@@ -109,10 +109,10 @@ class Node:
 
     def scanner_key(self):
         return self.name
-  
+
     def add_to_waiting_parents(self, node):
         self.waiting_parents.append(node)
-  
+
     def call_for_all_waiting_parents(self, func):
         func(self)
         for parent in self.waiting_parents:
@@ -186,7 +186,7 @@ class TaskmasterTestCase(unittest.TestCase):
         n1 = Node("n1")
         n2 = Node("n2")
         n3 = Node("n3", [n1, n2])
-        
+
         tm = SCons.Taskmaster.Taskmaster([n3])
 
         t = tm.next_task()
@@ -259,41 +259,29 @@ class TaskmasterTestCase(unittest.TestCase):
         n5 = Node("n5", [n3, n4])
         tm = SCons.Taskmaster.Taskmaster([n5])
 
-        assert not tm.is_blocked()
-        
         t1 = tm.next_task()
         assert t1.get_target() == n1
-        assert not tm.is_blocked()
-        
+
         t2 = tm.next_task()
         assert t2.get_target() == n2
-        assert not tm.is_blocked()
 
         t4 = tm.next_task()
         assert t4.get_target() == n4
-        assert tm.is_blocked()
         t4.executed()
-        assert tm.is_blocked()
-        
+
         t1.executed()
-        assert tm.is_blocked()
         t2.executed()
-        assert not tm.is_blocked()
         t3 = tm.next_task()
         assert t3.get_target() == n3
-        assert tm.is_blocked()
 
         t3.executed()
-        assert not tm.is_blocked()
         t5 = tm.next_task()
         assert t5.get_target() == n5, t5.get_target()
-        assert tm.is_blocked()  # still executing t5
         t5.executed()
-        assert not tm.is_blocked()
 
         assert tm.next_task() == None
 
-        
+
         n4 = Node("n4")
         n4.set_state(SCons.Node.executed)
         tm = SCons.Taskmaster.Taskmaster([n4])
@@ -303,9 +291,7 @@ class TaskmasterTestCase(unittest.TestCase):
         n2 = Node("n2", [n1])
         tm = SCons.Taskmaster.Taskmaster([n2,n2])
         t = tm.next_task()
-        assert tm.is_blocked()
         t.executed()
-        assert not tm.is_blocked()
         t = tm.next_task()
         assert tm.next_task() == None
 
@@ -369,27 +355,20 @@ class TaskmasterTestCase(unittest.TestCase):
         t = tm.next_task()
         assert t.get_target() == n1
         assert n4.state == SCons.Node.executing
-        assert tm.is_blocked()
         t.executed()
-        assert not tm.is_blocked()
         t = tm.next_task()
         assert t.get_target() == n2
-        assert tm.is_blocked()
         t.executed()
         t = tm.next_task()
         assert t.get_target() == n3
-        assert tm.is_blocked()
         t.executed()
         t = tm.next_task()
         assert t.get_target() == n4
-        assert tm.is_blocked()
         t.executed()
         t = tm.next_task()
         assert t.get_target() == n5
-        assert tm.is_blocked()  # still executing n5
         assert not tm.next_task()
         t.executed()
-        assert not tm.is_blocked()
 
         n1 = Node("n1")
         n2 = Node("n2")
@@ -416,10 +395,12 @@ class TaskmasterTestCase(unittest.TestCase):
         n6 = Node("n6")
         n7 = Node("n7")
         n6.alttargets = [n7]
+
         tm = SCons.Taskmaster.Taskmaster([n5])
         t = tm.next_task()
         assert t.get_target() == n5
         t.executed()
+
         tm = SCons.Taskmaster.Taskmaster([n6])
         t = tm.next_task()
         assert t.get_target() == n7
@@ -590,7 +571,6 @@ class TaskmasterTestCase(unittest.TestCase):
 
     def test_cycle_detection(self):
         """Test detecting dependency cycles
-
         """
         n1 = Node("n1")
         n2 = Node("n2", [n1])
@@ -604,42 +584,6 @@ class TaskmasterTestCase(unittest.TestCase):
             assert str(e) == "Dependency cycle: n3 -> n1 -> n2 -> n3", str(e)
         else:
             assert 0
-        
-    def test_is_blocked(self):
-        """Test whether a task is blocked
-
-        Both default and overridden in a subclass.
-        """
-        tm = SCons.Taskmaster.Taskmaster()
-        assert not tm.is_blocked()
-
-        class MyTM(SCons.Taskmaster.Taskmaster):
-            def _find_next_ready_node(self):
-                self.ready = 1
-        tm = MyTM()
-        assert not tm.is_blocked()
-
-        class MyTM(SCons.Taskmaster.Taskmaster):
-            def _find_next_ready_node(self):
-                self.ready = None
-                self.pending = []
-                self.executing = []
-        tm = MyTM()
-        assert not tm.is_blocked()
-
-        class MyTM(SCons.Taskmaster.Taskmaster):
-            def _find_next_ready_node(self):
-                self.ready = None
-                self.pending = [1]
-        tm = MyTM()
-        assert tm.is_blocked()
-
-        class MyTM(SCons.Taskmaster.Taskmaster):
-            def _find_next_ready_node(self):
-                self.ready = None
-                self.executing = [1]
-        tm = MyTM()
-        assert tm.is_blocked()
 
     def test_next_top_level_candidate(self):
         """Test the next_top_level_candidate() method
@@ -650,7 +594,7 @@ class TaskmasterTestCase(unittest.TestCase):
 
         tm = SCons.Taskmaster.Taskmaster([n3])
         t = tm.next_task()
-        assert tm.executing == [n1], tm.executing
+        assert t.targets == [n1], t.targets
         t.fail_stop()
         assert t.targets == [n3], t.targets
         assert t.top == 1, t.top
@@ -665,7 +609,7 @@ class TaskmasterTestCase(unittest.TestCase):
         n1 = Node("n1")
         n2 = Node("n2")
         n3 = Node("n3", [n1, n2])
-        
+
         tm = SCons.Taskmaster.Taskmaster([n3])
         t = tm.next_task()
         t.prepare()
@@ -702,9 +646,9 @@ class TaskmasterTestCase(unittest.TestCase):
         n1 = Node("n1")
         tm = SCons.Taskmaster.Taskmaster([n1])
         t = tm.next_task()
-        assert tm.executing == [n1], tm.executing
+        assert t.targets == [n1], map(str, t.targets)
         tm.failed(n1)
-        assert tm.executing == [], tm.executing
+        assert t.targets == [n1], map(str, t.targets)
 
     def test_executed(self):
         """Test when a task has been executed
@@ -759,7 +703,6 @@ class TaskmasterTestCase(unittest.TestCase):
 
     def test_prepare(self):
         """Test preparation of multiple Nodes for a task
-
         """
         n1 = Node("n1")
         n2 = Node("n2")
@@ -818,7 +761,7 @@ class TaskmasterTestCase(unittest.TestCase):
 
         n6.side_effects = [ n8 ]
         n7.side_effects = [ n9, n10 ]
-        
+
         tm = SCons.Taskmaster.Taskmaster([n6, n7])
         t = tm.next_task()
         # More bogus reaching in and setting the targets.
@@ -832,7 +775,6 @@ class TaskmasterTestCase(unittest.TestCase):
 
     def test_execute(self):
         """Test executing a task
-
         """
         global built_text
         global cache_text
@@ -994,7 +936,7 @@ class TaskmasterTestCase(unittest.TestCase):
         t.exception_set(("exception 4", "XYZZY"))
         def fw_exc(exc):
             raise 'exception_forwarded', exc
-        tm.exception_raise = fw_exc 
+        tm.exception_raise = fw_exc
         try:
             t.exception_raise()
         except:
@@ -1007,7 +949,6 @@ class TaskmasterTestCase(unittest.TestCase):
 
     def test_postprocess(self):
         """Test postprocessing targets to give them a chance to clean up
-        
         """
         n1 = Node("n1")
         tm = SCons.Taskmaster.Taskmaster([n1])
@@ -1056,7 +997,7 @@ class TaskmasterTestCase(unittest.TestCase):
 Taskmaster: 'n1': children:
     []
     evaluating
-Taskmaster: 'n1': already handled
+Taskmaster: 'n1': already handled (executed)
 Taskmaster: 'n3': children:
     ['n1', 'n2']
     waiting on unstarted children:

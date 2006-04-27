@@ -36,6 +36,8 @@ import traceback
 import SCons.Node
 import SCons.Errors
 
+StateString = SCons.Node.StateString
+
 # A subsystem for recording stats about how different Nodes are handled by
 # the main Taskmaster loop.  There's no external control here (no need for
 # a --debug= option); enable it by changing the value of CollectStats.
@@ -179,15 +181,13 @@ class Task:
         for t in self.targets:
             t.set_state(SCons.Node.failed)
         self.tm.failed(self.node)
-        next_top = self.tm.next_top_level_candidate()
         self.tm.stop()
 
-        if next_top:
-            # We're stopping because of a build failure, but give the
-            # calling Task class a chance to postprocess() the top-level
-            # target under which the build failure occurred.
-            self.targets = [next_top]
-            self.top = 1
+        # We're stopping because of a build failure, but give the
+        # calling Task class a chance to postprocess() the top-level
+        # target under which the build failure occurred.
+        self.targets = [self.tm.current_top]
+        self.top = 1
 
     def fail_continue(self):
         """Explicit continue-the-build failure.
@@ -273,25 +273,37 @@ class Taskmaster:
     """
 
     def __init__(self, targets=[], tasker=Task, order=order, trace=None):
-        self.targets = targets # top level targets
-        self.candidates = targets[:] # nodes that might be ready to be executed
-        self.candidates.reverse()
-        self.executing = [] # nodes that are currently executing
+        self.top_targets = targets[:]
+        self.top_targets.reverse()
+        self.candidates = []
         self.pending = [] # nodes that depend on a currently executing node
         self.tasker = tasker
         self.ready = None # the next task that is ready to be executed
         self.order = order
         self.message = None
         self.trace = trace
+        self.next_candidate = self.find_next_candidate
 
-        # See if we can alter the target list to find any
-        # corresponding targets in linked build directories
-        for node in self.targets:
-            alt, message = node.alter_targets()
-            if alt:
-                self.message = message
-                self.candidates.extend(self.order(alt))
-                continue
+    def find_next_candidate(self):
+        try:
+            return self.candidates.pop()
+        except IndexError:
+            pass
+        try:
+            node = self.top_targets.pop()
+        except IndexError:
+            return None
+        self.current_top = node
+        alt, message = node.alter_targets()
+        if alt:
+            self.message = message
+            self.candidates.append(node)
+            self.candidates.extend(self.order(alt))
+            node = self.candidates.pop()
+        return node
+
+    def no_next_candidate(self):
+        return None
 
     def _find_next_ready_node(self):
         """Find the next node that is ready to be built"""
@@ -303,8 +315,13 @@ class Taskmaster:
 
         T = self.trace
 
-        while self.candidates:
-            node = self.candidates.pop().disambiguate()
+        while 1:
+            node = self.next_candidate()
+            if node is None:
+                self.ready = None
+                break
+
+            node = node.disambiguate()
             state = node.get_state()
 
             if CollectStats:
@@ -321,7 +338,7 @@ class Taskmaster:
             # Skip this node if it has already been handled:
             if not state in [ SCons.Node.no_state, SCons.Node.stack ]:
                 if S: S.already_handled = S.already_handled + 1
-                if T: T.write(' already handled\n')
+                if T: T.write(' already handled (%s)\n' % StateString[state])
                 continue
 
             # Mark this node as being on the execution stack:
@@ -485,10 +502,8 @@ class Taskmaster:
             tlist = node.builder.targets(node)
         except AttributeError:
             tlist = [node]
-        self.executing.extend(tlist)
-        self.executing.extend(node.side_effects)
 
-        task = self.tasker(self, tlist, node in self.targets, node)
+        task = self.tasker(self, tlist, node is self.current_top, node)
         try:
             task.make_ready()
         except KeyboardInterrupt:
@@ -508,44 +523,19 @@ class Taskmaster:
 
         return task
 
-    def is_blocked(self):
-        self._find_next_ready_node()
-
-        return not self.ready and (self.pending or self.executing)
-
-    def next_top_level_candidate(self):
-        candidates = self.candidates[:]
-        candidates.reverse()
-        for c in candidates:
-            if c in self.targets:
-                return c
-        return None
-
     def stop(self):
         """Stop the current build completely."""
-        self.candidates = []
+        self.next_candidate = self.no_next_candidate
         self.ready = None
-        self.pending = []
 
     def failed(self, node):
-        try:
-            tlist = node.builder.targets(node)
-        except AttributeError:
-            tlist = [node]
-        for t in tlist:
-            self.executing.remove(t)
-        for side_effect in node.side_effects:
-            self.executing.remove(side_effect)
+        pass
 
     def executed(self, node):
         try:
             tlist = node.builder.targets(node)
         except AttributeError:
             tlist = [node]
-        for t in tlist:
-            self.executing.remove(t)
-        for side_effect in node.side_effects:
-            self.executing.remove(side_effect)
 
         # move the current pending nodes to the candidates list:
         # (they may not all be ready to build, but _find_next_ready_node()

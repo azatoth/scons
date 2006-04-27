@@ -8,9 +8,21 @@
 
 
 
+RELEASE 0.97 - XXX
+
+  From Steven Knight:
+
+  - Have the Taskmaster track the currently-executed top-level target
+    directly, not through its presence on the target list.
+
+  - Eliminate some unnecessary Taskmaster list(s), method(s) and
+    manipulation.
+
+
+
 RELEASE 0.96.92 - Mon, 10 Apr 2006 21:08:22 -0400
 
-  NOTE:  This is a pre-release of 0.97 for testing purposes.
+  NOTE:  This was a pre-release of 0.97 for testing purposes.
 
   From Anonymous:
 
