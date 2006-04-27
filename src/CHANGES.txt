@@ -8,7 +8,9 @@
 
 
 
-RELEASE 0.97 - XXX
+RELEASE 0.96.92 - Mon, 10 Apr 2006 21:08:22 -0400
+
+  NOTE:  This is a pre-release of 0.97 for testing purposes.
 
   From Anonymous:
 

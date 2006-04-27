@@ -262,8 +262,12 @@ With plenty of help from the SCons Development team:
         Chad Austin
         Charles Crain
         Steve Leblanc
+        Baptiste Lepilleur
+        Elliot Murphy
         Gary Oberbrunner
         Anthony Roach
+        Greg Noel
+        Kevin Quick
         Greg Spencer
         Christoph Wiedemann
 
