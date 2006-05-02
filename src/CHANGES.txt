@@ -18,6 +18,14 @@ RELEASE 0.97 - XXX
   - Eliminate some unnecessary Taskmaster list(s), method(s) and
     manipulation.
 
+  From Gary Oberbrunner:
+
+  - Fix parsing tripartite Intel C compiler version numbers on Linux.
+
+  From Atul Varma:
+
+  - Fix detection of Visual C++ Express Edition.
+
 
 
 RELEASE 0.96.92 - Mon, 10 Apr 2006 21:08:22 -0400
