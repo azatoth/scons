@@ -22,6 +22,9 @@ RELEASE 0.97 - XXX
 
   - Fix parsing tripartite Intel C compiler version numbers on Linux.
 
+  - Extend the ParseConfig() function to recognize -arch and
+    -isysroot options.
+
   From Atul Varma:
 
   - Fix detection of Visual C++ Express Edition.

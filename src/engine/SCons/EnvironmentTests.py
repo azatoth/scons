@@ -1504,7 +1504,8 @@ def generate(env):
                                  "-L/usr/fax -L foo -lxxx -l yyy " + \
                                  "-Wa,-as -Wl,-link -Wp,-cpp abc " + \
                                  "-pthread -framework Carbon " + \
-                                 "-mno-cygwin -mwindows")
+                                 "-mno-cygwin -mwindows " + \
+                                 "-arch i386 -isysroot /tmp")
             env.ParseConfig("fake $COMMAND")
             assert save_command == ['fake command'], save_command
             assert env['ASFLAGS'] == ['assembler', '-Wa,-as'], env['ASFLAGS']
@@ -1512,8 +1513,8 @@ def generate(env):
             assert env['CPPFLAGS'] == ['', '-Wp,-cpp'], env['CPPFLAGS']
             assert env['LIBPATH'] == ['list', '/usr/fax', 'foo'], env['LIBPATH']
             assert env['LIBS'] == ['xxx', 'yyy', env.File('abc')], env['LIBS']
-            assert env['LINKFLAGS'] == ['', '-Wl,-link', '-pthread', '-framework', 'Carbon', '-mno-cygwin', '-mwindows'], env['LINKFLAGS']
-            assert env['CCFLAGS'] == ['', '-X', '-pthread', '-mno-cygwin'], env['CCFLAGS']
+            assert env['LINKFLAGS'] == ['', '-Wl,-link', '-pthread', '-framework', 'Carbon', '-mno-cygwin', '-mwindows', '-arch', 'i386', '-isysroot', '/tmp'], env['LINKFLAGS']
+            assert env['CCFLAGS'] == ['', '-X', '-pthread', '-mno-cygwin', '-arch', 'i386', '-isysroot', '/tmp'], env['CCFLAGS']
 
             os.popen = my_popen([], "-Ibar")
             env.ParseConfig("fake2")

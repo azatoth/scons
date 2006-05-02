@@ -861,11 +861,16 @@ class Base(SubstitutionEnvironment):
             }
     
             params = string.split(output)
-            append_next_arg_to=''       # for multi-word args
+            append_next_arg_to=None       # for multi-word args
+            seen = {}                   # already seen args
             for arg in params:
                 if append_next_arg_to:
-                    dict[append_next_arg_to].append(arg)
-                    append_next_arg_to = ''
+                    if type(append_next_arg_to) is type(()):
+                        for a in append_next_arg_to:
+                            dict[a].append(arg)
+                    else: # assume string
+                        dict[append_next_arg_to].append(arg)
+                    append_next_arg_to = None
                 elif arg[0] != '-':
                     dict['LIBS'].append(fs.File(arg))
                 elif arg[:2] == '-L':
@@ -900,8 +905,24 @@ class Base(SubstitutionEnvironment):
                 elif arg == '-pthread':
                     dict['CCFLAGS'].append(arg)
                     dict['LINKFLAGS'].append(arg)
+                elif arg == '-isysroot':
+                    dict['CCFLAGS'].append(arg)
+                    dict['LINKFLAGS'].append(arg)
+                    append_next_arg_to = ('CCFLAGS', 'LINKFLAGS')
+                elif arg == '-arch':
+                    # allow multiple -arch flags (universal binaries on OSX)
+                    # XXX: this turns off unique for this whole ParseConfig,
+                    # it would be better to be more fine-grained.
+                    # But it's better than stripping the second -arch
+                    # altogether, so OK for now.
+                    if seen.has_key(arg):
+                        unique=0        # allow multiple -arch flags
+                    dict['CCFLAGS'].append(arg)
+                    dict['LINKFLAGS'].append(arg)
+                    append_next_arg_to = ('CCFLAGS', 'LINKFLAGS')
                 else:
                     dict['CCFLAGS'].append(arg)
+                seen[arg] = 1           # remember it
             if unique:
                 appender = env.AppendUnique
             else:
