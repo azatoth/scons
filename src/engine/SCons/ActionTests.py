@@ -688,6 +688,18 @@ class CommandActionTestCase(unittest.TestCase):
         assert a.cmd_list == [ "abra" ], a.cmd_list
         assert a.cmdstr == "cadabra", a.cmdstr
 
+    def test_bad_cmdstr(self):
+        """Test handling of bad CommandAction(cmdstr) arguments
+        """
+        try:
+            a = SCons.Action.CommandAction('foo', [])
+        except SCons.Errors.UserError, e:
+            s = str(e)
+            m = 'Invalid command display variable'
+            assert string.find(s, m) != -1, 'Unexpected string:  %s' % s
+        else:
+            raise "did not catch expected UserError"
+
     def test___str__(self):
         """Test fetching the pre-substitution string for command Actions
         """
@@ -1337,6 +1349,20 @@ class FunctionActionTestCase(unittest.TestCase):
         assert a.execfunction == func2, a.execfunction
         assert a.strfunction == func3, a.strfunction
 
+    def test_cmdstr_bad(self):
+        """Test handling of bad FunctionAction(cmdstr) arguments
+        """
+        def func():
+            pass
+        try:
+            a = SCons.Action.FunctionAction(func, [])
+        except SCons.Errors.UserError, e:
+            s = str(e)
+            m = 'Invalid function display variable'
+            assert string.find(s, m) != -1, 'Unexpected string:  %s' % s
+        else:
+            raise "did not catch expected UserError"
+
     def test___str__(self):
         """Test the __str__() method for function Actions
         """
@@ -1469,6 +1495,24 @@ class FunctionActionTestCase(unittest.TestCase):
         a = SCons.Action.FunctionAction(lc.LocalMethod)
         c = a.get_contents(target=[], source=[], env=Environment())
         assert c in matches, repr(c)
+
+    def test_strfunction(self):
+        """Test the FunctionAction.strfunction() method
+        """
+        def func():
+            pass
+
+        a = SCons.Action.FunctionAction(func)
+        s = a.strfunction(target=[], source=[], env=Environment())
+        assert s == 'func([], [])', s
+
+        a = SCons.Action.FunctionAction(func, None)
+        s = a.strfunction(target=[], source=[], env=Environment())
+        assert s is None, s
+
+        a = SCons.Action.FunctionAction(func, 'function')
+        s = a.strfunction(target=[], source=[], env=Environment())
+        assert s == 'function', s
 
 class ListActionTestCase(unittest.TestCase):
 

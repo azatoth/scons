@@ -10,6 +10,10 @@
 
 RELEASE 0.97 - XXX
 
+  From David Gruener:
+
+  - Fix inconsistent handling of Action strfunction arguments.
+
   From Steven Knight:
 
   - Have the Taskmaster track the currently-executed top-level target
