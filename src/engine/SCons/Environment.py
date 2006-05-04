@@ -458,6 +458,189 @@ class SubstitutionEnvironment:
         else:
             return self
 
+    def ParseFlags(self, *flags):
+        """
+        Parse the set of flags and return a dict with the flags placed
+        in the appropriate entry.  The flags are treated as a typical
+        set of command-line flags for a GNU-like toolchain and used to
+        populate the entries in the dict immediately below.  If one of
+        the flag strings begins with a bang (exclamation mark), it is
+        assumed to be a command and the rest of the string is executed;
+        the result of that evaluation is then added to the dict.
+        """
+        dict = {
+            'ASFLAGS'       : [],
+            'CCFLAGS'       : [],
+            'CPPDEFINES'    : [],
+            'CPPFLAGS'      : [],
+            'CPPPATH'       : [],
+            'FRAMEWORKPATH' : [],
+            'FRAMEWORKS'    : [],
+            'LIBPATH'       : [],
+            'LIBS'          : [],
+            'LINKFLAGS'     : [],
+            'RPATH'         : [],
+        }
+
+        # The use of the "me" parameter to provide our own name for
+        # recursion is an egregious hack to support Python 2.1 and before.
+        def do_parse(arg, me, self = self, dict = dict):
+            # if arg is a sequence, recurse with each element
+            if not SCons.Util.is_String(arg):
+                for t in arg: me(t, me)
+                return
+
+            # if arg is a command, execute it
+            if arg[0] == '!':
+                arg = os.popen(self.subst(arg[1:])).read()
+
+            # utility function to deal with -D option
+            def append_define(name, dict = dict):
+                t = string.split(name, '=')
+                if len(t) == 1:
+                    dict['CPPDEFINES'].append(name)
+                else:
+                    dict['CPPDEFINES'].append([t[0], string.join(t[1:], '=')])
+
+            # Loop through the flags and add them to the appropriate option.
+            # This tries to strike a balance between checking for all possible
+            # flags and keeping the logic to a finite size, so it doesn't
+            # check for some that don't occur often.  It particular, if the
+            # flag is not known to occur in a config script and there's a way
+            # of passing the flag to the right place (by wrapping it in a -W
+            # flag, for example) we don't check for it.  Note that most
+            # preprocessor options are not handled, since unhandled options
+            # are placed in CCFLAGS, so unless the preprocessor is invoked
+            # separately, these flags will still get to the preprocessor.
+            # Other options not currently handled:
+            #  -iqoutedir      (preprocessor search path)
+            #  -u symbol       (linker undefined symbol)
+            #  -s              (linker strip files)
+            #  -static*        (linker static binding)
+            #  -shared*        (linker dynamic binding)
+            #  -symbolic       (linker global binding)
+            #  -R dir          (deprecated linker rpath)
+            # IBM compilers may also accept -qframeworkdir=foo
+    
+            params = string.split(arg)
+            append_next_arg_to = None   # for multi-word args
+            for arg in params:
+                if append_next_arg_to:
+                   if append_next_arg_to == 'CPPDEFINES':
+                       append_define(arg)
+                   elif append_next_arg_to == '-include':
+                       dict['CCFLAGS'].append(['-include', self.fs.File(arg)])
+                   elif append_next_arg_to == '-isysroot':
+                       dict['CCFLAGS'].append(['-isysroot', arg])
+                       dict['LINKFLAGS'].append(['-isysroot', arg])
+                   elif append_next_arg_to == '-arch':
+                       dict['CCFLAGS'].append(['-arch', arg])
+                       dict['LINKFLAGS'].append(['-arch', arg])
+                   else:
+                       dict[append_next_arg_to].append(arg)
+                   append_next_arg_to = None
+                elif not arg[0] in ['-', '+']:
+                    dict['LIBS'].append(self.fs.File(arg))
+                elif arg[:2] == '-L':
+                    if arg[2:]:
+                        dict['LIBPATH'].append(arg[2:])
+                    else:
+                        append_next_arg_to = 'LIBPATH'
+                elif arg[:2] == '-l':
+                    if arg[2:]:
+                        dict['LIBS'].append(arg[2:])
+                    else:
+                        append_next_arg_to = 'LIBS'
+                elif arg[:2] == '-I':
+                    if arg[2:]:
+                        dict['CPPPATH'].append(arg[2:])
+                    else:
+                        append_next_arg_to = 'CPPPATH'
+                elif arg[:4] == '-Wa,':
+                    dict['ASFLAGS'].append(arg[4:])
+                    dict['CCFLAGS'].append(arg)
+                elif arg[:4] == '-Wl,':
+                    if arg[:11] == '-Wl,-rpath=':
+                        dict['RPATH'].append(arg[11:])
+                    elif arg[:7] == '-Wl,-R,':
+                        dict['RPATH'].append(arg[7:])
+                    elif arg[:6] == '-Wl,-R':
+                        dict['RPATH'].append(arg[6:])
+                    else:
+                        dict['LINKFLAGS'].append(arg)
+                elif arg[:4] == '-Wp,':
+                    dict['CPPFLAGS'].append(arg)
+                elif arg[:2] == '-D':
+                    if arg[2:]:
+                        append_define(arg[2:])
+                    else:
+                        appencd_next_arg_to = 'CPPDEFINES'
+                elif arg == '-framework':
+                    append_next_arg_to = 'FRAMEWORKS'
+                elif arg[:14] == '-frameworkdir=':
+                    dict['FRAMEWORKPATH'].append(arg[14:])
+                elif arg[:2] == '-F':
+                    if arg[2:]:
+                        dict['FRAMEWORKPATH'].append(arg[2:])
+                    else:
+                        append_next_arg_to = 'FRAMEWORKPATH'
+                elif arg == '-mno-cygwin':
+                    dict['CCFLAGS'].append(arg)
+                    dict['LINKFLAGS'].append(arg)
+                elif arg == '-mwindows':
+                    dict['LINKFLAGS'].append(arg)
+                elif arg == '-pthread':
+                    dict['CCFLAGS'].append(arg)
+                    dict['LINKFLAGS'].append(arg)
+                elif arg[0] == '+':
+                    dict['CCFLAGS'].append(arg)
+                    dict['LINKFLAGS'].append(arg)
+                elif arg in ['-include', '-isysroot', '-arch']:
+                    append_next_arg_to = arg
+                else:
+                    dict['CCFLAGS'].append(arg)
+    
+        for arg in flags:
+            do_parse(arg, do_parse)
+        return dict
+
+    def MergeFlags(self, args, unique=1):
+        """
+        Merge the dict in args into the construction variables.  If args
+        is not a dict, it is converted into a dict using ParseFlags.
+        If unique is not set, the flags are appended rather than merged.
+        """
+
+        if not SCons.Util.is_Dict(args):
+            args = self.ParseFlags(args)
+        if not unique:
+            apply(self.Append, (), args)
+            return self
+        for key,value in args.items():
+            if len(value) == 0:
+                continue
+            try:
+                orig = self[key]
+                if len(orig) == 0: orig = []
+                elif not SCons.Util.is_List(orig): orig = [orig]
+                orig = orig + value
+            except KeyError:
+                orig = value
+            t = []
+            if key[-4:] == 'PATH':
+                ### keep left-most occurence
+                for v in orig:
+                    if v not in t:
+                        t.append(v)
+            else:
+                ### keep right-most occurence
+                orig.reverse()
+                for v in orig:
+                    if v not in t:
+                        t.insert(0, v)
+            self[key] = t
+        return self
+
 class Base(SubstitutionEnvironment):
     """Base class for "real" construction Environments.  These are the
     primary objects used to communicate dependency and construction
@@ -838,100 +1021,19 @@ class Base(SubstitutionEnvironment):
     def ParseConfig(self, command, function=None, unique=1):
         """
         Use the specified function to parse the output of the command
-        in order to modify the current environment. The 'command' can
+        in order to modify the current environment.  The 'command' can
         be a string or a list of strings representing a command and
-        it's arguments. 'Function' is an optional argument that takes
-        the environment and the output of the command. If no function is
-        specified, the output will be treated as the output of a typical
-        'X-config' command (i.e. gtk-config) and used to append to the
-        ASFLAGS, CCFLAGS, CPPFLAGS, CPPPATH, LIBPATH, LIBS, LINKFLAGS
-        and CCFLAGS variables.
+        its arguments.  'Function' is an optional argument that takes
+        the environment, the output of the command, and the unique flag.
+        If no function is specified, MergeFlags, which treats the output
+        as the result of a typical 'X-config' command (i.e. gtk-config),
+        will merge the output into the appropriate variables.
         """
-
-        # the default parse function
-        def parse_conf(env, output, fs=self.fs, unique=unique):
-            dict = {
-                'ASFLAGS'       : [],
-                'CCFLAGS'       : [],
-                'CPPFLAGS'      : [],
-                'CPPPATH'       : [],
-                'LIBPATH'       : [],
-                'LIBS'          : [],
-                'LINKFLAGS'     : [],
-            }
-    
-            params = string.split(output)
-            append_next_arg_to=None       # for multi-word args
-            seen = {}                   # already seen args
-            for arg in params:
-                if append_next_arg_to:
-                    if type(append_next_arg_to) is type(()):
-                        for a in append_next_arg_to:
-                            dict[a].append(arg)
-                    else: # assume string
-                        dict[append_next_arg_to].append(arg)
-                    append_next_arg_to = None
-                elif arg[0] != '-':
-                    dict['LIBS'].append(fs.File(arg))
-                elif arg[:2] == '-L':
-                    if arg[2:]:
-                        dict['LIBPATH'].append(arg[2:])
-                    else:
-                        append_next_arg_to = 'LIBPATH'
-                elif arg[:2] == '-l':
-                    if arg[2:]:
-                        dict['LIBS'].append(arg[2:])
-                    else:
-                        append_next_arg_to = 'LIBS'
-                elif arg[:2] == '-I':
-                    if arg[2:]:
-                        dict['CPPPATH'].append(arg[2:])
-                    else:
-                        append_next_arg_to = 'CPPPATH'
-                elif arg[:4] == '-Wa,':
-                    dict['ASFLAGS'].append(arg)
-                elif arg[:4] == '-Wl,':
-                    dict['LINKFLAGS'].append(arg)
-                elif arg[:4] == '-Wp,':
-                    dict['CPPFLAGS'].append(arg)
-                elif arg == '-framework':
-                    dict['LINKFLAGS'].append(arg)
-                    append_next_arg_to='LINKFLAGS'
-                elif arg == '-mno-cygwin':
-                    dict['CCFLAGS'].append(arg)
-                    dict['LINKFLAGS'].append(arg)
-                elif arg == '-mwindows':
-                    dict['LINKFLAGS'].append(arg)
-                elif arg == '-pthread':
-                    dict['CCFLAGS'].append(arg)
-                    dict['LINKFLAGS'].append(arg)
-                elif arg == '-isysroot':
-                    dict['CCFLAGS'].append(arg)
-                    dict['LINKFLAGS'].append(arg)
-                    append_next_arg_to = ('CCFLAGS', 'LINKFLAGS')
-                elif arg == '-arch':
-                    # allow multiple -arch flags (universal binaries on OSX)
-                    # XXX: this turns off unique for this whole ParseConfig,
-                    # it would be better to be more fine-grained.
-                    # But it's better than stripping the second -arch
-                    # altogether, so OK for now.
-                    if seen.has_key(arg):
-                        unique=0        # allow multiple -arch flags
-                    dict['CCFLAGS'].append(arg)
-                    dict['LINKFLAGS'].append(arg)
-                    append_next_arg_to = ('CCFLAGS', 'LINKFLAGS')
-                else:
-                    dict['CCFLAGS'].append(arg)
-                seen[arg] = 1           # remember it
-            if unique:
-                appender = env.AppendUnique
-            else:
-                appender = env.Append
-            apply(appender, (), dict)
-    
+        def parse_conf(env, cmd, unique=unique):
+            return env.MergeFlags(cmd, unique)
         if function is None:
             function = parse_conf
-        if type(command) is type([]):
+        if SCons.Util.is_List(command):
             command = string.join(command)
         command = self.subst(command)
         return function(self, os.popen(command).read())

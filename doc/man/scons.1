@@ -2782,6 +2782,42 @@ Returns a list of the target Node or Nodes.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
+.RI env.MergeFlags( arg ", [" unique ])
+Merges the specified
+.I arg
+values to the construction envrionment's construction variables.
+If the
+.I arg
+argument is not a dictionary,
+it is converted to one by calling
+.B env.ParseFlags()
+on the argument
+before the values are merged.
+
+By default, 
+duplicate values are eliminated;
+you can, however, specify
+.B unique=0
+to allow duplicate
+values to be added.
+
+Examples:
+
+.ES
+# Add an optimization flag to $CCFLAGS.
+env.MergeFlags('-O3')
+
+# Combine the flags returned from running pkg-config with an optimization
+# flag and merge the result into the construction variables.
+env.MergeFlags(['!pkg-config gtk+-2.0 --cflags', '-O3'])
+
+env.MergeFlags(['-O3',
+               '!pkg-config gtk+-2.0 --cflags --libs',
+               '!pkg-config libpng12 --cflags --libs'])
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
 .RI NoClean( target ", ...)"
 .TP
 .RI env.NoClean( target ", ...)"
@@ -2836,7 +2872,9 @@ to modify the environment as specified by the output of
 .I command .
 The default
 .I function
-expects the output of a typical
+is
+.BR env.MergeFlags (),
+which expects the output of a typical
 .I *-config command
 (for example,
 .BR gtk-config )
@@ -2850,42 +2888,13 @@ you can specify
 to allow duplicate
 values to be added.
 
-By default,
-.BR -L ,
-.BR -l ,
-.BR -Wa ,
-.BR -Wl ,
-.BR -Wp ,
-.B -I
-and other options,
-are add to the
-.BR LIBPATH ,
-.BR LIBS ,
-.BR ASFLAGS ,
-.BR LINKFLAGS ,
-.BR CPPFLAGS ,
-.B CPPPATH
-and
-.B CCFLAGS
-construction variables,
-respectively.
-A returned
-.B -pthread
-option gets added to both the
-.B CCFLAGS
-and
-.B LINKFLAGS
-variables.
-A returned
-.B -framework
-option gets added to the
-.B LINKFLAGS
-variable.
-Any other strings not associated with options
-are assumed to be the names of libraries
-and added to the
-.B LIBS 
-construction variable.
+Interpreted options
+and the construction variables they affect
+are as specified for the
+.BR env.ParseFlags ()
+method (which thie method calls).
+See that method's description, below,
+for a table of options and construction variables.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
@@ -2943,6 +2952,72 @@ the directory of the
 file which calls the
 .B ParseDepends
 function.
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI env.ParseFlags( flags ", ...)"
+Parses one or more strings containing
+typical command-line flags for GCC tool chains
+and returns a dictionary with the flag values
+separated into the appropriate SCons construction variables.
+This is intended as a companion to the
+.BR env.MergeFlags ()
+method, but allows for the values in the returned dictionary
+to be modified, if necessary,
+before merging them into the construction environment.
+(Note that
+.BR env.MergeFlags ()
+will call this method if its argument is not a dictionary,
+so it is usually not necessary to call
+.BR env.ParseFlags ()
+directly unless you want to manipulate the values.)
+
+If the first character in any string is
+an exclamation mark (!),
+the rest of the string is executed as a command,
+and the output from the command is
+parsed as GCC tool chain command-line flags
+and added to the resulting dictionary.
+
+Flag values are translated accordig to the prefix found,
+and added to the following construction variables:
+
+.ES
+-arch               CCFLAGS, LINKFLAGS
+-D                  CPPDEFINES
+-framework          FRAMEWORKS
+-frameworkdir=      FRAMEWORKPATH
+-include            CCFLAGS
+-isysroot           CCFLAGS, LINKFLAGS
+-I                  CPPPATH
+-l                  LIBS
+-L                  LIBPATH
+-mno-cygwin         CCFLAGS, LINKFLAGS
+-mwindows           LINKFLAGS
+-pthread            CCFLAGS, LINKFLAGS
+-Wa,                ASFLAGS, CCFLAGS
+-Wl,-rpath=         RPATH
+-Wl,-R,             RPATH
+-Wl,-R              RPATH
+-Wl,                LINKFLAGS
+-Wp,                CPPFLAGS
++                   CCFLAGS, LINKFLAGS
+.EE
+
+Any other strings not associated with options
+are assumed to be the names of libraries
+and added to the
+.B LIBS 
+construction variable.
+
+Examples (all of which produce the same result):
+
+.ES
+dict = env.ParseFlags('-O2 -Dfoo -Dbar=1')
+dict = env.ParseFlags('-O2', '-Dfoo', '-Dbar=1')
+dict = env.ParseFlags(['-O2', '-Dfoo -Dbar=1'])
+dict = env.ParseFlags('-O2', '!echo -Dfoo -Dbar=1')
+.EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP

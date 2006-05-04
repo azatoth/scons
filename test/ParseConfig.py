@@ -90,14 +90,14 @@ good_stdout = test.wrap_stdout(read_str = """\
 ['/usr/include/fum', 'bar']
 ['/usr/fax', 'foo', 'lib_dir']
 ['xxx', 'abc']
-['-X', '-arch', 'i386']
+['-X', ['-arch', 'i386']]
 """, build_str = "scons: `.' is up to date.\n")
 
 stdout3 = test.wrap_stdout(read_str = """\
 []
 ['foo', 'lib_dir']
 []
-['-isysroot', '/tmp', '-arch', 'ppc', '-arch', 'i386']
+[['-isysroot', '/tmp'], ['-arch', 'ppc'], ['-arch', 'i386']]
 """, build_str = "scons: `.' is up to date.\n")
 
 test.run(arguments = ".", stdout = good_stdout)

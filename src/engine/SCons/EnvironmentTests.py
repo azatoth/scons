@@ -1476,14 +1476,18 @@ def generate(env):
 
     def test_ParseConfig(self):
         """Test the ParseConfig() method"""
-        env = self.TestEnvironment(ASFLAGS='assembler',
-                          COMMAND='command',
+        env = self.TestEnvironment(COMMAND='command',
+                          ASFLAGS='assembler',
+                          CCFLAGS=[''],
+                          CPPDEFINES=[],
                           CPPFLAGS=[''],
                           CPPPATH='string',
+                          FRAMEWORKPATH=[],
+                          FRAMEWORKS=[],
                           LIBPATH=['list'],
                           LIBS='',
                           LINKFLAGS=[''],
-                          CCFLAGS=[''])
+                          RPATH=[])
         orig_popen = os.popen
         class my_popen:
             def __init__(self, save_command, output):
@@ -1502,19 +1506,39 @@ def generate(env):
             os.popen = my_popen(save_command, 
                                  "-I/usr/include/fum -I bar -X\n" + \
                                  "-L/usr/fax -L foo -lxxx -l yyy " + \
-                                 "-Wa,-as -Wl,-link -Wp,-cpp abc " + \
-                                 "-pthread -framework Carbon " + \
+                                 "-Wa,-as -Wl,-link " + \
+                                 "-Wl,-rpath=rpath1 " + \
+                                 "-Wl,-R,rpath2 " + \
+                                 "-Wl,-Rrpath3 " + \
+                                 "-Wp,-cpp abc " + \
+                                 "-framework Carbon " + \
+                                 "-frameworkdir=fwd1 " + \
+                                 "-Ffwd2 " + \
+                                 "-F fwd3 " + \
+                                 "-pthread " + \
                                  "-mno-cygwin -mwindows " + \
-                                 "-arch i386 -isysroot /tmp")
+                                 "-arch i386 -isysroot /tmp +DD64 " + \
+                                 "-DFOO -DBAR=value")
             env.ParseConfig("fake $COMMAND")
             assert save_command == ['fake command'], save_command
-            assert env['ASFLAGS'] == ['assembler', '-Wa,-as'], env['ASFLAGS']
-            assert env['CPPPATH'] == ['string', '/usr/include/fum', 'bar'], env['CPPPATH']
+            assert env['ASFLAGS'] == ['assembler', '-as'], env['ASFLAGS']
+            assert env['CCFLAGS'] == ['', '-X', '-Wa,-as',
+                                      '-pthread', '-mno-cygwin',
+                                      ['-arch', 'i386'], ['-isysroot', '/tmp'],
+                                      '+DD64'], env['CCFLAGS']
+            assert env['CPPDEFINES'] == ['FOO', ['BAR', 'value']], env['CPPDEFINES']
             assert env['CPPFLAGS'] == ['', '-Wp,-cpp'], env['CPPFLAGS']
+            assert env['CPPPATH'] == ['string', '/usr/include/fum', 'bar'], env['CPPPATH']
+            assert env['FRAMEWORKPATH'] == ['fwd1', 'fwd2', 'fwd3'], env['FRAMEWORKPATH']
+            assert env['FRAMEWORKS'] == ['Carbon'], env['FRAMEWORKS']
             assert env['LIBPATH'] == ['list', '/usr/fax', 'foo'], env['LIBPATH']
             assert env['LIBS'] == ['xxx', 'yyy', env.File('abc')], env['LIBS']
-            assert env['LINKFLAGS'] == ['', '-Wl,-link', '-pthread', '-framework', 'Carbon', '-mno-cygwin', '-mwindows', '-arch', 'i386', '-isysroot', '/tmp'], env['LINKFLAGS']
-            assert env['CCFLAGS'] == ['', '-X', '-pthread', '-mno-cygwin', '-arch', 'i386', '-isysroot', '/tmp'], env['CCFLAGS']
+            assert env['LINKFLAGS'] == ['', '-Wl,-link', '-pthread',
+                                        '-mno-cygwin', '-mwindows',
+                                        ['-arch', 'i386'],
+                                        ['-isysroot', '/tmp'],
+                                        '+DD64'], env['LINKFLAGS']
+            assert env['RPATH'] == ['rpath1', 'rpath2', 'rpath3'], env['RPATH']
 
             os.popen = my_popen([], "-Ibar")
             env.ParseConfig("fake2")
