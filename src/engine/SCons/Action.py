@@ -415,7 +415,7 @@ class CommandAction(_ActionAction):
 
     def strfunction(self, target, source, env):
         if not self.cmdstr is None:
-            c = env.subst(self.cmdstr, 0, target, source)
+            c = env.subst(self.cmdstr, SCons.Subst.SUBST_RAW, target, source)
             if c:
                 return c
         cmd_list, ignore, silent = self.process(target, source, env)
@@ -641,7 +641,7 @@ class FunctionAction(_ActionAction):
         if self.cmdstr is None:
             return None
         if not self.cmdstr is _null:
-            c = env.subst(self.cmdstr, 0, target, source)
+            c = env.subst(self.cmdstr, SCons.Subst.SUBST_RAW, target, source)
             if c:
                 return c
         def array(a):

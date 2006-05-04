@@ -772,7 +772,7 @@ class CommandActionTestCase(unittest.TestCase):
         act = SCons.Action.CommandAction('xyzzy $TARGET $SOURCE',
                                          'cmdstr - $SOURCE - $TARGET -')
         s = act.strfunction([], [], env)
-        assert s == 'cmdstr - - -', s
+        assert s == 'cmdstr -  -  -', s
         s = act.strfunction([t1], [s1], env)
         assert s == 'cmdstr - s1 - t1 -', s
         s = act.strfunction([t1, t2], [s1, s2], env)
@@ -789,7 +789,7 @@ class CommandActionTestCase(unittest.TestCase):
         act = SCons.Action.CommandAction('xyzzy $TARGETS $SOURCES',
                                          'cmdstr = $SOURCES = $TARGETS =')
         s = act.strfunction([], [], env)
-        assert s == 'cmdstr = = =', s
+        assert s == 'cmdstr =  =  =', s
         s = act.strfunction([t1], [s1], env)
         assert s == 'cmdstr = s1 = t1 =', s
         s = act.strfunction([t1, t2], [s1, s2], env)
@@ -804,6 +804,16 @@ class CommandActionTestCase(unittest.TestCase):
         assert s == 'xyzzy t1 s1 t1 s1', s
         s = act.strfunction([t1, t2], [s1, s2], env)
         assert s == 'xyzzy t1 s1 t1 t2 s1 s2', s
+
+        act = SCons.Action.CommandAction('xyzzy $TARGETS $SOURCES',
+                                         'cmdstr\t$TARGETS\n$SOURCES   ')
+                    
+        s = act.strfunction([], [], env)
+        assert s == 'cmdstr\t\n   ', s
+        s = act.strfunction([t1], [s1], env)
+        assert s == 'cmdstr\tt1\ns1   ', s
+        s = act.strfunction([t1, t2], [s1, s2], env)
+        assert s == 'cmdstr\tt1 t2\ns1 s2   ', s
 
         def sf(target, source, env):
             return "sf was called"
