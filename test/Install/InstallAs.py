@@ -56,7 +56,13 @@ test.write('file1.in', "file1.in\n")
 test.write('file2.in', "file2.in\n")
 test.write(['subdir', 'file3.in'], "subdir/file3.in\n")
 
-test.run(arguments = '.')
+expect = test.wrap_stdout("""\
+Install file: "file1.in" as "install/file1.out"
+Install file: "file2.in" as "install/file2.out"
+Install file: "subdir/file3.in" as "install/file3.out"
+""")
+
+test.run(arguments = '.', stdout=expect)
 
 test.fail_test(test.read(install_file1_out) != "file1.in\n")
 test.fail_test(test.read(install_file2_out) != "file2.in\n")

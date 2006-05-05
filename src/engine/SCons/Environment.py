@@ -83,7 +83,7 @@ def installFunc(target, source, env):
     return install(target[0].path, source[0].path, env)
 
 def installString(target, source, env):
-    return env.subst(env['INSTALLSTR'], 0, target, source)
+    return env.subst_target_source(env['INSTALLSTR'], 0, target, source)
 
 installAction = SCons.Action.Action(installFunc, installString)
 
