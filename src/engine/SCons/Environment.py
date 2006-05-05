@@ -486,6 +486,9 @@ class SubstitutionEnvironment:
         # recursion is an egregious hack to support Python 2.1 and before.
         def do_parse(arg, me, self = self, dict = dict):
             # if arg is a sequence, recurse with each element
+            if not arg:
+                return
+
             if not SCons.Util.is_String(arg):
                 for t in arg: me(t, me)
                 return
@@ -529,13 +532,16 @@ class SubstitutionEnvironment:
                    if append_next_arg_to == 'CPPDEFINES':
                        append_define(arg)
                    elif append_next_arg_to == '-include':
-                       dict['CCFLAGS'].append(['-include', self.fs.File(arg)])
+                       t = ('-include', self.fs.File(arg))
+                       dict['CCFLAGS'].append(t)
                    elif append_next_arg_to == '-isysroot':
-                       dict['CCFLAGS'].append(['-isysroot', arg])
-                       dict['LINKFLAGS'].append(['-isysroot', arg])
+                       t = ('-isysroot', arg)
+                       dict['CCFLAGS'].append(t)
+                       dict['LINKFLAGS'].append(t)
                    elif append_next_arg_to == '-arch':
-                       dict['CCFLAGS'].append(['-arch', arg])
-                       dict['LINKFLAGS'].append(['-arch', arg])
+                       t = ('-arch', arg)
+                       dict['CCFLAGS'].append(t)
+                       dict['LINKFLAGS'].append(t)
                    else:
                        dict[append_next_arg_to].append(arg)
                    append_next_arg_to = None
@@ -616,16 +622,17 @@ class SubstitutionEnvironment:
         if not unique:
             apply(self.Append, (), args)
             return self
-        for key,value in args.items():
-            if len(value) == 0:
+        for key, value in args.items():
+            if value == '':
                 continue
             try:
                 orig = self[key]
+            except KeyError:
+                orig = value
+            else:
                 if len(orig) == 0: orig = []
                 elif not SCons.Util.is_List(orig): orig = [orig]
                 orig = orig + value
-            except KeyError:
-                orig = value
             t = []
             if key[-4:] == 'PATH':
                 ### keep left-most occurence

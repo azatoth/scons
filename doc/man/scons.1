@@ -2793,6 +2793,13 @@ it is converted to one by calling
 .B env.ParseFlags()
 on the argument
 before the values are merged.
+Note that
+.I arg
+must be a single value,
+so multiple strings must
+be passed in as a list,
+not as separate arguments to
+.BR env.MergeFlags ().
 
 By default, 
 duplicate values are eliminated;
@@ -2800,6 +2807,13 @@ you can, however, specify
 .B unique=0
 to allow duplicate
 values to be added.
+When eliminating duplicate values,
+any construction variables that end with
+the string
+.B PATH
+keep the left-most unique value.
+All other construction variables keep
+the right-most unique value.
 
 Examples:
 
@@ -3001,6 +3015,7 @@ and added to the following construction variables:
 -Wl,-R              RPATH
 -Wl,                LINKFLAGS
 -Wp,                CPPFLAGS
+-                   CCFLAGS
 +                   CCFLAGS, LINKFLAGS
 .EE
 

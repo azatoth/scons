@@ -587,6 +587,88 @@ class SubstitutionTestCase(unittest.TestCase):
         assert env2['ONE'] == "won", env2['ONE']
         assert env['ONE'] == 1, env['ONE']
 
+    def test_ParseFlags(self):
+        """Test the ParseFlags() method
+        """
+        env = SubstitutionEnvironment()
+
+        empty = {
+            'ASFLAGS'       : [],
+            'CCFLAGS'       : [],
+            'CPPDEFINES'    : [],
+            'CPPFLAGS'      : [],
+            'CPPPATH'       : [],
+            'FRAMEWORKPATH' : [],
+            'FRAMEWORKS'    : [],
+            'LIBPATH'       : [],
+            'LIBS'          : [],
+            'LINKFLAGS'     : [],
+            'RPATH'         : [],
+        }
+
+        d = env.ParseFlags(None)
+        assert d == empty, d
+
+        d = env.ParseFlags('')
+        assert d == empty, d
+
+        d = env.ParseFlags([])
+        assert d == empty, d
+
+        s = "-I/usr/include/fum -I bar -X\n" + \
+            "-L/usr/fax -L foo -lxxx -l yyy " + \
+            "-Wa,-as -Wl,-link " + \
+            "-Wl,-rpath=rpath1 " + \
+            "-Wl,-R,rpath2 " + \
+            "-Wl,-Rrpath3 " + \
+            "-Wp,-cpp " + \
+            "-framework Carbon " + \
+            "-frameworkdir=fwd1 " + \
+            "-Ffwd2 " + \
+            "-F fwd3 " + \
+            "-pthread " + \
+            "-mno-cygwin -mwindows " + \
+            "-arch i386 -isysroot /tmp +DD64 " + \
+            "-DFOO -DBAR=value"
+
+        d = env.ParseFlags(s)
+
+        assert d['ASFLAGS'] == ['-as'], d['ASFLAGS']
+        assert d['CCFLAGS'] == ['-X', '-Wa,-as',
+                                  '-pthread', '-mno-cygwin',
+                                  ('-arch', 'i386'), ('-isysroot', '/tmp'),
+                                  '+DD64'], d['CCFLAGS']
+        assert d['CPPDEFINES'] == ['FOO', ['BAR', 'value']], d['CPPDEFINES']
+        assert d['CPPFLAGS'] == ['-Wp,-cpp'], d['CPPFLAGS']
+        assert d['CPPPATH'] == ['/usr/include/fum', 'bar'], d['CPPPATH']
+        assert d['FRAMEWORKPATH'] == ['fwd1', 'fwd2', 'fwd3'], d['FRAMEWORKPATH']
+        assert d['FRAMEWORKS'] == ['Carbon'], d['FRAMEWORKS']
+        assert d['LIBPATH'] == ['/usr/fax', 'foo'], d['LIBPATH']
+        assert d['LIBS'] == ['xxx', 'yyy'], d['LIBS']
+        assert d['LINKFLAGS'] == ['-Wl,-link', '-pthread',
+                                  '-mno-cygwin', '-mwindows',
+                                  ('-arch', 'i386'),
+                                  ('-isysroot', '/tmp'),
+                                  '+DD64'], d['LINKFLAGS']
+        assert d['RPATH'] == ['rpath1', 'rpath2', 'rpath3'], d['RPATH']
+
+
+    def test_MergeFlags(self):
+        """Test the MergeFlags() method
+        """
+        env = SubstitutionEnvironment()
+        env.MergeFlags('')
+        assert env['CCFLAGS'] == [], env['CCFLAGS']
+        env.MergeFlags('-X')
+        assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
+        env.MergeFlags('-X')
+        assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
+
+        env = SubstitutionEnvironment()
+        env.MergeFlags({'A':['aaa'], 'B':['bbb']})
+        assert env['A'] == ['aaa'], env['A']
+        assert env['B'] == ['bbb'], env['B']
+
 
 
 class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
@@ -1524,7 +1606,7 @@ def generate(env):
             assert env['ASFLAGS'] == ['assembler', '-as'], env['ASFLAGS']
             assert env['CCFLAGS'] == ['', '-X', '-Wa,-as',
                                       '-pthread', '-mno-cygwin',
-                                      ['-arch', 'i386'], ['-isysroot', '/tmp'],
+                                      ('-arch', 'i386'), ('-isysroot', '/tmp'),
                                       '+DD64'], env['CCFLAGS']
             assert env['CPPDEFINES'] == ['FOO', ['BAR', 'value']], env['CPPDEFINES']
             assert env['CPPFLAGS'] == ['', '-Wp,-cpp'], env['CPPFLAGS']
@@ -1535,8 +1617,8 @@ def generate(env):
             assert env['LIBS'] == ['xxx', 'yyy', env.File('abc')], env['LIBS']
             assert env['LINKFLAGS'] == ['', '-Wl,-link', '-pthread',
                                         '-mno-cygwin', '-mwindows',
-                                        ['-arch', 'i386'],
-                                        ['-isysroot', '/tmp'],
+                                        ('-arch', 'i386'),
+                                        ('-isysroot', '/tmp'),
                                         '+DD64'], env['LINKFLAGS']
             assert env['RPATH'] == ['rpath1', 'rpath2', 'rpath3'], env['RPATH']
 
@@ -2840,12 +2922,12 @@ def generate(env):
                                    SOURCE = 'source',
                                    TARGET = 'target',
                                    INIT = 'init')
+        bad_msg = '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'
         added.append('INIT')
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), \
-                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
+            assert env.has_key(x), bad_msg % x
 
         env.Append(TARGETS = 'targets',
                    SOURCES = 'sources',
@@ -2856,8 +2938,7 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), \
-                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
+            assert env.has_key(x), bad_msg % x
 
         env.AppendUnique(TARGETS = 'targets',
                          SOURCES = 'sources',
@@ -2868,8 +2949,7 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), \
-                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
+            assert env.has_key(x), bad_msg % x
 
         env.Prepend(TARGETS = 'targets',
                     SOURCES = 'sources',
@@ -2880,8 +2960,7 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), \
-                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
+            assert env.has_key(x), bad_msg % x
 
         env.Prepend(TARGETS = 'targets',
                     SOURCES = 'sources',
@@ -2892,8 +2971,7 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), \
-                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
+            assert env.has_key(x), bad_msg % x
 
         env.Replace(TARGETS = 'targets',
                     SOURCES = 'sources',
@@ -2904,8 +2982,7 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), \
-                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
+            assert env.has_key(x), bad_msg % x
 
         copy = env.Copy(TARGETS = 'targets',
                         SOURCES = 'sources',
@@ -2915,8 +2992,7 @@ def generate(env):
         for x in reserved:
             assert not copy.has_key(x), env[x]
         for x in added + ['COPY']:
-            assert copy.has_key(x), \
-                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
+            assert copy.has_key(x), bad_msg % x
 
         over = env.Override({'TARGETS' : 'targets',
                              'SOURCES' : 'sources',
@@ -2926,8 +3002,7 @@ def generate(env):
         for x in reserved:
             assert not over.has_key(x), over[x]
         for x in added + ['OVERRIDE']:
-            assert over.has_key(x), \
-                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
+            assert over.has_key(x), bad_msg % x
 
 
 
