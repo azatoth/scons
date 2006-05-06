@@ -38,6 +38,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import copy
 import os
 import os.path
+import popen2
 import string
 from UserDict import UserDict
 
@@ -435,6 +436,31 @@ class SubstitutionEnvironment:
 
     subst_target_source = subst
 
+    def backtick(self, command):
+        try:
+            popen2.Popen3
+        except AttributeError:
+            (tochild, fromchild, childerr) = os.popen3(self.subst(command))
+            tochild.close()
+            err = childerr.read()
+            out = fromchild.read()
+            fromchild.close()
+            status = childerr.close()
+        else:
+            p = popen2.Popen3(command, 1)
+            p.tochild.close()
+            out = p.fromchild.read()
+            err = p.childerr.read()
+            status = p.wait()
+        if err:
+            import sys
+            sys.stderr.write(err)
+        if status:
+            if os.WIFEXITED(status):
+                status = os.WEXITSTATUS(status)
+            raise OSError("'%s' exited %s" % (command, status))
+        return out
+
     def Override(self, overrides):
         """
         Produce a modified environment whose variables are overriden by
@@ -495,7 +521,7 @@ class SubstitutionEnvironment:
 
             # if arg is a command, execute it
             if arg[0] == '!':
-                arg = os.popen(self.subst(arg[1:])).read()
+                arg = self.backtick(arg[1:])
 
             # utility function to deal with -D option
             def append_define(name, dict = dict):
@@ -1036,14 +1062,14 @@ class Base(SubstitutionEnvironment):
         as the result of a typical 'X-config' command (i.e. gtk-config),
         will merge the output into the appropriate variables.
         """
-        def parse_conf(env, cmd, unique=unique):
-            return env.MergeFlags(cmd, unique)
         if function is None:
+            def parse_conf(env, cmd, unique=unique):
+                return env.MergeFlags(cmd, unique)
             function = parse_conf
         if SCons.Util.is_List(command):
             command = string.join(command)
         command = self.subst(command)
-        return function(self, os.popen(command).read())
+        return function(self, self.backtick(command))
 
     def ParseDepends(self, filename, must_exist=None, only_one=0):
         """

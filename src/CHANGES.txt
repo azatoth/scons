@@ -28,6 +28,9 @@ RELEASE 0.97 - XXX
   - Eliminate some unnecessary Taskmaster list(s), method(s) and
     manipulation.
 
+  - Fix the expansion of $TARGET and $SOURCE in the expansion of
+    $INSTALLSTR displayed for non-environment calls to InstallAs().
+
   From Greg Noel:
 
   - Add an env.ParseFlags() method that provides separate logic for
@@ -50,6 +53,11 @@ RELEASE 0.97 - XXX
     default behavior of CheckLib() and CheckLibWithHeader() to print
     "Checking for C library foo..." instead of "Checking for main()
     in C library foo...".
+
+  From John Pye:
+
+  - Throw an exception if a command called by ParseConfig() or
+    ParseFlags() returns an error.
 
   From Atul Varma:
 

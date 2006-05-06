@@ -25,6 +25,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import string
+import StringIO
 import sys
 import TestCmd
 import unittest
@@ -200,13 +201,13 @@ class SubstitutionTestCase(unittest.TestCase):
         assert env1 == env2
 
     def test___getitem__(self):
-        """Test deleting a variable from a SubstitutionEnvironment
+        """Test fetching a variable from a SubstitutionEnvironment
         """
         env = SubstitutionEnvironment(XXX = 'x')
         assert env['XXX'] == 'x', env['XXX']
 
     def test___setitem__(self):
-        """Test deleting a variable from a SubstitutionEnvironment
+        """Test setting a variable in a SubstitutionEnvironment
         """
         env1 = SubstitutionEnvironment(XXX = 'x')
         env2 = SubstitutionEnvironment(XXX = 'x', YYY = 'y')
@@ -561,6 +562,56 @@ class SubstitutionTestCase(unittest.TestCase):
         env = SubstitutionEnvironment(AAA = 'a', BBB = 'b')
         mystr = env.subst_target_source("$AAA ${AAA}A $BBBB $BBB")
         assert mystr == "a aA b", mystr
+
+    def test_backtick(self):
+        """Test the backtick() method for capturing command output"""
+        env = SubstitutionEnvironment()
+
+        test = TestCmd.TestCmd(workdir = '')
+        test.write('stdout.py', """\
+import sys
+sys.stdout.write('this came from stdout.py\\n')
+sys.exit(0)
+""")
+        test.write('stderr.py', """\
+import sys
+sys.stderr.write('this came from stderr.py\\n')
+sys.exit(0)
+""")
+        test.write('fail.py', """\
+import sys
+sys.exit(1)
+""")
+
+        save_stderr = sys.stderr
+
+        try:
+            cmd = '%s %s' % (sys.executable, test.workpath('stdout.py'))
+            output = env.backtick(cmd)
+
+            assert output == 'this came from stdout.py\n', output
+
+            sys.stderr = StringIO.StringIO()
+
+            cmd = '%s %s' % (sys.executable, test.workpath('stderr.py'))
+            output = env.backtick(cmd)
+            errout = sys.stderr.getvalue()
+
+            assert output == '', output
+            assert errout == 'this came from stderr.py\n', errout
+
+            sys.stderr = StringIO.StringIO()
+
+            cmd = '%s %s' % (sys.executable, test.workpath('fail.py'))
+            try:
+                env.backtick(cmd)
+            except OSError, e:
+                assert str(e) == "'%s' exited 1" % cmd, str(e)
+            else:
+                self.fail("did not catch expected OSError")
+
+        finally:
+            sys.stderr = save_stderr
 
     def test_Override(self):
         "Test overriding construction variables"
@@ -1570,22 +1621,19 @@ def generate(env):
                           LIBS='',
                           LINKFLAGS=[''],
                           RPATH=[])
-        orig_popen = os.popen
-        class my_popen:
+
+        orig_backtick = env.backtick
+        class my_backtick:
             def __init__(self, save_command, output):
                 self.save_command = save_command
                 self.output = output
             def __call__(self, command):
                 self.save_command.append(command)
-                class fake_file:
-                    def __init__(self, output):
-                        self.output = output
-                    def read(self):
-                        return self.output
-                return fake_file(self.output)
+                return self.output
+
         try:
             save_command = []
-            os.popen = my_popen(save_command, 
+            env.backtick = my_backtick(save_command, 
                                  "-I/usr/include/fum -I bar -X\n" + \
                                  "-L/usr/fax -L foo -lxxx -l yyy " + \
                                  "-Wa,-as -Wl,-link " + \
@@ -1622,13 +1670,13 @@ def generate(env):
                                         '+DD64'], env['LINKFLAGS']
             assert env['RPATH'] == ['rpath1', 'rpath2', 'rpath3'], env['RPATH']
 
-            os.popen = my_popen([], "-Ibar")
+            env.backtick = my_backtick([], "-Ibar")
             env.ParseConfig("fake2")
             assert env['CPPPATH'] == ['string', '/usr/include/fum', 'bar'], env['CPPPATH']
             env.ParseConfig("fake2", unique=0)
             assert env['CPPPATH'] == ['string', '/usr/include/fum', 'bar', 'bar'], env['CPPPATH']
         finally:
-            os.popen = orig_popen
+            env.backtick = orig_backtick
 
     def test_ParseDepends(self):
         """Test the ParseDepends() method"""
