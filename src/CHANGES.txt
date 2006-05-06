@@ -22,11 +22,11 @@ RELEASE 0.97 - XXX
 
   From Steven Knight:
 
-  - Have the Taskmaster track the currently-executed top-level target
-    directly, not through its presence on the target list.
-
-  - Eliminate some unnecessary Taskmaster list(s), method(s) and
-    manipulation.
+  - Speed up the Taskmaster significantly by avoiding unnecessary
+    re-scans of Nodes to find out if there's work to be done, having it
+    track the currently-executed top-level target directly and not
+    through its presence on the target list, and eliminating some other
+    minor list(s), method(s) and manipulation.
 
   - Fix the expansion of $TARGET and $SOURCE in the expansion of
     $INSTALLSTR displayed for non-environment calls to InstallAs().

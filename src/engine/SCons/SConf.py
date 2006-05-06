@@ -246,8 +246,7 @@ class SConfBuildTask(SCons.Taskmaster.Task):
         cachable = 1
         for t in self.targets:
             bi = t.get_stored_info()
-            c_bi = isinstance(bi, SConfBuildInfo)
-            if c_bi:
+            if isinstance(bi, SConfBuildInfo):
                 if cache_mode == CACHE:
                     t.set_state(SCons.Node.up_to_date)
                 else:
@@ -480,7 +479,6 @@ class SConf:
             result = self.BuildNodes(nodesToBeBuilt)
 
         finally:
-            # Restor the SPAWN value to the environment.
             self.env['SPAWN'] = save_spawn
 
         _ac_build_counter = _ac_build_counter + 1

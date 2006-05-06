@@ -54,7 +54,8 @@ class Node:
         self.csig = None
         self.state = SCons.Node.no_state
         self.prepared = None
-        self.waiting_parents = []
+        self.waiting_parents = {}
+        self.waiting_s_e = {}
         self.side_effect = 0
         self.side_effects = []
         self.alttargets = []
@@ -111,11 +112,11 @@ class Node:
         return self.name
 
     def add_to_waiting_parents(self, node):
-        self.waiting_parents.append(node)
+        self.waiting_parents[node] = 1
 
     def call_for_all_waiting_parents(self, func):
         func(self)
-        for parent in self.waiting_parents:
+        for parent in self.waiting_parents.keys():
             parent.call_for_all_waiting_parents(func)
 
     def get_state(self):
@@ -194,18 +195,21 @@ class TaskmasterTestCase(unittest.TestCase):
         t.execute()
         assert built_text == "n1 built", built_text
         t.executed()
+        t.postprocess()
 
         t = tm.next_task()
         t.prepare()
         t.execute()
         assert built_text == "n2 built", built_text
         t.executed()
+        t.postprocess()
 
         t = tm.next_task()
         t.prepare()
         t.execute()
         assert built_text == "n3 built", built_text
         t.executed()
+        t.postprocess()
 
         assert tm.next_task() == None
 
@@ -236,18 +240,21 @@ class TaskmasterTestCase(unittest.TestCase):
         t.execute()
         assert built_text == "n1 up-to-date", built_text
         t.executed()
+        t.postprocess()
 
         t = tm.next_task()
         t.prepare()
         t.execute()
         assert built_text == "n2 up-to-date", built_text
         t.executed()
+        t.postprocess()
 
         t = tm.next_task()
         t.prepare()
         t.execute()
         assert built_text == "n3 up-to-date top", built_text
         t.executed()
+        t.postprocess()
 
         assert tm.next_task() == None
 
@@ -268,16 +275,21 @@ class TaskmasterTestCase(unittest.TestCase):
         t4 = tm.next_task()
         assert t4.get_target() == n4
         t4.executed()
+        t4.postprocess()
 
         t1.executed()
+        t1.postprocess()
         t2.executed()
+        t2.postprocess()
         t3 = tm.next_task()
         assert t3.get_target() == n3
 
         t3.executed()
+        t3.postprocess()
         t5 = tm.next_task()
         assert t5.get_target() == n5, t5.get_target()
         t5.executed()
+        t5.postprocess()
 
         assert tm.next_task() == None
 
@@ -292,6 +304,7 @@ class TaskmasterTestCase(unittest.TestCase):
         tm = SCons.Taskmaster.Taskmaster([n2,n2])
         t = tm.next_task()
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert tm.next_task() == None
 
@@ -304,14 +317,17 @@ class TaskmasterTestCase(unittest.TestCase):
         target = t.get_target()
         assert target == n1, target
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         target = t.get_target()
         assert target == n2, target
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         target = t.get_target()
         assert target == n3, target
         t.executed()
+        t.postprocess()
         assert tm.next_task() == None
 
         n1 = Node("n1")
@@ -325,15 +341,19 @@ class TaskmasterTestCase(unittest.TestCase):
         t = tm.next_task()
         assert t.get_target() == n1
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n2
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n3
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n4
         t.executed()
+        t.postprocess()
         assert tm.next_task() == None
         assert scan_called == 4, scan_called
 
@@ -354,21 +374,26 @@ class TaskmasterTestCase(unittest.TestCase):
         tm = SCons.Taskmaster.Taskmaster([n1,n2,n3,n4,n5])
         t = tm.next_task()
         assert t.get_target() == n1
-        assert n4.state == SCons.Node.executing
+        assert n4.state == SCons.Node.pending, n4.state
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n2
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n3
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n4
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n5
         assert not tm.next_task()
         t.executed()
+        t.postprocess()
 
         n1 = Node("n1")
         n2 = Node("n2")
@@ -381,15 +406,19 @@ class TaskmasterTestCase(unittest.TestCase):
         t = tm.next_task()
         assert t.get_target() == n3, t.get_target()
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n2, t.get_target()
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n1, t.get_target()
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n4, t.get_target()
         t.executed()
+        t.postprocess()
 
         n5 = Node("n5")
         n6 = Node("n6")
@@ -400,14 +429,17 @@ class TaskmasterTestCase(unittest.TestCase):
         t = tm.next_task()
         assert t.get_target() == n5
         t.executed()
+        t.postprocess()
 
         tm = SCons.Taskmaster.Taskmaster([n6])
         t = tm.next_task()
         assert t.get_target() == n7
         t.executed()
+        t.postprocess()
         t = tm.next_task()
         assert t.get_target() == n6
         t.executed()
+        t.postprocess()
 
         n1 = Node("n1")
         n2 = Node("n2", [n1])
@@ -422,6 +454,7 @@ class TaskmasterTestCase(unittest.TestCase):
         tm = SCons.Taskmaster.Taskmaster([n1])
         t = tm.next_task()
         t.executed()
+        t.postprocess()
 
         s = n1.get_state()
         assert s == SCons.Node.up_to_date, s
@@ -577,13 +610,13 @@ class TaskmasterTestCase(unittest.TestCase):
         n3 = Node("n3", [n2])
         n1.kids = [n3]
 
+        tm = SCons.Taskmaster.Taskmaster([n3])
         try:
-            tm = SCons.Taskmaster.Taskmaster([n3])
             t = tm.next_task()
         except SCons.Errors.UserError, e:
             assert str(e) == "Dependency cycle: n3 -> n1 -> n2 -> n3", str(e)
         else:
-            assert 0
+            assert 'Did not catch expected UserError'
 
     def test_next_top_level_candidate(self):
         """Test the next_top_level_candidate() method
@@ -596,7 +629,7 @@ class TaskmasterTestCase(unittest.TestCase):
         t = tm.next_task()
         assert t.targets == [n1], t.targets
         t.fail_stop()
-        assert t.targets == [n3], t.targets
+        assert t.targets == [n3], map(str, t.targets)
         assert t.top == 1, t.top
 
     def test_stop(self):
@@ -616,6 +649,7 @@ class TaskmasterTestCase(unittest.TestCase):
         t.execute()
         assert built_text == "n1 built", built_text
         t.executed()
+        t.postprocess()
         assert built_text == "n1 built really", built_text
 
         tm.stop()
@@ -994,17 +1028,13 @@ class TaskmasterTestCase(unittest.TestCase):
 
         value = trace.getvalue()
         expect = """\
-Taskmaster: 'n1': children:
-    []
-    evaluating
+Taskmaster: 'n1': evaluating n1
 Taskmaster: 'n1': already handled (executed)
 Taskmaster: 'n3': children:
     ['n1', 'n2']
     waiting on unstarted children:
     ['n2']
-Taskmaster: 'n2': children:
-    []
-    evaluating
+Taskmaster: 'n2': evaluating n2
 Taskmaster: 'n3': children:
     ['n1', 'n2']
     waiting on unfinished children:
