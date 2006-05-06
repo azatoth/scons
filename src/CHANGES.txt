@@ -14,6 +14,15 @@ RELEASE 0.97 - XXX
 
   - Enhance ParseConfig() to recognize options that begin with '+'.
 
+  From Christopher Drexler:
+
+  - Make SCons aware bibtex must be called if any \include files
+    cause creation of a bibliography.
+
+  - Make SCons aware that "\bilbiography" in TeX source files means
+    that related .bbl and .blg bibliography files will be created.
+    (NOTE:  This still needs to search for the string in \include files.)
+
   From David Gruener:
 
   - Fix inconsistent handling of Action strfunction arguments.
@@ -30,6 +39,16 @@ RELEASE 0.97 - XXX
 
   - Fix the expansion of $TARGET and $SOURCE in the expansion of
     $INSTALLSTR displayed for non-environment calls to InstallAs().
+
+  From Sanjoy Mahajan:
+
+  - Change use of $SOURCES to $SOURCE in all TeX-related Tool modules.
+
+  From Joel B. Mohler:
+
+  - Make SCons aware that "\makeindex" in TeX source files means that
+    related .ilg, .ind and .idx index files will be created.
+    (NOTE:  This still needs to search for the string in \include files.)
 
   From Greg Noel:
 
