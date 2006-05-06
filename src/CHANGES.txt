@@ -28,9 +28,6 @@ RELEASE 0.97 - XXX
   - Eliminate some unnecessary Taskmaster list(s), method(s) and
     manipulation.
 
-  - Fix the expansion of $TARGET and $SOURCE in the expansion of
-    $INSTALLSTR displayed for non-environment calls to InstallAs().
-
   From Greg Noel:
 
   - Add an env.ParseFlags() method that provides separate logic for

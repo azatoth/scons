@@ -4515,10 +4515,13 @@ or a list of library names,
 in which case each library in the list
 will be checked for
 .IR symbol .
-The default
+If 
 .I symbol
-is "main",
-which just check if
+is not set or is
+.BR None ,
+then
+.BR Configure.CheckLib ()
+just checks if
 you can link against the specified
 .IR library .
 The optional
@@ -4532,7 +4535,6 @@ the default is "C".
 The default value for
 .I autoadd
 is 1.
-It is assumed, that the C-language is used.
 This method returns 1 on success and 0 on error.
 
 .TP 
@@ -4558,7 +4560,13 @@ header line being checked for.
 .I language
 may be one of 'C','c','CXX','cxx','C++' and 'c++'.
 .I call
-can be any valid expression (with a trailing ';'). The default is 'main();'.
+can be any valid expression (with a trailing ';').
+If
+.I call
+is not set,
+the default simply checks that you
+can link against the specified
+.IR library .
 .I autoadd
 specifies whether to add the library to the environment (only if the check 
 succeeds). This method returns 1 on success and 0 on error.
