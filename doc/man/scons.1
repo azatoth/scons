@@ -2182,6 +2182,32 @@ env.Command('baz.out', 'baz.in',
 	     rename ])
 .EE
 
+Note that the
+.BR Command ()
+function will usually assume, by default,
+that the specified targets and/or sources are Files,
+if no other part of the configuration
+identifies what type of entry it is.
+If necessary, you can explicitly specify
+that targets or source nodes should
+be treated as directoriese
+by using the
+.BR Dir ()
+or
+.BR env.Dir ()
+functions:
+
+.ES
+env.Command('ddd.list', Dir('ddd'), 'ls -l $SOURCE > $TARGET')
+
+env['DISTDIR'] = 'destination/directory'
+env.Command(env.Dir('$DISTDIR')), None, make_distdir)
+.EE
+
+(Also note that SCons will usually
+automatically create any directory necessary to hold a target file,
+so you normally don't need to create directories by hand.)
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI Configure( env ", [" custom_tests ", " conf_dir ", " log_file ", " config_h ])
@@ -4803,13 +4829,30 @@ the construction variable will
 be added to the construction environment.
 .I validator
 is called to validate the value of the variable, and should take three
-arguments: key, value, and environment
+arguments: key, value, and environment.
+The recommended way to handle an invalid value is
+to raise an exception (see example below).
 .I converter
 is called to convert the value before putting it in the environment, and
-should take a single argument: value. Example:
+should take a single argument: value.
+The
+.I converter
+must return a value,
+which will be converted into a string
+before being validated by the
+.I validator
+(if any)
+and then added to the environment.
+
+Examples:
 
 .ES
 opts.Add('CC', 'The C compiler')
+
+def validate_color(key, val, env):
+    if not val in ['red', 'blue', 'yellow']:
+        raise "Invalid color value '%s'" % val
+opts.Add('COLOR', validator=valid_color)
 .EE
 
 .TP
@@ -5633,6 +5676,21 @@ env = Environment(BUILDERS = {'MyBuild' : b})
 env.MyBuild('sub/dir/foo.out', 'sub/dir/foo.in')
 .EE
 
+.B WARNING:
+Python only keeps one current directory
+location for all of the threads.
+This means that use of the
+.B chdir
+argument
+will
+.I not
+work with the SCons
+.B -j
+option,
+because individual worker threads spawned
+by SCons interfere with each other
+when they start changing directory.
+
 .RE
 Any additional keyword arguments supplied
 when a Builder object is created
@@ -5792,9 +5850,18 @@ a = Action(build_it)
 
 If the action argument is not one of the above,
 None is returned.
+.PP
 
 The second, optional argument
-is a Python function that returns
+is used to define the output which is printed
+when the Action is actually performed.
+In the absence of this parameter, or if it's an
+empty string, a default output depending on the type of the action
+is used. For example, a command-line action will print
+the executed command. The argument is either a python function
+or a string.
+
+In the first case, it's a function that returns
 a string to be printed to describe the action being executed.
 Like a function to build a file,
 this function takes three arguments:
@@ -5811,6 +5878,13 @@ and
 .B source
 arguments may be lists of Node objects if there is
 more than one target file or source file.
+
+In the second case, you provide the string itself.
+The string typically contains variables, notably
+$TARGET(S) and $SOURCE(S), or consists of just a single
+variable, which is optionally defined somewhere else.
+SCons itself heavily uses the latter variant.
+
 Examples:
 
 .ES
@@ -5822,10 +5896,15 @@ def string_it(target, source, env):
     return "building '%s' from '%s'" % (target[0], source[0])
 
 # Use a positional argument.
-a = Action(build_it, string_it)
+f = Action(build_it, string_it)
+s = Action(build_it, "building '$TARGET' from '$SOURCE'")
 
 # Alternatively, use a keyword argument.
-a = Action(build_it, strfunction=string_it)
+f = Action(build_it, strfunction=string_it)
+s = Action(build_it, cmdstr="building '$TARGET' from '$SOURCE'")
+
+# You can provide a configurable variable.
+l = Action(build_it, '$STRINGIT')
 .EE
 
 The third, also optional argument
@@ -5846,16 +5925,12 @@ def build_it(target, source, env):
     open(target[0], 'w').write(env['XXX'])
     return 0
 
-def string_it(target, source):
-    return "building '%s' from '%s'" % (target[0], source[0])
-
 # Use positional arguments.
-a = Action(build_it, string_it, ['XXX'])
+a = Action(build_it, '$STRINGIT', ['XXX'])
 
 # Alternatively, use a keyword argument.
 a = Action(build_it, varlist=['XXX'])
 .EE
-.PP
 
 The
 .BR Action ()
@@ -5988,7 +6063,7 @@ that
 env = Environment(TMPBUILD = '/tmp/builddir')
 env.Command('foo.out', 'foo.in',
             [Mkdir('$TMPBUILD'),
-             Copy('$TMPBUILD', '${SOURCE.dir}')
+             Copy('$TMPBUILD', '${SOURCE.dir}'),
              "cd $TMPBUILD && make",
              Delete('$TMPBUILD')])
 .EE
@@ -6399,6 +6474,13 @@ Use
 to fetch the name of the file, and
 .B node.get_contents()
 to fetch contents of the file.
+Note that the file is
+.I not
+guaranteed to exist before the scanner is called,
+so the scanner function should check that
+if there's any chance that the scanned file
+might not exist
+(for example, if it's built from other files).
 
 The
 .B env
@@ -6446,10 +6528,14 @@ then it will be expanded
 into a list by the current environment.
 
 .IP path_function
-A Python function that takes
-two or three arguments:
-a construction environment, directory Node,
-and optional argument supplied
+A Python function that takes four or five arguments:
+a construction environment,
+a Node for the directory containing
+the SConscript file in which
+the first target was defined,
+a list of target nodes,
+a list of source nodes,
+and an optional argument supplied
 when the scanner was created.
 The
 .B path_function

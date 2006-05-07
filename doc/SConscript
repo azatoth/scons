@@ -425,7 +425,7 @@ for man_1 in man_page_list:
             return 0
 
         cmds = [
-            "( cd ${SOURCE.dir} && cp %s .. )" % string.join(man_i_files),
+            "( cd build/doc/man && cp %s .. )" % string.join(man_i_files),
             "( cd ${SOURCE.dir} && man2html ${SOURCE.file} ) > $TARGET",
             Action(strip_to_first_html_tag),
         ]
