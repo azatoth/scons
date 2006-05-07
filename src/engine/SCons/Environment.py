@@ -456,8 +456,11 @@ class SubstitutionEnvironment:
             import sys
             sys.stderr.write(err)
         if status:
-            if os.WIFEXITED(status):
-                status = os.WEXITSTATUS(status)
+            try:
+                if os.WIFEXITED(status):
+                    status = os.WEXITSTATUS(status)
+            except AttributeError:
+                pass
             raise OSError("'%s' exited %s" % (command, status))
         return out
 
