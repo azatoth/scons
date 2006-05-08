@@ -78,6 +78,10 @@ RELEASE 0.97 - XXX
   - Throw an exception if a command called by ParseConfig() or
     ParseFlags() returns an error.
 
+  From Stefan Seefeld:
+
+  - Initial infrastructure for running SCons tests under QMTest.
+
   From Atul Varma:
 
   - Fix detection of Visual C++ Express Edition.
