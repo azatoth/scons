@@ -14,6 +14,14 @@ from   qm.test.directory_suite import DirectorySuite
 from   qm.extension import get_extension_class_name, get_class_arguments_as_dictionary
 import os, dircache
 
+if sys.platform == 'win32':
+    console = 'con'
+else:
+    console = '/dev/tty'
+
+def Trace(msg):
+    open(console, 'w').write(msg)
+
 ########################################################################
 # Classes
 ########################################################################
@@ -136,8 +144,10 @@ class Test(test.Test):
         #        harness from $srcdir/etc. These modules should be transfered
         #        to here, eventually.
         python_path = os.path.join(self.topdir, 'etc')
-        script_dir = os.path.join(self.topdir, 'src', 'script')
+        scons = os.path.join(self.topdir, 'src', 'script', 'scons.py')
         lib_dir = os.path.join(self.topdir, 'src', 'engine')
+        if not os.path.isabs(lib_dir):
+            lib_dir = os.path.join(os.getcwd(), lib_dir)
 
         # Some sort of command line control to select the following
         # directories when testing built packages will be necessary.
@@ -153,11 +163,12 @@ class Test(test.Test):
         # Let tests inherit our environment but add some special variables.
         env = os.environ.copy()
         env['PYTHONPATH'] = python_path
+        env['SCONS'] = scons
         env['SCONS_LIB_DIR'] = lib_dir
 
         command = RedirectedExecutable()
         status = command.Run([context.get('python', 'python'), self.script],
-                             env, script_dir)
+                             env)
         if not check_exit_status(result, 'Test.', self.script, status):
             # In case of failure record exit code, stdout, and stderr.
             result.Fail("Unexpected exit_code.")
@@ -178,6 +189,19 @@ class Database(database.Database):
                        description = "The root of the test suite's source tree.")
     _is_generic_database = True
 
+    def is_a_test_under_test(path, t):
+        return os.path.splitext(t)[1] == '.py' \
+               and os.path.isfile(os.path.join(path, t))
+
+    def is_a_test_under_src(path, t):
+        return t[-8:] == 'Tests.py' \
+               and os.path.isfile(os.path.join(path, t))
+
+    is_a_test = {
+        'src' : is_a_test_under_src,
+        'test' : is_a_test_under_test,
+    }
+
 
     def __init__(self, path, arguments):
 
@@ -196,27 +220,20 @@ class Database(database.Database):
 
         components = self.GetLabelComponents(directory)
         path = os.path.join(self.GetRoot(), *components)
-        return [d for d in dircache.listdir(path)
-                if os.path.isdir(os.path.join(path, d)) and d != 'QMTest']
+        if directory:
+            dirs = [d for d in dircache.listdir(path)
+                    if os.path.isdir(os.path.join(path, d))]
+        else:
+            dirs = self.is_a_test.keys()
+
+        dirs.sort()
+        return dirs
 
 
     def GetIds(self, kind, directory = "", scan_subdirs = 1):
 
         components = self.GetLabelComponents(directory)
         path = os.path.join(self.GetRoot(), *components)
-
-        def is_a_test_under_test(t):
-            return os.path.splitext(t)[1] == '.py' \
-                   and os.path.isfile(os.path.join(path, t))
-
-        def is_a_test_under_src(t):
-            return t[-8:] == 'Tests.py' \
-                   and os.path.isfile(os.path.join(path, t))
-
-        is_a_test = {
-            'src' : is_a_test_under_src,
-            'test' : is_a_test_under_test,
-        }
 
         if kind == database.Database.TEST:
 
@@ -225,7 +242,7 @@ class Database(database.Database):
 
             ids = [self.JoinLabels(directory, os.path.splitext(t)[0])
                    for t in dircache.listdir(path)
-                   if is_a_test[components[0]](t)]
+                   if self.is_a_test[components[0]](path, t)]
 
         elif kind == Database.RESOURCE:
             return [] # no resources yet
@@ -237,7 +254,7 @@ class Database(database.Database):
                        for d in dircache.listdir(path)
                        if os.path.isdir(os.path.join(path, d))]
             else:
-                ids = is_a_test.keys()
+                ids = self.is_a_test.keys()
 
         if scan_subdirs:
             for d in dircache.listdir(path):
