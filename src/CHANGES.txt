@@ -40,6 +40,9 @@ RELEASE 0.97 - XXX
   - Fix the expansion of $TARGET and $SOURCE in the expansion of
     $INSTALLSTR displayed for non-environment calls to InstallAs().
 
+  - Fix the ability to have an Alias() call refer to a directory
+    name that's not identified as a directory until later.
+
   From Sanjoy Mahajan:
 
   - Change use of $SOURCES to $SOURCE in all TeX-related Tool modules.

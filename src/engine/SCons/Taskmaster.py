@@ -238,7 +238,7 @@ class Task:
         """
         self.out_of_date = self.targets[:]
         for t in self.targets:
-            t.set_state(SCons.Node.executing)
+            t.disambiguate().set_state(SCons.Node.executing)
             for s in t.side_effects:
                 s.set_state(SCons.Node.pending)
 

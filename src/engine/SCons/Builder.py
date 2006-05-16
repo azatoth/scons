@@ -538,9 +538,6 @@ class BuilderBase:
             tlist = env.arg2nodes(target, target_factory)
             slist = env.arg2nodes(source, source_factory)
 
-        tlist = map(lambda n: n.disambiguate(), tlist)
-        slist = map(lambda n: n.disambiguate(), slist)
-
         return tlist, slist
 
     def _execute(self, env, target, source, overwarn={}, executor_kw={}):
