@@ -3,6 +3,7 @@
   PUBLIC '-//QM/2.3/Class-Directory//EN'
   'http://www.codesourcery.com/qm/dtds/2.3/-//qm/2.3/class-directory//en.dtd'>
 <class-directory>
- <class kind="test" name="scons_tdb.Test"/>
  <class kind="database" name="scons_tdb.Database"/>
+ <class kind="test" name="scons_tdb.Test"/>
+ <class kind="result_stream" name="scons_tdb.ResultStream"/>
 </class-directory>

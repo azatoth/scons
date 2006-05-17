@@ -104,6 +104,7 @@ print_passed_summary = None
 scons = None
 scons_exec = None
 outputfile = None
+qmtest = None
 testlistfile = None
 version = ''
 print_time = lambda fmt, time: None
@@ -145,6 +146,7 @@ Options:
                                 tar-gz        .tar.gz distribution
                                 zip           .zip distribution
   --passed                    Summarize which tests passed.
+  --qmtest                    Run using the QMTest harness.
   -q, --quiet                 Don't print the test being executed.
   -t, --time                  Print test execution time.
   -v version                  Specify the SCons version.
@@ -160,7 +162,8 @@ opts, args = getopt.getopt(sys.argv[1:], "adf:hlno:P:p:qv:Xx:t",
                             ['all', 'aegis',
                              'debug', 'file=', 'help',
                              'list', 'no-exec', 'output=',
-                             'package=', 'passed', 'python=', 'quiet',
+                             'package=', 'passed', 'python=',
+                             'qmtest', 'quiet',
                              'version=', 'exec=', 'time',
                              'verbose=', 'xml'])
 
@@ -190,6 +193,8 @@ for o, a in opts:
         print_passed_summary = 1
     elif o in ['-P', '--python']:
         python = a
+    elif o in ['--qmtest']:
+        qmtest = 1
     elif o in ['-q', '--quiet']:
         printcommand = 0
     elif o in ['-t', '--time']:
@@ -330,7 +335,9 @@ format_class = {
 }
 Test = format_class[format]
 
-if args:
+if qmtest:
+    pass
+elif args:
     if spe:
         for a in args:
             if os.path.isabs(a):
@@ -495,6 +502,11 @@ os.environ['SCONS_VERSION'] = version
 
 old_pythonpath = os.environ.get('PYTHONPATH')
 
+# FIXME: the following is necessary to pull in half of the testing
+#        harness from $srcdir/etc. Those modules should be transfered
+#        to QMTest/ once we completely cut over to using that as
+#        the harness, in which case this manipulation of PYTHONPATH
+#        should be able to go away.
 pythonpaths = [ pythonpath_dir ]
 for p in sp:
     pythonpaths.append(os.path.join(p, 'build', 'etc'))
@@ -505,6 +517,21 @@ if old_pythonpath:
     os.environ['PYTHONPATH'] = os.environ['PYTHONPATH'] + \
                                os.pathsep + \
                                old_pythonpath
+
+if qmtest:
+    #qmtest = r'D:\Applications\python23\scripts\qmtest.py'
+    qmtest = 'qmtest.py'
+    options = 'run --format none --result-stream=scons_tdb.ResultStream'
+
+    os.environ['SCONS'] = os.path.join(cwd, 'src', 'script', 'scons.py')
+
+    cmd = '%s %s %s' % (qmtest, options, string.join(args, ' '))
+    if printcommand:
+        print cmd
+    status = 0
+    if execute_tests:
+        status = os.system(cmd)
+    sys.exit(status)
 
 try:
     os.chdir(scons_script_dir)

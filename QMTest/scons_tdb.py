@@ -1,3 +1,35 @@
+#!/usr/bin/env python
+#
+# __COPYRIGHT__
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+# KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+"""
+QMTest classes to support SCons' testing and Aegis-inspired workflow.
+
+Thanks to Stefan Seefeld for the initial code.
+"""
+
 ########################################################################
 # Imports
 ########################################################################
@@ -10,6 +42,8 @@ from   qm.test import database
 from   qm.test import test
 from   qm.test import resource
 from   qm.test import suite
+from   qm.test.result import Result
+from   qm.test.classes.text_result_stream import TextResultStream
 from   qm.test.directory_suite import DirectorySuite
 from   qm.extension import get_extension_class_name, get_class_arguments_as_dictionary
 import os, dircache
@@ -129,6 +163,30 @@ def check_exit_status(result, prefix, desc, status):
 #        'USER',
 #    ]
 
+class ResultStream(TextResultStream):
+    def __init__(self, *args, **kw):
+        TextResultStream.__init__(self, *args, **kw)
+    def _DisplayText(self, text):
+        text = qm.common.html_to_text(text)
+        for l in text.splitlines():
+            self.file.write('    ' + l + '\n')
+    def _DisplayResult(self, result, format):
+        id_ = result.GetId()
+        kind = result.GetKind()
+        outcome = result.GetOutcome()
+        if outcome == Result.FAIL:
+            if result.get('Test.exit_code') == '2':
+                self._WriteOutcome(id_, kind, 'NO RESULT')
+                self._DisplayText(result["Test.stdout"])
+                self._DisplayText(result["Test.stderr"])
+                return
+        TextResultStream._DisplayResult(self, result, format)
+    def _DisplayAnnotations(self, result):
+        outcome = result.GetOutcome()
+        if outcome != Result.FAIL or result.get('Test.exit_code') != '2':
+            TextResultStream._DisplayAnnotations(self, result)
+
+
 class Test(test.Test):
     """Simple test that runs a python script and checks the status
     to determine whether the test passes."""
@@ -140,38 +198,12 @@ class Test(test.Test):
         """Run the test. The test passes if the command exits with status=0,
         and fails otherwise. The program output is logged, but not validated."""
 
-        # FIXME: the following is necessary to pull in half of the testing
-        #        harness from $srcdir/etc. These modules should be transfered
-        #        to here, eventually.
-        python_path = os.path.join(self.topdir, 'etc')
-        scons = os.path.join(self.topdir, 'src', 'script', 'scons.py')
-        lib_dir = os.path.join(self.topdir, 'src', 'engine')
-        if not os.path.isabs(lib_dir):
-            lib_dir = os.path.join(os.getcwd(), lib_dir)
-
-        # Some sort of command line control to select the following
-        # directories when testing built packages will be necessary.
-        #python_path = os.path.join(self.topdir, 'build', 'etc')
-        #script_dir = os.path.join(self.topdir, 'build', 'test-tar-gz', 'bin')
-        #lib_dir = os.path.join(self.topdir, 'build', 'test-tar-gz', 'lib', 'scons')
-        python_path += os.pathsep + lib_dir
-
-        try:
-            python_path += os.pathsep + os.environ['PYTHONPATH']
-        except KeyError:
-            pass
-        # Let tests inherit our environment but add some special variables.
-        env = os.environ.copy()
-        env['PYTHONPATH'] = python_path
-        env['SCONS'] = scons
-        env['SCONS_LIB_DIR'] = lib_dir
-
         command = RedirectedExecutable()
         status = command.Run([context.get('python', 'python'), self.script],
-                             env)
+                             os.environ)
         if not check_exit_status(result, 'Test.', self.script, status):
             # In case of failure record exit code, stdout, and stderr.
-            result.Fail("Unexpected exit_code.")
+            result.Fail("Non-zero exit_code.")
             result["Test.stdout"] = result.Quote(command.stdout)
             result["Test.stderr"] = result.Quote(command.stderr)
 
