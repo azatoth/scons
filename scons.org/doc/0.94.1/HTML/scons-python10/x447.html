@@ -1,0 +1,493 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Installation</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons Design and Implementation"
+HREF="t1.html"><LINK
+REL="PREVIOUS"
+TITLE="Architecture"
+HREF="x106.html"><LINK
+REL="NEXT"
+TITLE="Development Process"
+HREF="x539.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons Design and Implementation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x106.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x539.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="SECT-INSTALL"
+></A
+>Installation</H1
+><P
+>&#13;  Initial installation of a new utility provides the first, lasting
+  impression of how well the software is likely to perform. From the
+  start, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> has made clean installation a priority.&#13;</P
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN451"
+></A
+>Version Control</H2
+><P
+>&#13;    Distributing an application like <TT
+CLASS="APPLICATION"
+>SCons</TT
+> that depends
+    on a package normally found in a library poses a
+    problem. If the <TT
+CLASS="APPLICATION"
+>scons</TT
+> script and the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine
+    are installed separately, it could be easy
+    to introduce a version mismatch between the Build Engine
+    installed in
+    <TT
+CLASS="FILENAME"
+>/usr/lib/python*/site-packages</TT
+>
+    and the <TT
+CLASS="APPLICATION"
+>scons</TT
+> script installed in
+    <TT
+CLASS="FILENAME"
+>/usr/bin</TT
+>.
+    Such a mismatch
+    could possible mean exceptions that prevent builds, or even worse,
+    silently unreliable builds.
+
+  </P
+><P
+>&#13;    To reduce the possibility of a version mismatch,
+    the <TT
+CLASS="APPLICATION"
+>scons</TT
+> script looks first for its
+    imported modules in <TT
+CLASS="FILENAME"
+>/usr/lib/scons-{version}/</TT
+>,
+    then in <TT
+CLASS="FILENAME"
+>/usr/lib/scons/</TT
+>,
+    and then in the normal <TT
+CLASS="VARNAME"
+>PYTHONPATH</TT
+> locations,
+    including <TT
+CLASS="FILENAME"
+>/usr/lib/python*/site-packages</TT
+>).
+    Searching in a version-specific library directory first
+    makes it convenient to install and use multiple
+    side-by-side versions of <TT
+CLASS="APPLICATION"
+>SCons</TT
+>,
+    which is sometimes important
+    when verifying that a new version does not introduce any
+    errors into the local build process.
+    Searching next in an <TT
+CLASS="APPLICATION"
+>SCons</TT
+>-specific library directory
+    makes it convenient for other software to find
+    the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine without having to worry about
+    installing separate copies for
+    multiple versions of Python.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN469"
+></A
+>Packages</H2
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is currently distributed in the following packages:
+
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="AEN473"
+></A
+><P
+><B
+>Table 1. </B
+></P
+><TABLE
+BORDER="1"
+BGCOLOR="#E0E0E0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.tar.gz</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        The traditional <TT
+CLASS="LITERAL"
+>.tar.gz</TT
+> file,
+        installable by running <TT
+CLASS="FILENAME"
+>setup.py</TT
+>.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.noarch.rpm</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        An RPM file for typical installation.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>_all.deb</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        A Debian package.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.win32.exe</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        A Windows installer.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.src.rpm</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        A source RPM file.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-src-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.tar.gz</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        A tarball of the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> source tree,
+        including the full set of regression tests.
+
+      </P
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>&#13;    Like other software written in Python, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> benefits greatly from
+    the tremendous effort put into the <TT
+CLASS="LITERAL"
+>distutils</TT
+> by
+    Greg Ward and others. These take care of 90% of the work by making
+    it almost trivial to generate the appropriate RPM files, Debian
+    packages, and Windows installer.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN525"
+></A
+>Default Builder Objects</H2
+><P
+>&#13;    As part of the installation process, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> runs a set of scripts
+    that look for popular compilers and other tools and set up
+    appropriate default <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects for the tools found. These
+    <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects are then used to initialize the default <TT
+CLASS="LITERAL"
+>construction environment</TT
+>
+    values.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN532"
+></A
+>Default Scanner Objects</H2
+><P
+>&#13;    Additionally, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> comes with a stock set of <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> objects
+    for the various file types that it supports out of the box. Any
+    unusal <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> objects required for a specific tool will be
+    detected at installation time and associated with the appropriate
+    <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object for the tool.
+
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x106.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="t1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x539.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Architecture</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Development Process</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,372 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Building and Linking with Libraries</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.95"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Sharing Source Files Between Multiple Programs"
+HREF="x241.html"><LINK
+REL="NEXT"
+TITLE="Linking with Libraries"
+HREF="x302.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.95</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x241.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x302.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-LIBRARIES"
+></A
+>Building and Linking with Libraries</H1
+><P
+>&#13;  It's often useful to organize large software projects
+  by collecting parts of the software into one or more libraries.
+  <TT
+CLASS="APPLICATION"
+>SCons</TT
+> makes it easy to create libraries
+  and to use them in the programs.
+
+  </P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN260"
+></A
+>Building Libraries</H1
+><P
+>&#13;    You build your own libraries by specifying <TT
+CLASS="FUNCTION"
+>Library</TT
+>
+    instead of <TT
+CLASS="FUNCTION"
+>Program</TT
+>:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      Library('foo', ['f1.c', 'f2.c', 'f3.c'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> uses the appropriate library prefix and suffix for your system.
+    So on POSIX or Linux systems,
+    the above example would build as follows
+    (although <TT
+CLASS="APPLICATION"
+>ranlib</TT
+> may not be called on all systems):
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;f1.o&nbsp;f1.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;f2.o&nbsp;f2.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;f3.o&nbsp;f3.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ar&nbsp;r&nbsp;libfoo.a&nbsp;f1.o&nbsp;f2.o&nbsp;f3.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ranlib&nbsp;libfoo.a<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;    On a Windows system,
+    a build of the above example would look like:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:\&#62;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl&nbsp;/nologo&nbsp;/c&nbsp;f1.c&nbsp;/Fof1.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl&nbsp;/nologo&nbsp;/c&nbsp;f2.c&nbsp;/Fof2.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl&nbsp;/nologo&nbsp;/c&nbsp;f3.c&nbsp;/Fof3.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lib&nbsp;/nologo&nbsp;/OUT:foo.lib&nbsp;f1.obj&nbsp;f2.obj&nbsp;f3.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;    The rules for the target name of the library
+    are similar to those for programs:
+    if you don't explicitly specify a target library name,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will deduce one from the
+    name of the first source file specified,
+    and <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will add an appropriate
+    file prefix and suffix if you leave them off.
+
+    </P
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN277"
+></A
+>Building Static Libraries Explicitly</H2
+><P
+>&#13;      The <TT
+CLASS="FUNCTION"
+>Library</TT
+> function builds a traditional static library.
+      If you want to be explicit about the type of library being built,
+      you can use the synonym <TT
+CLASS="FUNCTION"
+>StaticLibrary</TT
+> function
+      instead of <TT
+CLASS="FUNCTION"
+>Library</TT
+>:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>        StaticLibrary('foo', ['f1.c', 'f2.c', 'f3.c'])
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      There is no functional difference between the
+      <TT
+CLASS="FUNCTION"
+>StaticLibrary</TT
+> and <TT
+CLASS="FUNCTION"
+>Library</TT
+> functions.
+
+      </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN287"
+></A
+>Building Shared (DLL) Libraries</H2
+><P
+>&#13;      If you want to build a shared library (on POSIX systems)
+      or a DLL file (on Windows systems),
+      you use the <TT
+CLASS="FUNCTION"
+>SharedLibrary</TT
+> function:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>        SharedLibrary('foo', ['f1.c', 'f2.c', 'f3.c'])
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      The output on POSIX:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;f1.os&nbsp;f1.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;f2.os&nbsp;f2.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;f3.os&nbsp;f3.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-shared&nbsp;-o&nbsp;libfoo.so&nbsp;f1.os&nbsp;f2.os&nbsp;f3.os<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      And the output on Windows:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:\&#62;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl&nbsp;/nologo&nbsp;/c&nbsp;f1.c&nbsp;/Fof1.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl&nbsp;/nologo&nbsp;/c&nbsp;f2.c&nbsp;/Fof2.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl&nbsp;/nologo&nbsp;/c&nbsp;f3.c&nbsp;/Fof3.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;link&nbsp;/nologo&nbsp;/dll&nbsp;/out:foo.dll&nbsp;/implib:foo.lib&nbsp;f1.obj&nbsp;f2.obj&nbsp;f3.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      Notice again that <TT
+CLASS="APPLICATION"
+>SCons</TT
+> takes care of
+      building the output file correctly,
+      adding the <TT
+CLASS="LITERAL"
+>-shared</TT
+> option
+      for a POSIX compilation,
+      and the <TT
+CLASS="LITERAL"
+>/dll</TT
+> option on Windows.
+
+      </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x241.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x302.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Sharing Source Files Between Multiple Programs</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Linking with Libraries</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

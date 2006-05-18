@@ -1,0 +1,324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Builders That Execute Python Functions</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Writing Your Own Builders"
+HREF="c2041.html"><LINK
+REL="PREVIOUS"
+TITLE="Letting SCons Handle The File Suffixes"
+HREF="x2113.html"><LINK
+REL="NEXT"
+TITLE="Builders That Create Actions Using a Generator"
+HREF="x2170.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x2113.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Writing Your Own Builders</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x2170.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN2134"
+></A
+>Builders That Execute Python Functions</H1
+><P
+>&#13;    In <TT
+CLASS="APPLICATION"
+>SCons</TT
+>, you don't have to call an external command
+    to build a file.
+    You can, instead, define a Python function
+    that a <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object can invoke
+    to build your target file (or files).
+    Such a <TT
+CLASS="LITERAL"
+>builder function</TT
+> definition looks like:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       def build_function(target, source, env):
+           # Code to build "target" from "source"
+           return None
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    The arguments of a <TT
+CLASS="LITERAL"
+>builder function</TT
+> are:
+
+    </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>target</DT
+><DD
+><P
+>&#13;      A list of Node objects representing
+      the target or targets to be
+      built by this builder function.
+      The file names of these target(s)
+      may be extracted using the Python <TT
+CLASS="FUNCTION"
+>str</TT
+> function.
+
+      </P
+></DD
+><DT
+>source</DT
+><DD
+><P
+>&#13;      A list of Node objects representing
+      the sources to be
+      used by this builder function to build the targets.
+      The file names of these source(s)
+      may be extracted using the Python <TT
+CLASS="FUNCTION"
+>str</TT
+> function.
+
+      </P
+></DD
+><DT
+>env</DT
+><DD
+><P
+>&#13;      The <TT
+CLASS="LITERAL"
+>construction environment</TT
+> used for building the target(s).
+      The builder function may use any of the
+      environment's construction variables
+      in any way to affect how it builds the targets.
+
+      </P
+></DD
+></DL
+></DIV
+><P
+>&#13;    The builder function must
+    return a <TT
+CLASS="LITERAL"
+>0</TT
+> or <TT
+CLASS="LITERAL"
+>None</TT
+> value
+    if the target(s) are built successfully.
+    The builder function
+    may raise an exception
+    or return any non-zero value
+    to indicate that the build is unsuccessful,
+
+    </P
+><P
+>&#13;    Once you've defined the Python function
+    that will build your target file,
+    defining a <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object for it is as
+    simple as specifying the name of the function,
+    instead of an external command,
+    as the <TT
+CLASS="CLASSNAME"
+>Builder</TT
+>'s
+    <TT
+CLASS="LITERAL"
+>action</TT
+>
+    argument:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       def build_function(target, source, env):
+           # Code to build "target" from "source"
+           return None
+       bld = Builder(action = build_function,
+                     suffix = '.foo',
+                     src_suffix = '.input')
+       env = Environment(BUILDERS = {'Foo' : bld})
+       env.Foo('file')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    And notice that the output changes slightly,
+    reflecting the fact that a Python function,
+    not an external command,
+    is now called to build the target file:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+      build_function(["file.foo"], ["file.input"])
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x2113.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x2170.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Letting <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Handle The File Suffixes</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c2041.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Builders That Create Actions Using a <TT
+CLASS="LITERAL"
+>Generator</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

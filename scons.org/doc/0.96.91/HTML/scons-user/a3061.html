@@ -1,0 +1,7835 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Construction Variables</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.91"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="What's in That Construction Environment?  the Dump Method"
+HREF="x3037.html"><LINK
+REL="NEXT"
+TITLE="Builders"
+HREF="a5334.html"></HEAD
+><BODY
+CLASS="APPENDIX"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.91</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x3037.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="a5334.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="APPENDIX"
+><H1
+><A
+NAME="APP-VARIABLES"
+></A
+>Construction Variables</H1
+><P
+>&#13;This appendix contains descriptions of all of the
+construction variables that are <I
+CLASS="EMPHASIS"
+>potentially</I
+>
+available "out of the box" in this version of SCons.
+Whether or not setting a construction variable
+in a construction environment
+will actually have an effect depends on
+whether any of the Tools and/or Builders
+that use the variable have been
+included in the construction environment.&#13;</P
+><P
+>&#13;In this appendix, we have
+appended the initial <VAR
+CLASS="ENVAR"
+>$</VAR
+>
+(dollar sign) to the beginning of each
+variable name when it appears in the text,
+but left off the dollar sign
+in the left-hand column
+where the name appears for each entry.&#13;</P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="CV-AR"
+></A
+><VAR
+CLASS="ENVAR"
+>AR</VAR
+></DT
+><DD
+><P
+>The static library archiver.</P
+></DD
+><DT
+><A
+NAME="CV-ARCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>ARCOM</VAR
+></DT
+><DD
+><P
+>The command line used to generate a static library from object files.</P
+></DD
+><DT
+><A
+NAME="CV-ARCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>ARCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when an object file
+is generated from an assembly-language source file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$ARCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(ARCOMSTR = "Archiving $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-ARFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>ARFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the static library archiver.</P
+></DD
+><DT
+><A
+NAME="CV-AS"
+></A
+><VAR
+CLASS="ENVAR"
+>AS</VAR
+></DT
+><DD
+><P
+>The assembler.</P
+></DD
+><DT
+><A
+NAME="CV-ASCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>ASCOM</VAR
+></DT
+><DD
+><P
+>The command line used to generate an object file
+from an assembly-language source file.</P
+></DD
+><DT
+><A
+NAME="CV-ASCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>ASCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when an object file
+is generated from an assembly-language source file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$ASCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(ASCOMSTR = "Assembling $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-ASFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>ASFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the assembler.</P
+></DD
+><DT
+><A
+NAME="CV-ASPPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>ASPPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to assemble an assembly-language
+source file into an object file
+after first running the file through the C preprocessor.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$ASFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-ASPPCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>ASPPCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when an object file
+is generated from an assembly-language source file
+after first running the file through the C preprocessor.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$ASPPCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(ASPPCOMSTR = "Assembling $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-ASPPFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>ASPPFLAGS</VAR
+></DT
+><DD
+><P
+>General options when an assembling an assembly-language
+source file into an object file
+after first running the file through the C preprocessor.
+The default is to use the value of <VAR
+CLASS="ENVAR"
+>$ASFLAGS</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-BIBTEX"
+></A
+><VAR
+CLASS="ENVAR"
+>BIBTEX</VAR
+></DT
+><DD
+><P
+>The bibliography generator for the TeX formatter and typesetter and the
+LaTeX structured formatter and typesetter.</P
+></DD
+><DT
+><A
+NAME="CV-BIBTEXCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>BIBTEXCOM</VAR
+></DT
+><DD
+><P
+>The command line used to call the bibliography generator for the
+TeX formatter and typesetter and the LaTeX structured formatter and
+typesetter.</P
+></DD
+><DT
+><A
+NAME="CV-BIBTEXCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>BIBTEXCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when generating a bibliography
+for TeX or LaTeX.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$BIBTEXCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(BIBTEXCOMSTR = "Generating bibliography $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-BIBTEXFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>BIBTEXFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the bibliography generator for the TeX formatter
+and typesetter and the LaTeX structured formatter and typesetter.</P
+></DD
+><DT
+><A
+NAME="CV-BITKEEPER"
+></A
+><VAR
+CLASS="ENVAR"
+>BITKEEPER</VAR
+></DT
+><DD
+><P
+>The BitKeeper executable.</P
+></DD
+><DT
+><A
+NAME="CV-BITKEEPERCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>BITKEEPERCOM</VAR
+></DT
+><DD
+><P
+>The command line for
+fetching source files using BitKEeper.</P
+></DD
+><DT
+><A
+NAME="CV-BITKEEPERCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>BITKEEPERCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when fetching
+a source file using BitKeeper.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$BITKEEPERCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-BITKEEPERGET"
+></A
+><VAR
+CLASS="ENVAR"
+>BITKEEPERGET</VAR
+></DT
+><DD
+><P
+>The command (<VAR
+CLASS="ENVAR"
+>$BITKEEPER</VAR
+>) and subcommand
+for fetching source files using BitKeeper.</P
+></DD
+><DT
+><A
+NAME="CV-BITKEEPERGETFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>BITKEEPERGETFLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed to the BitKeeper
+<B
+CLASS="COMMAND"
+>get</B
+>
+subcommand.</P
+></DD
+><DT
+><A
+NAME="CV-BUILDERS"
+></A
+><VAR
+CLASS="ENVAR"
+>BUILDERS</VAR
+></DT
+><DD
+><P
+>A dictionary mapping the names of the builders
+available through this environment
+to underlying Builder objects.
+Builders named
+Alias, CFile, CXXFile, DVI, Library, Object, PDF, PostScript, and Program
+are available by default.
+If you initialize this variable when an
+Environment is created:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(BUILDERS = {'NewBuilder' : foo})</PRE
+></TD
+></TR
+></TABLE
+><P
+>the default Builders will no longer be available.
+To use a new Builder object in addition to the default Builders,
+add your new Builder object like this:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment()
+env.Append(BUILDERS = {'NewBuilder' : foo})</PRE
+></TD
+></TR
+></TABLE
+><P
+>or this:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment()
+env['BUILDERS]['NewBuilder'] = foo</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-CC"
+></A
+><VAR
+CLASS="ENVAR"
+>CC</VAR
+></DT
+><DD
+><P
+>The C compiler.</P
+></DD
+><DT
+><A
+NAME="CV-CCCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>CCCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a C source file to a (static) object file.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$CCFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-CCCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>CCCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a C source file
+is compiled to a (static) object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$CCCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(CCCOMSTR = "Compiling static object $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-CCFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>CCFLAGS</VAR
+></DT
+><DD
+><P
+>General options that are passed to the C compiler.</P
+></DD
+><DT
+><A
+NAME="CV-CCVERSION"
+></A
+><VAR
+CLASS="ENVAR"
+>CCVERSION</VAR
+></DT
+><DD
+><P
+>The version number of the C compiler.
+This may or may not be set,
+depending on the specific C compiler being used.</P
+></DD
+><DT
+><A
+NAME="CV-CFILESUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>CFILESUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix for C source files.
+This is used by the internal CFile builder
+when generating C files from Lex (.l) or YACC (.y) input files.
+The default suffix, of course, is
+<TT
+CLASS="FILENAME"
+>.c</TT
+>
+(lower case).
+On case-insensitive systems (like Win32),
+SCons also treats
+<TT
+CLASS="FILENAME"
+>.C</TT
+>
+(upper case) files
+as C files.</P
+></DD
+><DT
+><A
+NAME="CV-_CONCAT"
+></A
+><VAR
+CLASS="ENVAR"
+>_concat</VAR
+></DT
+><DD
+><P
+>A function used to produce variables like <VAR
+CLASS="ENVAR"
+>$_CPPINCFLAGS</VAR
+>. It takes
+four or five
+arguments: a prefix to concatenate onto each element, a list of
+elements, a suffix to concatenate onto each element, an environment
+for variable interpolation, and an optional function that will be
+called to transform the list before concatenation.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env['_CPPINCFLAGS'] = '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, RDirs)} $)',</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-_CPPDEFFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>_CPPDEFFLAGS</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the C preprocessor command-line options
+to define values.
+The value of <VAR
+CLASS="ENVAR"
+>$_CPPDEFFLAGS</VAR
+> is created
+by appending <VAR
+CLASS="ENVAR"
+>$CPPDEFPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPDEFSUFFIX</VAR
+>
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$CPPDEFINES</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-CPPDEFINES"
+></A
+><VAR
+CLASS="ENVAR"
+>CPPDEFINES</VAR
+></DT
+><DD
+><P
+>A platform independent specification of C preprocessor definitions.
+The definitions will be added to command lines
+through the automatically-generated
+<VAR
+CLASS="ENVAR"
+>$_CPPDEFFLAGS</VAR
+> construction variable (see below),
+which is constructed according to
+the type of value of <VAR
+CLASS="ENVAR"
+>$CPPDEFINES</VAR
+>:</P
+><P
+>If <VAR
+CLASS="ENVAR"
+>$CPPDEFINES</VAR
+> is a string,
+the values of the
+<VAR
+CLASS="ENVAR"
+>$CPPDEFPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPDEFSUFFIX</VAR
+>
+construction variables
+will be added to the beginning and end.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+># Will add -Dxyz to POSIX compiler command lines,
+# and /Dxyz to Microsoft Visual C++ command lines.
+env = Environment(CPPDEFINES='xyz')</PRE
+></TD
+></TR
+></TABLE
+><P
+>If <VAR
+CLASS="ENVAR"
+>$CPPDEFINES</VAR
+> is a list,
+the values of the
+<VAR
+CLASS="ENVAR"
+>$CPPDEFPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPDEFSUFFIX</VAR
+>
+construction variables
+will be appended to the beginning and end
+of each element in the list.
+If any element is a list or tuple,
+then the first item is the name being
+defined and the second item is its value:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+># Will add -DB=2 -DA to POSIX compiler command lines,
+# and /DB=2 /DA to Microsoft Visual C++ command lines.
+env = Environment(CPPDEFINES=[('B', 2), 'A'])</PRE
+></TD
+></TR
+></TABLE
+><P
+>If <VAR
+CLASS="ENVAR"
+>$CPPDEFINES</VAR
+> is a dictionary,
+the values of the
+<VAR
+CLASS="ENVAR"
+>$CPPDEFPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPDEFSUFFIX</VAR
+>
+construction variables
+will be appended to the beginning and end
+of each item from the dictionary.
+The key of each dictionary item
+is a name being defined
+to the dictionary item's corresponding value;
+if the value is
+<TT
+CLASS="LITERAL"
+>None</TT
+>,
+then the name is defined without an explicit value.
+Note that the resulting flags are sorted by keyword
+to ensure that the order of the options on the
+command line is consistent each time
+<TT
+CLASS="APPLICATION"
+>scons</TT
+> is run.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+># Will add -DA -DB=2 to POSIX compiler command lines,
+# and /DA /DB=2 to Microsoft Visual C++ command lines.
+env = Environment(CPPDEFINES={'B':2, 'A':None})</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-CPPDEFPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>CPPDEFPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used to specify preprocessor definitions
+on the C compiler command line.
+This will be appended to the beginning of each definition
+in the <VAR
+CLASS="ENVAR"
+>$CPPDEFINES</VAR
+> construction variable
+when the <VAR
+CLASS="ENVAR"
+>$_CPPDEFFLAGS</VAR
+> variable is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-CPPDEFSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>CPPDEFSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used to specify preprocessor definitions
+on the C compiler command line.
+This will be appended to the end of each definition
+in the <VAR
+CLASS="ENVAR"
+>$CPPDEFINES</VAR
+> construction variable
+when the <VAR
+CLASS="ENVAR"
+>$_CPPDEFFLAGS</VAR
+> variable is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-CPPFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>CPPFLAGS</VAR
+></DT
+><DD
+><P
+>User-specified C preprocessor options.
+These will be included in any command that uses the C preprocessor,
+including not just compilation of C and C++ source files
+via the <VAR
+CLASS="ENVAR"
+>$CCCOM</VAR
+>, <VAR
+CLASS="ENVAR"
+>$SHCCCOM</VAR
+>, <VAR
+CLASS="ENVAR"
+>$CXXCOM</VAR
+> and <VAR
+CLASS="ENVAR"
+>$SHCXXCOM</VAR
+> command lines,
+but also the <VAR
+CLASS="ENVAR"
+>$FORTRANPPCOM</VAR
+>, <VAR
+CLASS="ENVAR"
+>$SHFORTRANPPCOM</VAR
+>,
+<VAR
+CLASS="ENVAR"
+>$F77PPCOM</VAR
+> and <VAR
+CLASS="ENVAR"
+>$SHF77PPCOM</VAR
+> command lines
+used to compile a Fortran source file,
+and the <VAR
+CLASS="ENVAR"
+>$ASPPCOM</VAR
+> command line
+used to assemble an assembly language source file,
+after first running each file through the C preprocessor.
+Note that this variable does
+<I
+CLASS="EMPHASIS"
+>not</I
+>
+contain
+<VAR
+CLASS="OPTION"
+>-I</VAR
+>
+(or similar) include search path options
+that scons generates automatically from <VAR
+CLASS="ENVAR"
+>$CPPPATH</VAR
+>.
+See <A
+HREF="a3061.html#CV-_CPPINCFLAGS"
+><VAR
+CLASS="ENVAR"
+>$_CPPINCFLAGS</VAR
+></A
+>, below,
+for the variable that expands to those options.</P
+></DD
+><DT
+><A
+NAME="CV-_CPPINCFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>_CPPINCFLAGS</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the C preprocessor command-line options
+for specifying directories to be searched for include files.
+The value of <VAR
+CLASS="ENVAR"
+>$_CPPINCFLAGS</VAR
+> is created
+by appending <VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$CPPPATH</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-CPPPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>CPPPATH</VAR
+></DT
+><DD
+><P
+>The list of directories that the C preprocessor will search for include
+directories. The C/C++ implicit dependency scanner will search these
+directories for include files. Don't explicitly put include directory
+arguments in CCFLAGS or CXXFLAGS because the result will be non-portable
+and the directories will not be searched by the dependency scanner. Note:
+directory names in CPPPATH will be looked-up relative to the SConscript
+directory when they are used in a command. To force 
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+to look-up a directory relative to the root of the source tree use #:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(CPPPATH='#/include')</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory look-up can also be forced using the 
+<TT
+CLASS="FUNCTION"
+>Dir</TT
+>()
+function:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>include = Dir('include')
+env = Environment(CPPPATH=include)</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory list will be added to command lines
+through the automatically-generated
+<VAR
+CLASS="ENVAR"
+>$_CPPINCFLAGS</VAR
+>
+construction variable,
+which is constructed by
+appending the values of the
+<VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+construction variables
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$CPPPATH</VAR
+>.
+Any command lines you define that need
+the CPPPATH directory list should
+include <VAR
+CLASS="ENVAR"
+>$_CPPINCFLAGS</VAR
+>:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(CCCOM="my_compiler $_CPPINCFLAGS -c -o $TARGET $SOURCE")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-CPPSUFFIXES"
+></A
+><VAR
+CLASS="ENVAR"
+>CPPSUFFIXES</VAR
+></DT
+><DD
+><P
+>The list of suffixes of files that will be scanned
+for C preprocessor implicit dependencies
+(#include lines).
+The default list is:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>[".c", ".C", ".cxx", ".cpp", ".c++", ".cc",
+ ".h", ".H", ".hxx", ".hpp", ".hh",
+ ".F", ".fpp", ".FPP",
+ ".S", ".spp", ".SPP"]</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-CVS"
+></A
+><VAR
+CLASS="ENVAR"
+>CVS</VAR
+></DT
+><DD
+><P
+>The CVS executable.</P
+></DD
+><DT
+><A
+NAME="CV-CVSCOFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>CVSCOFLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed to the CVS checkout subcommand.</P
+></DD
+><DT
+><A
+NAME="CV-CVSCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>CVSCOM</VAR
+></DT
+><DD
+><P
+>The command line used to
+fetch source files from a CVS repository.</P
+></DD
+><DT
+><A
+NAME="CV-CVSCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>CVSCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when fetching
+a source file from a CVS repository.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$CVSCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-CVSFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>CVSFLAGS</VAR
+></DT
+><DD
+><P
+>General options that are passed to CVS.
+By default, this is set to
+<TT
+CLASS="LITERAL"
+>-d $CVSREPOSITORY</TT
+>
+to specify from where the files must be fetched.</P
+></DD
+><DT
+><A
+NAME="CV-CVSREPOSITORY"
+></A
+><VAR
+CLASS="ENVAR"
+>CVSREPOSITORY</VAR
+></DT
+><DD
+><P
+>The path to the CVS repository.
+This is referenced in the default
+<VAR
+CLASS="ENVAR"
+>$CVSFLAGS</VAR
+> value.</P
+></DD
+><DT
+><A
+NAME="CV-CXX"
+></A
+><VAR
+CLASS="ENVAR"
+>CXX</VAR
+></DT
+><DD
+><P
+>The C++ compiler.</P
+></DD
+><DT
+><A
+NAME="CV-CXXCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>CXXCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a C++ source file to an object file.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$CXXFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-CXXCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>CXXCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a C++ source file
+is compiled to a (static) object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$CXXCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(CXXCOMSTR = "Compiling static object $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-CXXFILESUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>CXXFILESUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix for C++ source files.
+This is used by the internal CXXFile builder
+when generating C++ files from Lex (.ll) or YACC (.yy) input files.
+The default suffix is
+<TT
+CLASS="FILENAME"
+>.cc</TT
+>.
+SCons also treats files with the suffixes
+<TT
+CLASS="FILENAME"
+>.cpp</TT
+>,
+<TT
+CLASS="FILENAME"
+>.cxx</TT
+>,
+<TT
+CLASS="FILENAME"
+>.c++</TT
+>,
+and
+<TT
+CLASS="FILENAME"
+>.C++</TT
+>
+as C++ files.
+On case-sensitive systems (Linux, UNIX, and other POSIX-alikes),
+SCons also treats
+<TT
+CLASS="FILENAME"
+>.C</TT
+>
+(upper case) files
+as C++ files.</P
+></DD
+><DT
+><A
+NAME="CV-CXXFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>CXXFLAGS</VAR
+></DT
+><DD
+><P
+>General options that are passed to the C++ compiler.
+By default, this includes the value of <VAR
+CLASS="ENVAR"
+>$CCFLAGS</VAR
+>,
+so that setting <VAR
+CLASS="ENVAR"
+>$CCFLAGS</VAR
+> affects both C and C++ compilation.
+If you want to add C++-specific flags,
+you must set or override the value of <VAR
+CLASS="ENVAR"
+>$CXXFLAGS</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-CXXVERSION"
+></A
+><VAR
+CLASS="ENVAR"
+>CXXVERSION</VAR
+></DT
+><DD
+><P
+>The version number of the C++ compiler.
+This may or may not be set,
+depending on the specific C++ compiler being used.</P
+></DD
+><DT
+><A
+NAME="CV-DIR"
+></A
+><VAR
+CLASS="ENVAR"
+>Dir</VAR
+></DT
+><DD
+><P
+>A function that converts a file name into a Dir instance relative to the
+target being built. </P
+></DD
+><DT
+><A
+NAME="CV-DIRS"
+></A
+><VAR
+CLASS="ENVAR"
+>Dirs</VAR
+></DT
+><DD
+><P
+>A function that converts a list of strings
+into a list of Dir instances relative to the target being built.</P
+></DD
+><DT
+><A
+NAME="CV-DSUFFIXES"
+></A
+><VAR
+CLASS="ENVAR"
+>DSUFFIXES</VAR
+></DT
+><DD
+><P
+>The list of suffixes of files that will be scanned
+for imported D package files.
+The default list is:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>['.d']</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-DVIPDF"
+></A
+><VAR
+CLASS="ENVAR"
+>DVIPDF</VAR
+></DT
+><DD
+><P
+>The TeX DVI file to PDF file converter.</P
+></DD
+><DT
+><A
+NAME="CV-DVIPDFCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>DVIPDFCOM</VAR
+></DT
+><DD
+><P
+>The command line used to convert TeX DVI files into a PDF file.</P
+></DD
+><DT
+><A
+NAME="CV-DVIPDFCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>DVIPDFCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a TeX DVI file
+is converted into a PDF file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$DVIPDFCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-DVIPDFFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>DVIPDFFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the TeX DVI file to PDF file converter.</P
+></DD
+><DT
+><A
+NAME="CV-DVIPS"
+></A
+><VAR
+CLASS="ENVAR"
+>DVIPS</VAR
+></DT
+><DD
+><P
+>The TeX DVI file to PostScript converter.</P
+></DD
+><DT
+><A
+NAME="CV-DVIPSFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>DVIPSFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the TeX DVI file to PostScript converter.</P
+></DD
+><DT
+><A
+NAME="CV-ENV"
+></A
+><VAR
+CLASS="ENVAR"
+>ENV</VAR
+></DT
+><DD
+><P
+>A dictionary of environment variables
+to use when invoking commands. When
+<VAR
+CLASS="ENVAR"
+>$ENV</VAR
+> is used in a command all list
+values will be joined using the path separator and any other non-string
+values will simply be coerced to a string.
+Note that, by default,
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+does
+<I
+CLASS="EMPHASIS"
+>not</I
+>
+propagate the environment in force when you
+execute
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+to the commands used to build target files.
+This is so that builds will be guaranteed
+repeatable regardless of the environment
+variables set at the time
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+is invoked.</P
+><P
+>If you want to propagate your
+environment variables
+to the commands executed
+to build target files,
+you must do so explicitly:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import os
+env = Environment(ENV = os.environ)</PRE
+></TD
+></TR
+></TABLE
+><P
+>Note that you can choose only to propagate
+certain environment variables.
+A common example is
+the system
+<VAR
+CLASS="ENVAR"
+>PATH</VAR
+>
+environment variable,
+so that
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+uses the same utilities
+as the invoking shell (or other process):</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import os
+env = Environment(ENV = {'PATH' : os.environ['PATH']})</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-ESCAPE"
+></A
+><VAR
+CLASS="ENVAR"
+>ESCAPE</VAR
+></DT
+><DD
+><P
+>A function that will be called to escape shell special characters in
+command lines. The function should take one argument: the command line
+string to escape; and should return the escaped command line.</P
+></DD
+><DT
+><A
+NAME="CV-F77"
+></A
+><VAR
+CLASS="ENVAR"
+>F77</VAR
+></DT
+><DD
+><P
+>The Fortran 77 compiler.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRAN</VAR
+> variable,
+which specifies the default Fortran compiler
+for all Fortran versions.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F77</VAR
+> if you need to use a specific compiler
+or compiler version for Fortran 77 files.</P
+></DD
+><DT
+><A
+NAME="CV-F77COM"
+></A
+><VAR
+CLASS="ENVAR"
+>F77COM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 77 source file to an object file.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F77COM</VAR
+> if you need to use a specific
+command line for Fortran 77 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANCOM</VAR
+> variable,
+which specifies the default command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-F77COMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>F77COMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a Fortran 77 source file
+is compiled to an object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$F77COM</VAR
+> or <VAR
+CLASS="ENVAR"
+>$FORTRANCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-F77FLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>F77FLAGS</VAR
+></DT
+><DD
+><P
+>General user-specified options that are passed to the Fortran 77 compiler.
+Note that this variable does
+<I
+CLASS="EMPHASIS"
+>not</I
+>
+contain
+<VAR
+CLASS="OPTION"
+>-I</VAR
+>
+(or similar) include search path options
+that scons generates automatically from <VAR
+CLASS="ENVAR"
+>$F77PATH</VAR
+>.
+See
+<VAR
+CLASS="ENVAR"
+>$_F77INCFLAGS</VAR
+>
+below,
+for the variable that expands to those options.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F77FLAGS</VAR
+> if you need to define specific
+user options for Fortran 77 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANFLAGS</VAR
+> variable,
+which specifies the user-specified options
+passed to the default Fortran compiler
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-_F77INCFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>_F77INCFLAGS</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the Fortran 77 compiler command-line options
+for specifying directories to be searched for include files.
+The value of <VAR
+CLASS="ENVAR"
+>$_F77INCFLAGS</VAR
+> is created
+by appending <VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$F77PATH</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-F77PATH"
+></A
+><VAR
+CLASS="ENVAR"
+>F77PATH</VAR
+></DT
+><DD
+><P
+>The list of directories that the Fortran 77 compiler will search for include
+directories. The implicit dependency scanner will search these
+directories for include files. Don't explicitly put include directory
+arguments in <VAR
+CLASS="ENVAR"
+>$F77FLAGS</VAR
+> because the result will be non-portable
+and the directories will not be searched by the dependency scanner. Note:
+directory names in <VAR
+CLASS="ENVAR"
+>$F77PATH</VAR
+> will be looked-up relative to the SConscript
+directory when they are used in a command. To force
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+to look-up a directory relative to the root of the source tree use #:
+You only need to set <VAR
+CLASS="ENVAR"
+>$F77PATH</VAR
+> if you need to define a specific
+include path for Fortran 77 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANPATH</VAR
+> variable,
+which specifies the include path
+for the default Fortran compiler
+for all Fortran versions.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(F77PATH='#/include')</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory look-up can also be forced using the
+<TT
+CLASS="FUNCTION"
+>Dir</TT
+>()
+function:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>include = Dir('include')
+env = Environment(F77PATH=include)</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory list will be added to command lines
+through the automatically-generated
+<VAR
+CLASS="ENVAR"
+>$_F77INCFLAGS</VAR
+>
+construction variable,
+which is constructed by
+appending the values of the
+<VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+construction variables
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$F77PATH</VAR
+>.
+Any command lines you define that need
+the F77PATH directory list should
+include <VAR
+CLASS="ENVAR"
+>$_F77INCFLAGS</VAR
+>:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(F77COM="my_compiler $_F77INCFLAGS -c -o $TARGET $SOURCE")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-F77PPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>F77PPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 77 source file to an object file
+after first running the file through the C preprocessor.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$F77FLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F77PPCOM</VAR
+> if you need to use a specific
+C-preprocessor command line for Fortran 77 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANPPCOM</VAR
+> variable,
+which specifies the default C-preprocessor command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-F90"
+></A
+><VAR
+CLASS="ENVAR"
+>F90</VAR
+></DT
+><DD
+><P
+>The Fortran 90 compiler.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRAN</VAR
+> variable,
+which specifies the default Fortran compiler
+for all Fortran versions.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F90</VAR
+> if you need to use a specific compiler
+or compiler version for Fortran 90 files.</P
+></DD
+><DT
+><A
+NAME="CV-F90COM"
+></A
+><VAR
+CLASS="ENVAR"
+>F90COM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 90 source file to an object file.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F90COM</VAR
+> if you need to use a specific
+command line for Fortran 90 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANCOM</VAR
+> variable,
+which specifies the default command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-F90COMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>F90COMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a Fortran 90 source file
+is compiled to an object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$F90COM</VAR
+> or <VAR
+CLASS="ENVAR"
+>$FORTRANCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-F90FLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>F90FLAGS</VAR
+></DT
+><DD
+><P
+>General user-specified options that are passed to the Fortran 90 compiler.
+Note that this variable does
+<I
+CLASS="EMPHASIS"
+>not</I
+>
+contain
+<VAR
+CLASS="OPTION"
+>-I</VAR
+>
+(or similar) include search path options
+that scons generates automatically from <VAR
+CLASS="ENVAR"
+>$F90PATH</VAR
+>.
+See
+<VAR
+CLASS="ENVAR"
+>$_F90INCFLAGS</VAR
+>
+below,
+for the variable that expands to those options.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F90FLAGS</VAR
+> if you need to define specific
+user options for Fortran 90 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANFLAGS</VAR
+> variable,
+which specifies the user-specified options
+passed to the default Fortran compiler
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-_F90INCFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>_F90INCFLAGS</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the Fortran 90 compiler command-line options
+for specifying directories to be searched for include files.
+The value of <VAR
+CLASS="ENVAR"
+>$_F90INCFLAGS</VAR
+> is created
+by appending <VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$F90PATH</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-F90PATH"
+></A
+><VAR
+CLASS="ENVAR"
+>F90PATH</VAR
+></DT
+><DD
+><P
+>The list of directories that the Fortran 90 compiler will search for include
+directories. The implicit dependency scanner will search these
+directories for include files. Don't explicitly put include directory
+arguments in <VAR
+CLASS="ENVAR"
+>$F90FLAGS</VAR
+> because the result will be non-portable
+and the directories will not be searched by the dependency scanner. Note:
+directory names in <VAR
+CLASS="ENVAR"
+>$F90PATH</VAR
+> will be looked-up relative to the SConscript
+directory when they are used in a command. To force
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+to look-up a directory relative to the root of the source tree use #:
+You only need to set <VAR
+CLASS="ENVAR"
+>$F90PATH</VAR
+> if you need to define a specific
+include path for Fortran 90 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANPATH</VAR
+> variable,
+which specifies the include path
+for the default Fortran compiler
+for all Fortran versions.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(F90PATH='#/include')</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory look-up can also be forced using the
+<TT
+CLASS="FUNCTION"
+>Dir</TT
+>()
+function:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>include = Dir('include')
+env = Environment(F90PATH=include)</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory list will be added to command lines
+through the automatically-generated
+<VAR
+CLASS="ENVAR"
+>$_F90INCFLAGS</VAR
+>
+construction variable,
+which is constructed by
+appending the values of the
+<VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+construction variables
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$F90PATH</VAR
+>.
+Any command lines you define that need
+the F90PATH directory list should
+include <VAR
+CLASS="ENVAR"
+>$_F90INCFLAGS</VAR
+>:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(F90COM="my_compiler $_F90INCFLAGS -c -o $TARGET $SOURCE")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-F90PPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>F90PPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 90 source file to an object file
+after first running the file through the C preprocessor.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$F90FLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F90PPCOM</VAR
+> if you need to use a specific
+C-preprocessor command line for Fortran 90 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANPPCOM</VAR
+> variable,
+which specifies the default C-preprocessor command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-F95"
+></A
+><VAR
+CLASS="ENVAR"
+>F95</VAR
+></DT
+><DD
+><P
+>The Fortran 95 compiler.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRAN</VAR
+> variable,
+which specifies the default Fortran compiler
+for all Fortran versions.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F95</VAR
+> if you need to use a specific compiler
+or compiler version for Fortran 95 files.</P
+></DD
+><DT
+><A
+NAME="CV-F95COM"
+></A
+><VAR
+CLASS="ENVAR"
+>F95COM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 95 source file to an object file.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F95COM</VAR
+> if you need to use a specific
+command line for Fortran 95 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANCOM</VAR
+> variable,
+which specifies the default command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-F95COMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>F95COMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a Fortran 95 source file
+is compiled to an object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$F95COM</VAR
+> or <VAR
+CLASS="ENVAR"
+>$FORTRANCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-F95FLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>F95FLAGS</VAR
+></DT
+><DD
+><P
+>General user-specified options that are passed to the Fortran 95 compiler.
+Note that this variable does
+<I
+CLASS="EMPHASIS"
+>not</I
+>
+contain
+<VAR
+CLASS="OPTION"
+>-I</VAR
+>
+(or similar) include search path options
+that scons generates automatically from <VAR
+CLASS="ENVAR"
+>$F95PATH</VAR
+>.
+See
+<VAR
+CLASS="ENVAR"
+>$_F95INCFLAGS</VAR
+>
+below,
+for the variable that expands to those options.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F95FLAGS</VAR
+> if you need to define specific
+user options for Fortran 95 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANFLAGS</VAR
+> variable,
+which specifies the user-specified options
+passed to the default Fortran compiler
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-_F95INCFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>_F95INCFLAGS</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the Fortran 95 compiler command-line options
+for specifying directories to be searched for include files.
+The value of <VAR
+CLASS="ENVAR"
+>$_F95INCFLAGS</VAR
+> is created
+by appending <VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$F95PATH</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-F95PATH"
+></A
+><VAR
+CLASS="ENVAR"
+>F95PATH</VAR
+></DT
+><DD
+><P
+>The list of directories that the Fortran 95 compiler will search for include
+directories. The implicit dependency scanner will search these
+directories for include files. Don't explicitly put include directory
+arguments in <VAR
+CLASS="ENVAR"
+>$F95FLAGS</VAR
+> because the result will be non-portable
+and the directories will not be searched by the dependency scanner. Note:
+directory names in <VAR
+CLASS="ENVAR"
+>$F95PATH</VAR
+> will be looked-up relative to the SConscript
+directory when they are used in a command. To force
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+to look-up a directory relative to the root of the source tree use #:
+You only need to set <VAR
+CLASS="ENVAR"
+>$F95PATH</VAR
+> if you need to define a specific
+include path for Fortran 95 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANPATH</VAR
+> variable,
+which specifies the include path
+for the default Fortran compiler
+for all Fortran versions.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(F95PATH='#/include')</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory look-up can also be forced using the
+<TT
+CLASS="FUNCTION"
+>Dir</TT
+>()
+function:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>include = Dir('include')
+env = Environment(F95PATH=include)</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory list will be added to command lines
+through the automatically-generated
+<VAR
+CLASS="ENVAR"
+>$_F95INCFLAGS</VAR
+>
+construction variable,
+which is constructed by
+appending the values of the
+<VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+construction variables
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$F95PATH</VAR
+>.
+Any command lines you define that need
+the F95PATH directory list should
+include <VAR
+CLASS="ENVAR"
+>$_F95INCFLAGS</VAR
+>:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(F95COM="my_compiler $_F95INCFLAGS -c -o $TARGET $SOURCE")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-F95PPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>F95PPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 95 source file to an object file
+after first running the file through the C preprocessor.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$F95FLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.
+You only need to set <VAR
+CLASS="ENVAR"
+>$F95PPCOM</VAR
+> if you need to use a specific
+C-preprocessor command line for Fortran 95 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$FORTRANPPCOM</VAR
+> variable,
+which specifies the default C-preprocessor command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-FILE"
+></A
+><VAR
+CLASS="ENVAR"
+>File</VAR
+></DT
+><DD
+><P
+>A function that converts a file name into a File instance relative to the
+target being built. </P
+></DD
+><DT
+><A
+NAME="CV-FORTRAN"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRAN</VAR
+></DT
+><DD
+><P
+>The default Fortran compiler
+for all versions of Fortran.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran source file to an object file.
+By default, any options specified
+in the <VAR
+CLASS="ENVAR"
+>$FORTRANFLAGS</VAR
+>, <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+>, <VAR
+CLASS="ENVAR"
+>$_CPPDEFFLAGS</VAR
+>, 
+<VAR
+CLASS="ENVAR"
+>$_FORTRANMODFLAG</VAR
+>, and <VAR
+CLASS="ENVAR"
+>$_FORTRANINCFLAGS</VAR
+> construction variables
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a Fortran source file
+is compiled to an object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$FORTRANCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANFLAGS</VAR
+></DT
+><DD
+><P
+>General user-specified options that are passed to the Fortran compiler.
+Note that this variable does
+<I
+CLASS="EMPHASIS"
+>not</I
+>
+contain
+<VAR
+CLASS="OPTION"
+>-I</VAR
+>
+(or similar) include or module search path options
+that scons generates automatically from <VAR
+CLASS="ENVAR"
+>$FORTRANPATH</VAR
+>.
+See
+<VAR
+CLASS="ENVAR"
+>$_FORTRANINCFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$_FORTRANMODFLAG</VAR
+>,
+below,
+for the variables that expand those options.</P
+></DD
+><DT
+><A
+NAME="CV-_FORTRANINCFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>_FORTRANINCFLAGS</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the Fortran compiler command-line options
+for specifying directories to be searched for include 
+files and module files.
+The value of <VAR
+CLASS="ENVAR"
+>$_FORTRANINCFLAGS</VAR
+> is created
+by prepending/appending <VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$FORTRANPATH</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANMODDIR"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANMODDIR</VAR
+></DT
+><DD
+><P
+>Directory location where the Fortran compiler should place
+any module files it generates.  This variable is empty, by default. Some 
+Fortran compilers will internally append this directory in the search path 
+for module files, as well.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANMODDIRPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANMODDIRPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used to specify a module directory on the Fortran compiler command
+line.
+This will be appended to the beginning of the directory
+in the <VAR
+CLASS="ENVAR"
+>$FORTRANMODDIR</VAR
+> construction variables
+when the <VAR
+CLASS="ENVAR"
+>$_FORTRANMODFLAG</VAR
+> variables is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANMODDIRSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANMODDIRSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used to specify a module directory on the Fortran compiler command
+line.
+This will be appended to the beginning of the directory
+in the <VAR
+CLASS="ENVAR"
+>$FORTRANMODDIR</VAR
+> construction variables
+when the <VAR
+CLASS="ENVAR"
+>$_FORTRANMODFLAG</VAR
+> variables is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-_FORTRANMODFLAG"
+></A
+><VAR
+CLASS="ENVAR"
+>_FORTRANMODFLAG</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the Fortran compiler command-line option
+for specifying the directory location where the Fortran
+compiler should place any module files that happen to get 
+generated during compilation.
+The value of <VAR
+CLASS="ENVAR"
+>$_FORTRANMODFLAG</VAR
+> is created
+by prepending/appending <VAR
+CLASS="ENVAR"
+>$FORTRANMODDIRPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$FORTRANMODDIRSUFFIX</VAR
+>
+to the beginning and end of the directory in <VAR
+CLASS="ENVAR"
+>$FORTRANMODDIR</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANMODPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANMODPREFIX</VAR
+></DT
+><DD
+><P
+>The module file prefix used by the Fortran compiler.  SCons assumes that
+the Fortran compiler follows the quasi-standard naming convention for
+module files of
+<TT
+CLASS="FILENAME"
+>module_name.mod</TT
+>.
+As a result, this variable is left empty, by default.  For situations in
+which the compiler does not necessarily follow the normal convention,
+the user may use this variable.  Its value will be appended to every
+module file name as scons attempts to resolve dependencies.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANMODSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANMODSUFFIX</VAR
+></DT
+><DD
+><P
+>The module file suffix used by the Fortran compiler.  SCons assumes that
+the Fortran compiler follows the quasi-standard naming convention for
+module files of
+<TT
+CLASS="FILENAME"
+>module_name.mod</TT
+>.
+As a result, this variable is set to ".mod", by default.  For situations
+in which the compiler does not necessarily follow the normal convention,
+the user may use this variable.  Its value will be appended to every
+module file name as scons attempts to resolve dependencies.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANPATH</VAR
+></DT
+><DD
+><P
+>The list of directories that the Fortran compiler will search for
+include files and (for some compilers) module files. The Fortran implicit
+dependency scanner will search these directories for include files (but
+not module files since they are autogenerated and, as such, may not
+actually exist at the time the scan takes place). Don't explicitly put
+include directory arguments in FORTRANFLAGS because the result will be
+non-portable and the directories will not be searched by the dependency
+scanner. Note: directory names in FORTRANPATH will be looked-up relative
+to the SConscript directory when they are used in a command. To force
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+to look-up a directory relative to the root of the source tree use #:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(FORTRANPATH='#/include')</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory look-up can also be forced using the 
+<TT
+CLASS="FUNCTION"
+>Dir</TT
+>()
+function:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>include = Dir('include')
+env = Environment(FORTRANPATH=include)</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory list will be added to command lines
+through the automatically-generated
+<VAR
+CLASS="ENVAR"
+>$_FORTRANINCFLAGS</VAR
+>
+construction variable,
+which is constructed by
+appending the values of the
+<VAR
+CLASS="ENVAR"
+>$INCPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$INCSUFFIX</VAR
+>
+construction variables
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$FORTRANPATH</VAR
+>.
+Any command lines you define that need
+the FORTRANPATH directory list should
+include <VAR
+CLASS="ENVAR"
+>$_FORTRANINCFLAGS</VAR
+>:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(FORTRANCOM="my_compiler $_FORTRANINCFLAGS -c -o $TARGET $SOURCE")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-FORTRANPPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANPPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran source file to an object file
+after first running the file through the C preprocessor. 
+By default, any options specified in the <VAR
+CLASS="ENVAR"
+>$FORTRANFLAGS</VAR
+>, <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+>,
+_CPPDEFFLAGS, <VAR
+CLASS="ENVAR"
+>$_FORTRANMODFLAG</VAR
+>, and <VAR
+CLASS="ENVAR"
+>$_FORTRANINCFLAGS</VAR
+>
+construction variables are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-FORTRANSUFFIXES"
+></A
+><VAR
+CLASS="ENVAR"
+>FORTRANSUFFIXES</VAR
+></DT
+><DD
+><P
+>The list of suffixes of files that will be scanned
+for Fortran implicit dependencies
+(INCLUDE lines and USE statements).
+The default list is:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>[".f", ".F", ".for", ".FOR", ".ftn", ".FTN", ".fpp", ".FPP",
+".f77", ".F77", ".f90", ".F90", ".f95", ".F95"]</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-FRAMEWORKPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>FRAMEWORKPATH</VAR
+></DT
+><DD
+><P
+>On Mac OS X with gcc,
+a list containing the paths to search for frameworks.
+Used by the compiler to find framework-style includes like
+#include &#60;Fmwk/Header.h&#62;.
+Used by the linker to find user-specified frameworks when linking (see
+<VAR
+CLASS="ENVAR"
+>$FRAMEWORKS</VAR
+>).
+For example:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+> env.AppendUnique(FRAMEWORKPATH='#myframeworkdir')</PRE
+></TD
+></TR
+></TABLE
+><P
+>will add</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>  ... -Fmyframeworkdir</PRE
+></TD
+></TR
+></TABLE
+><P
+>to the compiler and linker command lines.</P
+></DD
+><DT
+><A
+NAME="CV-_FRAMEWORKPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>_FRAMEWORKPATH</VAR
+></DT
+><DD
+><P
+>On Mac OS X with gcc, an automatically-generated construction variable
+containing the linker command-line options corresponding to
+<VAR
+CLASS="ENVAR"
+>$FRAMEWORKPATH</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-FRAMEWORKPATHPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>FRAMEWORKPATHPREFIX</VAR
+></DT
+><DD
+><P
+>On Mac OS X with gcc, the prefix to be used for the FRAMEWORKPATH entries.
+(see <VAR
+CLASS="ENVAR"
+>$FRAMEWORKPATH</VAR
+>).
+The default value is
+<VAR
+CLASS="OPTION"
+>-F</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-FRAMEWORKPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>FRAMEWORKPREFIX</VAR
+></DT
+><DD
+><P
+>On Mac OS X with gcc,
+the prefix to be used for linking in frameworks
+(see <VAR
+CLASS="ENVAR"
+>$FRAMEWORKS</VAR
+>).
+The default value is
+<VAR
+CLASS="OPTION"
+>-framework</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-FRAMEWORKS"
+></A
+><VAR
+CLASS="ENVAR"
+>FRAMEWORKS</VAR
+></DT
+><DD
+><P
+>On Mac OS X with gcc, a list of the framework names to be linked into a
+program or shared library or bundle.
+The default value is the empty list.
+For example:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+> env.AppendUnique(FRAMEWORKS=Split('System Cocoa SystemConfiguration'))</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DD
+><DT
+><A
+NAME="CV-_FRAMEWORKS"
+></A
+><VAR
+CLASS="ENVAR"
+>_FRAMEWORKS</VAR
+></DT
+><DD
+><P
+>On Mac OS X with gcc,
+an automatically-generated construction variable
+containing the linker command-line options
+for linking with FRAMEWORKS.</P
+></DD
+><DT
+><A
+NAME="CV-FRAMEWORKSFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>FRAMEWORKSFLAGS</VAR
+></DT
+><DD
+><P
+>On Mac OS X with gcc,
+general user-supplied frameworks options to be added at
+the end of a command
+line building a loadable module.
+(This has been largely superceded by
+the <VAR
+CLASS="ENVAR"
+>$FRAMEWORKPATH</VAR
+>, <VAR
+CLASS="ENVAR"
+>$FRAMEWORKPATHPREFIX</VAR
+>,
+<VAR
+CLASS="ENVAR"
+>$FRAMEWORKPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$FRAMEWORKS</VAR
+> variables
+described above.)</P
+></DD
+><DT
+><A
+NAME="CV-GS"
+></A
+><VAR
+CLASS="ENVAR"
+>GS</VAR
+></DT
+><DD
+><P
+>The Ghostscript program used to convert PostScript to PDF files.</P
+></DD
+><DT
+><A
+NAME="CV-GSCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>GSCOM</VAR
+></DT
+><DD
+><P
+>The Ghostscript command line used to convert PostScript to PDF files.</P
+></DD
+><DT
+><A
+NAME="CV-GSCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>GSCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when
+Ghostscript is used to convert
+a PostScript file to a PDF file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$GSCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-GSFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>GSFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the Ghostscript program
+when converting PostScript to PDF files.</P
+></DD
+><DT
+><A
+NAME="CV-IDLSUFFIXES"
+></A
+><VAR
+CLASS="ENVAR"
+>IDLSUFFIXES</VAR
+></DT
+><DD
+><P
+>The list of suffixes of files that will be scanned
+for IDL implicit dependencies
+(#include or import lines).
+The default list is:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>[".idl", ".IDL"]</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-INCPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>INCPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used to specify an include directory on the C compiler command
+line.
+This will be appended to the beginning of each directory
+in the <VAR
+CLASS="ENVAR"
+>$CPPPATH</VAR
+> and <VAR
+CLASS="ENVAR"
+>$FORTRANPATH</VAR
+> construction variables
+when the <VAR
+CLASS="ENVAR"
+>$_CPPINCFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$_FORTRANINCFLAGS</VAR
+>
+variables are automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-INCSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>INCSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used to specify an include directory on the C compiler command
+line.
+This will be appended to the end of each directory
+in the <VAR
+CLASS="ENVAR"
+>$CPPPATH</VAR
+> and <VAR
+CLASS="ENVAR"
+>$FORTRANPATH</VAR
+> construction variables
+when the <VAR
+CLASS="ENVAR"
+>$_CPPINCFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$_FORTRANINCFLAGS</VAR
+>
+variables are automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-INSTALL"
+></A
+><VAR
+CLASS="ENVAR"
+>INSTALL</VAR
+></DT
+><DD
+><P
+>A function to be called to install a file into a
+destination file name.
+The default function copies the file into the destination
+(and sets the destination file's mode and permission bits
+to match the source file's).
+The function takes the following arguments:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>def install(dest, source, env):</PRE
+></TD
+></TR
+></TABLE
+><P
+><VAR
+CLASS="VARNAME"
+>dest</VAR
+>
+is the path name of the destination file.
+<VAR
+CLASS="VARNAME"
+>source</VAR
+>
+is the path name of the source file.
+<VAR
+CLASS="VARNAME"
+>env</VAR
+>
+is the construction environment
+(a dictionary of construction values)
+in force for this file installation.</P
+></DD
+><DT
+><A
+NAME="CV-INTEL_C_COMPILER_VERSION"
+></A
+><VAR
+CLASS="ENVAR"
+>INTEL_C_COMPILER_VERSION</VAR
+></DT
+><DD
+><P
+>Set by the "intelc" Tool
+to the major version number of the Intel C compiler
+selected for use.</P
+></DD
+><DT
+><A
+NAME="CV-JAR"
+></A
+><VAR
+CLASS="ENVAR"
+>JAR</VAR
+></DT
+><DD
+><P
+>The Java archive tool.</P
+></DD
+><DT
+><A
+NAME="CV-JARCHDIR"
+></A
+><VAR
+CLASS="ENVAR"
+>JARCHDIR</VAR
+></DT
+><DD
+><P
+>The directory to which the Java archive tool should change
+(using the
+<VAR
+CLASS="OPTION"
+>-C</VAR
+>
+option).</P
+></DD
+><DT
+><A
+NAME="CV-JARCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>JARCOM</VAR
+></DT
+><DD
+><P
+>The command line used to call the Java archive tool.</P
+></DD
+><DT
+><A
+NAME="CV-JARCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>JARCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when the Java archive tool
+is called
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$JARCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(JARCOMSTR = "JARchiving $SOURCES into $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-JARFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>JARFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the Java archive tool.
+By default this is set to
+<VAR
+CLASS="OPTION"
+>cf</VAR
+>
+to create the necessary
+<B
+CLASS="COMMAND"
+>jar</B
+>
+file.</P
+></DD
+><DT
+><A
+NAME="CV-JARSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>JARSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix for Java archives:
+<TT
+CLASS="FILENAME"
+>.jar</TT
+>
+by default.</P
+></DD
+><DT
+><A
+NAME="CV-JAVAC"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVAC</VAR
+></DT
+><DD
+><P
+>The Java compiler.</P
+></DD
+><DT
+><A
+NAME="CV-JAVACCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVACCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a directory tree containing
+Java source files to
+corresponding Java class files.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$JAVACFLAGS</VAR
+> construction variable
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-JAVACCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVACCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when compiling
+a directory tree of Java source files to
+corresponding Java class files.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$JAVACCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(JAVACCOMSTR = "Compiling class files $TARGETS from $SOURCES")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-JAVACFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVACFLAGS</VAR
+></DT
+><DD
+><P
+>General options that are passed to the Java compiler.</P
+></DD
+><DT
+><A
+NAME="CV-JAVACLASSDIR"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVACLASSDIR</VAR
+></DT
+><DD
+><P
+>The directory in which Java class files may be found.
+This is stripped from the beginning of any Java .class
+file names supplied to the
+<TT
+CLASS="LITERAL"
+>JavaH</TT
+>
+builder.</P
+></DD
+><DT
+><A
+NAME="CV-JAVACLASSSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVACLASSSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix for Java class files;
+<TT
+CLASS="FILENAME"
+>.class</TT
+>
+by default.</P
+></DD
+><DT
+><A
+NAME="CV-JAVAH"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVAH</VAR
+></DT
+><DD
+><P
+>The Java generator for C header and stub files.</P
+></DD
+><DT
+><A
+NAME="CV-JAVAHCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVAHCOM</VAR
+></DT
+><DD
+><P
+>The command line used to generate C header and stub files
+from Java classes.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$JAVAHFLAGS</VAR
+> construction variable
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-JAVAHCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVAHCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when C header and stub files
+are generated from Java classes.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$JAVAHCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(JAVAHCOMSTR = "Generating header/stub file(s) $TARGETS from $SOURCES")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-JAVAHFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVAHFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the C header and stub file generator
+for Java classes.</P
+></DD
+><DT
+><A
+NAME="CV-JAVASUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>JAVASUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix for Java files;
+<TT
+CLASS="FILENAME"
+>.java</TT
+>
+by default.</P
+></DD
+><DT
+><A
+NAME="CV-LATEX"
+></A
+><VAR
+CLASS="ENVAR"
+>LATEX</VAR
+></DT
+><DD
+><P
+>The LaTeX structured formatter and typesetter.</P
+></DD
+><DT
+><A
+NAME="CV-LATEXCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>LATEXCOM</VAR
+></DT
+><DD
+><P
+>The command line used to call the LaTeX structured formatter and typesetter.</P
+></DD
+><DT
+><A
+NAME="CV-LATEXCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>LATEXCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when calling
+the LaTeX structured formatter and typesetter.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$LATEXCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(LATEXCOMSTR = "Building $TARGET from LaTeX input $SOURCES")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-LATEXFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>LATEXFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the LaTeX structured formatter and typesetter.</P
+></DD
+><DT
+><A
+NAME="CV-LDMODULE"
+></A
+><VAR
+CLASS="ENVAR"
+>LDMODULE</VAR
+></DT
+><DD
+><P
+>The linker for building loadable modules.
+By default, this is the same as <VAR
+CLASS="ENVAR"
+>$SHLINK</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-LDMODULECOM"
+></A
+><VAR
+CLASS="ENVAR"
+>LDMODULECOM</VAR
+></DT
+><DD
+><P
+>The command line for building loadable modules.
+On Mac OS X, this uses the <VAR
+CLASS="ENVAR"
+>$LDMODULE</VAR
+>,
+<VAR
+CLASS="ENVAR"
+>$LDMODULEFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$FRAMEWORKSFLAGS</VAR
+> variables.
+On other systems, this is the same as <VAR
+CLASS="ENVAR"
+>$SHLINK</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-LDMODULECOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>LDMODULECOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when building loadable modules.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$LDMODULECOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-LDMODULEFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>LDMODULEFLAGS</VAR
+></DT
+><DD
+><P
+>General user options passed to the linker for building loadable modules.</P
+></DD
+><DT
+><A
+NAME="CV-LDMODULEPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>LDMODULEPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for loadable module file names.
+On Mac OS X, this is null;
+on other systems, this is
+the same as <VAR
+CLASS="ENVAR"
+>$SHLIBPREFIX</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-LDMODULESUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>LDMODULESUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for loadable module file names.
+On Mac OS X, this is null;
+on other systems, this is
+the same as $SHLIBSUFFIX.</P
+></DD
+><DT
+><A
+NAME="CV-LEX"
+></A
+><VAR
+CLASS="ENVAR"
+>LEX</VAR
+></DT
+><DD
+><P
+>The lexical analyzer generator.</P
+></DD
+><DT
+><A
+NAME="CV-LEXCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>LEXCOM</VAR
+></DT
+><DD
+><P
+>The command line used to call the lexical analyzer generator
+to generate a source file.</P
+></DD
+><DT
+><A
+NAME="CV-LEXCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>LEXCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when generating a source file
+using the lexical analyzer generator.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$LEXCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(LEXCOMSTR = "Lex'ing $TARGET from $SOURCES")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-LEXFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>LEXFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the lexical analyzer generator.</P
+></DD
+><DT
+><A
+NAME="CV-_LIBDIRFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>_LIBDIRFLAGS</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the linker command-line options
+for specifying directories to be searched for library.
+The value of <VAR
+CLASS="ENVAR"
+>$_LIBDIRFLAGS</VAR
+> is created
+by appending <VAR
+CLASS="ENVAR"
+>$LIBDIRPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$LIBDIRSUFFIX</VAR
+>
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$LIBPATH</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-LIBDIRPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBDIRPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used to specify a library directory on the linker command line.
+This will be appended to the beginning of each directory
+in the <VAR
+CLASS="ENVAR"
+>$LIBPATH</VAR
+> construction variable
+when the <VAR
+CLASS="ENVAR"
+>$_LIBDIRFLAGS</VAR
+> variable is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-LIBDIRSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBDIRSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used to specify a library directory on the linker command line.
+This will be appended to the end of each directory
+in the <VAR
+CLASS="ENVAR"
+>$LIBPATH</VAR
+> construction variable
+when the <VAR
+CLASS="ENVAR"
+>$_LIBDIRFLAGS</VAR
+> variable is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-_LIBFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>_LIBFLAGS</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the linker command-line options
+for specifying libraries to be linked with the resulting target.
+The value of <VAR
+CLASS="ENVAR"
+>$_LIBFLAGS</VAR
+> is created
+by appending <VAR
+CLASS="ENVAR"
+>$LIBLINKPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$LIBLINKSUFFIX</VAR
+>
+to the beginning and end
+of each filename in <VAR
+CLASS="ENVAR"
+>$LIBS</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-LIBLINKPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBLINKPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used to specify a library to link on the linker command line.
+This will be appended to the beginning of each library
+in the <VAR
+CLASS="ENVAR"
+>$LIBS</VAR
+> construction variable
+when the <VAR
+CLASS="ENVAR"
+>$_LIBFLAGS</VAR
+> variable is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-LIBLINKSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBLINKSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used to specify a library to link on the linker command line.
+This will be appended to the end of each library
+in the <VAR
+CLASS="ENVAR"
+>$LIBS</VAR
+> construction variable
+when the <VAR
+CLASS="ENVAR"
+>$_LIBFLAGS</VAR
+> variable is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-LIBPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBPATH</VAR
+></DT
+><DD
+><P
+>The list of directories that will be searched for libraries.
+The implicit dependency scanner will search these
+directories for include files. Don't explicitly put include directory
+arguments in <VAR
+CLASS="ENVAR"
+>$LINKFLAGS</VAR
+> or <VAR
+CLASS="ENVAR"
+>$SHLINKFLAGS</VAR
+>
+because the result will be non-portable
+and the directories will not be searched by the dependency scanner. Note:
+directory names in LIBPATH will be looked-up relative to the SConscript
+directory when they are used in a command. To force 
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+to look-up a directory relative to the root of the source tree use #:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(LIBPATH='#/libs')</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory look-up can also be forced using the 
+<TT
+CLASS="FUNCTION"
+>Dir</TT
+>()
+function:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>libs = Dir('libs')
+env = Environment(LIBPATH=libs)</PRE
+></TD
+></TR
+></TABLE
+><P
+>The directory list will be added to command lines
+through the automatically-generated
+<VAR
+CLASS="ENVAR"
+>$_LIBDIRFLAGS</VAR
+>
+construction variable,
+which is constructed by
+appending the values of the
+<VAR
+CLASS="ENVAR"
+>$LIBDIRPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$LIBDIRSUFFIX</VAR
+>
+construction variables
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$LIBPATH</VAR
+>.
+Any command lines you define that need
+the LIBPATH directory list should
+include <VAR
+CLASS="ENVAR"
+>$_LIBDIRFLAGS</VAR
+>:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(LINKCOM="my_linker $_LIBDIRFLAGS $_LIBFLAGS -o $TARGET $SOURCE")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-LIBPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for (static) library file names.
+A default value is set for each platform
+(posix, win32, os2, etc.),
+but the value is overridden by individual tools
+(ar, mslib, sgiar, sunar, tlib, etc.)
+to reflect the names of the libraries they create.</P
+></DD
+><DT
+><A
+NAME="CV-LIBPREFIXES"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBPREFIXES</VAR
+></DT
+><DD
+><P
+>An array of legal prefixes for library file names.</P
+></DD
+><DT
+><A
+NAME="CV-LIBS"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBS</VAR
+></DT
+><DD
+><P
+>A list of one or more libraries
+that will be linked with
+any executable programs
+created by this environment.</P
+><P
+>The library list will be added to command lines
+through the automatically-generated
+<VAR
+CLASS="ENVAR"
+>$_LIBFLAGS</VAR
+>
+construction variable,
+which is constructed by
+appending the values of the
+<VAR
+CLASS="ENVAR"
+>$LIBLINKPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$LIBLINKSUFFIX</VAR
+>
+construction variables
+to the beginning and end
+of each filename in <VAR
+CLASS="ENVAR"
+>$LIBS</VAR
+>.
+Any command lines you define that need
+the LIBS library list should
+include <VAR
+CLASS="ENVAR"
+>$_LIBFLAGS</VAR
+>:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(LINKCOM="my_linker $_LIBDIRFLAGS $_LIBFLAGS -o $TARGET $SOURCE")</PRE
+></TD
+></TR
+></TABLE
+><P
+>If you add a
+File
+object to the
+<VAR
+CLASS="ENVAR"
+>$LIBS</VAR
+>
+list, the name of that file will be added to
+<VAR
+CLASS="ENVAR"
+>$_LIBFLAGS</VAR
+>,
+and thus the link line, as is, without
+<VAR
+CLASS="ENVAR"
+>$LIBLINKPREFIX</VAR
+>
+or
+<VAR
+CLASS="ENVAR"
+>$LIBLINKSUFFIX</VAR
+>.
+For example:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env.Append(LIBS=File('/tmp/mylib.so'))</PRE
+></TD
+></TR
+></TABLE
+><P
+>In all cases, scons will add dependencies from the executable program to
+all the libraries in this list.</P
+></DD
+><DT
+><A
+NAME="CV-LIBSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for (static) library file names.
+A default value is set for each platform
+(posix, win32, os2, etc.),
+but the value is overridden by individual tools
+(ar, mslib, sgiar, sunar, tlib, etc.)
+to reflect the names of the libraries they create.</P
+></DD
+><DT
+><A
+NAME="CV-LIBSUFFIXES"
+></A
+><VAR
+CLASS="ENVAR"
+>LIBSUFFIXES</VAR
+></DT
+><DD
+><P
+>An array of legal suffixes for library file names.</P
+></DD
+><DT
+><A
+NAME="CV-LINK"
+></A
+><VAR
+CLASS="ENVAR"
+>LINK</VAR
+></DT
+><DD
+><P
+>The linker.</P
+></DD
+><DT
+><A
+NAME="CV-LINKCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>LINKCOM</VAR
+></DT
+><DD
+><P
+>The command line used to link object files into an executable.</P
+></DD
+><DT
+><A
+NAME="CV-LINKCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>LINKCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when object files
+are linked into an executable.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$LINKCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(LINKCOMSTR = "Linking $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-LINKFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>LINKFLAGS</VAR
+></DT
+><DD
+><P
+>General user options passed to the linker.
+Note that this variable should
+<I
+CLASS="EMPHASIS"
+>not</I
+>
+contain
+<VAR
+CLASS="OPTION"
+>-l</VAR
+>
+(or similar) options for linking with the libraries listed in <VAR
+CLASS="ENVAR"
+>$LIBS</VAR
+>,
+nor
+<VAR
+CLASS="OPTION"
+>-L</VAR
+>
+(or similar) library search path options
+that scons generates automatically from <VAR
+CLASS="ENVAR"
+>$LIBPATH</VAR
+>.
+See
+<VAR
+CLASS="ENVAR"
+>$_LIBFLAGS</VAR
+>
+above,
+for the variable that expands to library-link options,
+and
+<VAR
+CLASS="ENVAR"
+>$_LIBDIRFLAGS</VAR
+>
+above,
+for the variable that expands to library search path options.</P
+></DD
+><DT
+><A
+NAME="CV-M4"
+></A
+><VAR
+CLASS="ENVAR"
+>M4</VAR
+></DT
+><DD
+><P
+>The M4 macro preprocessor.</P
+></DD
+><DT
+><A
+NAME="CV-M4COM"
+></A
+><VAR
+CLASS="ENVAR"
+>M4COM</VAR
+></DT
+><DD
+><P
+>The command line used to pass files through the M4 macro preprocessor.</P
+></DD
+><DT
+><A
+NAME="CV-M4COMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>M4COMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when
+a file is passed through the M4 macro preprocessor.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$M4COM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-M4FLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>M4FLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the M4 macro preprocessor.</P
+></DD
+><DT
+><A
+NAME="CV-MAXLINELENGTH"
+></A
+><VAR
+CLASS="ENVAR"
+>MAXLINELENGTH</VAR
+></DT
+><DD
+><P
+>The maximum number of characters allowed on an external command line.
+On Win32 systems,
+link lines longer than this many characters
+are linked via a temporary file name.</P
+></DD
+><DT
+><A
+NAME="CV-MSVS"
+></A
+><VAR
+CLASS="ENVAR"
+>MSVS</VAR
+></DT
+><DD
+><P
+>When the Microsoft Visual Studio tools are initialized, they set up
+this dictionary with the following keys:</P
+><P
+><VAR
+CLASS="ENVAR"
+>VERSION</VAR
+>
+the version of MSVS being used (can be set via
+MSVS_VERSION)</P
+><P
+><VAR
+CLASS="ENVAR"
+>VERSIONS</VAR
+>
+the available versions of MSVS installed</P
+><P
+><VAR
+CLASS="ENVAR"
+>VCINSTALLDIR</VAR
+>
+installed directory of Visual C++</P
+><P
+><VAR
+CLASS="ENVAR"
+>VSINSTALLDIR</VAR
+>
+installed directory of Visual Studio</P
+><P
+><VAR
+CLASS="ENVAR"
+>FRAMEWORKDIR</VAR
+>
+installed directory of the .NET framework</P
+><P
+><VAR
+CLASS="ENVAR"
+>FRAMEWORKVERSIONS</VAR
+>
+list of installed versions of the .NET framework, sorted latest to oldest.</P
+><P
+><VAR
+CLASS="ENVAR"
+>FRAMEWORKVERSION</VAR
+>
+latest installed version of the .NET framework</P
+><P
+><VAR
+CLASS="ENVAR"
+>FRAMEWORKSDKDIR</VAR
+>
+installed location of the .NET SDK.</P
+><P
+><VAR
+CLASS="ENVAR"
+>PLATFORMSDKDIR</VAR
+>
+installed location of the Platform SDK.</P
+><P
+><VAR
+CLASS="ENVAR"
+>PLATFORMSDK_MODULES</VAR
+>
+dictionary of installed Platform SDK modules,
+where the dictionary keys are keywords for the various modules, and
+the values are 2-tuples where the first is the release date, and the
+second is the version number.</P
+><P
+>If a value isn't set, it wasn't available in the registry.</P
+></DD
+><DT
+><A
+NAME="CV-MSVS_IGNORE_IDE_PATHS"
+></A
+><VAR
+CLASS="ENVAR"
+>MSVS_IGNORE_IDE_PATHS</VAR
+></DT
+><DD
+><P
+>Tells the MS Visual Studio tools to use minimal INCLUDE, LIB, and PATH settings,
+instead of the settings from the IDE.</P
+><P
+>For Visual Studio, SCons will (by default) automatically determine
+where MSVS is installed, and use the LIB, INCLUDE, and PATH variables
+set by the IDE.  You can override this behavior by setting these
+variables after Environment initialization, or by setting
+<VAR
+CLASS="ENVAR"
+>MSVS_IGNORE_IDE_PATHS = 1</VAR
+>
+in the Environment initialization.
+Specifying this will not leave these unset, but will set them to a
+minimal set of paths needed to run the tools successfully.</P
+><P
+>For VS6, the mininimal set is:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   INCLUDE:'VSDir\VC98\ATL\include;VSDir\VC98\MFC\include;VSDir\VC98\include'
+   LIB:'VSDir\VC98\MFC\lib;VSDir\VC98\lib'
+   PATH:'VSDir\Common\MSDev98\bin;VSDir\VC98\bin'</PRE
+></TD
+></TR
+></TABLE
+><P
+>For VS7, it is:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   INCLUDE:'VSDir\Vc7\atlmfc\include;VSDir\Vc7\include'
+   LIB:'VSDir\Vc7\atlmfc\lib;VSDir\Vc7\lib'
+   PATH:'VSDir\Common7\Tools\bin;VSDir\Common7\Tools;VSDir\Vc7\bin'</PRE
+></TD
+></TR
+></TABLE
+><P
+>Where 'VSDir' is the installed location of Visual Studio.</P
+></DD
+><DT
+><A
+NAME="CV-MSVS_USE_MFC_DIRS"
+></A
+><VAR
+CLASS="ENVAR"
+>MSVS_USE_MFC_DIRS</VAR
+></DT
+><DD
+><P
+>Tells the MS Visual Studio tool(s) to use
+the MFC directories in its default paths
+for compiling and linking.
+Under MSVS version 6,
+setting
+<VAR
+CLASS="ENVAR"
+>MSVS_USE_MFC_DIRS</VAR
+>
+to a non-zero value
+adds the
+<TT
+CLASS="FILENAME"
+>ATL\include</TT
+>
+and
+<TT
+CLASS="FILENAME"
+>MFC\include</TT
+>
+directories to
+the default
+<VAR
+CLASS="ENVAR"
+>INCLUDE</VAR
+>
+external environment variable,
+and adds the
+<VAR
+CLASS="ENVAR"
+>MFC\lib</VAR
+>
+directory to
+the default
+<VAR
+CLASS="ENVAR"
+>LIB</VAR
+>
+external environment variable.
+Under MSVS version 7,
+setting
+<VAR
+CLASS="ENVAR"
+>MSVS_USE_MFC_DIRS</VAR
+>
+to a non-zero value
+adds the
+<VAR
+CLASS="ENVAR"
+>atlmfc\include</VAR
+>
+directory to the default
+<VAR
+CLASS="ENVAR"
+>INCLUDE</VAR
+>
+external environment variable,
+and adds the
+<VAR
+CLASS="ENVAR"
+>atlmfc\lib</VAR
+>
+directory to the default
+<VAR
+CLASS="ENVAR"
+>LIB</VAR
+>
+external environment variable.
+The current default value is
+<TT
+CLASS="LITERAL"
+>1</TT
+>
+which means these directories
+are added to the paths by default.
+This default value is likely to change
+in a future release,
+so users who want the ATL and MFC
+values included in their paths
+are encouraged to enable the
+<VAR
+CLASS="ENVAR"
+>MSVS_USE_MFC_DIRS</VAR
+>
+value explicitly
+to avoid future incompatibility.
+This variable has no effect if the
+<VAR
+CLASS="ENVAR"
+>INCLUDE</VAR
+>
+or
+<VAR
+CLASS="ENVAR"
+>LIB</VAR
+>
+environment variables are set explictly.</P
+></DD
+><DT
+><A
+NAME="CV-MSVS_VERSION"
+></A
+><VAR
+CLASS="ENVAR"
+>MSVS_VERSION</VAR
+></DT
+><DD
+><P
+>Sets the preferred version of MSVS to use.</P
+><P
+>SCons will (by default) select the latest version of MSVS
+installed on your machine.  So, if you have version 6 and version 7
+(MSVS .NET) installed, it will prefer version 7.  You can override this by
+specifying the 
+<VAR
+CLASS="ENVAR"
+>MSVS_VERSION</VAR
+>
+variable in the Environment initialization, setting it to the
+appropriate version ('6.0' or '7.0', for example).
+If the given version isn't installed, tool initialization will fail.</P
+></DD
+><DT
+><A
+NAME="CV-MSVSPROJECTCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>MSVSPROJECTCOM</VAR
+></DT
+><DD
+><P
+>The action used to generate Microsoft Visual Studio
+project and solution files.</P
+></DD
+><DT
+><A
+NAME="CV-MSVSPROJECTSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>MSVSPROJECTSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for Microsoft Visual Studio project (DSP) files.
+The default value is
+<TT
+CLASS="FILENAME"
+>.vcproj</TT
+>
+when using Visual Studio version 7.x (.NET),
+and
+<TT
+CLASS="FILENAME"
+>.dsp</TT
+>
+when using earlier versions of Visual Studio.</P
+></DD
+><DT
+><A
+NAME="CV-MSVSSOLUTIONSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>MSVSSOLUTIONSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for Microsoft Visual Studio solution (DSW) files.
+The default value is
+<TT
+CLASS="FILENAME"
+>.sln</TT
+>
+when using Visual Studio version 7.x (.NET),
+and
+<TT
+CLASS="FILENAME"
+>.dsw</TT
+>
+when using earlier versions of Visual Studio.</P
+></DD
+><DT
+><A
+NAME="CV-MWCW_VERSION"
+></A
+><VAR
+CLASS="ENVAR"
+>MWCW_VERSION</VAR
+></DT
+><DD
+><P
+>The version number of the MetroWerks CodeWarrior C compiler
+to be used.</P
+></DD
+><DT
+><A
+NAME="CV-MWCW_VERSIONS"
+></A
+><VAR
+CLASS="ENVAR"
+>MWCW_VERSIONS</VAR
+></DT
+><DD
+><P
+>A list of installed versions of the MetroWerks CodeWarrior C compiler
+on this system.</P
+></DD
+><DT
+><A
+NAME="CV-NO_IMPORT_LIB"
+></A
+><VAR
+CLASS="ENVAR"
+>no_import_lib</VAR
+></DT
+><DD
+><P
+>When set to non-zero,
+suppresses creation of a corresponding Win32 static import lib by the
+<TT
+CLASS="LITERAL"
+>SharedLibrary</TT
+>
+builder when used with
+MinGW, Microsoft Visual Studio or Metrowerks.
+This also suppresses creation
+of an export (.exp) file
+when using Microsoft Visual Studio.</P
+></DD
+><DT
+><A
+NAME="CV-OBJPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>OBJPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for (static) object file names.</P
+></DD
+><DT
+><A
+NAME="CV-OBJSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>OBJSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for (static) object file names.</P
+></DD
+><DT
+><A
+NAME="CV-P4"
+></A
+><VAR
+CLASS="ENVAR"
+>P4</VAR
+></DT
+><DD
+><P
+>The Perforce executable.</P
+></DD
+><DT
+><A
+NAME="CV-P4COM"
+></A
+><VAR
+CLASS="ENVAR"
+>P4COM</VAR
+></DT
+><DD
+><P
+>The command line used to
+fetch source files from Perforce.</P
+></DD
+><DT
+><A
+NAME="CV-P4COMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>P4COMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when
+fetching a source file from Perforce.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$P4COM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-P4FLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>P4FLAGS</VAR
+></DT
+><DD
+><P
+>General options that are passed to Perforce.</P
+></DD
+><DT
+><A
+NAME="CV-PCH"
+></A
+><VAR
+CLASS="ENVAR"
+>PCH</VAR
+></DT
+><DD
+><P
+>The Microsoft Visual C++ precompiled header that will be used when compiling
+object files. This variable is ignored by tools other than Microsoft Visual C++.
+When this variable is
+defined SCons will add options to the compiler command line to
+cause it to use the precompiled header, and will also set up the
+dependencies for the PCH file. Example: </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env['PCH'] = 'StdAfx.pch'</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-PCHCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>PCHCOM</VAR
+></DT
+><DD
+><P
+>The command line used by the
+<TT
+CLASS="FUNCTION"
+>PCH</TT
+>
+builder to generated a precompiled header.</P
+></DD
+><DT
+><A
+NAME="CV-PCHCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>PCHCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when generating a precompiled header.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$PCHCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-PCHSTOP"
+></A
+><VAR
+CLASS="ENVAR"
+>PCHSTOP</VAR
+></DT
+><DD
+><P
+>This variable specifies how much of a source file is precompiled. This
+variable is ignored by tools other than Microsoft Visual C++, or when
+the PCH variable is not being used. When this variable is define it
+must be a string that is the name of the header that
+is included at the end of the precompiled portion of the source files, or
+the empty string if the "#pragma hrdstop" construct is being used:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env['PCHSTOP'] = 'StdAfx.h'</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-PDB"
+></A
+><VAR
+CLASS="ENVAR"
+>PDB</VAR
+></DT
+><DD
+><P
+>The Microsoft Visual C++ PDB file that will store debugging information for
+object files, shared libraries, and programs. This variable is ignored by
+tools other than Microsoft Visual C++.
+When this variable is
+defined SCons will add options to the compiler and linker command line to
+cause them to generate external debugging information, and will also set up the
+dependencies for the PDB file. Example:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env['PDB'] = 'hello.pdb'</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-PDFCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>PDFCOM</VAR
+></DT
+><DD
+><P
+>A deprecated synonym for <VAR
+CLASS="ENVAR"
+>$DVIPDFCOM</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-PDFPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>PDFPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for PDF file names.</P
+></DD
+><DT
+><A
+NAME="CV-PDFSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>PDFSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for PDF file names.</P
+></DD
+><DT
+><A
+NAME="CV-PLATFORM"
+></A
+><VAR
+CLASS="ENVAR"
+>PLATFORM</VAR
+></DT
+><DD
+><P
+>The name of the platform used to create the Environment.  If no platform is
+specified when the Environment is created,
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+autodetects the platform.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(tools = [])
+if env['PLATFORM'] == 'cygwin':
+    Tool('mingw')(env)
+else:
+    Tool('msvc')(env)</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-PRINT_CMD_LINE_FUNC"
+></A
+><VAR
+CLASS="ENVAR"
+>PRINT_CMD_LINE_FUNC</VAR
+></DT
+><DD
+><P
+>A Python function used to print the command lines as they are executed
+(assuming command printing is not disabled by the
+<VAR
+CLASS="OPTION"
+>-q</VAR
+>
+or
+<VAR
+CLASS="OPTION"
+>-s</VAR
+>
+options or their equivalents).
+The function should take four arguments:
+<VAR
+CLASS="VARNAME"
+>s</VAR
+>,
+the command being executed (a string),
+<VAR
+CLASS="VARNAME"
+>target</VAR
+>,
+the target being built (file node, list, or string name(s)),
+<VAR
+CLASS="VARNAME"
+>source</VAR
+>,
+the source(s) used (file node, list, or string name(s)), and
+<VAR
+CLASS="VARNAME"
+>env</VAR
+>,
+the environment being used.</P
+><P
+>The function must do the printing itself.  The default implementation,
+used if this variable is not set or is None, is:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>def print_cmd_line(s, target, source, env):
+  sys.stdout.write(s + "\n")</PRE
+></TD
+></TR
+></TABLE
+><P
+>Here's an example of a more interesting function:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>def print_cmd_line(s, target, source, env):
+   sys.stdout.write("Building %s -&#62; %s...\n" %
+    (' and '.join([str(x) for x in source]),
+     ' and '.join([str(x) for x in target])))
+env=Environment(PRINT_CMD_LINE_FUNC=print_cmd_line)
+env.Program('foo', 'foo.c')</PRE
+></TD
+></TR
+></TABLE
+><P
+>This just prints "Building <VAR
+CLASS="VARNAME"
+>targetname</VAR
+> from <VAR
+CLASS="VARNAME"
+>sourcename</VAR
+>..." instead
+of the actual commands.
+Such a function could also log the actual commands to a log file,
+for example.</P
+></DD
+><DT
+><A
+NAME="CV-PROGPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>PROGPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for executable file names.</P
+></DD
+><DT
+><A
+NAME="CV-PROGSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>PROGSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for executable file names.</P
+></DD
+><DT
+><A
+NAME="CV-PSCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>PSCOM</VAR
+></DT
+><DD
+><P
+>The command line used to convert TeX DVI files into a PostScript file.</P
+></DD
+><DT
+><A
+NAME="CV-PSCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>PSCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a TeX DVI file
+is converted into a PostScript file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$PSCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-PSPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>PSPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for PostScript file names.</P
+></DD
+><DT
+><A
+NAME="CV-PSSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>PSSUFFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for PostScript file names.</P
+></DD
+><DT
+><A
+NAME="CV-QT_AUTOSCAN"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_AUTOSCAN</VAR
+></DT
+><DD
+><P
+>Turn off scanning for mocable files. Use the Moc Builder to explicitely 
+specify files to run moc on.</P
+></DD
+><DT
+><A
+NAME="CV-QT_BINPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_BINPATH</VAR
+></DT
+><DD
+><P
+>The path where the qt binaries are installed.
+The default value is '<VAR
+CLASS="ENVAR"
+>$QTDIR</VAR
+>/bin'.</P
+></DD
+><DT
+><A
+NAME="CV-QT_CPPPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_CPPPATH</VAR
+></DT
+><DD
+><P
+>The path where the qt header files are installed.
+The default value is '<VAR
+CLASS="ENVAR"
+>$QTDIR</VAR
+>/include'.
+Note: If you set this variable to None, the tool won't change the <VAR
+CLASS="ENVAR"
+>$CPPPATH</VAR
+>
+construction variable.</P
+></DD
+><DT
+><A
+NAME="CV-QT_DEBUG"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_DEBUG</VAR
+></DT
+><DD
+><P
+>Prints lots of debugging information while scanning for moc files.</P
+></DD
+><DT
+><A
+NAME="CV-QT_LIB"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_LIB</VAR
+></DT
+><DD
+><P
+>Default value is 'qt'. You may want to set this to 'qt-mt'. Note: If you set
+this variable to None, the tool won't change the <VAR
+CLASS="ENVAR"
+>$LIBS</VAR
+> variable.</P
+></DD
+><DT
+><A
+NAME="CV-QT_LIBPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_LIBPATH</VAR
+></DT
+><DD
+><P
+>The path where the qt libraries are installed.
+The default value is '<VAR
+CLASS="ENVAR"
+>$QTDIR</VAR
+>/lib'. 
+Note: If you set this variable to None, the tool won't change the <VAR
+CLASS="ENVAR"
+>$LIBPATH</VAR
+>
+construction variable.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOC"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOC</VAR
+></DT
+><DD
+><P
+>Default value is '<VAR
+CLASS="ENVAR"
+>$QT_BINPATH</VAR
+>/bin/moc'.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCCXXPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCCXXPREFIX</VAR
+></DT
+><DD
+><P
+>Default value is ''. Prefix for moc output files, when source is a cxx file.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCCXXSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCCXXSUFFIX</VAR
+></DT
+><DD
+><P
+>Default value is '.moc'. Suffix for moc output files, when source is a cxx 
+file.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCFROMCPPFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCFROMCPPFLAGS</VAR
+></DT
+><DD
+><P
+>Default value is '-i'. These flags are passed to moc, when moccing a
+cpp file.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCFROMCXXCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCFROMCXXCOM</VAR
+></DT
+><DD
+><P
+>Command to generate a moc file from a cpp file.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCFROMCXXCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCFROMCXXCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when generating a moc file from a cpp file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$QT_MOCFROMCXXCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCFROMHCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCFROMHCOM</VAR
+></DT
+><DD
+><P
+>Command to generate a moc file from a header.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCFROMHCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCFROMHCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when generating a moc file from a cpp file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$QT_MOCFROMHCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCFROMHFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCFROMHFLAGS</VAR
+></DT
+><DD
+><P
+>Default value is ''. These flags are passed to moc, when moccing a header
+file.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCHPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCHPREFIX</VAR
+></DT
+><DD
+><P
+>Default value is 'moc_'. Prefix for moc output files, when source is a header.</P
+></DD
+><DT
+><A
+NAME="CV-QT_MOCHSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_MOCHSUFFIX</VAR
+></DT
+><DD
+><P
+>Default value is '<VAR
+CLASS="ENVAR"
+>$CXXFILESUFFIX</VAR
+>'. Suffix for moc output files, when source is
+a header.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UIC"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UIC</VAR
+></DT
+><DD
+><P
+>Default value is '<VAR
+CLASS="ENVAR"
+>$QT_BINPATH</VAR
+>/uic'.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UICCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UICCOM</VAR
+></DT
+><DD
+><P
+>Command to generate header files from .ui files.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UICCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UICCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when generating header files from .ui files.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$QT_UICCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UICDECLFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UICDECLFLAGS</VAR
+></DT
+><DD
+><P
+>Default value is ''. These flags are passed to uic, when creating a a h
+file from a .ui file.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UICDECLPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UICDECLPREFIX</VAR
+></DT
+><DD
+><P
+>Default value is ''. Prefix for uic generated header files.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UICDECLSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UICDECLSUFFIX</VAR
+></DT
+><DD
+><P
+>Default value is '.h'. Suffix for uic generated header files.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UICIMPLFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UICIMPLFLAGS</VAR
+></DT
+><DD
+><P
+>Default value is ''. These flags are passed to uic, when creating a cxx
+file from a .ui file.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UICIMPLPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UICIMPLPREFIX</VAR
+></DT
+><DD
+><P
+>Default value is 'uic_'. Prefix for uic generated implementation files.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UICIMPLSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UICIMPLSUFFIX</VAR
+></DT
+><DD
+><P
+>Default value is '<VAR
+CLASS="ENVAR"
+>$CXXFILESUFFIX</VAR
+>'. Suffix for uic generated implementation 
+files.</P
+></DD
+><DT
+><A
+NAME="CV-QT_UISUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>QT_UISUFFIX</VAR
+></DT
+><DD
+><P
+>Default value is '.ui'. Suffix of designer input files.</P
+></DD
+><DT
+><A
+NAME="CV-QTDIR"
+></A
+><VAR
+CLASS="ENVAR"
+>QTDIR</VAR
+></DT
+><DD
+><P
+>The qt tool tries to take this from os.environ.
+It also initializes all QT_*
+construction variables listed below.
+(Note that all paths are constructed
+with python's os.path.join() method,
+but are listed here with the '/' separator
+for easier reading.)
+In addition, the construction environment
+variables <VAR
+CLASS="ENVAR"
+>$CPPPATH</VAR
+>, <VAR
+CLASS="ENVAR"
+>$LIBPATH</VAR
+> and <VAR
+CLASS="ENVAR"
+>$LIBS</VAR
+> may be modified
+and the variables
+PROGEMITTER, SHLIBEMITTER and LIBEMITTER
+are modified. Because the build-performance is affected when using this tool,
+you have to explicitly specify it at Environment creation:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>Environment(tools=['default','qt'])</PRE
+></TD
+></TR
+></TABLE
+><P
+>The qt tool supports the following operations:</P
+><P
+>.B Automatic moc file generation from header files.
+You do not have to specify moc files explicitly, the tool does it for you.
+However, there are a few preconditions to do so: Your header file must have
+the same filebase as your implementation file and must stay in the same
+directory. It must have one of the suffixes .h, .hpp, .H, .hxx, .hh. You 
+can turn off automatic moc file generation by setting QT_AUTOSCAN to 0.
+See also the corresponding builder method
+.B Moc()</P
+><P
+>.B Automatic moc file generation from cxx files.
+As stated in the qt documentation, include the moc file at the end of 
+the cxx file. Note that you have to include the file, which is generated
+by the transformation ${QT_MOCCXXPREFIX}basename${QT_MOCCXXSUFFIX}, by default
+basename.moc. A warning is generated after building the moc file, if you 
+do not include the correct file. If you are using BuildDir, you may 
+need to specify duplicate=1. You can turn off automatic moc file generation 
+by setting QT_AUTOSCAN to 0. See also the corresponding builder method
+.B Moc()</P
+><P
+>.B Automatic handling of .ui files.
+The implementation files generated from .ui files are handled much the same
+as yacc or lex files. Each .ui file given as a source of Program, Library or
+SharedLibrary will generate three files, the declaration file, the 
+implementation file and a moc file. Because there are also generated headers, 
+you may need to specify duplicate=1 in calls to BuildDir. See also the corresponding builder method
+.B Uic()</P
+></DD
+><DT
+><A
+NAME="CV-RANLIB"
+></A
+><VAR
+CLASS="ENVAR"
+>RANLIB</VAR
+></DT
+><DD
+><P
+>The archive indexer.</P
+></DD
+><DT
+><A
+NAME="CV-RANLIBFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>RANLIBFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the archive indexer.</P
+></DD
+><DT
+><A
+NAME="CV-RC"
+></A
+><VAR
+CLASS="ENVAR"
+>RC</VAR
+></DT
+><DD
+><P
+>The resource compiler used by the RES builder.</P
+></DD
+><DT
+><A
+NAME="CV-RCCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>RCCOM</VAR
+></DT
+><DD
+><P
+>The command line used by the RES builder.</P
+></DD
+><DT
+><A
+NAME="CV-RCCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>RCCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when invoking the resource compiler.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$RCCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-RCFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>RCFLAGS</VAR
+></DT
+><DD
+><P
+>The flags passed to the resource compiler by the RES builder.</P
+></DD
+><DT
+><A
+NAME="CV-RCS"
+></A
+><VAR
+CLASS="ENVAR"
+>RCS</VAR
+></DT
+><DD
+><P
+>The RCS executable.
+Note that this variable is not actually used
+for the command to fetch source files from RCS;
+see the
+<VAR
+CLASS="ENVAR"
+>$RCS_CO</VAR
+>
+construction variable, below.</P
+></DD
+><DT
+><A
+NAME="CV-RCS_CO"
+></A
+><VAR
+CLASS="ENVAR"
+>RCS_CO</VAR
+></DT
+><DD
+><P
+>The RCS "checkout" executable,
+used to fetch source files from RCS.</P
+></DD
+><DT
+><A
+NAME="CV-RCS_COCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>RCS_COCOM</VAR
+></DT
+><DD
+><P
+>The command line used to
+fetch (checkout) source files from RCS.</P
+></DD
+><DT
+><A
+NAME="CV-RCS_COCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>RCS_COCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when fetching
+a source file from RCS.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$RCS_COCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-RCS_COFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>RCS_COFLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed to the <VAR
+CLASS="ENVAR"
+>$RCS_CO</VAR
+> command.</P
+></DD
+><DT
+><A
+NAME="CV-RDIRS"
+></A
+><VAR
+CLASS="ENVAR"
+>RDirs</VAR
+></DT
+><DD
+><P
+>A function that converts a file name into a list of Dir instances by
+searching the repositories. </P
+></DD
+><DT
+><A
+NAME="CV-REGSVR"
+></A
+><VAR
+CLASS="ENVAR"
+>REGSVR</VAR
+></DT
+><DD
+><P
+>The program used on WIN32 systems
+to register a newly-built DLL library
+whenever the <TT
+CLASS="FUNCTION"
+>SharedLibrary</TT
+> builder
+is passed a keyword argument of <TT
+CLASS="LITERAL"
+>register=1</TT
+>.</P
+></DD
+><DT
+><A
+NAME="CV-REGSVRCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>REGSVRCOM</VAR
+></DT
+><DD
+><P
+>The command line used on WIN32 systems
+to register a newly-built DLL library
+whenever the <TT
+CLASS="FUNCTION"
+>SharedLibrary</TT
+> builder
+is passed a keyword argument of <TT
+CLASS="LITERAL"
+>register=1</TT
+>.</P
+></DD
+><DT
+><A
+NAME="CV-REGSVRCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>REGSVRCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when registering a newly-built DLL file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$REGSVRCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-REGSVRFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>REGSVRFLAGS</VAR
+></DT
+><DD
+><P
+>Flags passed to the DLL registration program
+on WIN32 systems when a newly-built DLL library is registered.
+By default,
+this includes the <VAR
+CLASS="OPTION"
+>/s</VAR
+>
+that prevents dialog boxes from popping up
+and requiring user attention.</P
+></DD
+><DT
+><A
+NAME="CV-RMIC"
+></A
+><VAR
+CLASS="ENVAR"
+>RMIC</VAR
+></DT
+><DD
+><P
+>The Java RMI stub compiler.</P
+></DD
+><DT
+><A
+NAME="CV-RMICCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>RMICCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile stub
+and skeleton class files
+from Java classes that contain RMI implementations.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$RMICFLAGS</VAR
+> construction variable
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-RMICCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>RMICCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when compiling
+stub and skeleton class files
+from Java classes that contain RMI implementations.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$RMICCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(RMICCOMSTR = "Generating stub/skeleton class files $TARGETS from $SOURCES")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-RMICFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>RMICFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the Java RMI stub compiler.</P
+></DD
+><DT
+><A
+NAME="CV-_RPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>_RPATH</VAR
+></DT
+><DD
+><P
+>An automatically-generated construction variable
+containing the rpath flags to be used when linking
+a program with shared libraries.
+The value of <VAR
+CLASS="ENVAR"
+>$_RPATH</VAR
+> is created
+by appending <VAR
+CLASS="ENVAR"
+>$RPATHPREFIX</VAR
+> and <VAR
+CLASS="ENVAR"
+>$RPATHSUFFIX</VAR
+>
+to the beginning and end
+of each directory in <VAR
+CLASS="ENVAR"
+>$RPATH</VAR
+>.</P
+></DD
+><DT
+><A
+NAME="CV-RPATH"
+></A
+><VAR
+CLASS="ENVAR"
+>RPATH</VAR
+></DT
+><DD
+><P
+>A list of paths to search for shared libraries when running programs.
+Currently only used in the GNU (gnulink),
+IRIX (sgilink) and Sun (sunlink) linkers.
+Ignored on platforms and toolchains that don't support it.
+Note that the paths added to RPATH
+are not transformed by
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+in any way:  if you want an absolute
+path, you must make it absolute yourself.</P
+></DD
+><DT
+><A
+NAME="CV-RPATHPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>RPATHPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used to specify a directory to be searched for
+shared libraries when running programs.
+This will be appended to the beginning of each directory
+in the <VAR
+CLASS="ENVAR"
+>$RPATH</VAR
+> construction variable
+when the <VAR
+CLASS="ENVAR"
+>$_RPATH</VAR
+> variable is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-RPATHSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>RPATHSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used to specify a directory to be searched for
+shared libraries when running programs.
+This will be appended to the end of each directory
+in the <VAR
+CLASS="ENVAR"
+>$RPATH</VAR
+> construction variable
+when the <VAR
+CLASS="ENVAR"
+>$_RPATH</VAR
+> variable is automatically generated.</P
+></DD
+><DT
+><A
+NAME="CV-RPCGEN"
+></A
+><VAR
+CLASS="ENVAR"
+>RPCGEN</VAR
+></DT
+><DD
+><P
+>The RPC protocol compiler.</P
+></DD
+><DT
+><A
+NAME="CV-RPCGENCLIENTFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>RPCGENCLIENTFLAGS</VAR
+></DT
+><DD
+><P
+>Options passed to the RPC protocol compiler
+when generating client side stubs.
+These are in addition to any flags specified in the
+<VAR
+CLASS="ENVAR"
+>$RPCGENFLAGS</VAR
+>
+construction variable.</P
+></DD
+><DT
+><A
+NAME="CV-RPCGENFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>RPCGENFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the RPC protocol compiler.</P
+></DD
+><DT
+><A
+NAME="CV-RPCGENHEADERFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>RPCGENHEADERFLAGS</VAR
+></DT
+><DD
+><P
+>Options passed to the RPC protocol compiler
+when generating a header file.
+These are in addition to any flags specified in the
+<VAR
+CLASS="ENVAR"
+>$RPCGENFLAGS</VAR
+>
+construction variable.</P
+></DD
+><DT
+><A
+NAME="CV-RPCGENSERVICEFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>RPCGENSERVICEFLAGS</VAR
+></DT
+><DD
+><P
+>Options passed to the RPC protocol compiler
+when generating server side stubs.
+These are in addition to any flags specified in the
+<VAR
+CLASS="ENVAR"
+>$RPCGENFLAGS</VAR
+>
+construction variable.</P
+></DD
+><DT
+><A
+NAME="CV-RPCGENXDRFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>RPCGENXDRFLAGS</VAR
+></DT
+><DD
+><P
+>Options passed to the RPC protocol compiler
+when generating XDR routines.
+These are in addition to any flags specified in the
+<VAR
+CLASS="ENVAR"
+>$RPCGENFLAGS</VAR
+>
+construction variable.</P
+></DD
+><DT
+><A
+NAME="CV-SCANNERS"
+></A
+><VAR
+CLASS="ENVAR"
+>SCANNERS</VAR
+></DT
+><DD
+><P
+>A list of the available implicit dependency scanners.
+New file scanners may be added by
+appending to this list,
+although the more flexible approach
+is to associate scanners
+with a specific Builder.
+See the sections "Builder Objects"
+and "Scanner Objects,"
+below, for more information.</P
+></DD
+><DT
+><A
+NAME="CV-SCCS"
+></A
+><VAR
+CLASS="ENVAR"
+>SCCS</VAR
+></DT
+><DD
+><P
+>The SCCS executable.</P
+></DD
+><DT
+><A
+NAME="CV-SCCSCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SCCSCOM</VAR
+></DT
+><DD
+><P
+>The command line used to
+fetch source files from SCCS.</P
+></DD
+><DT
+><A
+NAME="CV-SCCSCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>SCCSCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when fetching
+a source file from a CVS repository.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$SCCSCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-SCCSFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SCCSFLAGS</VAR
+></DT
+><DD
+><P
+>General options that are passed to SCCS.</P
+></DD
+><DT
+><A
+NAME="CV-SCCSGETFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SCCSGETFLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed specifically to the SCCS "get" subcommand.
+This can be set, for example, to
+<VAR
+CLASS="OPTION"
+>-e</VAR
+>
+to check out editable files from SCCS.</P
+></DD
+><DT
+><A
+NAME="CV-SHCC"
+></A
+><VAR
+CLASS="ENVAR"
+>SHCC</VAR
+></DT
+><DD
+><P
+>The C compiler used for generating shared-library objects.</P
+></DD
+><DT
+><A
+NAME="CV-SHCCCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHCCCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a C source file
+to a shared-library object file.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$SHCCFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-SHCCCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>SHCCCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a C source file
+is compiled to a shared object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$SHCCCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(SHCCCOMSTR = "Compiling shared object $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-SHCCFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SHCCFLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed to the C compiler
+to generate shared-library objects.</P
+></DD
+><DT
+><A
+NAME="CV-SHCXX"
+></A
+><VAR
+CLASS="ENVAR"
+>SHCXX</VAR
+></DT
+><DD
+><P
+>The C++ compiler used for generating shared-library objects.</P
+></DD
+><DT
+><A
+NAME="CV-SHCXXCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHCXXCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a C++ source file
+to a shared-library object file.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$SHCXXFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-SHCXXCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>SHCXXCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a C++ source file
+is compiled to a shared object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$SHCXXCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(SHCXXCOMSTR = "Compiling shared object $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-SHCXXFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SHCXXFLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed to the C++ compiler
+to generate shared-library objects.</P
+></DD
+><DT
+><A
+NAME="CV-SHELL"
+></A
+><VAR
+CLASS="ENVAR"
+>SHELL</VAR
+></DT
+><DD
+><P
+>A string naming the shell program that will be passed to the 
+<VAR
+CLASS="ENVAR"
+>$SPAWN</VAR
+>
+function. 
+See the 
+<VAR
+CLASS="ENVAR"
+>$SPAWN</VAR
+>
+construction variable for more information.</P
+></DD
+><DT
+><A
+NAME="CV-SHF77"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF77</VAR
+></DT
+><DD
+><P
+>The Fortran 77 compiler used for generating shared-library objects.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRAN</VAR
+> variable,
+which specifies the default Fortran compiler
+for all Fortran versions.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF77</VAR
+> if you need to use a specific compiler
+or compiler version for Fortran 77 files.</P
+></DD
+><DT
+><A
+NAME="CV-SHF77COM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF77COM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 77 source file
+to a shared-library object file.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF77COM</VAR
+> if you need to use a specific
+command line for Fortran 77 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRANCOM</VAR
+> variable,
+which specifies the default command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-SHF77COMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF77COMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a Fortran 77 source file
+is compiled to a shared-library object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$SHF77COM</VAR
+> or <VAR
+CLASS="ENVAR"
+>$SHFORTRANCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-SHF77FLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF77FLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed to the Fortran 77 compiler
+to generated shared-library objects.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF77FLAGS</VAR
+> if you need to define specific
+user options for Fortran 77 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRANFLAGS</VAR
+> variable,
+which specifies the user-specified options
+passed to the default Fortran compiler
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-SHF77PPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF77PPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 77 source file to a
+shared-library object file
+after first running the file through the C preprocessor.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$SHF77FLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF77PPCOM</VAR
+> if you need to use a specific
+C-preprocessor command line for Fortran 77 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRANPPCOM</VAR
+> variable,
+which specifies the default C-preprocessor command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-SHF90"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF90</VAR
+></DT
+><DD
+><P
+>The Fortran 90 compiler used for generating shared-library objects.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRAN</VAR
+> variable,
+which specifies the default Fortran compiler
+for all Fortran versions.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF90</VAR
+> if you need to use a specific compiler
+or compiler version for Fortran 90 files.</P
+></DD
+><DT
+><A
+NAME="CV-SHF90COM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF90COM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 90 source file
+to a shared-library object file.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF90COM</VAR
+> if you need to use a specific
+command line for Fortran 90 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRANCOM</VAR
+> variable,
+which specifies the default command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-SHF90COMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF90COMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a Fortran 90 source file
+is compiled to a shared-library object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$SHF90COM</VAR
+> or <VAR
+CLASS="ENVAR"
+>$SHFORTRANCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-SHF90FLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF90FLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed to the Fortran 90 compiler
+to generated shared-library objects.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF90FLAGS</VAR
+> if you need to define specific
+user options for Fortran 90 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRANFLAGS</VAR
+> variable,
+which specifies the user-specified options
+passed to the default Fortran compiler
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-SHF90PPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF90PPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 90 source file to a
+shared-library object file
+after first running the file through the C preprocessor.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$SHF90FLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF90PPCOM</VAR
+> if you need to use a specific
+C-preprocessor command line for Fortran 90 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRANPPCOM</VAR
+> variable,
+which specifies the default C-preprocessor command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-SHF95"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF95</VAR
+></DT
+><DD
+><P
+>The Fortran 95 compiler used for generating shared-library objects.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRAN</VAR
+> variable,
+which specifies the default Fortran compiler
+for all Fortran versions.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF95</VAR
+> if you need to use a specific compiler
+or compiler version for Fortran 95 files.</P
+></DD
+><DT
+><A
+NAME="CV-SHF95COM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF95COM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 95 source file
+to a shared-library object file.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF95COM</VAR
+> if you need to use a specific
+command line for Fortran 95 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRANCOM</VAR
+> variable,
+which specifies the default command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-SHF95COMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF95COMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a Fortran 95 source file
+is compiled to a shared-library object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$SHF95COM</VAR
+> or <VAR
+CLASS="ENVAR"
+>$SHFORTRANCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-SHF95FLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF95FLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed to the Fortran 95 compiler
+to generated shared-library objects.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF95FLAGS</VAR
+> if you need to define specific
+user options for Fortran 95 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRANFLAGS</VAR
+> variable,
+which specifies the user-specified options
+passed to the default Fortran compiler
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-SHF95PPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHF95PPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran 95 source file to a
+shared-library object file
+after first running the file through the C preprocessor.
+Any options specified in the <VAR
+CLASS="ENVAR"
+>$SHF95FLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.
+You only need to set <VAR
+CLASS="ENVAR"
+>$SHF95PPCOM</VAR
+> if you need to use a specific
+C-preprocessor command line for Fortran 95 files.
+You should normally set the <VAR
+CLASS="ENVAR"
+>$SHFORTRANPPCOM</VAR
+> variable,
+which specifies the default C-preprocessor command line
+for all Fortran versions.</P
+></DD
+><DT
+><A
+NAME="CV-SHFORTRAN"
+></A
+><VAR
+CLASS="ENVAR"
+>SHFORTRAN</VAR
+></DT
+><DD
+><P
+>The default Fortran compiler used for generating shared-library objects.</P
+></DD
+><DT
+><A
+NAME="CV-SHFORTRANCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHFORTRANCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran source file
+to a shared-library object file.</P
+></DD
+><DT
+><A
+NAME="CV-SHFORTRANCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>SHFORTRANCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when a Fortran source file
+is compiled to a shared-library object file.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$SHFORTRANCOM</VAR
+>
+(the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-SHFORTRANFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SHFORTRANFLAGS</VAR
+></DT
+><DD
+><P
+>Options that are passed to the Fortran compiler
+to generate shared-library objects.</P
+></DD
+><DT
+><A
+NAME="CV-SHFORTRANPPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHFORTRANPPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to compile a Fortran source file to a
+shared-library object file
+after first running the file through the C preprocessor.
+Any options specified
+in the <VAR
+CLASS="ENVAR"
+>$SHFORTRANFLAGS</VAR
+> and <VAR
+CLASS="ENVAR"
+>$CPPFLAGS</VAR
+> construction variables
+are included on this command line.</P
+></DD
+><DT
+><A
+NAME="CV-SHLIBPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>SHLIBPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for shared library file names.</P
+></DD
+><DT
+><A
+NAME="CV-SHLIBSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>SHLIBSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for shared library file names.</P
+></DD
+><DT
+><A
+NAME="CV-SHLINK"
+></A
+><VAR
+CLASS="ENVAR"
+>SHLINK</VAR
+></DT
+><DD
+><P
+>The linker for programs that use shared libraries.</P
+></DD
+><DT
+><A
+NAME="CV-SHLINKCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SHLINKCOM</VAR
+></DT
+><DD
+><P
+>The command line used to link programs using shared libaries.</P
+></DD
+><DT
+><A
+NAME="CV-SHLINKCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>SHLINKCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when programs using shared libraries are linked.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$SHLINKCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(SHLINKCOMSTR = "Linking shared $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-SHLINKFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SHLINKFLAGS</VAR
+></DT
+><DD
+><P
+>General user options passed to the linker for programs using shared libraries.
+Note that this variable should
+<I
+CLASS="EMPHASIS"
+>not</I
+>
+contain
+<VAR
+CLASS="OPTION"
+>-l</VAR
+>
+(or similar) options for linking with the libraries listed in <VAR
+CLASS="ENVAR"
+>$LIBS</VAR
+>,
+nor
+<VAR
+CLASS="OPTION"
+>-L</VAR
+>
+(or similar) include search path options
+that scons generates automatically from <VAR
+CLASS="ENVAR"
+>$LIBPATH</VAR
+>.
+See
+<VAR
+CLASS="ENVAR"
+>$_LIBFLAGS</VAR
+>
+above,
+for the variable that expands to library-link options,
+and
+<VAR
+CLASS="ENVAR"
+>$_LIBDIRFLAGS</VAR
+>
+above,
+for the variable that expands to library search path options.</P
+></DD
+><DT
+><A
+NAME="CV-SHOBJPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>SHOBJPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for shared object file names.</P
+></DD
+><DT
+><A
+NAME="CV-SHOBJSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>SHOBJSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for shared object file names.</P
+></DD
+><DT
+><A
+NAME="CV-SOURCE"
+></A
+><VAR
+CLASS="ENVAR"
+>SOURCE</VAR
+></DT
+><DD
+><P
+>A reserved variable name
+that may not be set or used in a construction environment.
+(See "Variable Substitution," below.)</P
+></DD
+><DT
+><A
+NAME="CV-SOURCES"
+></A
+><VAR
+CLASS="ENVAR"
+>SOURCES</VAR
+></DT
+><DD
+><P
+>A reserved variable name
+that may not be set or used in a construction environment.
+(See "Variable Substitution," below.)</P
+></DD
+><DT
+><A
+NAME="CV-SPAWN"
+></A
+><VAR
+CLASS="ENVAR"
+>SPAWN</VAR
+></DT
+><DD
+><P
+>A command interpreter function that will be called to execute command line
+strings. The function must expect the following arguments:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>def spawn(shell, escape, cmd, args, env):</PRE
+></TD
+></TR
+></TABLE
+><P
+><VAR
+CLASS="VARNAME"
+>sh</VAR
+>
+is a string naming the shell program to use.
+<VAR
+CLASS="VARNAME"
+>escape</VAR
+>
+is a function that can be called to escape shell special characters in
+the command line. 
+<VAR
+CLASS="VARNAME"
+>cmd</VAR
+>
+is the path to the command to be executed.
+<VAR
+CLASS="VARNAME"
+>args</VAR
+>
+is the arguments to the command.
+<VAR
+CLASS="VARNAME"
+>env</VAR
+>
+is a dictionary of the environment variables
+in which the command should be executed.</P
+></DD
+><DT
+><A
+NAME="CV-SWIG"
+></A
+><VAR
+CLASS="ENVAR"
+>SWIG</VAR
+></DT
+><DD
+><P
+>The scripting language wrapper and interface generator.</P
+></DD
+><DT
+><A
+NAME="CV-SWIGCFILESUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>SWIGCFILESUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix that will be used for intermediate C
+source files generated by
+the scripting language wrapper and interface generator.
+The default value is
+<TT
+CLASS="FILENAME"
+>_wrap</TT
+><VAR
+CLASS="ENVAR"
+>$CFILESUFFIX</VAR
+>.
+By default, this value is used whenever the
+<VAR
+CLASS="OPTION"
+>-c++</VAR
+>
+option is
+<I
+CLASS="EMPHASIS"
+>not</I
+>
+specified as part of the
+<VAR
+CLASS="ENVAR"
+>$SWIGFLAGS</VAR
+>
+construction variable.</P
+></DD
+><DT
+><A
+NAME="CV-SWIGCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>SWIGCOM</VAR
+></DT
+><DD
+><P
+>The command line used to call
+the scripting language wrapper and interface generator.</P
+></DD
+><DT
+><A
+NAME="CV-SWIGCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>SWIGCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when calling
+the scripting language wrapper and interface generator.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$SWIGCOM</VAR
+> (the command line) is displayed.</P
+></DD
+><DT
+><A
+NAME="CV-SWIGCXXFILESUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>SWIGCXXFILESUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix that will be used for intermediate C++
+source files generated by
+the scripting language wrapper and interface generator.
+The default value is
+<TT
+CLASS="FILENAME"
+>_wrap</TT
+><VAR
+CLASS="ENVAR"
+>$CFILESUFFIX</VAR
+>.
+By default, this value is used whenever the
+<TT
+CLASS="FILENAME"
+>-c++</TT
+>
+option is specified as part of the
+<VAR
+CLASS="ENVAR"
+>$SWIGFLAGS</VAR
+>
+construction variable.</P
+></DD
+><DT
+><A
+NAME="CV-SWIGFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>SWIGFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to
+the scripting language wrapper and interface generator.
+This is where you should set
+<VAR
+CLASS="OPTION"
+>-python</VAR
+>,
+<VAR
+CLASS="OPTION"
+>-perl5</VAR
+>,
+<VAR
+CLASS="OPTION"
+>-tcl</VAR
+>,
+or whatever other options you want to specify to SWIG.
+If you set the
+<VAR
+CLASS="OPTION"
+>-c++</VAR
+>
+option in this variable,
+<TT
+CLASS="APPLICATION"
+>scons</TT
+>
+will, by default,
+generate a C++ intermediate source file
+with the extension that is specified as the
+<VAR
+CLASS="ENVAR"
+>$CXXFILESUFFIX</VAR
+>
+variable.</P
+></DD
+><DT
+><A
+NAME="CV-TAR"
+></A
+><VAR
+CLASS="ENVAR"
+>TAR</VAR
+></DT
+><DD
+><P
+>The tar archiver.</P
+></DD
+><DT
+><A
+NAME="CV-TARCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>TARCOM</VAR
+></DT
+><DD
+><P
+>The command line used to call the tar archiver.</P
+></DD
+><DT
+><A
+NAME="CV-TARCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>TARCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when archiving files
+using the tar archiver.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$TARCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(TARCOMSTR = "Archiving $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-TARFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>TARFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the tar archiver.</P
+></DD
+><DT
+><A
+NAME="CV-TARGET"
+></A
+><VAR
+CLASS="ENVAR"
+>TARGET</VAR
+></DT
+><DD
+><P
+>A reserved variable name
+that may not be set or used in a construction environment.
+(See "Variable Substitution," below.)</P
+></DD
+><DT
+><A
+NAME="CV-TARGETS"
+></A
+><VAR
+CLASS="ENVAR"
+>TARGETS</VAR
+></DT
+><DD
+><P
+>A reserved variable name
+that may not be set or used in a construction environment.
+(See "Variable Substitution," below.)</P
+></DD
+><DT
+><A
+NAME="CV-TARSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>TARSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for tar file names.</P
+></DD
+><DT
+><A
+NAME="CV-TEMPFILEPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>TEMPFILEPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix for a temporary file used
+to execute lines longer than $MAXLINELENGTH.
+The default is '@'.
+This may be set for toolchains that use other values,
+such as '-@' for the diab compiler
+or '-via' for ARM toolchain.</P
+></DD
+><DT
+><A
+NAME="CV-TEX"
+></A
+><VAR
+CLASS="ENVAR"
+>TEX</VAR
+></DT
+><DD
+><P
+>The TeX formatter and typesetter.</P
+></DD
+><DT
+><A
+NAME="CV-TEXCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>TEXCOM</VAR
+></DT
+><DD
+><P
+>The command line used to call the TeX formatter and typesetter.</P
+></DD
+><DT
+><A
+NAME="CV-TEXCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>TEXCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when calling
+the TeX formatter and typesetter.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$TEXCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(TEXCOMSTR = "Building $TARGET from TeX input $SOURCES")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-TEXFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>TEXFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the TeX formatter and typesetter.</P
+></DD
+><DT
+><A
+NAME="CV-TOOLS"
+></A
+><VAR
+CLASS="ENVAR"
+>TOOLS</VAR
+></DT
+><DD
+><P
+>A list of the names of the Tool specifications
+that are part of this construction environment.</P
+></DD
+><DT
+><A
+NAME="CV-WIN32_INSERT_DEF"
+></A
+><VAR
+CLASS="ENVAR"
+>WIN32_INSERT_DEF</VAR
+></DT
+><DD
+><P
+>When this is set to true,
+a library build of a WIN32 shared library (.dll file)
+will also build a corresponding .def file at the same time,
+if a .def file is not already listed as a build target.
+The default is 0 (do not build a .def file).</P
+></DD
+><DT
+><A
+NAME="CV-WIN32DEFPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>WIN32DEFPREFIX</VAR
+></DT
+><DD
+><P
+>The prefix used for WIN32 .def file names.</P
+></DD
+><DT
+><A
+NAME="CV-WIN32DEFSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>WIN32DEFSUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix used for WIN32 .def file names.</P
+></DD
+><DT
+><A
+NAME="CV-WIN32EXPPREFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>WIN32EXPPREFIX</VAR
+></DT
+><DD
+><P
+>XXX The prefix used for WIN32 .def file names.</P
+></DD
+><DT
+><A
+NAME="CV-WIN32EXPSUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>WIN32EXPSUFFIX</VAR
+></DT
+><DD
+><P
+>XXX The suffix used for WIN32 .def file names.</P
+></DD
+><DT
+><A
+NAME="CV-YACC"
+></A
+><VAR
+CLASS="ENVAR"
+>YACC</VAR
+></DT
+><DD
+><P
+>The parser generator.</P
+></DD
+><DT
+><A
+NAME="CV-YACCCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>YACCCOM</VAR
+></DT
+><DD
+><P
+>The command line used to call the parser generator
+to generate a source file.</P
+></DD
+><DT
+><A
+NAME="CV-YACCCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>YACCCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when generating a source file
+using the parser generator.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$YACCCOM</VAR
+> (the command line) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(YACCCOMSTR = "Yacc'ing $TARGET from $SOURCES")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-YACCFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>YACCFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the parser generator.
+If <VAR
+CLASS="ENVAR"
+>$YACCFLAGS</VAR
+> contains a <VAR
+CLASS="OPTION"
+>-d</VAR
+> option,
+SCons assumes that the call will also create a .h file
+(if the yacc source file ends in a .y suffix)
+or a .hpp file
+(if the yacc source file ends in a .yy suffix)</P
+></DD
+><DT
+><A
+NAME="CV-YACCHFILESUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>YACCHFILESUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix of the C
+header file generated by the parser generator
+when the
+<VAR
+CLASS="OPTION"
+>-d</VAR
+>
+option is used.
+Note that setting this variable does not cause
+the parser generator to generate a header
+file with the specified suffix,
+it exists to allow you to specify
+what suffix the parser generator will use of its own accord.
+The default value is
+<TT
+CLASS="FILENAME"
+>.h</TT
+>.</P
+></DD
+><DT
+><A
+NAME="CV-YACCHXXFILESUFFIX"
+></A
+><VAR
+CLASS="ENVAR"
+>YACCHXXFILESUFFIX</VAR
+></DT
+><DD
+><P
+>The suffix of the C++
+header file generated by the parser generator
+when the
+<VAR
+CLASS="OPTION"
+>-d</VAR
+>
+option is used.
+Note that setting this variable does not cause
+the parser generator to generate a header
+file with the specified suffix,
+it exists to allow you to specify
+what suffix the parser generator will use of its own accord.
+The default value is
+<TT
+CLASS="FILENAME"
+>.hpp</TT
+>.</P
+></DD
+><DT
+><A
+NAME="CV-ZIP"
+></A
+><VAR
+CLASS="ENVAR"
+>ZIP</VAR
+></DT
+><DD
+><P
+>The zip compression and file packaging utility.</P
+></DD
+><DT
+><A
+NAME="CV-ZIPCOM"
+></A
+><VAR
+CLASS="ENVAR"
+>ZIPCOM</VAR
+></DT
+><DD
+><P
+>The command line used to call the zip utility,
+or the internal Python function used to create a
+zip archive.</P
+></DD
+><DT
+><A
+NAME="CV-ZIPCOMPRESSION"
+></A
+><VAR
+CLASS="ENVAR"
+>ZIPCOMPRESSION</VAR
+></DT
+><DD
+><P
+>The
+<VAR
+CLASS="VARNAME"
+>compression</VAR
+>
+flag
+from the Python
+<TT
+CLASS="FILENAME"
+>zipfile</TT
+>
+module used by the internal Python function
+to control whether the zip archive
+is compressed or not.
+The default value is
+<VAR
+CLASS="VARNAME"
+>zipfile.ZIP_DEFLATED</VAR
+>,
+which creates a compressed zip archive.
+This value has no effect when using Python 1.5.2
+or if the
+<VAR
+CLASS="VARNAME"
+>zipfile</VAR
+>
+module is otherwise unavailable.</P
+></DD
+><DT
+><A
+NAME="CV-ZIPCOMSTR"
+></A
+><VAR
+CLASS="ENVAR"
+>ZIPCOMSTR</VAR
+></DT
+><DD
+><P
+>The string displayed when archiving files
+using the zip utility.
+If this is not set, then <VAR
+CLASS="ENVAR"
+>$ZIPCOM</VAR
+>
+(the command line or internal Python function) is displayed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="90%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>env = Environment(ZIPCOMSTR = "Zipping $TARGET")</PRE
+></TD
+></TR
+></TABLE
+></DD
+><DT
+><A
+NAME="CV-ZIPFLAGS"
+></A
+><VAR
+CLASS="ENVAR"
+>ZIPFLAGS</VAR
+></DT
+><DD
+><P
+>General options passed to the zip utility.</P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x3037.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="a5334.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>What's in That Construction Environment?  the <TT
+CLASS="FUNCTION"
+>Dump</TT
+> Method</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Builders</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

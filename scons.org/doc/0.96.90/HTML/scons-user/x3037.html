@@ -1,0 +1,472 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>What's in That Construction Environment?  the Dump Method</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.90"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Troubleshooting"
+HREF="c2987.html"><LINK
+REL="PREVIOUS"
+TITLE="Troubleshooting"
+HREF="c2987.html"><LINK
+REL="NEXT"
+TITLE="Construction Variables"
+HREF="a3061.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.90</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c2987.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Troubleshooting</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="a3061.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN3037"
+></A
+>What's in That Construction Environment?  the <TT
+CLASS="FUNCTION"
+>Dump</TT
+> Method</H1
+><P
+>&#13;    When you create a construction environment,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> populates it
+    with construction variables that are set up
+    for various compilers, linkers and utilities
+    that it finds on your system.
+    Although this is usually helpful and what you want,
+    it might be frustrating if <TT
+CLASS="APPLICATION"
+>SCons</TT
+>
+    doesn't set certain variables that you
+    expect to be sit.
+    In situations like this,
+    it's sometimes helpful to use the
+    construction environment <TT
+CLASS="FUNCTION"
+>Dump</TT
+> method
+    to print all or some of
+    the construction variables.
+    Note that the <TT
+CLASS="FUNCTION"
+>Dump</TT
+> method
+    <I
+CLASS="EMPHASIS"
+>returns</I
+>
+    the representation of the variables
+    in the environment
+    for you to print (or otherwise manipulate):
+
+    </P
+><P
+>&#13;    On a POSIX system with gcc installed,
+    this might generate:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+>
+      scons: Reading SConscript files ...
+      { 'BUILDERS': {},
+        'CPPSUFFIXES': [ '.c',
+                         '.C',
+                         '.cxx',
+                         '.cpp',
+                         '.c++',
+                         '.cc',
+                         '.h',
+                         '.H',
+                         '.hxx',
+                         '.hpp',
+                         '.hh',
+                         '.F',
+                         '.fpp',
+                         '.FPP',
+                         '.S',
+                         '.spp',
+                         '.SPP'],
+        'DSUFFIXES': ['.d'],
+        'Dir': &#60;SCons.Defaults.Variable_Method_Caller instance at 0x829dcb4&#62;,
+        'ENV': {'PATH': '/usr/local/bin:/bin:/usr/bin'},
+        'ESCAPE': &#60;function escape at 0x837d2a4&#62;,
+        'File': &#60;SCons.Defaults.Variable_Method_Caller instance at 0x829e0fc&#62;,
+        'IDLSUFFIXES': ['.idl', '.IDL'],
+        'INSTALL': &#60;function copyFunc at 0x829db9c&#62;,
+        'LIBPREFIX': 'lib',
+        'LIBPREFIXES': '$LIBPREFIX',
+        'LIBSUFFIX': '.a',
+        'LIBSUFFIXES': ['$LIBSUFFIX', '$SHLIBSUFFIX'],
+        'OBJPREFIX': '',
+        'OBJSUFFIX': '.o',
+        'PDFPREFIX': '',
+        'PDFSUFFIX': '.pdf',
+        'PLATFORM': 'posix',
+        'PROGPREFIX': '',
+        'PROGSUFFIX': '',
+        'PSPAWN': &#60;function piped_env_spawn at 0x837d384&#62;,
+        'PSPREFIX': '',
+        'PSSUFFIX': '.ps',
+        'RDirs': &#60;SCons.Defaults.Variable_Method_Caller instance at 0x829e46c&#62;,
+        'SCANNERS': [],
+        'SHELL': 'sh',
+        'SHLIBPREFIX': '$LIBPREFIX',
+        'SHLIBSUFFIX': '.so',
+        'SHOBJPREFIX': '$OBJPREFIX',
+        'SHOBJSUFFIX': '$OBJSUFFIX',
+        'SPAWN': &#60;function spawnvpe_spawn at 0x8377fdc&#62;,
+        'TEMPFILE': &#60;class SCons.Defaults.NullCmdGenerator at 0x829ddec&#62;,
+        'TOOLS': [],
+        '_CPPDEFFLAGS': '${_defines(CPPDEFPREFIX, CPPDEFINES, CPPDEFSUFFIX, __env__)}',
+        '_CPPINCFLAGS': '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, RDirs, TARGET)} $)',
+        '_LIBDIRFLAGS': '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, RDirs, TARGET)} $)',
+        '_LIBFLAGS': '${_concat(LIBLINKPREFIX, LIBS, LIBLINKSUFFIX, __env__)}',
+        '__RPATH': '$_RPATH',
+        '_concat': &#60;function _concat at 0x829dc0c&#62;,
+        '_defines': &#60;function _defines at 0x829dc7c&#62;,
+        '_stripixes': &#60;function _stripixes at 0x829dc44&#62;}
+      scons: done reading SConscript files.
+      scons: Building targets ...
+      scons: `.' is up to date.
+      scons: done building targets.
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    On a Windows system with Visual C++
+    the output might look like:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      C:\&#62;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+>
+      scons: Reading SConscript files ...
+      { 'BUILDERS': {'Object': &#60;SCons.Memoize.MultiStepBuilder object at 0x83493e4&#62;, 'SharedObject': &#60;SCons.Memoize.MultiStepBuilder object at 0x8349fec&#62;, 'StaticObject': &#60;SCons.Memoize.MultiStepBuilder object at 0x83493e4&#62;, 'PCH': &#60;SCons.Memoize.BuilderBase object at 0x83418cc&#62;, 'RES': &#60;SCons.Memoize.BuilderBase object at 0x8367cec&#62;},
+        'CC': 'cl',
+        'CCCOM': &#60;SCons.Memoize.FunctionAction object at 0x8340454&#62;,
+        'CCCOMFLAGS': '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS /c $SOURCES /Fo$TARGET $CCPCHFLAGS $CCPDBFLAGS',
+        'CCFLAGS': ['/nologo'],
+        'CCPCHFLAGS': ['${(PCH and "/Yu%s /Fp%s"%(PCHSTOP or "",File(PCH))) or ""}'],
+        'CCPDBFLAGS': ['${(PDB and "/Z7") or ""}'],
+        'CFILESUFFIX': '.c',
+        'CPPDEFPREFIX': '/D',
+        'CPPDEFSUFFIX': '',
+        'CPPSUFFIXES': [ '.c',
+                         '.C',
+                         '.cxx',
+                         '.cpp',
+                         '.c++',
+                         '.cc',
+                         '.h',
+                         '.H',
+                         '.hxx',
+                         '.hpp',
+                         '.hh',
+                         '.F',
+                         '.fpp',
+                         '.FPP',
+                         '.S',
+                         '.spp',
+                         '.SPP'],
+        'CXX': '$CC',
+        'CXXCOM': '$CXX $CXXFLAGS $CCCOMFLAGS',
+        'CXXFILESUFFIX': '.cc',
+        'CXXFLAGS': ['$CCFLAGS', '$(', '/TP', '$)'],
+        'DSUFFIXES': ['.d'],
+        'Dir': &#60;SCons.Defaults.Variable_Method_Caller instance at 0x829dcb4&#62;,
+        'ENV': { 'INCLUDE': 'C:\\Program Files\\Microsoft Visual Studio/VC98\\include',
+                 'LIB': 'C:\\Program Files\\Microsoft Visual Studio/VC98\\lib',
+                 'PATH': 'C:\\Program Files\\Microsoft Visual Studio\\Common\\tools\\WIN95;C:\\Program Files\\Microsoft Visual Studio\\Common\\MSDev98\\bin;C:\\Program Files\\Microsoft Visual Studio\\Common\\tools;C:\\Program Files\\Microsoft Visual Studio/VC98\\bin',
+                 'PATHEXT': '.COM;.EXE;.BAT;.CMD'},
+        'ESCAPE': &#60;function &#60;lambda&#62; at 0x82339ec&#62;,
+        'File': &#60;SCons.Defaults.Variable_Method_Caller instance at 0x829e0fc&#62;,
+        'IDLSUFFIXES': ['.idl', '.IDL'],
+        'INCPREFIX': '/I',
+        'INCSUFFIX': '',
+        'INSTALL': &#60;function copyFunc at 0x829db9c&#62;,
+        'LIBPREFIX': '',
+        'LIBPREFIXES': ['$LIBPREFIX'],
+        'LIBSUFFIX': '.lib',
+        'LIBSUFFIXES': ['$LIBSUFFIX'],
+        'MAXLINELENGTH': 2048,
+        'MSVS': {'VERSION': '6.0', 'VERSIONS': ['6.0']},
+        'MSVS_VERSION': '6.0',
+        'OBJPREFIX': '',
+        'OBJSUFFIX': '.obj',
+        'PCHCOM': '$CXX $CXXFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS /c $SOURCES /Fo${TARGETS[1]} /Yc$PCHSTOP /Fp${TARGETS[0]} $CCPDBFLAGS $PCHPDBFLAGS',
+        'PCHPDBFLAGS': ['${(PDB and "/Yd") or ""}'],
+        'PDFPREFIX': '',
+        'PDFSUFFIX': '.pdf',
+        'PLATFORM': 'win32',
+        'PROGPREFIX': '',
+        'PROGSUFFIX': '.exe',
+        'PSPAWN': &#60;function piped_spawn at 0x8372bc4&#62;,
+        'PSPREFIX': '',
+        'PSSUFFIX': '.ps',
+        'RC': 'rc',
+        'RCCOM': '$RC $_CPPDEFFLAGS $_CPPINCFLAGS $RCFLAGS /fo$TARGET $SOURCES',
+        'RCFLAGS': [],
+        'RDirs': &#60;SCons.Defaults.Variable_Method_Caller instance at 0x829e46c&#62;,
+        'SCANNERS': [],
+        'SHCC': '$CC',
+        'SHCCCOM': &#60;SCons.Memoize.FunctionAction object at 0x83494bc&#62;,
+        'SHCCFLAGS': ['$CCFLAGS'],
+        'SHCXX': '$CXX',
+        'SHCXXCOM': '$SHCXX $SHCXXFLAGS $CCCOMFLAGS',
+        'SHCXXFLAGS': ['$CXXFLAGS'],
+        'SHELL': None,
+        'SHLIBPREFIX': '',
+        'SHLIBSUFFIX': '.dll',
+        'SHOBJPREFIX': '$OBJPREFIX',
+        'SHOBJSUFFIX': '$OBJSUFFIX',
+        'SPAWN': &#60;function spawn at 0x8374c34&#62;,
+        'STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME': 1,
+        'TEMPFILE': &#60;class SCons.Platform.win32.TempFileMunge at 0x835edc4&#62;,
+        'TOOLS': ['msvc'],
+        '_CPPDEFFLAGS': '${_defines(CPPDEFPREFIX, CPPDEFINES, CPPDEFSUFFIX, __env__)}',
+        '_CPPINCFLAGS': '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, RDirs, TARGET)} $)',
+        '_LIBDIRFLAGS': '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, RDirs, TARGET)} $)',
+        '_LIBFLAGS': '${_concat(LIBLINKPREFIX, LIBS, LIBLINKSUFFIX, __env__)}',
+        '_concat': &#60;function _concat at 0x829dc0c&#62;,
+        '_defines': &#60;function _defines at 0x829dc7c&#62;,
+        '_stripixes': &#60;function _stripixes at 0x829dc44&#62;}
+      scons: done reading SConscript files.
+      scons: Building targets ...
+      scons: `.' is up to date.
+      scons: done building targets.
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    The construction environments in these examples have
+    actually been restricted to just gcc and Visual C++,
+    respectively.
+    In a real-life situation,
+    the construction environments will
+    likely contain a great many more variables.
+
+    </P
+><P
+>&#13;    To make it easier to see just what you're
+    interested in,
+    the <TT
+CLASS="FUNCTION"
+>Dump</TT
+> method allows you to
+    specify a specific constrcution variable
+    that you want to disply.
+    For example,
+    it's not unusual to want to verify
+    the external environment used to execute build commands,
+    to make sure that the PATH and other
+    environment variables are set up the way they should be.
+    You can do this as follows:
+
+    </P
+><P
+>&#13;    Which might display the following when executed on a POSIX system:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+>
+      scons: Reading SConscript files ...
+      {'PATH': '/usr/local/bin:/bin:/usr/bin'}
+      scons: done reading SConscript files.
+      scons: Building targets ...
+      scons: `.' is up to date.
+      scons: done building targets.
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    And the following when executed on a Windows system:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      C:\&#62;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+>
+      scons: Reading SConscript files ...
+      { 'INCLUDE': 'C:\\Program Files\\Microsoft Visual Studio/VC98\\include',
+        'LIB': 'C:\\Program Files\\Microsoft Visual Studio/VC98\\lib',
+        'PATH': 'C:\\Program Files\\Microsoft Visual Studio\\Common\\tools\\WIN95;C:\\Program Files\\Microsoft Visual Studio\\Common\\MSDev98\\bin;C:\\Program Files\\Microsoft Visual Studio\\Common\\tools;C:\\Program Files\\Microsoft Visual Studio/VC98\\bin',
+        'PATHEXT': '.COM;.EXE;.BAT;.CMD'}
+      scons: done reading SConscript files.
+      scons: Building targets ...
+      scons: `.' is up to date.
+      scons: done building targets.
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c2987.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="a3061.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Troubleshooting</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c2987.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Construction Variables</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

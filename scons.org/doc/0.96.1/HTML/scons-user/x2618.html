@@ -1,0 +1,305 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>How SCons Handles Java Dependencies</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.1"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Java Builds"
+HREF="c2590.html"><LINK
+REL="PREVIOUS"
+TITLE="Java Builds"
+HREF="c2590.html"><LINK
+REL="NEXT"
+TITLE="Building Java Archive (.jar) Files:  the Jar Builder"
+HREF="x2645.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c2590.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Java Builds</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x2645.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN2618"
+></A
+>How <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Handles Java Dependencies</H1
+><P
+>&#13;    In addition to searching the source directory for
+    <TT
+CLASS="FILENAME"
+>.java</TT
+> files,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> actually runs the <TT
+CLASS="FILENAME"
+>.java</TT
+> files
+    through a stripped-down Java parser that figures out
+    what classes are defined.
+    In other words, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> knows,
+    without you having to tell it,
+    what <TT
+CLASS="FILENAME"
+>.class</TT
+> files
+    will be produced by the <TT
+CLASS="APPLICATION"
+>javac</TT
+> call.
+    So our one-liner example from the preceding section:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      Java('classes', 'src')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Will not only tell you reliably
+    that the <TT
+CLASS="FILENAME"
+>.class</TT
+> files
+    in the <TT
+CLASS="FILENAME"
+>classes</TT
+> subdirectory 
+    are up-to-date:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+      javac -d classes -sourcepath src src/Example1.java src/Example2.java src/Example3.java
+      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q classes</B
+></TT
+>
+      scons: `classes' is up to date.
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    But it will also remove all of the generated
+    <TT
+CLASS="FILENAME"
+>.class</TT
+> files,
+    even for inner classes,
+    without you having to specify them manually.
+    For example, if our
+    <TT
+CLASS="FILENAME"
+>Example1.java</TT
+>
+    and
+    <TT
+CLASS="FILENAME"
+>Example3.java</TT
+>
+    files both define additional classes,
+    and the class defined in <TT
+CLASS="FILENAME"
+>Example2.java</TT
+>
+    has an inner class,
+    running <TT
+CLASS="USERINPUT"
+><B
+>scons -c</B
+></TT
+>
+    will clean up all of those <TT
+CLASS="FILENAME"
+>.class</TT
+> files
+    as well:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+      javac -d classes -sourcepath src src/Example1.java src/Example2.java src/Example3.java
+      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q -c classes</B
+></TT
+>
+      Removed classes/Example1.class
+      Removed classes/AdditionalClass1.class
+      Removed classes/Example2$Inner2.class
+      Removed classes/Example2.class
+      Removed classes/Example3.class
+      Removed classes/AdditionalClass3.class
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c2590.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x2645.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Java Builds</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c2590.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Building Java Archive (<TT
+CLASS="FILENAME"
+>.jar</TT
+>) Files:  the <TT
+CLASS="FUNCTION"
+>Jar</TT
+> Builder</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

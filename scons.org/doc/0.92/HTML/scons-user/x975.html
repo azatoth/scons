@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Telling SCons to Not Duplicate Source Files in the Build Directory</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.92"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Separating Source and Build Directories"
+HREF="c926.html"><LINK
+REL="PREVIOUS"
+TITLE="Why SCons Duplicates Source Files in a Build Directory"
+HREF="x963.html"><LINK
+REL="NEXT"
+TITLE="The BuildDir Function"
+HREF="x991.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x963.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Separating Source and Build Directories</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x991.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN975"
+></A
+>Telling <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to Not Duplicate Source Files in the Build Directory</H1
+><P
+>&#13;    In most cases, however,
+    having <TT
+CLASS="APPLICATION"
+>SCons</TT
+> place its target files in a build subdirectory
+    <I
+CLASS="EMPHASIS"
+>without</I
+>
+    duplicating the source files works just fine.
+    You can disable the default <TT
+CLASS="APPLICATION"
+>SCons</TT
+> behavior
+    by specifying <TT
+CLASS="LITERAL"
+>duplicate=0</TT
+>
+    when you call the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> function:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      SConscript('src/SConscript', build_dir='build', duplicate=0)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    When this flag is specified,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> uses the build directory
+    like most people expect--that is,
+    the output files are placed in the build directory
+    while the source files stay in the source directory:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>ls -1 src</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SConscript<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hello.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;src/hello.c&nbsp;-o&nbsp;build/hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;build/hello&nbsp;build/hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>ls -1 build</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hello<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x963.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x991.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Why <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Duplicates Source Files in a Build Directory</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c926.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>The <TT
+CLASS="FUNCTION"
+>BuildDir</TT
+> Function</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

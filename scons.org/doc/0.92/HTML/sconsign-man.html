@@ -1,0 +1,152 @@
+Content-type: text/html
+
+<HTML><HEAD><TITLE>Manpage of SCONSIGN</TITLE>
+</HEAD><BODY>
+<H1>SCONSIGN</H1>
+Section: User Commands  (1)<BR>Updated: July 2003<BR><A HREF="#index">Index</A>
+<A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+sconsign - print SCons .sconsign file information
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>sconsign</B>
+
+[
+<I>options</I>...
+
+]
+<I>file</I>
+
+[ ... ]
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<P>
+The 
+<B>sconsign</B>
+
+command
+displays the contents of one or more
+<B>.sconsign</B>
+
+files specified by the user.
+<P>
+By default,
+<B>sconsign</B>
+
+dumps the entire contents of the
+specified file(s).
+Each entry is printed in the following format:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;file:&nbsp;timestamp&nbsp;bsig&nbsp;csig
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;implicit_dependency_1
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;implicit_dependency_2
+<P>
+If the entry has no timestamp, bsig, or csig, a dash
+<B>None</B>
+
+is printed.
+If the entry has no implicit dependencies,
+the lines are simply omitted.
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>OPTIONS</H2>
+
+<P>
+Various options control what information is printed
+and the format:
+<P>
+<DL COMPACT>
+<DT>-b<DD>
+Ignored for compatibility with non-GNU versions of
+<B>make.</B>
+
+<P>
+<DT>-b, --bsig<DD>
+Prints the build signature (bsig) information
+for all entries or the specified entries.
+<P>
+<DT>-c, --csig<DD>
+Prints the content signature (csig) information
+for all entries or the specified entries.
+<P>
+<DT>-e entry, --entry=entry<DD>
+Prints information about only the specified entry.
+Multiple -e options may be used,
+in which case information about each
+entry is printed in the order in which the
+options are specified on the command line.
+<P>
+<DT>-h, --help<DD>
+Prints a help message and exits.
+<P>
+<DT>-i, --implicit<DD>
+Prints the list of cached implicit dependencies
+for all entries or the the specified entries.
+<P>
+<DT>-r, --readable<DD>
+Prints timestamps in a human-readable string,
+enclosed in single quotes.
+<P>
+<DT>-t, --timestamp<DD>
+Prints the timestamp information
+for all entries or the specified entries.
+<P>
+<DT>-v, --verbose<DD>
+Prints labels identifying each field being printed.
+<P>
+</DL>
+<A NAME="lbAF">&nbsp;</A>
+<H2>ENVIRONMENT</H2>
+
+<P>
+<DL COMPACT>
+<DT>SCONS_LIB_DIR<DD>
+Specifies the directory that contains the SCons Python module directory
+(e.g. /home/aroach/scons-src-0.01/src/engine).
+on the command line.
+<P>
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<B>scons</B>,
+
+<B>scons</B>
+
+User Manual,
+<B>scons</B>
+
+Design Document,
+<B>scons</B>
+
+source code.
+<P>
+<A NAME="lbAH">&nbsp;</A>
+<H2>AUTHORS</H2>
+
+Steven Knight &lt;knight at baldmt dot com&gt;
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">OPTIONS</A><DD>
+<DT><A HREF="#lbAF">ENVIRONMENT</A><DD>
+<DT><A HREF="#lbAG">SEE ALSO</A><DD>
+<DT><A HREF="#lbAH">AUTHORS</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 23:18:34 GMT, August 19, 2003
+</BODY>
+</HTML>

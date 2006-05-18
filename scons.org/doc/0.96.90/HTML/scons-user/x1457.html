@@ -1,0 +1,295 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Controlling Command-Line Build Options</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.90"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Controlling a Build From the Command Line"
+HREF="c1271.html"><LINK
+REL="PREVIOUS"
+TITLE="Command-Line variable=value Build Options"
+HREF="x1423.html"><LINK
+REL="NEXT"
+TITLE="Providing Help for Command-Line Build Options"
+HREF="x1483.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.90</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x1423.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Controlling a Build From the Command Line</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1483.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1457"
+></A
+>Controlling Command-Line Build Options</H1
+><P
+>&#13;    Being able to use a command-line build option like
+    <TT
+CLASS="LITERAL"
+>debug=1</TT
+> is handy,
+    but it can be a chore to write specific Python code
+    to recognize each such option
+    and apply the values to a construction variable.
+    To help with this,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports a class to
+    define such build options easily,
+    and a mechanism to apply the
+    build options to a construction environment.
+    This allows you to control how the build options affect
+    construction environments.
+
+    </P
+><P
+>&#13;    For example, suppose that you want users to set
+    a <TT
+CLASS="VARNAME"
+>RELEASE</TT
+> construction variable on the
+    command line whenever the time comes to build
+    a program for release,
+    and that the value of this variable
+    should be added to the command line
+    with the appropriate <TT
+CLASS="LITERAL"
+>-D</TT
+> option
+    (or other command line option)
+    to pass the value to the C compiler.
+    Here's how you might do that by setting
+    the appropriate value in a dictionary for the
+    <A
+HREF="a3061.html#CV-CPPDEFINES"
+><TT
+CLASS="ENVAR"
+>$CPPDEFINES</TT
+></A
+> construction variable:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>         opts = Options()
+         opts.Add('RELEASE', 'Set to 1 to build for release', 0)
+         env = Environment(options = opts,
+                           CPPDEFINES={'RELEASE_BUILD' : '${RELEASE}'})
+         env.Program(['foo.c', 'bar.c'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    This <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file first creates an
+    <TT
+CLASS="FUNCTION"
+>Options</TT
+> object
+    (the <TT
+CLASS="LITERAL"
+>opts = Options()</TT
+> call),
+    and then uses the object's <TT
+CLASS="FUNCTION"
+>Add</TT
+>
+    method to indicate that the <TT
+CLASS="VARNAME"
+>RELEASE</TT
+>
+    option can be set on the command line,
+    and that it's default value will be <TT
+CLASS="LITERAL"
+>0</TT
+>
+    (the third argument to the <TT
+CLASS="FUNCTION"
+>Add</TT
+> method).
+    The second argument is a line of help text;
+    we'll learn how to use it in the next section.
+
+    </P
+><P
+>&#13;    We then pass the created <TT
+CLASS="FUNCTION"
+>Options</TT
+>
+    object as an <TT
+CLASS="VARNAME"
+>options</TT
+> keyword argument
+    to the <TT
+CLASS="FUNCTION"
+>Environment</TT
+> call
+    used to create the construction environment.
+    This then allows a user to set the
+    <TT
+CLASS="VARNAME"
+>RELEASE</TT
+> build option on the command line
+    and have the variable show up in
+    the command line used to build each object from
+    a C source file:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q RELEASE=1</B
+></TT
+>
+      cc -DRELEASE_BUILD=1 -c -o bar.o bar.c
+      cc -DRELEASE_BUILD=1 -c -o foo.o foo.c
+      cc -o foo foo.o bar.o
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x1423.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1483.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Command-Line <TT
+CLASS="VARNAME"
+>variable</TT
+>=<TT
+CLASS="VARNAME"
+>value</TT
+> Build Options</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c1271.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Providing Help for Command-Line Build Options</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,289 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Acknowledgements</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.92"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Preface"
+HREF="c16.html"><LINK
+REL="PREVIOUS"
+TITLE="History"
+HREF="x63.html"><LINK
+REL="NEXT"
+TITLE="Contact"
+HREF="x96.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x63.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Preface</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x96.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN73"
+></A
+>Acknowledgements</H1
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> would not exist without a lot of help
+    from a lot of people,
+    many of whom may not even be aware
+    that they helped or served as inspiration.
+    So in no particular order,
+    and at the risk of leaving out someone:
+
+    </P
+><P
+>&#13;    First and foremost,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> owes a tremendous debt to Bob Sidebotham,
+    the original author of the classic Perl-based <TT
+CLASS="APPLICATION"
+>Cons</TT
+> tool
+    which Bob first released to the world back around 1996.
+    Bob's work on Cons classic provided the underlying architecture
+    and model of specifying a build configuration
+    using a real scripting language.
+    My real-world experience working on Cons
+    informed many of the design decisions in SCons,
+    including the improved parallel build support,
+    making Builder objects easily definable by users,
+    and separating the build engine from the wrapping interface.
+
+    </P
+><P
+>&#13;    Greg Wilson was instrumental in getting
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> started as a real project
+    when he initiated the Software Carpentry design
+    competition in February 2000.
+    Without that nudge,
+    marrying the advantages of the Cons classic
+    architecture with the readability of Python
+    might have just stayed no more than a nice idea.
+
+    </P
+><P
+>&#13;    The entire <TT
+CLASS="APPLICATION"
+>SCons</TT
+> team have been
+    absolutely wonderful to work with,
+    and <TT
+CLASS="APPLICATION"
+>SCons</TT
+> would be nowhere near as useful a
+    tool without the energy, enthusiasm
+    and time people have contributed over the past few years.
+    The "core team"
+    of Chad Austin, Anthony Roach, Charles Crain,
+    Steve Leblanc, Greg Spencer and Christoph Wiedemann
+    have been great about reviewing my (and other) changes
+    and catching problems before they get in the code base.
+    Of particular technical note:
+    Anthony's outstanding and innovative work on the tasking engine
+    has given <TT
+CLASS="APPLICATION"
+>SCons</TT
+> a vastly superior parallel build model;
+    Charles has been the master of the crucial Node infrastructure;
+    Christoph's work on the Configure infrastructure
+    has added crucial Autoconf-like functionality;
+    and Greg has provided excellent support
+    for Microsoft Visual Studio.
+
+    </P
+><P
+>&#13;    Special thanks to David Snopek for contributing
+    his underlying "Autocons" code that formed
+    the basis of Christoph's work with the Configure functionality.
+    David was extremely generous in making
+    this code available to <TT
+CLASS="APPLICATION"
+>SCons</TT
+>,
+    given that he initially released it under the GPL
+    and <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is released under a less-restrictive MIT-style license.
+
+    </P
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> has received contributions
+    from many other people, of course:
+    Matt Balvin (extending long command-line support on Win32),
+    Allen Bierbaum (extensions and fixes to Options),
+    Steve Christensen (help text sorting and function action signature fixes),
+    Michael Cook (avoiding losing signal bits from executed commands),
+    Derrick 'dman' Hudson (),
+    Alex Jacques (work on the Win32 scons.bat file),
+    Stephen Kennedy (performance enhancements),
+    Lachlan O'Dea (SharedObject() support for masm
+    and normalized paths for the WhereIs() function),
+    Damyan Pepper (keeping output like Make),
+    Jeff Petkau (significant fixes for CacheDir and other areas),
+    Stefan Reichor (Ghostscript support),
+    Zed Shaw (Append() and Replace() environment methods),
+    Terrel Shumway (build and test fixes, as well as the SCons Wiki),
+    sam th (dynamic checks for utilities)
+    and Moshe Zadke (Debian packaging).
+
+    </P
+><P
+>&#13;    Thanks to Peter Miller
+    for his splendid change management system, <TT
+CLASS="APPLICATION"
+>Aegis</TT
+>,
+    which has provided the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> project
+    with a robust development methodology from day one,
+    and which showed me how you could
+    integrate incremental regression tests into
+    a practical development cycle
+    (years before eXtreme Programming arrived on the scene).
+
+    </P
+><P
+>&#13;    And last, thanks to Guido van Rossum
+    for his elegant scripting language,
+    which is the basis not only for the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> implementation,
+    but for the interface itself.
+
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x63.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x96.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>History</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c16.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Contact</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

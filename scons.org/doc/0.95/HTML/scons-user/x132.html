@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>The SConstruct File</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.95"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Simple Builds"
+HREF="c87.html"><LINK
+REL="PREVIOUS"
+TITLE="Simple Builds"
+HREF="c87.html"><LINK
+REL="NEXT"
+TITLE="Making the Output Less Verbose"
+HREF="x151.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.95</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c87.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Simple Builds</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x151.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN132"
+></A
+>The <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> File</H1
+><P
+>&#13;   If you're used to build systems like <TT
+CLASS="APPLICATION"
+>Make</TT
+>
+   you've already figured out that the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file
+   is the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> equivalent of a <TT
+CLASS="FILENAME"
+>Makefile</TT
+>.
+   That is, the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file is the input file
+   that <TT
+CLASS="APPLICATION"
+>SCons</TT
+> reads to control the build.
+
+   </P
+><P
+>&#13;   There is, however, an important difference between
+   an <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file and a <TT
+CLASS="FILENAME"
+>Makefile</TT
+>:
+   the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file is actually a Python script.
+   If you're not already familiar with Python, don't worry.
+   This User's Guide will introduce you step-by-step
+   to the relatively small amount of Python you'll
+   need to know to be able to use <TT
+CLASS="APPLICATION"
+>SCons</TT
+> effectively.
+   And Python is very easy to learn.
+
+   </P
+><P
+>&#13;   One aspect of using Python as the
+   scripting language is that you can put comments
+   in your <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file using Python's commenting convention;
+   that is, everything between a '#' and the end of the line
+   will be ignored:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      # Arrange to build the "hello" program.
+      Program('hello.c')    # "hello.c" is the source file.
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   You'll see throughout the remainder of this Guide
+   that being able to use the power of a
+   real scripting language
+   can greatly simplify the solutions
+   to complex requirements of real-world builds.
+
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c87.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x151.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Simple Builds</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c87.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Making the Output Less Verbose</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

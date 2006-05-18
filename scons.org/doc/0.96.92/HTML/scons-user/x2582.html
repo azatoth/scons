@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Finding the SConstruct file in repositories</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.92"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Building From Code Repositories"
+HREF="c2534.html"><LINK
+REL="PREVIOUS"
+TITLE="Finding source files in repositories"
+HREF="x2550.html"><LINK
+REL="NEXT"
+TITLE="Finding derived files in repositories"
+HREF="x2600.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x2550.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Building From Code Repositories</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x2600.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN2582"
+>Finding the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file in repositories</A
+></H1
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will also search in repositories
+    for the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file and any specified <TT
+CLASS="FILENAME"
+>SConscript</TT
+> files.
+    This poses a problem, though:  how can <TT
+CLASS="APPLICATION"
+>SCons</TT
+> search a
+    repository tree for an <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file
+    if the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file itself contains the information
+    about the pathname of the repository?
+    To solve this problem, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> allows you
+    to specify repository directories
+    on the command line using the <TT
+CLASS="LITERAL"
+>-Y</TT
+> option:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <KBD
+CLASS="USERINPUT"
+>scons -Q -Y /usr/repository1 -Y /usr/repository2</KBD
+>
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    When looking for source or derived files,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will first search the repositories
+    specified on the command line,
+    and then search the repositories
+    specified in the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> or <TT
+CLASS="FILENAME"
+>SConscript</TT
+> files.
+
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x2550.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x2600.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Finding source files in repositories</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c2534.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Finding derived files in repositories</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,3113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>SCons Design and Implementation</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"></HEAD
+><BODY
+CLASS="ARTICLE"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="ARTICLE"
+><DIV
+CLASS="TITLEPAGE"
+><H1
+CLASS="TITLE"
+><A
+NAME="AEN2"
+></A
+>SCons Design and Implementation</H1
+><P
+CLASS="COPYRIGHT"
+>Copyright &copy; 2001, 2002 by Steven Knight</P
+><HR
+WIDTH="75%"
+ALIGN="CENTER"
+COLOR="#000000"
+SIZE="1"></DIV
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+><A
+HREF="#SECT-INTRO"
+>Introduction</A
+></DT
+><DT
+><A
+HREF="#SECT-DESIGN"
+>Architecture</A
+></DT
+><DT
+><A
+HREF="#SECT-INSTALL"
+>Installation</A
+></DT
+><DT
+><A
+HREF="#SECT-PROCESS"
+>Development Process</A
+></DT
+><DT
+><A
+HREF="#SECT-FUTURE"
+>Future Directions</A
+></DT
+><DT
+><A
+HREF="#SECT-SUMMARY"
+>Summary</A
+></DT
+><DT
+><A
+HREF="#SECT-ACKS"
+>Acknowledgements</A
+></DT
+><DT
+><A
+HREF="#SECT-REFS"
+>References</A
+></DT
+></DL
+></DIV
+><BLOCKQUOTE
+CLASS="ABSTRACT"
+><DIV
+CLASS="ABSTRACT"
+><A
+NAME="AEN25"
+></A
+><P
+></P
+><P
+>&#13;  <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is a software construction tool (build tool, or make tool)
+  implemented in Python, which uses Python scripts as "configuration
+  files" for software builds. Based on the design which won the
+  Software Carpentry build tool competition, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> solves a number of
+  problems associated with other build tools, especially including the
+  classic and ubiquitous <TT
+CLASS="APPLICATION"
+>Make</TT
+> itself.&#13;</P
+><P
+>&#13;  Distinctive features of <TT
+CLASS="APPLICATION"
+>SCons</TT
+> include: a modular design that
+  lends itself to being embedded in other applications; a global
+  view of all dependencies in the source tree; an improved model for
+  parallel (<TT
+CLASS="OPTION"
+>-j</TT
+>) builds; automatic scanning of files for
+  dependencies; use of MD5 signatures for deciding whether a file
+  is up-to-date; use of traditional file timestamps instead of
+  MD5 signatures available as an option;
+  use of Python functions or objects to build target files; easy user
+  extensibility.&#13;</P
+><P
+>&#13;  This paper discusses the goals of the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> project, gives an overview
+  of the design of <TT
+CLASS="APPLICATION"
+>SCons</TT
+> itself, describes the development process used,
+  and discusses future plans and directions for the tool.&#13;</P
+><P
+></P
+></DIV
+></BLOCKQUOTE
+><DIV
+CLASS="SECTION"
+><HR><H1
+CLASS="SECTION"
+><A
+NAME="SECT-INTRO"
+></A
+>Introduction</H1
+><P
+>&#13;  More than twenty years after its creation, the classic UNIX <TT
+CLASS="APPLICATION"
+>Make</TT
+>
+  utility and its descendants are still the dominant way in which
+  software is built. <TT
+CLASS="APPLICATION"
+>Make</TT
+> has maintained this position despite the
+  fact that the intervening years have revealed many
+  shortcomings of the <TT
+CLASS="APPLICATION"
+>Make</TT
+> model for building software:&#13;</P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;      The use of timestamps to decide when a file has been updated is
+      imprecise and prone to error, especially across distributed file
+      systems such as NFS.
+
+    </P
+></LI
+><LI
+><P
+>&#13;      Builds of typical large software systems still take hours, if not
+      days, despite the tremendous advances in CPU and disk speeds over
+      recent years.
+
+    </P
+></LI
+><LI
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>Make</TT
+> maintains static definitions of dependencies in its
+      <TT
+CLASS="FILENAME"
+>Makefiles</TT
+>. Much effort has been put into
+      utilities (<TT
+CLASS="APPLICATION"
+>mkdepend</TT
+>, <TT
+CLASS="APPLICATION"
+>gcc
+      -M</TT
+>) and schemes (<TT
+CLASS="FILENAME"
+>Makefile.d</TT
+>
+      files) to try to keep <TT
+CLASS="FILENAME"
+>Makefile</TT
+> dependencies up-to-date,
+      but these only confirm that <TT
+CLASS="APPLICATION"
+>Make</TT
+>'s static dependencies are
+      inherently fragile.
+
+    </P
+></LI
+><LI
+><P
+>&#13;      The standard recursive use of <TT
+CLASS="APPLICATION"
+>Make</TT
+> for build hierarchies leads
+      to incomplete dependency graphs, which must be overcome by
+      manually changing the order in which directories are built, or
+      through the use of multiple build passes.
+
+    </P
+></LI
+></UL
+><P
+>&#13;  One need only look at the plethora of helper and wrapper utilities
+  (automake, easymake, imake, jmake, makeLib, maketool, mkmed, shake,
+  SMake, TMAKE) and complete alternatives to <TT
+CLASS="APPLICATION"
+>Make</TT
+> (Ant, bake, bau,
+  bras, Cake, Cons, Cook, Jam, jmk, jus, makeme, mash, MK, nmake, Odin,
+  VMake) that have been created over the years to realize that vanilla
+  <TT
+CLASS="APPLICATION"
+>Make</TT
+> is not satisfying everyone's build requirements. So why Yet
+  Another build tool?&#13;</P
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN62"
+></A
+>Enter Software Carpentry</H2
+><P
+>&#13;    Most of the build tools just mentioned
+    were written by programmers and for
+    programmers. The fact that most programmer-friendly
+    utilities do a poor job of fulfilling the needs
+    of non-programmers prompted Greg Wilson to
+    organize the Software Carpentry competition in January 2000.
+    Software Carpentry was an
+    open design contest with the express goal of producing a set of
+    next-generation utilities, including a build tool, that would be
+    accessible
+    not only to
+    programmers
+    but also to computer <I
+CLASS="EMPHASIS"
+>users</I
+>
+    such as physical scientists.
+
+  </P
+><P
+>&#13;    The key to this usability would be that all of
+    these utilities, including the build tool, would be
+    written in Python.
+    This provided the catalyst for actually
+    pursuing an idea
+    that had been floating around one of the more
+    intriguing <TT
+CLASS="APPLICATION"
+>Make</TT
+> alternatives,
+    a Perl utility called <TT
+CLASS="APPLICATION"
+>Cons</TT
+>.
+    What if the friendlier syntax of Python
+    could be married to the
+    architectural advantages of <TT
+CLASS="APPLICATION"
+>Cons</TT
+>?
+
+  </P
+><P
+>&#13;    The resulting merged design, at that time named <TT
+CLASS="APPLICATION"
+>ScCons</TT
+>,
+    won the Software Carpentry build tool competition. CodeSourcery (by
+    then the administrators of the competition) ultimately decided not to
+    fund development of the build tool, but the seed had been planted and the
+    design had taken root.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN72"
+></A
+>Cons</H2
+><P
+>&#13;    It helps to know something about <TT
+CLASS="APPLICATION"
+>Cons</TT
+>.
+    <TT
+CLASS="APPLICATION"
+>Cons</TT
+> was first released in 1996 by Bob Sidebotham,
+    then an employee of Fore Systems,
+    and it has a number of
+    distinctive features that set it apart from most <TT
+CLASS="APPLICATION"
+>Make</TT
+>-alikes:
+
+  </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;        <TT
+CLASS="APPLICATION"
+>Cons</TT
+> "configuration files" are not Yet Another
+        invented mini-language, but are actually <I
+CLASS="EMPHASIS"
+>Perl
+        scripts</I
+>, which means the full power and flexibility of
+        a real scripting language can be applied to build problems.
+
+      </P
+></LI
+><LI
+><P
+>&#13;        <TT
+CLASS="APPLICATION"
+>Cons</TT
+> builds everything from a single process at the top of the
+        source tree, with a global view of the dependencies.
+
+      </P
+></LI
+><LI
+><P
+>&#13;        <TT
+CLASS="APPLICATION"
+>Cons</TT
+> scans files automatically for dependencies such as
+        files specified on <TT
+CLASS="LITERAL"
+>#include</TT
+> lines.
+
+      </P
+></LI
+><LI
+><P
+>&#13;        <TT
+CLASS="APPLICATION"
+>Cons</TT
+> decides if a file was out-of-date by using MD5 checksums of
+        the contents of files, not timestamps.
+
+      </P
+></LI
+></UL
+><P
+>&#13;    Despite all of these intriguing architectural features, the great
+    strength of <TT
+CLASS="APPLICATION"
+>Cons</TT
+>&#8212;being written in Perl&#8212;was also one of
+    its weaknesses, turning away many potential users due to the
+    (real or perceived) steep learning curve of Perl.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN95"
+></A
+><TT
+CLASS="APPLICATION"
+>SCons</TT
+></H2
+><P
+>&#13;    Through the <TT
+CLASS="APPLICATION"
+>ScCons</TT
+> contest entry,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is the direct descendant of the <TT
+CLASS="APPLICATION"
+>Cons</TT
+> architecture,
+    and is currently
+    under active, supported development with a growing body of
+    users. Its first release was 13 December 2001, under the simple and
+    non-restrictive MIT license, and from the outset, the goal of the
+    members of the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> project has been to deliver a stable, reliable
+    tool that can be used for industrial-strength software builds.
+
+  </P
+><P
+>&#13;    The rest of this paper will give an overview of the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> design
+    (including its architecture and interface), describe the development
+    methodology used, and discuss future directions for <TT
+CLASS="APPLICATION"
+>SCons</TT
+>.
+
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H1
+CLASS="SECTION"
+><A
+NAME="SECT-DESIGN"
+></A
+>Architecture</H1
+><P
+>&#13;  The <TT
+CLASS="APPLICATION"
+>SCons</TT
+> architecture consists of three layers:&#13;</P
+><DIV
+CLASS="MEDIAOBJECT"
+><P
+><IMG
+SRC="arch.png"
+ALIGN="CENTER"></P
+></DIV
+><P
+></P
+><UL
+><LI
+><P
+>&#13;      The <TT
+CLASS="APPLICATION"
+>SCons</TT
+> <I
+CLASS="EMPHASIS"
+>Build Engine</I
+>, a package of Python
+      modules that handle dependency management and updating out-of-date
+      objects.
+
+    </P
+></LI
+><LI
+><P
+>&#13;      The <TT
+CLASS="APPLICATION"
+>SCons</TT
+> <I
+CLASS="EMPHASIS"
+>API</I
+> (applications programming
+      interface) between the Build Engine
+      and the user interface.
+
+    </P
+></LI
+><LI
+><P
+>&#13;      The <TT
+CLASS="APPLICATION"
+>scons</TT
+> <I
+CLASS="EMPHASIS"
+>script</I
+> itself (note lower case
+      <I
+CLASS="EMPHASIS"
+>sc</I
+>), which is the pre-provided interface to
+      the Build Engine.
+
+    </P
+></LI
+></UL
+><P
+>&#13;  Notice that this architecture separates the internal workings of
+  <TT
+CLASS="APPLICATION"
+>SCons</TT
+> (the Build Engine) from the
+  external user interface.  The benefit is that the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine
+  can be imported into any other software package written in Python
+  to support a variety of user interfaces&#8212;or, to look at it
+  in reverse, other software interfaces can use the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build
+  Engine to manage dependencies between their objects.&#13;</P
+><P
+>&#13;  Because the
+  <TT
+CLASS="APPLICATION"
+>SCons</TT
+> package itself is modular, only those parts of the package
+  relevant to the embedding interface need be imported; for example,
+  a utility that wants to use only file timestamps for checking
+  whether a file is up-to-date
+  need not import the MD5 signature module.&#13;</P
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN135"
+></A
+>The <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine</H2
+><P
+>&#13;    The Build Engine is a package of Python modules that
+    form the heart of <TT
+CLASS="APPLICATION"
+>SCons</TT
+>.
+
+    The Build Engine can be broadly divided into five
+    architectural subsystems, each responsible
+    for a crucial part of <TT
+CLASS="APPLICATION"
+>SCons</TT
+> functionality:
+
+  </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;        A <I
+CLASS="EMPHASIS"
+>node</I
+> subsystem, responsible for managing
+        the files (or other objects) to be built, and the dependency
+        relationships between them.
+
+      </P
+></LI
+><LI
+><P
+>&#13;        A <I
+CLASS="EMPHASIS"
+>scanner</I
+> subsystem, responsible for
+	scanning various file types for implicit dependencies.
+
+      </P
+></LI
+><LI
+><P
+>&#13;        A <I
+CLASS="EMPHASIS"
+>signature</I
+> subsystem, responsible for
+        deciding whether a given file (or other object) requires
+        rebuilding.
+
+      </P
+></LI
+><LI
+><P
+>&#13;        A <I
+CLASS="EMPHASIS"
+>builder</I
+> subsystem, responsible for
+        actually executing the necessary command or function to
+        build a file (or other object).
+
+      </P
+></LI
+><LI
+><P
+>&#13;        A <I
+CLASS="EMPHASIS"
+>job/task</I
+> subsystem, responsible for
+        handling parallelization of builds.
+
+      </P
+></LI
+></UL
+><P
+>&#13;    The rest of this section will provide a high-level overview of the
+    class structure of each of these Build Engine subsystems.
+
+  </P
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN158"
+></A
+>Node Subsystem</H3
+><P
+>&#13;      The node subsystem of the Build Engine is
+      responsible for managing the knowledge in <TT
+CLASS="APPLICATION"
+>SCons</TT
+> of
+      the relationships among the external objects
+      (files) it is responsible for updating.
+      The most important of these relationships is
+      the dependency relationship between various <TT
+CLASS="CLASSNAME"
+>Node</TT
+> objects,
+      which <TT
+CLASS="APPLICATION"
+>SCons</TT
+> uses to determine the order
+      in which builds should be performed.
+
+    </P
+><DIV
+CLASS="MEDIAOBJECT"
+><P
+><IMG
+SRC="node.png"
+ALIGN="CENTER"></P
+></DIV
+><P
+>&#13;      The <TT
+CLASS="APPLICATION"
+>scons</TT
+> script (or other
+      user interface)
+      tells the Build Engine
+      about dependencies
+      through its <TT
+CLASS="LITERAL"
+>construction environment</TT
+> API.
+      The Build Engine also discovers
+      dependencies automatically through the use of <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> objects.
+
+    </P
+><P
+>&#13;      Subclasses of the <TT
+CLASS="CLASSNAME"
+>Node</TT
+> class maintain additional
+      relationships that reflect the real-world
+      existence of these objects.
+      For example, the <TT
+CLASS="CLASSNAME"
+>Node.FS</TT
+> subclass
+      is responsible for managing a
+      representation of the directory hierarchy
+      of a file system.
+
+    </P
+><P
+>&#13;      A <TT
+CLASS="CLASSNAME"
+>Walker</TT
+> class is used by other subsystems
+      to walk the dependency tree maintained by the <TT
+CLASS="CLASSNAME"
+>Node</TT
+> class.
+      The <TT
+CLASS="CLASSNAME"
+>Walker</TT
+> class maintains a stack of <TT
+CLASS="CLASSNAME"
+>Node</TT
+> objects
+      visited during its depth-first traversal of the
+      dependency tree,
+      and uses an intermediate node <TT
+CLASS="CLASSNAME"
+>Wrapper</TT
+> class
+      to maintain state information about a
+      <TT
+CLASS="CLASSNAME"
+>Node</TT
+> object's dependencies.
+
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN183"
+></A
+>Scanner Subsystem</H3
+><P
+>&#13;      The scanner subsystem is responsible for maintaining
+      objects that can scan the contents of a <TT
+CLASS="CLASSNAME"
+>Node</TT
+>'s
+      for implicit dependencies.
+
+    </P
+><DIV
+CLASS="MEDIAOBJECT"
+><P
+><IMG
+SRC="scanner.png"
+ALIGN="CENTER"></P
+></DIV
+><P
+>&#13;      In practice, a given <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> subclass object
+      functions as a prototype,
+      returning clones of itself
+      depending on the <TT
+CLASS="LITERAL"
+>construction environment</TT
+>
+      values governing how the <TT
+CLASS="CLASSNAME"
+>Node</TT
+>
+      should be scanned.
+
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN196"
+></A
+>Signature Subsystem</H3
+><P
+>&#13;      The signature subsystem is responsible for computing
+      signature information for <TT
+CLASS="CLASSNAME"
+>Node</TT
+> objects.
+      The signature subsystem in <TT
+CLASS="APPLICATION"
+>SCons</TT
+>
+      supports multiple ways to
+      determine whether a <TT
+CLASS="CLASSNAME"
+>Node</TT
+> is up-to-date
+      by using an abstract <TT
+CLASS="CLASSNAME"
+>Sig</TT
+> class
+      as a strategy wrapper:
+
+    </P
+><DIV
+CLASS="MEDIAOBJECT"
+><P
+><IMG
+SRC="sig.png"
+ALIGN="CENTER"></P
+></DIV
+><P
+>&#13;      By default, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> tracks dependencies by computing and
+      maintaining MD5 signatures for the contents of each source file
+      (or other object). The signature of a <I
+CLASS="EMPHASIS"
+>derived</I
+>
+      file consists of the aggregate of the signatures of all the source
+      files <I
+CLASS="EMPHASIS"
+>plus</I
+> the command-line string used to
+      build the file. These signatures are stored in a <TT
+CLASS="FILENAME"
+>.sconsign</TT
+> file
+      in each directory.
+
+    </P
+><P
+>&#13;      If the contents of any of the source files changes, the change to its
+      MD5 signature is propogated to the signature of the derived file(s). The
+      simple fact that the new signature does not match the stored signature
+      indicates that the derived file is not up to date and must be rebuilt.
+
+    </P
+><P
+>&#13;      A separate <TT
+CLASS="CLASSNAME"
+>TimeStamp</TT
+> subclass of the <TT
+CLASS="CLASSNAME"
+>Sig</TT
+> class supports
+      the use of traditional file timestamps for
+      deciding whether files are up-to-date.
+
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN217"
+></A
+>Builder Subsystem</H3
+><P
+>&#13;      The <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine records how out-of-date files
+      (or other objects) should be rebuilt in <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects,
+      maintained by the builder subsystem:
+
+    </P
+><DIV
+CLASS="MEDIAOBJECT"
+><P
+><IMG
+SRC="builder.png"
+ALIGN="CENTER"></P
+></DIV
+><P
+>      
+      The actual underlying class name is <TT
+CLASS="CLASSNAME"
+>BuilderBase</TT
+>,
+      and there are subclasses that can encapsulate
+      multiple <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects for special purposes.
+      One subclass
+      (<TT
+CLASS="CLASSNAME"
+>CompositeBuilder</TT
+>)
+      selects an appropriate encapsulated <TT
+CLASS="CLASSNAME"
+>Builder</TT
+>
+      based on the file suffix of the target object.
+      The other
+      (<TT
+CLASS="CLASSNAME"
+>MultiStepBuilder</TT
+>).
+      can chain together multiple
+      <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects,
+      for example,
+      to build an executable program from a source file
+      through an implicit intermediate object file.
+
+    </P
+><P
+>&#13;      A <TT
+CLASS="CLASSNAME"
+>BuilderBase</TT
+> object has an associated
+      <TT
+CLASS="CLASSNAME"
+>ActionBase</TT
+> object
+      responsible for actually executing
+      the appropriate steps
+      to update the target file.
+      There are three subclasses,
+      one for externally executable commands
+      (<TT
+CLASS="CLASSNAME"
+>CommandAction</TT
+>),
+      one for Python functions
+      (<TT
+CLASS="CLASSNAME"
+>FunctionAction</TT
+>),
+      and one for lists of
+      multiple <TT
+CLASS="CLASSNAME"
+>Action</TT
+> objects
+      (<TT
+CLASS="CLASSNAME"
+>ListAction</TT
+>).
+
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN241"
+></A
+>Job/Task Subsystem</H3
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports parallel builds with a thread-based tasking
+      model, managed by the job/task subsystem.
+
+    </P
+><DIV
+CLASS="MEDIAOBJECT"
+><P
+><IMG
+SRC="job-task.png"
+ALIGN="CENTER"></P
+></DIV
+><P
+>      
+      Instead of performing an outer-loop recursive descent
+      of the dependency tree and then forking a task when it finds a
+      file that needs updating, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> starts as many threads as are
+      requested, each thread managed by the <TT
+CLASS="CLASSNAME"
+>Jobs</TT
+> class.
+      As a performance optimization,
+      the <TT
+CLASS="CLASSNAME"
+>Jobs</TT
+> class maintains an internal
+      distinction between
+      <TT
+CLASS="CLASSNAME"
+>Serial</TT
+> and <TT
+CLASS="CLASSNAME"
+>Parallel</TT
+>
+      build jobs,
+      so that serial builds
+      don't pay any performance penalty
+      by using a multi-threaded implementation
+      written for <TT
+CLASS="CLASSNAME"
+>Parallel</TT
+> builds.
+
+    </P
+><P
+>      
+      Each <TT
+CLASS="CLASSNAME"
+>Jobs</TT
+> object, running in its own thread,
+      then requests a <TT
+CLASS="FUNCTION"
+>Task</TT
+> from a central <TT
+CLASS="CLASSNAME"
+>Taskmaster</TT
+>,
+      which is responsible
+      for handing out available <TT
+CLASS="FUNCTION"
+>Task</TT
+> objects for (re-)building
+      out-of-date nodes. A condition variable
+      makes sure that the <TT
+CLASS="CLASSNAME"
+>Jobs</TT
+> objects
+      query the <TT
+CLASS="CLASSNAME"
+>Taskmaster</TT
+> one at a time.
+
+    </P
+><P
+>&#13;      The <TT
+CLASS="CLASSNAME"
+>Taskmaster</TT
+> uses the node subsystem's
+      <TT
+CLASS="CLASSNAME"
+>Walker</TT
+> class to walk the dependency tree,
+      and the <TT
+CLASS="CLASSNAME"
+>Sig</TT
+> class to use the
+      appropriate method
+      of deciding if a <TT
+CLASS="CLASSNAME"
+>Node</TT
+> is up-to-date.
+
+    </P
+><P
+>&#13;      This scheme has many advantages over the standard <TT
+CLASS="APPLICATION"
+>Make</TT
+>
+      implementation of <TT
+CLASS="OPTION"
+>-j</TT
+>.
+      Effective use of <TT
+CLASS="OPTION"
+>-j</TT
+> is difficult
+      with the usual recursive use of Make,
+      because the number of jobs started by <TT
+CLASS="OPTION"
+>-j</TT
+> multiply
+      at each level of the source tree.
+      This makes the actual number of jobs
+      executed at any moment very dependent on the size and layout of
+      the tree. <TT
+CLASS="APPLICATION"
+>SCons</TT
+>, in contrast, starts only as many jobs as are
+      requested, and keeps them constantly busy (excepting jobs that
+      block waiting for their dependency files to finish building).
+
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN275"
+></A
+>The <TT
+CLASS="APPLICATION"
+>SCons</TT
+> API</H2
+><P
+>&#13;    This section provides an overview of the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> interface. The
+    complete interface specification is both more detailed and flexible
+    than this overview.
+
+  </P
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN280"
+></A
+><TT
+CLASS="LITERAL"
+>Construction Variables</TT
+></H3
+><P
+>&#13;      In <TT
+CLASS="APPLICATION"
+>SCons</TT
+>, a <TT
+CLASS="LITERAL"
+>construction environment</TT
+> is an object through which an external
+      interface (such as the <TT
+CLASS="APPLICATION"
+>scons</TT
+> script) communicates dependency
+      information to the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine.
+
+    </P
+><P
+>&#13;      A construction environment is implemented as a dictionary
+      containing:
+
+    </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;          construction variables, string values that are substituted
+          into command lines or used by builder functions;
+
+        </P
+></LI
+><LI
+><P
+>&#13;          one or more <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects that can be invoked to update a
+          file or other object;
+
+        </P
+></LI
+><LI
+><P
+>&#13;          one or more <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> objects that can be used to
+          scan a file automatically for dependencies (such as
+          files specified on <TT
+CLASS="LITERAL"
+>#include</TT
+> lines).
+
+        </P
+></LI
+></UL
+><P
+>&#13;      <TT
+CLASS="LITERAL"
+>Construction environments</TT
+> are instantiated as follows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment()
+      env_debug = Environment(CCFLAGS = '-g')
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN302"
+></A
+><TT
+CLASS="CLASSNAME"
+>Builder</TT
+> Objects</H3
+><P
+>&#13;      An <TT
+CLASS="APPLICATION"
+>SCons</TT
+> <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object encapsulates information about how to
+      build a specific type of file: an executable program, an object
+      file, a library, etc. A <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object is associated with a
+      file through an associated <TT
+CLASS="LITERAL"
+>construction environment</TT
+> method and later invoked to
+      actually build the file. The <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object will typically use
+      construction variables (such as <TT
+CLASS="VARNAME"
+>CCFLAGS</TT
+>, <TT
+CLASS="VARNAME"
+>LIBPATH</TT
+>) to influence
+      the specific build execution.
+
+    </P
+><P
+>&#13;      <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects are instantiated as follows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      bld = Builder(name = 'Program', action = "$CC -o $TARGET $SOURCES")
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      In the above example, the <TT
+CLASS="LITERAL"
+>action</TT
+> is a
+      command-line string in which the Build Engine will
+      interpolate the values of construction
+      variables before execution. The actual
+      <TT
+CLASS="LITERAL"
+>action</TT
+> specified, though,
+      may be a function:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      def update(dest):
+          # [code to update the object]
+          return 0
+
+      bld = Builder(name = 'Program', function = update)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      Or a callable Python object (or class):
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      class class_a:
+          def __call__(self, kw):
+              # build the desired object
+          return 0
+
+      builder = SCons.Builder.Builder(action = class_a())
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      A <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object may have the <TT
+CLASS="LITERAL"
+>prefix</TT
+> and
+      <TT
+CLASS="LITERAL"
+>suffix</TT
+> of its target file type specified
+      as keyword arguments at instantiation.  Additionally, the
+      suffix of the <I
+CLASS="EMPHASIS"
+>source files</I
+> used by this
+      <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> to build its target files may be specified using the
+      <TT
+CLASS="LITERAL"
+>src_suffix</TT
+> keyword argument:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      bld_lib = Builder(name = 'Library', action = "$AR r $TARGET $SOURCES",
+                        prefix = 'lib', suffix = '.a', src_suffix = '.o')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      The specified <TT
+CLASS="LITERAL"
+>prefix</TT
+> and
+      <TT
+CLASS="LITERAL"
+>suffix</TT
+> will be appended to the name of any
+      target file built by this <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object, if they are not
+      already part of the file name.  The <TT
+CLASS="LITERAL"
+>src_suffix</TT
+>
+      is used by the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine to chain together
+      multiple <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects to create,
+      for example, a library from the original source
+      files without having to specify the
+      intermediate <TT
+CLASS="LITERAL"
+>.o</TT
+> files.
+
+    </P
+><P
+>&#13;      <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects are associated with a <TT
+CLASS="LITERAL"
+>construction environment</TT
+> through a
+      <TT
+CLASS="LITERAL"
+>construction variable</TT
+> named <TT
+CLASS="VARNAME"
+>BUILDERS</TT
+>, a list of the <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects that
+      will be available for execution through the <TT
+CLASS="LITERAL"
+>construction environment</TT
+>:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment(BUILDERS = [ Object, Library, WebPage, Program ])
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN346"
+></A
+><TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> Objects</H3
+><P
+>&#13;      <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> objects perform automatic checking for dependencies
+      by scanning the contents of files. The canonical
+      example is scanning a C source file or header file for
+      files specified on <TT
+CLASS="LITERAL"
+>#include</TT
+> lines.
+
+    </P
+><P
+>&#13;      A <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> object is instantiated as follows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      def c_scan(contents):
+           # scan contents of file
+           return # list of files found
+
+      c_scanner = Scanner(name = 'CScan', function = c_scan,
+                          argument = None,
+                          skeys = ['.c', '.C', '.h', '.H')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      The <TT
+CLASS="LITERAL"
+>skeys</TT
+> argument specifies a list of file
+      suffixes for file types that this <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> knows how to scan.
+
+    </P
+><P
+>&#13;      <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> objects are associated with a <TT
+CLASS="LITERAL"
+>construction environment</TT
+> through a
+      <TT
+CLASS="LITERAL"
+>construction variable</TT
+> named <TT
+CLASS="VARNAME"
+>SCANNERS</TT
+>, a list of the <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> objects that
+      will be available through the <TT
+CLASS="LITERAL"
+>construction environment</TT
+>:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment(SCANNERS = [ CScan, M4Scan ])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      For utilities that will build files with a variety of file
+      suffixes, or which require unusual scanning rules, a <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+>
+      object may be associated explicitly with a <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object as
+      follows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      def tool_scan(contents):
+          # scan contents of file
+          return # list of files found
+
+      tool_scanner = Scanner(name = 'TScan', function = tool_scan)
+
+      bld = Builder(name = 'Tool', scanner = tool_scanner)
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN370"
+></A
+><TT
+CLASS="FUNCTION"
+>BuildDir</TT
+></H3
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports a flexible mechanism for building target
+      files in a separate build directory from the source files.
+      The <TT
+CLASS="FUNCTION"
+>BuildDir</TT
+> syntax is straightforward:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      BuildDir(source = 'src', build = 'bld')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      By
+      default, source files are linked or copied into the build
+      directory, because exactly replicating the source directory
+      is sometimes necessary for certain combinations of use of
+      <TT
+CLASS="LITERAL"
+>#include "..."</TT
+> and <TT
+CLASS="OPTION"
+>-I</TT
+> search
+      paths.
+
+      An option exists to specify that only output files should be placed in
+      the build directory:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      BuildDir(source = 'src', build = 'bld', no_sources = 1)
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN381"
+></A
+><TT
+CLASS="FUNCTION"
+>Repository</TT
+></H3
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports the ability to search a list of code repositories
+      for source files and derived files. This works much like
+      <TT
+CLASS="APPLICATION"
+>Make</TT
+>'s <TT
+CLASS="VARNAME"
+>VPATH</TT
+> feature, as implemented in
+      recent versions of GNU <TT
+CLASS="APPLICATION"
+>Make</TT
+>.
+      (The POSIX standard for <TT
+CLASS="APPLICATION"
+>Make</TT
+> specifies slightly
+      different behavior for <TT
+CLASS="VARNAME"
+>VPATH</TT
+>.)
+      The syntax is:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      Repository('/home/source/1.1', '/home/source/1.0')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      A command-line <TT
+CLASS="OPTION"
+>-Y</TT
+> option exists to allow
+      repositories to be specified on the command line, or in the
+      <TT
+CLASS="VARNAME"
+>SCONSFLAGS</TT
+> environment variable (not construction variable!).
+      This avoids a chicken-and-egg situation and allows the top-level
+      <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file to be found in a repository as well.
+
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN396"
+></A
+><TT
+CLASS="FUNCTION"
+>Cache</TT
+></H3
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports a way for developers to share derived files. Again, the
+      syntax is straightforward:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      Cache('/var/build.cache/i386')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      Copies of any derived files built will be placed in the specified
+      directory with their MD5 signature. If another build results in an
+      out-of-date derived file with the same signature, the derived file
+      will be copied from the cache instead of being rebuilt.
+
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN403"
+></A
+>The <TT
+CLASS="APPLICATION"
+>scons</TT
+> Script</H2
+><P
+>&#13;    The <TT
+CLASS="APPLICATION"
+>scons</TT
+> script provides an interface
+    that looks roughly equivalent to the
+    classic <TT
+CLASS="APPLICATION"
+>Make</TT
+> utility&#8212;that is, execution from the command
+    line, and dependency information read from configuration files.
+
+  </P
+><P
+>&#13;    The most noticeable difference between <TT
+CLASS="APPLICATION"
+>scons</TT
+> and <TT
+CLASS="APPLICATION"
+>Make</TT
+>, or most
+    other build tools, is that the configuration files are actually
+    Python scripts, generically called "SConscripts" (although the
+    top-level "Makefile" is named <TT
+CLASS="FILENAME"
+>SConstruct</TT
+>). Users do not have to
+    learn a new language syntax, but instead configure dependency
+    information by making direct calls to the Python API of the
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine. Here is an example <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file which
+    builds a program in side-by-side normal and debug versions:
+
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    env = Environment()
+    debug = env.Copy(CCFLAGS = '-g')
+
+    source_files = ['f1.c', 'f2.c', 'f3.c']
+
+    env.Program(target = 'foo', sources = source_files)
+    debug.Program(target = 'foo-debug', sources = source_files)
+  </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Notice the fact that this file is a Python script, which allows us
+    to define and re-use an array that lists the source files.
+
+  </P
+><P
+>&#13;    Because quoting individul strings in long
+    lists of files can get tedious and error-prone, the <TT
+CLASS="APPLICATION"
+>SCons</TT
+>
+    methods support a short-cut of listing multiple files in a single
+    string, separated by white space.
+    This would change
+    the assignment in the above example to a more easily-readable:
+
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    source_files = 'f1.c f2.c f3.c'
+  </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    The mechanism to establish hierarchical builds is to "include" any
+    subsidiary configuration files in the build by listing them explicitly
+    in a call to the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> function:
+
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    SConscript('src/SConscript', 'lib/SConscript')
+  </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    By convention, configuration files in subdirectories are named
+    <TT
+CLASS="FILENAME"
+>SConscript</TT
+>.
+
+  </P
+><P
+>&#13;    The <TT
+CLASS="APPLICATION"
+>scons</TT
+> script has intentionally been made to look, from
+    the outside, as much like <TT
+CLASS="APPLICATION"
+>Make</TT
+> as is practical. To this
+    end, the <TT
+CLASS="APPLICATION"
+>scons</TT
+> script supports all of the same command-line
+    options supported by GNU <TT
+CLASS="APPLICATION"
+>Make</TT
+>: <TT
+CLASS="OPTION"
+>-f</TT
+> FILE,
+    <TT
+CLASS="OPTION"
+>-j</TT
+>, <TT
+CLASS="OPTION"
+>-k</TT
+>, <TT
+CLASS="OPTION"
+>-s</TT
+>,
+    etc. For compatibility, <TT
+CLASS="APPLICATION"
+>scons</TT
+> ignores those GNU <TT
+CLASS="APPLICATION"
+>Make</TT
+> options
+    that don't make sense for the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> architecture, such as
+    <TT
+CLASS="OPTION"
+>-b</TT
+>, <TT
+CLASS="OPTION"
+>-m</TT
+>, <TT
+CLASS="OPTION"
+>-S</TT
+>,
+    and <TT
+CLASS="OPTION"
+>-t</TT
+>.  The
+    intention is that, given an equivalent <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file for a
+    <TT
+CLASS="FILENAME"
+>Makefile</TT
+>, a user could use <TT
+CLASS="APPLICATION"
+>SCons</TT
+> as a drop-in replacement for
+    <TT
+CLASS="APPLICATION"
+>Make</TT
+>. Additional command-line options are, where possible, taken
+    from the Perl <TT
+CLASS="APPLICATION"
+>Cons</TT
+> utility on which the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> design is based.
+
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H1
+CLASS="SECTION"
+><A
+NAME="SECT-INSTALL"
+></A
+>Installation</H1
+><P
+>&#13;  Initial installation of a new utility provides the first, lasting
+  impression of how well the software is likely to perform. From the
+  start, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> has made clean installation a priority.&#13;</P
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN451"
+></A
+>Version Control</H2
+><P
+>&#13;    Distributing an application like <TT
+CLASS="APPLICATION"
+>SCons</TT
+> that depends
+    on a package normally found in a library poses a
+    problem. If the <TT
+CLASS="APPLICATION"
+>scons</TT
+> script and the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine
+    are installed separately, it could be easy
+    to introduce a version mismatch between the Build Engine
+    installed in
+    <TT
+CLASS="FILENAME"
+>/usr/lib/python*/site-packages</TT
+>
+    and the <TT
+CLASS="APPLICATION"
+>scons</TT
+> script installed in
+    <TT
+CLASS="FILENAME"
+>/usr/bin</TT
+>.
+    Such a mismatch
+    could possible mean exceptions that prevent builds, or even worse,
+    silently unreliable builds.
+
+  </P
+><P
+>&#13;    To reduce the possibility of a version mismatch,
+    the <TT
+CLASS="APPLICATION"
+>scons</TT
+> script looks first for its
+    imported modules in <TT
+CLASS="FILENAME"
+>/usr/lib/scons-{version}/</TT
+>,
+    then in <TT
+CLASS="FILENAME"
+>/usr/lib/scons/</TT
+>,
+    and then in the normal <TT
+CLASS="VARNAME"
+>PYTHONPATH</TT
+> locations,
+    including <TT
+CLASS="FILENAME"
+>/usr/lib/python*/site-packages</TT
+>).
+    Searching in a version-specific library directory first
+    makes it convenient to install and use multiple
+    side-by-side versions of <TT
+CLASS="APPLICATION"
+>SCons</TT
+>,
+    which is sometimes important
+    when verifying that a new version does not introduce any
+    errors into the local build process.
+    Searching next in an <TT
+CLASS="APPLICATION"
+>SCons</TT
+>-specific library directory
+    makes it convenient for other software to find
+    the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine without having to worry about
+    installing separate copies for
+    multiple versions of Python.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN469"
+></A
+>Packages</H2
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is currently distributed in the following packages:
+
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="AEN473"
+></A
+><P
+><B
+>Table 1. </B
+></P
+><TABLE
+BORDER="1"
+BGCOLOR="#E0E0E0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.tar.gz</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        The traditional <TT
+CLASS="LITERAL"
+>.tar.gz</TT
+> file,
+        installable by running <TT
+CLASS="FILENAME"
+>setup.py</TT
+>.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.noarch.rpm</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        An RPM file for typical installation.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>_all.deb</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        A Debian package.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.win32.exe</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        A Windows installer.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.src.rpm</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        A source RPM file.
+
+      </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>        <TT
+CLASS="LITERAL"
+>scons-src-</TT
+><I
+CLASS="EMPHASIS"
+>version</I
+><TT
+CLASS="LITERAL"
+>.tar.gz</TT
+>
+      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;        A tarball of the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> source tree,
+        including the full set of regression tests.
+
+      </P
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>&#13;    Like other software written in Python, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> benefits greatly from
+    the tremendous effort put into the <TT
+CLASS="LITERAL"
+>distutils</TT
+> by
+    Greg Ward and others. These take care of 90% of the work by making
+    it almost trivial to generate the appropriate RPM files, Debian
+    packages, and Windows installer.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN525"
+></A
+>Default Builder Objects</H2
+><P
+>&#13;    As part of the installation process, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> runs a set of scripts
+    that look for popular compilers and other tools and set up
+    appropriate default <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects for the tools found. These
+    <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects are then used to initialize the default <TT
+CLASS="LITERAL"
+>construction environment</TT
+>
+    values.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN532"
+></A
+>Default Scanner Objects</H2
+><P
+>&#13;    Additionally, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> comes with a stock set of <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> objects
+    for the various file types that it supports out of the box. Any
+    unusal <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> objects required for a specific tool will be
+    detected at installation time and associated with the appropriate
+    <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object for the tool.
+
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H1
+CLASS="SECTION"
+><A
+NAME="SECT-PROCESS"
+></A
+>Development Process</H1
+><P
+>&#13;  The <TT
+CLASS="APPLICATION"
+>SCons</TT
+> project has paid particular attention from day one to the
+  development process. One of the first internal documents produced was
+  a set of Developer's Guidelines to provide a loose framework for what
+  we were trying to accomplish and how we would go about accomplishing
+  it. These Guidelines cover things like:&#13;</P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will be written to Python version 1.5.2 (to ensure
+      usability by a wide install base).
+
+    </P
+></LI
+><LI
+><P
+>&#13;      How <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is be tested: which infrastructure modules to use,
+      what platforms to test on, etc.
+
+    </P
+></LI
+><LI
+><P
+>&#13;      Expectations for developers (subscribe to the mailing list,
+      encouraged to register at SourceForge).
+
+    </P
+></LI
+><LI
+><P
+>&#13;      Brief outline of how to use the change management systems (Aegis and
+      CVS) for <TT
+CLASS="APPLICATION"
+>SCons</TT
+> development;.
+
+    </P
+></LI
+></UL
+><P
+>&#13;  Establishing these guidelines up front had two purposes: 1)
+  Demonstrate the seriousness of the project to anyone wondering about
+  joining the effort; 2) Give potential developers an idea up front as
+  to whether their development style would mesh with the rest of the
+  project.&#13;</P
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN556"
+></A
+>Aegis</H2
+><P
+>&#13;    One of the most important aspects of the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> development process
+    is the use of Peter Miller's Aegis change management system. I
+    had been using Aegis for personal projects for several years, and
+    found its development methodology vastly improved the quality of my
+    programming. I was consequently committed to using it for <TT
+CLASS="APPLICATION"
+>SCons</TT
+>
+    development.
+
+  </P
+><P
+>&#13;    Aegis provides a number of things, including:
+
+  </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;        A flexible source code control and branching model.
+
+      </P
+></LI
+><LI
+><P
+>&#13;        A defined process with separate development, review and
+        integration steps.
+
+      </P
+></LI
+><LI
+><P
+>&#13;        A distributed development model based on distribution of atomic
+        change sets.
+
+      </P
+></LI
+></UL
+><P
+>&#13;    The single most important reason for using Aegis, however, is its
+    management of automated tests as part of the development process.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN570"
+></A
+>Testing, Testing, Testing</H2
+><P
+>&#13;    The <TT
+CLASS="APPLICATION"
+>SCons</TT
+> project has made extensive use of automated tests from day
+    one, taking inspiration mostly from Aegis, partly from the eXtreme
+    Programming model, and with a little home-brew scripting for glue.
+
+  </P
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN574"
+></A
+>Testing Criteria</H3
+><P
+>&#13;      The underlying criteria for testing changes to the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> code
+      are taken from Aegis:
+
+    </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;          Every change must have one or more new or modified tests
+          checked in along with the code.
+
+        </P
+></LI
+><LI
+><P
+>&#13;          The new code being checked in must pass all of the new and/or
+          modified tests.
+
+        </P
+></LI
+><LI
+><P
+>&#13;          The <I
+CLASS="EMPHASIS"
+>old</I
+>, already checked-in code in must
+          <I
+CLASS="EMPHASIS"
+>fail</I
+> all of the new and/or modified
+          tests.
+
+        </P
+></LI
+><LI
+><P
+>&#13;          The new code being checked in must pass all unmodified,
+          already checked-in tests.
+
+        </P
+></LI
+></UL
+><P
+>&#13;      In practice, these restrictions can be overridden as necessary­for
+      example, when changing comments or documentation.
+
+    </P
+><P
+>&#13;      The criterion that surprises many people is having the old code
+      fail the tests in the change. This makes sure that the new tests
+      or modified tests really do exercise the bug fix or feature being
+      added by the change.
+
+    </P
+><P
+>&#13;      Together, these criteria ensure that every newly checked-in
+      version <TT
+CLASS="APPLICATION"
+>SCons</TT
+> conforms to defined behavior, as defined by
+      the tests. Whenever a bug is found, its fix is checked in with
+      a new or modified test that guarantees the bug will not recur
+      in the future. We have already built up a regression test base
+      of almost 90 tests that cover the vast majority of <TT
+CLASS="APPLICATION"
+>SCons</TT
+>'
+      functionality.
+
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H3
+CLASS="SECTION"
+><A
+NAME="AEN594"
+></A
+>Testing Infrastructure</H3
+><P
+>&#13;      Testing standards are no good if they're too much of a burden for
+      developers, who will at best work around or ignore the testing
+      requirements, or at worst stop contributing code and go join a
+      project that's more fun. To this end, good testing infrastructure
+      that makes it easy to write tests is crucial.
+
+    </P
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> development uses two development methodologies, one for
+      the individual modules in the build engine, and the other for
+      end-to-end tests of the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> script.
+
+    </P
+><P
+>&#13;      For the build engine modules, we use PyUnit. Every change to a
+      build engine module must have a change to its corresponding unit
+      tests, which live side-by-side in a separate file that imports
+      module. As we build up a large body of unit tests, this ensures
+      that the build engine will perform correctly whenever someone uses
+      it in some application other than the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> script itself.
+
+    </P
+><P
+>&#13;      For end-to-end script tests, we have developed two modules to make
+      writing tests easy. The first, <TT
+CLASS="FILENAME"
+>TestCmd.py</TT
+>,
+      is a generic module for
+      testing commands or scripts (in any language, not just Python).
+
+      The second module, <TT
+CLASS="FILENAME"
+>TestScons.py</TT
+>,
+      is a subclass of the generic
+      <TT
+CLASS="FILENAME"
+>TestCmd.py</TT
+> module.
+      <TT
+CLASS="FILENAME"
+>TestScons.py</TT
+>
+      takes care of initialization and
+      displaying error conditions
+      specific to testing <TT
+CLASS="APPLICATION"
+>SCons</TT
+>.
+
+    </P
+><P
+>      
+      In practice, simple tests only
+      need to initialize a test object, use the object to write some
+      input files, run <TT
+CLASS="APPLICATION"
+>SCons</TT
+>, and then check whatever criteria
+      determine whether the test passed or failed. A complete test of
+      the <TT
+CLASS="FUNCTION"
+>Program</TT
+> method, for example, looks like this:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      test = TestSCons.TestSCons()
+
+      test.write('SConstruct',
+      """env = Environment()
+      env.Program(target = 'foo', source = 'foo.c')
+      """)
+
+      test.write('foo.c',
+      """
+      int
+      main(int argc, char *argv[])
+      {
+          argv[argc++] = "-"; /* dummy use of args */
+          printf("foo.c successfully compiled\\n");
+          exit (0);
+      }
+      """)
+
+      test.run(arguments = 'foo') # runs SCons
+
+      test.run(program = test.workpath('foo'))
+
+      test.fail_test(test.stdout() != "foo.c successfully compiled\n")
+
+      test.pass_test()
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN612"
+></A
+>SourceForge</H2
+><P
+>&#13;    Registration of the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> project was approved at SourceForge on
+    29 June 2001.  Within a week, the initial code base was checked in,
+    mailing lists were created, and the web site was set up. We started
+    making use of the task-list manager to track what we had to finish
+    for initial release.
+
+  </P
+><P
+>&#13;    The obvious complication was how to use
+    structured testing methodology of Aegis when SourceForge uses
+    CVS for source control. Not using the SourceForge CVS tree would
+    have had two significant disadvantages: one, missing out on the
+    archiving and central location in the event of disaster; two, people
+    coming to the SourceForge project page wouldn't be able to browse
+    the source.  The latter was particularly important in
+    the early stages of development, in order to avoid any impression
+    that this was Yet Another Project that starts with a bang and then
+    dwindles as the initial enthusiasm starts to wear off.
+
+  </P
+><P
+>&#13;    The solution was to use the SourceForge CVS repository for read-only
+    access to the source. <TT
+CLASS="APPLICATION"
+>SCons</TT
+> developers are welcome to use CVS for
+    their development, but the changes are <I
+CLASS="EMPHASIS"
+>not</I
+>
+    committed to the SourceForge repository. Instead, patches are sent
+    to the integrator for processing through Aegis. When the change
+    has been integrated into the Aegis repository, a home-brew
+    script translates the Aegis change into a virtual shell script
+    of commands that copy the necessary files from Aegis and check them
+    in to CVS at SourceForge.
+
+  </P
+><P
+>&#13;    (In practice, write access is not actually disabled for registered
+    developers, but if they do make any changes directly at SourceForge,
+    they can be overwritten at the next Aegis update.)
+
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H1
+CLASS="SECTION"
+><A
+NAME="SECT-FUTURE"
+></A
+>Future Directions</H1
+><P
+>&#13;  There are a number of things we would like to do to continue to
+  improve <TT
+CLASS="APPLICATION"
+>SCons</TT
+> in the future.&#13;</P
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN625"
+></A
+>Distutils Cooperation</H2
+><P
+>&#13;    There is a certain amount of overlap between what <TT
+CLASS="APPLICATION"
+>SCons</TT
+> does
+    to search out and make use of various compilers on a system, and
+    the impressively complete job that the Distutils do of describing
+    much the same thing. Collaborating to provide some sort of common
+    interface between the two tools would benefit both tools.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN629"
+></A
+>Additional Builder Support</H2
+><P
+>&#13;    Adding additional builders would broaden the
+    potential user base. In rough order of importance:
+
+  </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>Java</DT
+><DD
+><P
+>&#13;          Given the popularity of Java, support for it would greatly
+          increase the appeal of <TT
+CLASS="APPLICATION"
+>SCons</TT
+> in the large community of Java
+          users.
+
+        </P
+><P
+>&#13;          Good support for Java is, however, a tricky
+          proposition. Because the Java compiler can make decisions
+          about compiling other files based on what classes it finds
+          in a file, it behaves "unpredictably" from the point of
+          view of an outside build tool like <TT
+CLASS="APPLICATION"
+>SCons</TT
+> or <TT
+CLASS="APPLICATION"
+>Make</TT
+>. Some
+          sort of sophisticated scanning of Java source code to
+          identify what other classes are likely to be compiled
+          would be an obvious first step, but notice that here
+          <TT
+CLASS="APPLICATION"
+>SCons</TT
+> would be scanning the file to find additional
+          targets to be built. This is the inverse of the sort of
+          <TT
+CLASS="LITERAL"
+>#include</TT
+> scanning performed
+          for C files, in which <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is looking for additional
+          <I
+CLASS="EMPHASIS"
+>dependencies</I
+>.
+
+        </P
+></DD
+><DT
+>Documentation toolchains</DT
+><DD
+><P
+>&#13;	  A number of early adopters
+	  are using <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to
+	  build documents
+	  from TeX or DocBook source files.
+	  Built-in support for
+	  various documentation toolchains
+	  would be an obvious boon
+	  for many people.
+
+        </P
+></DD
+><DT
+>C#</DT
+><DD
+><P
+>&#13;          The reality is that anything that Microsoft does will doubtless
+          have a wide audience. Turning <TT
+CLASS="APPLICATION"
+>SCons</TT
+>' back on that would be
+          cutting off its nose to spite its face.
+    
+        </P
+></DD
+><DT
+>Fortran</DT
+><DD
+><P
+>&#13;          Despite the fact that <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is no longer directly
+          associated with Software Carpentry, it still shares the
+          same goal: to make programming easier for more than just
+          programmers. To that end, good Fortran support would
+          help a great many physical scientists and other computer
+          <I
+CLASS="EMPHASIS"
+>users</I
+> out there who still rely on Fortran
+          for a great deal of their work.
+
+        </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN661"
+></A
+>Database Interface</H2
+><P
+>&#13;    The Nodes in an <TT
+CLASS="APPLICATION"
+>SCons</TT
+> dependency graph aren't only restricted to
+    files. Creating an interface to mSQL or MySQL databases would allow
+    the possibility of updating external files in response to changes in
+    database fields, or vice versa. This could be handy, for example,
+    for generating a cache of static web pages from a database that only
+    need re-generating when the appropriate database objects change.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN665"
+></A
+>Tool Integration</H2
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> should work well with as many popular Integrated Development
+    Environments (IDEs) and tool chains as possible: Komodo, Microsoft
+    Visual Studio, ClearCase, etc. Suggestions for additional tools are
+    welcome.
+
+  </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H2
+CLASS="SECTION"
+><A
+NAME="AEN669"
+></A
+>Makefile Interface</H2
+><P
+>&#13;    Because the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build Engine can be embedded in any Python
+    interface, there isn't any technical reason why a <TT
+CLASS="FILENAME"
+>Makefile</TT
+>
+    interpreter couldn't be written in Python and use the <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Build
+    Engine for its dependency analysis.
+
+  </P
+><P
+>&#13;    Proof-of-concept for the idea already exists. Gary Holt's
+    <TT
+CLASS="LITERAL"
+>make++</TT
+> (also known as <TT
+CLASS="LITERAL"
+>makepp</TT
+>)
+    is a Perl implementation of just such a <TT
+CLASS="FILENAME"
+>Makefile</TT
+> interpreter. It
+    could possible serve as a model for a Python version, in much the
+    same way the <TT
+CLASS="APPLICATION"
+>Cons</TT
+> design served as the prototype for <TT
+CLASS="APPLICATION"
+>SCons</TT
+>.
+
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H1
+CLASS="SECTION"
+><A
+NAME="SECT-SUMMARY"
+></A
+>Summary</H1
+><P
+>&#13;      This paper has introduced <TT
+CLASS="APPLICATION"
+>SCons</TT
+>, a next-generation build tool
+      with a modular, embeddable architecture and a direct Python
+      interface. <TT
+CLASS="APPLICATION"
+>SCons</TT
+> has a global view of the dependencies in a source
+      tree, uses MD5 signatures to decide if derived files are out of date,
+      and automatically scans files for dependencies, all of which make <TT
+CLASS="APPLICATION"
+>SCons</TT
+>
+      builds exceptionally reliable. The <TT
+CLASS="APPLICATION"
+>SCons</TT
+> development methodology has
+      been described, notable for its emphasis on automated regression
+      testing to ensure a robust and reliable tool from day one. Several
+      future directions for <TT
+CLASS="APPLICATION"
+>SCons</TT
+> have also been discussed.
+
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><HR><H1
+CLASS="SECTION"
+><A
+NAME="SECT-ACKS"
+></A
+>Acknowledgements</H1
+><P
+>&#13;  First, many thanks to the great group of developers who dove in right
+  from the beginning and have contributed the code and ideas to make
+  <TT
+CLASS="APPLICATION"
+>SCons</TT
+> a success: Chad Austin, Charles Crain, Steve Leblanc, and
+  Anthony Roach. Thanks also to those on the scons-devel mailing list
+  who have contributed greatly to the discussion, notably including
+  David Abrahams, Trent Mick, and Steven Shaw.&#13;</P
+><P
+>&#13;  <TT
+CLASS="APPLICATION"
+>SCons</TT
+> would not exist today without the pioneering work of Bob
+  Sidebotham on the original <TT
+CLASS="APPLICATION"
+>Cons</TT
+> tool, and without Greg Wilson's
+  having started the Software Carpentry contest.&#13;</P
+><P
+>&#13;  Thanks also to Peter Miller for: Aegis; the testing discipline that it
+  enforces, without which creating a stable but flexible tool would be
+  impossible; the "Recursive Make Considered Harmful" paper which led me
+  to experiment with <TT
+CLASS="APPLICATION"
+>Cons</TT
+> in the first place.&#13;</P
+></DIV
+><A
+NAME="SECT-REFS"
+></A
+><HR><H1
+><A
+NAME="SECT-REFS"
+></A
+>References</H1
+><DIV
+CLASS="BIBLIOENTRY"
+><A
+NAME="AEN700"
+></A
+><P
+>[1]&nbsp;<SPAN
+CLASS="AUTHOR"
+>Stuart I. Feldman</SPAN
+>, Aug 1978, Bell Laboratories, <I
+>Make - A Program for Maintaining Computer Programs</I
+>.</P
+><DIV
+CLASS="BIBLIOENTRYBLOCK"
+STYLE="margin-left=0.5in"
+></DIV
+></DIV
+><DIV
+CLASS="BIBLIOENTRY"
+><A
+NAME="AEN711"
+></A
+><P
+>[2]&nbsp;<SPAN
+CLASS="AUTHOR"
+>Peter Miller</SPAN
+>, 1997, <I
+>Recursive Make Considered Harmful</I
+>.</P
+><DIV
+CLASS="BIBLIOENTRYBLOCK"
+STYLE="margin-left=0.5in"
+></DIV
+></DIV
+><DIV
+CLASS="BIBLIOENTRY"
+><A
+NAME="AEN721"
+></A
+><P
+>[3]&nbsp;<SPAN
+CLASS="AUTHOR"
+>Andrew Oram </SPAN
+><SPAN
+CLASS="AUTHOR"
+>and Steve Talbott</SPAN
+>, 1986, 1991, O'Reilly &#38; Associates, Inc., <I
+>Managing Projects with Make, 2nd Ed.</I
+>.</P
+><DIV
+CLASS="BIBLIOENTRYBLOCK"
+STYLE="margin-left=0.5in"
+></DIV
+></DIV
+><DIV
+CLASS="BIBLIOENTRY"
+><A
+NAME="AEN737"
+></A
+><P
+>[4]&nbsp;<SPAN
+CLASS="AUTHOR"
+>Richard M. Stallman </SPAN
+><SPAN
+CLASS="AUTHOR"
+>and Roland McGrath</SPAN
+>, 1988, '89, '90, '91, '92, '93, '94, '95, '96, '97, '98, '99, 2000, Free Software Foundation, Inc., <I
+>GNU Make</I
+><I
+>: </I
+><I
+>A Program for Directing Recompilation</I
+>.</P
+><DIV
+CLASS="BIBLIOENTRYBLOCK"
+STYLE="margin-left=0.5in"
+></DIV
+></DIV
+></DIV
+></BODY
+></HTML
+>

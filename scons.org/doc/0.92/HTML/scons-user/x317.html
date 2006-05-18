@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Fetching Values From a Construction Environment</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.92"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Construction Environments"
+HREF="c232.html"><LINK
+REL="PREVIOUS"
+TITLE="Copying Construction Environments"
+HREF="x293.html"><LINK
+REL="NEXT"
+TITLE="Modifying a Construction Environment"
+HREF="x335.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x293.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Construction Environments</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x335.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN317"
+></A
+>Fetching Values From a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></H1
+><P
+>&#13;   You can fetch individual construction variables
+   using the normal syntax
+   for accessing individual named items in a Python dictionary:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment()
+      print "CC is:", env['CC']
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   This example <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file doesn't build anything,
+   but because it's actually a Python script,
+   it will print the value of <TT
+CLASS="VARNAME"
+>CC</TT
+> for us:
+
+   </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CC&nbsp;is:&nbsp;cc<br>
+&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;   A <TT
+CLASS="LITERAL"
+>construction environment</TT
+>, however,
+   is actually a Python object with
+   associated methods, etc.
+   If you want to have direct access to only the
+   dictionary of construction variables,
+   you can fetch this using the <TT
+CLASS="LITERAL"
+>Dictionary</TT
+> method:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment(FOO = 'foo', BAR = 'bar')
+      dict = env.Dictionary()
+      for key, value in dict.items():
+          print "key = %s, value = %s % (key, value)
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   This <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file
+   will print the dictionary items for us as follows:
+
+   </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key&nbsp;=&nbsp;FOO,&nbsp;value&nbsp;=&nbsp;foo<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key&nbsp;=&nbsp;BAR,&nbsp;value&nbsp;=&nbsp;bar<br>
+&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x293.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x335.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Copying <TT
+CLASS="LITERAL"
+>Construction Environments</TT
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c232.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Modifying a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

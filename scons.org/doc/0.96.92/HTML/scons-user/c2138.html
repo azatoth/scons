@@ -1,0 +1,308 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Separating Source and Build Directories</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.92"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Sharing Environments (and Other Variables) Between SConscript Files"
+HREF="x2053.html"><LINK
+REL="NEXT"
+TITLE="Why SCons Duplicates Source Files in a Build Directory"
+HREF="x2175.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x2053.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x2175.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-SEPARATE"
+></A
+>Separating Source and Build Directories</H1
+><P
+>&#13;  It's often useful to keep any built files completely
+  separate from the source files.
+  This is usually done by creating one or more separate
+  <I
+CLASS="EMPHASIS"
+>build directories</I
+>
+  that are used to hold the built objects files, libraries,
+  and executable programs, etc.
+  for a specific flavor of build.
+  <TT
+CLASS="APPLICATION"
+>SCons</TT
+> provides two ways to do this,
+  one through the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> function that we've already seen,
+  and the second through a more flexible <TT
+CLASS="FUNCTION"
+>BuildDir</TT
+> function.
+
+  </P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN2145"
+>Specifying a Build Directory as Part of an <TT
+CLASS="FILENAME"
+>SConscript</TT
+> Call</A
+></H1
+><P
+>&#13;    The most straightforward way to establish a build directory
+    uses the fact that the usual way to
+    set up a build hierarchy is to have an
+    <TT
+CLASS="FILENAME"
+>SConscript</TT
+> file in the source subdirectory.
+    If you then pass a <VAR
+CLASS="VARNAME"
+>build_dir</VAR
+> argument to the
+    <TT
+CLASS="FILENAME"
+>SConscript</TT
+> function call:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      SConscript('src/SConscript', build_dir='build')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will then build all of the files in
+    the <TT
+CLASS="FILENAME"
+>build</TT
+> subdirectory:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <KBD
+CLASS="USERINPUT"
+>ls src</KBD
+>
+      SConscript  hello.c
+      % <KBD
+CLASS="USERINPUT"
+>scons -Q</KBD
+>
+      cc -c -o build/hello.o build/hello.c
+      cc -o build/hello build/hello.o
+      % <KBD
+CLASS="USERINPUT"
+>ls build</KBD
+>
+      SConscript  hello  hello.c  hello.o
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    But wait a minute--what's going on here?
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> created the object file
+    <TT
+CLASS="FILENAME"
+>build/hello.o</TT
+>
+    in the <TT
+CLASS="FILENAME"
+>build</TT
+> subdirectory,
+    as expected.
+    But even though our <TT
+CLASS="FILENAME"
+>hello.c</TT
+> file lives in the <TT
+CLASS="FILENAME"
+>src</TT
+> subdirectory,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> has actually compiled a
+    <TT
+CLASS="FILENAME"
+>build/hello.c</TT
+> file
+    to create the object file.
+
+    </P
+><P
+>&#13;    What's happened is that <TT
+CLASS="APPLICATION"
+>SCons</TT
+> has <I
+CLASS="EMPHASIS"
+>duplicated</I
+>
+    the <TT
+CLASS="FILENAME"
+>hello.c</TT
+> file from the <TT
+CLASS="FILENAME"
+>src</TT
+> subdirectory
+    to the <TT
+CLASS="FILENAME"
+>build</TT
+> subdirectory,
+    and built the program from there.
+    The next section explains why <TT
+CLASS="APPLICATION"
+>SCons</TT
+> does this.
+
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x2053.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x2175.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Sharing Environments (and Other Variables) Between <TT
+CLASS="FILENAME"
+>SConscript</TT
+> Files</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Why <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Duplicates Source Files in a Build Directory</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

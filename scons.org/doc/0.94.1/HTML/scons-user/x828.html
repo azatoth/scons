@@ -1,0 +1,294 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Getting at the List of Build Targets, Regardless of Origin</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.94.1"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Controlling a Build From the Command Line"
+HREF="c702.html"><LINK
+REL="PREVIOUS"
+TITLE="Controlling the Default Targets"
+HREF="x747.html"><LINK
+REL="NEXT"
+TITLE="Command-Line variable=value Build Options"
+HREF="x853.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.94.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x747.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Controlling a Build From the Command Line</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x853.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN828"
+></A
+>Getting at the List of Build Targets, Regardless of Origin</H1
+><P
+>&#13;    We've already been introduced to the
+    <TT
+CLASS="VARNAME"
+>COMMAND_LINE_TARGETS</TT
+> variable,
+    which contains a list of targets specified on the command line,
+    and the <TT
+CLASS="VARNAME"
+>DEFAULT_TARGETS</TT
+> variable,
+    which contains a list of targets specified
+    via calls to the <TT
+CLASS="FUNCTION"
+>Default</TT
+> method or function.
+    Sometimes, however,
+    you want a list of whatever targets
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will try to build,
+    regardless of whether the targets came from the
+    command line or a <TT
+CLASS="FUNCTION"
+>Default</TT
+> call.
+    You could code this up by hand, as follows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      if COMMAND_LINE_TARGETS:
+          targets = COMMAND_LINE_TARGETS
+      else:
+          targets = DEFAULT_TARGETS
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+>, however, provides a convenient
+    <TT
+CLASS="VARNAME"
+>BUILD_TARGETS</TT
+> variable
+    that eliminates the need for this by-hand manipulation.
+    Essentially, the <TT
+CLASS="VARNAME"
+>BUILD_TARGETS</TT
+> variable
+    contains a list of the command-line targets,
+    if any were specified,
+    and if no command-line targets were specified,
+    it contains a list of the targets specified
+    via the <TT
+CLASS="FUNCTION"
+>Default</TT
+> method or function.
+
+    </P
+><P
+>&#13;    Because <TT
+CLASS="VARNAME"
+>BUILD_TARGETS</TT
+> may contain a list of <TT
+CLASS="APPLICATION"
+>SCons</TT
+> nodes,
+    you must convert the list elements to strings
+    if you want to print them or look for a specific target name,
+    just like the <TT
+CLASS="VARNAME"
+>DEFAULT_TARGETS</TT
+> list:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      prog1 = Program('prog1.c')
+      Program('prog2.c')
+      Default(prog1)
+      print "BUILD_TARGETS is", map(str, BUILD_TARGETS)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Notice how the value of <TT
+CLASS="VARNAME"
+>BUILD_TARGETS</TT
+>
+    changes depending on whether a target is
+    specified on the command line:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUILD_TARGETS&nbsp;is&nbsp;['prog1']<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;prog1.o&nbsp;prog1.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;prog1&nbsp;prog1.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q prog2</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUILD_TARGETS&nbsp;is&nbsp;['prog2']<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;prog2.o&nbsp;prog2.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;prog2&nbsp;prog2.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q -c .</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUILD_TARGETS&nbsp;is&nbsp;['.']<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removed&nbsp;prog1.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removed&nbsp;prog1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removed&nbsp;prog2.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removed&nbsp;prog2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x747.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x853.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Controlling the Default Targets</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c702.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Command-Line <TT
+CLASS="VARNAME"
+>variable</TT
+>=<TT
+CLASS="VARNAME"
+>value</TT
+> Build Options</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

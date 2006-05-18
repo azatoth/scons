@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Keyword Arguments</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.95"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Simple Builds"
+HREF="c87.html"><LINK
+REL="PREVIOUS"
+TITLE="Keeping SConstruct Files Easy to Read"
+HREF="x190.html"><LINK
+REL="NEXT"
+TITLE="Compiling Multiple Programs"
+HREF="x227.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.95</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x190.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Simple Builds</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x227.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN216"
+></A
+>Keyword Arguments</H1
+><P
+>&#13;   <TT
+CLASS="APPLICATION"
+>SCons</TT
+> also allows you to identify
+   the output file and input source files
+   using Python keyword arguments.
+   The output file is known as the
+   <I
+CLASS="EMPHASIS"
+>target</I
+>,
+   and the source file(s) are known (logically enough) as the
+   <I
+CLASS="EMPHASIS"
+>source</I
+>.
+   The Python syntax for this is:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      list = Split('main.c file1.c file2.c')
+      Program(target = 'program', source = list)
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   Because the keywords explicitly identify
+   what each argument is,
+   you can actually reverse the order if you prefer:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      list = Split('main.c file1.c file2.c')
+      Program(source = list, target = 'program')
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   Whether or not you choose to use keyword arguments
+   to identify the target and source files,
+   and the order in which you specify them
+   when using keywords,
+   are purely personal choices;
+   <TT
+CLASS="APPLICATION"
+>SCons</TT
+> functions the same regardless.
+
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x190.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x227.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Keeping <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> Files Easy to Read</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c87.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Compiling Multiple Programs</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

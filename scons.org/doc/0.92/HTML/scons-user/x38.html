@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>SCons Principles</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.92"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Preface"
+HREF="c16.html"><LINK
+REL="PREVIOUS"
+TITLE="Preface"
+HREF="c16.html"><LINK
+REL="NEXT"
+TITLE="History"
+HREF="x63.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c16.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Preface</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x63.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN38"
+></A
+><TT
+CLASS="APPLICATION"
+>SCons</TT
+> Principles</H1
+><P
+>&#13;    There are a few overriding principles
+    we try to live up to in designing and implementing <TT
+CLASS="APPLICATION"
+>SCons</TT
+>:
+
+    </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>Correctness</DT
+><DD
+><P
+>&#13;      First and foremost,
+      by default, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> guarantees a correct build
+      even if it means sacrificing performance a little.
+      We strive to guarantee the build is correct
+      regardless of how the software being built is structured,
+      how it may have been written,
+      or how unusual the tools are that build it.
+
+      </P
+></DD
+><DT
+>Performance</DT
+><DD
+><P
+>&#13;      Given that the build is correct,
+      we try to make <TT
+CLASS="APPLICATION"
+>SCons</TT
+> build software
+      as quickly as possible.
+      In particular, wherever we may have needed to slow
+      down the default <TT
+CLASS="APPLICATION"
+>SCons</TT
+> behavior to guarantee a correct build,
+      we also try to make it easy to speed up <TT
+CLASS="APPLICATION"
+>SCons</TT
+>
+      through optimization options that let you trade off
+      guaranteed correctness for speed.
+
+      </P
+></DD
+><DT
+>Convenience</DT
+><DD
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> tries to do as much for you out of the box as reasonable,
+      including detecting the right tools on your system
+      and using them correctly to build the software.
+
+      </P
+></DD
+></DL
+></DIV
+><P
+>&#13;    In a nutshell, we try hard to make <TT
+CLASS="APPLICATION"
+>SCons</TT
+> just
+    "do the right thing" and build software correctly,
+    with a minimum of hassles.
+
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c16.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x63.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Preface</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c16.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>History</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

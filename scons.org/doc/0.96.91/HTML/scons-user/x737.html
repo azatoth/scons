@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Printing Node File Names</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.91"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Node Objects"
+HREF="c679.html"><LINK
+REL="PREVIOUS"
+TITLE="Explicitly Creating File and Directory Nodes"
+HREF="x717.html"><LINK
+REL="NEXT"
+TITLE="Using a Node's File Name as a String"
+HREF="x749.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.91</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x717.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Node Objects</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x749.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN737"
+>Printing <CODE
+CLASS="CLASSNAME"
+>Node</CODE
+> File Names</A
+></H1
+><P
+>&#13;    One of the most common things you can do
+    with a Node is use it to print the
+    file name that the node represents.
+    For example, the following <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      hello_c = File('hello.c')
+      Program(hello_c)
+
+      classes = Dir('classes')
+      Java(classes, 'src')
+
+      object_list = Object('hello.c')
+      program_list = Program(object_list)
+      print "The object file is:", object_list[0]
+      print "The program file is:", program_list[0]
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Would print the following file names on a POSIX system:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <KBD
+CLASS="USERINPUT"
+>scons -Q</KBD
+>
+      The object file is: hello.o
+      The program file is: hello
+      cc -c -o hello.o hello.c
+      cc -o hello hello.o
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    And the following file names on a Windows system:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      C:\&#62;<KBD
+CLASS="USERINPUT"
+>scons -Q</KBD
+>
+      The object file is: hello.obj
+      The program file is: hello.exe
+      cl /nologo /c hello.c /Fohello.obj
+      link /nologo /OUT:hello.exe hello.obj
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x717.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x749.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Explicitly Creating File and Directory Nodes</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c679.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Using a <CODE
+CLASS="CLASSNAME"
+>Node</CODE
+>'s File Name as a String</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
