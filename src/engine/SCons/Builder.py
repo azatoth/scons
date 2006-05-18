@@ -143,6 +143,10 @@ class DictCmdGenerator(SCons.Util.Selector):
     to return the proper action based on the file suffix of
     the source file."""
 
+    def __init__(self, dict=None, source_ext_match=1):
+        SCons.Util.Selector.__init__(self, dict)
+        self.source_ext_match = source_ext_match
+
     def src_suffixes(self):
         return self.keys()
 
@@ -155,12 +159,15 @@ class DictCmdGenerator(SCons.Util.Selector):
         if not source:
             return []
 
-        ext = None
-        for src in map(str, source):
-            my_ext = SCons.Util.splitext(src)[1]
-            if ext and my_ext != ext:
-                raise UserError("While building `%s' from `%s': Cannot build multiple sources with different extensions: %s, %s" % (repr(map(str, target)), src, ext, my_ext))
-            ext = my_ext
+        if self.source_ext_match:
+            ext = None
+            for src in map(str, source):
+                my_ext = SCons.Util.splitext(src)[1]
+                if ext and my_ext != ext:
+                    raise UserError("While building `%s' from `%s': Cannot build multiple sources with different extensions: %s, %s" % (repr(map(str, target)), src, ext, my_ext))
+                ext = my_ext
+        else:
+            ext = SCons.Util.splitext(str(source[0]))[1]
 
         if not ext:
             raise UserError("While building `%s': Cannot deduce file extension from source files: %s" % (repr(map(str, target)), repr(map(str, source))))
@@ -249,8 +256,11 @@ def Builder(**kw):
         kw['action'] = SCons.Action.CommandGeneratorAction(kw['generator'])
         del kw['generator']
     elif kw.has_key('action'):
+        source_ext_match = kw.get('source_ext_match', 1)
+        if kw.has_key('source_ext_match'):
+            del kw['source_ext_match']
         if SCons.Util.is_Dict(kw['action']):
-            composite = DictCmdGenerator(kw['action'])
+            composite = DictCmdGenerator(kw['action'], source_ext_match)
             kw['action'] = SCons.Action.CommandGeneratorAction(composite)
             kw['src_suffix'] = composite.src_suffixes()
         else:

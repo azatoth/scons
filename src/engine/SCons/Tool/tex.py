@@ -138,11 +138,11 @@ def tex_emitter(target, source, env):
     target.append(base + '.log')
     for f in source:
         content = f.get_contents()
-        if string.find(content, r'\makeindex'):
+        if string.find(content, r'\makeindex') != -1:
             target.append(base + '.ilg')
             target.append(base + '.ind')
             target.append(base + '.idx')
-        if string.find(content, r'\bibliography'):
+        if string.find(content, r'\bibliography') != -1:
             target.append(base + '.bbl')
             target.append(base + '.blg')
 

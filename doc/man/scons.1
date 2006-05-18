@@ -5613,6 +5613,48 @@ and
 .I action
 arguments must not both be used for the same Builder.
 
+.IP source_ext_match
+When the specified
+.I action
+argument is a dictionary,
+the default behavior when a builder is passed
+multiple source files is to make sure that the
+extensions of all the source files match.
+If it is legal for this builder to be
+called with a list of source files with different extensions,
+this check can be suppressed by setting
+.B source_ext_match
+to
+.B None
+or some other non-true value.
+When
+.B source_ext_match
+is disable,
+.B scons
+will use the suffix of the first specified
+source file to select the appropriate action from the
+.I action
+dictionary.
+
+In the following example,
+the setting of
+.B source_ext_match
+prevents
+.B scons 
+from exiting with an error
+due to the mismatched suffixes of
+.B foo.in
+and
+.BR foo.extra .
+
+.ES
+b = Builder(action={'.in' : 'build $SOURCES > $TARGET'},
+            source_ext_match = None)
+
+env = Environment(BUILDERS = {'MyBuild':b})
+env.MyBuild('foo.out', ['foo.in', 'foo.extra'])
+.EE
+
 .IP env
 A construction environment that can be used
 to fetch source code using this Builder.

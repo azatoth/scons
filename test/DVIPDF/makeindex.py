@@ -1,9 +1,4 @@
-"""SCons.Tool.pdf
-
-Common PDF Builder definition for various other Tool modules that use it.
-
-"""
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -29,29 +24,48 @@ Common PDF Builder definition for various other Tool modules that use it.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Builder
-import SCons.Tool
+import TestSCons
 
-PDFBuilder = None
+test = TestSCons.TestSCons()
 
-def generate(env):
-    try:
-        bld = env['BUILDERS']['PDF']
-    except KeyError:
-        global PDFBuilder
-        if PDFBuilder is None:
-            PDFBuilder = SCons.Builder.Builder(action = {},
-                                               source_scanner = SCons.Tool.LaTeXScanner,
-                                               prefix = '$PDFPREFIX',
-                                               suffix = '$PDFSUFFIX',
-                                               emitter = {},
-                                               source_ext_match = None)
-        env['BUILDERS']['PDF'] = PDFBuilder
 
-    env['PDFPREFIX'] = ''
-    env['PDFSUFFIX'] = '.pdf'
 
-def exists(env):
-    # This only puts a skeleton Builder in place, so if someone
-    # references this Tool directly, it's always "available."
-    return 1
+dvipdf = test.where_is('dvipdf')
+tex = test.where_is('tex')
+
+if not dvipdf or not tex:
+    test.skip_test('Could not find dvipdf or text; skipping test(s).\n')
+
+
+
+test.write('SConstruct', """
+import os
+env = Environment(ENV = { 'PATH' : os.environ['PATH'] })
+dvipdf = env.Dictionary('DVIPDF')
+env.PDF(target = 'foo.pdf',
+        source = env.DVI(target = 'foo.dvi', source = 'foo.tex'))
+""")
+
+test.write('foo.tex', r"""
+\documentclass{article}
+\usepackage{makeidx}
+\makeindex
+
+\begin{document}
+\section{Test 1}
+I would like to \index{index} this.
+
+\section{test 2}
+I'll index \index{this} as well.
+
+\printindex
+\end{document}
+""")
+
+test.run(arguments = 'foo.pdf', stderr = None)
+
+test.must_exist(test.workpath('foo.pdf'))
+
+
+
+test.pass_test()
