@@ -14,7 +14,7 @@
 <h2 class="pagetitle"> Latest News </h2>
 
 <h3> SCons 0.96.92 (testing pre-release for 0.97) is available </h3>
-<div class="date">10 April 2005</div>
+<div class="date">10 April 2006</div>
 <div class="newsitem">
 Another testing pre-release has been made available.
 This is intended as the last testing pre-release before

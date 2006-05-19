@@ -30,8 +30,7 @@ The most recent and up-to-date version of this FAQ
 may always be found at:
 </P>
 <PRE>
- <A HREF="http://www.scons.org/faq/current.html">http://www.scons.org/faq/current.html</A> (HTML)
- <A HREF="http://www.scons.org/faq/current.txt">http://www.scons.org/faq/current.txt</A> (text)
+ <A HREF="http://www.scons.org/faq.php">http://www.scons.org/faq.php</A>
 </PRE>
 <P>
 Please check to make sure your question
