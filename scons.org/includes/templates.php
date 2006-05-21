@@ -71,11 +71,11 @@ function make_top($title, $page)
 	</ul>
 
 </li>
-<li><a href="http://sourceforge.net/projects/scons">SourceForge</a><br />
+<li><a href="http://scons.tigris.org/">Tigris.org</a><br />
 	<ul class="submenuitems">
-	<li><a href="http://sourceforge.net/tracker/?func=add&group_id=30337&atid=398971">Report bugs</a></li>
-	<li><a href="http://sourceforge.net/tracker/?func=add&group_id=30337&atid=398973">Submit patches</a></li>
-	<li><a href="http://sourceforge.net/tracker/?atid=398974&group_id=30337&func=browse">Feature requests</a></li>
+	<li><a href="http://scons.tigris.org/bug-submission.html">Report bugs</a></li>
+	<li><a href="http://scons.tigris.org/patch-submission.html">Submit patches</a></li>
+	<li><a href="http://scons.tigris.org/feature-request.html">Feature requests</a></li>
 	</ul>
 	</li>
 <li><a href="links.php"<?if(!strcmp($page,"links"))echo $currentpage;?>>Links</a></li>
