@@ -53,6 +53,9 @@ RELEASE 0.97 - XXX
     related .ilg, .ind and .idx index files will be created.
     (NOTE:  This still needs to search for the string in \include files.)
 
+  - Prevent scanning the TeX .aux file for additional files from
+    trying to remove it twice when the -c option is used.
+
   From Greg Noel:
 
   - Add an env.ParseFlags() method that provides separate logic for

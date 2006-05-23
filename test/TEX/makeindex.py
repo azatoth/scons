@@ -31,6 +31,8 @@ aware of the necessary created index files.
 Test configuration courtesy Joel B. Mohler.
 """
 
+import string
+
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -74,9 +76,12 @@ I'll index \index{this} as well.
 # so we have to ignore it.
 test.run(arguments = '.', stderr=None)
 
+test.must_exist(test.workpath('simple.aux'))
 test.must_exist(test.workpath('simple.idx'))
 test.must_exist(test.workpath('simple.ilg'))
 test.must_exist(test.workpath('simple.ind'))
+
+test.must_exist(test.workpath('no_index.aux'))
 
 test.must_not_exist(test.workpath('no_index.idx'))
 test.must_not_exist(test.workpath('no_index.ilg'))
@@ -84,8 +89,16 @@ test.must_not_exist(test.workpath('no_index.ind'))
 
 test.run(arguments = '-c .')
 
+x = "Could not remove 'no_index.aux': No such file or directory"
+test.fail_test(string.find(test.stdout(), x) != -1)
+x = "Could not remove 'simple.aux': No such file or directory"
+test.fail_test(string.find(test.stdout(), x) != -1)
+
+test.must_not_exist(test.workpath('simple.aux'))
 test.must_not_exist(test.workpath('simple.idx'))
 test.must_not_exist(test.workpath('simple.ilg'))
 test.must_not_exist(test.workpath('simple.ind'))
+
+test.must_not_exist(test.workpath('no_index.aux'))
 
 test.pass_test()

@@ -150,7 +150,8 @@ def tex_emitter(target, source, env):
     logfilename = base + '.log'
     if os.path.exists(logfilename):
         content = open(logfilename, "rb").read()
-        target.extend(openout_aux_re.findall(content))
+        aux_files = openout_aux_re.findall(content)
+        target.extend(filter(lambda f, b=base+'.aux': f != b, aux_files))
 
     return (target, source)
 
