@@ -68,6 +68,9 @@ RELEASE 0.97 - XXX
   - Extend the ParseConfig() function to recognize -arch and
     -isysroot options.
 
+  - Have the error message list the known suffixes when a Builder call
+    can't build a source file with an unknown suffix.
+
   From Karol Pietrzak:
 
   - Avoid recursive calls to main() in the program snippet used by the

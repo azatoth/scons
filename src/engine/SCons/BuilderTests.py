@@ -1589,7 +1589,7 @@ class CompositeBuilderTestCase(unittest.TestCase):
         except SCons.Errors.UserError, e:
             flag = 1
         assert flag, "UserError should be thrown when we build a target with an unknown suffix."
-        expect = "While building `['t8']': Don't know how to build a file with suffix `.unknown'."
+        expect = "While building `['t8']' from `['test8.unknown']': Don't know how to build from a source file with suffix `.unknown'.  Expected a suffix in this list: ['.foo', '.bar']."
         assert str(e) == expect, e
 
 if __name__ == "__main__":

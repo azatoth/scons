@@ -177,7 +177,8 @@ class DictCmdGenerator(SCons.Util.Selector):
         except KeyError, e:
             raise UserError("Ambiguous suffixes after environment substitution: %s == %s == %s" % (e[0], e[1], e[2]))
         if ret is None:
-            raise UserError("While building `%s': Don't know how to build a file with suffix `%s'." % (repr(map(str, target)), ext))
+            raise UserError("While building `%s' from `%s': Don't know how to build from a source file with suffix `%s'.  Expected a suffix in this list: %s." % \
+                            (repr(map(str, target)), repr(map(str, source)), ext, repr(self.keys())))
         return ret
 
 class CallableSelector(SCons.Util.Selector):
