@@ -388,6 +388,16 @@ class SubstitutionTestCase(unittest.TestCase):
         mystr = env.subst("$AAA ${AAA}A ${AAA}B $BBB")
         assert mystr == "c cA cB c", mystr
 
+        # Lists:
+        env = SubstitutionEnvironment(AAA = ['a', 'aa', 'aaa'])
+        mystr = env.subst("$AAA")
+        assert mystr == "a aa aaa", mystr
+
+        # Tuples:
+        env = SubstitutionEnvironment(AAA = ('a', 'aa', 'aaa'))
+        mystr = env.subst("$AAA")
+        assert mystr == "a aa aaa", mystr
+
         t1 = DummyNode('t1')
         t2 = DummyNode('t2')
         s1 = DummyNode('s1')
@@ -2137,21 +2147,25 @@ def generate(env):
 
         a = env.Action('foo')
         assert a, a
-        assert a.__class__ is SCons.Action.CommandAction, a
+        assert a.__class__ is SCons.Action.CommandAction, a.__class__
 
         a = env.Action('$FOO')
         assert a, a
-        assert a.__class__ is SCons.Action.LazyAction, a
+        assert a.__class__ is SCons.Action.CommandAction, a.__class__
+
+        a = env.Action('$$FOO')
+        assert a, a
+        assert a.__class__ is SCons.Action.LazyAction, a.__class__
 
         a = env.Action(['$FOO', 'foo'])
         assert a, a
-        assert a.__class__ is SCons.Action.ListAction, a
+        assert a.__class__ is SCons.Action.ListAction, a.__class__
 
         def func(arg):
             pass
         a = env.Action(func)
         assert a, a
-        assert a.__class__ is SCons.Action.FunctionAction, a
+        assert a.__class__ is SCons.Action.FunctionAction, a.__class__
 
     def test_AddPostAction(self):
         """Test the AddPostAction() method"""

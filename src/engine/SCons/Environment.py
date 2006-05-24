@@ -1296,7 +1296,11 @@ class Base(SubstitutionEnvironment):
     #######################################################################
 
     def Action(self, *args, **kw):
-        nargs = self.subst(args)
+        def subst_string(a, self=self):
+            if SCons.Util.is_String(a):
+                a = self.subst(a)
+            return a
+        nargs = map(subst_string, args)
         nkw = self.subst_kw(kw)
         return apply(SCons.Action.Action, nargs, nkw)
 
