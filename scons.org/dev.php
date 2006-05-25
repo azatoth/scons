@@ -23,11 +23,12 @@ reliable tool for building software.  Here are the key points: </p>
 <ul>
 <li>We write a lot of automated tests to test the daylights out of <span
 class="sconslogo">SCons</span>.
-Lines of test code outnumber lines of code in SCons itself
-by more than two to one.
+Lines of test code currently outnumber lines of code in SCons itself
+by more than 2.5 to one.
 <li>We use the Aegis change management system to control the development and
 testing process.
-<li>You can still use CVS as a read-only front end for submitting patches.
+<li>You can still use Subversion or CVS as a front end
+for submitting patches.
 </ul>
 
 </p>
@@ -100,10 +101,10 @@ Updated whenever a change is made to <span class="sconslogo">SCons</span>.
 
 <div class="link">
 <div class="linkname">
-<a href="http://scons.tigris.org/source/browse/scons/">CVS&nbsp;repository</a></td>
+<a href="http://scons.tigris.org/source/browse/scons/">Subversion&nbsp;repository</a></td>
 </div>
 <div class="linkdesc">
-The browsable CVS repository at
+The browsable Subversion repository at
 <a href="http://www.tigris.org">Tigris.org</a>.
 Updated whenever a change is made to <span class="sconslogo">SCons</span>.
 </div>

@@ -9,7 +9,7 @@
 <div id="bodycontent">
 <h2> SCons Developer's Guidelines </h2>
 
-<center>28 September 2004</center>
+<center>22 May 2006</center>
 <ol class="upper-roman">
 <li>
 General
@@ -18,10 +18,10 @@ General
 <ol class="decimal">
 <li>
 All SCons software (SCons itself, tests, supporting utilities) will be
-written to Python version 1.5.2.
+written to work with Python version 1.5.2.
 </li>
 <li>
-SCons will be tested against Python versions 1.5.2 and 2.2.x.
+SCons will be tested against Python versions 1.5.2 and some version of 2.x.
 </li>
 <li>
 The SCons distribution will be generated
@@ -37,7 +37,7 @@ SCons installation will be atomic, and will install all necessary
 non-standard modules and/or packages.
 </li>
 <li>
-At a minimum, SCons will be tested on Linux and Windows 2000.  We will add
+At a minimum, SCons will be tested on Linux and Windows XP.  We will add
 other platforms as they become available.  All tests must be written
 portably.
 </li>
@@ -62,8 +62,12 @@ Aegis.
 SCons infrastructure module tests are written using PyUnit.
 </li>
 <li>
-Tests of full SCons script functionality are written using the
+Tests of SCons packaging are written using subclasses of the
 TestCmd.py module.
+</li>
+<li>
+Tests of full SCons script functionality are written using subclasses
+of the TestCmd.py module.
 </li>
 </ol>
 </p>
@@ -136,8 +140,8 @@ the infrastructure as needed to continue to make testing even easier, so
 long as it still does the job.
 </p>
 <p>
-SCons development uses two testing methodologies, one for unit tests and
-one for end-to-end functional tests:
+SCons development uses three (!) testing harnesses, one for unit tests,
+one for end-to-end functional tests, and one for test execution:
 </p>
 <ul>
 	<li>
@@ -158,14 +162,23 @@ one for end-to-end functional tests:
         live in the <code>test/</code> subdirectory and which use the
 	TestCmd.py infrastructure.
 	</li>
+        <li>
+        Execution of these tests will be handled by the
+        <a href="http://www.codesourcery.com/qmtest/">QMTest</a>
+        infrastructure, as wrapped by an execution script.
+        <strong>Note:</strong>  The transition to using
+        QMTest is still in progress.  The wrapper execution script
+        currently executes the test scripts directly.
+        </li>
 </ul>
 <p>
-The end-to-end tests in the <code>test/</code> subdirectory are not
-substitutes for module unit tests.  If you modify a module under the
-<code>src/scons/</code> subdirectory, you *must* modify its
-<code>*Tests.py</code> script to validate your change.  This can be
-(and probably should be) in addition to a <code>test/*</code>
-test of how the modification affects the end-to-end workings of SCons.
+The end-to-end tests in the <code>test/</code> subdirectory are
+not substitutes for module unit tests.  If you modify a module
+under the <code>src/scons/</code> subdirectory, you generally
+<emphasis>must</emphasis>modify its <code>*Tests.py</code> script to
+validate your change.  This can be (and probably should be) in addition to
+a <code>test/*</code> test of how the modification affects the end-to-end
+workings of SCons.
 </p>
 </li>
 
@@ -176,16 +189,17 @@ General developer requirements
 <p>
 <ol class="decimal">
 <li>
-All developers must subscribe to the dev@scons.tigris.org mailing list.
+All project developers must subscribe to the dev@scons.tigris.org
+mailing list.
 </li>
 <li>
-All developers are encouraged, but not required, to register at
-Tigris.org and SourceForge.
-</li>
-<li>
-Developers registered at SourceForge should be added to the SCons
-developer list, so that the number of active developers can be
+All project developers must register at Tigris.org and be added to the
+SCons developer list, so that the number of active developers can be
 accurately represented on the SCons project page.
+</li>
+<li>
+We will accept patches from developers not actually registered on
+the project, so long as the patches conform to our normal requirements.
 </li>
 </ol>
 </p>
@@ -237,7 +251,7 @@ automatically to the Tigris.org and SourceForge CVS repositories.
 
 
 <li>
-Using CVS for SCons development
+Using Subversion for SCons development
 <p>
 <ol class="decimal">
 <li>
