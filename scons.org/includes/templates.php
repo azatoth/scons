@@ -42,7 +42,7 @@ function make_top($title, $page)
 <div id="menu">
 <ul class="menuitems">
 <li><a href="."<?if(!strcmp($page,"home"))echo $currentpage;?>>Home</a></li>
-<li><a href="/wiki/index.html">Wiki</a></li>
+<li><a href="/wiki/">Wiki</a></li>
 <li><a href="download.php"<?if(!strcmp($page,"download"))echo $currentpage;?>>Download</a><br />
 	<ul class="submenuitems">
 	<li> <a href="<?echo $downloadpage;?>/scons-<?echo $currentrelease;?>.tar.gz">Tarball</a> </li>
@@ -78,6 +78,7 @@ function make_top($title, $page)
 	<li><a href="http://scons.tigris.org/feature-request.html">Feature requests</a></li>
 	</ul>
 	</li>
+<li><a href="news.php"<?if(!strcmp($page,"news"))echo $currentpage;?>>News</a></li>
 <li><a href="links.php"<?if(!strcmp($page,"links"))echo $currentpage;?>>Links</a></li>
 <li><a href="contact.php"<?if(!strcmp($page,"contact"))echo $currentpage;?>>Contact</a></li>
 <li><a href="refer.php"<?if(!strcmp($page,"references"))echo $currentpage;?>>References</a></li>

@@ -13,6 +13,20 @@
 <div id="bodycontent">
 <h2 class="pagetitle"> Latest News </h2>
 
+<h3>Tracking of SCons bug reports, patches and feature requests
+has moved to <a href="http://www.tigris.org">tigris.org</a>.</h3>
+<div class="date">21 May 2006</div>
+<div class="newsitem">
+After five years of tracking bug reports, patches and feature requests
+at our <a href="http://sourceforge.net/projects/scons/">SourceForge project page</a>,
+we've converted them all to our project
+<a href="http://scons.tigris.org/servlets/ProjectIssues">Issue Tracker</a>
+at
+<a href="http://www.tigris.org">tigris.org</a>.
+The goal is for this to provide improved management of work on the project.
+Many thanks to Greg Noel and Kevin Maples for making this happen.
+</div>
+
 <h3> SCons 0.96.92 (testing pre-release for 0.97) is available </h3>
 <div class="date">10 April 2006</div>
 <div class="newsitem">
@@ -31,66 +45,6 @@ that have accumulated since 0.96.91.
 Download it directly from the
 <a href="http://sourceforge.net/project/showfiles.php?group_id=30337">download page</a>
 at SourceForge.
-</div>
-
-<h3> SCons 0.96.91 (testing pre-release for 0.97) is available </h3>
-<div class="date">8 September 2005</div>
-<div class="newsitem">
-Another testing pre-release has been made available.
-There will be more of these to get fixes out to the field
-while we continue to work on performance issues
-in anticipation of a wider 0.97 release.
-Download it directly from the
-<a href="http://sourceforge.net/project/showfiles.php?group_id=30337">download page</a>
-at SourceForge.
-</div>
-
-<h3> SCons 0.96.90 (testing pre-release for 0.97) is available </h3>
-<div class="date">15 February 2005</div>
-<div class="newsitem">
-SCons 0.96.90 contains a lot of features, bug fixes,
-and some greatly-anticipated improvements
-in performance and memory consumption.
-Because there have been a number of extensive changes
-to internal subsystems,
-this testing pre-release is intended to try to catch
-any last crucial bugs before releasing it officially as 0.97
-(to be released soon, we hope).
-You can download it directly from the
-<a href="http://sourceforge.net/project/showfiles.php?group_id=30337">download page</a>
-at SourceForge.
-See the <a href="RELEASE.txt">Relase Notes</a>
-for a description of how you can help test this release
-and an overview of important (interface- or behavior-changing) changes.
-See the
-<a href="CHANGES.txt">ChangeLog</a>
-for a complete list of all the new and fixed stuff.
-</div>
-
-<h3> New SCons Website Design </h3>
-<div class="date">28 September 2004</div>
-<div class="newsitem">
-SCons has unveiled a new design of its website,
-contributed by Keir Mierle.
-Please report any issues with the site to
-<a href="mailto:webmaster@scons.org">webmaster@scons.org</a>.
-</div>
-
-<h3> SCons 0.96.1 Released </h3>
-<div class="date">23 August 2004</div>
-<div class="newsitem">
-Bugfix release 0.96.1 fixes a handful of critical problems in 0.96.
-Consult your friendly neighborhood download page for more information,
-or use the Download quick links to the right.
-</div>
-
-<h3> SCons 0.96 Released </h3>
-<div class="date">18 August 2004</div>
-<div class="newsitem">
-Beta release 0.96 adds Fortran 90/95 support,
-better Qt support, platform-independent file manipulation actions,
-new debugging features and lots more.
-&nbsp;
 </div>
 
 <div class="quote">
