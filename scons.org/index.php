@@ -13,6 +13,20 @@
 <div id="bodycontent">
 <h2 class="pagetitle"> Latest News </h2>
 
+<h3>SCons awarded Google Summer of Code project</h3>
+<div class="date">24 May 2006</div>
+<div class="newsitem">
+Google's <a href="http://code.google.com/soc/">Summer of Code</a>
+will fund a
+<a href="http://www.scons.org/wiki/PhilippSchollProposal">project</a>
+proposed by Philipp Scholl
+to add support for packaging and release dependencies to SCons.
+Stefan Seefeld will be mentoring Philipp's proposal for
+the next several months.
+Congratulations to Philipp,
+and thanks to Stefan for mentoring.
+</div>
+
 <h3>Tracking of SCons bug reports, patches and feature requests
 has moved to <a href="http://www.tigris.org">tigris.org</a>.</h3>
 <div class="date">21 May 2006</div>
@@ -26,6 +40,16 @@ at
 The goal is for this to provide improved management of work on the project.
 Many thanks to Greg Noel and Kevin Maples for making this happen.
 </div>
+
+<p>
+<strong>27 April 2006:</strong>
+SCons has been accepted as a Google
+<a href="http://code.google.com/soc/">Summer of Code</a> project.
+Check out the
+<a href="http://www.scons.org/cgi-sys/cgiwrap/scons/moin.cgi/SummerOfCodeIdeas">list of project ideas</a>
+over at the SCons
+<a href="http://www.scons.org/wiki/">wiki</a>.
+</p>
 
 <h3> SCons 0.96.92 (testing pre-release for 0.97) is available </h3>
 <div class="date">10 April 2006</div>
