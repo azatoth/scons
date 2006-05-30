@@ -58,6 +58,7 @@ import SCons.Sig.MD5
 import SCons.Sig.TimeStamp
 import SCons.Subst
 import SCons.Tool
+import SCons.Tool.Packaging
 import SCons.Util
 import SCons.Warnings
 
@@ -1636,6 +1637,22 @@ class Base(SubstitutionEnvironment):
         """
         """
         return SCons.Node.Python.Value(value)
+
+    def Package(self, type='gnu-src', target=None, **kw):
+        """ Entry point for the package tool.
+        """
+        if target==None:
+            # TODO deduce a default name.
+            pass
+
+        # TODO there is a better way to get the arg to the builder function
+        self._dict['PACKAGE_TYPE']=[ type ]
+        self._dict['PACKAGE_ARGS']=kw
+
+        return SCons.Builder.Builder( action=SCons.Tool.Packaging.package,
+                                      source_factory=self.fs.Entry,
+                                      target_factory=self.fs.Entry,
+                                      name='PackageBuilder' )
 
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction

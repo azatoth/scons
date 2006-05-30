@@ -1014,7 +1014,7 @@ class TestCmd:
             os.path.walk(top, col, None)
             col.entries.reverse()
             map(lambda d, do=do_chmod: do(d), col.entries)
-
+  
     def write(self, file, content, mode = 'wb'):
         """Writes the specified content text (second argument) to the
         specified file name (first argument).  The file name may be
