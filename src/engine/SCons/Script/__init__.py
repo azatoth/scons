@@ -330,6 +330,7 @@ GlobalDefaultBuilders = [
     'Tar',
     'TypeLibrary',
     'Zip',
+    'Package',
 ]
 
 for name in GlobalDefaultEnvironmentFunctions + GlobalDefaultBuilders:

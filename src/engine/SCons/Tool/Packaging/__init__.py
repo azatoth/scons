@@ -29,20 +29,25 @@ SCons Packaging Tool.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 # TODO this should be in it's own file
-def package_gnu_src(target, source, env):
-    if env['BUILDERS']['Tar']:
-        apply( env['BUILDERS']['Tar'], env, target, source )
-    else:
-        raise SCons.Errors.UserError, "Tar Tool is not available."
-
+def create_gnu_src_builder(target, source, env):
+    dict = { 'target' : target,
+             'source' : source,
+             'env'    : env }
+    return env.get_builder('Tar')
 
 # TODO this should be generated from listing the current module
-packager = {
-    'gnu-src' : package_gnu_src
+package_builder = {
+    'gnu-src' : create_gnu_src_builder
 }
 
-def package(target, source, env):
-    """ This is the entry point, this function calls the approriate packager for
-    a given type of package"""
-    for chosen_packager_id in env['PACKAGE_TYPE']:
-        packager.get(chosen_packager_id)(target, source, env)
+def create_builder(env, **kw):
+    """ factory method for the Package Builder.
+    According to to the given "type" of a package a special Builder is returned
+    """
+    assert kw.has_key('source')
+    assert kw.has_key('target')
+    assert kw.has_key('type')
+
+    target, source, type = kw['target'], kw['source'], kw['type']
+
+    return package_builder.get(type[0])(target, source, env)

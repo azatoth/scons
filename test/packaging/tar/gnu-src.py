@@ -53,14 +53,13 @@ int main( int argc, char* argv[] )
   """)
 
   test.write('SConstruct', """
-env = Environment()
-env.Program( 'src/main.c' )
-env.Package( type='gnu-src',
-             target='src.tar',
-             files=[ 'src/main.c', 'SConstruct' ] )
+Program( 'src/main.c' )
+Package( type='gnu-src',
+         target='src.tar',
+         source=[ 'src/main.c', 'SConstruct' ] )
 """)
 
-  test.run(stderr = None)
+  test.run(arguments='src.tar', stderr = None)
 
   test.fail_test( not os.path.exists( 'src.tar' ) )
 
