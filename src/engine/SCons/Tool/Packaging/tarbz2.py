@@ -1,7 +1,11 @@
-#!/usr/bin/env python
+"""SCons.Tool.Packaging.tarbz2
+
+The tarbz2 SRC packager.
+"""
+
 #
 # __COPYRIGHT__
-#
+# 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -24,43 +28,9 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-"""
-This tests the GNU-SRC packager, which does the following:
- - create a tar package from the . directory tree.
- - add configurable install targets to the SConstruct for a given
-   set of file categories. Configuration options are conforming the ones
-   of the GNU Coding Standard. see:
-   http://www.gnu.org/prep/standards/html_node/Managing-Releases.html#Managing-Releases
-"""
-
-import os
-import TestSCons
-
-python = TestSCons.python
-
-test = TestSCons.TestSCons()
-
-tar = test.detect('TAR', 'tar')
-
-if tar:
-  test.subdir('src')
-
-  test.write( [ 'src', 'main.c' ], r"""
-int main( int argc, char* argv[] )
-{
-  return 0;
-}
-  """)
-
-  test.write('SConstruct', """
-Program( 'src/main.c' )
-Package( type='gnu-src',
-         target='src.tar',
-         source=[ 'src/main.c', 'SConstruct' ] )
-""")
-
-  test.run(arguments='src.tar', stderr = None)
-
-  test.fail_test( not os.path.exists( 'src.tar' ) )
-
-test.pass_test()
+def create_builder(target, source, env):
+    dict = { 'target' : target,
+             'source' : source,
+             'env'    : env }
+    env['TARFLAGS'] = env['TARFLAGS'] + "-z"
+    return env.get_builder('Tar')

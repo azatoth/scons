@@ -1,11 +1,7 @@
-"""SCons.Tool.Packaging
-
-SCons Packaging Tool.
-"""
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -28,28 +24,39 @@ SCons Packaging Tool.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Errors
-import SCons.Tool.Packaging.tarbz2
-import SCons.Tool.Packaging.targz
+"""
+This tests the SRC bz2 packager, which does the following:
+ - create a tar package from the specified files
+"""
 
-# TODO this should be generated from listing the current module
-package_builder = {
-    'tarbz2' : tarbz2.create_builder,
-    'targz'  : targz.create_builder
+import os
+import TestSCons
+
+python = TestSCons.python
+
+test = TestSCons.TestSCons()
+
+tar = test.detect('TAR', 'tar')
+
+if tar:
+  test.subdir('src')
+
+  test.write( [ 'src', 'main.c' ], r"""
+int main( int argc, char* argv[] )
+{
+  return 0;
 }
+  """)
 
-def create_builder(env, **kw):
-    """ factory method for the Package Builder.
-    According to to the given "type" of a package a special Builder is returned
-    """
-    assert kw.has_key('source')
-    assert kw.has_key('target')
-    assert kw.has_key('type')
+  test.write('SConstruct', """
+Program( 'src/main.c' )
+Package( type='tarbz2',
+         target='src.tar.bz2',
+         source=[ 'src/main.c', 'SConstruct' ] )
+""")
 
-    target, source, type = kw['target'], kw['source'], kw['type']
+  test.run(arguments='', stderr = None)
 
-    if package_builder.get(type[0])==None:
-      raise SCons.Errors.UserError ("packager %s not available."%type)
-      return None
-    else:
-      return package_builder.get(type[0])(target, source, env)
+  test.fail_test( not os.path.exists( 'src.tar.bz2' ) )
+
+test.pass_test()

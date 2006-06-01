@@ -1,6 +1,6 @@
-"""SCons.Tool.Packaging
+"""SCons.Tool.Packaging.tarbz2
 
-SCons Packaging Tool.
+The targz SRC packager.
 """
 
 #
@@ -28,28 +28,9 @@ SCons Packaging Tool.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Errors
-import SCons.Tool.Packaging.tarbz2
-import SCons.Tool.Packaging.targz
-
-# TODO this should be generated from listing the current module
-package_builder = {
-    'tarbz2' : tarbz2.create_builder,
-    'targz'  : targz.create_builder
-}
-
-def create_builder(env, **kw):
-    """ factory method for the Package Builder.
-    According to to the given "type" of a package a special Builder is returned
-    """
-    assert kw.has_key('source')
-    assert kw.has_key('target')
-    assert kw.has_key('type')
-
-    target, source, type = kw['target'], kw['source'], kw['type']
-
-    if package_builder.get(type[0])==None:
-      raise SCons.Errors.UserError ("packager %s not available."%type)
-      return None
-    else:
-      return package_builder.get(type[0])(target, source, env)
+def create_builder(target, source, env):
+    dict = { 'target' : target,
+             'source' : source,
+             'env'    : env }
+    env['TARFLAGS'] = env['TARFLAGS'] + "-j"
+    return env.get_builder('Tar')
