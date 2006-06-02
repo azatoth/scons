@@ -1,11 +1,7 @@
-"""SCons.Tool.Packaging.targz
-
-The targz SRC packager.
-"""
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -28,8 +24,39 @@ The targz SRC packager.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-def create_builder(env):
-    env['TARFLAGS']  = env['TARFLAGS'] + "-z"
-    builder = env.get_builder('Tar')
-    builder.set_suffix('tar.gz')
-    return builder
+"""
+This tests the SRC zip packager, which does the following:
+ - create a zip package from the specified files
+"""
+
+import os
+import TestSCons
+
+python = TestSCons.python
+
+test = TestSCons.TestSCons()
+
+tar = test.detect('ZIP', 'zip')
+
+if tar:
+  test.subdir('src')
+
+  test.write( [ 'src', 'main.c' ], r"""
+int main( int argc, char* argv[] )
+{
+  return 0;
+}
+  """)
+
+  test.write('SConstruct', """
+Program( 'src/main.c' )
+Package( type   = 'zip',
+         target = 'src.zip',
+         source = [ 'src/main.c', 'SConstruct' ] )
+""")
+
+  test.run(arguments='', stderr = None)
+
+  test.fail_test( not os.path.exists( 'src.zip' ) )
+
+test.pass_test()

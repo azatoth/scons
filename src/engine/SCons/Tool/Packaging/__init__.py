@@ -31,11 +31,13 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import SCons.Errors
 import SCons.Tool.Packaging.tarbz2
 import SCons.Tool.Packaging.targz
+import SCons.Tool.Packaging.zip
 
 # TODO this should be generated from listing the current module
 package_builder = {
     'tarbz2' : tarbz2.create_builder,
-    'targz'  : targz.create_builder
+    'targz'  : targz.create_builder,
+    'zip'    : zip.create_builder,
 }
 
 def create_builder(env, **kw):

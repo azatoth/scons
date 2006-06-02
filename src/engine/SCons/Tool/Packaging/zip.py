@@ -1,6 +1,6 @@
-"""SCons.Tool.Packaging.targz
+"""SCons.Tool.Packaging.zip
 
-The targz SRC packager.
+The zip SRC packager.
 """
 
 #
@@ -29,7 +29,6 @@ The targz SRC packager.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 def create_builder(env):
-    env['TARFLAGS']  = env['TARFLAGS'] + "-z"
-    builder = env.get_builder('Tar')
-    builder.set_suffix('tar.gz')
+    builder = env.get_builder('Zip')
+    builder.set_suffix('zip')
     return builder
