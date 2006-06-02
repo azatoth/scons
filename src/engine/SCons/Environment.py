@@ -1642,31 +1642,27 @@ class Base(SubstitutionEnvironment):
         """ Entry point for the package tool.
         """
         if not kw.has_key('target') or kw['target']==None:
-            # TODO deduce a default name.
-            pass
+            kw['target'] = SCons.Tool.Packaging.create_default_target(kw)
 
         targets = self.arg2nodes(kw['target'], self.fs.File)
 
-        if not kw.has_key('source') or kw['source']==None:
+        if not kw.has_key('source'):
             raise SCons.Errors.UserError, "No source for Package() has been given"
 
         sources = self.arg2nodes(kw['source'], self.fs.Entry)
 
         # choose a default one
-        if not kw.has_key('type') or kw['type']==None:
-            kw['type']=='gnu-src'
+        if not kw.has_key('type'):
+            kw['type'] = 'targz'
 
         if SCons.Util.is_String(kw['type']):
-            kw['type']=[ kw['type'] ]
+            kw['type'] = [ kw['type'] ]
 
-        kw['source_factory']=self.fs.File
-        kw['target_factory']=self.fs.File
+        kw['source_factory'] = self.fs.File
+        kw['target_factory'] = self.fs.File
 
-        builder=apply(SCons.Tool.Packaging.create_builder, [self], kw)
-        targets[0].builder_set(builder)
-        targets[0].add_source(sources)
-
-        return targets[0]
+        builder = apply(SCons.Tool.Packaging.create_builder, [self], kw)
+        return apply(builder, [self], kw)
 
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction

@@ -52,4 +52,11 @@ def create_builder(env, **kw):
       raise SCons.Errors.UserError ("packager %s not available."%type)
       return None
     else:
-      return package_builder.get(type[0])(target, source, env)
+      return package_builder.get(type[0])(env)
+
+def create_default_target(kw):
+    """ In the absence of a filename for a given Package, this function deduces
+    one out of the projectname and version keywords.
+    """
+    projectname, version = kw['projectname'], kw['version']
+    return "%s-%s"%(projectname,version)

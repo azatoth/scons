@@ -28,9 +28,8 @@ The targz SRC packager.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-def create_builder(target, source, env):
-    dict = { 'target' : target,
-             'source' : source,
-             'env'    : env }
-    env['TARFLAGS'] = env['TARFLAGS'] + "-j"
-    return env.get_builder('Tar')
+def create_builder(env):
+    env['TARFLAGS']  = env['TARFLAGS'] + "-z"
+    builder = env.get_builder('Tar')
+    builder.set_suffix('tar.gz')
+    return builder
