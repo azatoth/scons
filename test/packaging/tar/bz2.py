@@ -52,6 +52,7 @@ int main( int argc, char* argv[] )
 Program( 'src/main.c' )
 Package( type='tarbz2',
          target='src.tar.bz2',
+         subdir = 'test',
          source=[ 'src/main.c', 'SConstruct' ] )
 """)
 

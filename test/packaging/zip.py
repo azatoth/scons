@@ -52,6 +52,7 @@ int main( int argc, char* argv[] )
 Program( 'src/main.c' )
 Package( type   = 'zip',
          target = 'src.zip',
+         subdir = 'test',
          source = [ 'src/main.c', 'SConstruct' ] )
 """)
 

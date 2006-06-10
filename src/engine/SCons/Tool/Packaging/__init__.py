@@ -33,6 +33,9 @@ import SCons.Tool.Packaging.tarbz2
 import SCons.Tool.Packaging.targz
 import SCons.Tool.Packaging.zip
 
+import os
+import SCons.Defaults
+
 # TODO this should be generated from listing the current module
 package_builder = {
     'tarbz2' : tarbz2.create_builder,
@@ -40,7 +43,7 @@ package_builder = {
     'zip'    : zip.create_builder,
 }
 
-def create_builder(env, **kw):
+def create_builder(env, kw):
     """ factory method for the Package Builder.
     According to to the given "type" of a package a special Builder is returned
     """
@@ -54,7 +57,10 @@ def create_builder(env, **kw):
       raise SCons.Errors.UserError ("packager %s not available."%type)
       return None
     else:
-      return package_builder.get(type[0])(env)
+      list = []
+      for t in type:
+          list.append(package_builder.get(t)(env))
+      return list
 
 def create_default_target(kw):
     """ In the absence of a filename for a given Package, this function deduces

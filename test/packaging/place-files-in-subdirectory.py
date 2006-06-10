@@ -25,12 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-This tests the feature of guessing the package name from the given metadata
-projectname and version.
-
-Also overriding this default package name is tested
-
-Furthermore that targz is the default packager is tested.
+Test the requirement to place files in a given subdirectory before archiving.
 """
 
 import os
@@ -44,34 +39,33 @@ tar = test.detect('TAR', 'tar')
 
 if tar:
   #
-  # TEST: default package name creation.
+  # TEST: subdir creation and file copying
   #
   test.subdir('src')
 
-  test.write( [ 'src', 'main.c' ], r"""
-int main( int argc, char* argv[] )
-{
-  return 0;
-}
-  """)
+  test.write('src/main.c', '')
 
   test.write('SConstruct', """
-Program( 'src/main.c' )
 Package( projectname = 'libfoo',
+         subdir      = 'libfoo',
          version     = '1.2.3',
          source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
-  test.run(options="--debug=stacktrace", stderr = None)
+  test.run(arguments='libfoo-1.2.3.tar.gz', stderr = None)
 
-  test.fail_test( not os.path.exists( 'libfoo-1.2.3.tar.gz' ) )
+  test.fail_test( not os.path.exists( 'libfoo' ) )
+  test.fail_test( not os.path.exists( 'libfoo/SConstruct' ) )
+  test.fail_test( not os.path.exists( 'libfoo/src/main.c' ) )
 
   #
-  # TEST: overriding default package name.
+  # TEST: subdir guessing and file copying.
   #
+  test.subdir('src')
+
+  test.write('src/main.c', '')
 
   test.write('SConstruct', """
-Program( 'src/main.c' )
 Package( projectname = 'libfoo',
          version     = '1.2.3',
          target      = 'src.tar.gz',
@@ -80,22 +74,27 @@ Package( projectname = 'libfoo',
 
   test.run(stderr = None)
 
-  test.fail_test( not os.path.exists( 'src.tar.gz' ) )
+  test.fail_test( not os.path.exists( 'libfoo-1.2.3' ) )
+  test.fail_test( not os.path.exists( 'libfoo-1.2.3/SConstruct' ) )
+  test.fail_test( not os.path.exists( 'libfoo-1.2.3/src/main.c' ) )
 
   #
-  # TEST: default package name creation with overriden packager.
+  # TEST: unpacking without the buildir.
   #
+  test.subdir('src')
+  test.subdir('temp')
+
+  test.write('src/main.c', '')
 
   test.write('SConstruct', """
-Program( 'src/main.c' )
 Package( projectname = 'libfoo',
          version     = '1.2.3',
-         type        = 'tarbz2',
          source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(stderr = None)
 
-  test.fail_test( not os.path.exists( 'libfoo-1.2.3.tar.bz2' ) )
+  str = os.popen( 'tar -tzf %s'%test.workpath('libfoo-1.2.3.tar.gz') ).read()
+  test.fail_test( str != "libfoo-1.2.3/src/main.c\nlibfoo-1.2.3/SConstruct\n" )
 
 test.pass_test()

@@ -25,14 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-This tests the SRC 'targz' packager, which does the following:
- - create a targz package containing the specified files.
-
-TODO:
- - add configurable install targets to the SConstruct for a given
-   set of file categories. Configuration options are conforming the ones
-   of the GNU Coding Standard. see:
-   http://www.gnu.org/prep/standards/html_node/Managing-Releases.html#Managing-Releases
+Test a simple project
 """
 
 import os
@@ -45,25 +38,32 @@ test = TestSCons.TestSCons()
 tar = test.detect('TAR', 'tar')
 
 if tar:
-  test.subdir('src')
+   test.subdir('src')
 
-  test.write( [ 'src', 'main.c' ], r"""
-int main( int argc, char* argv[] )
-{
-  return 0;
-}
-  """)
+   test.write([ 'src', 'foobar.h' ], '')
+   test.write([ 'src', 'foobar.c' ], '')
 
-  test.write('SConstruct', """
-Program( 'src/main.c' )
-Package( type='targz',
-         target='src.tar.gz',
-         subdir = 'test',
-         source=[ 'src/main.c', 'SConstruct' ] )
+   test.write('SConstruct', """
+from glob import glob
+
+src_files = glob( 'src/*.c' )
+include_files = glob( 'src/*.h' )
+
+SharedLibrary( 'foobar', src_files )
+
+Package( projectname = 'libfoobar',
+         version     = '1.2.3',
+         source      = src_files + include_files )
+
+Package( projectname = 'libfoobar',
+         version     = '1.2.3',
+         type        = 'zip',
+         source      = src_files + include_files )
 """)
 
-  test.run(arguments='', stderr = None)
+   test.run(stderr=None)
 
-  test.fail_test( not os.path.exists( 'src.tar.gz' ) )
+   test.fail_test( not os.path.exists( 'libfoobar-1.2.3.tar.gz' ) )
+   test.fail_test( not os.path.exists( 'libfoobar-1.2.3.zip' ) )
 
 test.pass_test()

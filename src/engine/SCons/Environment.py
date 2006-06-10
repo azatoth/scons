@@ -1644,12 +1644,11 @@ class Base(SubstitutionEnvironment):
         if not kw.has_key('target') or kw['target']==None:
             kw['target'] = SCons.Tool.Packaging.create_default_target(kw)
 
-        targets = self.arg2nodes(kw['target'], self.fs.File)
-
         if not kw.has_key('source'):
-            raise SCons.Errors.UserError, "No source for Package() has been given"
+            raise SCons.Errors.UserError, "No source for Package() given"
 
-        sources = self.arg2nodes(kw['source'], self.fs.Entry)
+        if not kw.has_key('subdir'):
+            kw['subdir'] = SCons.Tool.Packaging.create_default_target(kw)
 
         # choose a default one
         if not kw.has_key('type'):
@@ -1658,11 +1657,15 @@ class Base(SubstitutionEnvironment):
         if SCons.Util.is_String(kw['type']):
             kw['type'] = [ kw['type'] ]
 
-        kw['source_factory'] = self.fs.File
-        kw['target_factory'] = self.fs.File
+        kw['source_factory'] = self.fs.Entry
+        kw['target_factory'] = self.fs.Entry
 
-        builder = apply(SCons.Tool.Packaging.create_builder, [self], kw)
-        return apply(builder, [self], kw)
+        self.BuildDir( kw['subdir'], '.' )
+        kw['source'] = map( lambda x: os.path.join( kw['subdir'], x ), kw['source'] )
+
+        builders = SCons.Tool.Packaging.create_builder(self, kw)
+
+        return map( lambda x: apply(x, [self], kw), builders )
 
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction

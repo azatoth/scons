@@ -25,14 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-This tests the SRC 'targz' packager, which does the following:
- - create a targz package containing the specified files.
-
-TODO:
- - add configurable install targets to the SConstruct for a given
-   set of file categories. Configuration options are conforming the ones
-   of the GNU Coding Standard. see:
-   http://www.gnu.org/prep/standards/html_node/Managing-Releases.html#Managing-Releases
+Test the ability to use the archiver in combination with builddir.
 """
 
 import os
@@ -44,26 +37,50 @@ test = TestSCons.TestSCons()
 
 tar = test.detect('TAR', 'tar')
 
-if tar:
-  test.subdir('src')
+#if tar:
+#  #
+#  # TEST: builddir usage. XXX
+#  #
+#  test.subdir('src')
+#  test.subdir('build')
+#
+#  test.write('src/main.c', '')
+#
+#  test.write('SConstruct', """
+#BuildDir('build', 'src')
+#Package( projectname = 'libfoo',
+#         subdir      = 'build/libfoo',
+#         version     = '1.2.3',
+#         source      = [ 'src/main.c', 'SConstruct' ] )
+#""")
+#
+#  test.run(stderr = None)
+#
+#  test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.tar.gz' ) )
+#
+#  #
+#  # TEST: builddir not placed in archive
+#  #
+#  test.subdir('src')
+#  test.subdir('build')
+#  test.subdir('temp')
+#
+#  test.write('src/main.c', '')
+#
+#  test.write('SConstruct', """
+#BuildDir('build', 'src')
+#Package( projectname = 'libfoo',
+#         subdir      = 'build/libfoo',
+#         version     = '1.2.3',
+#         source      = [ 'src/main.c', 'SConstruct' ] )
+#Tar( 'build/libfoo-1.2.3.tar.gz', TARFLAGS = '-C temp -xzf' )
+#""")
+#
+#  test.run(stderr = None)
+#
+#  test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.tar.gz' ) )
+#  test.fail_test( not os.path.exists( 'temp/libfoo/src/main.c' ) )
+#  test.fail_test( not os.path.exists( 'temp/libfoo/SConstruct' ) )
 
-  test.write( [ 'src', 'main.c' ], r"""
-int main( int argc, char* argv[] )
-{
-  return 0;
-}
-  """)
-
-  test.write('SConstruct', """
-Program( 'src/main.c' )
-Package( type='targz',
-         target='src.tar.gz',
-         subdir = 'test',
-         source=[ 'src/main.c', 'SConstruct' ] )
-""")
-
-  test.run(arguments='', stderr = None)
-
-  test.fail_test( not os.path.exists( 'src.tar.gz' ) )
 
 test.pass_test()
