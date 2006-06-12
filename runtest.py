@@ -8,7 +8,7 @@
 # directories to test the SCons modules.
 #
 # By default, it directly uses the modules in the local tree:
-# ./src/ (source files we ship) and ./etc/ (other modules we don't).
+# ./src/ (source files we ship) and ./QMTest/ (other modules we don't).
 #
 # HOWEVER, now that SCons has Repository support, we don't have
 # Aegis copy all of the files into the local tree.  So if you're
@@ -93,6 +93,7 @@ import sys
 import time
 
 all = 0
+baseline = 0
 debug = ''
 execute_tests = 1
 format = None
@@ -107,12 +108,8 @@ outputfile = None
 qmtest = None
 testlistfile = None
 version = ''
-print_time = lambda fmt, time: None
-
-if os.name == 'java':
-    python = os.path.join(sys.prefix, 'jython')
-else:
-    python = sys.executable
+print_times = None
+python = None
 
 cwd = os.getcwd()
 
@@ -128,6 +125,7 @@ Usage: runtest.py [OPTIONS] [TEST ...]
 Options:
   -a, --all                   Run all tests.
   --aegis                     Print results in Aegis format.
+  -b BASE, --baseline BASE    Run test scripts against baseline BASE.
   -d, --debug                 Run test scripts under the Python debugger.
   -f FILE, --file FILE        Run tests in specified FILE.
   -h, --help                  Print this message and exit.
@@ -158,8 +156,8 @@ Options:
   --xml                       Print results in SCons XML format.
 """
 
-opts, args = getopt.getopt(sys.argv[1:], "adf:hlno:P:p:qv:Xx:t",
-                            ['all', 'aegis',
+opts, args = getopt.getopt(sys.argv[1:], "ab:df:hlno:P:p:qv:Xx:t",
+                            ['all', 'aegis', 'baseline=',
                              'debug', 'file=', 'help',
                              'list', 'no-exec', 'output=',
                              'package=', 'passed', 'python=',
@@ -170,6 +168,8 @@ opts, args = getopt.getopt(sys.argv[1:], "adf:hlno:P:p:qv:Xx:t",
 for o, a in opts:
     if o in ['-a', '--all']:
         all = 1
+    elif o in ['-b', '--baseline']:
+        baseline = a
     elif o in ['-d', '--debug']:
         debug = os.path.join(lib_dir, "pdb.py")
     elif o in ['-f', '--file']:
@@ -198,7 +198,7 @@ for o, a in opts:
     elif o in ['-q', '--quiet']:
         printcommand = 0
     elif o in ['-t', '--time']:
-        print_time = lambda fmt, time: sys.stdout.write(fmt % time)
+        print_times = 1
     elif o in ['--verbose']:
         os.environ['TESTCMD_VERBOSE'] = a
     elif o in ['-v', '--version']:
@@ -476,9 +476,43 @@ else:
     #    spe = map(lambda x: os.path.join(x, 'src', 'engine'), spe)
     #    ld = string.join(spe, os.pathsep)
 
-    scons_script_dir = sd or os.path.join(cwd, 'src', 'script')
+    if not baseline or baseline == '.':
+        base = cwd
+    elif baseline == '-':
+        # Tentative code for fetching information directly from the
+        # QMTest context file.
+        #
+        #import qm.common
+        #import qm.test.context
+        #qm.rc.Load("test")
+        #context = qm.test.context.Context()
+        #context.Read('context')
 
-    scons_lib_dir = ld or os.path.join(cwd, 'src', 'engine')
+        url = None
+        svn_info =  os.popen("svn info 2>&1", "r").read()
+        match = re.search('URL: (.*)', svn_info)
+        if match:
+            url = match.group(1)
+        if not url:
+            sys.stderr.write('runtest.py: could not find a URL:\n')
+            sys.stderr.write(svn_info)
+            sys.exit(1)
+        import tempfile
+        base = tempfile.mkdtemp(prefix='runtest-tmp-')
+
+        command = 'cd %s && svn co -q %s' % (base, url)
+
+        base = os.path.join(base, os.path.split(url)[1])
+        if printcommand:
+            print command
+        if execute_tests:
+            os.system(command)
+    else:
+        base = baseline
+
+    scons_script_dir = sd or os.path.join(base, 'src', 'script')
+
+    scons_lib_dir = ld or os.path.join(base, 'src', 'engine')
 
     pythonpath_dir = scons_lib_dir
 
@@ -502,16 +536,20 @@ os.environ['SCONS_VERSION'] = version
 
 old_pythonpath = os.environ.get('PYTHONPATH')
 
-# FIXME: the following is necessary to pull in half of the testing
-#        harness from $srcdir/etc. Those modules should be transfered
-#        to QMTest/ once we completely cut over to using that as
-#        the harness, in which case this manipulation of PYTHONPATH
-#        should be able to go away.
+qmtest_class_paths = []
 pythonpaths = [ pythonpath_dir ]
+
 for p in sp:
-    pythonpaths.append(os.path.join(p, 'build', 'etc'))
-    pythonpaths.append(os.path.join(p, 'etc'))
+    q = os.path.join(p, 'build', 'QMTest')
+    pythonpaths.append(q)
+    qmtest_class_paths.append(q)
+
+    q = os.path.join(p, 'QMTest')
+    pythonpaths.append(q)
+    qmtest_class_paths.append(q)
+
 os.environ['PYTHONPATH'] = string.join(pythonpaths, os.pathsep)
+os.environ['QMTEST_CLASS_PATH'] = string.join(qmtest_class_paths, os.pathsep)
 
 if old_pythonpath:
     os.environ['PYTHONPATH'] = os.environ['PYTHONPATH'] + \
@@ -519,24 +557,48 @@ if old_pythonpath:
                                old_pythonpath
 
 if qmtest:
+    if baseline:
+        result_stream = 'AegisBaselineStream'
+        qmr_file = 'baseline.qmr'
+    else:
+        result_stream = 'AegisChangeStream'
+        qmr_file = 'results.qmr'
     #qmtest = r'D:\Applications\python23\scripts\qmtest.py'
     qmtest = 'qmtest.py'
-    options = 'run --format none --result-stream=scons_tdb.ResultStream'
+    qmtest_args = [
+                qmtest,
+                'run',
+                '--output %s' % qmr_file,
+                '--format none',
+                '--result-stream=scons_tdb.%s' % result_stream,
+              ]
+
+    if python:
+        qmtest_args.append('--context python=%s' % python)
+
+    if print_times:
+        qmtest_args.append('--context print_time=1')
+
+    if outputfile:
+        #rs = '--result-stream=scons_tdb.AegisBatchStream(results_file=\\"%s\\")' % outputfile
+        rs = '\'--result-stream=scons_tdb.AegisBatchStream(results_file="%s")\'' % outputfile
+        qmtest_args.append(rs)
 
     os.environ['SCONS'] = os.path.join(cwd, 'src', 'script', 'scons.py')
 
-    cmd = '%s %s %s' % (qmtest, options, string.join(args, ' '))
+    cmd = string.join(qmtest_args + args, ' ')
     if printcommand:
-        print cmd
+        sys.stdout.write(cmd + '\n')
+        sys.stdout.flush()
     status = 0
     if execute_tests:
         status = os.system(cmd)
     sys.exit(status)
 
-try:
-    os.chdir(scons_script_dir)
-except OSError:
-    pass
+#try:
+#    os.chdir(scons_script_dir)
+#except OSError:
+#    pass
 
 class Unbuffered:
     def __init__(self, file):
@@ -554,9 +616,27 @@ if list_only:
         sys.stdout.write(t.abspath + "\n")
     sys.exit(0)
 
+#
+if not python:
+    if os.name == 'java':
+        python = os.path.join(sys.prefix, 'jython')
+    else:
+        python = sys.executable
+
 # time.clock() is the suggested interface for doing benchmarking timings,
 # but time.time() does a better job on Linux systems, so let that be
 # the non-Windows default.
+
+if print_times:
+    print_time_func = lambda fmt, time: sys.stdout.write(fmt % time)
+else:
+    print_time_func = lambda fmt, time: None
+
+if sys.platform == 'win32':
+    time_func = time.clock
+else:
+    time_func = time.time
+
 if sys.platform == 'win32':
     time_func = time.clock
 else:
@@ -575,10 +655,10 @@ for t in tests:
     if execute_tests:
         t.execute()
     t.test_time = time_func() - test_start_time
-    print_time("Test execution time: %.1f seconds\n",  t.test_time)
+    print_time_func("Test execution time: %.1f seconds\n", t.test_time)
 if len(tests) > 0:
     tests[0].total_time = time_func() - total_start_time
-    print_time("Total execution time for all tests: %.1f seconds\n",  tests[0].total_time)
+    print_time_func("Total execution time for all tests: %.1f seconds\n", tests[0].total_time)
 
 passed = filter(lambda t: t.status == 0, tests)
 fail = filter(lambda t: t.status == 1, tests)

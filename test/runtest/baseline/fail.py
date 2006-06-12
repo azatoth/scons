@@ -1,7 +1,4 @@
-#
-# SConscript file for external packages we need.
-#
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -25,29 +22,41 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os.path
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-Import('env')
+"""
+Test how we handle a failing test specified on the command line.
+"""
 
-files = [
-    'TestCmd.py',
-    'TestCommon.py',
-    'TestSCons.py',
-    'unittest.py',
-]
+import TestRuntest
 
-def copy(target, source, env):
-    t = str(target[0])
-    s = str(source[0])
-    open(t, 'wb').write(open(s, 'rb').read())
+test = TestRuntest.TestRuntest()
 
-for file in files:
-    # Guarantee that real copies of these files always exist in
-    # build/etc.  If there's a symlink there, then this is an Aegis
-    # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', 'etc', file)
-    if os.path.islink(p):
-        os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
-    Local(sp)
+test.subdir('test')
+
+test.write_failing_test(['test', 'fail.py'])
+
+# NOTE:  The "test.fail   : FAIL" line has spaces at the end.
+
+expect = r"""qmtest.py run --output baseline.qmr --format none --result-stream=scons_tdb.AegisBaselineStream test.fail
+--- TEST RESULTS -------------------------------------------------------------
+
+  test.fail                                     : FAIL    
+
+    FAILING TEST STDOUT
+
+    FAILING TEST STDERR
+
+--- TESTS WITH UNEXPECTED OUTCOMES -------------------------------------------
+
+  None.
+
+
+--- STATISTICS ---------------------------------------------------------------
+
+       1 (100%) tests as expected
+"""
+
+test.run(arguments = '--qmtest -b . test.fail', stdout = expect)
+
+test.pass_test()

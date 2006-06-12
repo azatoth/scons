@@ -152,6 +152,17 @@ for key in ['AEGIS_PROJECT', 'LOGNAME', 'PYTHONPATH']:
 
 cwd_build = os.path.join(os.getcwd(), "build")
 
+packaging_flavors = [
+    'deb',
+    'rpm',
+    'tar-gz',
+    'src-tar-gz',
+    'local-tar-gz',
+    'zip',
+    'src-zip',
+    'local-zip',
+]
+
 test_deb_dir          = os.path.join(cwd_build, "test-deb")
 test_rpm_dir          = os.path.join(cwd_build, "test-rpm")
 test_tar_gz_dir       = os.path.join(cwd_build, "test-tar-gz")
@@ -949,7 +960,30 @@ for p in [ scons ]:
 #
 Export('env')
 
-SConscript('etc/SConscript')
+SConscript('QMTest/SConscript')
+
+#
+#
+#
+files = [
+    'runtest.py',
+]
+
+def copy(target, source, env):
+    t = str(target[0])
+    s = str(source[0])
+    open(t, 'wb').write(open(s, 'rb').read())
+
+for file in files:
+    # Guarantee that real copies of these files always exist in
+    # build/.  If there's a symlink there, then this is an Aegis
+    # build and we blow them away now so that they'll get "built" later.
+    p = os.path.join('build', file)
+    if os.path.islink(p):
+        os.unlink(p)
+    sp = '#' + p
+    env.Command(sp, file, copy)
+    Local(sp)
 
 #
 # Documentation.
@@ -1136,3 +1170,6 @@ if change:
                                  'setup.py'),
                 ],
                 ENV = ENV)
+
+for pf in packaging_flavors:
+    Alias(pf, ['build/test-'+pf, 'build/QMTest', 'build/runtest.py'])

@@ -35,6 +35,7 @@ Thanks to Stefan Seefeld for the initial code.
 ########################################################################
 
 import qm
+import qm.common
 import qm.test.base
 from   qm.fields import *
 from   qm.executable import *
@@ -43,6 +44,7 @@ from   qm.test import test
 from   qm.test import resource
 from   qm.test import suite
 from   qm.test.result import Result
+from   qm.test.file_result_stream import FileResultStream
 from   qm.test.classes.text_result_stream import TextResultStream
 from   qm.test.directory_suite import DirectorySuite
 from   qm.extension import get_extension_class_name, get_class_arguments_as_dictionary
@@ -55,6 +57,24 @@ else:
 
 def Trace(msg):
     open(console, 'w').write(msg)
+
+# QMTest 2.3 hard-codes how it captures the beginning and end time by
+# calling the qm.common.format_time_iso() function, which canonicalizes
+# the time stamp in one-second granularity ISO format.  In order to get
+# sub-second granularity, as well as to use the more precise time.clock()
+# function on Windows, we must replace that function with our own.
+
+orig_format_time_iso = qm.common.format_time_iso
+
+if sys.platform == 'win32':
+    time_func = time.clock
+else:
+    time_func = time.time
+
+def my_format_time(time_secs=None):
+    return str(time_func())
+
+qm.common.format_time_iso = my_format_time
 
 ########################################################################
 # Classes
@@ -108,7 +128,7 @@ def check_exit_status(result, prefix, desc, status):
 
     return True
 
-# XXX I'd like to annotate the overal test run with the following
+# XXX I'd like to annotate the overall test run with the following
 # information about the Python version, SCons version, and environment.
 # Not sure how to do that yet; ask Stefan.
 #
@@ -163,31 +183,161 @@ def check_exit_status(result, prefix, desc, status):
 #        'USER',
 #    ]
 
-class ResultStream(TextResultStream):
+class AegisStream(TextResultStream):
     def __init__(self, *args, **kw):
-        TextResultStream.__init__(self, *args, **kw)
+        super(AegisStream, self).__init__(*args, **kw)
+        self._num_tests = 0
+        self._outcomes = {}
+        self._outcome_counts = {}
+        for outcome in AegisTest.aegis_outcomes:
+            self._outcome_counts[outcome] = 0
+        self.format = "full"
+    def _percent(self, outcome):
+        return 100. * self._outcome_counts[outcome] / self._num_tests
+    def _aegis_no_result(self, result):
+        outcome = result.GetOutcome()
+        return (outcome == Result.FAIL and result.get('Test.exit_code') == '2')
     def _DisplayText(self, text):
+        # qm.common.html_to_text() uses htmllib, which sticks an extra
+        # '\n' on the front of the text.  Strip it and only display
+        # the text if there's anything to display.
         text = qm.common.html_to_text(text)
-        for l in text.splitlines():
-            self.file.write('    ' + l + '\n')
+        if text[0] == '\n':
+            text = text[1:]
+        if text:
+            lines = text.splitlines()
+            if lines[-1] == '':
+                lines = lines[:-1]
+            self.file.write('    ' + '\n    '.join(lines) + '\n\n')
     def _DisplayResult(self, result, format):
-        id_ = result.GetId()
+        test_id = result.GetId()
+        kind = result.GetKind()
+        if self._aegis_no_result(result):
+            outcome = "NO_RESULT"
+        else:
+            outcome = result.GetOutcome()
+        self._WriteOutcome(test_id, kind, outcome)
+        self.file.write('\n')
+    def _DisplayAnnotations(self, result):
+        try:
+            self._DisplayText(result["Test.stdout"])
+        except KeyError:
+            pass
+        try:
+            self._DisplayText(result["Test.stderr"])
+        except KeyError:
+            pass
+        if result["Test.print_time"] != "0":
+            start = float(result['qmtest.start_time'])
+            end = float(result['qmtest.end_time'])
+            fmt = "    Total execution time: %.1f seconds\n\n"
+            self.file.write(fmt % (end - start))
+
+class AegisChangeStream(AegisStream):
+    def WriteResult(self, result):
+        test_id = result.GetId()
+        if self._aegis_no_result(result):
+            outcome = AegisTest.NO_RESULT
+        else:
+            outcome = result.GetOutcome()
+        self._num_tests += 1
+        self._outcome_counts[outcome] += 1
+        super(AegisStream, self).WriteResult(result)
+    def _SummarizeTestStats(self):
+        self.file.write("\n")
+        self._DisplayHeading("STATISTICS")
+        if self._num_tests != 0:
+            # We'd like to use the _FormatStatistics() method to do
+            # this, but it's wrapped around the list in Result.outcomes,
+            # so it's simpler to just do it ourselves.
+            print "  %6d        tests total\n" % self._num_tests
+            for outcome in AegisTest.aegis_outcomes:
+                if self._outcome_counts[outcome] != 0:
+                    print "  %6d (%3.0f%%) tests %s" % (
+                        self._outcome_counts[outcome],
+                        self._percent(outcome),
+                        outcome
+                    )
+
+class AegisBaselineStream(AegisStream):
+    def WriteResult(self, result):
+        test_id = result.GetId()
+        if self._aegis_no_result(result):
+            outcome = AegisTest.NO_RESULT
+            self.expected_outcomes[test_id] = Result.PASS
+            self._outcome_counts[outcome] += 1
+        else:
+            self.expected_outcomes[test_id] = Result.FAIL
+            outcome = result.GetOutcome()
+            if outcome != Result.Fail:
+                self._outcome_counts[outcome] += 1
+        self._num_tests += 1
+        super(AegisStream, self).WriteResult(result)
+    def _SummarizeRelativeTestStats(self):
+        self.file.write("\n")
+        self._DisplayHeading("STATISTICS")
+        if self._num_tests != 0:
+            # We'd like to use the _FormatStatistics() method to do
+            # this, but it's wrapped around the list in Result.outcomes,
+            # so it's simpler to just do it ourselves.
+            if self._outcome_counts[AegisTest.FAIL]:
+                print "  %6d (%3.0f%%) tests as expected" % (
+                    self._outcome_counts[AegisTest.FAIL],
+                    self._percent(AegisTest.FAIL),
+                )
+            non_fail_outcomes = list(AegisTest.aegis_outcomes[:])
+            non_fail_outcomes.remove(AegisTest.FAIL)
+            for outcome in non_fail_outcomes:
+                if self._outcome_counts[outcome] != 0:
+                    print "  %6d (%3.0f%%) tests unexpected %s" % (
+                        self._outcome_counts[outcome],
+                        self._percent(outcome),
+                        outcome,
+                    )
+
+class AegisBatchStream(FileResultStream):
+    arguments = [
+        qm.fields.TextField(
+            name = "results_file",
+            title = "Aegis Results File",
+            description = """
+            """,
+            verbatim = "true",
+            default_value = "aegis-results.txt",
+        ),
+    ]
+    def __init__(self, arguments):
+        self.filename = arguments['results_file']
+        super(AegisBatchStream, self).__init__(arguments)
+        self._outcomes = {}
+    def WriteResult(self, result):
+        test_id = result.GetId()
         kind = result.GetKind()
         outcome = result.GetOutcome()
+        exit_status = '0'
         if outcome == Result.FAIL:
-            if result.get('Test.exit_code') == '2':
-                self._WriteOutcome(id_, kind, 'NO RESULT')
-                self._DisplayText(result["Test.stdout"])
-                self._DisplayText(result["Test.stderr"])
-                return
-        TextResultStream._DisplayResult(self, result, format)
-    def _DisplayAnnotations(self, result):
-        outcome = result.GetOutcome()
-        if outcome != Result.FAIL or result.get('Test.exit_code') != '2':
-            TextResultStream._DisplayAnnotations(self, result)
+            exit_status = result.get('Test.exit_code')
+        self._outcomes[test_id] = exit_status
+    def Summarize(self):
+        self.file.write('test_result = [\n')
+        for file_name, exit_status in self._outcomes.items():
+            self.file.write('    { file_name = "%s";\n' % file_name)
+            self.file.write('      exit_status = %s; },\n' % exit_status)
+        self.file.write('];\n')
 
+class AegisTest(test.Test):
+    PASS = "PASS"
+    FAIL = "FAIL"
+    NO_RESULT = "NO_RESULT"
+    ERROR = "ERROR"
+    UNTESTED = "UNTESTED"
 
-class Test(test.Test):
+    aegis_outcomes = (
+        PASS, FAIL, NO_RESULT, ERROR, UNTESTED,
+    )
+    """Aegis test outcomes."""
+
+class Test(AegisTest):
     """Simple test that runs a python script and checks the status
     to determine whether the test passes."""
 
@@ -199,8 +349,9 @@ class Test(test.Test):
         and fails otherwise. The program output is logged, but not validated."""
 
         command = RedirectedExecutable()
-        status = command.Run([context.get('python', 'python'), self.script],
-                             os.environ)
+        args = [context.get('python', 'python'), self.script]
+        status = command.Run(args, os.environ)
+        result["Test.print_time"] = context.get('print_time', '0')
         if not check_exit_status(result, 'Test.', self.script, status):
             # In case of failure record exit code, stdout, and stderr.
             result.Fail("Non-zero exit_code.")
@@ -234,6 +385,15 @@ class Database(database.Database):
         'test' : is_a_test_under_test,
     }
 
+    exclude_subdirs = {
+        '.svn' : 1,
+        'CVS' : 1,
+    }
+
+    def is_a_test_subdir(path, subdir):
+        if exclude_subdirs.get(subdir):
+            return None
+        return os.path.isdir(os.path.join(path, subdir))
 
     def __init__(self, path, arguments):
 
