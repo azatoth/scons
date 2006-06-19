@@ -37,50 +37,56 @@ test = TestSCons.TestSCons()
 
 tar = test.detect('TAR', 'tar')
 
-#if tar:
-#  #
-#  # TEST: builddir usage. XXX
-#  #
-#  test.subdir('src')
-#  test.subdir('build')
-#
-#  test.write('src/main.c', '')
-#
-#  test.write('SConstruct', """
-#BuildDir('build', 'src')
-#Package( projectname = 'libfoo',
-#         subdir      = 'build/libfoo',
-#         version     = '1.2.3',
-#         source      = [ 'src/main.c', 'SConstruct' ] )
-#""")
-#
-#  test.run(stderr = None)
-#
-#  test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.tar.gz' ) )
-#
-#  #
-#  # TEST: builddir not placed in archive
-#  #
-#  test.subdir('src')
-#  test.subdir('build')
-#  test.subdir('temp')
-#
-#  test.write('src/main.c', '')
-#
-#  test.write('SConstruct', """
-#BuildDir('build', 'src')
-#Package( projectname = 'libfoo',
-#         subdir      = 'build/libfoo',
-#         version     = '1.2.3',
-#         source      = [ 'src/main.c', 'SConstruct' ] )
-#Tar( 'build/libfoo-1.2.3.tar.gz', TARFLAGS = '-C temp -xzf' )
-#""")
-#
-#  test.run(stderr = None)
-#
-#  test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.tar.gz' ) )
+if tar:
+  #
+  # TEST: builddir usage. XXX
+  # Hmm, how to create a new target node under a specified buildDir????
+  #
+  test.subdir('src')
+  test.subdir('build')
+
+  test.write('src/main.c', '')
+
+  test.write('SConstruct', """
+BuildDir('build', 'src')
+Package( projectname = 'libfoo',
+         subdir      = 'build/libfoo',
+         version     = '1.2.3',
+         source      = [ 'src/main.c', 'SConstruct' ] )
+""")
+
+  test.run(stderr = None)
+
+  test.fail_test( not os.path.exists( 'libfoo-1.2.3.tar.gz' ) )
+  #test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.tar.gz' ) )
+
+  #
+  # TEST: builddir not placed in archive
+  # XXX: BuildDir should be stripped.
+  #
+  test.subdir('src')
+  test.subdir('build')
+  test.subdir('temp')
+
+  test.write('src/main.c', '')
+
+  test.write('SConstruct', """
+BuildDir('build', 'src')
+Package( projectname = 'libfoo',
+         subdir      = 'build/libfoo',
+         version     = '1.2.3',
+         source      = [ 'src/main.c', 'SConstruct' ] )
+""")
+
+  test.run(stderr = None)
+
+  test.fail_test( not os.path.exists( 'libfoo-1.2.3.tar.gz' ) )
+
+  os.popen( 'tar -C temp -xzf %s'%test.workpath('libfoo-1.2.3.tar.gz') )
+  test.fail_test( not os.path.exists( 'temp/build/libfoo/src/main.c' ) )
+  test.fail_test( not os.path.exists( 'temp/build/libfoo/SConstruct' ) )
+
 #  test.fail_test( not os.path.exists( 'temp/libfoo/src/main.c' ) )
 #  test.fail_test( not os.path.exists( 'temp/libfoo/SConstruct' ) )
-
 
 test.pass_test()

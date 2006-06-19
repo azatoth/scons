@@ -1660,6 +1660,9 @@ class Base(SubstitutionEnvironment):
         kw['source_factory'] = self.fs.Entry
         kw['target_factory'] = self.fs.Entry
 
+        ## XXX: Instead of this hack, an emitter should be added to the builder,
+        #       which does the file name translation. Especially stripping the
+        #       buildDir needs to be done.
         self.BuildDir( kw['subdir'], '.' )
         kw['source'] = map( lambda x: os.path.join( kw['subdir'], x ), kw['source'] )
 
