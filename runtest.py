@@ -62,6 +62,10 @@
 #                       command line it will execute before
 #                       executing it.  This suppresses that print.
 #
+#       --sp            The Aegis search path.
+#
+#       --spe           The Aegis executable search path.
+#
 #       -t              Print the execution time of each test.
 #
 #       -X              The scons "script" is an executable; don't
@@ -110,6 +114,8 @@ testlistfile = None
 version = ''
 print_times = None
 python = None
+sp = None
+spe = None
 
 cwd = os.getcwd()
 
@@ -146,6 +152,8 @@ Options:
   --passed                    Summarize which tests passed.
   --qmtest                    Run using the QMTest harness.
   -q, --quiet                 Don't print the test being executed.
+  --sp PATH                   The Aegis search path.
+  --spe PATH                  The Aegis executable search path.
   -t, --time                  Print test execution time.
   -v version                  Specify the SCons version.
   --verbose=LEVEL             Set verbose level: 1 = print executed commands,
@@ -161,7 +169,7 @@ opts, args = getopt.getopt(sys.argv[1:], "ab:df:hlno:P:p:qv:Xx:t",
                              'debug', 'file=', 'help',
                              'list', 'no-exec', 'output=',
                              'package=', 'passed', 'python=',
-                             'qmtest', 'quiet',
+                             'qmtest', 'quiet', 'spe=',
                              'version=', 'exec=', 'time',
                              'verbose=', 'xml'])
 
@@ -197,6 +205,10 @@ for o, a in opts:
         qmtest = 1
     elif o in ['-q', '--quiet']:
         printcommand = 0
+    elif o in ['--sp']:
+        sp = string.split(a, os.pathsep)
+    elif o in ['--spe']:
+        spe = string.split(a, os.pathsep)
     elif o in ['-t', '--time']:
         print_times = 1
     elif o in ['--verbose']:
@@ -224,14 +236,21 @@ def whereis(file):
 
 aegis = whereis('aegis')
 
-sp = []
+if format == '--aegis' and aegis:
+    change = os.popen("aesub '$c' 2>/dev/null", "r").read()
+    if change:
+        if sp is None:
+            paths = os.popen("aesub '$sp' 2>/dev/null", "r").read()[:-1]
+            sp = string.split(paths, os.pathsep)
+        if spe is None:
+            spe = os.popen("aesub '$spe' 2>/dev/null", "r").read()[:-1]
+            spe = string.split(spe, os.pathsep)
+    else:
+        aegis = None
 
-if aegis:
-    paths = os.popen("aesub '$sp' 2>/dev/null", "r").read()[:-1]
-    sp.extend(string.split(paths, os.pathsep))
-    spe = os.popen("aesub '$spe' 2>/dev/null", "r").read()[:-1]
-    spe = string.split(spe, os.pathsep)
-else:
+if sp is None:
+    sp = []
+if spe is None:
     spe = []
 
 sp.append(cwd)
@@ -383,7 +402,7 @@ elif all:
                 tdict[t] = Test(t)
     os.path.walk('test', find_py, 0)
 
-    if aegis:
+    if format == '--aegis' and aegis:
         cmd = "aegis -list -unf pf 2>/dev/null"
         for line in os.popen(cmd, "r").readlines():
             a = string.split(line)
@@ -536,20 +555,18 @@ os.environ['SCONS_VERSION'] = version
 
 old_pythonpath = os.environ.get('PYTHONPATH')
 
-qmtest_class_paths = []
 pythonpaths = [ pythonpath_dir ]
 
-for p in sp:
-    q = os.path.join(p, 'build', 'QMTest')
+for dir in sp:
+    if format == '--aegis':
+        q = os.path.join(dir, 'build', 'QMTest')
+    else:
+        q = os.path.join(dir, 'QMTest')
     pythonpaths.append(q)
-    qmtest_class_paths.append(q)
 
-    q = os.path.join(p, 'QMTest')
-    pythonpaths.append(q)
-    qmtest_class_paths.append(q)
+os.environ['SCONS_SOURCE_PATH_EXECUTABLE'] = string.join(spe, os.pathsep)
 
 os.environ['PYTHONPATH'] = string.join(pythonpaths, os.pathsep)
-os.environ['QMTEST_CLASS_PATH'] = string.join(qmtest_class_paths, os.pathsep)
 
 if old_pythonpath:
     os.environ['PYTHONPATH'] = os.environ['PYTHONPATH'] + \

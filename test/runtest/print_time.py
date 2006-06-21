@@ -42,13 +42,13 @@ test.write_no_result_test(['test', 'no_result.py'])
 
 test.write_passing_test(['test', 'pass.py'])
 
-# NOTE:  The "test.fail : FAIL" line and "test.pass : PASS" lines both
+# NOTE:  The "test/fail.py : FAIL" and "test/pass.py : PASS" lines both
 # have spaces at the end.
 
 expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream --context print_time=1 test
 --- TEST RESULTS -------------------------------------------------------------
 
-  test.fail                                     : FAIL    
+  test/fail.py                                  : FAIL    
 
     FAILING TEST STDOUT
 
@@ -56,7 +56,7 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream=sc
 
     Total execution time: \d+\.\d+ seconds
 
-  test.no_result                                : NO_RESULT
+  test/no_result.py                             : NO_RESULT
 
     NO RESULT TEST STDOUT
 
@@ -64,15 +64,15 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream=sc
 
     Total execution time: \d+\.\d+ seconds
 
-  test.pass                                     : PASS    
+  test/pass.py                                  : PASS    
 
     Total execution time: \d+\.\d+ seconds
 
 --- TESTS THAT DID NOT PASS --------------------------------------------------
 
-  test.fail                                     : FAIL    
+  test/fail.py                                  : FAIL    
 
-  test.no_result                                : NO_RESULT
+  test/no_result.py                             : NO_RESULT
 
 
 --- STATISTICS ---------------------------------------------------------------

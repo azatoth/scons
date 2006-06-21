@@ -36,12 +36,12 @@ test.subdir('test')
 
 test.write_passing_test(['test', 'pass.py'])
 
-# NOTE:  The "test.pass   : PASS" line has spaces at the end.
+# NOTE:  The "test/pass.py   : PASS" line has spaces at the end.
 
-expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream test.pass
+expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream test/pass.py
 --- TEST RESULTS -------------------------------------------------------------
 
-  test.pass                                     : PASS    
+  test/pass.py                                  : PASS    
 
 --- TESTS THAT DID NOT PASS --------------------------------------------------
 
@@ -55,6 +55,6 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream=sc
        1 (100%) tests PASS
 """
 
-test.run(arguments = '--qmtest test.pass', stdout = expect)
+test.run(arguments = '--qmtest test/pass.py', stdout = expect)
 
 test.pass_test()

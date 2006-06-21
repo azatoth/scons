@@ -81,8 +81,10 @@ class TestRuntest(TestCommon):
         temporary directory, duplicating how this test infrastructure
         appears in a normal workspace.
         """
+        set_workpath_runtest = None
         if not kw.has_key('program'):
             kw['program'] = 'runtest.py'
+            set_workpath_runtest = 1
         if not kw.has_key('interpreter'):
             kw['interpreter'] = [python, '-tt']
         if not kw.has_key('match'):
@@ -97,10 +99,12 @@ class TestRuntest(TestCommon):
             'QMTest',
         ]
 
-        dirs = [
-            os.path.join(orig_cwd, 'build'),
-            orig_cwd,
-        ]
+        dirs = []
+        
+        spe = os.environ.get('SCONS_SOURCE_PATH_EXECUTABLE', orig_cwd)
+        for d in string.split(spe, os.pathsep):
+            dirs.append(os.path.join(d, 'build'))
+            dirs.append(d)
 
         for thing in things_to_copy:
             for dir in dirs:
@@ -112,6 +116,16 @@ class TestRuntest(TestCommon):
                         copy_func = shutil.copyfile
                     copy_func(t, self.workpath(thing))
                     break
+
+        if set_workpath_runtest:
+            self.program_set(self.workpath('runtest.py'))
+
+        for key in os.environ.keys():
+            if key[:5] == 'AEGIS':
+                os.environ[key] = ''
+
+        os.environ['PYTHONPATH'] = ''
+        os.environ['SCONS_SOURCE_PATH_EXECUTABLE'] = ''
 
     def write_failing_test(self, name):
         self.write(name, failing_test_template)

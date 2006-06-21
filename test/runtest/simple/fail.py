@@ -36,12 +36,12 @@ test.subdir('test')
 
 test.write_failing_test(['test', 'fail.py'])
 
-# NOTE:  The "test.fail   : FAIL" line has spaces at the end.
+# NOTE:  The "test/fail.py   : FAIL" line has spaces at the end.
 
-expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream test.fail
+expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream test/fail.py
 --- TEST RESULTS -------------------------------------------------------------
 
-  test.fail                                     : FAIL    
+  test/fail.py                                  : FAIL    
 
     FAILING TEST STDOUT
 
@@ -49,7 +49,7 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream=sc
 
 --- TESTS THAT DID NOT PASS --------------------------------------------------
 
-  test.fail                                     : FAIL    
+  test/fail.py                                  : FAIL    
 
 
 --- STATISTICS ---------------------------------------------------------------
@@ -59,6 +59,6 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream=sc
        1 (100%) tests FAIL
 """
 
-test.run(arguments = '--qmtest test.fail', stdout = expect)
+test.run(arguments = '--qmtest test/fail.py', stdout = expect)
 
 test.pass_test()

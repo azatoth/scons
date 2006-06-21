@@ -50,13 +50,13 @@ os.system(string.join([sys.executable] + sys.argv[1:]))
 
 test.chmod(mypython_py, 0755)
 
-# NOTE:  The "test.fail : FAIL" line and "test.pass : PASS" lines both
+# NOTE:  The "test/fail.py : FAIL" and "test/pass.py : PASS" lines both
 # have spaces at the end.
 
 expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream --context python=%(mypython_py)s test
 --- TEST RESULTS -------------------------------------------------------------
 
-  test.pass                                     : PASS    
+  test/pass.py                                  : PASS    
 
 --- TESTS THAT DID NOT PASS --------------------------------------------------
 

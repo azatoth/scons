@@ -397,7 +397,7 @@ class Database(database.Database):
 
     def __init__(self, path, arguments):
 
-        self.label_class = "python_label.PythonLabel"
+        self.label_class = "file_label.FileLabel"
         self.modifiable = "false"
         # Initialize the base class.
         super(Database, self).__init__(path, arguments)
@@ -432,7 +432,7 @@ class Database(database.Database):
             if not components:
                 return []
 
-            ids = [self.JoinLabels(directory, os.path.splitext(t)[0])
+            ids = [self.JoinLabels(directory, t)
                    for t in dircache.listdir(path)
                    if self.is_a_test[components[0]](path, t)]
 
@@ -469,10 +469,10 @@ class Database(database.Database):
         if os.path.isdir(path): # a directory
             return DirectorySuite(self, id)
 
-        elif os.path.isfile(path + '.py'): # a test
+        elif os.path.isfile(path): # a test
 
             arguments = {}
-            arguments['script'] = path + '.py'
+            arguments['script'] = path
             arguments['topdir'] = self.GetRoot()
 
             return Test(arguments, qmtest_id = id, qmtest_database = self)

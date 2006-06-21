@@ -31,7 +31,7 @@ with *Tests.py.
 
 import TestRuntest
 
-test = TestRuntest.TestRuntest()
+test = TestRuntest.TestRuntest(verbose=1)
 
 test.subdir(['src'],
             ['src', 'suite'])
@@ -44,15 +44,15 @@ test.write_passing_test(['src', 'suite', 'pass.py'])
 
 test.write_passing_test(['src', 'suite', 'passTests.py'])
 
-# NOTE:  The "test.fail : FAIL" line and "test.pass : PASS" lines both
+# NOTE:  The "test/fail.py : FAIL" and "test/pass.py : PASS" lines both
 # have spaces at the end.
 
 expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream src
 --- TEST RESULTS -------------------------------------------------------------
 
-  src.passTests                                 : PASS    
+  src/passTests.py                              : PASS    
 
-  src.suite.passTests                           : PASS    
+  src/suite/passTests.py                        : PASS    
 
 --- TESTS THAT DID NOT PASS --------------------------------------------------
 

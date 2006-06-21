@@ -36,12 +36,10 @@ test.subdir('test')
 
 test.write_no_result_test(['test', 'no_result.py'])
 
-# NOTE:  The "test.no_result   : NO_RESULT" line has spaces at the end.
-
-expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream test.no_result
+expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream test/no_result.py
 --- TEST RESULTS -------------------------------------------------------------
 
-  test.no_result                                : NO_RESULT
+  test/no_result.py                             : NO_RESULT
 
     NO RESULT TEST STDOUT
 
@@ -49,7 +47,7 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream=sc
 
 --- TESTS THAT DID NOT PASS --------------------------------------------------
 
-  test.no_result                                : NO_RESULT
+  test/no_result.py                             : NO_RESULT
 
 
 --- STATISTICS ---------------------------------------------------------------
@@ -59,6 +57,6 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream=sc
        1 (100%) tests NO_RESULT
 """
 
-test.run(arguments = '--qmtest test.no_result', stdout = expect)
+test.run(arguments = '--qmtest test/no_result.py', stdout = expect)
 
 test.pass_test()

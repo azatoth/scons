@@ -42,31 +42,31 @@ test.write_no_result_test(['test', 'no_result.py'])
 
 test.write_passing_test(['test', 'pass.py'])
 
-# NOTE:  The "test.fail : FAIL" line and "test.pass : PASS" lines both
+# NOTE:  The "test/fail.py : FAIL" and "test/pass.py : PASS" lines both
 # have spaces at the end.
 
 expect = r"""qmtest.py run --output baseline.qmr --format none --result-stream=scons_tdb.AegisBaselineStream test
 --- TEST RESULTS -------------------------------------------------------------
 
-  test.fail                                     : FAIL    
+  test/fail.py                                  : FAIL    
 
     FAILING TEST STDOUT
 
     FAILING TEST STDERR
 
-  test.no_result                                : NO_RESULT
+  test/no_result.py                             : NO_RESULT
 
     NO RESULT TEST STDOUT
 
     NO RESULT TEST STDERR
 
-  test.pass                                     : PASS    
+  test/pass.py                                  : PASS    
 
 --- TESTS WITH UNEXPECTED OUTCOMES -------------------------------------------
 
-  test.no_result                                : NO_RESULT
+  test/no_result.py                             : NO_RESULT
 
-  test.pass                                     : PASS    
+  test/pass.py                                  : PASS    
 
 
 --- STATISTICS ---------------------------------------------------------------
