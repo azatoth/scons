@@ -49,16 +49,17 @@ int main( int argc, char* argv[] )
 
   test.write('SConstruct', """
 prog=Program( 'src/main.c' )
-Package( type       ='rpm',
-         projectname='foo',
+Package( projectname='foo',
          version    ='1.2.3',
-         source     = [ prog ],
+         type       ='rpm',
+         source     = [ 'src/main.c' ],
         )
 """)
 
   test.run(arguments='', stderr = None)
 
   test.fail_test( not os.path.exists( 'foo-1.2.3.rpm' ) )
+  test.fail_test( not os.path.exists( 'foo-1.2.3.src.rpm' ) )
   test.fail_test( not os.popen('rpm -qpl foor-1.2.3.rpm').read()=='/src/main')
 
 test.pass_test()

@@ -1,6 +1,11 @@
+"""SCons.Tool.Packaging.rpm
+
+The rpm packager.
+"""
+
 #
 # __COPYRIGHT__
-#
+# 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -21,45 +26,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-"""SCons.Errors
-
-This file contains the exception classes used to handle internal
-and user errors in SCons.
-
-"""
-
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-
-
-class BuildError(Exception):
-    def __init__(self, node=None, errstr="Unknown error", filename=None, *args):
-        self.node = node
-        self.errstr = errstr
-        self.filename = filename
-        apply(Exception.__init__, (self,) + args)
-
-class InternalError(Exception):
-    pass
-
-class UserError(Exception):
-    pass
-
-class StopError(Exception):
-    pass
-
-class EnvironmentError(Exception):
-    pass
-
-class ExplicitExit(Exception):
-    def __init__(self, node=None, status=None, *args):
-        self.node = node
-        self.status = status
-        apply(Exception.__init__, (self,) + args)
-
-class TaskmasterException(Exception):
-    def __init__(self, node=None, exc_info=(None, None, None), *args):
-        self.node = node
-        self.errstr = "Exception"
-        self.exc_info = exc_info
-        apply(Exception.__init__, (self,) + args)
+def create_builder(env):
+    return env.get_builder('Rpm')

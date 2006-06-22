@@ -39,32 +39,46 @@ import SCons.Builder
 import SCons.Node.FS
 import SCons.Util
 
-zipcompression = 0
-zip = "$ZIP $ZIPFLAGS ${TARGET.abspath} $SOURCES"
+def build_rpm(target, source, env):
+    tar_file_with_included_specfile = source
+    if SCons.Util.is_List(source):
+        tar_file_with_included_specfile = source[0]
 
+    handle=os.popen( "%s %s %s"%(env['RPM'], env['RPMFLAGS'],
+                               tar_file_with_included_specfile.abspath ) )
+    output=handle.read()
+    retval=handle.close()
 
-zipAction = SCons.Action.Action(zip, varlist=['ZIPCOMPRESSION'])
+    if retval is not None:
+        raise SCons.Errors.BuildError( node=target[0],
+                                       errstr=output,
+                                       filename=str(target[0]) )
+    return retval
 
-ZipBuilder = SCons.Builder.Builder(action = SCons.Action.Action('$ZIPCOM', '$ZIPCOMSTR'),
+def string_rpm(target, source, env):
+    return "building %s from %s"%(str(target[0]), str(source[0]))
+
+rpmAction = SCons.Action.Action(build_rpm, string_rpm)
+
+RpmBuilder = SCons.Builder.Builder(action = SCons.Action.Action('$RPMCOM', '$RPMCOMSTR'),
                                    source_factory = SCons.Node.FS.Entry,
                                    source_scanner = SCons.Defaults.DirScanner,
-                                   suffix = '$ZIPSUFFIX',
-                                   multi = 1)
+                                   suffix = '$RPMSUFFIX')
+
 
 
 def generate(env):
-    """Add Builders and construction variables for zip to an Environment."""
+    """Add Builders and construction variables for rpm to an Environment."""
     try:
-        bld = env['BUILDERS']['Zip']
+        bld = env['BUILDERS']['Rpm']
     except KeyError:
-        bld = ZipBuilder
-        env['BUILDERS']['Zip'] = bld
+        bld = RpmBuilder
+        env['BUILDERS']['Rpm'] = bld
 
-    env['ZIP']        = 'zip'
-    env['ZIPFLAGS']   = SCons.Util.CLVar('')
-    env['ZIPCOM']     = zipAction
-    env['ZIPCOMPRESSION'] =  zipcompression
-    env['ZIPSUFFIX']  = '.zip'
+    env['RPM']        = 'rpmbuild'
+    env['RPMFLAGS']   = SCons.Util.CLVar('')
+    env['RPMCOM']     = rpmAction
+    env['RPMSUFFIX']  = '.rpm'
 
 def exists(env):
     return env.Detect('rpmbuild')

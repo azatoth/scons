@@ -32,6 +32,7 @@ import SCons.Errors
 import SCons.Tool.Packaging.tarbz2
 import SCons.Tool.Packaging.targz
 import SCons.Tool.Packaging.zip
+import SCons.Tool.Packaging.rpm
 
 import os
 import SCons.Defaults
@@ -41,6 +42,7 @@ package_builder = {
     'tarbz2' : tarbz2.create_builder,
     'targz'  : targz.create_builder,
     'zip'    : zip.create_builder,
+    'rpm'    : rpm.create_builder,
 }
 
 def create_builder(env, kw):
@@ -53,14 +55,14 @@ def create_builder(env, kw):
 
     target, source, type = kw['target'], kw['source'], kw['type']
 
-    if package_builder.get(type[0])==None:
-      raise SCons.Errors.UserError ("packager %s not available."%type)
-      return None
-    else:
-      list = []
-      for t in type:
-          list.append(package_builder.get(t)(env))
-      return list
+    list = []
+    for t in type:
+        # XXX: catching the non-availability of a given build is hard since 
+        #      comparing with None through an Exception (because of __cmp__ in
+        #      Builder) and checking if Builder is None throughs an
+        #      InternalError
+        list.append(package_builder.get(t)(env))
+    return list
 
 def create_default_target(kw):
     """ In the absence of a filename for a given Package, this function deduces
@@ -68,3 +70,11 @@ def create_default_target(kw):
     """
     projectname, version = kw['projectname'], kw['version']
     return "%s-%s"%(projectname,version)
+
+def create_fakeroot_emitter(fakeroot):
+    """This emitter changes the source to be rooted in the given fakeroot.
+    """
+    def fakeroot_emitter(target, source, env):
+        pass
+
+    return fakeroot_emitter

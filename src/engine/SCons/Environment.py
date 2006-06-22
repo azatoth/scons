@@ -1662,11 +1662,15 @@ class Base(SubstitutionEnvironment):
 
         ## XXX: Instead of this hack, an emitter should be added to the builder,
         #       which does the file name translation. Especially stripping the
-        #       buildDir needs to be done.
+        #       buildDir needs to be done, which can be achieved by inspecting
+        #       the source file, which should have the source files attached.
         self.BuildDir( kw['subdir'], '.' )
-        kw['source'] = map( lambda x: os.path.join( kw['subdir'], x ), kw['source'] )
+        kw['source'] = map( lambda x: os.path.join( kw['subdir'], str(x) ), kw['source'] )
 
         builders = SCons.Tool.Packaging.create_builder(self, kw)
+        emitter  = SCons.Tool.Packaging.create_fakeroot_emitter(kw['subdir'])
+        for builder in builders:
+            builder.push_emitter(emitter)
 
         return map( lambda x: apply(x, [self], kw), builders )
 

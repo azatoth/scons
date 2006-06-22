@@ -426,7 +426,7 @@ def tool_list(platform, env):
                                 # 'Subversion',
                                 'swig',
                                 'tar', 'tex',
-                                'yacc', 'zip'],
+                                'yacc', 'zip', 'rpm'],
                                env)
 
     tools = ([linker, c_compiler, cxx_compiler,

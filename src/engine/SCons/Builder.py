@@ -673,6 +673,15 @@ class BuilderBase:
         """
         self.emitter[suffix] = emitter
 
+    def push_emitter(self, emitter):
+        """Add a emitter to the beginning of the emitter list of this Builder.
+
+        This creates an empty list if the emitter is None.
+        """
+        if not self.emitter:
+            self.emitter = []
+        [emitter].extend(self.emitter)
+
 if SCons.Memoize.use_old_memoization():
     _Base = BuilderBase
     class BuilderBase(SCons.Memoize.Memoizer, _Base):
