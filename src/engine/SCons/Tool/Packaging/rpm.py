@@ -31,6 +31,8 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import SCons.Builder
 import SCons.Tool.Packaging.targz
 
+import os
+
 def create_builder(env, keywords=None):
     rpmbuilder = env.get_builder('Rpm')
     rpmbuilder.push_emitter(rpm_emitter)
@@ -118,13 +120,14 @@ def build_specfile_sections(spec, files):
 
     # Default prep, build, install and clean rules
     if not spec.has_key('x_rpm_Prep'):
-        spec['x_rpm_Prep'] = '%setup -q'
+        spec['x_rpm_Prep']  = 'rm -rf $RPM_BUILD_ROOT\n'
+        spec['x_rpm_Prep'] += '%setup -q'
 
-#    if not spec.has_key('x_rpm_Build'):
-#        spec['x_rpm_Build'] = 'scons'
+    if not spec.has_key('x_rpm_Build'):
+        spec['x_rpm_Build'] = 'mkdir $RPM_BUILD_ROOT'
 
     if not spec.has_key('x_rpm_Install'):
-        spec['x_rpm_Install'] = 'scons install'
+        spec['x_rpm_Install'] = 'scons prefix=$RPM_BUILD_ROOT install'
 
     if not spec.has_key('x_rpm_Clean'):
         spec['x_rpm_Clean'] = 'rm -rf $RPM_BUILD_ROOT'
@@ -177,7 +180,8 @@ def build_specfile_header(specs):
         'x_rpm_Conflicts'     : 'Conflicts: %s',
 
         # internal use
-        'x_rpm_Source'        : 'Source: %s'}
+        'x_rpm_Source'        : 'Source: %s',
+        'x_rpm_BuildRoot'      : 'BuildRoot: %s', }
 
     # fill in default values:
 #    if not s.has_key('x_rpm_BuildRequires'):
@@ -186,6 +190,9 @@ def build_specfile_header(specs):
     # XXX: assumed the name of the src package!
     if not s.has_key('x_rpm_Source'):
         s['x_rpm_Source'] = '%{name}-%{version}.rpm.tar.gz'
+
+    if not s.has_key('x_rpm_BuildRoot'):
+        s['x_rpm_BuildRoot'] = '%{_tmppath}/%{name}-%{version}-%{release}'
 
     str += compile( optional_header_fields, s, mandatory=0 )
 
@@ -199,7 +206,8 @@ specfile_action = SCons.Action.Action( build_specfile,
                                        varlist=[ 'RPMSPEC' ] )
 
 def rpm_emitter(target, source, env):
-    """This emitter adds a source package to the list of sources.
+    """This emitter adds a source package to the list of sources and fixes the
+    targets.
 
     The source list of this source packager also includes a specfile, which an
     attached specfile builder.
@@ -215,5 +223,10 @@ def rpm_emitter(target, source, env):
     suffix  = srcbuilder.get_suffix(env)
     srcnode = apply( srcbuilder, [env], { 'source' : source + specfile,
                                           'target' : target[0].abspath + suffix } )
+
+    # XXX: it seems that create_default_target should be done dependet on the
+    # packager,
+    defaultname = SCons.Tool.Packaging.create_default_target(env['RPMSPEC'])
+    target += env.arg2nodes( defaultname + '.i386', env.fs.Entry )
 
     return (target, srcnode)

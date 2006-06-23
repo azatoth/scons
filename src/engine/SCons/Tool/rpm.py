@@ -36,6 +36,8 @@ file is delivered to the rpmbuild command.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
+import re
+import shutil
 
 import SCons.Builder
 import SCons.Node.FS
@@ -50,6 +52,7 @@ def get_cmd(source, env):
                        tar_file_with_included_specfile.abspath )
 
 def build_rpm(target, source, env):
+    # XXX: building the rpm shoudl be done in a temporary directory.
     handle=os.popen( get_cmd(source, env) )
     output=handle.read()
     retval=handle.close()
@@ -58,6 +61,17 @@ def build_rpm(target, source, env):
         raise SCons.Errors.BuildError( node=target[0],
                                        errstr=output,
                                        filename=str(target[0]) )
+    else:
+        output_files = re.compile( 'Wrote: (.*)' ).findall( output )
+
+        # XXX: ugly ugly ugly
+        i=0
+        assert len(output_files) == len(target)
+        while i<len(output_files):
+            print os.path.basename(output_files[i]),os.path.basename(target[i].get_path())
+            assert os.path.basename(output_files[i]) == os.path.basename(target[i].get_path())
+            #shutil.copy( output_files[i], target[i].abspath )
+
     return retval
 
 def string_rpm(target, source, env):

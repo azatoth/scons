@@ -48,6 +48,8 @@ int main( int argc, char* argv[] )
   """)
 
   test.write('SConstruct', """
+import os
+
 prog=Program( 'src/main.c' )
 Package( projectname    = 'foo',
          version        = '1.2.3',
@@ -60,10 +62,11 @@ Package( projectname    = 'foo',
          source         = [ 'src/main.c', 'SConstruct', prog ],
         )
 
-Install( '/bin', prog )
-Install( '/usr/src/foo-1.2.3', ['src/main.c', 'SConstruct'] )
+list = []
+list.append(Install( ARGUMENTS.get('prefix', '/'), 'SConstruct' ) )
+list.append(Install( os.path.join( ARGUMENTS.get('prefix', '/'), 'src/' ),  ['src/main.c', prog] ))
 
-Alias( 'install', [ '/bin', '/usr/src/foo-1.2.3' ] )
+Alias( 'install', Flatten(list) )
 
 """)
 
