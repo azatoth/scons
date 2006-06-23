@@ -6,6 +6,8 @@ There normally shouldn't be any need to import this module directly.
 It will usually be imported through the generic SCons.Tool.Tool()
 selection method.
 
+The rpm tool calls the rpmbuild command. As a speciality only the first source
+file is delivered to the rpmbuild command.
 """
 
 #
@@ -39,13 +41,16 @@ import SCons.Builder
 import SCons.Node.FS
 import SCons.Util
 
-def build_rpm(target, source, env):
+def get_cmd(source, env):
     tar_file_with_included_specfile = source
     if SCons.Util.is_List(source):
         tar_file_with_included_specfile = source[0]
 
-    handle=os.popen( "%s %s %s"%(env['RPM'], env['RPMFLAGS'],
-                               tar_file_with_included_specfile.abspath ) )
+    return "%s %s %s"%(env['RPM'], env['RPMFLAGS'],
+                       tar_file_with_included_specfile.abspath )
+
+def build_rpm(target, source, env):
+    handle=os.popen( get_cmd(source, env) )
     output=handle.read()
     retval=handle.close()
 
@@ -56,7 +61,10 @@ def build_rpm(target, source, env):
     return retval
 
 def string_rpm(target, source, env):
-    return "building %s from %s"%(str(target[0]), str(source[0]))
+    try:
+        return env['RPMCOMSTR']
+    except KeyError:
+        return get_cmd(source, env)
 
 rpmAction = SCons.Action.Action(build_rpm, string_rpm)
 
@@ -76,7 +84,7 @@ def generate(env):
         env['BUILDERS']['Rpm'] = bld
 
     env['RPM']        = 'rpmbuild'
-    env['RPMFLAGS']   = SCons.Util.CLVar('')
+    env['RPMFLAGS']   = SCons.Util.CLVar('-ta')
     env['RPMCOM']     = rpmAction
     env['RPMSUFFIX']  = '.rpm'
 

@@ -1660,12 +1660,7 @@ class Base(SubstitutionEnvironment):
         kw['source_factory'] = self.fs.Entry
         kw['target_factory'] = self.fs.Entry
 
-        ## XXX: Instead of this hack, an emitter should be added to the builder,
-        #       which does the file name translation. Especially stripping the
-        #       buildDir needs to be done, which can be achieved by inspecting
-        #       the source file, which should have the source files attached.
-        self.BuildDir( kw['subdir'], '.' )
-        kw['source'] = map( lambda x: os.path.join( kw['subdir'], str(x) ), kw['source'] )
+        self.arg2nodes( kw['source'], self.fs.Entry )
 
         builders = SCons.Tool.Packaging.create_builder(self, kw)
         emitter  = SCons.Tool.Packaging.create_fakeroot_emitter(kw['subdir'])

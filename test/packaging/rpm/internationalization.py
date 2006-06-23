@@ -25,7 +25,9 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test the ability to create a really simple rpm package.
+Test the ability to handle internationalized package meta-data.
+
+These are x-rpm-Group, description and summary.
 """
 
 import os
@@ -53,24 +55,24 @@ Package( projectname    = 'foo',
          version        = '1.2.3',
          type           = 'rpm',
          license        = 'gpl',
-         summary        = 'balalalalal',
+         summary        = 'hello',
+         summary_de     = 'hallo',
+         summary_fr     = 'bonjour',
          packageversion = 0,
-         x_rpm_Group    = 'Applicatio/fu',
-         description    = 'this shoudl be reallly really long',
-         source         = [ 'src/main.c', 'SConstruct', prog ],
+         x_rpm_Group    = 'Application/office',
+         x_rpm_Group_de = 'Applikation/büro',
+         x_rpm_Group_fr = 'Application/bureau',
+         description    = 'this should be really long',
+         description_de = 'das sollte wirklich lang sein',
+         description_fr = 'ceci devrait être vraiment long',
+         source         = [ 'src/main.c' ],
         )
-
-Install( '/bin', prog )
-Install( '/usr/src/foo-1.2.3', ['src/main.c', 'SConstruct'] )
-
-Alias( 'install', [ '/bin', '/usr/src/foo-1.2.3' ] )
-
 """)
 
   test.run(arguments='', stderr = None)
 
   test.fail_test( not os.path.exists( 'foo-1.2.3.rpm' ) )
   test.fail_test( not os.path.exists( 'foo-1.2.3.src.rpm' ) )
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3.rpm').read()=='/src/main')
+  test.fail_test( not os.popen('rpm -qdi foor-1.2.3.rpm').read()=='/src/main')
 
 test.pass_test()

@@ -58,10 +58,10 @@ def create_builder(env, kw):
     list = []
     for t in type:
         # XXX: catching the non-availability of a given build is hard since 
-        #      comparing with None through an Exception (because of __cmp__ in
-        #      Builder) and checking if Builder is None throughs an
+        #      comparing with None throws an Exception (because of __cmp__ in
+        #      Builder) and checking if Builder is None throws an
         #      InternalError
-        list.append(package_builder.get(t)(env))
+        list.append(package_builder.get(t)(env, keywords=kw))
     return list
 
 def create_default_target(kw):
@@ -75,6 +75,13 @@ def create_fakeroot_emitter(fakeroot):
     """This emitter changes the source to be rooted in the given fakeroot.
     """
     def fakeroot_emitter(target, source, env):
-        pass
+        dir = env.arg2nodes( fakeroot, env.fs.Dir )[0]
+        new_source = []
+        for s in source:
+            new_s = dir.File( s.get_path() )
+            env.InstallAs( new_s, s )
+            new_source.append( new_s )
+
+        return (target, new_source)
 
     return fakeroot_emitter

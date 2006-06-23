@@ -679,8 +679,9 @@ class BuilderBase:
         This creates an empty list if the emitter is None.
         """
         if not self.emitter:
-            self.emitter = []
-        [emitter].extend(self.emitter)
+            self.emitter = ListEmitter( [emitter] )
+        else:
+            self.emitter.insert(0, emitter)
 
 if SCons.Memoize.use_old_memoization():
     _Base = BuilderBase
