@@ -33,13 +33,52 @@ import SCons.Tool.Packaging.targz
 
 import os
 
+def create_default_target(kw):
+    """ tries to guess the filenames of the generated RPMS files.
+    """
+    version        = kw['version']
+    projectname    = kw['projectname']
+    packageversion = kw['packageversion']
+    # XXX: this should be guessed by inspecting compilerflags?!?! how to get
+    # them?
+    buildarchitecture = 'i386'
+
+    srcrpm = '%s-%s-%s.src' % (projectname, version, packageversion)
+    binrpm = srcrpm.replace( 'src', buildarchitecture )
+
+    return [ srcrpm, binrpm ]
+
 def create_builder(env, keywords=None):
     rpmbuilder = env.get_builder('Rpm')
     rpmbuilder.push_emitter(rpm_emitter)
 
     env['RPMSPEC'] = keywords
+    env['RPMSPEC']['x_rpm_Source'] = keywords['source'][0]
 
     return rpmbuilder
+
+def rpm_emitter(target, source, env):
+    """This emitter adds a source package to the list of sources.
+
+    The source list of this source packager will also include a specfile
+    with an attached specfile builder.
+    """
+    specfilebuilder = SCons.Builder.Builder( action = specfile_action,
+                                             suffix = '.spec' )
+    spec_target = env['RPMSPEC']['projectname']
+    specfile = apply( specfilebuilder, [env], { 'source' : source,
+                                                'target' : spec_target })
+
+    # XXX: might use the create_builder function of Packaging
+    srcbuilder = SCons.Tool.Packaging.targz.create_builder(env)
+    suffix  = srcbuilder.get_suffix(env)
+    srcnode = apply( srcbuilder, [env], { 'source' : source + specfile,
+                                          'target' : target[0].abspath + suffix } )
+
+    return (target, srcnode)
+
+def string_specfile(target, source, env):
+    return "building RPM specfile %s"%( target[0].path )
 
 def build_specfile(target, source, env):
     """ Builds a RPM specfile from a dictionary with string metadata and
@@ -53,6 +92,7 @@ def build_specfile(target, source, env):
         file.write( build_specfile_sections(spec, source) )
     except KeyError, e:
         raise SCons.Errors.UserError( '"%s" package field for RPM is missing.' % e.args[0] )
+
 
 def compile( tags, values, mandatory=1 ):
     """ takes a list of given tags and fills in there values.
@@ -136,7 +176,7 @@ def build_specfile_sections(spec, files):
 
     str += '\n%files\n'
     for file in files:
-        str += '/'+file.get_path().replace(spec['subdir'], '')
+        str += '/'+file.get_path().replace(spec['package_root'], '')
         str += '\n'
     return str
 
@@ -187,10 +227,6 @@ def build_specfile_header(specs):
 #    if not s.has_key('x_rpm_BuildRequires'):
 #        s['x_rpm_BuildRequires'] = 'scons'
 
-    # XXX: assumed the name of the src package!
-    if not s.has_key('x_rpm_Source'):
-        s['x_rpm_Source'] = '%{name}-%{version}.rpm.tar.gz'
-
     if not s.has_key('x_rpm_BuildRoot'):
         s['x_rpm_BuildRoot'] = '%{_tmppath}/%{name}-%{version}-%{release}'
 
@@ -198,35 +234,7 @@ def build_specfile_header(specs):
 
     return str
 
-def string_specfile(target, source, env):
-    return "building RPM specfile %s"%( target[0].path )
 
 specfile_action = SCons.Action.Action( build_specfile,
                                        string_specfile,
                                        varlist=[ 'RPMSPEC' ] )
-
-def rpm_emitter(target, source, env):
-    """This emitter adds a source package to the list of sources and fixes the
-    targets.
-
-    The source list of this source packager also includes a specfile, which an
-    attached specfile builder.
-    """
-    specfilebuilder = SCons.Builder.Builder( action = specfile_action,
-                                             suffix = '.spec' )
-    spec_target = env['RPMSPEC']['projectname']
-    specfile = apply( specfilebuilder, [env], { 'source' : source,
-                                                'target' : spec_target })
-
-    # XXX: might use the create_builder function of Packaging
-    srcbuilder = SCons.Tool.Packaging.targz.create_builder(env)
-    suffix  = srcbuilder.get_suffix(env)
-    srcnode = apply( srcbuilder, [env], { 'source' : source + specfile,
-                                          'target' : target[0].abspath + suffix } )
-
-    # XXX: it seems that create_default_target should be done dependet on the
-    # packager,
-    defaultname = SCons.Tool.Packaging.create_default_target(env['RPMSPEC'])
-    target += env.arg2nodes( defaultname + '.i386', env.fs.Entry )
-
-    return (target, srcnode)

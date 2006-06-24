@@ -68,8 +68,10 @@ def build_rpm(target, source, env):
         i=0
         assert len(output_files) == len(target)
         while i<len(output_files):
-            print os.path.basename(output_files[i]),os.path.basename(target[i].get_path())
-            assert os.path.basename(output_files[i]) == os.path.basename(target[i].get_path())
+            rpm_output = os.path.basename(output_files[i])
+            expected   = os.path.basename(target[i].get_path())
+
+            assert expected == rpm_output, "got %s but expected %s" % (rpm_output, expected)
             #shutil.copy( output_files[i], target[i].abspath )
 
     return retval

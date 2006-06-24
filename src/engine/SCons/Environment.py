@@ -1641,31 +1641,32 @@ class Base(SubstitutionEnvironment):
     def Package(self, **kw):
         """ Entry point for the package tool.
         """
-        if not kw.has_key('target') or kw['target']==None:
-            kw['target'] = SCons.Tool.Packaging.create_default_target(kw)
-
-        if not kw.has_key('source'):
-            raise SCons.Errors.UserError, "No source for Package() given"
-
-        if not kw.has_key('subdir'):
-            kw['subdir'] = SCons.Tool.Packaging.create_default_target(kw)
-
         # choose a default one
         if not kw.has_key('type'):
             kw['type'] = 'targz'
 
-        if SCons.Util.is_String(kw['type']):
-            kw['type'] = [ kw['type'] ]
+        packager = SCons.Tool.Packaging.get_packager(self, kw)
+
+        if not kw.has_key('source'):
+            raise SCons.Errors.UserError, "No source for Package() given"
+
+        if not kw.has_key('package_root'):
+            kw['package_root'] = SCons.Tool.Packaging.create_default_package_root(kw)
 
         kw['source_factory'] = self.fs.Entry
         kw['target_factory'] = self.fs.Entry
 
         self.arg2nodes( kw['source'], self.fs.Entry )
 
-        builders = SCons.Tool.Packaging.create_builder(self, kw)
-        emitter  = SCons.Tool.Packaging.create_fakeroot_emitter(kw['subdir'])
-        for builder in builders:
+        builders = []
+        for p in packager:
+            if not kw.has_key('target') or kw['target']==None:
+                kw['target'] = SCons.Tool.Packaging.create_default_target(kw, p)
+
+            builder = p.create_builder(self, keywords=kw)
+            emitter = SCons.Tool.Packaging.create_src_package_root_emitter(kw['package_root'])
             builder.push_emitter(emitter)
+            builders.append(builder)
 
         return map( lambda x: apply(x, [self], kw), builders )
 

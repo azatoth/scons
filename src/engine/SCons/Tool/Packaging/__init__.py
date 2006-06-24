@@ -38,44 +38,50 @@ import os
 import SCons.Defaults
 
 # TODO this should be generated from listing the current module
-package_builder = {
-    'tarbz2' : tarbz2.create_builder,
-    'targz'  : targz.create_builder,
-    'zip'    : zip.create_builder,
-    'rpm'    : rpm.create_builder,
+packagers = {
+    'tarbz2' : tarbz2,
+    'targz'  : targz,
+    'zip'    : zip,
+    'rpm'    : rpm,
 }
 
-def create_builder(env, kw):
-    """ factory method for the Package Builder.
-    According to to the given "type" of a package a special Builder is returned
+def get_packager(env, kw):
+    """ factory method for the packager.
     """
-    assert kw.has_key('source')
-    assert kw.has_key('target')
-    assert kw.has_key('type')
+    type = kw['type']
+    if SCons.Util.is_String( type ):
+        type = [ type ]
 
-    target, source, type = kw['target'], kw['source'], kw['type']
+    try:
+        return map( packagers.get, type )
+    except KeyError:
+        raise SCons.Errors.UserError( 'packager %s not available' % t )
 
-    list = []
-    for t in type:
-        # XXX: catching the non-availability of a given build is hard since 
-        #      comparing with None throws an Exception (because of __cmp__ in
-        #      Builder) and checking if Builder is None throws an
-        #      InternalError
-        list.append(package_builder.get(t)(env, keywords=kw))
-    return list
-
-def create_default_target(kw):
-    """ In the absence of a filename for a given Package, this function deduces
+def create_default_target(kw, packager=None):
+    """ In the absence of a target for a given Package, this function deduces
     one out of the projectname and version keywords.
+
+    If a packager is given, it is asked to generate a default target.
     """
+    target = []
+
+    try:
+        target.extend( packager.create_default_target(kw) )
+    except AttributeError:
+        projectname, version = kw['projectname'], kw['version']
+        target.append( "%s-%s"%(projectname,version) )
+
+    return target
+
+def create_default_package_root(kw):
     projectname, version = kw['projectname'], kw['version']
     return "%s-%s"%(projectname,version)
 
-def create_fakeroot_emitter(fakeroot):
-    """This emitter changes the source to be rooted in the given fakeroot.
+def create_src_package_root_emitter(src_package_root):
+    """This emitter changes the source to be rooted in the given src_package_root.
     """
-    def fakeroot_emitter(target, source, env):
-        dir = env.arg2nodes( fakeroot, env.fs.Dir )[0]
+    def src_package_root_emitter(target, source, env):
+        dir = env.arg2nodes( src_package_root, env.fs.Dir )[0]
         new_source = []
         for s in source:
             new_s = dir.File( s.get_path() )
@@ -84,4 +90,4 @@ def create_fakeroot_emitter(fakeroot):
 
         return (target, new_source)
 
-    return fakeroot_emitter
+    return src_package_root_emitter
