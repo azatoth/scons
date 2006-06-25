@@ -50,12 +50,26 @@ def get_cmd(source, env):
     tar_file_with_included_specfile = source
     if SCons.Util.is_List(source):
         tar_file_with_included_specfile = source[0]
+    print "%s %s %s"%(env['RPM'], env['RPMFLAGS'],
+                       tar_file_with_included_specfile.abspath )
 
     return "%s %s %s"%(env['RPM'], env['RPMFLAGS'],
                        tar_file_with_included_specfile.abspath )
 
 def build_rpm(target, source, env):
-    # XXX: building the rpm shoudl be done in a temporary directory.
+    # create a temporary rpm build root.
+    tmpdir = os.path.join( os.path.dirname( target[0].abspath ), 'rpmtemp' )
+    if os.path.exists(tmpdir):
+        shtutil.rmtree(tmpdir)
+
+    # now create the mandatory rpm directory structure.
+    for d in 'RPMS SRPMS SPECS BUILD'.split(' '):
+        os.makedirs( os.path.join( tmpdir, d ) )
+
+    # set the topdir as an rpmflag.
+    env.Prepend( RPMFLAGS = '--define \'_topdir %s\'' % tmpdir )
+
+    # now call rpmbuild to create the rpm package.
     handle = popen2.Popen3( get_cmd(source, env) )
     output = handle.fromchild.read()
     status = handle.wait()
