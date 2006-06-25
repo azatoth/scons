@@ -50,10 +50,10 @@ int main( int argc, char* argv[] )
 
   test.write('SConstruct', """
 Program( 'src/main.c' )
-Package( type='tarbz2',
-         target='src.tar.bz2',
-         subdir = 'test',
-         source=[ 'src/main.c', 'SConstruct' ] )
+Package( type         = 'tarbz2',
+         target       = 'src.tar.bz2',
+         package_root = 'test',
+         source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(arguments='', stderr = None)

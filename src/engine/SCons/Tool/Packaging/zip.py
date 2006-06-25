@@ -28,7 +28,7 @@ The zip SRC packager.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-def create_builder(env):
+def create_builder(env, keywords=None):
     builder = env.get_builder('Zip')
     builder.set_suffix('zip')
     return builder

@@ -49,10 +49,10 @@ if tar:
 
   test.write('SConstruct', """
 BuildDir('build', 'src')
-Package( projectname = 'libfoo',
-         subdir      = 'build/libfoo',
-         version     = '1.2.3',
-         source      = [ 'src/main.c', 'SConstruct' ] )
+Package( projectname  = 'libfoo',
+         package_root = 'build/libfoo',
+         version      = '1.2.3',
+         source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(stderr = None)
@@ -72,10 +72,10 @@ Package( projectname = 'libfoo',
 
   test.write('SConstruct', """
 BuildDir('build', 'src')
-Package( projectname = 'libfoo',
-         subdir      = 'build/libfoo',
-         version     = '1.2.3',
-         source      = [ 'src/main.c', 'SConstruct' ] )
+Package( projectname  = 'libfoo',
+         package_root = 'build/libfoo',
+         version      = '1.2.3',
+         source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(stderr = None)

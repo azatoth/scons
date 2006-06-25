@@ -46,10 +46,10 @@ if tar:
   test.write('src/main.c', '')
 
   test.write('SConstruct', """
-Package( projectname = 'libfoo',
-         subdir      = 'libfoo',
-         version     = '1.2.3',
-         source      = [ 'src/main.c', 'SConstruct' ] )
+Package( projectname  = 'libfoo',
+         package_root = 'libfoo',
+         version      = '1.2.3',
+         source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(arguments='libfoo-1.2.3.tar.gz', stderr = None)
