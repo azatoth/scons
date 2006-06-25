@@ -35,13 +35,16 @@ file is delivered to the rpmbuild command.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os.path
+import os
 import re
 import shutil
+import popen2
 
 import SCons.Builder
 import SCons.Node.FS
 import SCons.Util
+import SCons.Action
+import SCons.Defaults
 
 def get_cmd(source, env):
     tar_file_with_included_specfile = source
@@ -53,11 +56,11 @@ def get_cmd(source, env):
 
 def build_rpm(target, source, env):
     # XXX: building the rpm shoudl be done in a temporary directory.
-    handle=os.popen( get_cmd(source, env) )
-    output=handle.read()
-    retval=handle.close()
+    handle = popen2.Popen3( get_cmd(source, env) )
+    output = handle.fromchild.read()
+    status = handle.wait()
 
-    if retval is not None:
+    if status:
         raise SCons.Errors.BuildError( node=target[0],
                                        errstr=output,
                                        filename=str(target[0]) )
@@ -72,9 +75,10 @@ def build_rpm(target, source, env):
             expected   = os.path.basename(target[i].get_path())
 
             assert expected == rpm_output, "got %s but expected %s" % (rpm_output, expected)
-            #shutil.copy( output_files[i], target[i].abspath )
+            shutil.copy( output_files[i], target[i].abspath )
+            i+=1
 
-    return retval
+    return status
 
 def string_rpm(target, source, env):
     try:

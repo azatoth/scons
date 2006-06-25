@@ -72,8 +72,9 @@ Alias( 'install', Flatten(list) )
 
   test.run(arguments='', stderr = None)
 
-  test.fail_test( not os.path.exists( 'foo-1.2.3.rpm' ) )
-  test.fail_test( not os.path.exists( 'foo-1.2.3.src.rpm' ) )
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3.rpm').read()=='/src/main')
+  test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
+  test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
+  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.i386.rpm').read()=='/SConstruct\n/src/main\n/src/main.c\n')
+  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.src.rpm').read()=='foo-1.2.3-0.src.rpm.tar.gz\nfoo.spec\n')
 
 test.pass_test()

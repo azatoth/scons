@@ -40,9 +40,7 @@ test = TestSCons.TestSCons()
 tar = test.Environment().WhereIs('rpm')
 
 if tar:
-  test.subdir('src')
-
-  test.write( [ 'src', 'main.c' ], r"""
+  test.write( [ 'main.c' ], r"""
 int main( int argc, char* argv[] )
 {
   return 0;
@@ -50,7 +48,7 @@ int main( int argc, char* argv[] )
   """)
 
   test.write('SConstruct', """
-prog=Program( 'src/main.c' )
+prog=Program( 'main.c' )
 Package( projectname    = 'foo',
          version        = '1.2.3',
          type           = 'rpm',
@@ -65,14 +63,24 @@ Package( projectname    = 'foo',
          description    = 'this should be really long',
          description_de = 'das sollte wirklich lang sein',
          description_fr = 'ceci devrait être vraiment long',
-         source         = [ 'src/main.c' ],
+         source         = [ 'main.c', 'SConstruct' ],
         )
+
+Alias ( 'install', Install( ARGUMENTS.get('prefix', '/'), [ 'SConstruct', 'main.c' ] ) )
 """)
 
   test.run(arguments='', stderr = None)
 
-  test.fail_test( not os.path.exists( 'foo-1.2.3.rpm' ) )
-  test.fail_test( not os.path.exists( 'foo-1.2.3.src.rpm' ) )
-  test.fail_test( not os.popen('rpm -qdi foor-1.2.3.rpm').read()=='/src/main')
+  test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
+  test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
+  cmd = 'LANGUAGE=%s && rpm -qp --queryformat \'%%{GROUP}-%%{SUMMARY}-%%{DESCRIPTION}\' %s'
+  out = os.popen( cmd % ('de', test.workpath('foo-1.2.3-0.i386.rpm') ) ).read()
+  test.fail_test( not out == 'Applikation/büro-hallo-das sollte wirklich lang sein' )
+  out = os.popen( cmd % ('fr', test.workpath('foo-1.2.3-0.i386.rpm') )).read()
+  test.fail_test( not out == 'Application/bureau-bonjour-ceci devrait être vraiment long' )
+  out = os.popen( cmd % ('en', test.workpath('foo-1.2.3-0.i386.rpm') ) ).read()
+  test.fail_test( not out == 'Application/office-hello-this should be really long' )
+  out = os.popen( cmd % ('ae', test.workpath('foo-1.2.3-0.i386.rpm') ) ).read()
+  test.fail_test( not out == 'Application/office-hello-this should be really long' )
 
 test.pass_test()

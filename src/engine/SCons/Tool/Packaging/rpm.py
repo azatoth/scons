@@ -43,7 +43,7 @@ def create_default_target(kw):
     # them?
     buildarchitecture = 'i386'
 
-    srcrpm = '%s-%s-%s.src' % (projectname, version, packageversion)
+    srcrpm = '%s-%s-%s.src.rpm' % (projectname, version, packageversion)
     binrpm = srcrpm.replace( 'src', buildarchitecture )
 
     return [ srcrpm, binrpm ]
@@ -53,7 +53,6 @@ def create_builder(env, keywords=None):
     rpmbuilder.push_emitter(rpm_emitter)
 
     env['RPMSPEC'] = keywords
-    env['RPMSPEC']['x_rpm_Source'] = keywords['source'][0]
 
     return rpmbuilder
 
@@ -74,6 +73,8 @@ def rpm_emitter(target, source, env):
     suffix  = srcbuilder.get_suffix(env)
     srcnode = apply( srcbuilder, [env], { 'source' : source + specfile,
                                           'target' : target[0].abspath + suffix } )
+
+    env['RPMSPEC']['x_rpm_Source'] = os.path.basename(srcnode[0].get_path())
 
     return (target, srcnode)
 
@@ -99,7 +100,7 @@ def compile( tags, values, mandatory=1 ):
 
     tags is a dict of the form { 'tag' : 'str with %s replacement markers' }
     values is a dict of the form { 'tag'  : 'value',
-                                   'tag_' : 'international value' }
+                                   'tag_xx' : 'international value' }
     """
     str = ""
 
@@ -113,22 +114,25 @@ def compile( tags, values, mandatory=1 ):
 
         for (key, replacement) in international:
             for (value_key, value_value) in [ (k, v) for k,v in values.items() if k.startswith(key) ]:
-              land_mark = value_key[rfind('_')+1:]
-              str += replacement % (land_mark, value_key)
-              str += '\n\n'
+                land_mark = value_key[rfind('_')+1:]
+                str += replacement % (land_mark, value_key)
+                str += '\n\n'
     else:
         available_values = [ (k, v) for k,v in tags.items() if values.has_key(k) and not k.endswith('_') ]
-        international    = [ (k, v) for k,v in tags.items() if values.has_key(k) and k.endswith('_') ]
+        # international replacement tags look like x_rpm_Group_,
+        # while the value tag looks like           x_rpm_Group_de
+        international    = [ (k, v) for k,v in values.items() if k[len(k)-3]=='_' and tags.has_key(k[:len(k)-2]) ]
 
         for (key, replacement) in available_values:
             str += replacement % values[key]
             str += '\n\n'
 
-        for (key, replacement) in international:
-            for (value_key, value_value) in [ (k, v) for k,v in values.items() if k.startswith(key) ]:
-              land_mark = value_key[rfind('_')+1:]
-              str += replacement % (land_mark, value_key)
-              str += '\n\n'
+        for (key, value) in international:
+            land_code             = key[key.rfind('_')+1:]
+            key_without_land_code = key[:key.rfind('_')+1]
+            replacement           = tags[key_without_land_code]
+            str += replacement % (land_code, value)
+            str += '\n\n'
 
     return str
 
@@ -205,6 +209,7 @@ def build_specfile_header(specs):
         'x_rpm_Distribution'  : 'Distribution: %s',
         'x_rpm_Icon'          : 'Icon: %s',
         'x_rpm_Packager'      : 'Packager: %s',
+        'x_rpm_Group_'        : 'Group(%s): %s',
 
         'x_rpm_Requires'      : 'Requires: %s',
         'x_rpm_Provides'      : 'Provides: %s',
