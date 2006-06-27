@@ -88,6 +88,10 @@ def build_rpm(target, source, env):
             assert expected == rpm_output, "got %s but expected %s" % (rpm_output, expected)
             shutil.copy( output, input.abspath )
 
+
+    # cleanup before leaving.
+    shutil.rmtree(tmpdir)
+
     return status
 
 def string_rpm(target, source, env):
