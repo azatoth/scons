@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: iso-8859-15 -*-
 #
 # __COPYRIGHT__
 #
@@ -48,7 +49,10 @@ int main( int argc, char* argv[] )
   """)
 
   test.write('SConstruct', """
-prog=Program( 'main.c' )
+import os
+
+prog_install = Install( os.path.join( ARGUMENTS.get('prefix', '/'), 'bin'), Program( 'main.c' ) )
+
 Package( projectname    = 'foo',
          version        = '1.2.3',
          type           = 'rpm',
@@ -63,10 +67,10 @@ Package( projectname    = 'foo',
          description    = 'this should be really long',
          description_de = 'das sollte wirklich lang sein',
          description_fr = 'ceci devrait être vraiment long',
-         source         = [ 'main.c', 'SConstruct' ],
+         source         = [ 'main.c', 'SConstruct', prog_install ],
         )
 
-Alias ( 'install', Install( ARGUMENTS.get('prefix', '/'), [ 'SConstruct', 'main.c' ] ) )
+Alias ( 'install', prog_install )
 """)
 
   test.run(arguments='', stderr = None)

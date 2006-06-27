@@ -528,6 +528,8 @@ class Base(SCons.Node.Node):
         self.cwd = None # will hold the SConscript directory for target nodes
         self.duplicate = directory.duplicate
 
+        self.tags = {}
+
     def clear(self):
         """Completely clear a Node.FS.Base object of all its cached
         state (so that it can be re-evaluated by interfaces that do
@@ -684,6 +686,39 @@ class Base(SCons.Node.Node):
 
     def target_from_source(self, prefix, suffix, splitext=SCons.Util.splitext):
         return self.dir.Entry(prefix + splitext(self.name)[0] + suffix)
+
+    def get_tags(self, factories=[]):
+        """ returns a dict of information known about the file.
+
+        This list is partly build from outside, primarily from the PackageTag()
+        builder and from analyzing the attached builders.
+
+        For example finding that this node has the Install Builder attached, it
+        will get a "location" tag with the value of the install directory. This
+        is done by the SCons.Tool.Packaging.LocationTagFactory.
+
+        Factories is a list of TagFactory that will be used to create additional
+        tags.
+        """
+        for factory in factories:
+            generated_tags = apply( factory, [ self, self.tags ], {} )
+            # XXX: instead of update, we could perhaps use the attached
+            # BuildInfo and its merge function !!
+            if generated_tags:
+                self.tags.update( generated_tags )
+
+        return self.tags
+
+    def set_tags(self, e=[], **kw):
+        """ set the given tags in the directory.
+        """
+        if SCons.Util.is_Dict( e ):
+            apply( self.tags.update, [e], kw )
+        else:
+            apply( self.tags.update, e, kw )
+
+        return self.tags
+
 
 class Entry(Base):
     """This is the class for generic Node.FS entries--that is, things

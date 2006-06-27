@@ -33,6 +33,7 @@ import SCons.Tool.Packaging.tarbz2
 import SCons.Tool.Packaging.targz
 import SCons.Tool.Packaging.zip
 import SCons.Tool.Packaging.rpm
+import SCons.Environment
 
 import os
 import SCons.Defaults
@@ -78,16 +79,57 @@ def create_default_package_root(kw):
     return "%s-%s"%(projectname,version)
 
 def create_src_package_root_emitter(src_package_root):
-    """This emitter changes the source to be rooted in the given src_package_root.
+    """This emitter changes the source to be rooted in the given package_root.
     """
     def src_package_root_emitter(target, source, env):
         dir = env.arg2nodes( src_package_root, env.fs.Dir )[0]
         new_source = []
         for s in source:
-            new_s = dir.File( s.get_path() )
-            env.InstallAs( new_s, s )
+            filename = os.path.join( src_package_root, s.get_path() )
+            new_s    = env.InstallAs( filename, s )[0]
+            new_s.set_explicit(1)
+
+            # store the tags of our original file in the new file.
+            new_s.set_tags( s.get_tags( factories=[ LocationTagFactory() ] ) )
+
             new_source.append( new_s )
 
         return (target, new_source)
 
     return src_package_root_emitter
+
+class TagFactory:
+    """An instance of this class has the responsibility to generate additional
+    tags for a SCons.Node.FS.File instance.
+
+    Subclasses have to be callable. This class definition is informally
+    describing the interface.
+    """
+
+    def __call__(self, file, current_tag_dict):
+        """ This call has to return additional tags in the form of a dict.
+        """
+        pass
+
+    def attach_additional_info(self, info=None):
+        pass
+
+class LocationTagFactory(TagFactory):
+    """ This class creates the "location" tag, which describes the install
+    location of a given file.
+
+    This is done by analyzing the builder of a given file for a InstallBuilder,
+    from this builder the install location is deduced.
+    """
+
+    def __call__(self, file, current_tag_dict):
+        if current_tag_dict.has_key('install_location'):
+            return {}
+
+        if file.has_builder() and\
+           file.builder == SCons.Environment.InstallBuilder and\
+           file.has_explicit_builder():
+            print file.get_path()
+            return { 'install_location' : file.builder.targets( file ) }
+        else:
+            return {}

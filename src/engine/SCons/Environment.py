@@ -1664,8 +1664,6 @@ class Base(SubstitutionEnvironment):
                 kw['target'] = SCons.Tool.Packaging.create_default_target(kw, p)
 
             builder = p.create_builder(self, keywords=kw)
-            emitter = SCons.Tool.Packaging.create_src_package_root_emitter(kw['package_root'])
-            builder.push_emitter(emitter)
             builders.append(builder)
 
         return map( lambda x: apply(x, [self], kw), builders )

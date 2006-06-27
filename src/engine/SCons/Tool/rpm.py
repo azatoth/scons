@@ -60,7 +60,7 @@ def build_rpm(target, source, env):
     # create a temporary rpm build root.
     tmpdir = os.path.join( os.path.dirname( target[0].abspath ), 'rpmtemp' )
     if os.path.exists(tmpdir):
-        shtutil.rmtree(tmpdir)
+        shutil.rmtree(tmpdir)
 
     # now create the mandatory rpm directory structure.
     for d in 'RPMS SRPMS SPECS BUILD'.split(' '):
@@ -81,16 +81,12 @@ def build_rpm(target, source, env):
     else:
         output_files = re.compile( 'Wrote: (.*)' ).findall( output )
 
-        # XXX: ugly ugly ugly
-        i=0
-        assert len(output_files) == len(target)
-        while i<len(output_files):
-            rpm_output = os.path.basename(output_files[i])
-            expected   = os.path.basename(target[i].get_path())
+        for output, input in zip( output_files, target ):
+            rpm_output = os.path.basename(output)
+            expected   = os.path.basename(input.get_path())
 
             assert expected == rpm_output, "got %s but expected %s" % (rpm_output, expected)
-            shutil.copy( output_files[i], target[i].abspath )
-            i+=1
+            shutil.copy( output, input.abspath )
 
     return status
 

@@ -57,23 +57,68 @@ def create_builder(env, keywords=None):
     return rpmbuilder
 
 def rpm_emitter(target, source, env):
-    """This emitter adds a source package to the list of sources.
+    """This emitter adds a source package to the list of sources. The source
+    list is split into three parts, seperated by their location:
+     * those that go into the source package (these are the nodes which have
+       no tags set). They are removed from the source argument list.
+     * those that go into the rpm package (these are the nodes which have at
+       least a 'install_location' tag ). They are removed from the source
+       argument list and are given to the specfile builder as putting files
+       into the rpm file really means putting an entry into the spec file.
+     * those that do not fall into one of the above categories. These will
+       generate a Exception as they would otherwise be ignored.
 
     The source list of this source packager will also include a specfile
     with an attached specfile builder.
     """
+
+    # categorize files
+    tag_factories = [ SCons.Tool.Packaging.LocationTagFactory() ]
+
+    def belongs_into_source_pkg(file):
+        return len( file.get_tags(factories=tag_factories) ) == 0
+
+    def belongs_into_rpm_pkg(file):
+        tags = file.get_tags(factories=tag_factories)
+        return tags.has_key('install_location')
+
+    def belongs_to_no_category(file):
+        return not belongs_into_source_pkg(file) and\
+               not belongs_into_rpm_pkg(file)
+
+    uncategorized = filter( belongs_to_no_category, source )
+    rpm_files     = filter( belongs_into_rpm_pkg, source )
+    src_files     = filter( belongs_into_source_pkg, source )
+
+    # spit out warning and errors.
+    if len( uncategorized ) != 0:
+        # XXX: better error message?
+        raise SCons.Errors.UserError( 'There are files which tags but are missing a install_location tag and are therefore not packageable.' )
+
+    if len(rpm_files) == 0:
+        raise SCons.Errors.UserError( 'No file to put into the RPM package? Only files with are returned by Install() or InstallAs() will be put into the RPM Package!.')
+
+    # build the specfile.
+    p, v        = env['RPMSPEC']['projectname'], env['RPMSPEC']['version']
+    spec_target = '%s-%s' % ( p, v )
+
     specfilebuilder = SCons.Builder.Builder( action = specfile_action,
                                              suffix = '.spec' )
-    spec_target = env['RPMSPEC']['projectname']
-    specfile = apply( specfilebuilder, [env], { 'source' : source,
-                                                'target' : spec_target })
+    specfile = apply( specfilebuilder, [env], {
+                      'target' : spec_target,
+                      'source' : rpm_files } )
 
-    # XXX: might use the create_builder function of Packaging
-    srcbuilder = SCons.Tool.Packaging.targz.create_builder(env)
-    suffix  = srcbuilder.get_suffix(env)
-    srcnode = apply( srcbuilder, [env], { 'source' : source + specfile,
-                                          'target' : target[0].abspath + suffix } )
+    # build a source package with three properties:
+    #  * contains a SConstruct with an install target with a prefix argument.
+    #  * contains a generated specfile.
+    #  * contains all source files.
+    srcbuilder = SCons.Tool.Packaging.targz.create_builder(env, env['RPMSPEC'])
+    suffix     = srcbuilder.get_suffix(env)
+    srcnode    = apply( srcbuilder, [env], {
+                        'source' : src_files + specfile,
+                        'target' : target[0].abspath + suffix } )
 
+    # set the source target in the rpmspec file
     env['RPMSPEC']['x_rpm_Source'] = os.path.basename(srcnode[0].get_path())
 
     return (target, srcnode)
@@ -90,7 +135,9 @@ def build_specfile(target, source, env):
 
     try:
         file.write( build_specfile_header(spec) )
-        file.write( build_specfile_sections(spec, source) )
+        file.write( build_specfile_sections(spec) )
+        file.write( build_specfile_filesection(source) )
+
     except KeyError, e:
         raise SCons.Errors.UserError( '"%s" package field for RPM is missing.' % e.args[0] )
 
@@ -136,7 +183,7 @@ def compile( tags, values, mandatory=1 ):
 
     return str
 
-def build_specfile_sections(spec, files):
+def build_specfile_sections(spec):
     """ Builds the %files and other sections of a rpm specfile.
     """
     str = ""
@@ -178,10 +225,23 @@ def build_specfile_sections(spec, files):
 
     str += compile( optional_sections, spec, mandatory = 0 )
 
-    str += '\n%files\n'
+    return str
+
+def build_specfile_filesection(files):
+    """ builds the %file section of the specfile
+    """
+    str  = '%files\n'
+
+    tag_factories = [ SCons.Tool.Packaging.LocationTagFactory() ]
+
     for file in files:
-        str += '/'+file.get_path().replace(spec['package_root'], '')
+        tags = file.get_tags( tag_factories )
+        # compile() file-tags
+        
+
+        str += tags['install_location'][0].get_path()
         str += '\n'
+
     return str
 
 def build_specfile_header(specs):
@@ -236,9 +296,7 @@ def build_specfile_header(specs):
         s['x_rpm_BuildRoot'] = '%{_tmppath}/%{name}-%{version}-%{release}'
 
     str += compile( optional_header_fields, s, mandatory=0 )
-
     return str
-
 
 specfile_action = SCons.Action.Action( build_specfile,
                                        string_specfile,

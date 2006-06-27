@@ -50,7 +50,11 @@ int main( int argc, char* argv[] )
   test.write('SConstruct', """
 import os
 
-prog=Program( 'src/main.c' )
+prog = Program( 'src/main.c' )
+install_dir  = os.path.join( ARGUMENTS.get('prefix', '/'), 'bin/' )
+prog_install = Install( install_dir , prog )
+Alias( 'install', prog_install )
+
 Package( projectname    = 'foo',
          version        = '1.2.3',
          type           = 'rpm',
@@ -59,22 +63,15 @@ Package( projectname    = 'foo',
          packageversion = 0,
          x_rpm_Group    = 'Applicatio/fu',
          description    = 'this shoudl be reallly really long',
-         source         = [ 'src/main.c', 'SConstruct', prog ],
+         source         = [ 'src/main.c', 'SConstruct', prog_install ],
         )
-
-list = []
-list.append(Install( ARGUMENTS.get('prefix', '/'), 'SConstruct' ) )
-list.append(Install( os.path.join( ARGUMENTS.get('prefix', '/'), 'src/' ),  ['src/main.c', prog] ))
-
-Alias( 'install', Flatten(list) )
-
 """)
 
   test.run(arguments='', stderr = None)
 
   test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
   test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.i386.rpm').read()=='/SConstruct\n/src/main\n/src/main.c\n')
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.src.rpm').read()=='foo-1.2.3-0.src.rpm.tar.gz\nfoo.spec\n')
+  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.i386.rpm').read()=='/bin/main\n')
+  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.src.rpm').read()=='foo-1.2.3-0.src.rpm.tar.gz\nfoo-1.2.3.spec\n')
 
 test.pass_test()
