@@ -32,7 +32,7 @@ import SCons.Tool.Packaging
 
 def create_builder(env, keywords=None):
     builder = env.get_builder('Zip')
-    emitter = SCons.Tool.Packaging.create_src_package_root_emitter(keywords['package_root'])
+    emitter = SCons.Tool.Packaging.get_src_package_root_emitter(keywords['package_root'])
     builder.push_emitter(emitter)
     builder.set_suffix('zip')
     return builder

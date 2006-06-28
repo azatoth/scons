@@ -303,6 +303,7 @@ GlobalDefaultEnvironmentFunctions = [
     'Split',
     'TargetSignatures',
     'Value',
+    'Tag',
 ]
 
 GlobalDefaultBuilders = [

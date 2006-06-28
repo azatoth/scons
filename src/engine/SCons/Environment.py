@@ -6,7 +6,7 @@ construction information to the build engine.
 
 Keyword arguments supplied when the construction Environment
 is created are construction variables used to initialize the
-Environment 
+Environment
 """
 
 #
@@ -355,7 +355,7 @@ class SubstitutionEnvironment:
                         nodes.append(v)
             else:
                 nodes.append(v)
-    
+
         return nodes
 
     def gvars(self):
@@ -554,7 +554,7 @@ class SubstitutionEnvironment:
             #  -symbolic       (linker global binding)
             #  -R dir          (deprecated linker rpath)
             # IBM compilers may also accept -qframeworkdir=foo
-    
+
             params = string.split(arg)
             append_next_arg_to = None   # for multi-word args
             for arg in params:
@@ -635,7 +635,7 @@ class SubstitutionEnvironment:
                     append_next_arg_to = arg
                 else:
                     dict['CCFLAGS'].append(arg)
-    
+
         for arg in flags:
             do_parse(arg, do_parse)
         return dict
@@ -835,7 +835,7 @@ class Base(SubstitutionEnvironment):
             for k in scanner.get_skeys(self):
                 sm[k] = scanner
         return sm
-        
+
     def get_scanner(self, skey):
         """Find the appropriate scanner given a key (usually a file suffix).
         """
@@ -846,7 +846,7 @@ class Base(SubstitutionEnvironment):
     def _smd(self):
         "__reset_cache__"
         pass
-    
+
     def scanner_map_delete(self, kw=None):
         """Delete the cached scanner map (if we need to).
         """
@@ -941,7 +941,7 @@ class Base(SubstitutionEnvironment):
             orig = self._dict[envname][name]
 
         nv = SCons.Util.AppendPath(orig, newpath, sep)
-            
+
         if not self._dict.has_key(envname):
             self._dict[envname] = {}
 
@@ -990,7 +990,7 @@ class Base(SubstitutionEnvironment):
             clone._dict['BUILDERS'] = BuilderDict(cbd, clone)
         except KeyError:
             pass
-        
+
         apply_tools(clone, tools, toolpath)
 
         # Apply passed-in variables after the new tools.
@@ -1052,7 +1052,7 @@ class Base(SubstitutionEnvironment):
 
         for path in paths:
             dir,name = os.path.split(str(path))
-            if name[:len(prefix)] == prefix and name[-len(suffix):] == suffix: 
+            if name[:len(prefix)] == prefix and name[-len(suffix):] == suffix:
                 return path
 
     def ParseConfig(self, command, function=None, unique=1):
@@ -1180,7 +1180,7 @@ class Base(SubstitutionEnvironment):
             orig = self._dict[envname][name]
 
         nv = SCons.Util.PrependPath(orig, newpath, sep)
-            
+
         if not self._dict.has_key(envname):
             self._dict[envname] = {}
 
@@ -1573,7 +1573,7 @@ class Base(SubstitutionEnvironment):
         SCons.SConsign.File(name, dbm_module)
 
     def SideEffect(self, side_effect, target):
-        """Tell scons that side_effects are built as side 
+        """Tell scons that side_effects are built as side
         effects of building targets."""
         side_effects = self.arg2nodes(side_effect, self.fs.Entry)
         targets = self.arg2nodes(target, self.fs.Entry)
@@ -1638,6 +1638,21 @@ class Base(SubstitutionEnvironment):
         """
         return SCons.Node.Python.Value(value)
 
+    def Tag(self, source, *args, **kw):
+        """
+        """
+        nodes = self.arg2nodes(source, self.fs.Entry)
+
+        if len(kw) == 0 and len(args) == 0:
+            raise SCons.Errors.UserError, "No tags for PackageTag() given."
+
+        # XXX: sanity checks
+        for x in args:
+            kw[x] = ''
+
+        for n in nodes:
+            n.set_tags( kw )
+
     def Package(self, **kw):
         """ Entry point for the package tool.
         """
@@ -1667,6 +1682,7 @@ class Base(SubstitutionEnvironment):
             builders.append(builder)
 
         return map( lambda x: apply(x, [self], kw), builders )
+
 
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction

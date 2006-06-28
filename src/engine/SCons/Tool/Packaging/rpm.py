@@ -76,7 +76,8 @@ def rpm_emitter(target, source, env):
     tag_factories = [ SCons.Tool.Packaging.LocationTagFactory() ]
 
     def belongs_into_source_pkg(file):
-        return len( file.get_tags(factories=tag_factories) ) == 0
+        tags = file.get_tags(factories=tag_factories)
+        return len( tags ) == 0 or tags.has_key( 'source' )
 
     def belongs_into_rpm_pkg(file):
         tags = file.get_tags(factories=tag_factories)
@@ -89,6 +90,8 @@ def rpm_emitter(target, source, env):
     uncategorized = filter( belongs_to_no_category, source )
     rpm_files     = filter( belongs_into_rpm_pkg, source )
     src_files     = filter( belongs_into_source_pkg, source )
+
+    print map( lambda x: x.get_path(), src_files )
 
     # spit out warning and errors.
     if len( uncategorized ) != 0:
@@ -136,7 +139,7 @@ def build_specfile(target, source, env):
     try:
         file.write( build_specfile_header(spec) )
         file.write( build_specfile_sections(spec) )
-        file.write( build_specfile_filesection(source) )
+        file.write( build_specfile_filesection(spec, source) )
 
     except KeyError, e:
         raise SCons.Errors.UserError( '"%s" package field for RPM is missing.' % e.args[0] )
@@ -151,62 +154,61 @@ def compile( tags, values, mandatory=1 ):
     """
     str = ""
 
-    if mandatory:
-        available_values = [ (k, v) for k,v in tags.items() if not k.endswith('_') ]
-        international    = [ (k, v) for k,v in tags.items() if k.endswith('_') ]
+    def is_international(_str):
+        return _str.endswith('_')
 
-        for (key, replacement) in available_values:
+    if mandatory:
+        replacements  = [ (k, v) for k,v in tags.items() if not is_international(k) ]
+        international = [ (k, v) for k,v in tags.items() if is_international(k) ]
+
+        for (key, replacement) in replacements:
             str += replacement % values[key]
-            str += '\n\n'
 
         for (key, replacement) in international:
             for (value_key, value_value) in [ (k, v) for k,v in values.items() if k.startswith(key) ]:
                 land_mark = value_key[rfind('_')+1:]
                 str += replacement % (land_mark, value_key)
-                str += '\n\n'
     else:
-        available_values = [ (k, v) for k,v in tags.items() if values.has_key(k) and not k.endswith('_') ]
+        replacements  = [ (k, v) for k,v in tags.items() if values.has_key(k) and not is_international(k) ]
         # international replacement tags look like x_rpm_Group_,
         # while the value tag looks like           x_rpm_Group_de
-        international    = [ (k, v) for k,v in values.items() if k[len(k)-3]=='_' and tags.has_key(k[:len(k)-2]) ]
+        international = [ (k, v) for k,v in values.items() if k[len(k)-3]=='_' and tags.has_key(k[:len(k)-2]) ]
 
-        for (key, replacement) in available_values:
+        for (key, replacement) in replacements:
             str += replacement % values[key]
-            str += '\n\n'
 
         for (key, value) in international:
-            land_code             = key[key.rfind('_')+1:]
-            key_without_land_code = key[:key.rfind('_')+1]
-            replacement           = tags[key_without_land_code]
-            str += replacement % (land_code, value)
-            str += '\n\n'
+            country_code             = key[key.rfind('_')+1:]
+            key_without_country_code = key[:key.rfind('_')+1]
+            replacement              = tags[key_without_country_code]
+            str += replacement % (country_code, value)
 
     return str
 
 def build_specfile_sections(spec):
-    """ Builds the %files and other sections of a rpm specfile.
+    """ Builds the sections of a rpm specfile.
     """
     str = ""
 
     mandatory_sections = {
-        'description'  : '%%description\n%s', }
+        'description'  : '\n%%description\n%s\n\n', }
 
     str += compile( mandatory_sections, spec )
 
     optional_sections = {
-        'description_'        : '%%description -l %s\n%s',
-        'changelog'           : '%%changelog\n%s',
-        'x_rpm_PreInstall'    : '%%pre\n%s',
-        'x_rpm_PostInstall'   : '%%post\n%s',
-        'x_rpm_PreUninstall'  : '%%preun\n%s',
-        'x_rpm_PostUninstall' : '%%postun\n%s',
-        'x_rpm_Verify'        : '%%verify\n%s',
+        'description_'        : '%%description -l %s\n%s\n\n',
+        'changelog'           : '%%changelog\n%s\n\n',
+        'x_rpm_PreInstall'    : '%%pre\n%s\n\n',
+        'x_rpm_PostInstall'   : '%%post\n%s\n\n',
+        'x_rpm_PreUninstall'  : '%%preun\n%s\n\n',
+        'x_rpm_PostUninstall' : '%%postun\n%s\n\n',
+        'x_rpm_Verify'        : '%%verify\n%s\n\n',
 
         # These are for internal use but could possibly be overriden
-        'x_rpm_Prep'          : '%%prep\n%s',
-        'x_rpm_Build'         : '%%build\n%s',
-        'x_rpm_Install'       : '%%install\n%s',
-        'x_rpm_Clean'         : '%%clean\n%s',
+        'x_rpm_Prep'          : '%%prep\n%s\n\n',
+        'x_rpm_Build'         : '%%build\n%s\n\n',
+        'x_rpm_Install'       : '%%install\n%s\n\n',
+        'x_rpm_Clean'         : '%%clean\n%s\n\n',
         }
 
     # Default prep, build, install and clean rules
@@ -227,66 +229,84 @@ def build_specfile_sections(spec):
 
     return str
 
-def build_specfile_filesection(files):
+def build_specfile_filesection(spec, files):
     """ builds the %file section of the specfile
     """
     str  = '%files\n'
+
+    defattr = '(-,root,root)'
+    if not spec.has_key('x_rpm_defattr'):
+        defattr = '(-,root,root)'
+
+    str += '%%defattr %s\n' % defattr
+
+    supported_tags = {
+        'config'           : '%%config %s',
+        'config_noreplace' : '%%config(noreplace) %s',
+        'doc'              : '%%doc %s',
+        'unix_attr'        : '%%attr %s',
+        'lang_'            : '%%lang(%s) %s',
+        'x_rpm_verify'     : '%%verify %s',
+        'x_rpm_dir'        : '%%dir %s',
+        'x_rpm_docdir'     : '%%docdir %s',
+        'x_rpm_ghost'      : '%%ghost %s', }
 
     tag_factories = [ SCons.Tool.Packaging.LocationTagFactory() ]
 
     for file in files:
         tags = file.get_tags( tag_factories )
-        # compile() file-tags
-        
 
+        str += compile( supported_tags, tags, mandatory = 0 )
+
+        str += ' '
         str += tags['install_location'][0].get_path()
-        str += '\n'
+        str += '\n\n'
 
     return str
 
-def build_specfile_header(specs):
+def build_specfile_header(spec):
     """ Builds all section but the %file of a rpm specfile
     """
-    s = specs.copy()
+    s = spec.copy()
     str = ""
 
     # first the mandatory sections
     mandatory_header_fields = {
-        'projectname'    : '%%define name %s\nName: %%{name}',
-        'version'        : '%%define version %s\nVersion: %%{version}',
-        'packageversion' : '%%define release %s\nRelease: %%{release}',
-        'x_rpm_Group'    : 'Group: %s',
-        'summary'        : 'Summary: %s',
-        'license'        : 'License: %s', }
+        'projectname'    : '%%define name %s\nName: %%{name}\n',
+        'version'        : '%%define version %s\nVersion: %%{version}\n',
+        'packageversion' : '%%define release %s\nRelease: %%{release}\n',
+        'x_rpm_Group'    : 'Group: %s\n',
+        'summary'        : 'Summary: %s\n',
+        'license'        : 'License: %s\n', }
 
     str += compile( mandatory_header_fields, s )
 
     # now the optional tags
     optional_header_fields = {
-        'vendor'              : 'Vendor: %s',
-        'url'                 : 'Url: %s', 
-        'summary_'            : 'Summary(%s): %s',
-        'x_rpm_Distribution'  : 'Distribution: %s',
-        'x_rpm_Icon'          : 'Icon: %s',
-        'x_rpm_Packager'      : 'Packager: %s',
-        'x_rpm_Group_'        : 'Group(%s): %s',
+        'vendor'              : 'Vendor: %s\n',
+        'url'                 : 'Url: %s\n',
+        'summary_'            : 'Summary(%s): %s\n',
+        'x_rpm_Distribution'  : 'Distribution: %s\n',
+        'x_rpm_Icon'          : 'Icon: %s\n',
+        'x_rpm_Packager'      : 'Packager: %s\n',
+        'x_rpm_Group_'        : 'Group(%s): %s\n',
 
-        'x_rpm_Requires'      : 'Requires: %s',
-        'x_rpm_Provides'      : 'Provides: %s',
-        'x_rpm_Conflicts'     : 'Conflicts: %s',
-        'x_rpm_BuildRequires' : 'BuildRequires: %s',
+        'x_rpm_Requires'      : 'Requires: %s\n',
+        'x_rpm_Provides'      : 'Provides: %s\n',
+        'x_rpm_Conflicts'     : 'Conflicts: %s\n',
+        'x_rpm_BuildRequires' : 'BuildRequires: %s\n',
 
-        'x_rpm_Serial'        : 'Serial: %s',
-        'x_rpm_Epoch'         : 'Epoch: %s',
-        'x_rpm_AutoReqProv'   : 'AutoReqProv: %s',
-        'x_rpm_ExcludeArch'   : 'ExcludeArch: %s',
-        'x_rpm_ExclusiveArch' : 'ExclusiveArch: %s',
-        'x_rpm_Prefix'        : 'Prefix: %s',
-        'x_rpm_Conflicts'     : 'Conflicts: %s',
+        'x_rpm_Serial'        : 'Serial: %s\n',
+        'x_rpm_Epoch'         : 'Epoch: %s\n',
+        'x_rpm_AutoReqProv'   : 'AutoReqProv: %s\n',
+        'x_rpm_ExcludeArch'   : 'ExcludeArch: %s\n',
+        'x_rpm_ExclusiveArch' : 'ExclusiveArch: %s\n',
+        'x_rpm_Prefix'        : 'Prefix: %s\n',
+        'x_rpm_Conflicts'     : 'Conflicts: %s\n',
 
         # internal use
-        'x_rpm_Source'        : 'Source: %s',
-        'x_rpm_BuildRoot'      : 'BuildRoot: %s', }
+        'x_rpm_Source'        : 'Source: %s\n',
+        'x_rpm_BuildRoot'     : 'BuildRoot: %s\n', }
 
     # fill in default values:
 #    if not s.has_key('x_rpm_BuildRequires'):

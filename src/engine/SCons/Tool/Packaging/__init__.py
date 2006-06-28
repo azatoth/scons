@@ -78,7 +78,7 @@ def create_default_package_root(kw):
     projectname, version = kw['projectname'], kw['version']
     return "%s-%s"%(projectname,version)
 
-def create_src_package_root_emitter(src_package_root):
+def get_src_package_root_emitter(src_package_root):
     """This emitter changes the source to be rooted in the given package_root.
     """
     def src_package_root_emitter(target, source, env):
@@ -89,7 +89,6 @@ def create_src_package_root_emitter(src_package_root):
                                     target = filename,
                                     action = SCons.Defaults.Copy( '$TARGET', '$SOURCE' ),
                                   )[0]
-            new_s.set_explicit(0)
 
             # store the tags of our original file in the new file.
             new_s.set_tags( s.get_tags( factories=[ LocationTagFactory() ] ) )
@@ -131,7 +130,6 @@ class LocationTagFactory(TagFactory):
         if file.has_builder() and\
            file.builder == SCons.Environment.InstallBuilder and\
            file.has_explicit_builder():
-            print file.get_path()
             return { 'install_location' : file.builder.targets( file ) }
         else:
             return {}

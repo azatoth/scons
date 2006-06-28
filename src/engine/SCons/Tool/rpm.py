@@ -50,9 +50,6 @@ def get_cmd(source, env):
     tar_file_with_included_specfile = source
     if SCons.Util.is_List(source):
         tar_file_with_included_specfile = source[0]
-    print "%s %s %s"%(env['RPM'], env['RPMFLAGS'],
-                       tar_file_with_included_specfile.abspath )
-
     return "%s %s %s"%(env['RPM'], env['RPMFLAGS'],
                        tar_file_with_included_specfile.abspath )
 
@@ -70,9 +67,10 @@ def build_rpm(target, source, env):
     env.Prepend( RPMFLAGS = '--define \'_topdir %s\'' % tmpdir )
 
     # now call rpmbuild to create the rpm package.
-    handle = popen2.Popen3( get_cmd(source, env) )
-    output = handle.fromchild.read()
-    status = handle.wait()
+    handle  = popen2.Popen3( get_cmd(source, env), capturestderr=1 )
+    output  = handle.fromchild.read()
+    output += handle.childerr.read() # fetch the 
+    status  = handle.wait()
 
     if status:
         raise SCons.Errors.BuildError( node=target[0],

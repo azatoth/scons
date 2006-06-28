@@ -33,7 +33,7 @@ import SCons.Tool.Packaging
 def create_builder(env, keywords=None):
     env['TARFLAGS']  = env['TARFLAGS'] + "-j"
     builder = env.get_builder('Tar')
-    emitter = SCons.Tool.Packaging.create_src_package_root_emitter(keywords['package_root'])
+    emitter = SCons.Tool.Packaging.get_src_package_root_emitter(keywords['package_root'])
     builder.push_emitter(emitter)
     builder.set_suffix('tar.bz2')
     return builder
