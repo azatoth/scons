@@ -1,6 +1,8 @@
+# coding: utf-8
 import os
 
 prog_install = Install( os.path.join( ARGUMENTS.get('prefix', '/'), 'bin'), Program( 'main.c' ) )
+Tag( prog_install, unix_attr='(0755, root, users)' )
 
 Package( projectname    = 'foo',
          version        = '1.2.3',
