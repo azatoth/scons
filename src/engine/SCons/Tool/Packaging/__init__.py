@@ -82,12 +82,14 @@ def create_src_package_root_emitter(src_package_root):
     """This emitter changes the source to be rooted in the given package_root.
     """
     def src_package_root_emitter(target, source, env):
-        dir = env.arg2nodes( src_package_root, env.fs.Dir )[0]
         new_source = []
         for s in source:
             filename = os.path.join( src_package_root, s.get_path() )
-            new_s    = env.InstallAs( filename, s )[0]
-            new_s.set_explicit(1)
+            new_s    = env.Command( source = s,
+                                    target = filename,
+                                    action = SCons.Defaults.Copy( '$TARGET', '$SOURCE' ),
+                                  )[0]
+            new_s.set_explicit(0)
 
             # store the tags of our original file in the new file.
             new_s.set_tags( s.get_tags( factories=[ LocationTagFactory() ] ) )
