@@ -220,7 +220,7 @@ def build_specfile_sections(spec):
         spec['x_rpm_Build'] = 'mkdir $RPM_BUILD_ROOT'
 
     if not spec.has_key('x_rpm_Install'):
-        spec['x_rpm_Install'] = 'scons prefix=$RPM_BUILD_ROOT install'
+        spec['x_rpm_Install'] = 'scons DESTDIR=$RPM_BUILD_ROOT install'
 
     if not spec.has_key('x_rpm_Clean'):
         spec['x_rpm_Clean'] = 'rm -rf $RPM_BUILD_ROOT'

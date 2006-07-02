@@ -82,7 +82,7 @@ def installFunc(target, source, env):
         install = env['INSTALL']
     except KeyError:
         raise SCons.Errors.UserError('Missing INSTALL construction variable.')
-    return install(target[0].path, source[0].path, env)
+    return install(target[0].abspath, source[0].path, env)
 
 def installString(target, source, env):
     return env.subst_target_source(env['INSTALLSTR'], 0, target, source)
@@ -869,6 +869,20 @@ class Base(SubstitutionEnvironment):
             self._build_signature = b
             return b
 
+    def strip_abs_dir(self, source, dir):
+        """ strips the absolute path dir from the absolute source pathname. If one of them is not absolute nothing is changed.
+        """
+        if os.path.isabs( source ):
+            drive_s,x = os.path.splitdrive( source )
+            source    = source[source.find(drive_s):]
+
+            if source[0] == os.sep:
+                source = source[1:]
+
+        assert( not os.path.isabs( source ) )
+        return source
+
+
     #######################################################################
     # Public methods for manipulating an Environment.  These begin with
     # upper-case letters.  The essential characteristic of methods in
@@ -1501,11 +1515,32 @@ class Base(SubstitutionEnvironment):
         return tlist
 
     def Install(self, dir, source):
-        """Install specified files in the given directory."""
+        """Install specified files in the given directory. Prepend the DESTDIR argument to absolute and relative paths."""
+        destdir = None
+
         try:
-            dnodes = self.arg2nodes(dir, self.fs.Dir)
+            import SCons.Script
+            args    = SCons.Script.ARGUMENTS
+            destdir = self.arg2nodes( args['DESTDIR'], self.fs.Dir )[0]
         except TypeError:
+            raise SCons.Errors.UserError, "DESTDIR `%s' of Install() is a file, but should be a directory." % str(args['DESTDIR'])
+        except KeyError:
+            # DESTDIR undefined
+            pass
+
+        try:
+            if destdir:
+                # Handle the case where the sources are specfied as absolute paths,
+                # where we need to convert them to relative ones, so we really get
+                # them relative to DESTDIR.
+                _dir   = self.strip_abs_dir( dir, destdir.abspath )
+                dnodes = self.arg2nodes( _dir, destdir.Dir)
+            else:
+                dnodes = self.arg2nodes(dir, self.fs.Dir)
+        except TypeError, e:
+            print str(e)
             raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
+
         try:
             sources = self.arg2nodes(source, self.fs.File)
         except TypeError:
@@ -1522,8 +1557,21 @@ class Base(SubstitutionEnvironment):
 
     def InstallAs(self, target, source):
         """Install sources as targets."""
-        sources = self.arg2nodes(source, self.fs.File)
         targets = self.arg2nodes(target, self.fs.File)
+
+        try:
+            import SCons.Script
+            args    = SCons.Script.ARGUMENTS
+            destdir = self.arg2nodes( args['DESTDIR'], self.fs.Dir )[0]
+
+            targets = self.arg2nodes( target, lambda x: destdir.Entry( self.strip_abs_dir( x, destdir.abspath ) ) )
+        except TypeError:
+            raise SCons.Errors.UserError, "DESTDIR `%s' of Install() is a file, but should be a directory." % str(args['destdir'])
+        except KeyError:
+            # DESTDIR undefined
+            pass
+
+        sources = self.arg2nodes(source, self.fs.File)
         result = []
         for src, tgt in map(lambda x, y: (x, y), sources, targets):
             result.extend(InstallBuilder(self, tgt, src))

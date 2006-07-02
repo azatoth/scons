@@ -50,21 +50,20 @@ int main( int argc, char* argv[] )
   test.write('SConstruct', """
 import os
 
-prog = Program( 'src/main.c' )
-install_dir  = os.path.join( ARGUMENTS.get('prefix', '/'), 'bin/' )
-prog_install = Install( install_dir , prog )
-Alias( 'install', prog_install )
+prog = Install( '/bin/' , Program( 'src/main.c')  )
 
 Package( projectname    = 'foo',
          version        = '1.2.3',
+         packageversion = 0,
          type           = 'rpm',
          license        = 'gpl',
          summary        = 'balalalalal',
-         packageversion = 0,
-         x_rpm_Group    = 'Applicatio/fu',
-         description    = 'this shoudl be reallly really long',
-         source         = [ 'src/main.c', 'SConstruct', prog_install ],
+         x_rpm_Group    = 'Application/fu',
+         description    = 'this should be reallly really long',
+         source         = [ 'src/main.c', 'SConstruct', prog ],
         )
+
+Alias( 'install', prog )
 """)
 
   test.run(arguments='', stderr = None)
@@ -73,5 +72,6 @@ Package( projectname    = 'foo',
   test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
   test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.i386.rpm').read()=='/bin/main\n')
   test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.src.rpm').read()=='foo-1.2.3-0.src.rpm.tar.gz\nfoo-1.2.3.spec\n')
+  test.fail_test( os.path.exists( 'bin/main' ) )
 
 test.pass_test()

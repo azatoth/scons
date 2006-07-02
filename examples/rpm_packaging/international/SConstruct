@@ -4,7 +4,7 @@ import os
 prog_install = Install( os.path.join( ARGUMENTS.get('prefix', '/'), 'bin'), Program( 'main.c' ) )
 Tag( prog_install, unix_attr='(0755, root, users)' )
 
-Package( projectname    = 'foo',
+Default( Package( projectname    = 'foo',
          version        = '1.2.3',
          type           = 'rpm',
          license        = 'gpl',
@@ -19,6 +19,6 @@ Package( projectname    = 'foo',
          description_de = 'das sollte wirklich lang sein',
          description_fr = 'ceci devrait être vraiment long',
          source         = [ 'main.c', 'SConstruct', prog_install ],
-        )
+        ) )
 
 Alias ( 'install', prog_install )
