@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test the ability to create a really simple rpm package.
+Test the ability to create a simple msi package.
 """
 
 import os
@@ -35,43 +35,34 @@ python = TestSCons.python
 
 test = TestSCons.TestSCons()
 
-rpm = test.Environment().WhereIs('rpm')
+wix = test.Environment().WhereIs('candle')
 
-if rpm:
-  test.subdir('src')
-
-  test.write( [ 'src', 'main.c' ], r"""
-int main( int argc, char* argv[] )
-{
-  return 0;
-}
-  """)
+if wix:
+  test.write( 'file1.exe', "file1" )
+  test.write( 'file2.exe', "file2" )
 
   test.write('SConstruct', """
 import os
 
-prog = Install( '/bin/' , Program( 'src/main.c')  )
+f1 = Install( '/usr/' , 'file1.exe'  )
+f2 = Install( '/usr/' , 'file2.exe'  )
 
 Package( projectname    = 'foo',
          version        = '1.2.3',
          packageversion = 0,
-         type           = 'rpm',
-         license        = 'gpl',
+         type           = 'msi',
          summary        = 'balalalalal',
-         x_rpm_Group    = 'Application/fu',
          description    = 'this should be reallly really long',
-         source         = [ 'src/main.c', 'SConstruct', prog ],
+	 vendor         = 'Nanosoft',
+         source         = [ f1, f2 ],
         )
 
-Alias( 'install', prog )
+Alias( 'install', [ f1, f2 ] )
 """)
 
   test.run(arguments='', stderr = None)
 
-  test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
-  test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.i386.rpm').read()=='/bin/main\n')
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.src.rpm').read()=='foo-1.2.3-0.src.rpm.tar.gz\nfoo-1.2.3.spec\n')
-  test.fail_test( os.path.exists( 'bin/main' ) )
+  test.fail_test( not os.path.exists( 'foo-1.2.3.wxs' ) )
+  test.fail_test( not os.path.exists( 'foo-1.2.3-0.msi' ) )
 
 test.pass_test()

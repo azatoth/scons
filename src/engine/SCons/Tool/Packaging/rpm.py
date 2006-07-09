@@ -91,12 +91,10 @@ def rpm_emitter(target, source, env):
     rpm_files     = filter( belongs_into_rpm_pkg, source )
     src_files     = filter( belongs_into_source_pkg, source )
 
-    print map( lambda x: x.get_path(), src_files )
-
     # spit out warning and errors.
     if len( uncategorized ) != 0:
         # XXX: better error message?
-        raise SCons.Errors.UserError( 'There are files which tags but are missing a install_location tag and are therefore not packageable.' )
+        raise SCons.Errors.UserError( 'There are tagged files which are missing a install_location tag and are therefore not packageable.' )
 
     if len(rpm_files) == 0:
         raise SCons.Errors.UserError( 'No file to put into the RPM package? Only files with are returned by Install() or InstallAs() will be put into the RPM Package!.')
@@ -146,7 +144,7 @@ def build_specfile(target, source, env):
 
 
 def compile( tags, values, mandatory=1 ):
-    """ takes a list of given tags and fills in there values.
+    """ takes a list of given tags and fills in their values.
 
     tags is a dict of the form { 'tag' : 'str with %s replacement markers' }
     values is a dict of the form { 'tag'  : 'value',

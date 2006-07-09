@@ -760,7 +760,7 @@ class MultiStepBuilder(BuilderBase):
             for suf in bld.src_suffixes(env):
                 sdict[suf] = bld
         return sdict
-        
+
     def _execute(self, env, target, source, overwarn={}, executor_kw={}):
         # We now assume that target and source are lists or None.
         source_factory = env.get_factory(self.source_factory)

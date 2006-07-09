@@ -6,8 +6,8 @@ There normally shouldn't be any need to import this module directly.
 It will usually be imported through the generic SCons.Tool.Tool()
 selection method.
 
-The rpm tool calls the rpmbuild command. As a speciality only the first source
-file is delivered to the rpmbuild command.
+The rpm tool calls the rpmbuild command. The first and only argument should a
+tar.gz consisting of the source file and a specfile.
 """
 
 #
@@ -69,7 +69,7 @@ def build_rpm(target, source, env):
     # now call rpmbuild to create the rpm package.
     handle  = popen2.Popen3( get_cmd(source, env), capturestderr=1 )
     output  = handle.fromchild.read()
-    output += handle.childerr.read() # fetch the 
+    output += handle.childerr.read()
     status  = handle.wait()
 
     if status:

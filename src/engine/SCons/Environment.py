@@ -869,7 +869,7 @@ class Base(SubstitutionEnvironment):
             self._build_signature = b
             return b
 
-    def strip_abs_dir(self, source, dir):
+    def strip_abs_path(self, source):
         """ strips the absolute path dir from the absolute source pathname. If one of them is not absolute nothing is changed.
         """
         if os.path.isabs( source ):
@@ -1533,7 +1533,7 @@ class Base(SubstitutionEnvironment):
                 # Handle the case where the sources are specfied as absolute paths,
                 # where we need to convert them to relative ones, so we really get
                 # them relative to DESTDIR.
-                _dir   = self.strip_abs_dir( dir, destdir.abspath )
+                _dir   = self.strip_abs_path( dir )
                 dnodes = self.arg2nodes( _dir, destdir.Dir)
             else:
                 dnodes = self.arg2nodes(dir, self.fs.Dir)
@@ -1564,7 +1564,7 @@ class Base(SubstitutionEnvironment):
             args    = SCons.Script.ARGUMENTS
             destdir = self.arg2nodes( args['DESTDIR'], self.fs.Dir )[0]
 
-            targets = self.arg2nodes( target, lambda x: destdir.Entry( self.strip_abs_dir( x, destdir.abspath ) ) )
+            targets = self.arg2nodes( target, lambda x: destdir.Entry( self.strip_abs_path( x ) ) )
         except TypeError:
             raise SCons.Errors.UserError, "DESTDIR `%s' of Install() is a file, but should be a directory." % str(args['destdir'])
         except KeyError:
@@ -1706,7 +1706,7 @@ class Base(SubstitutionEnvironment):
         """
         # choose a default one
         if not kw.has_key('type'):
-            kw['type'] = 'targz'
+            kw['type'] = 'zip'
 
         packager = SCons.Tool.Packaging.get_packager(self, kw)
 

@@ -29,10 +29,13 @@ SCons Packaging Tool.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import SCons.Errors
+import SCons.Environment
+
 import SCons.Tool.Packaging.tarbz2
 import SCons.Tool.Packaging.targz
 import SCons.Tool.Packaging.zip
 import SCons.Tool.Packaging.rpm
+import SCons.Tool.Packaging.msi
 import SCons.Environment
 
 import os
@@ -44,6 +47,7 @@ packagers = {
     'targz'  : targz,
     'zip'    : zip,
     'rpm'    : rpm,
+    'msi'    : msi,
 }
 
 def get_packager(env, kw):
@@ -84,7 +88,7 @@ def get_src_package_root_emitter(src_package_root):
     def src_package_root_emitter(target, source, env):
         new_source = []
         for s in source:
-            filename = os.path.join( src_package_root, s.get_path() )
+            filename = os.path.join( src_package_root, env.strip_abs_path( s.get_path() ) )
             new_s    = env.Command( source = s,
                                     target = filename,
                                     action = SCons.Defaults.Copy( '$TARGET', '$SOURCE' ),
