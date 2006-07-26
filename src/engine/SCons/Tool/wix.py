@@ -78,10 +78,9 @@ def exists(env):
         if env['WIXCANDLE'] in os.listdir(path) and\
            env['WIXLIGHT']  in os.listdir(path):
                env.PrependENVPath('PATH', path)
-               env['WIXLIGHTFLAGS'] = [ '%s'    % ( os.path.join( path, 'wixui.wixlib' ) ),
-                                        '%s %s' % ( '-loc',
-                                                    os.path.join( path, 'WixUI_en-us.wxl' ) ) ]
-               print env['WIXLIGHTFLAGS']
+               env['WIXLIGHTFLAGS'] = [ os.path.join( path, 'wixui.wixlib' ),
+                                        '-loc',
+                                        os.path.join( path, 'WixUI_en-us.wxl' ) ]
                return 1
 
     return None

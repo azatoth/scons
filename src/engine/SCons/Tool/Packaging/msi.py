@@ -34,17 +34,18 @@ import SCons.Tool.Packaging.targz
 import os
 
 from xml.dom.minidom import *
+from xml.sax.saxutils import escape
 
 filename_set = []
+id_set = {}
 
 def create_default_target(kw):
     """ tries to guess the filenames of the generated msi file.
     """
     version        = kw['version']
     projectname    = kw['projectname']
-    packageversion = kw['packageversion']
 
-    msi = '%s-%s-%s.msi' % (projectname, version, packageversion)
+    msi = '%s-%s.msi' % (projectname, version)
 
     return [ msi ]
 
@@ -52,6 +53,9 @@ def create_builder(env, keywords=None):
     # the wxs_builder is kind of hacked, calling the object_builder and 
     # linker_builder with the correct files.
     def attach_wix_process(source, target, env):
+        ''' this is an emitter which attaches the wxi-file builder and
+        the call to candle.exe to the src files.
+        '''
         # categorize files
         tag_factories = [ SCons.Tool.Packaging.LocationTagFactory() ]
 
@@ -68,9 +72,9 @@ def create_builder(env, keywords=None):
         spec = env['MSISPEC']
 
         # build the specfile.
-        p, v, pv   = env['MSISPEC']['projectname'], env['MSISPEC']['version'], env['MSISPEC']['packageversion']
-        wxs_target = '%s-%s.%s.wxs' % ( p, v, pv )
-        wxi_target = '%s-%s.%s.wxiobj' % ( p, v, pv )
+        p, v       = env['MSISPEC']['projectname'], env['MSISPEC']['version']
+        wxs_target = '%s-%s.wxs' % ( p, v )
+        wxi_target = '%s-%s.wxiobj' % ( p, v )
 
         wxs_builder = SCons.Builder.Builder(
             action  = wxsfile_action,
@@ -121,8 +125,8 @@ def build_wxsfile(target, source, env):
         build_wxsfile_header_section(root, spec)
         build_wxsfile_file_section(root, spec, source)
         generate_guids(root)
-        build_wxsfile_features_section(root)
-    #    build_wxsfile_default_gui(root)
+        build_wxsfile_features_section(root, spec, source)
+        build_wxsfile_default_gui(root)
 
         # write the xml to a file
         file.write( doc.toprettyxml() )
@@ -158,12 +162,107 @@ def generate_guids( root ):
             hash_str = '%s-%s-%s-%s-%s' % ( hash[:8], hash[8:12], hash[12:16], hash[16:20], hash[20:] )
             node.attributes[attribute] = hash_str
 
+def is_dos_short_file_name(file):
+    fname, ext = os.path.splitext(file)
+
+    return len(fname) <= 8 and ((2 <= len(ext) <= 4) or (len(ext) ==0)) and file.isupper()
+
+def gen_dos_short_file_name(file):
+    """ see http://support.microsoft.com/default.aspx?scid=kb;en-us;Q142982
+    """
+    if is_dos_short_file_name(file):
+        return file
+
+    fname, ext = os.path.splitext(file)
+
+    # first try if it suffices to convert to upper
+    file = file.upper()
+    if is_dos_short_file_name(file):
+        return file
+
+    for x in [ '.', '"', '/', '[', ']', ':', ';', '=', ',', ' ' ]:
+        fname.replace(x, '')
+
+    # check if we already generated a filename with the same number:
+    # Thisis~1.txt, Thisis~2.txt etc.
+    duplicate, num = not None, 1
+    while duplicate:
+        shortname = "%s~%s" % (fname[:7-len(str(num))].upper(),\
+                               str(num))
+        if len( ext ) >= 2:
+            shortname = "%s%s" % (shortname, ext[:4].upper())
+
+        duplicate = shortname in filename_set
+        num += 1
+
+    assert( is_dos_short_file_name(shortname) ), 'shortname is %s, longname is %s' % (shortname, file)
+    filename_set.append(shortname)
+    return shortname
+
+def create_feature_dict( files ):
+    """ creates a dictioniary which maps from the x_msi_feature and doc FileTag
+    to the included files.
+    """
+    dict = {}
+
+    def add_to_dict( feature, file ):
+        if not SCons.Util.is_List( feature ):
+            feature = [ feature ]
+
+        for f in feature:
+            if not dict.has_key( f ):
+                dict[ f ] = [ file ]
+            else:
+                dict[ f ].append( file )
+
+    for file in files:
+        tags = file.get_tags()
+        if tags.has_key( 'x_msi_feature' ):
+            add_to_dict( tags['x_msi_feature'], file ) 
+        elif tags.has_key( 'doc' ):
+            add_to_dict( 'doc', file )
+        else:
+            add_to_dict( 'default', file )
+
+    return dict
+
+def convert_to_id( _str ):
+    """ converts a long str to a valid Id. This means a str which consists only
+    of A-Z and a-z characters is returned. 
+
+    Furthermore cares for duplicate ids.
+    """
+    try:
+        return id_set[_str]
+    except KeyError:
+        n_id = filter( lambda c: 'A' <= c <= 'Z' or 'a' <= c <= 'z', _str )
+        def conv_num_to_str( num ):
+            alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            str  = 'a' * (num/len(alphabet))
+            return str + alphabet[num % len(alphabet)]
+
+        num  = 0
+        while "%s_%s" % (n_id, conv_num_to_str(num)) in id_set.values():
+            num += 1
+
+        name = "%s_%s" % (n_id, conv_num_to_str(num))
+        id_set[_str] = name
+
+        return name
+
 def create_default_directory_layout(root, spec):
     """ Create the wix default target directory layout and return the innermost
     directory.
 
     We assume that the XML tree delivered in the root argument already contains
     the Product tag.
+
+    Everything is put under the PFiles directory property defined by WiX.
+    After that a directory  with the optional 'vendor' tag is placed and then
+    a directory with the name of the project and its version. This leads to the
+    following TARGET Directory Layout:
+    C:\<PFiles>\<Vendor>\<Projectname-Version>\ , where vendor is optional. 
+    Example: C:\Programme\Company\Product-1.2\
     """
     doc = Document()
     d1  = doc.createElement( 'Directory' )
@@ -174,78 +273,90 @@ def create_default_directory_layout(root, spec):
     d2.attributes['Id']   = 'ProgramFilesFolder'
     d2.attributes['Name'] = 'PFiles'
 
-    d3  = doc.createElement( 'Directory' )
-    d3.attributes['Id']   = 'default_folder'
-    d3.attributes['Name'] = "%s-%s.%s" % (spec['projectname'], spec['version'], spec['packageversion'])
+    d3 = doc.createElement( 'Directory' )
+    d3.attributes['Id']       = 'vendor_folder'
+    d3.attributes['Name']     = escape( gen_dos_short_file_name( spec['vendor'] ) )
+    d3.attributes['LongName'] = escape( spec['vendor'] )
+
+    d4 = doc.createElement( 'Directory' )
+    project_folder            = "%s-%s" % (spec['projectname'], spec['version'])
+    d4.attributes['Id']       = 'MY_DEFAULT_FOLDER'
+    d4.attributes['Name']     = escape( gen_dos_short_file_name( project_folder ) )
+    d4.attributes['LongName'] = escape( project_folder )
 
     d1.childNodes.append( d2 )
     d2.childNodes.append( d3 )
+    d3.childNodes.append( d4 )
 
     root.getElementsByTagName('Product')[0].childNodes.append( d1 )
 
-    return d3
+    return d4
 
 def build_wxsfile_file_section(root, spec, files):
     """ builds the Component sections of the wxs file with their included files.
+
+    As the files need to specified in 8.3 Filename format and long filename, we needed
+    to write a function that converts long filename to 8.3 filenames.
+
+    Features are specficied with the 'x_msi_feature' or 'doc' FileTag.
     """
-    # Helper function for convering a long filename to a DOS 8.3 one.
-    def is_dos_short_file_name(file):
-        fname, ext = os.path.splitext(file)
+    root       = create_default_directory_layout(root, spec)
+    components = create_feature_dict( files )
+    factory    = Document()
 
-        return len(fname) <= 8 and len(ext) <= 3 and file.isupper()
+    def get_directory( node, dir ):
+        """ returns the node under the given node representing the directory.
 
-    def gen_dos_short_file_name(file):
-        """ see http://support.microsoft.com/default.aspx?scid=kb;en-us;Q142982
-        XXX: this conversion is incomplete.
+        Returns the component node if dir is None or empty.
         """
-        if is_dos_short_file_name(file):
-            return file
+        if dir == '' or not dir:
+            return node
 
-        fname, ext = os.path.splitext(file)
+        Directory = node
+        dir_parts = dir.split(os.path.sep)
 
-        # first try if it suffices to convert to upper
-        file = file.upper()
-        if is_dos_short_file_name(file):
-            return file
+        # to make sure that our directory id are unique, the parent folder are 
+        # consecutively added to upper_dir
+        upper_dir = ''
 
-        for x in [ '.', '"', '/', '[', ']', ':', ';', '=', ',', ' ' ]:
-            fname.replace(x, '')
+        # walk down the xml tree finding parts of the directory
+        dir_parts = filter( lambda d: d != '', dir_parts )
+        for d in dir_parts[:]:
+            already_created = filter( lambda c: c.nodeName == 'Directory' and c.attributes['LongName'].value == escape(d), Directory.childNodes ) 
 
-        # check if we already generated a filename with the same number:
-        # Thisis~1.txt, Thisis~2.txt etc.
-        duplicate, num = not None, 1
-        while duplicate:
-            shortname = "%s~%s" % (fname[:7-len(str(num))].upper(),\
-                                   str(num))
-            if len(ext) > 0:
-                shortname = "%s.%s" % (shortname, ext[:3].upper())
+            if already_created != []:
+                Directory = already_created[0]
+                dir_parts.remove(d)
+                upper_dir += d
+            else:
+                break
 
-            duplicate = shortname in filename_set
-            num += 1
+        for d in dir_parts:
+            nDirectory = factory.createElement( 'Directory' )
+            nDirectory.attributes['LongName'] = escape( d )
+            nDirectory.attributes['Name']     = escape( gen_dos_short_file_name( d ) )
+            upper_dir += d
+            nDirectory.attributes['Id']       = convert_to_id( upper_dir )
 
-        assert( is_dos_short_file_name(shortname) )
-        filename_set.append(shortname)
-        return shortname
+            Directory.childNodes.append( nDirectory )
+            Directory = nDirectory
 
-    # create a default layout and a <Component> tag.
-    Component = Document().createElement('Component')
-    Component.attributes['DiskId'] = '1'
-    Component.attributes['Id']     = 'default'
-
-    Directory = create_default_directory_layout(root, spec)
-    Directory.childNodes.append(Component)
+        return Directory
 
     tag_factories = [ SCons.Tool.Packaging.LocationTagFactory() ]
 
     for file in files:
         tags = file.get_tags( tag_factories )
-        filename = os.path.basename( file.get_path() )
+        drive, path = os.path.splitdrive( tags['install_location'][0].get_path() )
+        filename = os.path.basename( path )
+        dirname  = os.path.dirname( path )
 
         if not tags.has_key('x_msi_vital'):
             tags['x_msi_vital'] = 'yes'
 
         if not tags.has_key('x_msi_fileid'):
-            tags['x_msi_fileid'] = filename
+            # TODO convert_to_id does not care for uniqueness
+            tags['x_msi_fileid'] = convert_to_id( filename )
 
         if not tags.has_key('x_msi_longname'):
             tags['x_msi_longname'] = filename
@@ -256,33 +367,69 @@ def build_wxsfile_file_section(root, spec, files):
         if not tags.has_key('x_msi_source'):
             tags['x_msi_source'] = filename
 
-        File = Document().createElement( 'File' )
-        File.attributes['LongName'] = tags['x_msi_longname']
-        File.attributes['Name']     = tags['x_msi_shortname']
-        File.attributes['Source']   = tags['x_msi_source']
-        File.attributes['Id']       = tags['x_msi_fileid']
-        File.attributes['Vital']    = tags['x_msi_vital']
+        File = factory.createElement( 'File' )
+        File.attributes['LongName'] = escape( tags['x_msi_longname'] )
+        File.attributes['Name']     = escape( tags['x_msi_shortname'] )
+        File.attributes['Source']   = escape( tags['x_msi_source'] )
+        File.attributes['Id']       = escape( tags['x_msi_fileid'] )
+        File.attributes['Vital']    = escape( tags['x_msi_vital'] )
 
-        Component.childNodes.append(File)
+        # create the <Component> Tag under which this file should appear
+        Component = factory.createElement('Component')
+        Component.attributes['DiskId'] = '1'
+        Component.attributes['Id']     = convert_to_id( filename )
+    
+        # hang the component node under the root node and the file node
+        # under the component node.
+        Directory = get_directory( root, dirname )
+        Directory.childNodes.append( Component )
+        Component.childNodes.append( File )
 
-def build_wxsfile_features_section(root):
+def build_wxsfile_features_section(root, spec, files):
     """ This function creates the <features> tag based on the supplied xml tree.
 
     This is achieved by finding all <component>s and adding them to a default target.
 
     It should be called after the tree has been built completly.  We assume
-    that a TARGETDIR Property is defined in the wxs file tree.
+    that a MY_DEFAULT_FOLDER Property is defined in the wxs file tree.
+
+    Furthermore a top-level with the name and version of the software will be created.
     """
     factory = Document()
     Feature = factory.createElement('Feature')
     Feature.attributes['Id']                    = 'complete'
-    Feature.attributes['ConfigurableDirectory'] = 'TARGETDIR'
+    Feature.attributes['ConfigurableDirectory'] = 'MY_DEFAULT_FOLDER'
     Feature.attributes['Level']                 = '1'
+    Feature.attributes['Title']                 = escape( '%s %s' % (spec['projectname'], spec['version']) )
+    Feature.attributes['Description']           = escape( spec['summary'] )
+    Feature.attributes['Display']               = 'expand'
 
-    for node in root.getElementsByTagName('Component'):
-        ComponentRef = factory.createElement('ComponentRef')
-        ComponentRef.attributes['Id'] = node.attributes['Id']
-        Feature.childNodes.append(ComponentRef)
+    for (feature, files) in create_feature_dict(files).items():
+        SubFeature   = factory.createElement('Feature')
+        SubFeature.attributes['Id']    = convert_to_id( feature )
+        SubFeature.attributes['Title'] = ('Main Part',feature)[feature!='default']
+        SubFeature.attributes['Level'] = '1'
+
+        f = files
+        if SCons.Util.is_List( files ):
+            f = files[0]
+
+        tags = f.get_tags()
+        if tags.has_key( 'x_msi_feature' ):
+            SubFeature.attributes['Description'] = tags['x_msi_feature']
+        elif tags.has_key( 'doc' ):
+            SubFeature.attributes['Description'] = 'Documentation'
+            SubFeature.attributes['Title']       = 'Documentation'
+
+        # build the componentrefs. As one of the design decision is that every
+        # file is also a component we walk the list of files and create a
+        # reference.
+        for f in files:
+            ComponentRef = factory.createElement('ComponentRef')
+            ComponentRef.attributes['Id'] = convert_to_id( os.path.basename(f.get_path()) )
+            SubFeature.childNodes.append(ComponentRef)
+
+        Feature.childNodes.append(SubFeature)
 
     root.getElementsByTagName('Product')[0].childNodes.append(Feature)
 
@@ -302,16 +449,16 @@ def build_wxsfile_header_section(root, spec):
         spec['x_msi_language'] = '1033' # select english
 
     # mandatory sections, will throw a KeyError if the tag is not available
-    Product.attributes['Name']         = spec['projectname']
-    Product.attributes['Version']      = "%s.%s" % (spec['version'], spec['packageversion'])
-    Product.attributes['Manufacturer'] = spec['vendor']
-    Product.attributes['Language']     = spec['x_msi_language']
+    Product.attributes['Name']         = escape( spec['projectname'] )
+    Product.attributes['Version']      = escape( spec['version'] )
+    Product.attributes['Manufacturer'] = escape( spec['vendor'] )
+    Product.attributes['Language']     = escape( spec['x_msi_language'] )
 
-    Package.attributes['Description']  = spec['summary']
+    Package.attributes['Description']  = escape( spec['summary'] )
 
     # now the optional tags, for which we avoid the KeyErrror exception
     if spec.has_key( 'description' ):
-        Package.attributes['Comments'] = spec['description']
+        Package.attributes['Comments'] = escape( spec['description'] )
 
     # We hardcode the media tag as our current model cannot handle it.
     Media = factory.createElement('Media')
@@ -328,7 +475,10 @@ def build_wxsfile_default_gui(root):
 
     UIRef   = factory.createElement('UIRef')
     UIRef.attributes['Id'] = 'WixUI_Mondo'
+    Product.childNodes.append(UIRef)
 
+    UIRef   = factory.createElement('UIRef')
+    UIRef.attributes['Id'] = 'WixUI_ErrorProgressText'
     Product.childNodes.append(UIRef)
 
 wxsfile_action = SCons.Action.Action( build_wxsfile,
