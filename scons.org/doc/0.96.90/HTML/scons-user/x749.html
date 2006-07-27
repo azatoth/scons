@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Using a Node's File Name as a String</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.90"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Node Objects"
+HREF="c679.html"><LINK
+REL="PREVIOUS"
+TITLE="Printing Node File Names"
+HREF="x737.html"><LINK
+REL="NEXT"
+TITLE="Dependencies"
+HREF="c762.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.90</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x737.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Node Objects</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c762.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN749"
+></A
+>Using a <TT
+CLASS="CLASSNAME"
+>Node</TT
+>'s File Name as a String</H1
+><P
+>&#13;    Printing a <TT
+CLASS="CLASSNAME"
+>Node</TT
+>'s name
+    as described in the previous section
+    works because the string representation of a <TT
+CLASS="CLASSNAME"
+>Node</TT
+>
+    is the name of the file.
+    If you want to do something other than
+    print the name of the file,
+    you can fetch it by using the builtin Python
+    <TT
+CLASS="FUNCTION"
+>str</TT
+> function.
+    For example, if you want to use the Python
+    <TT
+CLASS="FUNCTION"
+>os.path.exists</TT
+>
+    to figure out whether a file
+    exists while the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file
+    is being read and executed,
+    you can fetch the string as follows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      import os.path
+      program_list = Program('hello.c')
+      program_name = str(program_list[0])
+      if not os.path.exists(program_name)
+          print program_name, "does not exist!"
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Which executes as follows on a POSIX system:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+      The object file is: hello.o
+      The program file is: hello
+      cc -c -o hello.o hello.c
+      cc -o hello hello.o
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x737.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c762.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Printing <TT
+CLASS="CLASSNAME"
+>Node</TT
+> File Names</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c679.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Dependencies</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

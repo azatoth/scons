@@ -1,0 +1,261 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Guaranteeing local copies of files</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.92"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Building From Code Repositories"
+HREF="c1482.html"><LINK
+REL="PREVIOUS"
+TITLE="Finding derived files in repositories"
+HREF="x1548.html"><LINK
+REL="NEXT"
+TITLE="Fetching Files From Source Code Management Systems"
+HREF="c1598.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x1548.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Building From Code Repositories</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c1598.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1575"
+></A
+>Guaranteeing local copies of files</H1
+><P
+>&#13;    If the repository tree contains the complete results of a build,
+    and we try to build from the repository
+    without any files in our local tree,
+    something moderately surprising happens:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>mkdir $HOME/build2</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>cd $HOME/build2</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Y /usr/all/repository hello</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;`hello'&nbsp;is&nbsp;up-to-date.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;    Why does <TT
+CLASS="APPLICATION"
+>SCons</TT
+> say that the <TT
+CLASS="APPLICATION"
+>hello</TT
+> program
+    is up-to-date when there is no <TT
+CLASS="APPLICATION"
+>hello</TT
+> program
+    in the local build directory?
+    Because the repository (not the local directory)
+    contains the up-to-date <TT
+CLASS="APPLICATION"
+>hello</TT
+> program,
+    and <TT
+CLASS="APPLICATION"
+>SCons</TT
+> correctly determines that nothing
+    needs to be done to rebuild that
+    up-to-date copy of the file.
+
+    </P
+><P
+>&#13;    There are, however, many times when you want to ensure that a
+    local copy of a file always exists.
+    A packaging or testing script, for example,
+    may assume that certain generated files exist locally.
+    To tell <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to make a copy of any up-to-date repository
+    file in the local build directory,
+    use the <TT
+CLASS="FUNCTION"
+>Local</TT
+> function:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       hello = env.Program('hello.c')
+       Local(hello)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    If we then run the same command,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will make a local copy of the program
+    from the repository copy,
+    and tell you that it is doing so:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;scons&nbsp;-Y&nbsp;/usr/all/repository&nbsp;hello<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Local&nbsp;copy&nbsp;of&nbsp;hello&nbsp;from&nbsp;/usr/all/repository/hello<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;`hello'&nbsp;is&nbsp;up-to-date.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XXXXXX&nbsp;DO&nbsp;WE&nbsp;REALLY&nbsp;REPORT&nbsp;up-to-date,&nbsp;TOO?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;    (Notice that, because the act of making the local copy
+    is not considered a "build" of the <TT
+CLASS="APPLICATION"
+>hello</TT
+> file,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> still reports that it is up-to-date.)
+    XXXXXX DO WE REALLY REPORT up-to-date, TOO?
+
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x1548.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c1598.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Finding derived files in repositories</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c1482.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Fetching Files From Source Code Management Systems</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

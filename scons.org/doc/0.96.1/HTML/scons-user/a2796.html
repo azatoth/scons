@@ -1,0 +1,336 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Handling Common Tasks</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.1"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Troubleshooting"
+HREF="c2746.html"></HEAD
+><BODY
+CLASS="APPENDIX"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c2746.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+>&nbsp;</TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="APPENDIX"
+><H1
+><A
+NAME="APP-TASKS"
+></A
+>Handling Common Tasks</H1
+><P
+>There is a common set of simple tasks that many build configurations rely
+on as they become more complex. Most build tools have special
+purpose constructs for performing these tasks, but since <TT
+CLASS="FILENAME"
+>SConscript</TT
+>
+files are <TT
+CLASS="APPLICATION"
+>Python</TT
+> scripts, you can use more flexible built-in <TT
+CLASS="APPLICATION"
+>Python</TT
+>
+services to perform these tasks. This appendix lists a number of these
+tasks and how to implement them in <TT
+CLASS="APPLICATION"
+>Python</TT
+>.</P
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN2803"
+></A
+><P
+><B
+>Example 1. Wildcard globbing to create a list of filenames</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import glob
+files = glob.glob(wildcard)</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN2806"
+></A
+><P
+><B
+>Example 2. Filename extension substitution</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import os.path
+filename = os.path.splitext(filename)[0]+extension</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN2809"
+></A
+><P
+><B
+>Example 3. Appending a path prefix to a list of filenames</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import os.path
+filenames = [os.path.join(prefix, x) for x in filenames]</PRE
+></TD
+></TR
+></TABLE
+><P
+>or in Python 1.5.2:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import os.path
+new_filenames = [] 
+for x in filenames:
+    new_filenames.append(os.path.join(prefix, x))</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN2814"
+></A
+><P
+><B
+>Example 4. Substituting a path prefix with another one</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>if filename.find(old_prefix) == 0:
+    filename = filename.replace(old_prefix, new_prefix)</PRE
+></TD
+></TR
+></TABLE
+><P
+>or in Python 1.5.2:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import string
+if string.find(filename, old_prefix) == 0:
+    filename = string.replace(filename, old_prefix, new_prefix)      </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN2819"
+></A
+><P
+><B
+>Example 5. Filtering a filename list to exclude/retain only a specific set
+of extensions</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import os.path
+filenames = [x for x in filenames if os.path.splitext(x)[1] in extensions]</PRE
+></TD
+></TR
+></TABLE
+><P
+>or in Python 1.5.2:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import os.path
+new_filenames = []
+for x in filenames:
+    if os.path.splitext(x)[1] in extensions:
+        new_filenames.append(x)</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN2824"
+></A
+><P
+><B
+>Example 6. The "backtick function": run a shell command and capture the
+output</B
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>import os
+output = os.popen(command).read()</PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c2746.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Troubleshooting</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

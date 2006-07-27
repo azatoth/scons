@@ -1,0 +1,243 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Copying Construction Environments</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.95"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Construction Environments"
+HREF="c587.html"><LINK
+REL="PREVIOUS"
+TITLE="Construction Environments"
+HREF="c587.html"><LINK
+REL="NEXT"
+TITLE="Fetching Values From a Construction Environment"
+HREF="x660.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.95</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c587.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Construction Environments</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x660.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN642"
+></A
+>Copying <TT
+CLASS="LITERAL"
+>Construction Environments</TT
+></H1
+><P
+>&#13;   Sometimes you want more than one construction environment
+   to share the same values for one or more variables.
+   Rather than always having to repeat all of the common
+   variables when you create each construction environment,
+   you can use the <TT
+CLASS="FUNCTION"
+>Copy</TT
+> method
+   to create a copy of a construction environment.
+
+   </P
+><P
+>&#13;   Like the <TT
+CLASS="FUNCTION"
+>Environment</TT
+> call that creates a construction environment,
+   the <TT
+CLASS="FUNCTION"
+>Copy</TT
+> method takes <TT
+CLASS="LITERAL"
+>construction variable</TT
+> assignments,
+   which will override the values in the copied construction environment.
+   For example, suppose we want to use <TT
+CLASS="APPLICATION"
+>gcc</TT
+>
+   to create three versions of a program,
+   one optimized, one debug, and one with neither.
+   We could do this by creating a "base" construction environment
+   that sets <TT
+CLASS="VARNAME"
+>CC</TT
+> to <TT
+CLASS="APPLICATION"
+>gcc</TT
+>,
+   and then creating two copies,
+   one which sets <TT
+CLASS="VARNAME"
+>CCFLAGS</TT
+> for optimization
+   and the other which sets <TT
+CLASS="VARNAME"
+>CCFLAGS</TT
+> for debugging:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment(CC = 'gcc')
+      opt = env.Copy(CCFLAGS = '-O2')
+      dbg = env.Copy(CCFLAGS = '-g')
+
+      env.Program('foo', 'foo.c')
+
+      o = opt.Object('foo-opt', 'foo.c')
+      opt.Program(o)
+
+      d = dbg.Object('foo-dbg', 'foo.c')
+      dbg.Program(d)
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   Then our output would look like:
+
+   </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gcc&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gcc&nbsp;-o&nbsp;foo&nbsp;foo.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gcc&nbsp;-g&nbsp;-c&nbsp;-o&nbsp;foo-dbg.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gcc&nbsp;-o&nbsp;foo-dbg&nbsp;foo-dbg.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gcc&nbsp;-O2&nbsp;-c&nbsp;-o&nbsp;foo-opt.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gcc&nbsp;-o&nbsp;foo-opt&nbsp;foo-opt.o<br>
+&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c587.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x660.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Construction Environments</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c587.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Fetching Values From a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

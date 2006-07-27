@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Not Writing a Builder:  The Command Builder</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.95"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Builders That Modify the Target or Source Lists Using an Emitter"
+HREF="x1733.html"><LINK
+REL="NEXT"
+TITLE="Writing Scanners"
+HREF="c1764.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.95</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x1733.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c1764.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-BUILDERS-COMMANDS"
+></A
+>Not Writing a Builder:  The <TT
+CLASS="FUNCTION"
+>Command</TT
+> Builder</H1
+><P
+>&#13;  Creating a <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> and attaching it to a <TT
+CLASS="LITERAL"
+>construction environment</TT
+>
+  allows for a lot of flexibility when you
+  want to re-use actions
+  to build multiple files of the same type.
+  This can, however, be cumbersome
+  if you only need to execute one specific command
+  to build a single file (or group of files).
+  For these situations, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports a
+  <TT
+CLASS="FUNCTION"
+>Command</TT
+> <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> that arranges
+  for a specific action to be executed
+  to build a specific file or files.
+  This looks a lot like the other builders
+  (like <TT
+CLASS="FUNCTION"
+>Program</TT
+>, <TT
+CLASS="FUNCTION"
+>Object</TT
+>, etc.),
+  but takes as an additional argument
+  the command to be executed to build the file:
+
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>     env = Environment()
+     env.Command('foo.out', 'foo.in', "sed 's/x/y/' &#60; $SOURCE &#62; $TARGET")
+  </PRE
+></TD
+></TR
+></TABLE
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;sed&nbsp;'s/x/y/'&nbsp;&#60;&nbsp;foo.in&nbsp;&#62;&nbsp;foo.out<br>
+&nbsp;&nbsp;</P
+><P
+>&#13;  This is often more convenient than
+  creating a <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object
+  and adding it to the <TT
+CLASS="VARNAME"
+>BUILDERS</TT
+> variable
+  of a <TT
+CLASS="LITERAL"
+>construction environment</TT
+>
+
+  </P
+><P
+>&#13;  Note that the action you 
+
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>     env = Environment()
+     def build(target, source, env):
+         # Whatever it takes to build
+         return None
+     env.Command('foo.out', 'foo.in', build)
+  </PRE
+></TD
+></TR
+></TABLE
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;build("foo.out",&nbsp;"foo.in")<br>
+&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x1733.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c1764.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Builders That Modify the Target or Source Lists Using an <TT
+CLASS="LITERAL"
+>Emitter</TT
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Writing Scanners</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

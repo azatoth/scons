@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Variant Builds</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.92"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Why You'd Want to Call BuildDir Instead of SConscript"
+HREF="x1040.html"><LINK
+REL="NEXT"
+TITLE="Built-In Builders"
+HREF="c1060.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x1040.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c1060.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-VARIANTS"
+></A
+>Variant Builds</H1
+><P
+>&#13;  The <TT
+CLASS="FUNCTION"
+>BuildDir</TT
+> function now gives us everything
+  we need to show how easy it is to create
+  variant builds using <TT
+CLASS="APPLICATION"
+>SCons</TT
+>.
+  Suppose, for example, that we want to
+  build a program for both Windows and Linux platforms,
+  but that we want to build it in a shared directory
+  with separate side-by-side build directories
+  for the Windows and Linux versions of the program.
+
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    platform = ARGUMENT.get('OS', Platform())
+
+    include = "#export/$PLATFORM/include"
+    lib = "#export/$PLATFORM/lib"
+    bin = "#export/$PLATFORM/bin"
+
+    env = Environment(PLATFORM = platform,
+                      CPPPATH = [include],
+                      LIB = lib,
+                      LIBS = '-lworld')
+
+    Export('env')
+
+    SConscript('src/SConscript', build_dir='build/$PLATFORM')
+
+    #
+    #BuildDir("#build/$PLATFORM", 'src')
+    #SConscript("build/$PLATFORM/hello/SConscript")
+    #SConscript("build/$PLATFORM/world/SConscript")
+  </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;  This SConstruct file,
+  when run on a Linux system, yields:
+
+  </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;$&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons OS=linux</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;build/linux/world/world.h&nbsp;as&nbsp;export/linux/include/world.h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-Iexport/linux/include&nbsp;-c&nbsp;build/linux/hello/hello.c&nbsp;-o&nbsp;build/linux/hello/hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-Iexport/linux/include&nbsp;-c&nbsp;build/linux/world/world.c&nbsp;-o&nbsp;build/linux/world/world.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ar&nbsp;r&nbsp;build/linux/world/libworld.a&nbsp;build/linux/world/world.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ar:&nbsp;creating&nbsp;build/linux/world/libworld.a<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ranlib&nbsp;build/linux/world/libworld.a<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;build/linux/world/libworld.a&nbsp;as&nbsp;export/linux/lib/libworld.a<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;build/linux/hello/hello&nbsp;build/linux/hello/hello.o&nbsp;-Lexport/linux/lib&nbsp;-lworld<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;build/linux/hello/hello&nbsp;as&nbsp;export/linux/bin/hello<br>
+&nbsp;&nbsp;</P
+><P
+>&#13;  The same SConstruct file on Windows would build:
+
+  </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;C:\test\&#62;<TT
+CLASS="USERINPUT"
+><B
+>scons OS=linux</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;build\linux\world\world.h&nbsp;as&nbsp;export\linux\include\world.h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cl&nbsp;/Iexport\linux\include&nbsp;/Fobuild\linux\hello\hello.obj&nbsp;build\linux\hello\hello.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cl&nbsp;/Iexport\linux\include&nbsp;/Fobuild\linux\world\world.obj&nbsp;build\linux\world\world.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;XXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ar&nbsp;r&nbsp;build\linux\world\world.lib&nbsp;build\linux\world\world.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;build\linux\world\world.lib&nbsp;as&nbsp;export\linux\lib\libworld.a<br>
+&nbsp;&nbsp;&nbsp;&nbsp;link&nbsp;/Fobuild\linux\hello\hello.exe&nbsp;build\linux\hello\hello.obj&nbsp;-Lexport\linux\lib&nbsp;world.lib<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;build\linux\hello\hello.exe&nbsp;as&nbsp;export\linux\bin\hello.exe<br>
+&nbsp;&nbsp;</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    env = Environment(OS = )
+    for os in ['newell', 'post']:
+        SConscript('src/SConscript', build_dir='build/' + os)
+  </PRE
+></TD
+></TR
+></TABLE
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+><br>
+&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x1040.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c1060.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Why You'd Want to Call <TT
+CLASS="FUNCTION"
+>BuildDir</TT
+> Instead of <TT
+CLASS="FILENAME"
+>SConscript</TT
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Built-In Builders</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

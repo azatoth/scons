@@ -1,0 +1,699 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Controlling the Default Targets</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.1"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Controlling a Build From the Command Line"
+HREF="c1220.html"><LINK
+REL="PREVIOUS"
+TITLE="Getting at Command-Line Targets"
+HREF="x1250.html"><LINK
+REL="NEXT"
+TITLE="Getting at the List of Build Targets, Regardless of Origin"
+HREF="x1347.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x1250.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Controlling a Build From the Command Line</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1347.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1266"
+></A
+>Controlling the Default Targets</H1
+><P
+>&#13;    One of the most basic things you can control
+    is which targets <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will build by default--that is,
+    when there are no targets specified on the command line.
+    As mentioned previously,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will normally build every target
+    in or below the current directory
+    by default--that is, when you don't
+    explicitly specify one or more targets
+    on the command line.
+    Sometimes, however, you may want
+    to specify explicitly that only
+    certain programs, or programs in certain directories,
+    should be built by default.
+    You do this with the <TT
+CLASS="FUNCTION"
+>Default</TT
+> function:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       hello = env.Program('hello.c')
+       env.Program('goodbye.c')
+       Default(hello)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    This <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file knows how to build two programs,
+    <TT
+CLASS="APPLICATION"
+>hello</TT
+> and <TT
+CLASS="APPLICATION"
+>goodbye</TT
+>,
+    but only builds the
+    <TT
+CLASS="APPLICATION"
+>hello</TT
+> program by default:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+       cc -c -o hello.o hello.c
+       cc -o hello hello.o
+       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+       scons: `hello' is up to date.
+       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q goodbye</B
+></TT
+>
+       cc -c -o goodbye.o goodbye.c
+       cc -o goodbye goodbye.o
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Note that, even when you use the <TT
+CLASS="FUNCTION"
+>Default</TT
+>
+    function in your <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file,
+    you can still explicitly specify the current directory
+    (<TT
+CLASS="LITERAL"
+>.</TT
+>) on the command line
+    to tell <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to build
+    everything in (or below) the current directory:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q .</B
+></TT
+>
+       cc -c -o goodbye.o goodbye.c
+       cc -o goodbye goodbye.o
+       cc -c -o hello.o hello.c
+       cc -o hello hello.o
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    You can also call the <TT
+CLASS="FUNCTION"
+>Default</TT
+>
+    function more than once,
+    in which case each call
+    adds to the list of targets to be built by default:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       prog1 = env.Program('prog1.c')
+       Default(prog1)
+       prog2 = env.Program('prog2.c')
+       prog3 = env.Program('prog3.c')
+       Default(prog3)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Or you can specify more than one target
+    in a single call to the <TT
+CLASS="FUNCTION"
+>Default</TT
+> function:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       prog1 = env.Program('prog1.c')
+       prog2 = env.Program('prog2.c')
+       prog3 = env.Program('prog3.c')
+       Default(prog1, prog3)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Either of these last two examples
+    will build only the
+    <TT
+CLASS="APPLICATION"
+>prog1</TT
+>
+    and
+    <TT
+CLASS="APPLICATION"
+>prog3</TT
+>
+    programs by default:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+       cc -c -o prog1.o prog1.c
+       cc -o prog1 prog1.o
+       cc -c -o prog3.o prog3.c
+       cc -o prog3 prog3.o
+       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q .</B
+></TT
+>
+       cc -c -o prog2.o prog2.c
+       cc -o prog2 prog2.o
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    You can list a directory as
+    an argument to <TT
+CLASS="FUNCTION"
+>Default</TT
+>:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       env.Program(['prog1/main.c', 'prog1/foo.c'])
+       env.Program(['prog2/main.c', 'prog2/bar.c'])
+       Default('prog1')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    In which case only the target(s) in that
+    directory will be built by default:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+       cc -c -o prog1/foo.o prog1/foo.c
+       cc -c -o prog1/main.o prog1/main.c
+       cc -o prog1/main prog1/main.o prog1/foo.o
+       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+       scons: `prog1' is up to date.
+       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q .</B
+></TT
+>
+       cc -c -o prog2/bar.o prog2/bar.c
+       cc -c -o prog2/main.o prog2/main.c
+       cc -o prog2/main prog2/main.o prog2/bar.o
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Lastly, if for some reason you don't want
+    any targets built by default,
+    you can use the Python <TT
+CLASS="LITERAL"
+>None</TT
+>
+    variable:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       prog1 = env.Program('prog1.c')
+       prog2 = env.Program('prog2.c')
+       Default(None)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Which would produce build output like:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+       scons: *** No targets specified and no Default() targets found.  Stop.
+       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q .</B
+></TT
+>
+       cc -c -o prog1.o prog1.c
+       cc -o prog1 prog1.o
+       cc -c -o prog2.o prog2.c
+       cc -o prog2 prog2.o
+    </PRE
+></TD
+></TR
+></TABLE
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN1316"
+></A
+>Getting at the List of Default Targets</H2
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports a <TT
+CLASS="VARNAME"
+>DEFAULT_TARGETS</TT
+> variable
+      that lets you get at the current list of default targets.
+      The <TT
+CLASS="VARNAME"
+>DEFAULT_TARGETS</TT
+> variable has
+      two important differences from the <TT
+CLASS="VARNAME"
+>COMMAND_LINE_TARGETS</TT
+> variable.
+      First, the <TT
+CLASS="VARNAME"
+>DEFAULT_TARGETS</TT
+> variable is a list of
+      internal <TT
+CLASS="APPLICATION"
+>SCons</TT
+> nodes,
+      so you need to convert the list elements to strings
+      if you want to print them or look for a specific target name.
+      Fortunately, you can do this easily
+      by using the Python <TT
+CLASS="FUNCTION"
+>map</TT
+> function
+      to run the list through <TT
+CLASS="FUNCTION"
+>str</TT
+>:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>         prog1 = Program('prog1.c')
+         Default(prog1)
+         print "DEFAULT_TARGETS is", map(str, DEFAULT_TARGETS)
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      (Keep in mind that all of the manipulation of the
+      <TT
+CLASS="VARNAME"
+>DEFAULT_TARGETS</TT
+> list takes place during the
+      first phase when <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is reading up the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> files,
+      which is obvious if 
+      we leave off the <TT
+CLASS="LITERAL"
+>-Q</TT
+> flag when we run <TT
+CLASS="APPLICATION"
+>SCons</TT
+>:)
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>         % <TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+>
+         scons: Reading SConscript files ...
+         DEFAULT_TARGETS is ['prog1']
+         scons: done reading SConscript files.
+         scons: Building targets ...
+         cc -c -o prog1.o prog1.c
+         cc -o prog1 prog1.o
+         scons: done building targets.
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      Second,
+      the contents of the <TT
+CLASS="VARNAME"
+>DEFAULT_TARGETS</TT
+> list change
+      in response to calls to the <TT
+CLASS="FUNCTION"
+>Default</TT
+>: function,
+      as you can see from the following <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>         prog1 = Program('prog1.c')
+         Default(prog1)
+         print "DEFAULT_TARGETS is now", map(str, DEFAULT_TARGETS)
+         prog2 = Program('prog2.c')
+         Default(prog2)
+         print "DEFAULT_TARGETS is now", map(str, DEFAULT_TARGETS)
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      Which yields the output:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>         % <TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+>
+         scons: Reading SConscript files ...
+         DEFAULT_TARGETS is now ['prog1']
+         DEFAULT_TARGETS is now ['prog1', 'prog2']
+         scons: done reading SConscript files.
+         scons: Building targets ...
+         cc -c -o prog1.o prog1.c
+         cc -o prog1 prog1.o
+         cc -c -o prog2.o prog2.c
+         cc -o prog2 prog2.o
+         scons: done building targets.
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      In practice, this simply means that you
+      need to pay attention to the order in
+      which you call the <TT
+CLASS="FUNCTION"
+>Default</TT
+> function
+      and refer to the <TT
+CLASS="VARNAME"
+>DEFAULT_TARGETS</TT
+> list,
+      to make sure that you don't examine the
+      list before you've added the default targets
+      you expect to find in it.
+
+      </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x1250.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1347.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Getting at Command-Line Targets</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c1220.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Getting at the List of Build Targets, Regardless of Origin</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,309 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Modifying a Construction Environment</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.93"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Construction Environments"
+HREF="c541.html"><LINK
+REL="PREVIOUS"
+TITLE="Fetching Values From a Construction Environment"
+HREF="x623.html"><LINK
+REL="NEXT"
+TITLE="Default Targets"
+HREF="c675.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.93</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x623.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Construction Environments</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c675.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN644"
+></A
+>Modifying a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></H1
+><P
+>&#13;   <TT
+CLASS="APPLICATION"
+>SCons</TT
+> provides various methods that
+   support modifying existing values in a <TT
+CLASS="LITERAL"
+>construction environment</TT
+>.
+
+   </P
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN650"
+></A
+>Replacing Values in a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></H2
+><P
+>&#13;     You can replace existing construction variable values
+     using the <TT
+CLASS="FUNCTION"
+>Replace</TT
+> method:
+
+     </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>        env = Environment(CCFLAGS = '-DDEFINE1')
+        env.Program('foo.c')
+        env.Replace(CCFLAGS = '-DDEFINE2')
+        env.Program('bar.c')
+     </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;     The replaced value completely overwrites
+
+     </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DDEFINE2&nbsp;-c&nbsp;-o&nbsp;bar.o&nbsp;bar.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;bar&nbsp;bar.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DDEFINE1&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;foo&nbsp;foo.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN659"
+></A
+>Appending to the End of Values in a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></H2
+><P
+>&#13;     You can append a value to
+     an existing construction variable
+     using the <TT
+CLASS="FUNCTION"
+>Append</TT
+> method:
+
+     </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>        env = Environment(CCFLAGS = '-DMY_VALUE')
+        env.Append(CCFLAGS = ' -DLAST')
+        env.Program('foo.c')
+     </PRE
+></TD
+></TR
+></TABLE
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DMY_VALUE&nbsp;-DLAST&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;foo&nbsp;foo.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN667"
+></A
+>Appending to the Beginning of Values in a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></H2
+><P
+>&#13;     You can append a value to the beginning
+     an existing construction variable
+     using the <TT
+CLASS="FUNCTION"
+>Prepend</TT
+> method:
+
+     </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>        env = Environment(CCFLAGS = '-DMY_VALUE')
+        env.Prepend(CCFLAGS = '-DFIRST ')
+        env.Program('foo.c')
+     </PRE
+></TD
+></TR
+></TABLE
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DFIRST&nbsp;-DMY_VALUE&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;foo&nbsp;foo.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x623.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c675.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Fetching Values From a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c541.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Default Targets</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

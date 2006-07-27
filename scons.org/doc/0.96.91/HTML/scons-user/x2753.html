@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Keeping Build Output Consistent</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.91"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Caching Built Files"
+HREF="c2735.html"><LINK
+REL="PREVIOUS"
+TITLE="Caching Built Files"
+HREF="c2735.html"><LINK
+REL="NEXT"
+TITLE="Not Retrieving Files From a Shared Cache"
+HREF="x2766.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.91</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c2735.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Caching Built Files</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x2766.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN2753"
+>Keeping Build Output Consistent</A
+></H1
+><P
+>&#13;    One potential drawback to using a shared cache
+    is that your build output can be inconsistent
+    from invocation to invocation,
+    because any given file may be rebuilt one time
+    and retrieved from the shared cache the next time.
+    This can make analyzing build output more difficult,
+    especially for automated scripts that
+    expect consistent output each time.
+
+    </P
+><P
+>&#13;    If, however, you use the <TT
+CLASS="LITERAL"
+>--cache-show</TT
+> option,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will print the command line that it
+    <I
+CLASS="EMPHASIS"
+>would</I
+> have executed
+    to build the file,
+    even when it is retrieving the file from the shared cache.
+    This makes the build output consistent
+    every time the build is run:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <KBD
+CLASS="USERINPUT"
+>scons -Q</KBD
+>
+      cc -c -o hello.o hello.c
+      cc -o hello hello.o
+      % <KBD
+CLASS="USERINPUT"
+>scons -Q -c</KBD
+>
+      Removed hello.o
+      Removed hello
+      % <KBD
+CLASS="USERINPUT"
+>scons -Q --cache-show</KBD
+>
+      cc -c -o hello.o hello.c
+      cc -o hello hello.o
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    The trade-off, of course, is that you no longer
+    know whether or not <TT
+CLASS="APPLICATION"
+>SCons</TT
+>
+    has retrieved a derived file from cache
+    or has rebuilt it locally.
+
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c2735.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x2766.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Caching Built Files</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c2735.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Not Retrieving Files From a Shared Cache</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

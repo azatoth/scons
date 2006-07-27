@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Making Lists of Files Easier to Read</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Less Simple Things to Do With Builds"
+HREF="c414.html"><LINK
+REL="PREVIOUS"
+TITLE="Specifying Single Files Vs. Lists of Files"
+HREF="x464.html"><LINK
+REL="NEXT"
+TITLE="Keyword Arguments"
+HREF="x508.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x464.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Less Simple Things to Do With Builds</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x508.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN482"
+></A
+>Making Lists of Files Easier to Read</H1
+><P
+>&#13;    One drawback to the use of a Python list
+    for source files is that 
+    each file name must be enclosed in quotes
+    (either single quotes or double quotes).
+    This can get cumbersome and difficult to read
+    when the list of file names is long.
+    Fortunately, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> and Python provide a number of ways
+    to make sure that
+    the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file stays easy to read.
+
+    </P
+><P
+>&#13;    To make long lists of file names
+    easier to deal with, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> provides a
+    <TT
+CLASS="FUNCTION"
+>Split</TT
+> function
+    that takes a quoted list of file names,
+    with the names separated by spaces or other white-space characters,
+    and turns it into a list of separate file names.
+    Using the <TT
+CLASS="FUNCTION"
+>Split</TT
+> function turns the
+    previous example into:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       Program('program', Split('main.c file1.c file2.c'))
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    (If you're already familiar with Python,
+    you'll have realized that this is similar to the
+    <TT
+CLASS="FUNCTION"
+>split()</TT
+> method
+    in the Python standard <TT
+CLASS="FUNCTION"
+>string</TT
+> module.
+    Unlike the <TT
+CLASS="FUNCTION"
+>string.split()</TT
+> method,
+    however, the <TT
+CLASS="FUNCTION"
+>Split</TT
+> function
+    does not require a string as input
+    and will wrap up a single non-string object in a list,
+    or return its argument untouched if it's already a list.
+    This comes in handy as a way to make sure
+    arbitrary values can be passed to <TT
+CLASS="APPLICATION"
+>SCons</TT
+> functions
+    without having to check the type of the variable by hand.)
+
+    </P
+><P
+>&#13;    Putting the call to the <TT
+CLASS="FUNCTION"
+>Split</TT
+> function
+    inside the <TT
+CLASS="FUNCTION"
+>Program</TT
+> call
+    can also be a little unwieldy.
+    A more readable alternative is to
+    assign the output from the <TT
+CLASS="FUNCTION"
+>Split</TT
+> call
+    to a variable name,
+    and then use the variable when calling the
+    <TT
+CLASS="FUNCTION"
+>Program</TT
+> function:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       list = Split('main.c file1.c file2.c')
+       Program('program', list)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Lastly, the <TT
+CLASS="FUNCTION"
+>Split</TT
+> function
+    doesn't care how much white space separates
+    the file names in the quoted string.
+    This allows you to create lists of file
+    names that span multiple lines,
+    which often makes for easier editing:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       list = Split("""main.c
+                       file1.c
+                       file2.c""")
+       Program('program', list)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    (Note in this example that we used
+    the Python "triple-quote" syntax,
+    which allows a string to contain
+    multiple lines.
+    The three quotes can be either
+    single or double quotes.)
+
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x464.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x508.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Specifying Single Files Vs. Lists of Files</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c414.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Keyword Arguments</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

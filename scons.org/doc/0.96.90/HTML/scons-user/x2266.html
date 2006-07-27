@@ -1,0 +1,450 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Attaching a Builder to a Construction Environment</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.90"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Writing Your Own Builders"
+HREF="c2246.html"><LINK
+REL="PREVIOUS"
+TITLE="Writing Your Own Builders"
+HREF="c2246.html"><LINK
+REL="NEXT"
+TITLE="Letting SCons Handle The File Suffixes"
+HREF="x2322.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.90</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c2246.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Writing Your Own Builders</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x2322.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN2266"
+></A
+>Attaching a Builder to a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></H1
+><P
+>&#13;    A <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> object isn't useful
+    until it's attached to a <TT
+CLASS="LITERAL"
+>construction environment</TT
+>
+    so that we can call it to arrange
+    for files to be built.
+    This is done through the <A
+HREF="a3061.html#CV-BUILDERS"
+><TT
+CLASS="ENVAR"
+>$BUILDERS</TT
+></A
+>
+    <TT
+CLASS="LITERAL"
+>construction variable</TT
+> in an environment.
+    The <TT
+CLASS="ENVAR"
+>$BUILDERS</TT
+> variable is a Python dictionary
+    that maps the names by which you want to call
+    various <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects to the objects themselves.
+    For example, if we want to call the
+    <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> we just defined by the name
+    <TT
+CLASS="FUNCTION"
+>Foo</TT
+>,
+    our <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file might look like:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       bld = Builder(action = 'foobuild &#60; $SOURCE &#62; $TARGET')
+       env = Environment(BUILDERS = {'Foo' : bld})
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    With the <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> so attached to our <TT
+CLASS="LITERAL"
+>construction environment</TT
+>
+    we can now actually call it like so:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env.Foo('file.foo', 'file.input')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Then when we run <TT
+CLASS="APPLICATION"
+>SCons</TT
+> it looks like:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+      foobuild &#60; file.input &#62; file.foo
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Note, however, that the default <TT
+CLASS="ENVAR"
+>$BUILDERS</TT
+>
+    variable in a <TT
+CLASS="LITERAL"
+>construction environment</TT
+>
+    comes with a default set of <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects
+    already defined:
+    <A
+HREF="a5264.html#B-PROGRAM"
+><TT
+CLASS="FUNCTION"
+>Program</TT
+></A
+>, <A
+HREF="a5264.html#B-LIBRARY"
+><TT
+CLASS="FUNCTION"
+>Library</TT
+></A
+>, etc.
+    And when we explicitly set the <TT
+CLASS="ENVAR"
+>$BUILDERS</TT
+> variable
+    when we create the <TT
+CLASS="LITERAL"
+>construction environment</TT
+>,
+    the default <TT
+CLASS="CLASSNAME"
+>Builder</TT
+>s are no longer part of
+    the environment:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       bld = Builder(action = 'foobuild &#60; $SOURCE &#62; $TARGET')
+       env = Environment(BUILDERS = {'Foo' : bld})
+       env.Foo('file.foo', 'file.input')
+       env.Program('hello.c')
+    </PRE
+></TD
+></TR
+></TABLE
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+      AttributeError: 'SConsEnvironment' object has no attribute 'Program':
+        File "SConstruct", line 4:
+          env.Program('hello.c')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    To be able use both our own defined <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects
+    and the default <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects in the same <TT
+CLASS="LITERAL"
+>construction environment</TT
+>,
+    you can either add to the <TT
+CLASS="ENVAR"
+>$BUILDERS</TT
+> variable
+    using the <TT
+CLASS="FUNCTION"
+>Append</TT
+> function:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       bld = Builder(action = 'foobuild &#60; $SOURCE &#62; $TARGET')
+       env.Append(BUILDERS = {'Foo' : bld})
+       env.Foo('file.foo', 'file.input')
+       env.Program('hello.c')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Or you can explicitly set the appropriately-named
+    key in the <TT
+CLASS="ENVAR"
+>$BUILDERS</TT
+> dictionary:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       bld = Builder(action = 'foobuild &#60; $SOURCE &#62; $TARGET')
+       env['BUILDERS']['Foo'] = bld
+       env.Foo('file.foo', 'file.input')
+       env.Program('hello.c')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Either way, the same <TT
+CLASS="LITERAL"
+>construction environment</TT
+>
+    can then use both the newly-defined
+    <TT
+CLASS="FUNCTION"
+>Foo</TT
+> <TT
+CLASS="CLASSNAME"
+>Builder</TT
+>
+    and the default <A
+HREF="a5264.html#B-PROGRAM"
+><TT
+CLASS="FUNCTION"
+>Program</TT
+></A
+> <TT
+CLASS="CLASSNAME"
+>Builder</TT
+>:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+      foobuild &#60; file.input &#62; file.foo
+      cc -c -o hello.o hello.c
+      cc -o hello hello.o
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c2246.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x2322.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Writing Your Own Builders</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c2246.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Letting <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Handle The File Suffixes</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

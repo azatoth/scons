@@ -1,0 +1,349 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Node Objects</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.1"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Finding Libraries:  the LIBPATH Construction Variable"
+HREF="x622.html"><LINK
+REL="NEXT"
+TITLE="Explicitly Creating File and Directory Nodes"
+HREF="x681.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x622.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x681.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-NODES"
+></A
+>Node Objects</H1
+><P
+>&#13;  Internally, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> represents all of the files
+  and directories it knows about as <TT
+CLASS="LITERAL"
+>Nodes</TT
+>.
+  These internal objects
+  (not object <I
+CLASS="EMPHASIS"
+>files</I
+>)
+  can be used in a variety of ways
+  to make your <TT
+CLASS="FILENAME"
+>SConscript</TT
+>
+  files portable and easy to read.
+
+  </P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN652"
+></A
+>Builder Methods Return Lists of Target Nodes</H1
+><P
+>&#13;    All builder methods return a list of
+    <TT
+CLASS="CLASSNAME"
+>Node</TT
+> objects that identify the
+    target file or files that will be built.
+    These returned <TT
+CLASS="LITERAL"
+>Nodes</TT
+> can be passed
+    as source files to other builder methods,
+
+    </P
+><P
+>&#13;    For example, suppose that we want to build
+    the two object files that make up a program with different options.
+    This would mean calling the <TT
+CLASS="FUNCTION"
+>Object</TT
+>
+    builder once for each object file,
+    specifying the desired options:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    Object('hello.c', CCFLAGS='-DHELLO')
+    Object('goodbye.c', CCFLAGS='-DGOODBYE')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    One way to combine these object files
+    into the resulting program
+    would be to call the <TT
+CLASS="FUNCTION"
+>Program</TT
+>
+    builder with the names of the object files
+    listed as sources:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    Object('hello.c', CCFLAGS='-DHELLO')
+    Object('goodbye.c', CCFLAGS='-DGOODBYE')
+    Program(['hello.o', 'goodbye.o'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    The problem with listing the names as strings
+    is that our <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file is no longer portable
+    across operating systems.
+    It won't, for example, work on Windows
+    because the object files there would be
+    named <TT
+CLASS="FILENAME"
+>hello.obj</TT
+> and <TT
+CLASS="FILENAME"
+>goodbye.obj</TT
+>,
+    not <TT
+CLASS="FILENAME"
+>hello.o</TT
+> and <TT
+CLASS="FILENAME"
+>goodbye.o</TT
+>.
+
+    </P
+><P
+>&#13;    A better solution is to assign the lists of targets
+    returned by the calls to the <TT
+CLASS="FUNCTION"
+>Object</TT
+> builder to variables,
+    which we can then concatenate in our
+    call to the <TT
+CLASS="FUNCTION"
+>Program</TT
+> builder:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      hello_list = Object('hello.c', CCFLAGS='-DHELLO')
+      goodbye_list = Object('goodbye.c', CCFLAGS='-DGOODBYE')
+      Program(hello_list + goodbye_list)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    This makes our <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file portable again,
+    the build output on Linux looking like:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>       % <TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+       cc -DGOODBYE -c -o goodbye.o goodbye.c
+       cc -DHELLO -c -o hello.o hello.c
+       cc -o hello hello.o goodbye.o
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    And on Windows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>       C:\&#62;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+>
+       cl -DGOODBYE /c goodbye.c /Fogoodbye.obj
+       cl -DHELLO /c hello.c /Fohello.obj
+       link /nologo /OUT:hello.exe hello.obj goodbye.obj
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    We'll see examples of using the list of nodes
+    returned by builder methods throughout
+    the rest of this guide.
+
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x622.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x681.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Finding Libraries:  the <TT
+CLASS="VARNAME"
+>LIBPATH</TT
+> Construction Variable</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Explicitly Creating File and Directory Nodes</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

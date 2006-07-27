@@ -1,0 +1,340 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Installing Files in Other Directories</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.94.1"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Providing Build Help"
+HREF="c1126.html"><LINK
+REL="NEXT"
+TITLE="Installing a File Under a Different Name"
+HREF="x1178.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.94.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c1126.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1178.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-INSTALL"
+></A
+>Installing Files in Other Directories</H1
+><P
+>&#13;  Once a program is built,
+  it is often appropriate to install it in another
+  directory for public use.
+  You use the <TT
+CLASS="FUNCTION"
+>Install</TT
+> method 
+  to arrange for a program, or any other file,
+  to be copied into a destination directory:
+
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>     env = Environment()
+     hello = env.Program('hello.c')
+     env.Install('/usr/bin', hello)
+  </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;  Note, however, that installing a file is
+  still considered a type of file "build."
+  This is important when you remember that
+  the default behavior of <TT
+CLASS="APPLICATION"
+>SCons</TT
+> is
+  to build files in or below the current directory.
+  If, as in the example above,
+  you are installing files in a directory
+  outside of the top-level <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file's directory tree,
+  you must specify that directory
+  (or a higher directory, such as <TT
+CLASS="LITERAL"
+>/</TT
+>)
+  for it to install anything there:
+
+  </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;hello.o&nbsp;hello.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;hello&nbsp;hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q /usr/bin</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;file:&nbsp;"hello"&nbsp;as&nbsp;"/usr/bin/hello"<br>
+&nbsp;&nbsp;</P
+><P
+>&#13;  It can, however, be cumbersome to remember
+  (and type) the specific destination directory
+  in which the program (or any other file)
+  should be installed.
+  This is an area where the <TT
+CLASS="FUNCTION"
+>Alias</TT
+>
+  function comes in handy,
+  allowing you, for example,
+  to create a pseudo-target named <TT
+CLASS="LITERAL"
+>install</TT
+>
+  that can expand to the specified destination directory:
+
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>     env = Environment()
+     hello = env.Program('hello.c')
+     env.Install('/usr/bin', hello)
+     env.Alias('install', '/usr/bin')
+  </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;  This then yields the more natural
+  ability to install the program
+  in its destination as follows:
+
+  </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;hello.o&nbsp;hello.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;hello&nbsp;hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q install</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;file:&nbsp;"hello"&nbsp;as&nbsp;"/usr/bin/hello"<br>
+&nbsp;&nbsp;</P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1168"
+></A
+>Installing Multiple Files in a Directory</H1
+><P
+>&#13;    You can install multiple files into a directory
+    simply by calling the <TT
+CLASS="FUNCTION"
+>Install</TT
+> function multiple times:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       hello = env.Program('hello.c')
+       goodbye = env.Program('goodbye.c')
+       env.Install('/usr/bin', hello)
+       env.Install('/usr/bin', goodbye)
+       env.Alias('install', '/usr/bin')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Or, more succinctly, listing the multiple input
+    files in a list
+    (just like you can do with any other builder):
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       env = Environment()
+       hello = env.Program('hello.c')
+       goodbye = env.Program('goodbye.c')
+       env.Install('/usr/bin', [hello, goodbye])
+       env.Alias('install', '/usr/bin')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Either of these two examples yields:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q install</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;goodbye.o&nbsp;goodbye.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;goodbye&nbsp;goodbye.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;file:&nbsp;"goodbye"&nbsp;as&nbsp;"/usr/bin/goodbye"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;hello.o&nbsp;hello.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;hello&nbsp;hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Install&nbsp;file:&nbsp;"hello"&nbsp;as&nbsp;"/usr/bin/hello"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c1126.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1178.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Providing Build Help</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Installing a File Under a Different Name</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
