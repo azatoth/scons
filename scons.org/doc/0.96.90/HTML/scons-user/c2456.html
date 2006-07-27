@@ -1,0 +1,401 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Writing Scanners</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.90"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Not Writing a Builder:  the Command Builder"
+HREF="c2431.html"><LINK
+REL="NEXT"
+TITLE="Building From Code Repositories"
+HREF="c2511.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.90</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c2431.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c2511.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-SCANNERS"
+></A
+>Writing Scanners</H1
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> has built-in scanners that know how to look in
+    C, Fortran and IDL source files for information about
+    other files that targets built from those files depend on--for example,
+    in the case of files that use the C preprocessor,
+    the <TT
+CLASS="FILENAME"
+>.h</TT
+> files that are specified
+    using <TT
+CLASS="LITERAL"
+>#include</TT
+> lines in the source.
+    You can use the same mechanisms that <TT
+CLASS="APPLICATION"
+>SCons</TT
+> uses to create
+    its built-in scanners to write scanners of your own for file types
+    that <TT
+CLASS="APPLICATION"
+>SCons</TT
+> does not know how to scan "out of the box."
+
+  </P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN2464"
+></A
+>A Simple Scanner Example</H1
+><P
+>&#13;      Suppose, for example, that we want to create a simple scanner
+      for <TT
+CLASS="FILENAME"
+>.foo</TT
+> files.
+      A <TT
+CLASS="FILENAME"
+>.foo</TT
+> file contains some text that
+      will be processed,
+      and can include other files on lines that begin
+      with <TT
+CLASS="LITERAL"
+>include</TT
+>
+      followed by a file name:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      include filename.foo
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      Scanning a file will be handled by a Python function
+      that you must supply.
+      Here is a function that will use the Python
+      <TT
+CLASS="FILENAME"
+>re</TT
+> module
+      to scan for the <TT
+CLASS="LITERAL"
+>include</TT
+> lines in our example:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      import re
+      
+      include_re = re.compile(r'^include\\s+(\\S+)$', re.M)
+      
+      def kfile_scan(node, env, path, arg):
+          contents = node.get_contents()
+          return include_re.findall(contents)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      The scanner function must
+      accept the four specified arguments
+      and return a list of implicit dependencies.
+      Presumably, these would be dependencies found
+      from examining the contents of the file,
+      although the function can perform any
+      manipulation at all to generate the list of
+      dependencies.
+
+    </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>node</DT
+><DD
+><P
+>&#13;      An <TT
+CLASS="APPLICATION"
+>SCons</TT
+> node object representing the file being scanned.
+      The path name to the file can be
+      used by converting the node to a string
+      using the <TT
+CLASS="LITERAL"
+>str()</TT
+> function,
+      or an internal <TT
+CLASS="APPLICATION"
+>SCons</TT
+> <TT
+CLASS="LITERAL"
+>get_contents()</TT
+>
+      object method can be used to fetch the contents.
+
+      </P
+></DD
+><DT
+>env</DT
+><DD
+><P
+>&#13;      The construction environment in effect for this scan.
+      The scanner function may choose to use construction
+      variables from this environment to affect its behavior.
+
+      </P
+></DD
+><DT
+>path</DT
+><DD
+><P
+>&#13;      A list of directories that form the search path for included files
+      for this scanner.
+      This is how <TT
+CLASS="APPLICATION"
+>SCons</TT
+> handles the <A
+HREF="a3061.html#CV-CPPPATH"
+><TT
+CLASS="ENVAR"
+>$CPPPATH</TT
+></A
+> and <A
+HREF="a3061.html#CV-LIBPATH"
+><TT
+CLASS="ENVAR"
+>$LIBPATH</TT
+></A
+>
+      variables.
+
+      </P
+></DD
+><DT
+>arg</DT
+><DD
+><P
+>&#13;      An optional argument that you can choose to
+      have passed to this scanner function by
+      various scanner instances.
+
+      </P
+></DD
+></DL
+></DIV
+><P
+>&#13;    A Scanner object is created using the <TT
+CLASS="CLASSNAME"
+>Scanner</TT
+> function,
+    which typically takes an <TT
+CLASS="LITERAL"
+>skeys</TT
+> argument
+    to associate the type of file suffix with this scanner.
+    The Scanner object must then be associated with the
+    <A
+HREF="a3061.html#CV-SCANNERS"
+><TT
+CLASS="ENVAR"
+>$SCANNERS</TT
+></A
+> construction variable of a construction environment,
+    typically by using the <TT
+CLASS="FUNCTION"
+>Append</TT
+> method:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       kscan = Scanner(function = kfile_scan,
+                       skeys = ['.k'])
+       env.Append(SCANNERS = kscan)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    When we put it all together, it looks like:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>        import re
+
+        include_re = re.compile(r'^include\\s+(\\S+)$', re.M)
+
+        def kfile_scan(node, env, path):
+            contents = node.get_contents()
+            includes = include_re.findall(contents)
+            return includes
+
+        kscan = Scanner(function = kfile_scan,
+                        skeys = ['.k'])
+
+        env = Environment(ENV = {'PATH' : '/usr/local/bin'})
+        env.Append(SCANNERS = kscan)
+
+        env.Command('foo', 'foo.k', 'kprocess &#60; $SOURCES &#62; $TARGET')
+    </PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c2431.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c2511.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Not Writing a Builder:  the <TT
+CLASS="FUNCTION"
+>Command</TT
+> Builder</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Building From Code Repositories</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

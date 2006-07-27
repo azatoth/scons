@@ -1,0 +1,292 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Built-In Builders</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.92"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Variant Builds"
+HREF="c1045.html"><LINK
+REL="NEXT"
+TITLE="Object-File Builders"
+HREF="x1089.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c1045.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1089.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-BUILDERS-BUILT-IN"
+></A
+>Built-In Builders</H1
+><P
+>&#13;  <TT
+CLASS="APPLICATION"
+>SCons</TT
+> provides the ability to build a lot of different
+  types of files right "out of the box."
+  So far, we've been using <TT
+CLASS="APPLICATION"
+>SCons</TT
+>' ability to build
+  programs, objects and libraries to
+  illustrate much of the underlying functionality of <TT
+CLASS="APPLICATION"
+>SCons</TT
+>
+  This section will describe all of the different
+  types of files that you can build with <TT
+CLASS="APPLICATION"
+>SCons</TT
+>,
+  and the built-in <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> objects used to build them.
+
+  </P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1068"
+></A
+>Programs:  the <TT
+CLASS="FUNCTION"
+>Program</TT
+> Builder</H1
+><P
+>&#13;    As we've seen, the <TT
+CLASS="FUNCTION"
+>Program</TT
+> Builder
+    is used to build an executable program.
+    The <TT
+CLASS="VARNAME"
+>source</TT
+> argument is one or more
+    source-code files or object files,
+    and the <TT
+CLASS="VARNAME"
+>target</TT
+> argument is the
+    name of the executable program name to be created.
+    For example:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment()
+      env.Program('prog', 'file1.o')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Will create the <TT
+CLASS="FILENAME"
+>prog</TT
+>
+    executable on a POSIX system,
+    the <TT
+CLASS="FILENAME"
+>prog.exe</TT
+> executable on a Windows system.
+
+    </P
+><P
+>&#13;    The target file's prefix and suffix may be omitted,
+    and the values from the
+    $PROGPREFIX
+    and
+    $PROGSUFFIX
+    construction variables
+    will be appended appropriately.
+    For example:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment(PROGPREFIX='my', PROGSUFFIX='.xxx')
+      env.Program('prog', ['file1.o', 'file2.o'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Will create a program named
+    <TT
+CLASS="FILENAME"
+>myprog.xxx</TT
+>
+    regardless of the system on which it is run.
+
+    </P
+><P
+>&#13;    If you omit the <TT
+CLASS="VARNAME"
+>target</TT
+>,
+    the base of the first input
+    file name specified
+    because the base of the target
+    program created.
+    For example:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment()
+      env.Program(['hello.c', 'goodbye.c'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Will create the <TT
+CLASS="APPLICATION"
+>hello</TT
+>
+    executable on a POSIX system,
+    the <TT
+CLASS="FILENAME"
+>hello.exe</TT
+> executable on a Windows system.
+
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c1045.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1089.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Variant Builds</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Object-File Builders</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

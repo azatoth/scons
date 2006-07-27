@@ -1,0 +1,311 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Hierarchical Builds</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.94.1"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Preventing Removal of Targets"
+HREF="c1198.html"><LINK
+REL="NEXT"
+TITLE="Path Names Are Relative to the SConscript Directory"
+HREF="x1246.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.94.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c1198.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1246.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-HIERARCHICAL"
+></A
+>Hierarchical Builds</H1
+><P
+>&#13;  The source code for large software projects
+  rarely stays in a single directory,
+  but is nearly always divided into a
+  hierarchy of directories.
+  Organizing a large software build using <TT
+CLASS="APPLICATION"
+>SCons</TT
+>
+  involves creating a hierarchy of build scripts
+  using the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> function.
+
+  </P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1218"
+></A
+><TT
+CLASS="FILENAME"
+>SConscript</TT
+> Files</H1
+><P
+>&#13;    As we've already seen,
+    the build script at the top of the tree is called <TT
+CLASS="FILENAME"
+>SConstruct</TT
+>.
+    The top-level <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file can
+    use the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> function to
+    include other subsidiary scripts in the build.
+    These subsidiary scripts can, in turn,
+    use the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> function
+    to include still other scripts in the build.
+    By convention, these subsidiary scripts are usually
+    named <TT
+CLASS="FILENAME"
+>SConscript</TT
+>.
+    For example, a top-level <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file might
+    arrange for four subsidiary scripts to be included
+    in the build as follows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      SConscript(['drivers/display/SConscript',
+                  'drivers/mouse/SConscript',
+                  'parser/SConscript',
+                  'utilities/SConscript'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    In this case, the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file
+    lists all of the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> files in the build explicitly.
+    (Note, however, that not every directory in the tree
+    necessarily has an <TT
+CLASS="FILENAME"
+>SConscript</TT
+> file.)
+    Alternatively, the <TT
+CLASS="LITERAL"
+>drivers</TT
+>
+    subdirectory might contain an intermediate
+    <TT
+CLASS="FILENAME"
+>SConscript</TT
+> file,
+    in which case the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> call in
+    the top-level <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file
+    would look like:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      SConscript(['drivers/SConscript',
+                  'parser/SConscript',
+                  'utilities/SConscript'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    And the subsidiary <TT
+CLASS="FILENAME"
+>SConscript</TT
+> file in the
+    <TT
+CLASS="LITERAL"
+>drivers</TT
+> subdirectory
+    would look like:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      SConscript(['display/SConscript',
+                  'mouse/SConscript'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Whether you list all of the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> files in the
+    top-level <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file,
+    or place a subsidiary <TT
+CLASS="FILENAME"
+>SConscript</TT
+> file in
+    intervening directories,
+    or use some mix of the two schemes,
+    is up to you and the needs of your software.
+
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c1198.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1246.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Preventing Removal of Targets</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Path Names Are Relative to the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> Directory</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

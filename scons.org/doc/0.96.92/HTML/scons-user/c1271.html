@@ -1,0 +1,277 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Controlling a Build From the Command Line</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.92"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Controlling the External Environment Used to Execute Build Commands"
+HREF="c1221.html"><LINK
+REL="NEXT"
+TITLE="Getting at Command-Line Targets"
+HREF="x1301.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c1221.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1301.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-COMMAND-LINE"
+></A
+>Controlling a Build From the Command Line</H1
+><P
+>&#13;  <TT
+CLASS="APPLICATION"
+>SCons</TT
+> provides a number of ways that
+  allow the writer of the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> files
+  to give users a great deal of control over how to run the builds.
+
+  </P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1276"
+>Not Having to Specify Command-Line Options Each Time:  the <VAR
+CLASS="VARNAME"
+>SCONSFLAGS</VAR
+> Environment Variable</A
+></H1
+><P
+>&#13;    Users may find themselves supplying
+    the same command-line options every time
+    they run <TT
+CLASS="APPLICATION"
+>SCons</TT
+>.
+    For example, a user might find that it saves time
+    to specify a value of <TT
+CLASS="LITERAL"
+>-j 2</TT
+>
+    to run the builds in parallel.
+    To avoid having to type <TT
+CLASS="LITERAL"
+>-j 2</TT
+> by hand
+    every time,
+    you can set the external environment variable
+    <VAR
+CLASS="VARNAME"
+>SCONSFLAGS</VAR
+> to a string containing
+    command-line options that you want <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to use.
+
+    </P
+><P
+>&#13;    If, for example,
+    and you're using a POSIX shell that's
+    compatible with the Bourne shell,
+    and you always want <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to use the
+    <TT
+CLASS="LITERAL"
+>-Q</TT
+> option,
+    you can set the <VAR
+CLASS="VARNAME"
+>SCONSFLAGS</VAR
+>
+    environment as follows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      % <KBD
+CLASS="USERINPUT"
+>scons</KBD
+>
+      scons: Reading SConscript files ...
+      scons: done reading SConscript files.
+      scons: Building targets ...
+          ... [build output] ...
+      scons: done building targets.
+      % <KBD
+CLASS="USERINPUT"
+>export SCONSFLAGS="-Q"</KBD
+>
+      % <KBD
+CLASS="USERINPUT"
+>scons</KBD
+>
+          ... [build output] ...
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Users of <TT
+CLASS="APPLICATION"
+>csh</TT
+>-style shells on POSIX systems
+    can set the <VAR
+CLASS="VARNAME"
+>SCONSFLAGS</VAR
+> environment as follows:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>      $ <KBD
+CLASS="USERINPUT"
+>setenv SCONSFLAGS "-Q"</KBD
+>
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Windows users may typically want to set this
+    <VAR
+CLASS="VARNAME"
+>SCONSFLAGS</VAR
+> in the appropriate tab of the
+    <TT
+CLASS="LITERAL"
+>System Properties</TT
+> window.
+
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c1221.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1301.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Controlling the External Environment Used to Execute Build Commands</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Getting at Command-Line Targets</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

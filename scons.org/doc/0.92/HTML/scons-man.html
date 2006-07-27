@@ -1,0 +1,8128 @@
+Content-type: text/html
+
+<HTML><HEAD><TITLE>Manpage of SCONS</TITLE>
+</HEAD><BODY>
+<H1>SCONS</H1>
+Section: User Commands  (1)<BR>Updated: June 2003<BR><A HREF="#index">Index</A>
+<A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+scons - a software construction tool
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>scons</B>
+
+[
+<I>options</I>...
+
+]
+[
+<I>name</I>=<I>val</I>...
+
+]
+[
+<I>targets</I>...
+
+]
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<P>
+The 
+<B>scons </B>
+
+utility builds software (or other files) by determining which
+component pieces must be rebuilt and executing the necessary commands to
+rebuild them.
+<P>
+By default, 
+<B>scons </B>
+
+searches for a file named 
+<I>SConstruct</I>,
+
+<I>Sconstruct</I>,
+
+or
+<I>sconstruct</I>
+
+(in that order) in the current directory and reads its
+configuration from the first file found.
+An alternate file name may be
+specified via the 
+<B>-f</B>
+
+option.
+<P>
+The
+<I>SConstruct</I>
+
+file can specify subsidiary
+configuration files using the
+<B>SConscript()</B>
+
+function.
+By convention,
+these subsidiary files are named
+<I>SConscript</I>,
+
+although any name may be used.
+(Because of this naming convention,
+the term &quot;SConscript files&quot;
+is sometimes used to refer
+generically to all
+<B>scons</B>
+
+configuration files,
+regardless of actual file name.)
+<P>
+The configuration files
+specify the target files to be built, and
+(optionally) the rules to build those targets.  Reasonable default
+rules exist for building common software components (executable
+programs, object files, libraries), so that for most software
+projects, only the target and input files need be specified.
+<P>
+<B>scons</B>
+
+reads and executes the SConscript files as Python scripts,
+so you may use normal Python scripting capabilities
+(such as flow control, data manipulation, and imported Python libraries)
+to handle complicated build situations.
+<B>scons</B>,
+
+however, reads and executes all of the SConscript files
+<I>before</I>
+
+it begins building any targets.
+To make this obvious,
+<B>scons</B>
+
+prints the following messages about what it is doing:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+$ scons foo.out
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Building targets  ...
+cp foo.in foo.out
+scons: done building targets.
+$
+
+</DL>
+</PRE>
+
+
+<P>
+The status messages
+(everything except the line that reads &quot;cp foo.in foo.out&quot;)
+may be suppressed using the
+<B>-Q</B>
+
+option.
+<P>
+<B>scons</B>
+
+does not automatically propagate
+the external environment used to execute
+<B>scons</B>
+
+to the commands used to build target files.
+This is so that builds will be guaranteed
+repeatable regardless of the environment
+variables set at the time
+<B>scons</B>
+
+is invoked.
+This also means that if the compiler or other commands
+that you want to use to build your target files
+are not in standard system locations,
+<B>scons</B>
+
+will not find them unless
+you explicitly set the PATH
+to include those locations.
+Whenever you create an
+<B>scons</B>
+
+construction environment,
+you can propagate the value of PATH
+from your external environment as follows:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+import os
+env = Environment(ENV = {'PATH' : os.environ['PATH']})
+
+</DL>
+</PRE>
+
+
+<P>
+<B>scons</B>
+
+can scan known input files automatically for dependency
+information (for example, #include statements
+in C or C++ files) and will rebuild dependent files appropriately
+whenever any &quot;included&quot; input file changes. 
+<B>scons</B>
+
+supports the
+ability to define new scanners for unknown input file types.
+<P>
+<B>scons</B>
+
+knows how to fetch files automatically from
+SCCS or RCS subdirectories
+using SCCS, RCS or BitKeeper.
+<P>
+<B>scons</B>
+
+is normally executed in a top-level directory containing a
+<I>SConstruct</I>
+
+file, optionally specifying
+as command-line arguments
+the target file or files to be built.
+<P>
+By default, the command
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons
+
+</DL>
+</PRE>
+
+
+<P>
+will build all target files in or below the current directory.
+Explicit default targets
+(to be built when no targets are specified on the command line)
+may be defined the SConscript file(s)
+using the
+<B>Default()</B>
+
+function, described below.
+<P>
+Even when
+<B>Default()</B>
+
+targets are specified in the SConscript file(s),
+all target files in or below the current directory
+may be built by explicitly specifying
+the current directory (.)
+as a command-line target:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons .
+
+</DL>
+</PRE>
+
+
+<P>
+Building all target files,
+including any files outside of the current directory,
+may be specified by supplying a command-line target
+of the root directory (on POSIX systems):
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons /
+
+</DL>
+</PRE>
+
+
+<P>
+or the path name(s) of the volume(s) in which all the targets
+should be built (on Windows systems):
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons C:\ D:\
+
+</DL>
+</PRE>
+
+
+<P>
+To build only specific targets,
+supply them as command-line arguments:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons foo bar
+
+</DL>
+</PRE>
+
+
+<P>
+in which case only the specified targets will be built
+(along with any derived files on which they depend).
+<P>
+Specifying &quot;cleanup&quot; targets in SConscript files is not
+necessary.  The 
+<B>-c</B>
+
+flag removes all files
+necessary to build the specified target:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons -c .
+
+</DL>
+</PRE>
+
+
+<P>
+to remove all target files, or:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons -c build export
+
+</DL>
+</PRE>
+
+
+<P>
+to remove target files under build and export.
+Additional files or directories to remove can be specified using the
+Clean() function.
+<P>
+A subset of a hierarchical tree may be built by
+remaining at the top-level directory (where the 
+<I>SConstruct</I>
+
+file lives) and specifying the subdirectory as the target to be
+built:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons src/subdir
+
+</DL>
+</PRE>
+
+
+<P>
+or by changing directory and invoking scons with the
+<B>-u</B>
+
+option, which traverses up the directory
+hierarchy until it finds the 
+<I>SConstruct</I>
+
+file, and then builds
+targets relatively to the current subdirectory:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+cd src/subdir
+scons -u .
+
+</DL>
+</PRE>
+
+
+<P>
+<B>scons</B>
+
+supports building multiple targets in parallel via a
+<B>-j</B>
+
+option that takes, as its argument, the number
+of simultaneous tasks that may be spawned:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons -j 4
+
+</DL>
+</PRE>
+
+
+<P>
+builds four targets in parallel, for example.
+<P>
+<B>scons</B>
+
+can maintain a cache of target (derived) files that can
+be shared between multiple builds.  When caching is enabled in a
+SConscript file, any target files built by 
+<B>scons</B>
+
+will be copied
+to the cache.  If an up-to-date target file is found in the cache, it
+will be retrieved from the cache instead of being rebuilt locally.
+Caching behavior may be disabled and controlled in other ways by the
+<B>--cache-force</B>,
+
+<B>--cache-disable</B>,
+
+and
+<B>--cache-show</B>
+
+command-line options.  The
+<B>--random</B>
+
+option is useful to prevent multiple builds
+from trying to update the cache simultaneously.
+<P>
+Values of variables to be passed to the SConscript file(s)
+may be specified on the command line:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons debug=1 .
+
+</DL>
+</PRE>
+
+
+<P>
+These variables are available in SConscript files
+through the ARGUMENTS dictionary,
+and can be used in the SConscript file(s) to modify
+the build in any way:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+if ARGUMENTS.get('debug', 0):
+    env = Environment(CCFLAGS = '-g')
+else:
+    env = Environment()
+
+</DL>
+</PRE>
+
+
+<P>
+<B>scons</B>
+
+requires Python version 1.5.2 or later.
+There should be no other dependencies or requirements to run
+<B>scons.</B>
+
+<P>
+
+
+
+By default,
+<B>scons</B>
+
+knows how to search for available programming tools
+on various systems.
+On WIN32 systems,
+<B>scons</B>
+
+searches in order for the
+Microsoft Visual C++ tools,
+the MinGW tool chain,
+the Intel compiler tools,
+and the PharLap ETS compiler.
+On OS/2 systems,
+<B>scons</B>
+
+searches in order for the 
+OS/2 compiler,
+the GCC tool chain,
+and the Microsoft Visual C++ tools,
+On SGI IRIX, IBM AIX, Hewlett Packard HP-UX, and Sun Solaris systems,
+<B>scons</B>
+
+searches for the native compiler tools
+(MIPSpro, Visual Age, aCC, and Forte tools respectively)
+and the GCC tool chain.
+On all other platforms,
+including POSIX (Linux and UNIX) platforms,
+<B>scons</B>
+
+searches in order
+for the GCC tool chain,
+the Microsoft Visual C++ tools,
+and the Intel compiler tools.
+You may, of course, override these default values
+by appropriate configuration of
+Environment construction variables.
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>OPTIONS</H2>
+
+In general, 
+<B>scons </B>
+
+supports the same command-line options as GNU
+<B>make</B>,
+
+and many of those supported by 
+<B>cons</B>.
+
+<P>
+<DL COMPACT>
+<DT>-b<DD>
+Ignored for compatibility with non-GNU versions of
+<B>make.</B>
+
+<P>
+<DT>-c, --clean, --remove<DD>
+Clean up by removing all target files for which a construction
+command is specified.
+Also remove any files or directories associated to the construction command
+using the Clean() function.
+<P>
+<DT>--cache-disable, --no-cache<DD>
+Disable the derived-file caching specified by
+<B>CacheDir</B>().
+
+<B>scons</B>
+
+will neither retrieve files from the cache
+nor copy files to the cache.
+<P>
+<DT>--cache-force, --cache-populate<DD>
+When using
+<B>CacheDir</B>(),
+
+populate a cache by copying any already-existing, up-to-date
+derived files to the cache,
+in addition to files built by this invocation.
+This is useful to populate a new cache with
+all the current derived files,
+or to add to the cache any derived files
+recently built with caching disabled via the
+<B>--cache-disable</B>
+
+option.
+<P>
+<DT>--cache-show<DD>
+When using
+<B>CacheDir</B>()
+
+and retrieving a derived file from the cache,
+show the command
+that would have been executed to build the file,
+instead of the usual report,
+&quot;Retrieved `file' from cache.&quot;
+This will produce consistent output for build logs,
+regardless of whether a target
+file was rebuilt or retrieved from the cache.
+<P>
+<DT>-C<I> directory</I>,  --directory=<I>directory</I>
+
+<DD>
+Change to the specified 
+<I>directory</I>
+
+before searching for the 
+<I>SConstruct</I>,
+
+<I>Sconstruct</I>,
+
+or
+<I>sconstruct</I>
+
+file, or doing anything
+else.  Multiple 
+<B>-C</B>
+
+options are interpreted
+relative to the previous one, and the right-most
+<B>-C</B>
+
+option wins. (This option is nearly
+equivalent to 
+<B>-f directory/SConstruct</B>,
+
+except that it will search for
+<I>SConstruct</I>,
+
+<I>Sconstruct</I>,
+
+or
+<I>sconstruct</I>
+
+in the specified directory.)
+<P>
+
+
+
+
+
+<P>
+<DT>-D<DD>
+Works exactly the same way as the
+<B>-u</B>
+
+option except for the way default targets are handled.
+When this option is used and no targets are specified on the command line,
+all default targets are built, whether or not they are below the current
+directory.
+<P>
+<DT>--debug=<I>type</I>
+
+<DD>
+Debug the build process.
+<I>type</I>
+
+specifies what type of debugging:
+<P>
+<DT>--debug=pdb<DD>
+Re-run SCons under the control of the
+pdb
+
+Python debugger.
+The
+--debug=pdb
+argument will be stripped from the command-line,
+but all other arguments will be passed in-order
+to the SCons invocation run by the debugger.
+<P>
+<DT>--debug=tree<DD>
+Print the dependency tree
+after each top-level target is built. This prints out the complete
+dependency tree including implicit dependencies and ignored
+dependencies.
+<P>
+<DT>--debug=dtree<DD>
+Print the dependency tree
+after each top-level target is built. This prints out only derived files.
+<P>
+<DT>--debug=time<DD>
+Prints various time profiling information: the time spent
+executing each build command, the total build time, the total time spent
+executing build commands, the total time spent executing SConstruct and
+SConscript files, and the total time spent executing SCons itself.
+<P>
+<DT>--debug=includes<DD>
+Print the include tree after each top-level target is built. 
+This is generally used to find out what files are included by the sources
+of a given derived file:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+$ scons --debug=includes foo.o
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>-e, --environment-overrides<DD>
+Variables from the execution environment override construction
+variables from the SConscript files.
+<P>
+<DT>-f<I> file</I>, --file=<I>file</I>, --makefile=<I>file</I>, --sconstruct=<I>file</I>
+
+<DD>
+Use 
+<I>file </I>
+
+as the initial SConscript file.
+<P>
+<DT>-h, --help<DD>
+Print a local help message for this build, if one is defined in
+the SConscript file(s), plus a line that describes the 
+<B>-H</B>
+
+option for command-line option help.  If no local help message
+is defined, prints the standard help message about command-line
+options.  Exits after displaying the appropriate message.
+<P>
+<DT>-H, --help-options<DD>
+Print the standard help message about command-line options and
+exit.
+<P>
+<DT>-i, --ignore-errors<DD>
+Ignore all errors from commands executed to rebuild files.
+<P>
+<DT>-I<I> directory</I>, --include-dir=<I>directory</I>
+
+<DD>
+Specifies a 
+<I>directory</I>
+
+to search for
+imported Python modules.  If several 
+<B>-I</B>
+
+options
+are used, the directories are searched in the order specified.
+<P>
+<DT>--implicit-cache<DD>
+Cache implicit dependencies. This can cause 
+<B>scons</B>
+
+to miss changes in the implicit dependencies in cases where a new implicit
+dependency is added earlier in the implicit dependency search path
+(e.g. CPPPATH) than a current implicit dependency with the same name.
+<P>
+<DT>--implicit-deps-changed<DD>
+Force SCons to ignore the cached implicit dependencies. This causes the
+implicit dependencies to be rescanned and recached. This implies
+<B>--implicit-cache</B>.
+
+<P>
+<DT>--implicit-deps-unchanged<DD>
+Force SCons to ignore changes in the implicit dependencies.
+This causes cached implicit dependencies to always be used.
+This implies 
+<B>--implicit-cache</B>.
+
+<P>
+<DT>-j<I> N</I>, --jobs=<I>N</I>
+
+<DD>
+Specifies the number of jobs (commands) to run simultaneously.
+If there is more than one 
+<B>-j </B>
+
+option, the last one is effective.
+
+
+
+
+
+
+
+<P>
+<DT>-k, --keep-going<DD>
+Continue as much as possible after an error.  The target that
+failed and those that depend on it will not be remade, but other
+targets specified on the command line will still be processed.
+<P>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<P>
+<DT>-m<DD>
+Ignored for compatibility with non-GNU versions of
+<B>make</B>.
+
+<P>
+<DT>--max-drift=<I>SECONDS</I>
+
+<DD>
+Set the maximum expected drift in the modification time of files to 
+<I>SECONDS</I>.
+
+This value determines how old a file must be before its content signature
+is cached. The default value is 2 days, which means a file must have a
+modification time of at least two days ago in order to have its content
+signature cached. A negative value means to never cache the content
+signature and to ignore the cached value if there already is one. A value
+of 0 means to always cache the signature, no matter how old the file is.
+<P>
+<DT>-n, --just-print, --dry-run, --recon<DD>
+No execute.  Print the commands that would be executed to build
+any out-of-date target files, but do not execute the commands.
+<P>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<P>
+<DT>--profile=<I>file</I>
+
+<DD>
+Run SCons under the Python profiler
+and save the results in the specified
+<I>file</I>.
+
+The results may be analyzed using the Python
+pstats module.
+<DT>-q, --question<DD>
+Do not run any commands, or print anything.  Just return an exit
+status that is zero if the specified targets are already up to
+date, non-zero otherwise.
+<DT>-Q<DD>
+Quiets SCons status messages about
+reading SConscript files,
+building targets
+and entering directories.
+Commands that are executed
+to rebuild target files are still printed.
+<P>
+
+
+
+
+<P>
+<DT>--random<DD>
+Build dependencies in a random order.  This is useful when
+building multiple trees simultaneously with caching enabled,
+to prevent multiple builds from simultaneously trying to build
+or retrieve the same target files.
+<P>
+<DT>-s, --silent, --quiet<DD>
+Silent.  Do not print commands that are executed to rebuild
+target files.
+Also suppresses SCons status messages.
+<P>
+<DT>-S, --no-keep-going, --stop<DD>
+Ignored for compatibility with GNU 
+<B>make</B>.
+
+<P>
+<DT>-t, --touch<DD>
+Ignored for compatibility with GNU
+<B>make</B>.
+
+(Touching a file to make it
+appear up-to-date is unnecessary when using 
+<B>scons</B>.)
+
+<P>
+<DT>-u, --up, --search-up<DD>
+Walks up the directory structure until an 
+<I>SConstruct ,</I>
+
+<I>Sconstruct</I>
+
+or 
+<I>sconstruct</I>
+
+file is found, and uses that
+as the top of the directory tree.
+If no targets are specified on the command line,
+only targets at or below the
+current directory will be built.
+<P>
+<DT>-U<DD>
+Works exactly the same way as the
+<B>-u</B>
+
+option except for the way default targets are handled.
+When this option is used and no targets are specified on the command line,
+all default targets that are defined in the SConscript(s) in the current
+directory are built, regardless of what directory the resultant targets end
+up in.
+<P>
+<DT>-v, --version<DD>
+Print the 
+<B>scons</B>
+
+version, copyright information,
+list of authors, and any other relevant information.
+Then exit.
+<P>
+<DT>-w, --print-directory<DD>
+Print a message containing the working directory before and
+after other processing.
+<P>
+<DT>--warn=<I>type</I>, --warn=no-<I>type</I>
+
+<DD>
+Enable or disable warnings.
+<I>type</I>
+
+specifies the type of warnings to be enabled or disabled:
+<P>
+<DT>--warn=all, --warn=no-all<DD>
+Enables or disables all warnings.
+<P>
+<DT>--warn=dependency, --warn=no-dependency<DD>
+Enables or disables warnings about dependencies.
+These warnings are disabled by default.
+<P>
+<DT>--warn=deprecated, --warn=no-deprecated<DD>
+Enables or disables warnings about use of deprecated features.
+These warnings are enabled by default.
+<P>
+<DT>--no-print-directory<DD>
+Turn off -w, even if it was turned on implicitly.
+<P>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<P>
+<DT>-Y<I> repository</I>, --repository=<I>repository</I>
+
+<DD>
+Search the specified repository for any input and target
+files not found in the local directory hierarchy.  Multiple
+<B>-Y</B>
+
+options may specified, in which case the
+repositories are searched in the order specified.
+<P>
+</DL>
+<A NAME="lbAF">&nbsp;</A>
+<H2>CONFIGURATION FILE REFERENCE</H2>
+
+
+
+<A NAME="lbAG">&nbsp;</A>
+<H3>Construction Environments</H3>
+
+A construction environment is the basic means by which the SConscript
+files communicate build information to 
+<B>scons</B>.
+
+A new construction environment is created using the 
+<B>Environment </B>
+
+function:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+
+</DL>
+</PRE>
+
+
+<P>
+By default, a new construction environment is
+initialized with a set of builder methods
+and construction variables that are appropriate
+for the current platform.
+An optional platform keyword argument may be
+used to specify that an environment should
+be initialized for a different platform:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(platform = 'cygwin')
+env = Environment(platform = 'os2')
+env = Environment(platform = 'posix')
+env = Environment(platform = 'win32')
+
+</DL>
+</PRE>
+
+
+<P>
+Specifying a platform initializes the appropriate
+construction variables in the environment
+to use and generate file names with prefixes
+and suffixes appropriate for the platform.
+<P>
+Note that the
+<B>win32</B>
+
+platform adds the
+<B>SYSTEMROOT</B>
+
+variable from the user's external environment
+to the construction environment's
+<B>ENV</B>
+
+dictionary.
+This is so that any executed commands
+that use sockets to connect with other systems
+(such as fetching source files from
+external CVS repository specifications like 
+<B>:pserver:<A HREF="mailto:anonymous@cvs.sourceforge.net">anonymous@cvs.sourceforge.net</A>:/cvsroot/scons</B>)
+
+will work on Win32 systems.
+<P>
+The platform argument may be function or callable object,
+in which case the Environment() method
+will call the specified argument to update
+the new construction environment:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def my_platform(env):
+    env['VAR'] = 'xyzzy'
+
+env = Environment(platform = my_platform)
+
+</DL>
+</PRE>
+
+
+<P>
+Additionally, a specific set of tools
+with which to initialize the environment
+may specified as an optional keyword argument:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(tools = ['msvc', 'lex'])
+
+</DL>
+</PRE>
+
+
+<P>
+The elements of the tools list may also
+be functions or callable objects,
+in which case the Environment() method
+will call the specified elements
+to update the new construction environment:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def my_tool(env):
+    env['XYZZY'] = 'xyzzy'
+
+env = Environment(tools = [my_tool])
+
+</DL>
+</PRE>
+
+
+<P>
+The tool definition (i.e. my_tool()) can use the PLATFORM variable from
+the environment it receives to customize the tool for different platforms.
+<P>
+If no tool list is specified, then SCons will auto-detect the installed
+tools using the PATH variable in the ENV construction variable and the
+platform name when the Environment is constructed. Changing the PATH
+variable after the Environment is constructed will not cause the tools to
+be redetected.
+<P>
+SCons supports the following tool specifications out of the box:
+
+<DL COMPACT><DT><DD>
+<PRE>
+386asm
+ar
+dvipdf
+dvips
+g++
+g77
+gs
+icc
+icl
+ifl
+ilink
+gas
+gcc
+gnulink
+jar
+javac
+javah
+latex
+lex
+linkloc
+m4
+masm
+midl
+mingw
+mslib
+mslink
+msvc
+msvs
+nasm
+pdflatex
+pdftex
+qt
+rmic
+sgiar
+sgicc
+sgilink
+sunar
+suncc
+sunlink
+swig
+tar
+tex
+yacc
+zip
+
+</DL>
+</PRE>
+
+
+<P>
+Additionally, there is a &quot;tool&quot; named
+<B>default</B>
+
+which configures the
+environment with a default set of tools for the current platform.
+<P>
+On posix and cygwin platforms
+the GNU tools (e.g. gcc) are preferred by SCons,
+on win32 the Microsoft tools (e.g. msvc)
+followed by MinGW are preferred by SCons,
+and in OS/2 the IBM tools (e.g. icc) are preferred by SCons.
+<P>
+<A NAME="lbAH">&nbsp;</A>
+<H3>Builder Methods</H3>
+
+<P>
+Build rules are specified by calling a construction
+environment's builder methods.
+The arguments to the builder methods are
+<B>target</B>
+
+(a list of target files)
+and
+<B>source</B>
+
+(a list of source files).
+<P>
+Because long lists of file names
+can lead to a lot of quoting,
+<B>scons</B>
+
+supplies a
+<B>Split()</B>
+
+function that splits a single string
+into a list, separated on
+strings of white-space characters.
+(This is similar to the
+string.split() method
+from the standard Python library.)
+<P>
+Like all Python arguments,
+the target and source arguments to a builder
+can be specified either with or without
+the &quot;target&quot; and &quot;source&quot; keywords.
+When the keywords are omitted,
+the target is first,
+followed by the source.
+The following are equivalent examples of calling the Program builder:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Program('bar', ['bar.c', 'foo.c'])
+env.Program('bar', Split('bar.c foo.c'))
+env.Program(source =  ['bar.c', 'foo.c'], target = 'bar')
+env.Program(target = 'bar', Split('bar.c foo.c'))
+env.Program('bar', source = string.split('bar.c foo.c'))
+
+</DL>
+</PRE>
+
+
+<P>
+When the target shares the same base name
+as the source and only the suffix varies,
+and if the builder has a suffix defined for the target file type,
+then the target argument may be omitted completely,
+and
+<B>scons</B>
+
+will deduce the target file name from
+the source file name.
+The following examples all build the
+executable program
+<B>bar</B>
+
+(on POSIX systems)
+or 
+<B>bar.exe</B>
+
+(on Windows systems)
+from the bar.c source file:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Program(target = 'bar', source = 'bar.c')
+env.Program('bar', source = 'bar.c')
+env.Program(source = 'bar.c')
+env.Program('bar.c')
+
+</DL>
+</PRE>
+
+
+<P>
+It is possible to override or add construction variables when calling a
+builder by passing additional keyword arguments. These overridden or added
+variables will only be in effect when building the target, so they will not
+affect other parts of the build. For example, if you want to add additional
+libraries for just one program:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Program('hello', 'hello.c', LIBS=['gl', 'glut'])
+
+</DL>
+</PRE>
+
+
+<P>
+or generate a shared library with a nonstandard suffix:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SharedLibrary('word', 'word.cpp', SHLIBSUFFIX='.ocx')
+
+</DL>
+</PRE>
+
+
+<P>
+All Builders return a Node or a list of Nodes,
+representing the target or targets that will be built.
+A list of Nodes is returned if there is more than one target,
+and a single Node is returned if there is only one target.
+A
+<I>Node</I>
+
+is an internal SCons object
+which represents
+build targets or sources.
+<P>
+The returned Node(s)
+can be passed to other builder methods as source(s)
+or passed into to any SCons function or method
+where a filename would normally be accepted.
+For example, if it were necessary
+to add a specific
+<B>-D</B>
+
+flag when compiling one specific object file:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+bar_obj = env.StaticObject('bar.c', CCFLAGS='-DBAR')
+env.Program(source = ['foo.c', bar_obj, 'main.c'])
+
+</DL>
+</PRE>
+
+
+<P>
+Using a Node in this way
+makes for a more portable build
+by avoiding having to specify
+a platform-specific object suffix
+when calling the Program() builder.
+<P>
+The path name for a Node's file may be used
+by passing the Node to the Python-builtin
+<B>str()</B>
+
+function:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+bar_obj = env.StaticObject('bar.c', CCFLAGS='-DBAR')
+print &quot;The path to bar_obj is:&quot;, str(bar_obj)
+
+</DL>
+</PRE>
+
+
+<P>
+<B>scons</B>
+
+provides the following builders:
+<P>
+<DL COMPACT>
+<DT>StaticObject<DD>
+Builds a static object file
+from one or more C, C++, or Fortran source files.
+Source files must have one of the following extensions:
+
+<DL COMPACT><DT><DD>
+<PRE>
+  .asm    assembly language file
+  .ASM    assembly language file
+  .c      C file
+  .C      WIN32:  C file
+          POSIX:  C++ file
+  .cc     C++ file
+  .cpp    C++ file
+  .cxx    C++ file
+  .cxx    C++ file
+  .c++    C++ file
+  .C++    C++ file
+  .f      Fortran file
+  .F      WIN32:  Fortran file
+          POSIX:  Fortran file + C pre-processor
+  .for    Fortran file
+  .FOR    Fortran file
+  .fpp    Fortran file + C pre-processor
+  .FPP    Fortran file + C pre-processor
+  .s      assembly language file
+  .S      WIN32:  assembly language file
+          POSIX:  assembly language file + C pre-processor
+  .spp    assembly language file + C pre-processor
+  .SPP    assembly language file + C pre-processor
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+The target object file prefix
+(specified by the $OBJPREFIX construction variable; nothing by default)
+and suffix
+(specified by the $OBJSUFFIX construction variable;
+.obj on Windows systems, .o on POSIX systems)
+are automatically added to the target if not already present.
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.StaticObject(target = 'aaa', source = 'aaa.c')
+env.StaticObject(target = 'bbb.o', source = 'bbb.c++')
+env.StaticObject(target = 'ccc.obj', source = 'ccc.f')
+
+</DL>
+</PRE>
+
+
+<DT>SharedObject<DD>
+Builds an object file for
+inclusion in a shared library.
+Source files must have one of the same set of extensions
+specified above for the
+<B>StaticObject</B>
+
+builder. On some platforms building a shared object requires additional
+compiler options (e.g. -fPIC for gcc) in addition to those needed to build a
+normal (static) object, but on some platforms there is no difference between a
+shared object and a normal (static) one. When there is a difference, SCons
+will only allow shared objects to be linked into a shared library, and will
+use a different suffix for shared objects. On platforms where there is no
+difference, SCons will allow both normal (static)
+and shared objects to be linked into a
+shared library, and will use the same suffix for shared and normal
+(static) objects.
+The target object file prefix
+(specified by the $SHOBJPREFIX construction variable;
+by default, the same as $OBJPREFIX)
+and suffix
+(specified by the $SHOBJSUFFIX construction variable)
+are automatically added to the target if not already present. 
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SharedObject(target = 'ddd', source = 'ddd.c')
+env.SharedObject(target = 'eee.o', source = 'eee.cpp')
+env.SharedObject(target = 'fff.obj', source = 'fff.for')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Object<DD>
+A synonym for the
+<B>StaticObject</B>
+
+builder.
+<P>
+<DT>PCH<DD>
+Builds a Microsoft Visual C++ precompiled header. Calling this builder
+returns a list of two targets: the PCH as the first element, and the object
+file as the second element. Normally the object file is ignored. This builder is only
+provided when Microsoft Visual C++ is being used as the compiler. 
+The PCH builder is generally used in
+conjuction with the PCH construction variable to force object files to use
+the precompiled header:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env['PCH'] = env.PCH('StdAfx.cpp')[0]
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Program<DD>
+Builds an executable given one or more object files or C, C++
+or Fortran source files.
+If any C, C++ or Fortran source files are specified,
+then they will be automatically
+compiled to object files using the
+<B>Object</B>
+
+builder;
+see that builder's description for
+a list of legal source file suffixes
+and how they are interpreted.
+The target executable file prefix
+(specified by the $PROGPREFIX construction variable; nothing by default)
+and suffix
+(specified by the $PROGSUFFIX construction variable;
+by default, .exe on Windows systems, nothing on POSIX systems)
+are automatically added to the target if not already present.
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Program(target = 'foo', source = ['foo.o', 'bar.c', 'baz.f'])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>MSVSProject<DD>
+Builds Microsoft Visual Studio project files.
+This builds a Visual Studio project file, based on the version of
+Visual Studio that is configured (either the latest installed version,
+or the version set by 
+<B>MSVS_VERSION</B>
+
+in the Environment constructor).
+For VS 6, it will generate 
+<B>.dsp</B>
+
+and
+<B>.dsw</B>
+
+files, for VS 7, it will
+generate
+<B>.vcproj</B>
+
+and
+<B>.sln</B>
+
+files.
+<P>
+It takes several lists of filenames to be placed into the project
+file, currently these are limited to 
+<B>srcs, incs, localincs, resources,</B>
+
+and
+<B>misc.</B>
+
+These are pretty self explanatory, but it
+should be noted that the 'srcs' list is NOT added to the $SOURCES
+environment variable.  This is because it represents a list of files
+to be added to the project file, not the source used to build the
+project file (in this case, the 'source' is the SConscript file used
+to call MSVSProject).
+<P>
+In addition to these values (which are all optional, although not
+specifying any of them results in an empty project file), the
+following values must be specified:
+<P>
+target: The name of the target .dsp or .vcproj file.  The correct
+suffix for the version of Visual Studio must be used, but the value
+<P>
+env['MSVSPROJECTSUFFIX']
+<P>
+will be defined to the correct value (see example below).
+<P>
+variant: The name of this particular variant.  These are typically
+things like &quot;Debug&quot; or &quot;Release&quot;, but really can be anything you want.
+Multiple calls to MSVSProject with different variants are allowed: all
+variants will be added to the project file with their appropriate
+build targets and sources.
+<P>
+buildtarget: A list of SCons.Node.FS objects which is returned from
+the command which builds the target.  This is used to tell SCons what
+to build when the 'build' button is pressed inside of the IDE.
+<P>
+Example Usage:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+        barsrcs = ['bar.cpp'],
+        barincs = ['bar.h'],
+        barlocalincs = ['StdAfx.h']
+        barresources = ['bar.rc','resource.h']
+        barmisc = ['bar_readme.txt']
+
+        dll = local.SharedLibrary(target = 'bar.dll',
+                                  source = barsrcs)
+
+        local.MSVSProject(target = 'Bar' + env['MSVSPROJECTSUFFIX'],
+                          srcs = barsrcs,
+                          incs = barincs,
+                          localincs = barlocalincs,
+                          resources = barresources,
+                          misc = barmisc,
+                          buildtarget = dll,
+                          variant = 'Release')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>RES<DD>
+Builds a Microsoft Visual C++ resource file.
+This builder is only provided
+when Microsoft Visual C++ or MinGW is being used as the compiler. The
+<I>.res</I>
+
+(or 
+<I>.o </I>
+
+for MinGW) suffix is added to the target name if no other suffix is given. The source
+file is scanned for implicit dependencies as though it were a C file. Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.RES('resource.rc')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>StaticLibrary<DD>
+Builds a static library given one or more object files
+or C, C++ or Fortran source files.
+If any source files are given,
+then they will be automatically
+compiled to object files.
+The static library prefix and suffix (if any)
+are automatically added to the target.
+The target library file prefix
+(specified by the $LIBPREFIX construction variable;
+by default, lib on POSIX systems, nothing on Windows systems)
+and suffix
+(specified by the $LIBSUFFIX construction variable;
+by default, .lib on Windows systems, .a on POSIX systems)
+are automatically added to the target if not already present.
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.StaticLibrary(target = 'bar', source = ['bar.c', 'foo.o'])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+Any object files listed in the
+<B>source</B>
+
+must have been built for a static library
+(that is, using the
+<B>StaticObject</B>
+
+builder).
+<B>scons</B>
+
+will raise an error if there is any mismatch.
+<P>
+<DT>SharedLibrary<DD>
+Builds a shared library
+(.so on a POSIX system, .dll on WIN32)
+given one or more object files
+or C, C++ or Fortran source files.
+If any source files are given,
+then they will be automatically
+compiled to object files.
+The static library prefix and suffix (if any)
+are automatically added to the target.
+The target library file prefix
+(specified by the $SHLIBPREFIX construction variable;
+by default, lib on POSIX systems, nothing on Windows systems)
+and suffix
+(specified by the $SHLIBSUFFIX construction variable;
+by default, .dll on Windows systems, .so on POSIX systems)
+are automatically added to the target if not already present.
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SharedLibrary(target = 'bar', source = ['bar.c', 'foo.o'])
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+On WIN32 systems, the
+<B>SharedLibrary</B>
+
+builder will always build an import (.lib) library
+in addition to the shared (.dll) library,
+adding a .lib library with the same basename
+if there is not already a .lib file explicitly
+listed in the targets.
+<P>
+Any object files listed in the
+<B>source</B>
+
+must have been built for a shared library
+(that is, using the
+<B>SharedObject</B>
+
+builder).
+<B>scons</B>
+
+will raise an error if there is any mismatch.
+<DT><DD>
+On WIN32 systems, specifying &quot;register=1&quot; will cause the dll to be
+registered after it is built using REGSVR32.  The command that is run
+(&quot;regsvr32&quot; by default) is determined by $REGSVR construction
+variable, and the flags passed are determined by $REGSVRFLAGS.  By
+default, $REGSVRFLAGS includes &quot;/s&quot;, to prevent dialogs from popping
+up and requiring user attention when it is run.  If you change
+$REGSVRFLAGS, be sure to include &quot;/s&quot;.  For example,
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SharedLibrary(target = 'bar',
+                  source = ['bar.cxx', 'foo.obj'],
+                  register=1)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+will register &quot;bar.dll&quot; as a COM object when it is done linking it.
+<P>
+<DT>Library<DD>
+A synonym for the
+<B>StaticLibrary</B>
+
+builder.
+<P>
+<DT>CFile<DD>
+Builds a C source file given a lex (.l) or yacc (.y) input file.
+The suffix specified by the $CFILESUFFIX construction variable
+(.c by default)
+is automatically added to the target
+if it is not already present. Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# builds foo.c
+env.CFile(target = 'foo.c', source = 'foo.l')
+# builds bar.c
+env.CFile(target = 'bar', source = 'bar.y')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>CXXFile<DD>
+Builds a C++ source file given a lex (.ll), yacc (.yy)
+or uic (.ui) input file.
+The suffix specified by the $CXXFILESUFFIX construction variable
+(.cc by default)
+is automatically added to the target
+if it is not already present. Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# builds foo.cc
+env.CXXFile(target = 'foo.cc', source = 'foo.ll')
+# builds bar.cc
+env.CXXFile(target = 'bar', source = 'bar.yy')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>M4<DD>
+Builds an output file from an M4 input file.
+This uses a default $M4FLAGS value of
+<B>-E</B>,
+
+which considers all warnings to be fatal
+and stops on the first warning
+when using the GNU version of m4.
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.M4(target = 'foo.c', source = 'foo.c.m4')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Jar<DD>
+Builds a Java archive (.jar) file
+from a source tree of .class files.
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Jar(target = 'foo.jar', source = 'classes')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Java<DD>
+Builds one or more Java class files
+from a source tree of .java files.
+The class files will be placed underneath
+the specified target directory.
+SCons will parse each source .java file
+to find the classes
+(including inner classes)
+defined within that file,
+and from that figure out the
+target .class files that will be created.
+SCons will also search each Java file
+for the Java package name,
+which it assumes can be found on a line
+beginning with the string
+<B>package</B>
+
+in the first column;
+the resulting .class files
+will be placed in a directory reflecting
+the specified package name.
+For example,
+the file
+<I>Foo.java</I>
+
+defining a single public
+<I>Foo</I>
+
+class and
+containing a package name of
+<I>sub.dir</I>
+
+will generate a corresponding
+<I>sub/dir/Foo.class</I>
+
+class file.
+<P>
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Java(target = 'classes', source = 'src')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>JavaH<DD>
+Builds C header and source files for
+implementing Java native methods.
+The target can be either a directory
+in which the header files will be written,
+or a header file name which
+will contain all of the definitions.
+The source can be either the names of .class files,
+or the objects returned from the
+<B>Java</B>
+
+builder.
+<P>
+If the construction variable
+<B>JAVACLASSDIR</B>
+
+is set, either in the environment
+or in the call to the
+<B>JavaH</B>
+
+builder itself,
+then the value of the variable
+will be stripped from the
+beginning of any .class file names.
+<P>
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# builds java_native.h
+classes = env.Java(target = 'classdir', source = 'src')
+env.JavaH(target = 'java_native.h', source = classes)
+
+# builds include/package_foo.h and include/package_bar.h
+env.JavaH(target = 'include',
+          source = ['package/foo.class', 'package/bar.class'])
+
+# builds export/foo.h and export/bar.h
+env.JavaH(target = 'export',
+          source = ['classes/foo.class', 'classes/bar.class'],
+          JAVACLASSDIR = 'classes')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>RMIC<DD>
+Builds stub and skeleton class files
+for remote objects
+from Java .class files.
+The target is a directory
+relative to which the stub
+and skeleton class files will be written.
+The source can be the names of .class files,
+or the objects return from the
+<B>Java</B>
+
+builder.
+<P>
+If the construction variable
+<B>JAVACLASSDIR</B>
+
+is set, either in the environment
+or in the call to the
+<B>RMIC</B>
+
+builder itself,
+then the value of the variable
+will be stripped from the
+beginning of any .class file names.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+classes = env.Java(target = 'classdir', source = 'src')
+env.RMIC(target = 'outdir1', source = classes)
+
+env.RMIC(target = 'outdir2',
+         source = ['package/foo.class', 'package/bar.class'])
+
+env.RMIC(target = 'outdir3',
+         source = ['classes/foo.class', 'classes/bar.class'],
+         JAVACLASSDIR = 'classes')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>TypeLibrary<DD>
+Builds a Windows type library (.tlb) file from and input IDL file
+(.idl).  In addition, it will build the associated inteface stub and
+proxy source files.  It names them according to the base name of the .idl file.
+<DT><DD>
+For example,
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.TypeLibrary(source=&quot;foo.idl&quot;)
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+Will create foo.tlb, foo.h, foo_i.c, foo_p.c, and foo_data.c.
+<P>
+<DT>DVI<DD>
+Builds a .dvi file from a .tex, .ltx or .latex input file.
+The suffix .dvi
+(hard-coded within TeX itself)
+is automatically added to the target
+if it is not already present. Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# builds from aaa.tex
+env.DVI(target = 'aaa.dvi', source = 'aaa.tex')
+# builds bbb.dvi
+env.DVI(target = 'bbb', source = 'bbb.ltx')
+# builds from ccc.latex
+env.DVI(target = 'ccc.dvi', source = 'ccc.latex')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>PDF<DD>
+Builds a .pdf file from a .dvi input file
+(or, by extension, a .tex, .ltx, or .latex input file).
+The suffix specified by the $PDFSUFFIX construction variable
+(.pdf by default)
+is added automatically to the target
+if it is not already present.  Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# builds from aaa.tex
+env.PDF(target = 'aaa.pdf', source = 'aaa.tex')
+# builds bbb.pdf from bbb.dvi
+env.PDF(target = 'bbb', source = 'bbb.dvi')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>PostScript<DD>
+Builds a .ps file from a .dvi input file
+(or, by extension, a .tex, .ltx, or .latex input file).
+The suffix specified by the $PSSUFFIX construction variable
+(.ps by default)
+is added automatically to the target
+if it is not already present.  Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# builds from aaa.tex
+env.PostScript(target = 'aaa.ps', source = 'aaa.tex')
+# builds bbb.ps from bbb.dvi
+env.PostScript(target = 'bbb', source = 'bbb.dvi')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Tar<DD>
+Builds a tar archive of the specified files
+and/or directories.
+Unlike most builders,
+the
+<B>Tar</B>
+
+builder may be called multiple times
+for a given target;
+each additional call
+adds to the list of entries
+that will be built into the archive.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Tar('src.tar', 'src')
+
+# Create the stuff.tar file.
+env.Tar('stuff', ['subdir1', 'subdir2'])
+# Also add &quot;another&quot; to the stuff.tar file.
+env.Tar('stuff', 'another')
+
+# Set TARFLAGS to create a gzip-filtered archive.
+env = Environment(TARFLAGS = '-c -z')
+env.Tar('foo.tar.gz', 'foo')
+
+# Also set the suffix to .tgz.
+env = Environment(TARFLAGS = '-c -z',
+                  TARSUFFIX = '.tgz')
+env.Tar('foo')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Zip<DD>
+Builds a zip archive of the specified files
+and/or directories.
+Unlike most builders,
+the
+<B>Zip</B>
+
+builder may be called multiple times
+for a given target;
+each additional call
+adds to the list of entries
+that will be built into the archive.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Zip('src.zip', 'src')
+
+# Create the stuff.zip file.
+env.Zip('stuff', ['subdir1', 'subdir2'])
+# Also add &quot;another&quot; to the stuff.tar file.
+env.Zip('stuff', 'another')
+
+</DL>
+</PRE>
+
+
+<P>
+<B>scons</B>
+
+automatically scans
+C source files, C++ source files,
+Fortran source files with
+<B>.F</B>
+
+(POSIX systems only),
+<B>.fpp,</B>
+
+or
+<B>.FPP</B>
+
+file extensions,
+and assembly language files with
+<B>.S</B>
+
+(POSIX systems only),
+<B>.spp,</B>
+
+or
+<B>.SPP</B>
+
+files extensions
+for C preprocessor dependencies,
+so the dependencies do not need to be specified explicitly.
+In addition, all builder
+targets automatically depend on their sources.
+An explicit dependency can
+be specified using the 
+<B>Depends </B>
+
+method of a construction environment (see below).
+<P>
+</DL>
+<A NAME="lbAI">&nbsp;</A>
+<H3>Other Construction Environment Methods</H3>
+
+Additional construction environment methods include:
+<P>
+<DL COMPACT>
+<DT>Alias(<I>alias</I>, <I>targets</I>)
+
+<DD>
+Creates a phony target that
+expands to one or more other targets.
+Returns the Node object representing the alias,
+which exists outside of any file system.
+This Node object, or the alias name,
+may be used as a dependency of any other target,
+including another alias. Alias can be called multiple times for the same
+alias to add additional targets to the alias. There is also an Alias
+global function for creating or referencing an alias independently of
+any construction environment.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Alias('install', ['/usr/local/bin', '/usr/local/lib'])
+env.Alias('install', ['/usr/local/man'])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Append(<I>key</I>=<I>val</I>, [...])
+
+<DD>
+Appends the specified keyword arguments
+to the end of construction variables in the environment.
+If the Environment does not have
+the specified construction variable,
+it is simply added to the environment.
+If the values of the construction variable
+and the keyword argument are the same type,
+then the two values will be simply added together.
+Otherwise, the construction variable
+and the value of the keyword argument
+are both coerced to lists,
+and the lists are added together.
+(See also the Prepend method, below.)
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Append(CCFLAGS = ' -g', FOO = ['foo.yyy'])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>PrependENVPath(<I>name</I>, <I>newpath</I>, [<I>envname</I>, <I>sep</I>])
+
+<DD>
+This appends new path elements to the given path in the
+specified external environment
+(<B>ENV</B>
+
+by default).
+This will only add
+any particular path once (leaving the first one it encounters and
+ignoring the rest, to preserve path order),
+and to help assure this,
+will normalize all paths (using
+<B>os.path.normpath</B>
+
+and
+<B>os.path.normcase</B>).
+
+This can also handle the
+case where the given old path variable is a list instead of a
+string, in which case a list will be returned instead of a string.
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+print 'before:',env['ENV']['INCLUDE']
+include_path = '/foo/bar:/foo'
+env.PrependENVPath('INCLUDE', include_path)
+print 'after:',env['ENV']['INCLUDE']
+
+yields:
+before: /biz:/foo
+after: /foo/bar:/foo:/biz
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>AppendENVPath(<I>name</I>, <I>newpath</I>, [<I>envname</I>, <I>sep</I>])
+
+<DD>
+This appends new path elements to the given path in the
+specified external environment
+(<B>ENV</B>
+
+by default).
+This will only add
+any particular path once (leaving the last one it encounters and
+ignoring the rest, to preserve path order),
+and to help assure this,
+will normalize all paths (using
+<B>os.path.normpath</B>
+
+and
+<B>os.path.normcase</B>).
+
+This can also handle the
+case where the given old path variable is a list instead of a
+string, in which case a list will be returned instead of a string.
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+print 'before:',env['ENV']['INCLUDE']
+include_path = '/foo/bar:/foo'
+env.PrependENVPath('INCLUDE', include_path)
+print 'after:',env['ENV']['INCLUDE']
+
+yields:
+before: /foo:/biz
+after: /biz:/foo/bar:/foo
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>BitKeeper()<DD>
+A factory function that
+returns a Builder object
+to be used to fetch source files
+using BitKeeper.
+The returned Builder
+is intended to be passed to the
+<B>SourceCode</B>
+
+function.
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SourceCode('.', env.BitKeeper())
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Command(<I>target</I>, <I>source</I>, <I>commands</I>)
+
+<DD>
+Executes a specific action
+(or list of actions)
+to build a target file or files.
+This is more convenient
+than defining a separate Builder object
+for a single special-case build.
+<P>
+Note that an action can be an external command,
+specified as a string,
+or a callable Python object;
+see &quot;Action Objects,&quot; below.
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Command('foo.out', 'foo.in',
+            &quot;$FOO_BUILD &lt; $SOURCES &gt; $TARGET&quot;)
+
+env.Command('bar.out', 'bar.in',
+            [&quot;rm -f $TARGET&quot;,
+             &quot;$BAR_BUILD &lt; $SOURCES &gt; $TARGET&quot;])
+
+def rename(env, target, source):
+    import os
+    os.rename('.tmp', str(target[0]))
+
+env.Command('baz.out', 'baz.in',
+            [&quot;$BAZ_BUILD &lt; $SOURCES &gt; .tmp&quot;,
+             rename ])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Copy([<I>key</I>=<I>val</I>, ...])
+
+<DD>
+Return a separate copy of a construction environment.
+If there are any keyword arguments specified,
+they are added to the returned copy,
+overwriting any existing values
+for the keywords.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env2 = env.Copy()
+env3 = env.Copy(CCFLAGS = '-g')
+
+</DL>
+</PRE>
+
+
+<P>
+Additionally, a list of tools may be specified, as in the Environment
+constructor:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def MyTool(env): env['FOO'] = 'bar'
+env4 = env.Copy(tools = ['msvc', MyTool])
+
+</DL>
+</PRE>
+
+
+<P>
+<P>
+<DT>CVS(<I>repository</I>, <I>module</I>)
+
+<DD>
+A factory function that
+returns a Builder object
+to be used to fetch source files
+from the specified
+CVS
+<I>repository</I>.
+
+The returned Builder
+is intended to be passed to the
+<B>SourceCode</B>
+
+function.
+<P>
+The optional specified
+<I>module</I>
+
+will be added to the beginning
+of all repository path names;
+this can be used, in essence,
+to strip initial directory names
+from the repository path names,
+so that you only have to
+replicate part of the repository
+directory hierarchy in your
+local build directory:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# Will fetch foo/bar/src.c
+# from /usr/local/CVSROOT/foo/bar/src.c.
+env.SourceCode('.', env.CVS('/usr/local/CVSROOT'))
+
+# Will fetch bar/src.c
+# from /usr/local/CVSROOT/foo/bar/src.c.
+env.SourceCode('.', env.CVS('/usr/local/CVSROOT', 'foo'))
+
+# Will fetch src.c
+# from /usr/local/CVSROOT/foo/bar/src.c.
+env.SourceCode('.', env.CVS('/usr/local/CVSROOT', 'foo/bar'))
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Depends(<I>target</I>, <I>dependency</I>)
+
+<DD>
+Specifies an explicit dependency;
+the target file(s) will be rebuilt
+whenever the dependency file(s) has changed.
+This should only be necessary
+for cases where the dependency
+is not caught by a Scanner
+for the file.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Depends('foo', 'other-input-file-for-foo')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Dictionary([<I>vars</I>])
+
+<DD>
+Returns a dictionary object
+containing copies of all of the
+construction variables in the environment.
+If there are any variable names specified,
+only the specified construction
+variables are returned in the dictionary.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+dict = env.Dictionary()
+cc_dict = env.Dictionary('CC', 'CCFLAGS', 'CCCOM')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Ignore(<I>target</I>, <I>dependency</I>)
+
+<DD>
+The specified dependency file(s)
+will be ignored when deciding if
+the target file(s) need to be rebuilt.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Ignore('foo', 'foo.c')
+env.Ignore('bar', ['bar1.h', 'bar2.h'])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Install(<I>dir</I>, <I>source</I>)
+
+<DD>
+Installs one or more files in a destination directory.
+The file names remain the same.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>InstallAs(<I>target</I>, <I>source</I>)
+
+<DD>
+Installs one or more files as specific file names,
+allowing changing a file name as part of the
+installation.
+It is an error if the target and source
+list different numbers of files.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.InstallAs(target = '/usr/local/bin/foo',
+              source = 'foo_debug')
+env.InstallAs(target = ['../lib/libfoo.a', '../lib/libbar.a'],
+              source = ['libFOO.a', 'libBAR.a'])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Perforce()<DD>
+A factory function that
+returns a Builder object
+to be used to fetch source files
+from the Perforce source code management system.
+The returned Builder
+is intended to be passed to the
+<B>SourceCode</B>
+
+function:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SourceCode('.', env.Perforce())
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+Perforce uses a number of external
+environment variables for its operation.
+Consequently, this function adds the
+following variables from the user's external environment
+to the construction environment's
+ENV dictionary:
+P4CHARSET,
+P4CLIENT,
+P4LANGUAGE,
+P4PASSWD,
+P4PORT,
+P4USER,
+SYSTEMROOT,
+USER,
+and
+USERNAME.
+<P>
+<DT>AlwaysBuild(<I>target</I>, ...)
+
+<DD>
+Marks each given
+<I>target</I>
+
+so that it is always assumed to be out of date,
+and will always be rebuilt if needed.
+Note, however, that
+<B>AlwaysBuild</B>()
+
+does not add its target(s) to the default target list,
+so the targets will only be built
+if they are specified on the command line,
+or are a dependent of a target specified on the command line--but
+they will
+<I>always</I>
+
+be built if so specified.
+Multiple targets can be passed in to a single call to
+<B>AlwaysBuild</B>().
+
+<P>
+<DT>Precious(<I>target</I>, ...)
+
+<DD>
+Marks each given
+<I>target</I>
+
+as precious so it is not deleted before it is rebuilt. Normally
+<B>scons</B>
+
+deletes a target before building it.
+Multiple targets can be passed in to a single call to
+<B>Precious</B>().
+
+<P>
+<DT>Prepend(<I>key</I>=<I>val</I>, [...])
+
+<DD>
+Appends the specified keyword arguments
+to the beginning of construction variables in the environment.
+If the Environment does not have
+the specified construction variable,
+it is simply added to the environment.
+If the values of the construction variable
+and the keyword argument are the same type,
+then the two values will be simply added together.
+Otherwise, the construction variable
+and the value of the keyword argument
+are both coerced to lists,
+and the lists are added together.
+(See also the Append method, above.)
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Prepend(CCFLAGS = '-g ', FOO = ['foo.yyy'])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>RCS()<DD>
+A factory function that
+returns a Builder object
+to be used to fetch source files
+from RCS.
+The returned Builder
+is intended to be passed to the
+<B>SourceCode</B>
+
+function:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SourceCode('.', env.RCS())
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+Note that
+<B>scons</B>
+
+will fetch source files
+from RCS subdirectories automatically,
+so configuring RCS
+as demonstrated in the above example
+should only be necessary if
+you are fetching from
+RCS,v
+files in the same
+directory as the source files,
+or if you need to explicitly specify RCS
+for a specific subdirectory.
+<P>
+<DT>Replace(<I>key</I>=<I>val</I>, [...])
+
+<DD>
+Replaces construction variables in the Environment
+with the specified keyword arguments.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.Replace(CCFLAGS = '-g', FOO = 'foo.xxx')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>SCCS()<DD>
+A factory function that
+returns a Builder object
+to be used to fetch source files
+from SCCS.
+The returned Builder
+is intended to be passed to the
+<B>SourceCode</B>
+
+function:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SourceCode('.', env.SCCS())
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+Note that
+<B>scons</B>
+
+will fetch source files
+from SCCS subdirectories automatically,
+so configuring SCCS
+as demonstrated in the above example
+should only be necessary if
+you are fetching from
+<I>s.SCCS</I>
+
+files in the same
+directory as the source files,
+or if you need to explicitly specify SCCS
+for a specific subdirectory.
+<P>
+<DT>SideEffect(<I>side_effect</I>, <I>target</I>)
+
+<DD>
+Declares
+<I>side_effect</I>
+
+as a side effect of building
+<I>target</I>.
+
+Both 
+<I>side_effect </I>
+
+and
+<I>target</I>
+
+can be a list, a file name, or a node.
+A side effect is a target that is created
+as a side effect of building other targets.
+For example, a Windows PDB
+file is created as a side effect of building the .obj
+files for a static library.
+If a target is a side effect of multiple build commands,
+<B>scons</B>
+
+will ensure that only one set of commands
+is executed at a time.
+Consequently, you only need to use this method
+for side-effect targets that are built as a result of
+multiple build commands.
+<P>
+<DT>SourceCode(<I>entries</I>, <I>builder</I>)
+
+<DD>
+Arrange for non-existent source files to
+be fetched from a source code management system
+using the specified
+<I>builder</I>.
+
+The specified
+<I>entries</I>
+
+may be a Node, string or list of both,
+and may represent either individual
+source files or directories in which
+source files can be found.
+<P>
+For any non-existent source files,
+<B>scons</B>
+
+will search up the directory tree
+and use the first
+<B>SourceCode</B>
+
+builder it finds.
+The specified
+<I>builder</I>
+
+may be
+<B>None</B>,
+
+in which case
+<B>scons</B>
+
+will not use a builder to fetch
+source files for the specified
+<I>entries</I>,
+
+even if a
+<B>SourceCode</B>
+
+builder has been specified
+for a directory higher up the tree.
+<P>
+<B>scons</B>
+
+will, by default,
+fetch files from SCCS or RCS subdirectories
+without explicit configuration.
+This takes some extra processing time
+to search for the necessary
+source code management files on disk.
+You can avoid these extra searches
+and speed up your build a little
+by disabling these searches as follows:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SourceCode('.', None)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+Note that if the specified
+<I>builder</I>
+
+is one you create by hand,
+it must have an associated
+construction environment to use
+when fetching a source file.
+<P>
+<B>scons</B>
+
+provides a set of canned factory
+functions that return appropriate
+Builders for various popular
+source code management systems.
+Canonical examples of invocation include:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env.SourceCode('.', env.BitKeeper('/usr/local/BKsources'))
+env.SourceCode('src', env.CVS('/usr/local/CVSROOT'))
+env.SourceCode('/', env.RCS())
+env.SourceCode(['f1.c', 'f2.c'], env.SCCS())
+env.SourceCode('no_source.c', None)
+
+</DL>
+</PRE>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<P>
+</DL>
+<A NAME="lbAJ">&nbsp;</A>
+<H3>Construction Variables</H3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A construction environment has an associated dictionary of
+<I>construction variables</I>
+
+that are used by built-in or user-supplied build rules.
+Construction variables must follow the same rules for
+Python identifiers:
+the initial character must be an underscore or letter,
+followed by any number of underscores, letters, or digits.
+<P>
+A number of useful construction variables are automatically defined by
+scons for each supported platform, and additional construction variables
+can be defined by the user. The following is a list of the automatically
+defined construction variables:
+<P>
+<DL COMPACT>
+<DT>AR<DD>
+The static library archiver.
+<P>
+<DT>ARCOM<DD>
+The command line used to generate a static library from object files.
+<P>
+<DT>ARFLAGS<DD>
+General options passed to the static library archiver.
+<P>
+<DT>AS<DD>
+The assembler.
+<P>
+<DT>ASCOM<DD>
+The command line used to generate an object file
+from an assembly-language source file.
+<P>
+<DT>ASFLAGS<DD>
+General options passed to the assembler.
+<P>
+<DT>ASPPCOM<DD>
+The command line used to assemble an assembly-language
+source file into an object file
+after first running the file through the C preprocessor.
+Any options specified in the $ASFLAGS and $CPPFLAGS construction variables
+are included on this command line.
+<P>
+<DT>BITKEEPER<DD>
+The BitKeeper executable.
+<P>
+<DT>BITKEEPERCOM<DD>
+The command line for
+fetching source files using BitKEeper.
+<P>
+<DT>BITKEEPERGET<DD>
+The command ($BITKEEPER) and subcommand
+for fetching source files using BitKeeper.
+<P>
+<DT>BITKEEPERGETFLAGS<DD>
+Options that are passed to the BitKeeper
+<B>get</B>
+
+subcommand.
+<P>
+<DT>BUILDERS<DD>
+A dictionary mapping the names of the builders
+available through this environment
+to underlying Builder objects.
+Builders named
+Alias, CFile, CXXFile, DVI, Library, Object, PDF, PostScript, and Program
+are available by default.
+If you initialize this variable when an
+Environment is created:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(BUILDERS = {'NewBuilder' : foo})
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+the default Builders will no longer be available.
+To use a new Builder object in addition to the default Builders,
+add your new Builder object like this:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+env.Append(BUILDERS = {'NewBuilder' : foo})
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+or this:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+env['BUILDERS]['NewBuilder'] = foo
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>CC<DD>
+The C compiler.
+<P>
+<DT>CCCOM<DD>
+The command line used to compile a C source file to a (static) object file.
+Any options specified in the $CCFLAGS and $CPPFLAGS construction variables
+are included on this command line.
+<P>
+<DT>CCFLAGS<DD>
+General options that are passed to the C compiler.
+<P>
+<DT>CFILESUFFIX<DD>
+The suffix for C source files.
+This is used by the internal CFile builder
+when generating C files from Lex (.l) or YACC (.y) input files.
+The default suffix, of course, is
+<I>.c</I>
+
+(lower case).
+On case-insensitive systems (like Win32),
+SCons also treats
+<I>.C</I>
+
+(upper case) files
+as C files.
+<P>
+<DT>_concat<DD>
+A function used to produce variables like $_CPPINCFLAGS. It takes five
+arguments: a prefix to concatenate onto each element, a list of
+elements, a suffix to concatenate onto each element, an environment
+for variable interpolation, and an optional function that will be
+called to transform the list before concatenation.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env['_CPPINCFLAGS'] = '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, RDirs)} $)',
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>CPPDEFINES<DD>
+A platform independent specification of C preprocessor definitions.
+The definitions will be added to command lines
+through the automatically-generated
+$_CPPDEFFLAGS construction variable (see below),
+which is constructed according to
+the type of value of $CPPDEFINES:
+<P>
+<DT><DD>
+If $CPPDEFINES is a string,
+the values of the
+$CPPDEFPREFIX and $CPPDEFSUFFIX
+construction variables
+will be added to the beginning and end.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# Will add -Dxyz to POSIX compiler command lines,
+# and /Dxyz to Microsoft Visual C++ command lines.
+env = Environment(CPPDEFINES='xyz')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+If $CPPDEFINES is a list,
+the values of the
+$CPPDEFPREFIX and $CPPDEFSUFFIX
+construction variables
+will be appended to the beginning and end
+of each element in the list.
+If any element is a list or tuple,
+then the first item is the name being
+defined and the second item is its value:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# Will add -DB=2 -DA to POSIX compiler command lines,
+# and /DB=2 /DA to Microsoft Visual C++ command lines.
+env = Environment(CPPDEFINES=[('B', 2), 'A'])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+If $CPPDEFINES is a dictionary,
+the values of the
+$CPPDEFPREFIX and $CPPDEFSUFFIX
+construction variables
+will be appended to the beginning and end
+of each item from the dictionary.
+The key of each dictionary item
+is a name being defined
+to the dictionary item's corresponding value;
+if the value is
+<B>None</B>,
+
+then the name is defined without an explicit value.
+Note that the resulting flags are sorted by keyword
+to ensure that the order of the options on the
+command line is consistent each time
+<B>scons</B>
+
+<BR>&nbsp;is&nbsp;run.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+# Will add -DA -DB=2 to POSIX compiler command lines,
+# and /DA /DB=2 to Microsoft Visual C++ command lines.
+env = Environment(CPPDEFINES={'B':2, 'A':None})
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>_CPPDEFFLAGS<DD>
+An automatically-generated construction variable
+containing the C preprocessor command-line options
+to define values.
+The value of $_CPPDEFFLAGS is created
+by appending $CPPDEFPREFIX and $CPPDEFSUFFIX
+to the beginning and end
+of each directory in $CPPDEFINES.
+<P>
+<DT>CPPDEFPREFIX<DD>
+The prefix used to specify preprocessor definitions
+on the C compiler command line.
+This will be appended to the beginning of each definition
+in the $CPPDEFINES construction variable
+when the $_CPPDEFFLAGS variable is automatically generated.
+<P>
+<DT>CPPDEFSUFFIX<DD>
+The suffix used to specify preprocessor definitions
+on the C compiler command line.
+This will be appended to the end of each definition
+in the $CPPDEFINES construction variable
+when the $_CPPDEFFLAGS variable is automatically generated.
+<P>
+<DT>CPPFLAGS<DD>
+User-specified C preprocessor options.
+These will be included in any command that uses the C preprocessor,
+including not just compilation of C and C++ source files
+via the $CCCOM, $SHCCCOM, $CXXCOM and $SHCXXCOM command lines,
+but also the $F77PPCOM and $SHF77PPCOM command lines
+used to compile a Fortran source file,
+and the $ASPPCOM command line
+used to assemble an assembly language source file,
+after first running each file through the C preprocessor.
+Note that this variable does
+<I>not</I>
+
+contain
+<B>-I</B>
+
+(or similar) include search path options
+that scons generates automatically from $CPPPATH.
+See
+<B>_CPPINCFLAGS</B>,
+
+below,
+for the variable that expands to those options.
+<P>
+<DT>_CPPINCFLAGS<DD>
+An automatically-generated construction variable
+containing the C preprocessor command-line options
+for specifying directories to be searched for include files.
+The value of $_CPPINCFLAGS is created
+by appending $INCPREFIX and $INCSUFFIX
+to the beginning and end
+of each directory in $CPPPATH.
+<P>
+<DT>CPPPATH<DD>
+The list of directories that the C preprocessor will search for include
+directories. The C/C++ implicit dependency scanner will search these
+directories for include files. Don't explicitly put include directory
+arguments in CCFLAGS or CXXFLAGS because the result will be non-portable
+and the directories will not be searched by the dependency scanner. Note:
+directory names in CPPPATH will be looked-up relative to the SConscript
+directory when they are used in a command. To force 
+<B>scons</B>
+
+to look-up a directory relative to the root of the source tree use #:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(CPPPATH='#/include')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+The directory look-up can also be forced using the 
+<B>Dir</B>()
+
+function:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+include = Dir('include')
+env = Environment(CPPPATH=include)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+The directory list will be added to command lines
+through the automatically-generated
+$_CPPINCFLAGS
+construction variable,
+which is constructed by
+appending the values of the
+$INCPREFIX and $INCSUFFIX
+construction variables
+to the beginning and end
+of each directory in $CPPPATH.
+Any command lines you define that need
+the CPPPATH directory list should
+include $_CPPINCFLAGS:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(CCCOM=&quot;my_compiler $_CPPINCFLAGS -c -o $TARGET $SOURCE&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>CVS<DD>
+The CVS executable.
+<P>
+<DT>CVSCOFLAGS<DD>
+Options that are passed to the CVS checkout subcommand.
+<P>
+<DT>CVSCOM<DD>
+The command line used to
+fetch source files from a CVS repository.
+<P>
+<DT>CVSFLAGS<DD>
+General options that are passed to CVS.
+By default, this is set to
+&quot;-d $CVSREPOSITORY&quot;
+to specify from where the files must be fetched.
+<P>
+<DT>CVSREPOSITORY<DD>
+The path to the CVS repository.
+This is referenced in the default
+$CVSFLAGS value.
+<P>
+<DT>CXX<DD>
+The C++ compiler.
+<P>
+<DT>CXXFILESUFFIX<DD>
+The suffix for C++ source files.
+This is used by the internal CXXFile builder
+when generating C++ files from Lex (.ll) or YACC (.yy) input files.
+The default suffix is
+<I>.cc</I>.
+
+SCons also treats files with the suffixes
+<I>.cpp</I>,
+
+<I>.cxx</I>,
+
+<I>.c++</I>,
+
+and
+<I>.C++</I>
+
+as C++ files.
+On case-sensitive systems (Linux, UNIX, and other POSIX-alikes),
+SCons also treats
+<I>.C</I>
+
+(upper case) files
+as C++ files.
+<P>
+<DT>CXXCOM<DD>
+The command line used to compile a C++ source file to an object file.
+Any options specified in the $CXXFLAGS and $CPPFLAGS construction variables
+are included on this command line.
+<P>
+<DT>CXXFLAGS<DD>
+General options that are passed to the C++ compiler.
+<P>
+<DT>Dir<DD>
+A function that converts a file name into a Dir instance relative to the
+target being built. 
+<P>
+<DT>DVIPDF<DD>
+The TeX DVI file to PDF file converter.
+<P>
+<DT>DVIPDFFLAGS<DD>
+General options passed to the TeX DVI file to PDF file converter.
+<P>
+<DT>DVIPDFCOM<DD>
+The command line used to convert TeX DVI files into a PDF file.
+<P>
+<DT>DVIPS<DD>
+The TeX DVI file to PostScript converter.
+<P>
+<DT>DVIPSFLAGS<DD>
+General options passed to the TeX DVI file to PostScript converter.
+<P>
+<DT>ENV<DD>
+A dictionary of environment variables
+to use when invoking commands.
+Note that, by default,
+<B>scons</B>
+
+does
+<I>not</I>
+
+propagate the environment in force when you
+execute
+<B>scons</B>
+
+to the commands used to build target files.
+This is so that builds will be guaranteed
+repeatable regardless of the environment
+variables set at the time
+<B>scons</B>
+
+is invoked.
+<P>
+If you want to propagate your
+environment variables
+to the commands executed
+to build target files,
+you must do so explicitly:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+import os
+env = Environment(ENV = os.environ)
+
+</DL>
+</PRE>
+
+
+<P>
+<DL COMPACT><DT><DD>
+Note that you can choose only to propagate
+certain environment variables.
+A common example is
+the system
+<B>PATH</B>
+
+environment variable,
+so that
+<B>scons</B>
+
+uses the same utilities
+as the invoking shell (or other process):
+</DL>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+import os
+env = Environment(ENV = {'PATH' : os.environ['PATH']})
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>ESCAPE<DD>
+A function that will be called to escape shell special characters in
+command lines. The function should take one argument: the command line
+string to escape; and should return the escaped command line.
+<P>
+<DT>F77<DD>
+The Fortran compiler.
+<P>
+<DT>F77COM<DD>
+The command line used to compile a Fortran source file to an object file.
+<P>
+<DT>F77FLAGS<DD>
+General user-specified options that are passed to the Fortran compiler.
+Note that this variable does
+<I>not</I>
+
+contain
+<B>-I</B>
+
+(or similar) include search path options
+that scons generates automatically from $F77PATH.
+See
+<B>_F77INCFLAGS</B>,
+
+below,
+for the variable that expands to those options.
+<P>
+<DT>_F77INCFLAGS<DD>
+An automatically-generated construction variable
+containing the Fortran compiler command-line options
+for specifying directories to be searched for include files.
+The value of $_F77INCFLAGS is created
+by appending $INCPREFIX and $INCSUFFIX
+to the beginning and end
+of each directory in $F77PATH.
+<P>
+<DT>F77PATH<DD>
+The list of directories that the Fortran compiler will search for include
+directories. The Fortran implicit dependency scanner will search these
+directories for include files. Don't explicitly put include directory
+arguments in F77FLAGS because the result will be non-portable
+and the directories will not be searched by the dependency scanner. Note:
+directory names in F77PATH will be looked-up relative to the SConscript
+directory when they are used in a command. To force 
+<B>scons</B>
+
+to look-up a directory relative to the root of the source tree use #:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(F77PATH='#/include')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+The directory look-up can also be forced using the 
+<B>Dir</B>()
+
+function:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+include = Dir('include')
+env = Environment(F77PATH=include)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+The directory list will be added to command lines
+through the automatically-generated
+$_F77INCFLAGS
+construction variable,
+which is constructed by
+appending the values of the
+$INCPREFIX and $INCSUFFIX
+construction variables
+to the beginning and end
+of each directory in $F77PATH.
+Any command lines you define that need
+the F77PATH directory list should
+include $_F77INCFLAGS:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(F77COM=&quot;my_compiler $_F77INCFLAGS -c -o $TARGET $SOURCE&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>F77PPCOM<DD>
+The command line used to compile a Fortran source file to an object file
+after first running the file through the C preprocessor.
+Any options specified in the $F77FLAGS and $CPPFLAGS construction variables
+are included on this command line.
+<P>
+<DT>File<DD>
+A function that converts a file name into a File instance relative to the
+target being built. 
+<P>
+<DT>GS<DD>
+The Ghostscript program used to convert PostScript to PDF files.
+<P>
+<DT>GSFLAGS<DD>
+General options passed to the Ghostscript program
+when converting PostScript to PDF files.
+<P>
+<DT>GSCOM<DD>
+The Ghostscript command line used to convert PostScript to PDF files.
+<P>
+<DT>INCPREFIX<DD>
+The prefix used to specify an include directory on the C compiler command
+line.
+This will be appended to the beginning of each directory
+in the $CPPPATH and $F77PATH construction variables
+when the $_CPPINCFLAGS and $_F77INCFLAGS
+variables are automatically generated.
+<P>
+<DT>INCSUFFIX<DD>
+The suffix used to specify an include directory on the C compiler command
+line.
+This will be appended to the end of each directory
+in the $CPPPATH and $F77PATH construction variables
+when the $_CPPINCFLAGS and $_F77INCFLAGS
+variables are automatically generated.
+<P>
+<DT>INSTALL<DD>
+A function to be called to install a file into a
+destination file name.
+The default function copies the file into the destination
+(and sets the destination file's mode and permission bits
+to match the source file's).
+The function takes the following arguments:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def install(dest, source, env):
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+<I>dest</I>
+
+is the path name of the destination file.
+<I>source</I>
+
+is the path name of the source file.
+<I>env</I>
+
+is the construction environment
+(a dictionary of construction values)
+in force for this file installation.
+<P>
+<DT>JAR<DD>
+The Java archive tool.
+<P>
+<DT>JARCOM<DD>
+The command line used to call the Java archive tool.
+<P>
+<DT>JARFLAGS<DD>
+General options passed to the Java archive tool.
+By default this is set to
+<B>cf</B>
+
+to create the necessary
+<I>jar</I>
+
+file.
+<P>
+<DT>JARSUFFIX<DD>
+The suffix for Java archives:
+<B>.jar</B>
+
+by default.
+<P>
+<DT>JAVAC<DD>
+The Java compiler.
+<P>
+<DT>JAVACCOM<DD>
+The command line used to compile a directory tree containing
+Java source files to
+corresponding Java class files.
+Any options specified in the $JAVACFLAGS construction variable
+are included on this command line.
+<P>
+<DT>JAVACFLAGS<DD>
+General options that are passed to the Java compiler.
+<P>
+<DT>JAVACLASSDIR<DD>
+The directory in which Java class files may be found.
+This is stripped from the beginning of any Java .class
+file names supplied to the
+<B>JavaH</B>
+
+builder.
+<P>
+<DT>JAVACLASSSUFFIX<DD>
+The suffix for Java class files;
+<B>.class</B>
+
+by default.
+<P>
+<DT>JAVAH<DD>
+The Java generator for C header and stub files.
+<P>
+<DT>JAVAHCOM<DD>
+The command line used to generate C header and stub files
+from Java classes.
+Any options specified in the $JAVAHFLAGS construction variable
+are included on this command line.
+<P>
+<DT>JAVAHFLAGS<DD>
+General options passed to the C header and stub file generator
+for Java classes.
+<P>
+<DT>JAVASUFFIX<DD>
+The suffix for Java files;
+<B>.java</B>
+
+by default.
+<P>
+<DT>LATEX<DD>
+The LaTeX structured formatter and typesetter.
+<P>
+<DT>LATEXCOM<DD>
+The command line used to call the LaTeX structured formatter and typesetter.
+<P>
+<DT>LATEXFLAGS<DD>
+General options passed to the LaTeX structured formatter and typesetter.
+<P>
+<DT>LEX<DD>
+The lexical analyzer generator.
+<P>
+<DT>LEXFLAGS<DD>
+General options passed to the lexical analyzer generator.
+<P>
+<DT>LEXCOM<DD>
+The command line used to call the lexical analyzer generator
+to generate a source file.
+<P>
+<DT>_LIBDIRFLAGS<DD>
+An automatically-generated construction variable
+containing the linker command-line options
+for specifying directories to be searched for library.
+The value of $_LIBDIRFLAGS is created
+by appending $LIBDIRPREFIX and $LIBDIRSUFFIX
+to the beginning and end
+of each directory in $LIBPATH.
+<P>
+<DT>LIBDIRPREFIX<DD>
+The prefix used to specify a library directory on the linker command line.
+This will be appended to the beginning of each directory
+in the $LIBPATH construction variable
+when the $_LIBDIRFLAGS variable is automatically generated.
+<P>
+<DT>LIBDIRSUFFIX<DD>
+The suffix used to specify a library directory on the linker command line.
+This will be appended to the end of each directory
+in the $LIBPATH construction variable
+when the $_LIBDIRFLAGS variable is automatically generated.
+<P>
+<DT>_LIBFLAGS<DD>
+An automatically-generated construction variable
+containing the linker command-line options
+for specifying libraries to be linked with the resulting target.
+The value of $_LIBFLAGS is created
+by appending $LIBLINKPREFIX and $LIBLINKSUFFIX
+to the beginning and end
+of each directory in $LIBS.
+<P>
+<DT>LIBLINKPREFIX<DD>
+The prefix used to specify a library to link on the linker command line.
+This will be appended to the beginning of each library
+in the $LIBS construction variable
+when the $_LIBFLAGS variable is automatically generated.
+<P>
+<DT>LIBLINKSUFFIX<DD>
+The suffix used to specify a library to link on the linker command line.
+This will be appended to the end of each library
+in the $LIBS construction variable
+when the $_LIBFLAGS variable is automatically generated.
+<P>
+<DT>LIBPATH<DD>
+The list of directories that will be searched for libraries.
+The implicit dependency scanner will search these
+directories for include files. Don't explicitly put include directory
+arguments in $LINKFLAGS or $SHLINKFLAGS
+because the result will be non-portable
+and the directories will not be searched by the dependency scanner. Note:
+directory names in LIBPATH will be looked-up relative to the SConscript
+directory when they are used in a command. To force 
+<B>scons</B>
+
+to look-up a directory relative to the root of the source tree use #:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(LIBPATH='#/libs')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+The directory look-up can also be forced using the 
+<B>Dir</B>()
+
+function:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+libs = Dir('libs')
+env = Environment(LIBPATH=libs)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+The directory list will be added to command lines
+through the automatically-generated
+$_LIBDIRFLAGS
+construction variable,
+which is constructed by
+appending the values of the
+$LIBDIRPREFIX and $LIBDIRSUFFIX
+construction variables
+to the beginning and end
+of each directory in $LIBPATH.
+Any command lines you define that need
+the LIBPATH directory list should
+include $_LIBDIRFLAGS:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(LINKCOM=&quot;my_linker $_LIBDIRFLAGS $_LIBFLAGS -o $TARGET $SOURCE&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>LIBPREFIX<DD>
+The prefix used for (static) library file names.
+<P>
+<DT>LIBPREFIXES<DD>
+An array of legal prefixes for library file names.
+<P>
+<DT>LIBS<DD>
+A list of one or more libraries
+that will be linked with
+any executable programs
+created by this environment.
+<P>
+<DT><DD>
+The library list will be added to command lines
+through the automatically-generated
+$_LIBFLAGS
+construction variable,
+which is constructed by
+appending the values of the
+$LIBLINKPREFIX and $LIBLINKSUFFIX
+construction variables
+to the beginning and end
+of each directory in $LIBS.
+Any command lines you define that need
+the LIBS library list should
+include $_LIBFLAGS:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(LINKCOM=&quot;my_linker $_LIBDIRFLAGS $_LIBFLAGS -o $TARGET $SOURCE&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>LIBSUFFIX<DD>
+The suffix used for (static) library file names.
+<P>
+<DT>LIBSUFFIXES<DD>
+An array of legal suffixes for library file names.
+<P>
+<DT>LINK<DD>
+The linker.
+<P>
+<DT>LINKFLAGS<DD>
+General user options passed to the linker.
+Note that this variable should
+<I>not</I>
+
+contain
+<B>-l</B>
+
+(or similar) options for linking with the libraries listed in $LIBS,
+nor
+<B>-L</B>
+
+(or similar) library search path options
+that scons generates automatically from $LIBPATH.
+See
+<B>_LIBFLAGS</B>,
+
+above,
+for the variable that expands to library-link options,
+and
+<B>_LIBDIRFLAGS</B>,
+
+above,
+for the variable that expands to library search path options.
+<P>
+<DT>LINKCOM<DD>
+The command line used to link object files into an executable.
+<P>
+<DT>M4<DD>
+The M4 macro preprocessor.
+<P>
+<DT>M4FLAGS<DD>
+General options passed to the M4 macro preprocessor.
+<P>
+<DT>M4COM<DD>
+The command line used to pass files through the macro preprocessor.
+<P>
+<DT>MAXLINELENGTH<DD>
+The maximum number of characters allowed on an external command line.
+On Win32 systems,
+link lines longer than this many characters
+are linke via a temporary file name.
+<P>
+<DT>MSVS<DD>
+When the Microsoft Visual Studio tools are initialized, they set up
+this dictionary with the following keys:
+<P>
+<B>VERSION:</B>
+
+the version of MSVS being used (can be set via
+MSVS_VERSION)
+<P>
+<B>VERSIONS:</B>
+
+the available versions of MSVS installed
+<P>
+<B>VCINSTALLDIR:</B>
+
+installed directory of Visual C++
+<P>
+<B>VSINSTALLDIR:</B>
+
+installed directory of Visual Studio
+<P>
+<B>FRAMEWORKDIR:</B>
+
+installed directory of the .NET framework
+<P>
+<B>FRAMEWORKVERSIONS:</B>
+
+list of installed versions of the .NET framework, sorted latest to oldest.
+<P>
+<B>FRAMEWORKVERSION:</B>
+
+latest installed version of the .NET framework
+<P>
+<B>FRAMEWORKSDKDIR:</B>
+
+installed location of the .NET SDK.
+<P>
+<B>PLATFORMSDKDIR:</B>
+
+installed location of the Platform SDK.
+<P>
+<B>PLATFORMSDK_MODULES:</B>
+
+dictionary of installed Platform SDK modules,
+where the dictionary keys are keywords for the various modules, and
+the values are 2-tuples where the first is the release date, and the
+second is the version number.
+<P>
+If a value isn't set, it wasn't available in the registry.
+<P>
+<DT>MSVS_IGNORE_IDE_PATHS<DD>
+Tells the MS Visual Studio tools to use minimal INCLUDE, LIB, and PATH settings,
+instead of the settings from the IDE.
+<P>
+For Visual Studio, SCons will (by default) automatically determine
+where MSVS is installed, and use the LIB, INCLUDE, and PATH variables
+set by the IDE.  You can override this behavior by setting these
+variables after Environment initialization, or by setting
+<B>MSVS_IGNORE_IDE_PATHS = 1</B>
+
+in the Environment initialization.
+Specifying this will not leave these unset, but will set them to a
+minimal set of paths needed to run the tools successfully.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+For VS6, the mininimal set is:
+   INCLUDE:'&lt;VSDir&gt;\VC98\ATL\include;&lt;VSDir&gt;\VC98\MFC\include;&lt;VSDir&gt;\VC98\include'
+   LIB:'&lt;VSDir&gt;\VC98\MFC\lib;&lt;VSDir&gt;\VC98\lib'
+   PATH:'&lt;VSDir&gt;\Common\MSDev98\bin;&lt;VSDir&gt;\VC98\bin'
+For VS7, it is:
+   INCLUDE:'&lt;VSDir&gt;\Vc7\atlmfc\include;&lt;VSDir&gt;\Vc7\include'
+   LIB:'&lt;VSDir&gt;\Vc7\atlmfc\lib;&lt;VSDir&gt;\Vc7\lib'
+   PATH:'&lt;VSDir&gt;\Common7\Tools\bin;&lt;VSDir&gt;\Common7\Tools;&lt;VSDir&gt;\Vc7\bin'
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+Where '&lt;VSDir&gt;' is the installed location of Visual Studio.
+<P>
+<DT>MSVS_VERSION<DD>
+Sets the preferred version of MSVS to use.
+<P>
+SCons will (by default) select the latest version of MSVS
+installed on your machine.  So, if you have version 6 and version 7
+(MSVS .NET) installed, it will prefer version 7.  You can override this by
+specifying the 
+<B>MSVS_VERSION</B>
+
+variable in the Environment initialization, setting it to the
+appropriate version ('6.0' or '7.0', for example).
+If the given version isn't installed, tool initialization will fail.
+<P>
+<DT>MSVSPROJECTCOM<DD>
+The action used to generate Microsoft Visual Studio
+project and solution files.
+<P>
+<DT>MSVSPROJECTSUFFIX<DD>
+The suffix used for Microsoft Visual Studio project (DSP) files.
+The default value is
+<B>.vcproj</B>
+
+when using Visual Studio version 7.x (.NET),
+and
+<B>.dsp</B>
+
+when using earlier versions of Visual Studio.
+<P>
+<DT>MSVSSOLUTIONSUFFIX<DD>
+The suffix used for Microsoft Visual Studio solution (DSW) files.
+The default value is
+<B>.sln</B>
+
+when using Visual Studio version 7.x (.NET),
+and
+<B>.dsw</B>
+
+when using earlier versions of Visual Studio.
+<P>
+<DT>no_import_lib<DD>
+When set to non-zero,
+suppresses creation of a corresponding Win32 static import lib by the
+<B>SharedLibrary</B>
+
+builder when used with
+MinGW or Microsoft Visual Studio.
+This also suppresses creation
+of an export (.exp) file
+when using Microsoft Visual Studio.
+<P>
+<DT>OBJPREFIX<DD>
+The prefix used for (static) object file names.
+<P>
+<DT>OBJSUFFIX<DD>
+The suffix used for (static) object file names.
+<P>
+<DT>P4<DD>
+The Perforce executable.
+<P>
+<DT>P4COM<DD>
+The command line used to
+fetch source files from Perforce.
+<P>
+<DT>P4FLAGS<DD>
+General options that are passed to Perforce.
+<P>
+<DT>PCH<DD>
+The Microsoft Visual C++ precompiled header that will be used when compiling
+object files. This variable is ignored by tools other than Microsoft Visual C++.
+When this variable is
+defined SCons will add options to the compiler command line to
+cause it to use the precompiled header, and will also set up the
+dependencies for the PCH file. Example: 
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env['PCH'] = 'StdAfx.pch'
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>PCHSTOP<DD>
+This variable specifies how much of a source file is precompiled. This
+variable is ignored by tools other than Microsoft Visual C++, or when
+the PCH variable is not being used. When this variable is define it
+must be a string that is the name of the header that
+is included at the end of the precompiled portion of the source files, or
+the empty string if the &quot;#pragma hrdstop&quot; construct is being used:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env['PCHSTOP'] = 'StdAfx.h'
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>PDB<DD>
+The Microsoft Visual C++ PDB file that will store debugging information for
+object files, shared libraries, and programs. This variable is ignored by
+tools other than Microsoft Visual C++.
+When this variable is
+defined SCons will add options to the compiler and linker command line to
+cause them to generate external debugging information, and will also set up the
+dependencies for the PDB file. Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env['PDB'] = 'hello.pdb'
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>PDFCOM<DD>
+A deprecated synonym for $DVIPDFCOM.
+<P>
+<DT>PDFPREFIX<DD>
+The prefix used for PDF file names.
+<P>
+<DT>PDFSUFFIX<DD>
+The suffix used for PDF file names.
+<P>
+<DT>PLATFORM<DD>
+The name of the platform used to create the Environment.  If no platform is
+specified when the Environment is created,
+<B>SCons</B>
+
+autodetects the platform.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(tools = [])
+if env['PLATFORM'] == 'cygwin':
+    Tool('mingw')(env)
+else:
+    Tool('msvc')(env)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>PROGPREFIX<DD>
+The prefix used for executable file names.
+<P>
+<DT>PROGSUFFIX<DD>
+The suffix used for executable file names.
+<P>
+<DT>PSCOM<DD>
+The command line used to convert TeX DVI files into a PostScript file.
+<P>
+<DT>PSPREFIX<DD>
+The prefix used for PostScript file names.
+<P>
+<DT>PSSUFFIX<DD>
+The prefix used for PostScript file names.
+<P>
+<DT>QTDIR<DD>
+The qt tool tries to take this from os.environ.
+It also initializes all QT_*
+construction variables listed below.
+(Note that all paths are constructed
+with python's os.path.join() method, but listed here with the '/' seperator
+for easier reading.)
+In addition, the construction environment
+variables CPPPATH, LIBPATH, LIBS, PROGEMITTER, SHLIBEMITTER and LIBEMITTER
+are modified. Because the build-performance is affected when using this tool,
+you have to explicitly specify it at Environment creation:
+
+<DL COMPACT><DT><DD>
+<PRE>
+Environment(tools=['default','qt']).
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+You may want to use
+<B>Configure</B>
+
+to verify that the qt support really works.
+The qt tool supports the following operations:
+<P>
+<B>Automatic moc file generation from header files.</B>
+
+You do not have to specify moc files explicitly, the tool does it for you.
+However, there are a few preconditions to do so: Your header file must have
+the same filebase as your implementation file and must stay in the same
+directory. It must have one of the suffixes .h, .hpp, .H, .hxx, .hh.
+<P>
+<B>Automatic moc file generation from cxx files.</B>
+
+As stated in the qt documentation,
+include the moc file at the end of the cxx file.
+Note that you have to include the file, which is generated by the
+QT_MOCNAMEGENERATOR function. If you are using BuildDir, you may need to
+specify duplicate=1.
+<P>
+<B>Automatic handling of .ui files.</B>
+
+The implementation files generated from .ui files are handled much the same
+as yacc or lex files. Because there are also generated headers, you may
+need to specify duplicate=1 in calls to BuildDir.
+<P>
+<DT>QT_LIB<DD>
+Default value is 'qt'. You may want to set this to 'qt-mt'
+<P>
+<DT>QT_MOC<DD>
+Default value is '$QTDIR/bin/moc'.
+<P>
+<DT>QT_UIC<DD>
+Default value is '$QTDIR/bin/uic'.
+<P>
+<DT>QT_UICIMPLFLAGS<DD>
+Default value is ''. These flags are passed to uic, when creating a cxx
+file from a .ui file.
+<P>
+<DT>QT_UICDECLFLAGS<DD>
+Default value is ''. These flags are passed to uic, when creating a a h
+file from a .ui file.
+<P>
+<DT>QT_MOCFROMHFLAGS<DD>
+Default value is ''. These flags are passed to moc, when moccing a header
+file.
+<P>
+<DT>QT_MOCFROMCPPFLAGS<DD>
+Default value is '-i'. These flags are passed to moc, when moccing a
+cpp file.
+<P>
+<DT>QT_HSUFFIX<DD>
+Default value is '.h'. Suffix of headers generated with uic.
+<P>
+<DT>QT_UISUFFIX<DD>
+Default value is '.ui'. Suffix of designer files.
+<P>
+<DT>QT_UIHSUFFIX<DD>
+Default value is '.ui.h'.
+<P>
+<DT>QT_MOCNAMEGENERATOR<DD>
+Three-argument function, which generates names of moc output files.
+This is the most flexible way to support the huge number of conventions
+for this type of files. The arguments are the
+<I>filebase</I>
+
+, which is the file to be moc'd without path and extension, the
+<I>src_suffix</I>
+
+, which is the extension of the file to be moc'd and the environment
+<I>env</I>
+
+The default value maps 'myfile.myext' to 'moc_myfile.$CXXFILESUFFIX':
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+lambda filebase, src_suffix, env: 'moc_' + filebase + env['CXXFILESUFFIX']
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>QT_UICIMPLCOM<DD>
+Command to generate cxx files from .ui files.
+<P>
+<DT>QT_UICDECLCOM<DD>
+Command to generate header files from .ui files.
+<P>
+<DT>QT_MOCFROMHCOM<DD>
+Command to generate a moc file from a header.
+<P>
+<DT>QT_MOCFROMCXXCOM<DD>
+Command to generate a moc file from a cpp file.
+<P>
+<DT>RANLIB<DD>
+The archive indexer.
+<P>
+<DT>RANLIBFLAGS<DD>
+General options passed to the archive indexer.
+<P>
+<DT>RC<DD>
+The resource compiler used by the RES builder.
+<P>
+<DT>RCCOM<DD>
+The command line used by the RES builder.
+<P>
+<DT>RCFLAGS<DD>
+The flags passed to the resource compiler by the RES builder.
+<P>
+<DT>RCS<DD>
+The RCS executable.
+Note that this variable is not actually used
+for the command to fetch source files from RCS;
+see the
+<B>RCS_CO</B>
+
+construction variable, below.
+<P>
+<DT>RCS_CO<DD>
+The RCS &quot;checkout&quot; executable,
+used to fetch source files from RCS.
+<P>
+<DT>RCS_COCOM<DD>
+The command line used to
+fetch (checkout) source files from RCS.
+<P>
+<DT>RCS_COFLAGS<DD>
+Options that are passed to the $RCS_CO command.
+<P>
+<DT>RDirs<DD>
+A function that converts a file name into a list of Dir instances by
+searching the repositories. 
+<P>
+<DT>RMIC<DD>
+The Java RMI stub compiler.
+<P>
+<DT>RMICCOM<DD>
+The command line used to compile stub
+and skeleton class files
+from Java classes that contain RMI implementations.
+Any options specified in the $RMICFLAGS construction variable
+are included on this command line.
+<P>
+<DT>RMICFLAGS<DD>
+General options passed to the Java RMI stub compiler.
+<P>
+<DT>SCANNERS<DD>
+A list of the available implicit dependency scanners. [CScan] by default.
+<P>
+<DT>SCCS<DD>
+The SCCS executable.
+<P>
+<DT>SCCSCOM<DD>
+The command line used to
+fetch source files from SCCS.
+<P>
+<DT>SCCSFLAGS<DD>
+General options that are passed to SCCS.
+<P>
+<DT>SCCSGETFLAGS<DD>
+Options that are passed specifically to the SCCS &quot;get&quot; subcommand.
+This can be set, for example, to
+<I>-e</I>
+
+to check out editable files from SCCS.
+<P>
+<DT>SHCC<DD>
+The C compiler used for generating shared-library objects.
+<P>
+<DT>SHCCCOM<DD>
+The command line used to compile a C source file
+to a shared-library object file.
+Any options specified in the $SHCCFLAGS and $CPPFLAGS construction variables
+are included on this command line.
+<P>
+<DT>SHCCFLAGS<DD>
+Options that are passed to the C compiler
+to generate shared-library objects.
+<P>
+<DT>SHCXX<DD>
+The C++ compiler used for generating shared-library objects.
+<P>
+<DT>SHCXXCOM<DD>
+The command line used to compile a C++ source file
+to a shared-library object file.
+Any options specified in the $SHCXXFLAGS and $CPPFLAGS construction variables
+are included on this command line.
+<P>
+<DT>SHCXXFLAGS<DD>
+Options that are passed to the C++ compiler
+to generate shared-library objects.
+<P>
+<DT>SHELL<DD>
+A string naming the shell program that will be passed to the 
+<I>SPAWN </I>
+
+function. 
+See the 
+<I>SPAWN </I>
+
+construction variable for more information.
+<P>
+<DT>SHF77<DD>
+The Fortran compiler used for generating shared-library objects.
+<P>
+<DT>SHF77COM<DD>
+The command line used to compile a Fortran source file
+to a shared-library object file.
+<P>
+<DT>SHF77FLAGS<DD>
+Options that are passed to the Fortran compiler
+to generated shared-library objects.
+<P>
+<DT>SHF77PPCOM<DD>
+The command line used to compile a Fortran source file to a
+shared-library object file
+after first running the file through the C preprocessor.
+Any options specified in the $SHF77FLAGS and $CPPFLAGS construction variables
+are included on this command line.
+<P>
+<DT>SHLIBPREFIX<DD>
+The prefix used for shared library file names.
+<P>
+<DT>SHLIBSUFFIX<DD>
+The suffix used for shared library file names.
+<P>
+<DT>SHLINK<DD>
+The linker for programs that use shared libraries.
+<P>
+<DT>SHLINKFLAGS<DD>
+General user options passed to the linker for programs using shared libraries.
+Note that this variable should
+<I>not</I>
+
+contain
+<B>-l</B>
+
+(or similar) options for linking with the libraries listed in $LIBS,
+nor
+<B>-L</B>
+
+(or similar) include search path options
+that scons generates automatically from $LIBPATH.
+See
+<B>_LIBFLAGS</B>,
+
+above,
+for the variable that expands to library-link options,
+and
+<B>_LIBDIRFLAGS</B>,
+
+above,
+for the variable that expands to library search path options.
+<P>
+<DT>SHOBJPREFIX<DD>
+The prefix used for shared object file names.
+<P>
+<DT>SHOBJSUFFIX<DD>
+The suffix used for shared object file names.
+<P>
+<DT>SOURCE<DD>
+A reserved variable name
+that may not be set or used in a construction environment.
+(See &quot;Variable Substitution,&quot; below.)
+<P>
+<DT>SOURCES<DD>
+A reserved variable name
+that may not be set or used in a construction environment.
+(See &quot;Variable Substitution,&quot; below.)
+<P>
+<DT>SPAWN<DD>
+A command interpreter function that will be called to execute command line
+strings. The function must expect 4 arguments:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def spawn(shell, escape, cmd, args, env):
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+<I>sh</I>
+
+is a string naming the shell program to use.
+<I>escape</I>
+
+is a function that can be called to escape shell special characters in
+the command line. 
+<I>cmd</I>
+
+is the path to the command to be executed.
+<I>args</I>
+
+is that arguments to the command.
+<I>env</I>
+
+is a dictionary of the environment variables
+in which the command should be executed.
+
+
+
+
+
+
+
+
+
+
+
+<P>
+<DT>SWIG<DD>
+The scripting language wrapper and interface generator.
+<P>
+<DT>SWIGCFILESUFFIX<DD>
+The suffix that will be used for intermediate C
+source files generated by
+the scripting language wrapper and interface generator.
+The default value is
+<B>_wrap$CFILESUFFIX</B>.
+
+By default, this value is used whenever the
+<B>-c++</B>
+
+option is
+<I>not</I>
+
+specified as part of the
+<B>SWIGFLAGS</B>
+
+construction variable.
+<P>
+<DT>SWIGCOM<DD>
+The command line used to call
+the scripting language wrapper and interface generator.
+<P>
+<DT>SWIGCXXFILESUFFIX<DD>
+The suffix that will be used for intermediate C++
+source files generated by
+the scripting language wrapper and interface generator.
+The default value is
+<B>_wrap$CFILESUFFIX</B>.
+
+By default, this value is used whenever the
+<B>-c++</B>
+
+option is specified as part of the
+<B>SWIGFLAGS</B>
+
+construction variable.
+<P>
+<DT>SWIGFLAGS<DD>
+General options passed to
+the scripting language wrapper and interface generator.
+This is where you should set
+<B>-python</B>,
+
+<B>-perl5</B>,
+
+<B>-tcl</B>,
+
+or whatever other options you want to specify to SWIG.
+If you set the
+<B>-c++</B>
+
+option in this variable,
+<B>scons</B>
+
+will, by default,
+generate a C++ intermediate source file
+with the extension that is specified as the
+<B>$CXXFILESUFFIX</B>
+
+variable.
+<P>
+<DT>TAR<DD>
+The tar archiver.
+<P>
+<DT>TARCOM<DD>
+The command line used to call the tar archiver.
+<P>
+<DT>TARFLAGS<DD>
+General options passed to the tar archiver.
+<P>
+<DT>TARGET<DD>
+A reserved variable name
+that may not be set or used in a construction environment.
+(See &quot;Variable Substitution,&quot; below.)
+<P>
+<DT>TARGETS<DD>
+A reserved variable name
+that may not be set or used in a construction environment.
+(See &quot;Variable Substitution,&quot; below.)
+<P>
+<DT>TARSUFFIX<DD>
+The suffix used for tar file names.
+<P>
+<DT>TEX<DD>
+The TeX formatter and typesetter.
+<P>
+<DT>TEXCOM<DD>
+The command line used to call the TeX formatter and typesetter.
+<P>
+<DT>TEXFLAGS<DD>
+General options passed to the TeX formatter and typesetter.
+<P>
+<DT>TOOLS<DD>
+A list of the names of the Tool specifications
+that are part of this construction environment.
+<P>
+<DT>WIN32_INSERT_DEF<DD>
+When this is set to true,
+a library build of a WIN32 shared library (.dll file)
+will also build a corresponding .def file at the same time,
+if a .def file is not already listed as a build target.
+The default is 0 (do not build a .def file).
+<P>
+<DT>WIN32DEFPREFIX<DD>
+The prefix used for WIN32 .def file names.
+<P>
+<DT>WIN32DEFSUFFIX<DD>
+The suffix used for WIN32 .def file names.
+<P>
+<DT>YACC<DD>
+The parser generator.
+<P>
+<DT>YACCCOM<DD>
+The command line used to call the parser generator
+to generate a source file.
+<P>
+<DT>YACCFLAGS<DD>
+General options passed to the parser generator.
+If $YACCFLAGS contains a -d option,
+SCons assumes that the call will also create a .h file
+(if the yacc source file ends in a .y suffix)
+or a .hpp file
+(if the yacc source file ends in a .yy suffix)
+<P>
+<DT>ZIP<DD>
+The zip compression and file packaging utility.
+<P>
+<DT>ZIPCOM<DD>
+The command line used to call the zip utility.
+<P>
+<DT>ZIPFLAGS<DD>
+General options passed to the zip utility.
+<P>
+</DL>
+<P>
+
+Construction variables can be retrieved and set using the 
+<B>Dictionary </B>
+
+method of the construction environment:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+dict = env.Dictionary()
+dict[&quot;CC&quot;] = &quot;cc&quot;
+
+</DL>
+</PRE>
+
+
+<P>
+or using the [] operator:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env[&quot;CC&quot;] = &quot;cc&quot;
+
+</DL>
+</PRE>
+
+
+<P>
+Construction variables can also be passed to the construction environment
+constructor:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(CC=&quot;cc&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+or when copying a construction environment using the 
+<B>Copy </B>
+
+method:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env2 = env.Copy(CC=&quot;cl.exe&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbAK">&nbsp;</A>
+<H3>Configure contexts</H3>
+
+<P>
+<B>scons</B>
+
+supports
+<I>configure contexts,</I>
+
+an integrated mechanism similar to the
+various AC_CHECK macros in GNU autoconf
+for testing for the existence of C header
+files, libraries, etc.
+In contrast to autoconf,
+<B>scons</B>
+
+does not maintain an explicit cache of the tested values,
+but uses its normal dependency tracking to keep the checked values
+up to date. 
+The following methods can be used to perform checks:
+<P>
+<DL COMPACT>
+<DT>Configure(<I>env</I>, [<I>custom_tests</I>, <I>conf_dir</I>, <I>log_file</I>])
+
+<DD>
+This creates a configure context, which can be used to perform checks.
+<I>env</I>
+
+specifies the environment for building the tests.
+This environment may be modified when performing checks.
+<I>custom_tests</I>
+
+is a dictionary containing custom tests.
+See also the section about custom tests below. 
+By default, no custom tests are added to the configure context.
+<I>conf_dir</I>
+
+specifies a directory where the test cases are built.
+Note that this directory is not used for building
+normal targets.
+The default value is the directory
+#/.sconf_temp.
+<I>log_file</I>
+
+specifies a file which collects the output from commands
+that are executed to check for the existence of header files, libraries, etc.
+The default is the file #/config.log.
+If you are using the
+<B>BuildDir</B>
+
+method,
+you may want to specify a subdirectory under your build directory.
+<P>
+
+
+
+
+A created
+<B>Configure</B>
+
+instance has the following associated methods:
+<P>
+<DT>Configure.Finish(<I>self</I>)
+
+<DD>
+This method should be called after configuration is done.
+It returns the environment as modified
+by the configuration checks performed.
+After this method is called, no further checks can be performed
+with this configuration context.
+However, you can create a new 
+Configure
+
+context to perform additional checks.
+Only one context should be active at a time.
+<P>
+The following Checks are predefined.
+(This list will likely grow larger as time
+goes by and developers contribute new useful tests.)
+<P>
+<DT>Configure.CheckCHeader(<I>self</I>, <I>header</I>, [<I>include_quotes</I>])
+
+<DD>
+Checks if 
+<I>header</I>
+
+is usable in the C-language. The optional argument 
+<I>include_quotes </I>
+
+must be
+a two character string, where the first character denotes the opening
+quote and the second character denotes the closing quote (both default
+to N'34')
+Returns 1 on success and 0 on failure.
+<P>
+<DT>Configure.CheckCXXHeader(<I>self</I>, <I>header</I>, [<I>include_quotes</I>])
+
+<DD>
+Checks if 
+<I>header</I>
+
+is usable in the C++ language. The optional argument 
+<I>include_quotes </I>
+
+must be
+a two character string, where the first character denotes the opening
+quote and the second character denotes the closing quote (both default
+to N'34')
+Returns 1 on success and 0 on failure. 
+<P>
+<DT>Configure.CheckFunc(<I>self</I>, <I>function_name</I>)
+
+<DD>
+Checks if the specified
+C or C+++ function is available.
+<I>function_name</I>
+
+is the name of the function to check for.
+<P>
+<DT>Configure.CheckLib(<I>self</I>, [<I>library</I>, <I>symbol</I>, <I>autoadd</I>])
+
+<DD>
+Checks if 
+<I>library </I>
+
+provides 
+<I>symbol</I>.
+
+If the value of
+<I>autoadd</I>
+
+is 1 and the library provides the specified
+<I>symbol</I>,
+
+appends the library to the LIBS construction environment variable.
+<I>library </I>
+
+may also be None (the default),
+in which case 
+<I>symbol </I>
+
+is checked with the current LIBS variable.
+The default
+<I>symbol</I>
+
+is &quot;main&quot;,
+which just check if
+you can link against the specified
+<I>library</I>.
+
+The default value for
+<I>autoadd</I>
+
+is 1.
+It is assumed, that the C-language is used.
+This method returns 1 on success and 0 on error.
+<P>
+<DT>Configure.CheckLibWithHeader(<I>self</I>, <I>library</I>, <I>header</I>, <I>language</I>, [<I>call</I>, <I>autoadd</I>])
+
+<DD>
+<P>
+In contrast to the 
+Configure.CheckLib
+
+call, this call provides a more sophisticated way to check against libraries.
+Again, 
+<I>library</I>
+
+specifies the library to check. 
+<I>header</I>
+
+specifies a header to check for.
+<I>language</I>
+
+may be one of 'C','c','CXX','cxx','C++' and 'c++'.
+<I>call</I>
+
+can be any valid expression (with a trailing ';'). The default is 'main();'.
+<I>autoadd</I>
+
+specifies whether to add the library to the environment (only if the check 
+succeeds). This method returns 1 on success and 0 on error.
+<P>
+<DT>Configure.CheckType(<I>self</I>, <I>type_name</I>, [<I>includes</I>])
+
+<DD>
+Checks for the existence of a type defined by
+<B>typedef</B>.
+
+<I>type_name</I>
+
+specifies the typedef name to check for.
+<I>includes</I>
+
+is a string containing one or more
+<B>#include</B>
+
+lines that will be inserted into the program
+that will be run to test for the existence of the type.
+<P>
+
+
+
+
+Example of a typical Configure usage:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+conf = Configure( env )
+if not conf.CheckCHeader( 'math.h' ):
+    print 'We really need math.h!'
+    <A HREF="http://localhost/cgi-bin/man/man2html?1+Exit">Exit</A>(1)
+if conf.CheckLibWithHeader( 'qt', 'qapp.h', 'c++', 'QApplication qapp(0,0);' ):
+    # do stuff for qt - usage, e.g.
+    conf.env.Append( CPPFLAGS = '-DWITH_QT' )
+env = conf.Finish() 
+
+</DL>
+</PRE>
+
+
+<P>
+
+
+
+
+You can define your own custom checks. 
+in addition to the predefined checks.
+These are passed in a dictionary to the Configure function.
+This dictionary maps the names of the checks
+to user defined Python callables 
+(either Python functions or class instances implementing the
+<I>__call__</I>
+
+method).
+The first argument of the call is always a 
+<I>CheckContext</I>
+
+instance followed by the arguments,
+which must be supplied by the user of the check.
+These CheckContext instances define the following methods:
+<P>
+<DT>CheckContext.Message(<I>self</I>, <I>text</I>)
+
+<DD>
+<P>
+Usually called before the check is started. 
+<I>text</I>
+
+will be displayed to the user, e.g. 'Checking for library X...'
+<P>
+<DT>CheckContext.Result(<I>self,</I>, <I>res</I>)
+
+<DD>
+<P>
+Usually called after the check is done. 
+<I>res</I>
+
+can be either an integer or a string. In the former case, 'ok' (res != 0) 
+or 'failed' (res == 0) is displayed to the user, in the latter case the 
+given string is displayed.
+<P>
+<DT>CheckContext.TryCompile(<I>self</I>, <I>text</I>, <I>extension</I>)
+
+<DD>
+Checks if a file with the specified 
+<I>extension</I>
+
+(e.g. '.c') containing 
+<I>text </I>
+
+can be compiled using the environment's
+<B>Object </B>
+
+builder. Returns 1 on success and 0 on failure.
+<P>
+<DT>CheckContext.TryLink(<I>self</I>, <I>text</I>, <I>extension</I>)
+
+<DD>
+Checks, if a file with the specified
+<I>extension</I>
+
+(e.g. '.c') containing 
+<I>text </I>
+
+can be compiled using the environment's
+<B>Program</B>
+
+builder. Returns 1 on success and 0 on failure.
+<P>
+<DT>CheckContext.TryRun(<I>self</I>, <I>text</I>, <I>extension</I>)
+
+<DD>
+Checks, if a file with the specified
+<I>extension</I>
+
+(e.g. '.c') containing 
+<I>text </I>
+
+can be compiled using the environment's
+<B>Program</B>
+
+builder. On success, the program is run. If the program
+executes successfully
+(that is, its return status is 0),
+a tuple
+<I>(1, outputStr)</I>
+
+is returned, where
+<I>outputStr</I>
+
+is the standard output of the
+program.
+If the program fails execution
+(its return status is non-zero),
+then (0, '') is returned.
+<P>
+<DT>CheckContext.TryAction(<I>self</I>, <I>action</I>, [<I>text</I>, <I>extension</I>])
+
+<DD>
+Checks if the specified
+<I>action </I>
+
+with an optional source file (contents
+<I>text</I>
+
+, extension 
+<I>extension</I>
+
+= ''
+) can be executed. 
+<I>action </I>
+
+may be anything which can be converted to a 
+<B>scons</B>
+
+Action.
+
+On success,
+<I>(1, outputStr)</I>
+
+is returned, where
+<I>outputStr</I>
+
+is the content of the target file.
+On failure
+<I>(0, '')</I>
+
+is returned.
+<P>
+<DT>CheckContext.TryBuild(<I>self</I>, <I>builder</I>, [<I>text</I>, <I>extension</I>])
+
+<DD>
+Low level implementation for testing specific builds;
+the methods above are based on this method.
+Given the Builder instance
+<I>builder</I>
+
+and the optional 
+<I>text</I>
+
+of a source file with optional
+<I>extension</I>,
+
+this method returns 1 on success and 0 on failure. In addition, 
+<I>self.lastTarget </I>
+
+is set to the build target node, if the build was successful.
+<P>
+
+
+
+
+Example for implementing and using custom tests:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def CheckQt(context, qtdir):
+    context.Message( 'Checking for qt ...' )
+    lastLIBS = context.env['LIBS']
+    lastLIBPATH = context.env['LIBPATH']
+    lastCPPPATH= context.env['CPPPATH']
+    context.env.Append(LIBS = 'qt', LIBPATH = qtdir + '/lib', CPPPATH = qtdir + '/include' )
+    ret = context.TryLink(&quot;&quot;&quot;
+#include &lt;<A HREF="file:/usr/include/qapp.h">qapp.h</A>&gt;
+int main(int argc, char **argv) { 
+  QApplication qapp(argc, argv);
+  return 0;
+}
+&quot;&quot;&quot;)
+    if not ret:
+        context.env.Replace(LIBS = lastLIBS, LIBPATH=lastLIBPATH, CPPPATH=lastCPPPATH)
+    context.Result( ret )
+    return ret
+
+env = Environment()
+conf = Configure( env, custom_tests = { 'CheckQt' : CheckQt } )
+if not conf.CheckQt('/usr/lib/qt'):
+    print 'We really need qt!'
+    <A HREF="http://localhost/cgi-bin/man/man2html?1+Exit">Exit</A>(1)
+env = conf.Finish() 
+
+</DL>
+</PRE>
+
+
+<P>
+</DL>
+<A NAME="lbAL">&nbsp;</A>
+<H3>Construction Variable Options</H3>
+
+<P>
+Often when building software, various options need to be specified at build
+time that are not known when the SConstruct/SConscript files are
+written. For example, libraries needed for the build may be in non-standard
+locations, or site-specific compiler options may need to be passed to the
+compiler. 
+<B>scons</B>
+
+provides a mechanism for overridding construction variables from the
+command line or a text-based SConscript file through an Options
+object. To create an Options object, call the Options() function:
+<P>
+<DL COMPACT>
+<DT>Options([<I>files</I>], [<I>args</I>])
+
+<DD>
+This creates an Options object that will read construction variables from
+the file or list of filenames specified in
+<I>files</I>.
+
+If no files are specified,
+or the
+<I>files</I>
+
+argument is
+<B>None</B>,
+
+then no files will be read.
+The optional argument
+<I>args</I>
+
+is a dictionary of
+values that will override anything read from the specified files;
+it is primarily intended to be passed the
+<B>ARGUMENTS</B>
+
+dictionary that holds variables
+specified on the command line.
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+opts = Options('custom.py')
+opts = Options('overrides.py', ARGUMENTS)
+opts = Options(None, {FOO:'expansion', BAR:7})
+
+</DL>
+</PRE>
+
+
+<P>
+Options objects have the following methods:
+<P>
+<DT>Add(<I>key</I>, [<I>help</I>, <I>default</I>, <I>validator</I>, <I>converter</I>])
+
+<DD>
+This adds a customizable construction variable to the Options object. 
+<I>key</I>
+
+is the name of the variable. 
+<I>help </I>
+
+is the help text for the variable.
+<I>default </I>
+
+is the default value of the variable.
+<I>validator</I>
+
+is called to validate the value of the variable, and should take three
+arguments: key, value, and environment
+<I>converter</I>
+
+is called to convert the value before putting it in the environment, and
+should take a single argument: value. Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+opts.Add('CC', 'The C compiler')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Update(<I>env</I>, [<I>args</I>])
+
+<DD>
+This updates a construction environment
+<I>env</I>
+
+with the customized construction variables. Normally this method is not
+called directly, but is called indirectly by passing the Options object to
+the Environment() function:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(options=opts)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Save(<I>filename</I>, <I>env</I>)
+
+<DD>
+This saves the currently set options into a script file named  
+<I>filename</I>
+
+that can be used on the next invocation to automatically load the current
+settings.  This method combined with the Options method can be used to
+support caching of options between runs.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+opts = Options(['options.cache', 'custom.py'])
+opts.Add(...)
+opts.Update(env)
+opts.Save('options.cache', env)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>GenerateHelpText(<I>env</I>, [<I>sort</I>])
+
+<DD>
+This generates help text documenting the customizable construction
+variables suitable to passing in to the Help() function. 
+<I>env</I>
+
+is the construction environment that will be used to get the actual values
+of customizable variables. Calling with 
+an optional
+<I>sort</I>
+
+function
+will cause the output to be sorted
+by the specified argument.
+The specific
+<I>sort</I>
+
+function
+should take two arguments
+and return
+-1, 0 or 1
+(like the standard Python
+<I>cmp</I>
+
+function).
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+Help(opts.GenerateHelpText(env))
+Help(opts.GenerateHelpText(env, sort=cmp))
+
+</DL>
+</PRE>
+
+
+<P>
+The text based SConscript file is executed as a Python script, and the
+global variables are queried for customizable construction
+variables. Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+CC = 'my_cc'
+
+</DL>
+</PRE>
+
+
+<P>
+</DL>
+<A NAME="lbAM">&nbsp;</A>
+<H3>Other Functions</H3>
+
+<P>
+<B>scons</B>
+
+also provides various additional functions,
+not associated with a construction environment,
+that SConscript files can use:
+<P>
+<DL COMPACT>
+<DT>AddPostAction(<I>target</I>, <I>action</I>)
+
+<DD>
+Arranges for the specified
+<I>action</I>
+
+to be performed
+after the specified
+<I>target</I>
+
+has been built.
+The specified action(s) may be
+an Action object, or anything that
+can be converted into an Action object
+(see below).
+<P>
+<DT>AddPreAction(<I>target</I>, <I>action</I>)
+
+<DD>
+Arranges for the specified
+<I>action</I>
+
+to be performed
+before the specified
+<I>target</I>
+
+is built.
+The specified action(s) may be
+an Action object, or anything that
+can be converted into an Action object
+(see below).
+<P>
+<DT>Alias(<I>name</I>)
+
+<DD>
+Creates or references an alias independent of the construction environment.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+Alias('install')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>BuildDir(<I>build_dir</I>, <I>src_dir</I>, [<I>duplicate</I>])
+
+<DD>
+This specifies a build directory
+<I>build_dir</I>
+
+in which to build all derived files
+that would normally be built under
+<I>src_dir</I>.
+
+Multiple build directories can be set up for multiple build variants, for
+example. 
+<I>src_dir</I>
+
+must be underneath the SConstruct file's directory,
+and
+<I>build_dir</I>
+
+may not be underneath the
+<I>src_dir .</I>
+
+<P>
+The default behavior is for
+<B>scons</B>
+
+to duplicate all of the files in the tree underneath
+<I>src_dir</I>
+
+into
+<I>build_dir</I>,
+
+and then build the derived files within the copied tree.
+(The duplication is performed by
+linking or copying,
+depending on the platform.)
+This guarantees correct builds
+regardless of whether intermediate source files
+are generated during the build,
+where preprocessors or other scanners search
+for included files,
+or whether individual compilers or other invoked tools
+are hard-coded to put derived files in the same directory as source files.
+<P>
+This behavior of making a complete copy of the source tree
+may be disabled by setting
+<I>duplicate</I>
+
+to 0.
+This will cause
+<B>scons</B>
+
+to invoke Builders using the
+path names of source files in
+<I>src_dir</I>
+
+and the path names of derived files within
+<I>build_dir</I>.
+
+This is always more efficient than
+<I>duplicate</I>=1,
+
+and is usually safe for most builds.
+Specifying
+<I>duplicate</I>=0,
+
+however,
+may cause build problems
+if source files are generated during the build,
+if any invoked tools are hard-coded to
+put derived files in the same directory as the source files.
+<P>
+Note that specifying a
+<B>BuildDir</B>
+
+works most naturally
+with a subsidiary SConscript file
+in the source directory.
+However,
+you would then call the subsidiary SConscript file
+not in the source directory,
+but in the
+<I>build_dir ,</I>
+
+as if
+<B>scons</B>
+
+had made a virtual copy of the source tree
+regardless of the value of 
+<I>duplicate</I>.
+
+This is how you tell
+<B>scons</B>
+
+which variant of a source tree to build.
+For example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+BuildDir('build-variant1', 'src')
+SConscript('build-variant1/SConscript')
+BuildDir('build-variant2', 'src')
+SConscript('build-variant2/SConscript')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+See also the
+<B>SConscript</B>()
+
+function, described below,
+for another way to 
+specify a build directory
+in conjunction with calling a subsidiary
+SConscript file.)
+<P>
+<DT>CacheDir(<I>cache_dir</I>)
+
+<DD>
+Specifies that
+<B>scons</B>
+
+will maintain a cache of derived files in
+<I>cache_dir .</I>
+
+The derived files in the cache will be shared
+among all the builds using the same
+<B>CacheDir</B>()
+
+call.
+<P>
+When a
+<B>CacheDir</B>()
+
+is being used and
+<B>scons</B>
+
+finds a derived file that needs to be rebuilt,
+it will first look in the cache to see if a
+derived file has already been built
+from identical input files and an identical build action
+(as incorporated into the MD5 build signature).
+If so,
+<B>scons</B>
+
+will retrieve the file from the cache.
+If the derived file is not present in the cache,
+<B>scons</B>
+
+will rebuild it and
+then place a copy of the built file in the cache
+(identified by its MD5 build signature),
+so that it may be retrieved by other
+builds that need to build the same derived file
+from identical inputs.
+<P>
+Use of a specified
+<B>CacheDir()</B>
+
+may be disabled for any invocation
+by using the
+<B>--cache-disable</B>
+
+option.
+<P>
+If the
+<B>--cache-force</B>
+
+option is used,
+<B>scons</B>
+
+will place a copy of
+<I>all</I>
+
+derived files in the cache,
+even if they already existed
+and were not built by this invocation.
+This is useful to populate a cache
+the first time
+<B>CacheDir</B>()
+
+is added to a build,
+or after using the
+<B>--cache-disable</B>
+
+option.
+<P>
+When using
+<B>CacheDir</B>(),
+
+<B>scons</B>
+
+will report,
+&quot;Retrieved `file' from cache,&quot;
+unless the
+<B>--cache-show</B>
+
+option is being used.
+When the
+<B>--cache-show</B>
+
+option is used,
+<B>scons</B>
+
+will print the action that
+<I>would</I>
+
+have been used to build the file,
+without any indication that
+the file was actually retrieved from the cache.
+This is useful to generate build logs
+that are equivalent regardless of whether
+a given derived file has been built in-place
+or retrieved from the cache.
+<P>
+<DT>Clean(<I>target</I>, <I>files_or_dirs</I>)
+
+<DD>
+This specifies a list of files or directories which should be removed
+whenever the target is specified with the
+<B>-c</B>
+
+command line option.
+Multiple calls to
+<B>Clean</B>()
+
+are legal,
+and create a new target or add files and directories to the
+clean list for the specified target.
+<P>
+Multiple files or directories should be specified
+either as separate arguments to the
+<B>Clean</B>()
+
+method, or as a list.
+<B>Clean</B>()
+
+will also accept the return value of any of the construction environment
+Builder methods.
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+Clean('foo', ['bar', 'baz'])
+Clean('dist', env.Program('hello', 'hello.c'))
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Default(<I>targets</I>)
+
+<DD>
+This specifies a list of default targets,
+which will be built by
+<B>scons</B>
+
+if no explicit targets are given on the command line.
+Multiple calls to
+<B>Default</B>()
+
+are legal,
+and add to the list of default targets.
+<P>
+Multiple targets should be specified as
+separate arguments to the
+<B>Default</B>()
+
+method, or as a list.
+<B>Default</B>()
+
+will also accept the Node returned by any
+of a construction environment's
+builder methods.
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+Default('foo', 'bar', 'baz')
+Default(['a', 'b', 'c'])
+hello = env.Program('hello', 'hello.c')
+Default(hello)
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+An argument to
+<B>Default</B>()
+
+of
+<B>None</B>
+
+will clear all default targets.
+Later calls to
+<B>Default</B>()
+
+will add to the (now empty) default-target list
+like normal.
+<P>
+<DT>DefaultEnvironment([<I>args</I>])
+
+<DD>
+Creates and returns a default construction environment object.
+This construction environment is used internally by SCons
+in order to fetch source files transparently
+from source code management systems.
+<P>
+<DT>Dir(<I>name</I>, [<I>directory</I>])
+
+<DD>
+This returns an object that represents a given directory 
+<I>name</I>.
+
+<I>name</I>
+
+can be a relative or absolute path. 
+<I>directory</I>
+
+is an optional directory that will be used as the parent directory. 
+<P>
+<DT>EnsurePythonVersion(<I>major</I>, <I>minor</I>)
+
+<DD>
+Ensure that the Python version is at least 
+<I>major</I>.<I>minor</I>.
+
+This function will
+print out an error message and exit SCons with a non-zero exit code if the
+actual Python version is not late enough.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+EnsurePythonVersion(2,2)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>EnsureSConsVersion(<I>major</I>, <I>minor</I>)
+
+<DD>
+Ensure that the SCons version is at least 
+<I>major</I>.<I>minor</I>.
+
+This function will
+print out an error message and exit SCons with a non-zero exit code if the
+actual SCons version is not late enough.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+EnsureSConsVersion(0,9)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Exit([<I>value</I>])
+
+<DD>
+This tells
+<B>scons</B>
+
+to exit immediately
+with the specified
+<I>value</I>.
+
+A default exit value of
+<B>0</B>
+
+(zero)
+is used if no value is specified.
+<P>
+<DT>Export(<I>vars</I>)
+
+<DD>
+This tells 
+<B>scons</B>
+
+to export a list of variables from the current
+SConscript file to all other SConscript files.
+The exported variables are kept in a global collection,
+so subsequent calls to
+<B>Export</B>()
+
+will over-write previous exports that have the same name. 
+Multiple variable names can be passed to
+<B>Export</B>()
+
+as separate arguments or as a list. A dictionary can be used to map
+variables to a different name when exported. Both local variables and
+global variables can be exported.
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+# Make env available for all SConscript files to Import().
+Export(&quot;env&quot;)
+
+package = 'my_name'
+# Make env and package available for all SConscript files:.
+Export(&quot;env&quot;, &quot;package&quot;)
+
+# Make env and package available for all SConscript files:
+Export([&quot;env&quot;, &quot;package&quot;])
+
+# Make env available using the name debug:.
+Export({&quot;debug&quot;:env})
+
+</DL>
+</PRE>
+
+
+<P>
+<DT><DD>
+Note that the
+<B>SConscript</B>()
+
+function supports an
+<I>exports</I>
+
+argument that makes it easier to to export a variable or
+set of variables to a single SConscript file.
+See the description of the
+<B>SConscript</B>()
+
+function, below.
+<P>
+<DT>File(<I>name</I>, [<I>directory</I>])
+
+<DD>
+This returns an object that represents a given file 
+<I>name</I>.
+
+<I>name</I>
+
+can be a relative or absolute path. 
+<I>directory</I>
+
+is an optional directory that will be used as the parent directory. 
+<P>
+<DT>FindFile(<I>file</I>, <I>dirs</I>)
+
+<DD>
+Search for 
+<I>file </I>
+
+in the path specified by 
+<I>dirs</I>.
+
+<I>file</I>
+
+may be a list of file names or a single file name. In addition to searching
+for files that exist in the filesytem, this function also searches for
+derived files that have not yet been built.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+foo = FindFile('foo', ['dir1', 'dir2'])
+
+</DL>
+</PRE>
+
+
+
+
+
+
+
+
+
+
+<P>
+<DT>GetOption(<I>name</I>)
+
+<DD>
+This function provides a way to query a select subset of the scons command line
+options from a SConscript file. See 
+<I>SetOption</I>()
+
+for a description of the options available.
+<P>
+<DT>Help(<I>text</I>)
+
+<DD>
+This specifies help text to be printed if the 
+<B>-h </B>
+
+argument is given to
+<B>scons</B>.
+
+<B>scons</B>
+
+will exit after printing out the help text.
+<P>
+<DT>Import(<I>vars</I>)
+
+<DD>
+This tells 
+<B>scons</B>
+
+to import a list of variables into the current SConscript file. This
+will import variables that were exported with
+<B>Export</B>()
+
+or in the 
+<I>exports</I>
+
+argument to 
+<B>SConscript</B>().
+
+Variables exported by 
+<B>SConscript</B>()
+
+have precedence.
+Multiple variable names can be passed to 
+<B>Import</B>()
+
+as separate arguments or as a list. The variable &quot;*&quot; can be used
+to import all variables.
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+Import(&quot;env&quot;)
+Import(&quot;env&quot;, &quot;variable&quot;)
+Import([&quot;env&quot;, &quot;variable&quot;])
+Import(&quot;*&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Literal(<I>string</I>)
+
+<DD>
+The specified
+<I>string</I>
+
+will be preserved as-is
+and not have construction variables expanded.
+<P>
+<DT>Local(<I>targets</I>)
+
+<DD>
+The specified
+<I>targets</I>
+
+will have copies made in the local tree,
+even if an already up-to-date copy
+exists in a repository.
+<P>
+<DT>ParseConfig(<I>env</I>, <I>command</I>, [<I>function</I>])
+
+<DD>
+Calls the specified
+<I>function</I>
+
+to modify the specified environment
+<I>env</I>
+
+as specified by the output of
+<I>command .</I>
+
+The default
+<I>function</I>
+
+expects the output of a typical
+<I>*-config command</I>
+
+(for example,
+<B>gtk-config</B>)
+
+and parses the returned
+<B>-L</B>,
+
+<B>-l</B>,
+
+<B>-I</B>
+
+and other options
+into the
+<B>LIBPATH</B>,
+
+<B>LIBS</B>,
+
+<B>CPPPATH</B>
+
+and
+<B>CCFLAGS</B>
+
+variables,
+respectively.
+<P>
+<DT>Platform(<I>string</I>)
+
+<DD>
+Returns a callable object
+that can be used to initialize
+a construction environment using the
+platform keyword of the Environment() method.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(platform = Platform('win32'))
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+Note that the
+<B>win32</B>
+
+platform adds the
+<B>SYSTEMROOT</B>
+
+variable from the user's external environment
+to the construction environment's
+<B>ENV</B>
+
+dictionary.
+This is so that any executed commands
+that use sockets to connect with other systems
+(such as fetching source files from
+external CVS repository specifications like 
+<B>:pserver:<A HREF="mailto:anonymous@cvs.sourceforge.net">anonymous@cvs.sourceforge.net</A>:/cvsroot/scons</B>)
+
+will work on Win32 systems.
+<P>
+<DT>Repository(<I>directory</I>)
+
+<DD>
+Specifies that
+<I>directory</I>
+
+is a repository to be searched for files.
+Multiple calls to
+<B>Repository</B>()
+
+are legal,
+and each one adds to the list of
+repositories that will be searched.
+<P>
+To
+<B>scons</B>,
+
+a repository is a copy of the source tree,
+from the top-level directory on down,
+which may contain
+both source files and derived files
+that can be used to build targets in
+the local source tree.
+The canonical example would be an
+official source tree maintained by an integrator.
+If the repository contains derived files,
+then the derived files should have been built using
+<B>scons</B>,
+
+so that the repository contains the necessary
+signature information to allow
+<B>scons</B>
+
+to figure out when it is appropriate to
+use the repository copy of a derived file,
+instead of building one locally.
+<P>
+Note that if an up-to-date derived file
+already exists in a repository,
+<B>scons</B>
+
+will
+<I>not</I>
+
+make a copy in the local directory tree.
+In order to guarantee that a local copy
+will be made,
+use the
+<B>Local()</B>
+
+method.
+<P>
+<DT>Return(<I>vars</I>)
+
+<DD>
+This tells
+<B>scons</B>
+
+what variable(s) to use as the return value(s) of the current SConscript
+file. These variables will be returned to the &quot;calling&quot; SConscript file
+as the return value(s) of 
+<B>SConscript</B>().
+
+Multiple variable names should be passed to 
+<B>Return</B>()
+
+as a list. Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+Return(&quot;foo&quot;)
+Return([&quot;foo&quot;, &quot;bar&quot;])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>SetOption(<I>name</I>, <I>value</I>)
+
+<DD>
+This function provides a way to set a select subset of the scons command
+line options from a SConscript file. The options supported are: clean which
+cooresponds to -c, --clean, and --remove; implicit_cache which corresponds
+to --implicit-cache; max_drift which corresponds to --max-drift; and
+num_jobs which corresponds to -j and --jobs. See the documentation for the
+corresponding command line object for information about each specific
+option. Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+SetOption('max_drift', 1)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>SConscript(<I>scripts</I>, [<I>exports</I>, <I>build_dir</I>, <I>src_dir</I>, <I>duplicate</I>])
+
+<DD>
+<DT>SConscript(dirs=<I>subdirs</I>, [name=<I>script</I>, <I>exports</I>, <I>build_dir</I>, <I>src_dir</I>, <I>duplicate</I>])
+
+<DD>
+This tells
+<B>scons</B>
+
+to execute
+one or more subsidiary SConscript (configuration) files.
+There are two ways to call the
+<B>SConscript</B>()
+
+function.
+<P>
+The first way you can call
+<B>SConscript</B>()
+
+is to explicitly specify one or more
+<I>scripts</I>
+
+as the first argument.
+A single script may be specified as a string;
+multiple scripts must be specified as a list
+(either explicitly or as created by
+a function like
+<B>Split</B>()).
+
+<P>
+The second way you can call
+<B>SConscript</B>()
+
+is to specify a list of (sub)directory names
+as a
+dirs=<I>subdirs</I>
+
+keyword argument.
+In this case,
+<B>scons</B>
+
+will, by default,
+execute a subsidiary configuration file named
+<B>SConscript</B>
+
+in each of the specified directories.
+You may specify a name other than
+<B>SConscript</B>
+
+by supplying an optional
+name=<I>script</I>
+
+keyword argument.
+<P>
+The optional 
+<I>exports</I>
+
+argument provides a list of variable names or a dictionary of
+named values to export to the
+<I>script(s)</I>. 
+
+These variables are locally exported only to the specified
+<I>script(s)</I>,
+
+and do not affect the
+global pool of variables used by
+the
+<B>Export</B>()
+
+function.
+
+
+The subsidiary
+<I>script(s)</I>
+
+must use the
+<B>Import</B>()
+
+function to import the variables.
+<P>
+The optional
+<I>build_dir</I>
+
+argument specifies that all of the target files
+(for example, object files and executables)
+that would normally be built in the subdirectory in which
+<I>script</I>
+
+resides should actually
+be built in
+<I>build_dir</I>.
+
+<P>
+The optional
+<I>src_dir</I>
+
+argument specifies that the
+source files from which
+the target files should be built
+can be found in
+<I>src_dir</I>.
+
+<P>
+By default,
+<B>scons</B>
+
+will link or copy (depending on the platform)
+all the source files into the build directory.
+This behavior may be disabled by
+setting the optional
+<I>duplicate</I>
+
+argument to 0
+(it is set to 1 by default),
+in which case
+<B>scons</B>
+
+will refer directly to
+the source files in their source directory
+when building target files.
+(Setting
+<I>duplicate</I>=0
+
+is usually safe, and always more efficient
+than the default of
+<I>duplicate</I>=1,
+
+but it may cause build problems in certain end-cases,
+such as compiling from source files that
+are generated by the build.)
+<P>
+Any variables returned by 
+<I>script </I>
+
+using 
+<B>Return</B>()
+
+will be returned by the call to
+<B>SConscript</B>().
+
+<P>
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+SConscript('subdir/SConscript')
+foo = SConscript('sub/SConscript', exports='env')
+SConscript('dir/SConscript', exports=['env', 'variable'])
+SConscript('src/SConscript', build_dir='build', duplicate=0)
+SConscript('bld/SConscript', src_dir='src', exports='env variable')
+SConscript(dirs=['sub1', 'sub2'])
+SConscript(dirs=['sub3', 'sub4'], name='MySConscript')
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>SConscriptChdir(<I>value</I>)
+
+<DD>
+By default,
+<B>scons</B>
+
+changes its working directory
+to the directory in which each
+subsidiary SConscript file lives.
+This behavior may be disabled
+by specifying:
+
+<DL COMPACT><DT><DD>
+<PRE>
+SConscriptChdir(0)
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+in which case
+<B>scons</B>
+
+will stay in the top-level directory
+while reading all SConscript files.
+(This may be necessary when building from repositories,
+when all the directories in which SConscript files may be found
+don't necessarily exist locally.)
+<P>
+You may enable and disable
+this ability by calling
+SConscriptChdir()
+multiple times:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+SConscriptChdir(0)
+SConscript('foo/SConscript')    # will not chdir to foo
+<A HREF="http://localhost/cgi-bin/man/man2html?1+SConscriptChdir">SConscriptChdir</A>(1)
+SConscript('bar/SConscript')    # will chdir to bar
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>SourceSignatures(<I>type</I>)
+
+<DD>
+This function tells SCons what type of signature to use for source files:
+<B>MD5</B>
+
+or
+<B>timestamp</B>.
+
+&quot;MD5&quot; means the signature of a source file
+is the MD5 checksum of its contents.
+&quot;timestamp&quot; means the signature of a source file
+is its timestamp (modification time).
+When using &quot;timestamp&quot; signatures,
+changes in the command line will not cause files to be rebuilt.
+&quot;MD5&quot; signatures take longer to compute,
+but are more accurate than &quot;timestamp&quot; signatures.
+The default is &quot;MD5&quot;.
+<P>
+<DT>Split(<I>arg</I>)
+
+<DD>
+Returns a list of file names or other objects.
+If arg is a string,
+it will be split on strings of white-space characters
+within the string,
+making it easier to write long lists of file names.
+If arg is already a list,
+the list will be returned untouched.
+If arg is any other type of object,
+it will be returned as a list
+containing just the object.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+files = Split(&quot;f1.c f2.c f3.c&quot;)
+files = Split(&quot;&quot;&quot;
+        f4.c
+        f5.c
+        f6.c
+&quot;&quot;&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>TargetSignatures(<I>type</I>)
+
+<DD>
+This function tells SCons what type of signatures to use
+for target files:
+<B>build</B>
+
+or
+<B>content</B>.
+
+&quot;build&quot; means the signature of a target file
+is made by concatenating all of the
+signatures of all its source files.
+&quot;content&quot; means the signature of a target
+file is an MD5 checksum of its contents.
+&quot;build&quot; signatures are usually faster to compute,
+but &quot;content&quot; signatures can prevent unnecessary rebuilds
+when a target file is rebuilt to the exact same contents as last time.
+The default is &quot;build&quot;.
+<P>
+<DT>Tool(<I>string</I>)
+
+<DD>
+Returns a callable object
+that can be used to initialize
+a construction environment using the
+tools keyword of the Environment() method.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(tools = [ Tool('msvc') ])
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+The object may be called with a construction
+environment as an argument,
+in which case the object will be
+add the necessary variables
+to the construction environment
+and the name of the tool will be added to the
+<B>$TOOLS</B>
+
+construction variable.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+t = Tool('msvc')
+t(env)  # adds 'msvc' to the TOOLS variable
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Value(<I>value</I>)
+
+<DD>
+Returns a Node object representing the specified Python value.  Value
+nodes can be used as dependencies of targets.  If the result of
+calling
+<B>str(</B>value<B>)</B>
+
+changes between SCons runs, any targets depending on
+<B>Value(</B>value<B>)</B>
+
+will be rebuilt.  When using timestamp source signatures, Value nodes'
+timestamps are equal to the system time when the node is created.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def create(target, source, env):
+    f = open(str(target[0]), 'wb')
+    f.write('prefix=' + source[0].get_contents())
+    
+prefix = ARGUMENTS.get('prefix', '/usr/local')
+env = Environment()
+env['BUILDERS']['Config'] = Builder(action = create)
+env.Config(target = 'package-config', source = Value(prefix))
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>WhereIs(<I>program</I>, [<I>path</I>, [<I>pathext</I>]])
+
+<DD>
+<P>
+Searches for the specified executable
+<I>program,</I>
+
+returning the full path name to the program
+if it is found,
+and returning None if not.
+Searches the specified
+<I>path,</I>
+
+or the user's current PATH
+(os.environ['PATH'])
+by default.
+On Win32 systems, searches for executable
+programs with any of the file extensions
+listed in the specified
+<I>pathext,</I>
+
+or the user's current PATHEXT
+(os.environ['PATHEXT'])
+by default.
+<P>
+</DL>
+<A NAME="lbAN">&nbsp;</A>
+<H2>EXTENDING SCONS</H2>
+
+<A NAME="lbAO">&nbsp;</A>
+<H3>Builder Objects</H3>
+
+<B>scons</B>
+
+can be extended by adding new builders to a construction
+environment using the 
+<B>Builder </B>
+
+function.
+The
+<B>Builder</B>
+
+function accepts the following arguments:
+<P>
+<DL COMPACT>
+<DT>action<DD>
+The command line string used to build the target from the source. 
+<B>action</B>
+
+can also be:
+a list of strings representing the command
+to be executed and its arguments
+(suitable for enclosing white space in an argument),
+a dictionary
+mapping source file name suffixes to
+any combination of command line strings
+(if the builder should accept multiple source file extensions),
+a Python function;
+an Action object
+(see the next section);
+or a list of any of the above.
+<P>
+An action function
+takes three arguments:
+<I>source </I>
+
+- a list of source nodes, 
+<I>target</I>
+
+- a list of target nodes,
+<I>env</I>
+
+- the construction environment.
+<P>
+<DT>multi<DD>
+Specifies whether this builder is allowed to be called multiple times for
+the same target file(s). The default is 0, which means the builder
+can not be called multiple times for the same target file(s). Calling a
+builder multiple times for the same target simply adds additional source
+files to the target; it is not allowed to change the environment associated
+with the target, specify addition environment overrides, or associate a different
+builder with the target. 
+<P>
+<DT>prefix<DD>
+The prefix that will be prepended to the target file name.
+This may be a simple string,  or a callable object that takes
+two arguments, a construction environment and a list of sources,
+and returns a prefix.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+b = Builder(&quot;build_it &lt; $SOURCE &gt; $TARGET&quot;
+            prefix = &quot;file-&quot;)
+
+def gen_prefix(env, sources):
+    return &quot;file-&quot; + env['PLATFORM'] + '-'
+b = Builder(&quot;build_it &lt; $SOURCE &gt; $TARGET&quot;
+            prefix = gen_prefix)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>suffix<DD>
+The suffix that will be appended to the target file name.
+This may be a simple string, or a callable object that takes
+two arguments, a construction environment and a list of sources,
+and returns a suffix.
+If the suffix is a string, then
+<B>scons</B>
+
+will append a '.' to the beginning of the
+suffix if it's not already there.
+The string returned by callable object
+is untouched and must append its own '.'
+to the beginning if one is desired.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+b = Builder(&quot;build_it &lt; $SOURCE &gt; $TARGET&quot;
+            suffix = &quot;file-&quot;
+
+def gen_suffix(env, sources):
+    return &quot;.&quot; + env['PLATFORM'] + &quot;-file&quot;
+b = Builder(&quot;build_it &lt; $SOURCE &gt; $TARGET&quot;
+            suffix = gen_suffix)
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>src_suffix<DD>
+The expected source file name suffix.
+<P>
+<DT>src_builder<DD>
+Specifies a builder to use when a source file name suffix does not match
+any of the suffixes of the builder. Using this argument produces a
+multi-stage builder.
+<P>
+<DT>emitter<DD>
+A function to manipulate the target and source
+lists before dependencies are established
+and the target(s) are actually built.
+<B>emitter</B>
+
+can also be string containing a construction variable to expand
+to an emitter function,
+or a dictionary mapping source file suffixes
+to emitter functions.
+(Only the suffix of the first source file
+is used to select the actual emitter function
+from an emitter dictionary.)
+<P>
+An emitter function
+takes three arguments:
+<I>source </I>
+
+- a list of source nodes, 
+<I>target</I>
+
+- a list of target nodes,
+<I>env</I>
+
+- the construction environment.
+An emitter must return a tuple containing two lists,
+the list of targets to be built by this builder,
+and the list of sources for this builder.
+<P>
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def e(target, source, env):
+    return (target + ['foo.foo'], source + ['foo.src'])
+
+# Simple association of an emitter function with a Builder.
+b = Builder(&quot;my_build &lt; $TARGET &gt; $SOURCE&quot;,
+            emitter = e)
+
+# Calling an emitter through a construction variable.
+env = Environment(MY_EMITTER = e)
+b = Builder(&quot;my_build &lt; $TARGET &gt; $SOURCE&quot;,
+            emitter = '$MY_EMITTER')
+
+# Associating multiple emitters with different file
+# suffixes using a dictionary.
+def e_suf1(target, source, env):
+    return (target + ['another_target_file'], source)
+def e_suf2(target, source, env):
+    return (target, source + ['another_source_file'])
+b = Builder(&quot;my_build &lt; $TARGET &gt; $SOURCE&quot;,
+            emitter = {'.suf1' : e_suf1,
+                       '.suf2' : e_suf2})
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>generator<DD>
+A function that returns a list of actions that will be executed to build
+the target(s) from the source(s).
+The returned action(s) may be
+an Action object, or anything that
+can be converted into an Action object
+(see the next section).
+<P>
+The generator function
+takes four arguments:
+<I>source </I>
+
+- a list of source nodes, 
+<I>target</I>
+
+- a list of target nodes,
+<I>env</I>
+
+- the construction environment,
+<I>for_signature</I>
+
+- a Boolean value that specifies
+whether the generator is being called
+for generating a build signature
+(as opposed to actually executing the command).
+Example:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def g(source, target, env, for_signature):
+    return [[&quot;gcc&quot;, &quot;-c&quot;, &quot;-o&quot;] + target + source] 
+
+b = Builder(generator=g)
+
+</DL>
+</PRE>
+
+
+<P>
+The 
+<I>generator</I>
+
+and
+<I>action</I>
+
+arguments must not both be used for the same Builder.
+<P>
+<DT>env<DD>
+A construction environment that can be used
+to fetch source code using this Builder.
+(Note that this environment is
+<I>not</I>
+
+used for normal builds of normal target files,
+which use the environment that was
+used to call the Builder for the target file.)
+<P>
+<DT>overrides<DD>
+A dictionary of construction variables
+that will be set in the executing
+construction environment when this
+Builder is invoked.
+The canonical example here would be
+to set a construction variable to 
+the repository of a source code system.
+<P>
+Any additional keyword arguments supplied
+when a Builder object is called
+will be associated with the target
+(and any other files built as a
+result of the call).
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+b = Builder(action=&quot;build &lt; $SOURCE &gt; $TARGET&quot;)
+env = Environment(BUILDERS = {'MyBuild' : b})
+env.MyBuild('foo.out', 'foo.in', my_arg = 'xyzzy')
+
+</DL>
+</PRE>
+
+
+<P>
+These extra keyword arguments are passed to the
+following functions:
+command generator functions,
+function Actions,
+and emitter functions.
+<P>
+</DL>
+<A NAME="lbAP">&nbsp;</A>
+<H3>Action Objects</H3>
+
+<P>
+The Builder function will turn its
+<B>action</B>
+
+keyword argument into an appropriate
+internal Action object.
+Occasionally, it may be more efficient
+to create an explicit Action object
+and use it to initialize multiple
+Builder objects,
+rather than let each separate Builder object
+create a separate Action.
+<P>
+The Action method takes one or two arguments
+and returns an appropriate object for the action
+represented by the type of the first argument:
+<P>
+<DL COMPACT>
+<DT>Action<DD>
+If the first argument is already an Action object,
+the object is simply returned.
+<P>
+<DT>String<DD>
+If the first argument is a string,
+a command-line Action is returned.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+Action('$CC -c -o $TARGET $SOURCES')
+
+</DL>
+</PRE>
+
+
+<P>
+
+
+
+
+
+
+
+
+<P>
+<P>
+<DT>List<DD>
+If the first argument is a list,
+then a list of Action objects is returned.
+An Action object is created as necessary
+for each element in the list.
+If an element
+<I>within</I>
+
+the list is itself a list,
+the internal list is the
+command and arguments to be executed via
+the command line.
+This allows white space to be enclosed
+in an argument by defining
+a command in a list within a list:
+
+<DL COMPACT><DT><DD>
+<PRE>
+Action([['cc', '-c', '-DWHITE SPACE', '-o', '$TARGET', '$SOURCES']])
+
+</DL>
+</PRE>
+
+
+<P>
+<DT>Function<DD>
+If the first argument is a Python function,
+a function Action is returned.
+The Python function takes three keyword arguments,
+<B>target</B>
+
+(a Node object representing the target file),
+<B>source</B>
+
+(a Node object representing the source file)
+and
+<B>env</B>
+
+(the construction environment
+used for building the target file).
+The
+<B>target</B>
+
+and
+<B>source</B>
+
+arguments may be lists of Node objects if there is
+more than one target file or source file.
+The actual target and source file name(s) may
+be retrieved from their Node objects
+via the built-in Python str() function:
+
+<DL COMPACT><DT><DD>
+<PRE>
+target_file_name = str(target)
+source_file_names = map(lambda x: str(x), source)
+
+</DL>
+</PRE>
+
+
+<DT><DD>
+The function should return
+<B>0</B>
+
+or
+<B>None</B>
+
+to indicate a successful build of the target file(s).
+The function may raise an exception
+or return a non-zero exit status
+to indicate an unsuccessful build.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def build_it(target = None, source = None, env = None):
+    # build the target from the source
+    return 0
+ 
+a = Action(build_it)
+
+</DL>
+</PRE>
+
+
+<P>
+The second, optional argument
+is a Python function that returns
+a string to be printed to describe the action being executed.
+Like the function to build a file,
+this function takes three arguments:
+<B>target</B>
+
+(a Node object representing the target file),
+<B>source</B>
+
+(a Node object representing the source file)
+and
+<B>env</B>
+
+(a construction environment).
+The
+<B>target</B>
+
+and
+<B>source</B>
+
+arguments may be lists of Node objects if there is
+more than one target file or source file.
+Examples:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def build_it(target, source, env):
+    # build the target from the source
+    return 0
+
+def string_it(target, source, env):
+    return &quot;building '%s' from '%s'&quot; % (target[0], source[0])
+
+# Use a positional argument.
+a = Action(build_it, string_it)
+
+# Alternatively, use a keyword argument.
+a = Action(build_it, strfunction=string_it)
+
+</DL>
+</PRE>
+
+
+<P>
+The third, also optional argument
+is a list of construction variables
+whose values will be included
+in the signature of the Action
+when deciding whether a target should
+be rebuilt because the action changed.
+This is necessary whenever you want a target to
+be rebuilt when a specific
+construction variable changes,
+because the underlying Python code for a function
+will not change when the value of the construction variable does.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def build_it(target, source, env):
+    # build the target from the 'XXX' construction variable
+    open(target[0], 'w').write(env['XXX'])
+    return 0
+
+def string_it(target, source):
+    return &quot;building '%s' from '%s'&quot; % (target[0], source[0])
+
+# Use positional arguments.
+a = Action(build_it, string_it, ['XXX'])
+
+# Alternatively, use a keyword argument.
+a = Action(build_it, varlist=['XXX'])
+
+</DL>
+</PRE>
+
+
+</DL>
+<P>
+
+If the action argument is not one of the above,
+None is returned.
+<P>
+<A NAME="lbAQ">&nbsp;</A>
+<H3>Variable Substitution</H3>
+
+<P>
+Before executing a command,
+<B>scons</B>
+
+performs construction variable interpolation on the strings that make up
+the command line of builders.
+Variables are introduced by a
+<B>$</B>
+
+prefix.
+Besides construction variables, scons provides the following
+variables for each command execution:
+<P>
+<DL COMPACT>
+<DT>TARGET<DD>
+The file name of the target being built, or the file name of the first 
+target if multiple targets are being built.
+<P>
+<DT>TARGETS<DD>
+The file names of all targets being built.
+<P>
+<DT>SOURCE<DD>
+The file name of the source of the build command, or the file name of the
+first source if multiple sources are being built.
+<P>
+<DT>SOURCES<DD>
+The file names of the sources of the build command.
+<P>
+(Note that the above variables are reserved
+and may not be set in a construction environment.)
+<P>
+</DL>
+<P>
+
+For example, given the construction variable CC='cc', targets=['foo'], and
+sources=['foo.c', 'bar.c']:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+action='$CC -c -o $TARGET $SOURCES'
+
+</DL>
+</PRE>
+
+
+<P>
+would produce the command line:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+cc -c -o foo foo.c bar.c
+
+</DL>
+</PRE>
+
+
+<P>
+Variable names may be surrounded by curly braces ({})
+to separate the name from the trailing characters.
+Within the curly braces, a variable name may have
+a Python slice subscript appended to select one
+or more items from a list.
+In the previous example, the string:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+${SOURCES[1]}
+
+</DL>
+</PRE>
+
+
+<P>
+would produce:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+bar.c
+
+</DL>
+</PRE>
+
+
+<P>
+Additionally, a variable name may
+have the following special
+modifiers appended within the enclosing curly braces
+to modify the interpolated string:
+<P>
+<DL COMPACT>
+<DT>base<DD>
+The base path of the file name,
+including the directory path
+but excluding any suffix.
+<P>
+<DT>dir<DD>
+The name of the directory in which the file exists.
+<P>
+<DT>file<DD>
+The file name,
+minus any directory portion.
+<P>
+<DT>filebase<DD>
+Just the basename of the file,
+minus any suffix
+and minus the directory.
+<P>
+<DT>suffix<DD>
+Just the file suffix.
+<P>
+<DT>abspath<DD>
+The absolute path name of the file.
+<P>
+<DT>posix<DD>
+The POSIX form of the path,
+with directories separated by
+<B>/</B>
+
+(forward slashes)
+not backslashes.
+This is sometimes necessary on Win32 systems
+when a path references a file on other (POSIX) systems.
+<P>
+<DT>srcpath<DD>
+The directory and file name to the source file linked to this file
+through BuildDir.  If this file isn't linked, it just returns the
+directory and filename unchanged.
+<P>
+<DT>srcdir<DD>
+The directory containing the source file linked to this file
+through BuildDir.  If this file isn't linked, it just returns the
+directory part of the filename.
+<P>
+</DL>
+<P>
+
+For example, the specified target will
+expand as follows for the corresponding modifiers:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+$TARGET              =&gt; sub/dir/file.x
+${TARGET.base}       =&gt; sub/dir/file
+${TARGET.dir}        =&gt; sub/dir
+${TARGET.file}       =&gt; file.x
+${TARGET.filebase}   =&gt; file
+${TARGET.suffix}     =&gt; .x
+${TARGET.abspath}    =&gt; /top/dir/sub/dir/file.x
+
+BuildDir('sub/dir','src')
+$SOURCE              =&gt; sub/dir/file.x
+${SOURCE.srcpath}    =&gt; src/file.x
+${SOURCE.srcdir}     =&gt; src
+
+</DL>
+</PRE>
+
+
+<P>
+Lastly, a variable name
+may be a callable Python function
+associated with a
+construction variable in the environment.
+The function should
+take four arguments:
+<I>target</I>
+
+- a list of target nodes,
+<I>source </I>
+
+- a list of source nodes, 
+<I>env</I>
+
+- the construction environment,
+<I>for_signature</I>
+
+- a Boolean value that specifies
+whether the function is being called
+for generating a build signature.
+SCons will insert whatever
+the called function returns
+into the expanded string:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+def foo(target, source, env, for_signature):
+    return &quot;bar&quot;
+
+# Will expand $BAR to &quot;bar baz&quot;
+env=Environment(FOO=foo, BAR=&quot;$FOO baz&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+You can use this feature to pass arguments to a
+Python function by creating a callable class
+that stores one or more arguments in an object,
+and then uses them when the
+<B>__call__()</B>
+
+method is called.
+Note that in this case,
+the entire variable expansion must
+be enclosed by curly braces
+so that the arguments will
+be associated with the
+instantiation of the class:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+class foo:
+    def __init__(self, arg):
+        self.arg = arg
+
+    def __call__(self, target, source, env):
+        return arg + &quot; bar&quot;
+
+# Will expand $BAR to &quot;my argument bar baz&quot;
+env=Environment(FOO=foo, BAR=&quot;${FOO('my argument')} baz&quot;)
+
+</DL>
+</PRE>
+
+
+<P>
+<P>
+
+The special pseudo-variables
+<B>$(</B>
+
+and
+<B>$)</B>
+
+may be used to surround parts of a command line
+that may change
+<I>without</I>
+
+causing a rebuild--that is,
+which are not included in the signature
+of target files built with this command.
+All text between
+<B>$(</B>
+
+and
+<B>$)</B>
+
+will be removed from the command line
+before it is added to file signatures,
+and the
+<B>$(</B>
+
+and
+<B>$)</B>
+
+will be removed before the command is executed.
+For example, the command line:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+echo Last build occurred $( $TODAY $). &gt; $TARGET
+
+</DL>
+</PRE>
+
+
+<P>
+<P>
+
+would execute the command:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+echo Last build occurred $TODAY. &gt; $TARGET
+
+</DL>
+</PRE>
+
+
+<P>
+<P>
+
+but the command signature added to any target files would be:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+echo Last build occurred  . &gt; $TARGET
+
+</DL>
+</PRE>
+
+
+<P>
+SCons uses the following rules when converting construction variables into
+command lines:
+<P>
+<DL COMPACT>
+<DT>String<DD>
+When the value is a string it is interpreted as a space delimited list of
+command line arguments. 
+<P>
+<DT>List<DD>
+When the value is a list it is interpreted as a list of command line
+arguments. Each element of the list is converted to a string.
+<P>
+<DT>Other<DD>
+Anything that is not a list or string is converted to a string and
+interpreted as a single command line argument.
+<P>
+<DT>Newline<DD>
+Newline characters (\n) delimit lines. The newline parsing is done after
+all other parsing, so it is not possible for arguments (e.g. file names) to
+contain embedded newline characters. This limitation will likely go away in
+a future version of SCons.
+<P>
+</DL>
+<A NAME="lbAR">&nbsp;</A>
+<H3>Scanner Objects</H3>
+
+<P>
+You can use the
+<B>Scanner</B>
+
+function to define
+objects to scan
+new file types for implicit dependencies.
+Scanner accepts the following arguments:
+<P>
+<DL COMPACT>
+<DT>function<DD>
+A Python function that will process
+the Node (file)
+and return a list of strings (file names)
+representing the implicit
+dependencies found in the contents.
+The function takes three or four arguments:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;scanner_function(node,&nbsp;env,&nbsp;path):
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;scanner_function(node,&nbsp;env,&nbsp;path,&nbsp;arg):
+<P>
+The
+<B>node</B>
+
+argument is the internal
+SCons node representing the file.
+Use
+<B>str(node)</B>
+
+to fetch the name of the file, and
+<B>node.get_contents()</B>
+
+to fetch contents of the file.
+<P>
+The
+<B>env</B>
+
+argument is the construction environment for the scan.
+Fetch values from it using the
+<B>env.Dictionary()</B>
+
+method.
+<P>
+The
+<B>path</B>
+
+argument is a tuple (or list)
+of directories that can be searched
+for files.
+This will usually be the tuple returned by the
+<B>path_function</B>
+
+argument (see below).
+<P>
+The
+<B>arg</B>
+
+argument is the argument supplied
+when the scanner was created, if any.
+<P>
+<DT>name<DD>
+The name of the Scanner.
+This is mainly used
+to identify the Scanner internally.
+<P>
+<DT>argument<DD>
+An optional argument that, if specified,
+will be passed to the scanner function
+(described above)
+and the path function
+(specified below).
+<P>
+<DT>skeys<DD>
+An optional list that can be used to
+determine which scanner should be used for
+a given Node.
+In the usual case of scanning for file names,
+this array will be a list of suffixes
+for the different file types that this
+Scanner knows how to scan.
+<P>
+<DT>path_function<DD>
+A Python function that takes
+two or three arguments:
+a construction environment, directory Node,
+and optional argument supplied
+when the scanner was created.
+The
+<B>path_function</B>
+
+returns a tuple of directories
+that can be searched for files to be returned
+by this Scanner object.
+<P>
+<DT>node_class<DD>
+The class of Node that should be returned
+by this Scanner object.
+Any strings or other objects returned
+by the scanner function
+that are not of this class
+will be run through the
+<B>node_factory</B>
+
+function.
+<P>
+<DT>node_factory<DD>
+A Python function that will take a string
+or other object
+and turn it into the appropriate class of Node
+to be returned by this Scanner object.
+<P>
+<DT>scan_check<DD>
+An optional Python function that takes a Node (file)
+as an argument and returns whether the
+Node should, in fact,
+be scanned for dependencies.
+This check can be used to eliminate unnecessary
+calls to the scanner function when,
+for example, the underlying file
+represented by a Node does not yet exist.
+<P>
+<DT>recursive<DD>
+An optional flag that
+specifies whether this scanner should be re-invoked
+on the dependency files returned by the scanner.
+When this flag is not set,
+the Node subsystem will
+only invoke the scanner on the file being scanned,
+and not (for example) also on the files
+specified by the #include lines
+in the file being scanned.
+<P>
+</DL>
+<A NAME="lbAS">&nbsp;</A>
+<H2>SYSTEM-SPECIFIC BEHAVIOR</H2>
+
+SCons and its configuration files are very portable,
+due largely to its implementation in Python.
+There are, however, a few portability
+issues waiting to trap the unwary.
+<A NAME="lbAT">&nbsp;</A>
+<H3>.C file suffix</H3>
+
+SCons handles the upper-case
+<B>.C</B>
+
+file suffix differently,
+depending on the capabilities of
+the underlying system.
+On a case-sensitive system
+such as Linux or UNIX,
+SCons treats a file with a 
+<B>.C</B>
+
+suffix as a C++ source file.
+On a case-insensitive system
+such as Windows,
+SCons treats a file with a 
+<B>.C</B>
+
+suffix as a C source file.
+<A NAME="lbAU">&nbsp;</A>
+<H3>.F file suffix</H3>
+
+SCons handles the upper-case
+<B>.F</B>
+
+file suffix differently,
+depending on the capabilities of
+the underlying system.
+On a case-sensitive system
+such as Linux or UNIX,
+SCons treats a file with a 
+<B>.F</B>
+
+suffix as a Fortran source file
+that is to be first run through
+the standard C preprocessor.
+On a case-insensitive system
+such as Windows,
+SCons treats a file with a 
+<B>.F</B>
+
+suffix as a Fortran source file that should
+<I>not</I>
+
+be run through the C preprocessor.
+<A NAME="lbAV">&nbsp;</A>
+<H3>WIN32:  Cygwin Tools and Cygwin Python vs. Windows Pythons</H3>
+
+Cygwin supplies a set of tools and utilities
+that let users work on a
+Windows system using a more POSIX-like environment.
+The Cygwin tools, including Cygwin Python,
+do this, in part,
+by sharing an ability to interpret UNIX-like path names.
+For example, the Cygwin tools
+will internally translate a Cygwin path name
+like /cygdrive/c/mydir
+to an equivalent Windows pathname
+of C:/mydir (equivalent to C:\mydir).
+<P>
+Versions of Python
+that are built for native Windows execution,
+such as the python.org and ActiveState versions,
+do not have the Cygwin path name semantics.
+This means that using a native Windows version of Python
+to build compiled programs using Cygwin tools
+(such as gcc, bison, and flex)
+may yield unpredictable results.
+&quot;Mixing and matching&quot; in this way
+can be made to work,
+but it requires careful attention to the use of path names
+in your SConscript files.
+<P>
+In practice, users can sidestep
+the issue by adopting the following rules:
+When using gcc,
+use the Cygwin-supplied Python interpreter
+to run SCons;
+when using Microsoft Visual C/C++
+(or some other Windows compiler)
+use the python.org or ActiveState version of Python
+to run SCons.
+<A NAME="lbAW">&nbsp;</A>
+<H3>WIN32:  scons.bat file</H3>
+
+On WIN32 systems,
+SCons is executed via a wrapper
+<B>scons.bat</B>
+
+file.
+This has (at least) two ramifications:
+<P>
+First, Windows command-line users
+that want to use variable assignment
+on the command line
+may have to put double quotes
+around the assignments:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons &quot;FOO=BAR&quot; &quot;BAZ=BLEH&quot;
+
+</DL>
+</PRE>
+
+
+<P>
+Second, the Cygwin shell does not
+recognize this file as being the same
+as an
+<B>scons</B>
+
+command issued at the command-line prompt.
+You can work around this either by
+executing
+<B>scons.bat</B>
+
+from the Cygwin command line,
+or by creating a wrapper shell
+script named
+<B>scons .</B>
+
+<P>
+<A NAME="lbAX">&nbsp;</A>
+<H3>MinGW</H3>
+
+<P>
+The MinGW bin directory must be in your PATH environment variable or the
+PATH variable under the ENV construction variable for SCons
+to detect and use the MinGW tools. When running under the native Windows
+Python interpreter, SCons will prefer the MinGW tools over the Cygwin
+tools, if they are both installed, regardless of the order of the bin
+directories in the PATH variable. If you have both MSVC and MinGW
+installed and you want to use MinGW instead of MSVC,
+then you must explictly tell SCons to use MinGW by passing 
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+tools=['mingw']
+
+</DL>
+</PRE>
+
+
+<P>
+to the Environment() function, because SCons will prefer the MSVC tools
+over the MinGW tools.
+<P>
+<A NAME="lbAY">&nbsp;</A>
+<H2>EXAMPLES</H2>
+
+<P>
+To help you get started using SCons,
+this section contains a brief overview of some common tasks.
+<P>
+NOTE:  SCons does
+<I>not</I>
+
+build all of its targets by default,
+like other build tools do.
+The canonical way to invoke SCons
+is with a target of '.' (dot)
+to represent all targets in and below the current directory:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons .
+
+</DL>
+</PRE>
+
+
+<P>
+One or more default targets may be specified
+via the Default() method
+in the SConstruct file.
+<P>
+<A NAME="lbAZ">&nbsp;</A>
+<H3>Basic Compilation From a Single Source File</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+env.Program(target = 'foo', source = 'foo.c')
+
+</DL>
+</PRE>
+
+
+<P>
+Note:  Build the file by specifying
+the target as an argument
+(&quot;scons foo&quot; or &quot;scons foo.exe&quot;).
+or by specifying a dot (&quot;scons .&quot;).
+<P>
+<A NAME="lbBA">&nbsp;</A>
+<H3>Basic Compilation From Multiple Source Files</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+env.Program(target = 'foo', source = Split('f1.c f2.c f3.c'))
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBB">&nbsp;</A>
+<H3>Setting a Compilation Flag</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(CCFLAGS = '-g')
+env.Program(target = 'foo', source = 'foo.c')
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBC">&nbsp;</A>
+<H3>Search The Local Directory For .h Files</H3>
+
+<P>
+Note:  You do
+<I>not</I>
+
+need to set CCFLAGS to specify -I options by hand.
+SCons will construct the right -I options from CPPPATH.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(CPPPATH = ['.'])
+env.Program(target = 'foo', source = 'foo.c')
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBD">&nbsp;</A>
+<H3>Search Multiple Directories For .h Files</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(CPPPATH = ['include1', 'include2'])
+env.Program(target = 'foo', source = 'foo.c')
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBE">&nbsp;</A>
+<H3>Building a Static Library</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+env.StaticLibrary(target = 'foo', source = Split('l1.c l2.c'))
+env.StaticLibrary(target = 'bar', source = ['l3.c', 'l4.c'])
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBF">&nbsp;</A>
+<H3>Building a Shared Library</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+env.SharedLibrary(target = 'foo', source = ['l5.c', 'l6.c'])
+env.SharedLibrary(target = 'bar', source = Split('l7.c l8.c'))
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBG">&nbsp;</A>
+<H3>Linking a Local Library Into a Program</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment(LIBS = 'mylib', LIBPATH = ['.'])
+env.Library(target = 'mylib', source = Split('l1.c l2.c'))
+env.Program(target = 'prog', source = ['p1.c', 'p2.c'])
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBH">&nbsp;</A>
+<H3>Defining Your Own Builder Object</H3>
+
+<P>
+Notice that when you invoke the Builder,
+you can leave off the target file suffix,
+and SCons will add it automatically.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+bld = Builder(action = 'pdftex &lt; $SOURCES &gt; $TARGET'
+              suffix = '.pdf',
+              src_suffix = '.tex')
+env = Environment(BUILDERS = {'PDFBuilder' : bld})
+env.PDFBuilder(target = 'foo.pdf', source = 'foo.tex')
+
+# The following creates &quot;bar.pdf&quot; from &quot;bar.tex&quot;
+env.PDFBuilder(target = 'bar', source = 'bar')
+
+</DL>
+</PRE>
+
+
+<P>
+Note also that the above initialization
+overwrites the default Builder objects,
+so the Environment created above
+can not be used call Builders like env.Program(),
+env.Object(), env.StaticLibrary(), etc.
+<P>
+<A NAME="lbBI">&nbsp;</A>
+<H3>Adding Your Own Builder Object to an Environment</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+bld = Builder(action = 'pdftex &lt; $SOURCES &gt; $TARGET'
+              suffix = '.pdf',
+              src_suffix = '.tex')
+env = Environment()
+env.Append(BUILDERS = {'PDFBuilder' : bld})
+env.PDFBuilder(target = 'foo.pdf', source = 'foo.tex')
+env.Program(target = 'bar', source = 'bar.c')
+
+</DL>
+</PRE>
+
+
+<P>
+You also can use other Pythonic techniques to add
+to the BUILDERS construction variable, such as:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+env = Environment()
+env['BUILDERS]['PDFBuilder'] = bld
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBJ">&nbsp;</A>
+<H3>Defining Your Own Scanner Object</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+import re
+
+include_re = re.compile(r'^include\s+(\S+)$', re.M)
+
+def kfile_scan(node, env, path, arg):
+    contents = node.get_contents()
+    includes = include_re.findall(contents)
+    return includes
+
+kscan = Scanner(name = 'kfile',
+                function = kfile_scan,
+                argument = None,
+                skeys = ['.k'])
+scanners = Environment().Dictionary('SCANNERS')
+env = Environment(SCANNERS = scanners + [kscan])
+
+env.Command('foo', 'foo.k', 'kprocess &lt; $SOURCES &gt; $TARGET')
+
+bar_in = File('bar.in')
+env.Command('bar', bar_in, 'kprocess $SOURCES &gt; $TARGET')
+bar_in.target_scanner = kscan
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBK">&nbsp;</A>
+<H3>Creating a Hierarchical Build</H3>
+
+<P>
+Notice that the file names specified in a subdirectory's
+SConscript
+file are relative to that subdirectory.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+SConstruct:
+
+    env = Environment()
+    env.Program(target = 'foo', source = 'foo.c')
+
+    SConscript('sub/SConscript')
+
+sub/SConscript:
+
+    env = Environment()
+    # Builds sub/foo from sub/foo.c
+    env.Program(target = 'foo', source = 'foo.c')
+
+    SConscript('dir/SConscript')
+
+sub/dir/SConscript:
+
+    env = Environment()
+    # Builds sub/dir/foo from sub/dir/foo.c
+    env.Program(target = 'foo', source = 'foo.c')
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBL">&nbsp;</A>
+<H3>Sharing Variables Between SConscript Files</H3>
+
+<P>
+You must explicitly Export() and Import() variables that
+you want to share between SConscript files.
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+SConstruct:
+
+    env = Environment()
+    env.Program(target = 'foo', source = 'foo.c')
+
+    Export(&quot;env&quot;)
+    SConscript('subdirectory/SConscript')
+
+subdirectory/SConscript:
+
+    Import(&quot;env&quot;)
+    env.Program(target = 'foo', source = 'foo.c')
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBM">&nbsp;</A>
+<H3>Building Multiple Variants From the Same Source</H3>
+
+<P>
+Use the BuildDir() method to establish
+one or more separate build directories for
+a given source directory,
+then use the SConscript() method
+to specify the SConscript files
+in the build directories:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+SConstruct:
+
+    ccflags = '-DFOO'
+    Export(&quot;ccflags&quot;)
+    BuildDir('foo', 'src')
+    SConscript('foo/SConscript')
+
+    ccflags = '-DBAR'
+    Export(&quot;ccflags&quot;)
+    BuildDir('bar', 'src')
+    SConscript('bar/SConscript')
+
+src/SConscript:
+
+    Import(&quot;ccflags&quot;)
+    env = Environment(CCFLAGS = ccflags)
+    env.Program(target = 'src', source = 'src.c')
+
+</DL>
+</PRE>
+
+
+<P>
+Note the use of the Export() method
+to set the &quot;ccflags&quot; variable to a different
+value for each variant build.
+<P>
+<A NAME="lbBN">&nbsp;</A>
+<H3>Hierarchical Build of Two Libraries Linked With a Program</H3>
+
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+SConstruct:
+
+    env = Environment(LIBPATH = ['#libA', '#libB'])
+    Export('env')
+    SConscript('libA/SConscript')
+    SConscript('libB/SConscript')
+    SConscript('Main/SConscript')
+
+libA/SConscript:
+
+    Import('env')
+    env.Library('a', Split('a1.c a2.c a3.c'))
+
+libB/SConscript:                                                  
+
+    Import('env')
+    env.Library('b', Split('b1.c b2.c b3.c'))
+
+Main/SConscript:
+
+    Import('env')
+    e = env.Copy(LIBS = ['a', ','b'])
+    e.Program('foo', Split('m1.c m2.c m3.c'))
+
+</DL>
+</PRE>
+
+
+<P>
+The '#' in the LIBPATH directories specify that they're relative to the
+top-level directory, so they don't turn into &quot;Main/libA&quot; when they're
+used in Main/SConscript.
+<P>
+Specifying only 'a' and 'b' for the library names
+allows SCons to append the appropriate library
+prefix and suffix for the current platform
+(for example, 'liba.a' on POSIX systems,
+
+<P>
+<A NAME="lbBO">&nbsp;</A>
+<H3>Customizing contruction variables from the command line.</H3>
+
+<P>
+The following would allow the C compiler to be specified on the command
+line or in the file custom.py. 
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+opts = Options('custom.py')
+opts.Add('CC', 'The C compiler.')
+env = Environment(options=opts)
+Help(opts.GenerateHelpText(env))
+
+</DL>
+</PRE>
+
+
+<P>
+The user could specify the C compiler on the command line:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+scons &quot;CC=my_cc&quot;
+
+</DL>
+</PRE>
+
+
+<P>
+or in the custom.py file:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+CC = 'my_cc'
+
+</DL>
+</PRE>
+
+
+<P>
+or get documentation on the options:
+<P>
+
+<DL COMPACT><DT><DD>
+<PRE>
+$ scons -h
+
+CC: The C compiler.
+    default: None
+    actual: cc
+
+
+</DL>
+</PRE>
+
+
+<P>
+<A NAME="lbBP">&nbsp;</A>
+<H3>Using Microsoft Visual C++ precompiled headers</H3>
+
+<P>
+Since windows.h includes everything and the kitchen sink, it can take quite
+some time to compile it over and over again for a bunch of object files, so
+Microsoft provides a mechanism to compile a set of headers once and then
+include the previously compiled headers in any object file. This
+technology is called precompiled headers. The general recipe is to create a
+file named &quot;StdAfx.cpp&quot; that includes a single header named &quot;StdAfx.h&quot;, and
+then include every header you want to precompile in &quot;StdAfx.h&quot;, and finally
+include &quot;StdAfx.h&quot; as the first header in all the source files you are
+compiling to object files. For example:
+<P>
+StdAfx.h:
+
+<DL COMPACT><DT><DD>
+<PRE>
+#include &lt;<A HREF="file:/usr/include/windows.h">windows.h</A>&gt;
+#include &lt;<A HREF="file:/usr/include/my_big_header.h">my_big_header.h</A>&gt;
+
+</DL>
+</PRE>
+
+
+<P>
+StdAfx.cpp:
+
+<DL COMPACT><DT><DD>
+<PRE>
+#include &lt;<A HREF="file:/usr/include/StdAfx.h">StdAfx.h</A>&gt;
+
+</DL>
+</PRE>
+
+
+<P>
+Foo.cpp:
+
+<DL COMPACT><DT><DD>
+<PRE>
+#include &lt;<A HREF="file:/usr/include/StdAfx.h">StdAfx.h</A>&gt;
+
+/* do some stuff */
+
+</DL>
+</PRE>
+
+
+<P>
+Bar.cpp:
+
+<DL COMPACT><DT><DD>
+<PRE>
+#include &lt;<A HREF="file:/usr/include/StdAfx.h">StdAfx.h</A>&gt;
+
+/* do some other stuff */
+
+</DL>
+</PRE>
+
+
+<P>
+SConstruct:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env=Environment()
+env['PCHSTOP'] = 'StdAfx.h'
+env['PCH'] = env.PCH('StdAfx.cpp')[0]
+env.Program('MyApp', ['Foo.cpp', 'Bar.cpp'])
+
+</DL>
+</PRE>
+
+
+<P>
+For more information see the document for the PCH builder, and the PCH and
+PCHSTOP construction variables. To learn about the details of precompiled
+headers consult the MSDN documention for /Yc, /Yu, and /Yp.
+<P>
+<A NAME="lbBQ">&nbsp;</A>
+<H3>Using Microsoft Visual C++ external debugging information</H3>
+
+<P>
+Since including debugging information in programs and shared libraries can
+cause their size to increase significantly, Microsoft provides a mechanism
+for including the debugging information in an external file called a PDB
+file. SCons supports PDB files through the PDB construction
+variable. 
+<P>
+SConstruct:
+
+<DL COMPACT><DT><DD>
+<PRE>
+env=Environment()
+env['PDB'] = 'MyApp.pdb'
+env.Program('MyApp', ['Foo.cpp', 'Bar.cpp'])
+
+</DL>
+</PRE>
+
+
+<P>
+For more information see the document for the PDB construction variable.
+<P>
+<A NAME="lbBR">&nbsp;</A>
+<H2>ENVIRONMENT</H2>
+
+<P>
+<DL COMPACT>
+<DT>SCONS_LIB_DIR<DD>
+Specifies the directory that contains the SCons Python module directory
+(e.g. /home/aroach/scons-src-0.01/src/engine).
+<P>
+<DT>SCONSFLAGS<DD>
+A string of options that will be used by scons in addition to those passed
+on the command line.
+<P>
+</DL>
+<A NAME="lbBS">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<B>scons</B>
+
+User Manual,
+<B>scons</B>
+
+Design Document,
+<B>scons</B>
+
+source code.
+<P>
+<A NAME="lbBT">&nbsp;</A>
+<H2>AUTHORS</H2>
+
+Steven Knight &lt;<A HREF="mailto:knight@baldmt.com">knight@baldmt.com</A>&gt;
+<BR>
+
+Anthony Roach &lt;<A HREF="mailto:aroach@electriceyeball.com">aroach@electriceyeball.com</A>&gt;
+<P>
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">OPTIONS</A><DD>
+<DT><A HREF="#lbAF">CONFIGURATION FILE REFERENCE</A><DD>
+<DL>
+<DT><A HREF="#lbAG">Construction Environments</A><DD>
+<DT><A HREF="#lbAH">Builder Methods</A><DD>
+<DT><A HREF="#lbAI">Other Construction Environment Methods</A><DD>
+<DT><A HREF="#lbAJ">Construction Variables</A><DD>
+<DT><A HREF="#lbAK">Configure contexts</A><DD>
+<DT><A HREF="#lbAL">Construction Variable Options</A><DD>
+<DT><A HREF="#lbAM">Other Functions</A><DD>
+</DL>
+<DT><A HREF="#lbAN">EXTENDING SCONS</A><DD>
+<DL>
+<DT><A HREF="#lbAO">Builder Objects</A><DD>
+<DT><A HREF="#lbAP">Action Objects</A><DD>
+<DT><A HREF="#lbAQ">Variable Substitution</A><DD>
+<DT><A HREF="#lbAR">Scanner Objects</A><DD>
+</DL>
+<DT><A HREF="#lbAS">SYSTEM-SPECIFIC BEHAVIOR</A><DD>
+<DL>
+<DT><A HREF="#lbAT">.C file suffix</A><DD>
+<DT><A HREF="#lbAU">.F file suffix</A><DD>
+<DT><A HREF="#lbAV">WIN32:  Cygwin Tools and Cygwin Python vs. Windows Pythons</A><DD>
+<DT><A HREF="#lbAW">WIN32:  scons.bat file</A><DD>
+<DT><A HREF="#lbAX">MinGW</A><DD>
+</DL>
+<DT><A HREF="#lbAY">EXAMPLES</A><DD>
+<DL>
+<DT><A HREF="#lbAZ">Basic Compilation From a Single Source File</A><DD>
+<DT><A HREF="#lbBA">Basic Compilation From Multiple Source Files</A><DD>
+<DT><A HREF="#lbBB">Setting a Compilation Flag</A><DD>
+<DT><A HREF="#lbBC">Search The Local Directory For .h Files</A><DD>
+<DT><A HREF="#lbBD">Search Multiple Directories For .h Files</A><DD>
+<DT><A HREF="#lbBE">Building a Static Library</A><DD>
+<DT><A HREF="#lbBF">Building a Shared Library</A><DD>
+<DT><A HREF="#lbBG">Linking a Local Library Into a Program</A><DD>
+<DT><A HREF="#lbBH">Defining Your Own Builder Object</A><DD>
+<DT><A HREF="#lbBI">Adding Your Own Builder Object to an Environment</A><DD>
+<DT><A HREF="#lbBJ">Defining Your Own Scanner Object</A><DD>
+<DT><A HREF="#lbBK">Creating a Hierarchical Build</A><DD>
+<DT><A HREF="#lbBL">Sharing Variables Between SConscript Files</A><DD>
+<DT><A HREF="#lbBM">Building Multiple Variants From the Same Source</A><DD>
+<DT><A HREF="#lbBN">Hierarchical Build of Two Libraries Linked With a Program</A><DD>
+<DT><A HREF="#lbBO">Customizing contruction variables from the command line.</A><DD>
+<DT><A HREF="#lbBP">Using Microsoft Visual C++ precompiled headers</A><DD>
+<DT><A HREF="#lbBQ">Using Microsoft Visual C++ external debugging information</A><DD>
+</DL>
+<DT><A HREF="#lbBR">ENVIRONMENT</A><DD>
+<DT><A HREF="#lbBS">SEE ALSO</A><DD>
+<DT><A HREF="#lbBT">AUTHORS</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 23:18:34 GMT, August 19, 2003
+</BODY>
+</HTML>

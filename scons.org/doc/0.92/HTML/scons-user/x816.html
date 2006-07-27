@@ -1,0 +1,289 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Path Names Are Relative to the SConscript Directory</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.92"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Hierarchical Builds"
+HREF="c783.html"><LINK
+REL="PREVIOUS"
+TITLE="Hierarchical Builds"
+HREF="c783.html"><LINK
+REL="NEXT"
+TITLE="Top-Level Path Names in Subsidiary SConscript Files"
+HREF="x841.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c783.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Hierarchical Builds</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x841.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN816"
+></A
+>Path Names Are Relative to the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> Directory</H1
+><P
+>&#13;    Subsidiary <TT
+CLASS="FILENAME"
+>SConscript</TT
+> files make it easy to create a build
+    hierarchy because all of the file and directory names
+    in a subsidiary <TT
+CLASS="FILENAME"
+>SConscript</TT
+> files are interpreted
+    relative to the directory in which the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> file lives.
+    Typically, this allows the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> file containing the
+    instructions to build a target file
+    to live in the same directory as the source files
+    from which the target will be built,
+    making it easy to update how the software is built
+    whenever files are added or deleted
+    (or other changes are made).
+
+    </P
+><P
+>&#13;    For example, suppose we want to build two programs
+    <TT
+CLASS="FILENAME"
+>prog1</TT
+> and <TT
+CLASS="FILENAME"
+>prog2</TT
+> in two separate directories
+    with the same names as the programs.
+    One typical way to do this would be
+    with a top-level <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file like this:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      SConscript(['prog1/SConscript',
+                  'prog2/SConscript'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    And subsidiary <TT
+CLASS="FILENAME"
+>SConscript</TT
+> files that look like this:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment()
+      env.Program('prog1', ['main.c', 'foo1.c', 'foo2.c'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    And this:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      env = Environment()
+      env.Program('prog2', ['main.c', 'bar1.c', 'bar2.c'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Then, when we run <TT
+CLASS="APPLICATION"
+>SCons</TT
+> in the top-level directory,
+    our build looks like:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;prog1/foo1.c&nbsp;-o&nbsp;prog1/foo1.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;prog1/foo2.c&nbsp;-o&nbsp;prog1/foo2.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;prog1/main.c&nbsp;-o&nbsp;prog1/main.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;prog1/prog1&nbsp;prog1/main.o&nbsp;prog1/foo1.o&nbsp;prog1/foo2.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;prog2/bar1.c&nbsp;-o&nbsp;prog2/bar1.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;prog2/bar2.c&nbsp;-o&nbsp;prog2/bar2.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;prog2/main.c&nbsp;-o&nbsp;prog2/main.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;prog2/prog2&nbsp;prog2/main.o&nbsp;prog2/bar1.o&nbsp;prog2/bar2.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;    Notice the following:
+
+    First, you can have files with the same names
+    in multiple directories, like main.c in the above example.
+
+    Second, unlike standard recursive use of <TT
+CLASS="APPLICATION"
+>Make</TT
+>,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> stays in the top-level directory and
+    issues commands
+
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c783.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x841.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Hierarchical Builds</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c783.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Top-Level Path Names in Subsidiary <TT
+CLASS="FILENAME"
+>SConscript</TT
+> Files</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

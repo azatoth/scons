@@ -1,0 +1,691 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>SCons User Guide 0.93</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="NEXT"
+TITLE="Preface"
+HREF="c16.html"></HEAD
+><BODY
+CLASS="BOOK"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="BOOK"
+><A
+NAME="AEN1"
+></A
+><DIV
+CLASS="TITLEPAGE"
+><H1
+CLASS="TITLE"
+><A
+NAME="AEN2"
+></A
+>SCons User Guide 0.93</H1
+><H3
+CLASS="AUTHOR"
+><A
+NAME="AEN4"
+></A
+>Steven Knight</H3
+><P
+CLASS="COPYRIGHT"
+><A
+HREF="ln12.html"
+>Copyright</A
+> &copy; 2003 by Steven Knight</P
+><SPAN
+CLASS="RELEASEINFO"
+>version 0.93<BR></SPAN
+><HR></DIV
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+><A
+HREF="c16.html"
+>Preface</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c16.html#AEN29"
+><TT
+CLASS="APPLICATION"
+>SCons</TT
+> Principles</A
+></DT
+><DT
+><A
+HREF="x54.html"
+>Acknowledgements</A
+></DT
+><DT
+><A
+HREF="x75.html"
+>Contact</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c87.html"
+>Simple Builds</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c87.html#AEN112"
+>The <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> File</A
+></DT
+><DT
+><A
+HREF="x131.html"
+>Making the Output Less Verbose</A
+></DT
+><DT
+><A
+HREF="x148.html"
+>Compiling Multiple Source Files</A
+></DT
+><DT
+><A
+HREF="x170.html"
+>Keeping <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> Files Easy to Read</A
+></DT
+><DT
+><A
+HREF="x196.html"
+>Keyword Arguments</A
+></DT
+><DT
+><A
+HREF="x207.html"
+>Compiling Multiple Programs</A
+></DT
+><DT
+><A
+HREF="x221.html"
+>Sharing Source Files Between Multiple Programs</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c236.html"
+>Building and Linking with Libraries</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c236.html#AEN239"
+>Building Libraries</A
+></DT
+><DT
+><A
+HREF="x256.html"
+>Linking with Libraries</A
+></DT
+><DT
+><A
+HREF="x275.html"
+>Finding Libraries:  the <TT
+CLASS="VARNAME"
+>LIBPATH</TT
+> Construction Variable</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c297.html"
+>Dependencies</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c297.html#AEN320"
+>Source File Signatures</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c297.html#AEN326"
+>MD5 Source File Signatures</A
+></DT
+><DT
+><A
+HREF="c297.html#AEN350"
+>Source File Time Stamps</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="x364.html"
+>Target File Signatures</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="x364.html#AEN369"
+>Build Signatures</A
+></DT
+><DT
+><A
+HREF="x364.html#AEN389"
+>File Contents</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="x407.html"
+>Implicit Dependencies:  The <TT
+CLASS="LITERAL"
+>CPPPATH</TT
+> Construction Variable</A
+></DT
+><DT
+><A
+HREF="x464.html"
+>Caching Implicit Dependencies</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="x464.html#AEN483"
+>The <TT
+CLASS="LITERAL"
+>--implicit-deps-changed</TT
+> Option</A
+></DT
+><DT
+><A
+HREF="x464.html#AEN495"
+>The <TT
+CLASS="LITERAL"
+>--implicit-deps-unchanged</TT
+> Option</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="x508.html"
+>The <TT
+CLASS="FUNCTION"
+>Ignore</TT
+> Method</A
+></DT
+><DT
+><A
+HREF="x528.html"
+>The <TT
+CLASS="FUNCTION"
+>Depends</TT
+> Method</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c541.html"
+>Construction Environments</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c541.html#AEN561"
+>Multiple <TT
+CLASS="LITERAL"
+>Construction Environments</TT
+></A
+></DT
+><DT
+><A
+HREF="x599.html"
+>Copying <TT
+CLASS="LITERAL"
+>Construction Environments</TT
+></A
+></DT
+><DT
+><A
+HREF="x623.html"
+>Fetching Values From a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></A
+></DT
+><DT
+><A
+HREF="x644.html"
+>Modifying a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="x644.html#AEN650"
+>Replacing Values in a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></A
+></DT
+><DT
+><A
+HREF="x644.html#AEN659"
+>Appending to the End of Values in a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></A
+></DT
+><DT
+><A
+HREF="x644.html#AEN667"
+>Appending to the Beginning of Values in a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+><A
+HREF="c675.html"
+>Default Targets</A
+></DT
+><DT
+><A
+HREF="c716.html"
+>Providing Build Help</A
+></DT
+><DT
+><A
+HREF="c738.html"
+>Installing Files in Other Directories</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c738.html#AEN758"
+>Installing Multiple Files in a Directory</A
+></DT
+><DT
+><A
+HREF="x768.html"
+>Installing a File Under a Different Name</A
+></DT
+><DT
+><A
+HREF="x779.html"
+>Installing Multiple Files Under Different Names</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c788.html"
+>Preventing Removal of Targets</A
+></DT
+><DT
+><A
+HREF="c803.html"
+>Hierarchical Builds</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c803.html#AEN808"
+><TT
+CLASS="FILENAME"
+>SConscript</TT
+> Files</A
+></DT
+><DT
+><A
+HREF="x836.html"
+>Path Names Are Relative to the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> Directory</A
+></DT
+><DT
+><A
+HREF="x862.html"
+>Top-Level Path Names in Subsidiary <TT
+CLASS="FILENAME"
+>SConscript</TT
+> Files</A
+></DT
+><DT
+><A
+HREF="x882.html"
+>Absolute Path Names</A
+></DT
+><DT
+><A
+HREF="x891.html"
+>Sharing Environments (and Other Variables) Between <TT
+CLASS="FILENAME"
+>SConscript</TT
+> Files</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="x891.html#AEN903"
+>Exporting Variables</A
+></DT
+><DT
+><A
+HREF="x891.html#AEN931"
+>Importing Variables</A
+></DT
+><DT
+><A
+HREF="x891.html#AEN954"
+>Returning Values From an <TT
+CLASS="FILENAME"
+>SConscript</TT
+> File</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+><A
+HREF="c976.html"
+>Separating Source and Build Directories</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c976.html#AEN983"
+>Specifying a Build Directory as Part of an <TT
+CLASS="FILENAME"
+>SConscript</TT
+> Call</A
+></DT
+><DT
+><A
+HREF="x1013.html"
+>Why <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Duplicates Source Files in a Build Directory</A
+></DT
+><DT
+><A
+HREF="x1030.html"
+>Telling <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to Not Duplicate Source Files in the Build Directory</A
+></DT
+><DT
+><A
+HREF="x1046.html"
+>The <TT
+CLASS="FUNCTION"
+>BuildDir</TT
+> Function</A
+></DT
+><DT
+><A
+HREF="x1075.html"
+>Using <TT
+CLASS="FUNCTION"
+>BuildDir</TT
+> With an <TT
+CLASS="FILENAME"
+>SConscript</TT
+> File</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c1094.html"
+>Variant Builds</A
+></DT
+><DT
+><A
+HREF="c1106.html"
+>Writing Your Own Builders</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c1106.html#AEN1117"
+>Writing Builders That Execute External Commands</A
+></DT
+><DT
+><A
+HREF="x1126.html"
+>Attaching a Builder to a <TT
+CLASS="LITERAL"
+>Construction Environment</TT
+></A
+></DT
+><DT
+><A
+HREF="x1178.html"
+>Letting <TT
+CLASS="APPLICATION"
+>SCons</TT
+> Handle The File Suffixes</A
+></DT
+><DT
+><A
+HREF="x1199.html"
+>Builders That Execute Python Functions</A
+></DT
+><DT
+><A
+HREF="x1235.html"
+>Builders That Create Actions Using a <TT
+CLASS="LITERAL"
+>Generator</TT
+></A
+></DT
+><DT
+><A
+HREF="x1278.html"
+>Builders That Modify the Target or Source Lists Using an <TT
+CLASS="LITERAL"
+>Emitter</TT
+></A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c1287.html"
+>Not Writing a Builder:  The <TT
+CLASS="FUNCTION"
+>Command</TT
+> Builder</A
+></DT
+><DT
+><A
+HREF="c1309.html"
+>Writing Scanners</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c1309.html#AEN1317"
+>A Simple Scanner Example</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c1361.html"
+>Building From Code Repositories</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c1361.html#AEN1365"
+>The <TT
+CLASS="FUNCTION"
+>Repository</TT
+> Method</A
+></DT
+><DT
+><A
+HREF="x1377.html"
+>Finding source files in repositories</A
+></DT
+><DT
+><A
+HREF="x1409.html"
+>Finding the <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file in repositories</A
+></DT
+><DT
+><A
+HREF="x1427.html"
+>Finding derived files in repositories</A
+></DT
+><DT
+><A
+HREF="x1454.html"
+>Guaranteeing local copies of files</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c1477.html"
+>Caching Built Files</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c1477.html#AEN1481"
+>Specifying the Shared Cache Directory</A
+></DT
+><DT
+><A
+HREF="x1495.html"
+>Keeping Build Output Consistent</A
+></DT
+><DT
+><A
+HREF="x1508.html"
+>Not Retrieving Files From a Shared Cache</A
+></DT
+><DT
+><A
+HREF="x1520.html"
+>Populating a Shared Cache With Already-Built Files</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c1538.html"
+>Alias Targets</A
+></DT
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c16.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Preface</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

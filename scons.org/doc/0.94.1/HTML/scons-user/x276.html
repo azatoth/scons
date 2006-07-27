@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Finding Libraries:  the LIBPATH Construction Variable</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.94.1"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Building and Linking with Libraries"
+HREF="c236.html"><LINK
+REL="PREVIOUS"
+TITLE="Linking with Libraries"
+HREF="x257.html"><LINK
+REL="NEXT"
+TITLE="Dependencies"
+HREF="c298.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.94.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x257.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Building and Linking with Libraries</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c298.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN276"
+></A
+>Finding Libraries:  the <TT
+CLASS="VARNAME"
+>LIBPATH</TT
+> Construction Variable</H1
+><P
+>&#13;    By default, the linker will only look in
+    certain system-defined directories for libraries.
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> knows how to look for libraries
+    in directories that you specify with the
+    <TT
+CLASS="VARNAME"
+>LIBPATH</TT
+> construction variable.
+    <TT
+CLASS="VARNAME"
+>LIBPATH</TT
+> consists of a list of
+    directory names, like so:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      Program('prog.c', LIBS = 'm',
+                        LIBPATH = ['/usr/lib', '/usr/local/lib'])
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Using a Python list is preferred because it's portable
+    across systems.  Alternatively, you could put all of
+    the directory names in a single string, separated by the
+    system-specific path separator character:
+    a colon on POSIX systems:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      LIBPATH = '/usr/lib:/usr/local/lib'
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    or a semi-colon on Windows systems:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      LIBPATH = 'C:\lib;D:\lib'
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    When the linker is executed,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will create appropriate flags
+    so that the linker will look for
+    libraries in the same directories as <TT
+CLASS="APPLICATION"
+>SCons</TT
+>.
+    So on a POSIX or Linux system,
+    a build of the above example would look like:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;prog.o&nbsp;prog.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;prog&nbsp;prog.o&nbsp;-L/usr/lib&nbsp;-L/usr/local/lib&nbsp;-lm<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;    On a Windows system,
+    a build of the above example would look like:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:\&#62;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl&nbsp;/nologo&nbsp;/c&nbsp;prog.c&nbsp;/Foprog.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;link&nbsp;/nologo&nbsp;/OUT:prog.exe&nbsp;/LIBPATH:\usr\lib&nbsp;/LIBPATH:\usr\local\lib&nbsp;m.lib&nbsp;prog.obj<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;    Note again that <TT
+CLASS="APPLICATION"
+>SCons</TT
+> has taken care of
+    the system-specific details of creating
+    the right command-line options.
+
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x257.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c298.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Linking with Libraries</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c236.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Dependencies</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

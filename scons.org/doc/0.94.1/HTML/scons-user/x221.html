@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Sharing Source Files Between Multiple Programs</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.94.1"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Simple Builds"
+HREF="c87.html"><LINK
+REL="PREVIOUS"
+TITLE="Compiling Multiple Programs"
+HREF="x207.html"><LINK
+REL="NEXT"
+TITLE="Building and Linking with Libraries"
+HREF="c236.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.94.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x207.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Simple Builds</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c236.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN221"
+></A
+>Sharing Source Files Between Multiple Programs</H1
+><P
+>&#13;   It's common to re-use code by sharing source files
+   between multiple programs.
+   One way to do this is to create a library
+   from the common source files,
+   which can then be linked into resulting programs.
+   (Creating libraries is discussed in
+   section XXX, below.)
+
+   </P
+><P
+>&#13;   A more straightforward, but perhaps less convenient,
+   way to share source files between multiple programs
+   is simply to include the common files
+   in the lists of source files for each program:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      Program(Split('foo.c common1.c common2.c'))
+      Program('bar', Split('bar1.c bar2.c common1.c common2.c'))
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   <TT
+CLASS="APPLICATION"
+>SCons</TT
+> recognizes that the object files for
+   the <TT
+CLASS="APPLICATION"
+>common1.c</TT
+> and <TT
+CLASS="APPLICATION"
+>common2.c</TT
+> source files
+   each only need to be built once,
+   even though the resulting object files are
+   each linked in to both of the resulting executable programs:
+
+   </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;bar1.o&nbsp;bar1.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;bar2.o&nbsp;bar2.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;common1.o&nbsp;common1.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;common2.o&nbsp;common2.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;bar&nbsp;bar1.o&nbsp;bar2.o&nbsp;common1.o&nbsp;common2.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;foo&nbsp;foo.o&nbsp;common1.o&nbsp;common2.o<br>
+&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;   If two or more programs
+   share a lot of common source files,
+   repeating the common files in the list for each program
+   can be a maintenance problem when you need to change the
+   list of common files.
+   You can simplify this by creating a separate Python list
+   to hold the common file names,
+   and concatenating it with other lists
+   using the Python <TT
+CLASS="LITERAL"
+>+</TT
+> operator:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      common = ['common1.c', 'common2.c']
+      foo_files = ['foo.c'] + common
+      bar_files = ['bar1.c', 'bar2.c'] + common
+      Program('foo', foo_files)
+      Program('bar', bar_files)
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   This is functionally equivalent to the previous example.
+
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x207.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c236.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Compiling Multiple Programs</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c87.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Building and Linking with Libraries</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,492 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Construction Environments</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.92"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="Sharing Source Files Between Multiple Programs"
+HREF="x217.html"><LINK
+REL="NEXT"
+TITLE="Copying Construction Environments"
+HREF="x293.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.92</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x217.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x293.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CHAP-ENVIRONMENTS"
+></A
+>Construction Environments</H1
+><P
+>&#13;   It is rare that all of the software in a large,
+   complicated system needs to be built the same way.
+   For example, different source files may need different options
+   enabled on the command line,
+   or different executable programs need to be linked
+   with different libraries.
+   <TT
+CLASS="APPLICATION"
+>SCons</TT
+> accomodates these different build
+   requirements by allowing you to create and
+   configure multiple <TT
+CLASS="LITERAL"
+>construction environments</TT
+>
+   that control how the software is built.
+   Technically, a <TT
+CLASS="LITERAL"
+>construction environment</TT
+> is an object
+   that has a number of associated
+   <TT
+CLASS="LITERAL"
+>construction variables</TT
+>, each with a name and a value.
+   (A <TT
+CLASS="LITERAL"
+>construction environment</TT
+> also has an attached
+   set of <TT
+CLASS="CLASSNAME"
+>Builder</TT
+> methods,
+   about which we'll learn more later.)
+
+ </P
+><P
+>&#13;   A <TT
+CLASS="LITERAL"
+>construction environment</TT
+> is created by the <TT
+CLASS="FUNCTION"
+>Environment</TT
+>
+   method which you have already seen.
+   What you haven't seen, though,
+   is that when you initialize a <TT
+CLASS="LITERAL"
+>construction environment</TT
+>,
+   you can set the values of the
+   environment's <TT
+CLASS="LITERAL"
+>construction variables</TT
+>
+   to control how a program is built.
+   For example:
+
+ </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    env = Environment(CC = 'gcc',
+                      CCFLAGS = '-O2')
+
+    env.Program('foo.c')
+ </PRE
+></TD
+></TR
+></TABLE
+><P
+>   
+   This example, rather than using the default,
+   explicitly specifies use of the
+   GNU C compiler <TT
+CLASS="APPLICATION"
+>gcc</TT
+>,
+   and further specifies that the <TT
+CLASS="LITERAL"
+>-O2</TT
+>
+   (optimization level two)
+   flag should be used when compiling the object file.
+   So a run from this example would look like:
+
+ </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;gcc&nbsp;-c&nbsp;-O2&nbsp;foo.c&nbsp;-o&nbsp;foo.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;gcc&nbsp;-o&nbsp;foo&nbsp;foo.o<br>
+&nbsp;</P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN252"
+></A
+>Multiple <TT
+CLASS="LITERAL"
+>Construction Environments</TT
+></H1
+><P
+>&#13;   So far,
+   all of our examples have
+   created a single <TT
+CLASS="LITERAL"
+>construction environment</TT
+> named
+   <TT
+CLASS="LITERAL"
+>env</TT
+>.
+   <TT
+CLASS="LITERAL"
+>env</TT
+>, however,
+   is simply a Python variable name,
+   and you can use any other variable name that you like.
+   For example:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      my_env = Environment(CC = 'gcc',
+                           CCFLAGS = '-O2')
+
+      my_env.Program('foo.c')
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   This opens up the possibility of
+   using multiple <TT
+CLASS="LITERAL"
+>construction environments</TT
+>,
+   each with a separate variable name.
+   We can then use these separate <TT
+CLASS="LITERAL"
+>construction environments</TT
+>
+   to build different programs in different ways:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      opt = Environment(CCFLAGS = '-O2')
+      dbg = Environment(CCFLAGS = '-g')
+
+      opt.Program('foo', 'foo.c')
+
+      dbg.Program('bar', 'bar.c')
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-O2&nbsp;bar.c&nbsp;-o&nbsp;bar.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;bar&nbsp;bar.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-g&nbsp;foo.c&nbsp;-o&nbsp;foo.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;foo&nbsp;foo.o<br>
+&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;   We can even use multiple <TT
+CLASS="LITERAL"
+>construction environments</TT
+> to build
+   multiple versions of a single program.
+   If you do this by simply trying to use the
+   <TT
+CLASS="FUNCTION"
+>Program</TT
+> builder with both environments, though,
+   like this:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      opt = Environment(CCFLAGS = '-O2')
+      dbg = Environment(CCFLAGS = '-g')
+
+      opt.Program('foo', 'foo.c')
+
+      dbg.Program('foo', 'foo.c')
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   Then <TT
+CLASS="APPLICATION"
+>SCons</TT
+> generates the following error:
+
+   </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;***&nbsp;Two&nbsp;different&nbsp;environments&nbsp;were&nbsp;specified&nbsp;for&nbsp;the&nbsp;same&nbsp;target:&nbsp;&nbsp;foo.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;"SConstruct",&nbsp;line&nbsp;6,&nbsp;in&nbsp;?<br>
+&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;   This is because the two <TT
+CLASS="FUNCTION"
+>Program</TT
+> calls have
+   each implicitly told <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to generate an object file named
+   <TT
+CLASS="FILENAME"
+>foo.o</TT
+>,
+   one with a <TT
+CLASS="VARNAME"
+>CCFLAGS</TT
+> value of
+   <TT
+CLASS="LITERAL"
+>-O2</TT
+>
+   and one with a <TT
+CLASS="VARNAME"
+>CCFLAGS</TT
+> value of
+   <TT
+CLASS="LITERAL"
+>-g</TT
+>.
+   To avoid this problem,
+   we must explicitly specify
+   that each environment compile
+   <TT
+CLASS="FILENAME"
+>foo.c</TT
+>
+   to a separately-named object file
+   using the <TT
+CLASS="FUNCTION"
+>Object</TT
+> call, like so:
+
+   </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      opt = Environment(CCFLAGS = '-O2')
+      dbg = Environment(CCFLAGS = '-g')
+
+      o = opt.Object('foo-opt', 'foo.c')
+      opt.Program(o)
+
+      d = dbg.Object('foo-dbg', 'foo.c')
+      dbg.Program(d)
+   </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;   Notice that each call to the <TT
+CLASS="FUNCTION"
+>Object</TT
+> builder
+   returns a value,
+   an internal <TT
+CLASS="APPLICATION"
+>SCons</TT
+> object that
+   represents the file that will be built.
+   We then use that object
+   as input to the <TT
+CLASS="FUNCTION"
+>Program</TT
+> builder.
+   This avoids having to specify explicitly
+   the object file name in multiple places,
+   and makes for a compact, readable
+   <TT
+CLASS="FILENAME"
+>SConstruct</TT
+> file.
+   Our <TT
+CLASS="APPLICATION"
+>SCons</TT
+> output then looks like:
+
+   </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-g&nbsp;foo.c&nbsp;-o&nbsp;foo-dbg.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;foo-dbg&nbsp;foo-dbg.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-O2&nbsp;foo.c&nbsp;-o&nbsp;foo-opt.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;foo-opt&nbsp;foo-opt.o<br>
+&nbsp;&nbsp;&nbsp;</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x217.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x293.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Sharing Source Files Between Multiple Programs</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Copying <TT
+CLASS="LITERAL"
+>Construction Environments</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,1063 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Canned Build Options</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.94.1"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Controlling a Build From the Command Line"
+HREF="c702.html"><LINK
+REL="PREVIOUS"
+TITLE="Reading Build Options From a File"
+HREF="x925.html"><LINK
+REL="NEXT"
+TITLE="Adding Multiple Command-Line Build Options at Once"
+HREF="x1116.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.94.1</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x925.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Controlling a Build From the Command Line</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1116.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN947"
+></A
+>Canned Build Options</H1
+><P
+>&#13;    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> provides a number of functions
+    that provide ready-made behaviors
+    for various types of command-line build options.
+
+    </P
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN951"
+></A
+>True/False Values:  the <TT
+CLASS="FUNCTION"
+>BoolOption</TT
+> Build Option</H2
+><P
+>&#13;      It's often handy to be able to specify an
+      option that controls a simple Boolean variable
+      with a <TT
+CLASS="LITERAL"
+>true</TT
+> or <TT
+CLASS="LITERAL"
+>false</TT
+> value.
+      It would be even more handy to accomodate
+      users who have different preferences for how to represent
+      <TT
+CLASS="LITERAL"
+>true</TT
+> or <TT
+CLASS="LITERAL"
+>false</TT
+> values.
+      The <TT
+CLASS="FUNCTION"
+>BoolOption</TT
+> function
+      makes it easy to accomodate a variety of
+      common values that represent
+      <TT
+CLASS="LITERAL"
+>true</TT
+> or <TT
+CLASS="LITERAL"
+>false</TT
+>.
+
+      </P
+><P
+>&#13;      The <TT
+CLASS="FUNCTION"
+>BoolOption</TT
+> function takes three arguments:
+      the name of the build option,
+      the default value of the build option,
+      and the help string for the option.
+      It then returns appropriate information for
+      passing to the <TT
+CLASS="FUNCTION"
+>Add</TT
+> method of an <TT
+CLASS="FUNCTION"
+>Options</TT
+> object, like so:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>           opts = Options('custom.py')
+           opts.Add(BoolOption('RELEASE', 0, 'Set to build for release'))
+           env = Environment(options = opts,
+                             CPPDEFINES={'RELEASE_BUILD' : '${RELEASE}'})
+           env.Program('foo.c')
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      With this build option,
+      the <TT
+CLASS="VARNAME"
+>RELEASE</TT
+> variable can now be enabled by
+      setting it to the value <TT
+CLASS="LITERAL"
+>yes</TT
+>
+      or <TT
+CLASS="LITERAL"
+>t</TT
+>:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q RELEASE=yes foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DRELEASE_BUILD=1&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q RELEASE=t foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DRELEASE_BUILD=1&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      Other values that equate to <TT
+CLASS="LITERAL"
+>true</TT
+> include
+      <TT
+CLASS="LITERAL"
+>y</TT
+>,
+      <TT
+CLASS="LITERAL"
+>1</TT
+>,
+      <TT
+CLASS="LITERAL"
+>on</TT
+>
+      and
+      <TT
+CLASS="LITERAL"
+>all</TT
+>.
+
+      </P
+><P
+>&#13;      Conversely, <TT
+CLASS="VARNAME"
+>RELEASE</TT
+> may now be given a <TT
+CLASS="LITERAL"
+>false</TT
+>
+      value by setting it to
+      <TT
+CLASS="LITERAL"
+>no</TT
+>
+      or
+      <TT
+CLASS="LITERAL"
+>f</TT
+>:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q RELEASE=no foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DRELEASE_BUILD=0&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q RELEASE=f foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DRELEASE_BUILD=0&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      Other values that equate to <TT
+CLASS="LITERAL"
+>true</TT
+> include
+      <TT
+CLASS="LITERAL"
+>n</TT
+>,
+      <TT
+CLASS="LITERAL"
+>0</TT
+>,
+      <TT
+CLASS="LITERAL"
+>off</TT
+>
+      and
+      <TT
+CLASS="LITERAL"
+>none</TT
+>.
+
+      </P
+><P
+>&#13;      Lastly, if a user tries to specify
+      any other value,
+      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supplies an appropriate error message:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q RELEASE=bad_value foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;***&nbsp;Error&nbsp;converting&nbsp;option:&nbsp;RELEASE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Invalid&nbsp;value&nbsp;for&nbsp;boolean&nbsp;option:&nbsp;bad_value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;"SConstruct",&nbsp;line&nbsp;4,&nbsp;in&nbsp;?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN1000"
+></A
+>Single Value From a List:  the <TT
+CLASS="FUNCTION"
+>EnumOption</TT
+> Build Option</H2
+><P
+>&#13;      Suppose that we want a user to be able to
+      set a <TT
+CLASS="VARNAME"
+>COLOR</TT
+> option
+      that selects a background color to be
+      displayed by an application,
+      but that we want to restrict the
+      choices to a specific set of allowed colors.
+      This can be set up quite easily
+      using the <TT
+CLASS="FUNCTION"
+>EnumOption</TT
+>,
+      which takes a list of <TT
+CLASS="VARNAME"
+>allowed_values</TT
+>      in addition to the variable name,
+      default value,
+      and help text arguments:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>           opts = Options('custom.py')
+           opts.Add(EnumOption('COLOR', 'red', 'Set background color',
+                               allowed_values=('red', 'green', 'blue')))
+           env = Environment(options = opts,
+                             CPPDEFINES={'COLOR' : '"${COLOR}"'})
+           env.Program('foo.c')
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      The user can now explicity set the <TT
+CLASS="VARNAME"
+>COLOR</TT
+> build option
+      to any of the specified allowed values:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=red foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="red"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=blue foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="blue"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=green foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="green"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      But, almost more importantly,
+      an attempt to set <TT
+CLASS="VARNAME"
+>COLOR</TT
+>
+      to a value that's not in the list
+      generates an error message:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=magenta foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;***&nbsp;Invalid&nbsp;value&nbsp;for&nbsp;option&nbsp;COLOR:&nbsp;magenta<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;"SConstruct",&nbsp;line&nbsp;5,&nbsp;in&nbsp;?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      The <TT
+CLASS="FUNCTION"
+>EnumOption</TT
+> function also supports a way
+      to map alternate names to allowed values.
+      Suppose, for example,
+      that we want to allow the user
+      to use the word <TT
+CLASS="LITERAL"
+>navy</TT
+> as a synonym for
+      <TT
+CLASS="LITERAL"
+>blue</TT
+>.
+      We do this by adding a <TT
+CLASS="VARNAME"
+>map</TT
+> dictionary
+      that will map its key values
+      to the desired legal value:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>           opts = Options('custom.py')
+           opts.Add(EnumOption('COLOR', 'red', 'Set background color',
+                               allowed_values=('red', 'green', 'blue'),
+                               map={'navy':'blue'}))
+           env = Environment(options = opts,
+                             CPPDEFINES={'COLOR' : '"${COLOR}"'})
+           env.Program('foo.c')
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      As desired, the user can then use
+      <TT
+CLASS="LITERAL"
+>navy</TT
+> on the command line,
+      and <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will translate it into <TT
+CLASS="LITERAL"
+>blue</TT
+>
+      when it comes time to use the <TT
+CLASS="VARNAME"
+>COLOR</TT
+>
+      option to build a target:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=navy foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="blue"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      By default, when using the <TT
+CLASS="FUNCTION"
+>EnumOption</TT
+> function,
+      arguments that differ
+      from the legal values
+      only in case
+      are treated as illegal values:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=Red foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;***&nbsp;Invalid&nbsp;value&nbsp;for&nbsp;option&nbsp;COLOR:&nbsp;Red<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;"SConstruct",&nbsp;line&nbsp;5,&nbsp;in&nbsp;?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=BLUE foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;***&nbsp;Invalid&nbsp;value&nbsp;for&nbsp;option&nbsp;COLOR:&nbsp;BLUE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;"SConstruct",&nbsp;line&nbsp;5,&nbsp;in&nbsp;?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=nAvY foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;***&nbsp;Invalid&nbsp;value&nbsp;for&nbsp;option&nbsp;COLOR:&nbsp;nAvY<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;"SConstruct",&nbsp;line&nbsp;5,&nbsp;in&nbsp;?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      The <TT
+CLASS="FUNCTION"
+>EnumOption</TT
+> function can take an additional
+      <TT
+CLASS="VARNAME"
+>ignorecase</TT
+> keyword argument that,
+      when set to <TT
+CLASS="LITERAL"
+>1</TT
+>,
+      tells <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to allow case differences
+      when the values are specified:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>           opts = Options('custom.py')
+           opts.Add(EnumOption('COLOR', 'red', 'Set background color',
+                               allowed_values=('red', 'green', 'blue'),
+                               map={'navy':'blue'},
+                               ignorecase=1))
+           env = Environment(options = opts,
+                             CPPDEFINES={'COLOR' : '"${COLOR}"'})
+           env.Program('foo.c')
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      Which yields the output:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=Red foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="Red"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=BLUE foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="BLUE"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=nAvY foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="blue"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=green foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="green"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      Notice that an <TT
+CLASS="VARNAME"
+>ignorecase</TT
+> value of <TT
+CLASS="LITERAL"
+>1</TT
+>
+      preserves the case-spelling that the user supplied.
+      If you want <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to translate the names
+      into lower-case,
+      regardless of the case used by the user,
+      specify an <TT
+CLASS="VARNAME"
+>ignorecase</TT
+> value of <TT
+CLASS="LITERAL"
+>2</TT
+>:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>           opts = Options('custom.py')
+           opts.Add(EnumOption('COLOR', 'red', 'Set background color',
+                               allowed_values=('red', 'green', 'blue'),
+                               map={'navy':'blue'},
+                               ignorecase=2))
+           env = Environment(options = opts,
+                             CPPDEFINES={'COLOR' : '"${COLOR}"'})
+           env.Program('foo.c')
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      Now <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will use values of
+      <TT
+CLASS="LITERAL"
+>red</TT
+>,
+      <TT
+CLASS="LITERAL"
+>green</TT
+> or
+      <TT
+CLASS="LITERAL"
+>blue</TT
+>
+      regardless of how the user spells
+      those values on the command line:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=Red foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="red"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=nAvY foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="blue"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLOR=GREEN foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCOLOR="green"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN1065"
+></A
+>Multiple Values From a List:  the <TT
+CLASS="FUNCTION"
+>ListOption</TT
+> Build Option</H2
+><P
+>&#13;      Another way in which you might want to allow users
+      to control build option is to
+      specify a list of one or more legal values.
+      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports this through the <TT
+CLASS="FUNCTION"
+>ListOption</TT
+> function.
+      If, for example, we want a user to be able to set a
+      <TT
+CLASS="VARNAME"
+>COLORS</TT
+> option to one or more of the legal list of values:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>           opts = Options('custom.py')
+           opts.Add(ListOption('COLORS', 0, 'List of colors',
+                               ['red', 'green', 'blue']))
+           env = Environment(options = opts,
+                             CPPDEFINES={'COLORS' : '"${COLORS}"'})
+           env.Program('foo.c')
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      A user can now specify a comma-separated list
+      of legal values,
+      which will get translated into a space-separated
+      list for passing to the any build commands:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLORS=red,blue foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeError:&nbsp;sequence&nbsp;item&nbsp;0:&nbsp;expected&nbsp;string,&nbsp;int&nbsp;found:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLORS=blue,green,red foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeError:&nbsp;sequence&nbsp;item&nbsp;0:&nbsp;expected&nbsp;string,&nbsp;int&nbsp;found:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      In addition, the <TT
+CLASS="FUNCTION"
+>ListOption</TT
+> function
+      allows the user to specify explicit keywords of
+      <TT
+CLASS="LITERAL"
+>all</TT
+> or <TT
+CLASS="LITERAL"
+>none</TT
+>
+      to select all of the legal values,
+      or none of them, respectively:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLORS=all foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeError:&nbsp;sequence&nbsp;item&nbsp;0:&nbsp;expected&nbsp;string,&nbsp;int&nbsp;found:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLORS=none foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeError:&nbsp;sequence&nbsp;item&nbsp;0:&nbsp;expected&nbsp;string,&nbsp;int&nbsp;found:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      And, of course, an illegal value
+      still generates an error message:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q COLORS=magenta foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeError:&nbsp;sequence&nbsp;item&nbsp;0:&nbsp;expected&nbsp;string,&nbsp;int&nbsp;found:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN1087"
+></A
+>Path Names:  the <TT
+CLASS="FUNCTION"
+>PathOption</TT
+> Build Option</H2
+><P
+>&#13;      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports a <TT
+CLASS="FUNCTION"
+>PathOption</TT
+> function
+      to make it easy to create a build option
+      to control an expected path name.
+      If, for example, you need to
+      define a variable in the preprocessor
+      that control the location of a
+      configuration file:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>           opts = Options('custom.py')
+           opts.Add(PathOption('CONFIG', '/etc/my_config', 'Path to configuration file'))
+           env = Environment(options = opts,
+                             CPPDEFINES={'CONFIG_FILE' : '"$CONFIG"'})
+           env.Program('foo.c')
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      This then allows the user to
+      override the <TT
+CLASS="VARNAME"
+>CONFIG</TT
+> build option
+      on the command line as necessary:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;***&nbsp;Path&nbsp;does&nbsp;not&nbsp;exist&nbsp;for&nbsp;option&nbsp;CONFIG:&nbsp;Path&nbsp;to&nbsp;configuration&nbsp;file<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;"SConstruct",&nbsp;line&nbsp;4,&nbsp;in&nbsp;?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q CONFIG=/usr/local/etc/other_config foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DCONFIG_FILE="/usr/local/etc/other_config"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN1099"
+></A
+>Enabled/Disabled Path Names: the <TT
+CLASS="FUNCTION"
+>PackageOption</TT
+> Build Option</H2
+><P
+>&#13;      Sometimes you want to give users
+      even more control over a path name variable,
+      allowing them to explicitly enable or
+      disable the path name
+      by using <TT
+CLASS="LITERAL"
+>yes</TT
+> or <TT
+CLASS="LITERAL"
+>no</TT
+> keywords,
+      in addition to allow them
+      to supply an explicit path name.
+      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports the <TT
+CLASS="FUNCTION"
+>PackageOption</TT
+>
+      function to support this:
+
+      </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>           opts = Options('custom.py')
+           opts.Add(PackageOption('PACKAGE', '/opt/location', 'Location package'))
+           env = Environment(options = opts,
+                             CPPDEFINES={'PACKAGE' : '"$PACKAGE"'})
+           env.Program('foo.c')
+      </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;      When the <TT
+CLASS="FILENAME"
+>SConscript</TT
+> file uses the <TT
+CLASS="FUNCTION"
+>PackageOption</TT
+> funciton,
+      user can now still use the default
+      or supply an overriding path name,
+      but can now explicitly set the
+      specified variable to a value
+      that indicates the package should be enabled
+      (in which case the default should be used)
+      or disabled:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;***&nbsp;Path&nbsp;does&nbsp;not&nbsp;exist&nbsp;for&nbsp;option&nbsp;PACKAGE:&nbsp;Location&nbsp;package<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;"SConstruct",&nbsp;line&nbsp;4,&nbsp;in&nbsp;?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q PACKAGE=/usr/local/location foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DPACKAGE="/usr/local/location"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q PACKAGE=yes foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DPACKAGE="1"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q PACKAGE=no foo.o</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-DPACKAGE="0"&nbsp;-c&nbsp;-o&nbsp;foo.o&nbsp;foo.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x925.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1116.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Reading Build Options From a File</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c702.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Adding Multiple Command-Line Build Options at Once</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

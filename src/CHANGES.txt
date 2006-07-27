@@ -43,6 +43,10 @@ RELEASE 0.97 - XXX
   - Fix the ability to have an Alias() call refer to a directory
     name that's not identified as a directory until later.
 
+  - Enhance runtest.py with an option to use QMTest as the harness.
+    This will become the default behavior as we add more functionality
+    to the QMTest side.
+
   From Sanjoy Mahajan:
 
   - Change use of $SOURCES to $SOURCE in all TeX-related Tool modules.

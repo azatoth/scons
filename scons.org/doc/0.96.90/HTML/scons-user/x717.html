@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Explicitly Creating File and Directory Nodes</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.96.90"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Node Objects"
+HREF="c679.html"><LINK
+REL="PREVIOUS"
+TITLE="Node Objects"
+HREF="c679.html"><LINK
+REL="NEXT"
+TITLE="Printing Node File Names"
+HREF="x737.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.96.90</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c679.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Node Objects</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x737.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN717"
+></A
+>Explicitly Creating File and Directory Nodes</H1
+><P
+>&#13;    It's worth mentioning here that
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> maintains a clear distinction
+    between Nodes that represent files
+    and Nodes that represent directories.
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> supports <TT
+CLASS="FUNCTION"
+>File</TT
+> and <TT
+CLASS="FUNCTION"
+>Dir</TT
+>
+    functions that, repectively,
+    return a file or directory Node:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>      hello_c = File('hello.c')
+      Program(hello_c)
+
+      classes = Dir('classes')
+      Java(classes, 'src')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    Normally, you don't need to call
+    <TT
+CLASS="FUNCTION"
+>File</TT
+> or <TT
+CLASS="FUNCTION"
+>Dir</TT
+> directly,
+    because calling a builder method automatically
+    treats strings as the names of files or directories,
+    and translates them into
+    the Node objects for you.
+    The <TT
+CLASS="FUNCTION"
+>File</TT
+> and <TT
+CLASS="FUNCTION"
+>Dir</TT
+> functions can come in handy
+    in situations where you need to explicitly
+    instruct <TT
+CLASS="APPLICATION"
+>SCons</TT
+> about the type of Node being
+    passed to a builder or other function,
+    or unambiguously refer to a specific
+    file in a directory tree.
+    
+
+    </P
+><P
+>&#13;    There are also times when you may need to
+    refer to an entry in a file system
+    without knowing in advance
+    whether it's a file or a directory.
+    For those situations,
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> also supports an <TT
+CLASS="FUNCTION"
+>Entry</TT
+> function,
+    which returns a Node
+    that can represent either a file or a directory.
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    xyzzy = Entry('xyzzy')
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>&#13;    The returned <TT
+CLASS="LITERAL"
+>xyzzy</TT
+> Node
+    will be turned into a file or directory Node
+    the first time it is used by a builder method
+    or other function that
+    requires one vs. the other.
+
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c679.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x737.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Node Objects</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c679.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Printing <TT
+CLASS="CLASSNAME"
+>Node</TT
+> File Names</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

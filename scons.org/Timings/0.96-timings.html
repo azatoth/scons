@@ -1,0 +1,1198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <title>0.96-timings</title>
+</head>
+
+
+<body>
+
+
+
+
+
+
+
+
+
+<h1 style="text-align: center; font-family: Helvetica,Arial,sans-serif;"><small>SCons 0.96.x Development Cycle Timings</small></h1>
+
+
+
+
+
+
+
+
+
+<small><span style="font-family: Helvetica,Arial,sans-serif;"><big>This
+is a distillation of timing data that I've been collecting for various
+configurations during the development cycle following the release of
+0.96 a long time ago.<br>
+
+
+
+
+
+
+
+
+
+<br>
+
+
+
+
+
+
+
+
+
+I run SCons against multiple configurations after every checkin, using the </big></span><big><span style="font-family: monospace;">--profile=</span></big><span style="font-family: Helvetica,Arial,sans-serif;"><big>
+option to capture the fine-grained statistics about calls and timings.
+&nbsp;On my old, slow development system, this typically takes about
+four hours of wall-clock time each change, but it's a better way to
+make use of&nbsp; off-line time than simply running a screen saver.<br>
+
+
+
+
+
+
+
+
+
+</big><br>
+
+
+
+
+
+
+
+
+
+<big>In the graphs below, the X axis is the delta (or change) number on
+the 0.96 branch. &nbsp;We're just about to go over 400 accumulated
+changes since 0.96 was released. &nbsp;The timings start at delta 175
+because I switched development systems at that point, and obviously
+timings aren't comparable from system to system.<br>
+
+
+
+
+
+<br>
+
+
+
+
+
+The Y axis is the number of total, cumuative seconds consumed by the&nbsp;</big></span><big><span style="font-family: monospace;">Main._main()</span></big><span style="font-family: Helvetica,Arial,sans-serif;"><big> call and all of its subsidiary function calls (and so on), as reported by the Python profiler. &nbsp;This does <span style="font-style: italic;">not</span> count wall-clock wait time for execution of external compilers and other utilities, this is purely Python execution time.<br>
+
+
+
+
+
+
+
+
+
+<br>
+
+
+
+
+
+These runs all use Python 2.3, which happens to be the default installed on my Fedore Core system(s) that I use for development.<br>
+
+
+
+
+
+<br>
+
+
+
+
+
+
+
+
+
+I do four runs for each configuration:<br>
+
+
+
+
+
+
+
+
+
+</big></span></small>
+<ul>
+
+
+
+
+
+
+
+
+
+  <li><small><span style="font-family: Helvetica,Arial,sans-serif;"><big>Just the startup without the memoizer (run with </big></span><big><span style="font-family: monospace;">--debug=nomemoizer</span></big><span style="font-family: Helvetica,Arial,sans-serif;"><big>, and the </big></span><big><small style="font-family: monospace;">-h</small></big><span style="font-family: Helvetica,Arial,sans-serif;"><big> option so it just reads the </big></span><big>SConscript</big><span style="font-family: Helvetica,Arial,sans-serif;"><big> files and exits)</big></span></small></li>
+
+
+
+
+
+
+
+
+
+  <li><small><span style="font-family: Helvetica,Arial,sans-serif;"><big>Just the startup with the memoizer (run with just the </big></span><big><span style="font-family: monospace;">-h</span></big><span style="font-family: Helvetica,Arial,sans-serif;"><big> option so it just reads the </big></span><big><span style="font-family: monospace;">SConscript</span></big><span style="font-family: Helvetica,Arial,sans-serif;"><big> files and exits)<br>
+
+
+
+
+
+
+
+
+
+    </big></span></small></li>
+
+
+
+
+
+
+
+
+
+  <li><small><span style="font-family: Helvetica,Arial,sans-serif;"><big>Normal run that builds everything</big></span></small></li>
+
+
+
+
+
+
+
+
+
+  <li><small><span style="font-family: Helvetica,Arial,sans-serif;"><big>Additional run that should find everything up-to-date</big></span></small></li>
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+
+
+
+
+
+
+<span style="font-family: Helvetica,Arial,sans-serif;">Each run starts</span><small><span style="font-family: Helvetica,Arial,sans-serif;"><big> with a fresh copy of SCons
+as of that delta, and the starting configuration being timed. &nbsp;</big></span></small><span style="font-family: Helvetica,Arial,sans-serif;">Note that I
+didn't begin timing the two startup runs separately until about delta 260,
+although I did start from scratch on the JTimer configuration, so it
+has timings for all four runs all the way back to delta 175.<br>
+
+
+
+
+
+<br>
+
+
+
+
+
+(Note that I also save the output logs each run, which capture&nbsp;memory usage statistics (</span><span style="font-family: monospace;">--debug=memory</span><span style="font-family: Helvetica,Arial,sans-serif;">), object counts (</span><span style="font-family: monospace;">--debug=count</span><span style="font-family: Helvetica,Arial,sans-serif;">) and the memoizer hit/miss stats (</span><span style="font-family: monospace;">--debug=memoizer</span><span style="font-family: Helvetica,Arial,sans-serif;">,
+where appropriate), so there's additional data that can be mined to
+answer specific questions about what's caused some timing change.)<br>
+
+
+
+
+
+</span><small><br>
+
+
+
+
+
+
+
+
+
+<big><span style="font-family: Helvetica,Arial,sans-serif;">The
+yellow-gold vertical lines in the graphs below represent the releases
+of 0.96.90, 0.96.91 and 0.96.92. &nbsp;The more frequent blue vertical
+lines represent some changes that had significant timing impact on one
+or more configurations. &nbsp;(Apologies to those of you who are color
+blind.) &nbsp;By comparing these points on different graphs, it really
+becomes apparent how varied the different configurations are, and how a
+change that&nbsp;affects one configuration can have no effect, or a
+significantly different effect, on other configurations.</span></big><br>
+
+
+
+
+
+
+
+
+
+<br style="font-family: Helvetica,Arial,sans-serif;">
+
+
+
+
+
+
+
+
+
+</small>
+<table style="text-align: left; font-family: Helvetica,Arial,sans-serif; width: 100%;" border="0" cellpadding="2" cellspacing="5">
+
+
+
+
+
+
+
+
+
+  <tbody>
+
+
+
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+
+
+
+      <td style="vertical-align: top;"><small><img style="width: 640px; height: 480px;" alt="Ethereal timings" src="Ethereal-profiled.png"><br>
+
+
+
+
+
+
+
+
+
+      </small></td>
+
+
+
+
+
+
+
+
+
+      <td style="text-align: left; vertical-align: top;"><small><br>
+
+
+
+      <br>
+
+
+
+
+
+
+
+
+
+This is a stripped down version of the Ethereal packet sniffer.
+&nbsp;There is a bug in its build configuration such that it bombs out
+early in the build, so this mainly tests startup time.<br>
+
+
+
+
+
+
+
+
+
+      </small>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <ul>
+
+
+
+
+
+
+
+
+
+        <li><small>The drop in time at delta 200 was due to optimizing out an NxM inefficiency in matching the suffixes of files.</small></li>
+
+
+
+
+
+
+
+
+
+        <li><small>The trough around delta 296-300 was due to a broken checkin that went unnoticed because I was behind on my timing runs.</small></li>
+
+
+
+
+
+
+
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </ul>
+
+
+
+
+
+
+
+
+
+      <small>All in all, because it's mainly testing startup, this is a
+pretty consistent configuration now and doesn't reveal too much useful
+information about timing changes introduced by new deltas. &nbsp;I'm
+considering dropping this from my timing runs (or else, diving in and
+fixing the build configuration so that we perhaps get something more
+useful from it).</small></td>
+
+
+
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+
+
+
+      <td style="vertical-align: top;"><small><img style="width: 640px; height: 480px;" alt="FooCompiler timings" src="FooCompiler.png"></small></td>
+
+
+
+
+
+
+
+
+
+      <td style="text-align: left; vertical-align: top;"><small><br>
+
+
+
+      <br>
+
+
+
+
+
+
+
+
+
+This does a very simple test of 800 file copies.<br>
+
+
+
+
+
+
+
+
+
+      </small>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <ul>
+
+
+
+
+
+
+
+
+
+        <li><small>The slow down at delta 266 was due to a change that <span style="font-style: italic;">followed</span> making the dependency path names stored in <span style="font-family: monospace;">.sconsign </span>files relative to the target, not the top-level <span style="font-family: monospace;">SConstruct</span>
+directory. &nbsp;The change in delta 266 refactored the translation of
+the strings stored in the .sconsign file into the Nodes in the current
+run.</small></li>
+
+
+
+
+
+
+
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </ul>
+
+
+
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+
+
+
+      <td style="vertical-align: top;"><small><img style="width: 640px; height: 480px;" alt="JTimer timings" src="JTimer.png"></small></td>
+
+
+
+
+
+
+
+
+
+      <td style="text-align: left; vertical-align: top;"><small><br>
+
+
+
+      <br>
+
+
+
+
+
+
+
+
+
+This is Kevin Massey's configuration, a simple chain of 100 files that
+each depend on the next in turn, and then run with <span style="font-family: monospace;">-j 2</span>. &nbsp;This
+configuration has&nbsp;really gotten hammered during the 0.96
+development cycle.<br>
+
+
+
+
+
+
+
+
+
+      </small>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <ul>
+
+
+
+
+
+
+
+
+
+        <li><small>Notice that delta 220 made up-to-date builds a lot
+more efficient (the drop in the green line) but significantly impacted
+the full build. &nbsp;Delta 220 explicity "fixed" the ability to re-scan built files for dependencies when run with <span style="font-family: monospace;">-j</span>, but it did so by causing a lot of <span style="font-style: italic;">unnecessary</span>
+re-scans as well in certain configurations. &nbsp;In&nbsp;this
+particular configuration, the chain of dependencies means only&nbsp;one
+thing can be built at a time, so only
+one worker thread is busy. The second thread keeps asking the
+Taskmaster over and over and over, "Got anything for me to build?"
+"No."
+"Got anythning for me to build?" &nbsp;"No." &nbsp;"Got anything for me
+to build?" &nbsp;No..." &nbsp;Each time it's asked, the Taskmaster
+re-scans&nbsp;<span style="font-style: italic;">all</span> the remaining Nodes (again and again and again), looking for <span style="font-style: italic;">something</span>
+that might have become buldable because its dependencies&nbsp;were
+built since the last tme it was asked. &nbsp;This re-evaluating of Nodes over and over and over chews up a lot of
+cycles, and may also be contributing to how much memory SCons consumes
+during the build.</small></li>
+
+
+
+
+
+
+
+
+
+        <li><small>This configuration gets significantly worse at delta
+364, in between 0.96.91 and 0.96.92, when the explicit <span style="font-family: monospace;">DirScanner</span> was
+introduced. &nbsp;Why? &nbsp;Because now the unnecessary re-scans of Nodes scan the <span style="font-style: italic;">whole directory tree&nbsp;</span><span style="font-style: italic;">each time</span> the idle thread asks for some work.</small></li>
+
+
+
+
+
+
+
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </ul>
+
+
+
+
+
+
+
+
+
+      <small>I actually have a Taskmaster refactoring teed up
+that fixes this, but right now it
+depends on the big signature refactoring. &nbsp;I'm looking at trying
+to retrofit this fix&nbsp;to the current 0.96.92 code base, so I can
+perhaps release it in a 0.96.93 before the signature
+refactoring get released and rocks&nbsp;everyone's world.</small></td>
+
+
+
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+
+
+
+      <td style="vertical-align: top;"><small><img style="width: 640px; height: 480px;" alt="LilyPond timings" src="LilyPond-profiled.png"></small></td>
+
+
+
+
+
+
+
+
+
+      <td style="text-align: left; vertical-align: top;"><small><br>
+
+
+
+      <br>
+
+
+
+
+
+
+
+
+
+This is a&nbsp; shrink-wrapped copy of the LilyPond music notation system contributed by the key LilyPond developers.<br>
+
+
+
+
+
+
+
+
+
+      </small>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <ul>
+
+
+
+
+
+
+
+
+
+        <li><small>At first glance, the spike at delta 221 looks like the same problem as the JTimer graph above, but it's actually the delta <span style="font-style: italic;">after</span> the JTimer spike. &nbsp;This one was introduced when we started matching Entries while searching directories for
+File or Dir nodes. &nbsp;The contrast between these two graphs shows very clearly how different
+configurations can react in radically different ways to code changes in
+SCons: &nbsp;delta 220 caused JTimer to slown down really badly but didn't affect this
+configuration, and delta 221 didn't affect JTimer but slowed down this configuration really badly.</small></li>
+
+
+
+
+
+
+
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </ul>
+
+
+
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+
+
+
+      <td style="vertical-align: top;"><small><img style="width: 640px; height: 480px;" alt="SCons profiled timings" src="SCons-profiled.png"></small></td>
+
+
+
+
+
+
+
+
+
+      <td style="text-align: left; vertical-align: top;"><small><br>
+
+
+
+      <br>
+
+
+
+
+
+
+
+
+
+This is a copy of the SCons packaging build itself. &nbsp;This
+configuration uses lots of very long lists of source files to decide if
+different archive formats must be rebuilt.<br>
+
+
+
+
+
+
+
+
+
+      </small>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <ul>
+
+
+
+
+
+
+
+
+
+        <li><small>The spike at delta 190 (before 0.96.90 was released)
+comes from adding a check that an on-disk entry isn't itself a
+directory that matches the name of a file being searched for.</small></li>
+
+
+
+
+
+
+
+
+
+        <li><small>The slight speed up at delta 204 comes from more efficient recording of build info for long source file lists.</small></li>
+
+
+
+
+
+
+
+
+
+        <li><small>The big slow down at delta 232 comes from storing paths in <span style="font-family: monospace;">.sconsign</span> files relative to their target, not relative to the top-level <span style="font-family: monospace;">SConstruct</span> directory.</small></li>
+
+
+
+
+
+        <li><small>The slight speed up at delta 241 comes from throwing the Memoizer at caching lookups of the relative paths that we store in <span style="font-family: monospace;">.sconsign</span> files.<br>
+
+
+
+
+
+          </small></li>
+
+
+
+
+
+
+
+
+
+        <li><small>The next slow down at delta 266 came from moving when the
+translation of the relative paths in the <span style="font-family: monospace;">.sconsign</span> file occurs,
+essentially translating all of the path names in the file whether we
+were going to use them or not. &nbsp;But also notice that this makes
+the up-to-date build take <span style="font-style: italic;">longer</span>
+than the full build! &nbsp;That's because the up-to-date run now has a lot of file names in the <span style="font-family: monospace;">.sconsign</span>
+file that chew up cycles getting translated into Nodes, where the
+initial full build had none. &nbsp;I didn't dig into this because I
+(mistakenly) dismissed it
+as being something that only affected the SCons packaging build, not
+"real" configurations.</small></li>
+
+
+
+
+
+
+
+
+
+        <li><small>The up and down shaking at deltas 300-308 are erroneous, due to errors I introduced into the SCons packaging itself.</small></li>
+
+
+
+
+
+
+
+
+
+        <li><small>Last, the big speed up of the up-to-date
+build at delta 392 (note the jump of the green line from ~750 seconds
+to ~290 seconds) comes from <span style="font-style: italic;">undoing</span> the effects of deltas 232 and 266, by only converting the <span style="font-family: monospace;">.sconsign</span> file strings to Nodes when needed.<br>
+
+
+
+
+
+
+
+
+
+          </small></li>
+
+
+
+
+
+
+
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </ul>
+
+
+
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+
+
+
+    <tr>
+
+
+
+
+
+
+
+
+
+      <td style="vertical-align: top;"><small><img style="width: 640px; height: 480px;" alt="SCons unprofiled timings" src="SCons-unprofiled.png"></small></td>
+
+
+
+
+
+
+
+
+
+      <td style="text-align: left; vertical-align: top;"><small><br>
+
+
+
+      <br>
+
+
+
+
+
+
+
+
+
+This is also&nbsp;the SCons packaging build, but this time it's run
+with profiling turned off, as a sanity check that running
+configurations with profiling on doesn't give drastically differnt
+results from the non-profiled use of SCons that most people do.
+&nbsp;As you'd expect, most of the key deltas that have significant
+impact are the same as for the SCons-profiled configuration.<br>
+
+
+
+
+
+
+
+
+
+      </small>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <ul>
+
+
+
+
+
+
+
+
+
+        <li><small>The one-off drop at delta 364 was the same
+introduction of the DirScanner that hurt the JTimer configuration, only
+this time it broke my non-profiled build completely.</small></li>
+
+
+
+
+
+
+
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </ul>
+
+
+
+
+
+
+
+
+
+      </td>
+
+
+
+
+
+
+
+
+
+    </tr>
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+<small><br style="font-family: Helvetica,Arial,sans-serif;">
+
+
+
+
+
+
+
+
+
+</small>
+</body>
+</html>

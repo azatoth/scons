@@ -1,0 +1,389 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Caching Implicit Dependencies</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SCons User Guide 0.93"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Dependencies"
+HREF="c297.html"><LINK
+REL="PREVIOUS"
+TITLE="Implicit Dependencies:  The CPPPATH Construction Variable"
+HREF="x407.html"><LINK
+REL="NEXT"
+TITLE="The Ignore Method"
+HREF="x508.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SCons User Guide 0.93</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x407.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Dependencies</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x508.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN464"
+></A
+>Caching Implicit Dependencies</H1
+><P
+>&#13;    Scanning each file for <TT
+CLASS="LITERAL"
+>#include</TT
+> lines
+    does take some extra processing time.
+    When you're doing a full build of a large system,
+    the scanning time is usually a very small percentage
+    of the overall time spent on the build.
+    You're most likely to notice the scanning time,
+    however, when you <I
+CLASS="EMPHASIS"
+>rebuild</I
+>
+    all or part of a large system:
+    <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will likely take some extra time to "think about"
+    what must be built before it issues the
+    first build command
+    (or decides that everything is up to date
+    and nothing must be rebuilt).
+
+ 
+
+    </P
+><P
+>&#13;    In practice, having <TT
+CLASS="APPLICATION"
+>SCons</TT
+> scan files saves time
+    relative to the amount of potential time
+    lost to tracking down subtle problems
+    introduced by incorrect dependencies.
+    Nevertheless, the "waiting time"
+    while <TT
+CLASS="APPLICATION"
+>SCons</TT
+> scans files can annoy
+    individual developers waiting for their builds to finish.
+    Consequently, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> lets you cache
+    the implicit dependencies
+    that its scanners find,
+    for use by later builds.
+    You can do this by specifying the
+    <TT
+CLASS="LITERAL"
+>--implicit-cache</TT
+> option on the command line:
+
+    </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q --implicit-cache hello</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;hello.o&nbsp;hello.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;hello&nbsp;hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q hello</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;`hello'&nbsp;is&nbsp;up&nbsp;to&nbsp;date.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;    If you don't want to specify <TT
+CLASS="LITERAL"
+>--implicit-cache</TT
+>
+    on the command line each time,
+    you can make it the default behavior for your build
+    by setting the <TT
+CLASS="LITERAL"
+>implicit_cache</TT
+> option
+    in an <TT
+CLASS="FILENAME"
+>SConscript</TT
+> file:
+
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>       SetOption('implicit_cache', 1)
+    </PRE
+></TD
+></TR
+></TABLE
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN483"
+></A
+>The <TT
+CLASS="LITERAL"
+>--implicit-deps-changed</TT
+> Option</H2
+><P
+>&#13;      When using cached implicit dependencies,
+      sometimes you want to "start fresh"
+      and have <TT
+CLASS="APPLICATION"
+>SCons</TT
+> re-scan the files
+      for which it previously cached the dependencies.
+      For example,
+      if you have recently installed a new version of
+      external code that you use for compilation,
+      the external header files will have changed
+      and the previously-cached implicit dependencies
+      will be out of date.
+      You can update them by
+      running <TT
+CLASS="APPLICATION"
+>SCons</TT
+> with the <TT
+CLASS="LITERAL"
+>--implicit-deps-changed</TT
+> option:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q --implicit-deps-changed hello</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;hello.o&nbsp;hello.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;hello&nbsp;hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q hello</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;`hello'&nbsp;is&nbsp;up&nbsp;to&nbsp;date.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      In this case, <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will re-scan all of the implicit dependencies
+      and cache updated copies of the information.
+
+      </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN495"
+></A
+>The <TT
+CLASS="LITERAL"
+>--implicit-deps-unchanged</TT
+> Option</H2
+><P
+>&#13;      By default when caching dependencies,
+      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> notices when a file has been modified
+      and re-scans the file for any updated
+      implicit dependency information.
+      Sometimes, however, you may want
+      to force <TT
+CLASS="APPLICATION"
+>SCons</TT
+> to use the cached implicit dependencies, 
+      even if the source files changed.
+      This can speed up a build for example,
+      when you have changed your source files
+      but know that you haven't changed
+      any <TT
+CLASS="LITERAL"
+>#include</TT
+> lines.
+      In this case,
+      you can use the <TT
+CLASS="LITERAL"
+>--implicit-deps-unchanged</TT
+> option:
+
+      </P
+><P
+CLASS="LITERALLAYOUT"
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q --implicit-deps-unchanged hello</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-c&nbsp;-o&nbsp;hello.o&nbsp;hello.c<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cc&nbsp;-o&nbsp;hello&nbsp;hello.o<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%&nbsp;<TT
+CLASS="USERINPUT"
+><B
+>scons -Q hello</B
+></TT
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scons:&nbsp;`hello'&nbsp;is&nbsp;up&nbsp;to&nbsp;date.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+><P
+>&#13;      In this case,
+      <TT
+CLASS="APPLICATION"
+>SCons</TT
+> will assume that the cached implicit
+      dependencies are correct and
+      will not bother to re-scan changed files.
+      For typical builds after small,
+      incremental changes to source files,
+      the savings may not be very big,
+      but sometimes every bit of
+      improved performance counts.
+
+      </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x407.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x508.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Implicit Dependencies:  The <TT
+CLASS="LITERAL"
+>CPPPATH</TT
+> Construction Variable</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c297.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>The <TT
+CLASS="FUNCTION"
+>Ignore</TT
+> Method</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

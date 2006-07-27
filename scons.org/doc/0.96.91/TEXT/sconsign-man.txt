@@ -1,0 +1,111 @@
+SCONSIGN(1)                                                        SCONSIGN(1)
+
+
+
+NNAAMMEE
+       sconsign - print SCons .sconsign file information
+
+SSYYNNOOPPSSIISS
+       ssccoonnssiiggnn [ _o_p_t_i_o_n_s...  ] _f_i_l_e [ ... ]
+
+DDEESSCCRRIIPPTTIIOONN
+       The  ssccoonnssiiggnn  command  displays  the contents of one or more ..ssccoonnssiiggnn
+       files specified by the user.
+
+       By default,  ssccoonnssiiggnn  dumps  the  entire  contents  of  the  specified
+       file(s).  Each entry is printed in the following format:
+
+           file: timestamp bsig csig
+                   implicit_dependency_1
+                   implicit_dependency_2
+
+       If  the  entry has no timestamp, bsig, or csig, a dash NNoonnee is printed.
+       If the entry has no implicit dependencies, the lines are  simply  omit-
+       ted.
+
+       By  default,  ssccoonnssiiggnn  assumes that any _f_i_l_e arguments that end with a
+       ..ddbbmm suffix contains signature entries  for  more  than  one  directory
+       (that  is,  was  specified  by the SSCCoonnssiiggnnFFiillee (()) function).  Any _f_i_l_e
+       argument that does not end in ..ddbbmm  is  assumed  to  be  a  traditional
+       ..ssccoonnssiiggnn file containing the signature entries for a single directory.
+       An explicit format may be specified using the --ff or ----ffiillee== options.
+
+
+OOPPTTIIOONNSS
+       Various options control what information is printed and the format:
+
+
+       -b, --bsig
+              Prints the build signature (bsig) information for all entries or
+              the specified entries.
+
+
+       -c, --csig
+              Prints  the content signature (csig) information for all entries
+              or the specified entries.
+
+
+       -d DIRECTORY, --dir=DIRECTORY
+              When the signatures are being read from a ..ddbbmm file, or  the  --ff
+              ddbbmm  or  ----ffoorrmmaatt==ddbbmm options are used, prints information about
+              only the signatures for entries in the specified _D_I_R_E_C_T_O_R_Y.
+
+
+       -e ENTRY, --entry=ENTRY
+              Prints information about only the specified _E_N_T_R_Y.  Multiple  -e
+              options  may be used, in which case information about each _E_N_T_R_Y
+              is printed in the order in which the options  are  specified  on
+              the command line.
+
+
+       -f FORMAT, --format=FORMAT
+              The  file(s)  to  be printed are in the specified _F_O_R_M_A_T.  Legal
+              values are ddbbmm (the DBM  format  used  when  the  SSCCoonnssiiggnnFFiillee()
+              function  is  used)  or ssccoonnssiiggnn (the default format used for an
+              individual ..ssccoonnssiiggnn file in each directory).
+
+
+       -h, --help
+              Prints a help message and exits.
+
+
+       -i, --implicit
+              Prints the list of cached implicit dependencies for all  entries
+              or the the specified entries.
+
+
+       --raw  Prints a pretty-printed representation of the raw Python dictio-
+              nary that holds build information about an entry.
+
+
+       -r, --readable
+              Prints timestamps in a human-readable string, enclosed in single
+              quotes.
+
+
+       -t, --timestamp
+              Prints  the  timestamp information for all entries or the speci-
+              fied entries.
+
+
+       -v, --verbose
+              Prints labels identifying each field being printed.
+
+
+EENNVVIIRROONNMMEENNTT
+       SCONS_LIB_DIR
+              Specifies the directory that contains the  SCons  Python  module
+              directory (e.g. /home/aroach/scons-src-0.01/src/engine).  on the
+              command line.
+
+
+SSEEEE AALLSSOO
+       ssccoonnss, ssccoonnss User Manual, ssccoonnss Design Document, ssccoonnss source code.
+
+
+AAUUTTHHOORRSS
+       Steven Knight <knight at baldmt dot com>
+
+
+
+                                  August 2004                      SCONSIGN(1)
