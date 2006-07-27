@@ -38,11 +38,13 @@ def create_default_target(kw):
     """
     version        = kw['version']
     projectname    = kw['projectname']
+    packageversion = kw['packageversion']
+
     # XXX: this should be guessed by inspecting compilerflags?!?! how to get
     # them?
     buildarchitecture = 'i386'
 
-    srcrpm = '%s-%s.src.rpm' % (projectname, version)
+    srcrpm = '%s-%s-%s.src.rpm' % (projectname, version, packageversion)
     binrpm = srcrpm.replace( 'src', buildarchitecture )
 
     return [ srcrpm, binrpm ]
@@ -271,7 +273,7 @@ def build_specfile_header(spec):
     mandatory_header_fields = {
         'projectname'    : '%%define name %s\nName: %%{name}\n',
         'version'        : '%%define version %s\nVersion: %%{version}\n',
-        'x_rpm_Release'  : '%%define release %s\nRelease: %%{release}\n',
+        'packageversion' : '%%define release %s\nRelease: %%{release}\n',
         'x_rpm_Group'    : 'Group: %s\n',
         'summary'        : 'Summary: %s\n',
         'license'        : 'License: %s\n', }

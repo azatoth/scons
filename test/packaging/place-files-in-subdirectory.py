@@ -52,7 +52,7 @@ Package( projectname  = 'libfoo',
          source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 
-  test.run(arguments='libfoo-1.2.3.tar.gz', stderr = None)
+  test.run(arguments='libfoo-1.2.3.zip', stderr = None)
 
   test.fail_test( not os.path.exists( 'libfoo' ) )
   test.fail_test( not os.path.exists( 'libfoo/SConstruct' ) )
@@ -68,7 +68,7 @@ Package( projectname  = 'libfoo',
   test.write('SConstruct', """
 Package( projectname = 'libfoo',
          version     = '1.2.3',
-         target      = 'src.tar.gz',
+         target      = 'src.zip',
          source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
@@ -89,6 +89,7 @@ Package( projectname = 'libfoo',
   test.write('SConstruct', """
 Package( projectname = 'libfoo',
          version     = '1.2.3',
+         type        = 'targz',
          source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 

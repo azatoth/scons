@@ -64,7 +64,7 @@ Package( projectname = 'libfoo',
 
   test.run(options="--debug=stacktrace", stderr = None)
 
-  test.fail_test( not os.path.exists( 'libfoo-1.2.3.tar.gz' ) )
+  test.fail_test( not os.path.exists( 'libfoo-1.2.3.zip' ) )
 
   #
   # TEST: overriding default package name.

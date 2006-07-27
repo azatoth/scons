@@ -57,8 +57,8 @@ Package( projectname  = 'libfoo',
 
   test.run(stderr = None)
 
-  test.fail_test( not os.path.exists( 'libfoo-1.2.3.tar.gz' ) )
-  #test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.tar.gz' ) )
+  test.fail_test( not os.path.exists( 'libfoo-1.2.3.zip' ) )
+  #test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.zip' ) )
 
   #
   # TEST: builddir not placed in archive
@@ -75,6 +75,7 @@ BuildDir('build', 'src')
 Package( projectname  = 'libfoo',
          package_root = 'build/libfoo',
          version      = '1.2.3',
+         type         = 'targz',
          source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 

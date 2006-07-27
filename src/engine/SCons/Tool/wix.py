@@ -67,20 +67,23 @@ def exists(env):
     # try to find the candle.exe and light.exe tools and 
     # add the install directory to light libpath.
     for path in os.environ['PATH'].split(os.pathsep):
-        # workaround for some weird win32 bug.
+        # workaround for some weird python win32 bug.
         if path[0] == '"' and path[-1:]=='"':
             path = path[1:-1]
 
         # normalize the path
         path = os.path.normpath(path)
 
-        # search for the tools
-        if env['WIXCANDLE'] in os.listdir(path) and\
-           env['WIXLIGHT']  in os.listdir(path):
-               env.PrependENVPath('PATH', path)
-               env['WIXLIGHTFLAGS'] = [ os.path.join( path, 'wixui.wixlib' ),
-                                        '-loc',
-                                        os.path.join( path, 'WixUI_en-us.wxl' ) ]
-               return 1
+        # search for the tools in the PATH environment variable
+        try:
+            if env['WIXCANDLE'] in os.listdir(path) and\
+               env['WIXLIGHT']  in os.listdir(path):
+                   env.PrependENVPath('PATH', path)
+                   env['WIXLIGHTFLAGS'] = [ os.path.join( path, 'wixui.wixlib' ),
+                                            '-loc',
+                                            os.path.join( path, 'WixUI_en-us.wxl' ) ]
+                   return 1
+        except OSError:
+            pass # ignore this, could be a stale PATH entry.
 
     return None
