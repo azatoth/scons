@@ -52,12 +52,20 @@ def create_default_target(kw):
 def create_builder(env, keywords=None):
     # the wxs_builder is kind of hacked, calling the object_builder and 
     # linker_builder with the correct files.
+
+    wxsfile_action = SCons.Action.Action( build_wxsfile,
+                                          string_wxsfile,
+                                          varlist=[ 'MSISPEC' ] )
+
     def attach_wix_process(source, target, env):
         ''' this is an emitter which attaches the wxi-file builder and
         the call to candle.exe to the src files.
         '''
         # categorize files
         tag_factories = [ SCons.Tool.Packaging.LocationTagFactory() ]
+
+        # try to guess the builddir.
+        build_dir = target[0].get_dir()
 
         def belongs_into_msi_pkg(file):
             tags = file.get_tags(factories=tag_factories)
@@ -73,8 +81,8 @@ def create_builder(env, keywords=None):
 
         # build the specfile.
         p, v       = env['MSISPEC']['projectname'], env['MSISPEC']['version']
-        wxs_target = '%s-%s.wxs' % ( p, v )
-        wxi_target = '%s-%s.wxiobj' % ( p, v )
+        wxs_target = build_dir.File( '%s-%s.wxs' % ( p, v ) )
+        wxi_target = build_dir.File( '%s-%s.wxiobj' % ( p, v ) )
 
         wxs_builder = SCons.Builder.Builder(
             action  = wxsfile_action,
@@ -106,10 +114,6 @@ def string_wxsfile(target, source, env):
 def build_wxsfile(target, source, env):
     """ Builds a WiX file from a dictionary with string metadata and
     by analyzing a tree of nodes.
-
-    As with RPM there is an abstract compile() function, the build_ function
-    define the dict to wxsfile-content mapping. In this case this is a XML
-    Attribute, so we have a tuple consisting of XML tag- and attributename.
     """
     file = open(target[0].abspath, 'w')
     spec = env['MSISPEC']
@@ -127,6 +131,7 @@ def build_wxsfile(target, source, env):
         generate_guids(root)
         build_wxsfile_features_section(root, spec, source)
         build_wxsfile_default_gui(root)
+        build_license_file(target[0].get_dir(), spec)
 
         # write the xml to a file
         file.write( doc.toprettyxml() )
@@ -134,7 +139,7 @@ def build_wxsfile(target, source, env):
     except KeyError, e:
         raise SCons.Errors.UserError( '"%s" package field for MSI is missing.' % e.args[0] )
 
-def generate_guids( root ):
+def generate_guids(root):
     """ generates globally unique identifiers for parts of the xml which need 
     them.
 
@@ -199,7 +204,7 @@ def gen_dos_short_file_name(file):
     filename_set.append(shortname)
     return shortname
 
-def create_feature_dict( files ):
+def create_feature_dict(files):
     """ creates a dictioniary which maps from the x_msi_feature and doc FileTag
     to the included files.
     """
@@ -226,7 +231,7 @@ def create_feature_dict( files ):
 
     return dict
 
-def convert_to_id( _str ):
+def convert_to_id(_str):
     """ converts a long str to a valid Id. This means a str which consists only
     of A-Z and a-z characters is returned. 
 
@@ -460,6 +465,9 @@ def build_wxsfile_header_section(root, spec):
     if spec.has_key( 'description' ):
         Package.attributes['Comments'] = escape( spec['description'] )
 
+    if spec.has_key( 'x_msi_upgrade_code' ):
+        Package.attributes['x_msi_upgrade_code'] = escape( spec['x_msi_upgrade_code'] ) 
+
     # We hardcode the media tag as our current model cannot handle it.
     Media = factory.createElement('Media')
     Media.attributes['Id']       = '1'
@@ -481,6 +489,22 @@ def build_wxsfile_default_gui(root):
     UIRef.attributes['Id'] = 'WixUI_ErrorProgressText'
     Product.childNodes.append(UIRef)
 
-wxsfile_action = SCons.Action.Action( build_wxsfile,
-                                      string_wxsfile,
-                                      varlist=[ 'MSISPEC' ] )
+def build_license_file(directory, spec):
+    """ creates a License.rtf file with the content of "x_msi_license_text" 
+    in the given directory. """
+    name, text = '', ''
+
+    try:
+        name = spec['license']
+        text = spec['license_text']
+    except KeyError:
+        pass # ignore this as x_msi_license_text is optional
+
+    if name!='' or text!='':
+        file = open( os.path.join(directory.get_path(), 'License.rtf'), 'w' )
+        file.write('{\\rtf\r\n')
+        file.write(name+'\r\n\r\n')
+        file.write(text)
+        file.write('}')
+        file.close()
+
