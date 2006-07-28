@@ -57,7 +57,10 @@ class AliasNameSpace(UserDict.UserDict):
             return None
 
 class AliasNodeInfo(SCons.Node.NodeInfoBase):
-    pass
+    current_target = SCons.Node.NodeInfoBase.current_state
+    current_source = SCons.Node.NodeInfoBase.current_state
+    current_timestamp = SCons.Node.NodeInfoBase.current_state
+    current_content = SCons.Node.NodeInfoBase.current_state
 
 class AliasBuildInfo(SCons.Node.BuildInfoBase):
     pass

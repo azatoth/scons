@@ -49,7 +49,6 @@ import SCons.Action
 import SCons.Builder
 import SCons.Environment
 import SCons.Tool
-import SCons.Sig
 import SCons.Subst
 
 # A placeholder for a default Environment (for fetching source files
@@ -64,8 +63,8 @@ def DefaultEnvironment(*args, **kw):
     global _default_env
     if not _default_env:
         _default_env = apply(SCons.Environment.Environment, args, kw)
-        _default_env._build_signature = 1
-        _default_env._calc_module = SCons.Sig.default_module
+        _default_env.src_sig_type = 'MD5'
+        _default_env.tgt_sig_type = 'source'
     return _default_env
 
 # Emitters for setting the shared attribute on object files,
@@ -104,9 +103,9 @@ LaTeXScan = SCons.Tool.LaTeXScanner
 ObjSourceScan = SCons.Tool.SourceFileScanner
 ProgScan = SCons.Tool.ProgramScanner
 
-# This isn't really a tool scanner, so it doesn't quite belong with
-# the rest of those in Tool/__init__.py, but I'm not sure where else it
-# should go.  Leave it here for now.
+# These aren't really tool scanners, so they don't quite belong with
+# the rest of those in Tool/__init__.py, but I'm not sure where else
+# they should go.  Leave them here for now.
 import SCons.Scanner.Dir
 DirScanner = SCons.Scanner.Dir.DirScanner()
 DirEntryScanner = SCons.Scanner.Dir.DirEntryScanner()

@@ -92,18 +92,17 @@ scons: `foo.out' is up to date.
 
 
 
+# Swapping content and build signatures no longer causes a rebuild
+# because we record the right underlying information regardless.
+
 write_SConstruct(test, 'x = 2 # added this line', 'content', 'build')
 
-test.run(arguments="bar.out foo.out",
-         stdout=test.wrap_stdout("""\
-copy1(["bar.out"], ["bar.mid"])
-copy1(["foo.out"], ["foo.mid"])
-"""))
+test.up_to_date(arguments="bar.out foo.out")
 
 
 
 # Change the code in the the copy2() function back again, which should
-# its content again and trigger a rebuild of the targets built with it.
+# trigger another rebuild of the targets built with it.
 
 write_SConstruct(test, '', 'content', 'build')
 

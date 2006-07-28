@@ -2887,19 +2887,18 @@ def generate(env):
         except SCons.Errors.UserError:
             exc_caught = 1
         assert exc_caught, "did not catch expected UserError"
-        assert not hasattr(env, '_calc_module')
 
         env.SourceSignatures('MD5')
-        m = env._calc_module
+        assert env.src_sig_type == 'MD5', env.src_sig_type
 
         env.SourceSignatures('$M')
-        assert env._calc_module is m
+        assert env.src_sig_type == 'MD5', env.src_sig_type
 
         env.SourceSignatures('timestamp')
-        t = env._calc_module
+        assert env.src_sig_type == 'timestamp', env.src_sig_type
 
         env.SourceSignatures('$T')
-        assert env._calc_module is t
+        assert env.src_sig_type == 'timestamp', env.src_sig_type
 
     def test_Split(self):
         """Test the Split() method"""
@@ -2930,16 +2929,22 @@ def generate(env):
         assert not hasattr(env, '_build_signature')
 
         env.TargetSignatures('build')
-        assert env._build_signature == 1, env._build_signature
-
-        env.TargetSignatures('content')
-        assert env._build_signature == 0, env._build_signature
+        assert env.tgt_sig_type == 'build', env.tgt_sig_type
 
         env.TargetSignatures('$B')
-        assert env._build_signature == 1, env._build_signature
+        assert env.tgt_sig_type == 'build', env.tgt_sig_type
+
+        env.TargetSignatures('content')
+        assert env.tgt_sig_type == 'content', env.tgt_sig_type
 
         env.TargetSignatures('$C')
-        assert env._build_signature == 0, env._build_signature
+        assert env.tgt_sig_type == 'content', env.tgt_sig_type
+
+        env.TargetSignatures('MD5')
+        assert env.tgt_sig_type == 'MD5', env.tgt_sig_type
+
+        env.TargetSignatures('timestamp')
+        assert env.tgt_sig_type == 'timestamp', env.tgt_sig_type
 
     def test_Value(self):
         """Test creating a Value() object

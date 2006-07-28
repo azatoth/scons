@@ -36,7 +36,6 @@ import string
 import time
 
 import SCons.dblite
-import SCons.Sig
 import SCons.Warnings
 
 def corrupt_dblite_warning(filename):
@@ -123,7 +122,6 @@ class Base:
         module - the signature module being used
         """
 
-        self.module = module or SCons.Sig.default_calc.module
         self.entries = {}
         self.dirty = 0
 

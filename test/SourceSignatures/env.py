@@ -76,12 +76,10 @@ build(["f4.out"], ["f4.in"])
 
 
 
-os.utime(test.workpath('f1.in'), 
-         (os.path.getatime(test.workpath('f1.in')),
-          os.path.getmtime(test.workpath('f1.in'))+10))
-os.utime(test.workpath('f3.in'), 
-         (os.path.getatime(test.workpath('f3.in')),
-          os.path.getmtime(test.workpath('f3.in'))+10))
+test.sleep()
+
+test.touch('f1.in')
+test.touch('f3.in')
 
 test.run(arguments = 'f1.out f2.out f3.out f4.out',
          stdout = test.wrap_stdout("""\

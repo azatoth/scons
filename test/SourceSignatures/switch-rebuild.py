@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that switching SourceSignature() types causes appropriate rebuilds.
+Test that switching SourceSignature() types no longer causes rebuilds.
 """
 
 import TestSCons
@@ -62,15 +62,11 @@ test.up_to_date(arguments = 'switch.out')
 
 write_SConstruct(test, 'timestamp')
 
-test.run(arguments = 'switch.out', stdout = switch_out_switch_in)
-
 test.up_to_date(arguments = 'switch.out')
 
 
 
 write_SConstruct(test, 'MD5')
-
-test.run(arguments = 'switch.out', stdout = switch_out_switch_in)
 
 test.up_to_date(arguments = 'switch.out')
 

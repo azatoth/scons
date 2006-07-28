@@ -45,6 +45,8 @@ import SCons.Util
 import SCons.Warnings
 import SCons.Conftest
 
+from SCons.Debug import Trace
+
 # Turn off the Conftest error logging
 SCons.Conftest.LogInputFiles = 0
 SCons.Conftest.LogErrorMessages = 0
@@ -158,14 +160,10 @@ class SConfBuildInfo(SCons.Node.FS.FileBuildInfo):
     """
     result = None # -> 0/None -> no error, != 0 error
     string = None # the stdout / stderr output when building the target
-    
-    def __init__(self, node, result, string, sig):
-        SCons.Node.FS.FileBuildInfo.__init__(self, node)
-        self.set_ninfo(SCons.Node.FS.FileNodeInfo(node))
-        self.ninfo.update(node)
+
+    def set_build_result(self, result, string):
         self.result = result
         self.string = string
-        self.ninfo.bsig = sig
 
 
 class Streamer:
@@ -246,18 +244,14 @@ class SConfBuildTask(SCons.Taskmaster.Task):
         is_up_to_date = 1
         cached_error = 0
         cachable = 1
+        from SCons.Debug import Trace
         for t in self.targets:
             bi = t.get_stored_info()
             if isinstance(bi, SConfBuildInfo):
                 if cache_mode == CACHE:
                     t.set_state(SCons.Node.up_to_date)
                 else:
-                    new_bsig = t.calc_signature(sconf_global.calc)
-                    if t.env.use_build_signature():
-                        old_bsig = bi.ninfo.bsig
-                    else:
-                        old_bsig = bi.ninfo.csig
-                    is_up_to_date = (is_up_to_date and new_bsig == old_bsig)
+                    is_up_to_date = (is_up_to_date and t.is_up_to_date())
                 cached_error = cached_error or bi.result
             else:
                 # the node hasn't been built in a SConf context or doesn't
@@ -305,16 +299,32 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                 raise SCons.Errors.ExplicitExit(self.targets[0],exc_value.code)
             except:
                 for t in self.targets:
-                    sig = t.calc_signature(sconf.calc)
-                    string = s.getvalue()
-                    binfo = SConfBuildInfo(t,1,string,sig)
+                    binfo = t.get_binfo()
+                    #Trace('except: %s: %s\n' % (t, repr(t)))
+                    #Trace('except: %s: binfo = %s\n' % (t, binfo))
+                    binfo.__class__ = SConfBuildInfo
+                    binfo.set_build_result(1, s.getvalue())
+                    # We'd like to do this as follows:
+                    #    t.store_info(binfo)
+                    # However, we need to store it as an SConfBuildInfo
+                    # object, and store_info() will turn it into a
+                    # regular FileNodeInfo if the target is itself a
+                    # regular File.
                     t.dir.sconsign().set_entry(t.name, binfo)
                 raise
             else:
                 for t in self.targets:
-                    sig = t.calc_signature(sconf.calc)
-                    string = s.getvalue()
-                    binfo = SConfBuildInfo(t,0,string,sig)
+                    binfo = t.get_binfo()
+                    #Trace('else:   %s: %s\n' % (t, repr(t)))
+                    #Trace('else:   %s: binfo = %s\n' % (t, binfo))
+                    binfo.__class__ = SConfBuildInfo
+                    binfo.set_build_result(0, s.getvalue())
+                    # We'd like to do this as follows:
+                    #    t.store_info(binfo)
+                    # However, we need to store it as an SConfBuildInfo
+                    # object, and store_info() will turn it into a
+                    # regular FileNodeInfo if the target is itself a
+                    # regular File.
                     t.dir.sconsign().set_entry(t.name, binfo)
 
 class SConf:
@@ -367,7 +377,6 @@ class SConf:
         self.AddTests(default_tests)
         self.AddTests(custom_tests)
         self.confdir = SConfFS.Dir(env.subst(conf_dir))
-        self.calc = None
         if not config_h is None:
             config_h = SConfFS.File(config_h)
         self.config_h = config_h

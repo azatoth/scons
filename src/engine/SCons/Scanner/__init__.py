@@ -33,7 +33,6 @@ import re
 import string
 
 import SCons.Node.FS
-import SCons.Sig
 import SCons.Util
 
 
@@ -297,8 +296,7 @@ class Current(Base):
 
     def __init__(self, *args, **kw):
         def current_check(node, env):
-            c = not node.has_builder() or node.current(env.get_calculator())
-            return c
+            return not node.has_builder() or node.current()
         kw['scan_check'] = current_check
         apply(Base.__init__, (self,) + args, kw)
 

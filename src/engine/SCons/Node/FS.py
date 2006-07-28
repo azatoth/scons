@@ -53,6 +53,8 @@ import SCons.Subst
 import SCons.Util
 import SCons.Warnings
 
+from SCons.Debug import Trace
+
 # The max_drift value:  by default, use a cached signature value for
 # any file that's been untouched for more than two days.
 default_max_drift = 2*24*60*60
@@ -258,7 +260,6 @@ def CachePushFunc(target, source, env):
         SCons.Warnings.warn(SCons.Warnings.CacheWriteErrorWarning,
                             "Unable to copy %s to cache. Cache file is %s"
                                 % (str(target), cachefile))
-        return
 
 CachePush = SCons.Action.Action(CachePushFunc, None)
 
@@ -767,6 +768,12 @@ class Entry(Base):
             raise "rel_path() could not disambiguate File/Dir"
         return d.rel_path(other)
 
+    def new_ninfo(self):
+        return self.disambiguate().new_ninfo()
+
+#    def new_binfo(self):
+#        return self.disambiguate().new_binfo()
+
 # This is for later so we can differentiate between Entry the class and Entry
 # the method of the FS class.
 _classEntry = Entry
@@ -1167,7 +1174,10 @@ class FS(LocalFS):
         return targets, message
 
 class DirNodeInfo(SCons.Node.NodeInfoBase):
-    pass
+    current_target = SCons.Node.NodeInfoBase.current_state
+    current_source = SCons.Node.NodeInfoBase.current_state
+    current_timestamp = SCons.Node.NodeInfoBase.current_state
+    current_content = SCons.Node.NodeInfoBase.current_state
 
 class DirBuildInfo(SCons.Node.BuildInfoBase):
     pass
@@ -1392,7 +1402,7 @@ class Dir(Base):
     def do_duplicate(self, src):
         pass
 
-    def current(self, calc=None):
+    def current(self):
         """If any child is not up-to-date, then this directory isn't,
         either."""
         if not self.builder is MkdirBuilder and not self.exists():
@@ -1601,19 +1611,73 @@ class FileNodeInfo(SCons.Node.NodeInfoBase):
         SCons.Node.NodeInfoBase.__init__(self, node)
         self.timestamp = 0
         self.size = 0
-    def __cmp__(self, other):
-        try:
-             return cmp(self.bsig, other.bsig)
-        except AttributeError:
-            #return 1
-            try:
-                return cmp(self.csig, other.csig)
-            except AttributeError:
-                return 1
     def update(self, node):
         self.csig = node.get_csig()
+        #Trace('update(%s): %s\n' % (node, self.csig))
         self.timestamp = node.get_timestamp()
         self.size = node.getsize()
+    def current_target(self, prev, target, source, type):
+        func = {
+            'MD5' : self.current_content,
+            'content' : self.current_content,
+            'timestamp' : self.current_timestamp,
+            'build' : self.current_state,
+        }[type]
+        return func(prev, target, source, type)
+    def current_source(self, prev, target, source, type):
+        func = {
+            'MD5' : self.current_content,
+            'timestamp' : self.current_timestamp,
+        }[type]
+        return func(prev, target, source, type)
+    def current_timestamp(self, prev, target, source, type=None):
+        try:
+            return target.get_timestamp() >= self.timestamp
+        except AttributeError:
+            return None
+    def current_content(self, prev, target, source, type=None):
+        try:
+            return prev.csig == self.csig
+        except AttributeError:
+            return None
+
+_FileNodeInfo = FileNodeInfo
+
+force_trace = 0
+
+class TraceFileNodeInfo(_FileNodeInfo):
+    def current_target(self, prev, target, source, type):
+        r = _FileNodeInfo.current_target(self, prev, target, source, type)
+        if not r or force_trace:
+            Trace('current_target(%s, %s, %s): %s\n' % (target, source, type, r))
+        return r
+    def current_source(self, prev, target, source, type):
+        r = _FileNodeInfo.current_source(self, prev, target, source, type)
+        if not r or force_trace:
+            Trace('current_source(%s, %s, %s): %s\n' % (target, source, type, r))
+        return r
+    def current_timestamp(self, prev, target, source, type):
+        r = _FileNodeInfo.current_timestamp(self, prev, target, source, type)
+        if not r or force_trace:
+            Trace('current_timestamp(%s, %s, %s): %s\n' % (target, source, type, r))
+        return r
+    def current_content(self, prev, target, source, type):
+        r = _FileNodeInfo.current_content(self, prev, target, source, type)
+        if not r or force_trace:
+            Trace('current_content(%s, %s, %s): %s\n' % (target, source, type, r))
+            try:
+                Trace('  prev.csig %s\n' % (prev.csig))
+                Trace('  self.csig %s\n' % (self.csig))
+            except AttributeError:
+                pass
+        return r
+    def current_state(self, prev, target, source, type):
+        r = _FileNodeInfo.current_state(self, prev, target, source, type)
+        if not r or force_trace:
+            Trace('current_state(%s, %s, %s): %s\n' % (target, source, type, r))
+        return r
+
+#FileNodeInfo = TraceFileNodeInfo
 
 class FileBuildInfo(SCons.Node.BuildInfoBase):
     def __init__(self, node):
@@ -1748,6 +1812,14 @@ class File(Base):
         # in one build (SConstruct file) is a source in a different build.
         # See test/chained-build.py for the use case.
         entry = self.get_stored_info()
+        #try:
+        #    Trace('store_info(%s): %s\n' % (self, obj.csig))
+        #except AttributeError:
+        #    pass
+        #try:
+        #    Trace('store_info(%s): %s\n' % (self, entry.csig))
+        #except AttributeError:
+        #    pass
         entry.merge(obj)
         self.dir.sconsign().set_entry(self.name, entry)
 
@@ -1985,7 +2057,18 @@ class File(Base):
 #                self.store_info(binfo)
 #        return ninfo
 
-    def get_csig(self, calc=None):
+#    def new_binfo(self):
+#        binfo = SCons.Node.Node.new_binfo(self)
+#        if not self.has_builder():
+#            #max_drift = self.fs.max_drift
+#            #mtime = self.get_timestamp()
+#            #if max_drift >= 0 and (time.time() - mtime) > max_drift:
+#            #    #self.dir.sconsign().set_entry(self.name, binfo)
+#            #    self.store_info(binfo)
+#            self.store_info(binfo)
+#        return binfo
+
+    def get_csig(self):
         """
         Generate a node's content signature, the digested signature
         of its content.
@@ -1998,9 +2081,6 @@ class File(Base):
             return self.binfo.ninfo.csig
         except AttributeError:
             pass
-
-        if calc is None:
-            calc = self.calculator()
 
         max_drift = self.fs.max_drift
         if max_drift > 0:
@@ -2015,51 +2095,49 @@ class File(Base):
         elif max_drift == 0:
             old = self.get_stored_info().ninfo
             try:
+                #Trace('1 get_csig(%s): %s\n' % (self, old.csig))
                 return old.csig
             except AttributeError:
                 pass
-        #import SCons.Sig.MD5
-        #return SCons.Sig.MD5.signature(self)
-        return calc.module.signature(self)
+           
+        r = SCons.Sig.MD5.signature(self)
+        #Trace('2 get_csig(%s): %s\n' % (self, r))
+        return r
 
     #
     #
     #
 
-    def is_up_to_date(self, node=None, bi=None):
-        """Returns if the node is up-to-date with respect to stored
-        BuildInfo.  The default is to compare it against our own
-        previously stored BuildInfo, but the stored BuildInfo from another
-        Node (typically one in a Repository) can be used instead."""
-        if bi is None:
-            if node is None:
-                node = self
-            bi = node.get_stored_info()
-        new = self.get_binfo()
-        return new == bi
-
-    def current(self, calc=None):
-        self.binfo = self.gen_binfo(calc)
+    def current(self):
+        self.binfo = self.get_binfo()
         return self._cur2()
     def _cur2(self):
         "__cacheable__"
         if self.always_build:
             return None
+        #Trace('_cur2(%s):' % self)
         if not self.exists():
+            #Trace(' not self.exists():')
             # The file doesn't exist locally...
             r = self.rfile()
             if r != self:
                 # ...but there is one in a Repository...
                 if self.is_up_to_date(r):
+                    #Trace(' is_up_to_date(%s):' % r)
                     # ...and it's even up-to-date...
                     if self._local:
                         # ...and they'd like a local copy.
                         LocalCopy(self, r, None)
                         self.store_info(self.get_binfo())
+                    #Trace(' 1\n')
                     return 1
+            #Trace(' None\n')
             return None
         else:
             return self.is_up_to_date()
+            #r = self.is_up_to_date()
+            #Trace(' self.exists():  %s\n' % r)
+            #return r
 
     def rfile(self):
         "__cacheable__"
@@ -2077,21 +2155,57 @@ class File(Base):
     def rstr(self):
         return str(self.rfile())
 
-    def cachepath(self):
-        if not self.fs.CachePath:
-            return None, None
-        ninfo = self.get_binfo().ninfo
-        if not hasattr(ninfo, 'bsig'):
-            raise SCons.Errors.InternalError, "cachepath(%s) found no bsig" % self.path
-        elif ninfo.bsig is None:
-            raise SCons.Errors.InternalError, "cachepath(%s) found a bsig of None" % self.path
+    def get_cachedir_csig(self):
+        """
+        Fetch a Node's content signature for purposes of computing
+        another Node's cachesig.
+
+        This is a wrapper around the normal get_csig() method that handles
+        the somewhat obscure case of using CacheDir with the -n option.
+        Any files that don't exist would normally be "built" by fetching
+        them from the cache, but the normal get_csig() method will try
+        to open up the local file, which doesn't exist because the -n
+        option meant we didn't actually pull the file from cachedir.
+        But since the file *does* actually exist in the cachedir, we
+        can use its contents for the csig.
+        """
+        try:
+            return self.cachedir_csig
+        except AttributeError:
+            pass
+
+        cachedir, cachefile = self.cachepath()
+        if os.path.exists(cachefile):
+            contents = open(cachefile, 'rb').read()
+            self.cachedir_csig = SCons.Sig.MD5.new_md5(contents).hexdigest()
+        else:
+            self.cachedir_csig = self.get_csig()
+        return self.cachedir_csig
+
+    def get_cachesig(self):
+        try:
+            return self.cachesig
+        except AttributeError:
+            pass
+
         # Add the path to the cache signature, because multiple
         # targets built by the same action will all have the same
         # build signature, and we have to differentiate them somehow.
-        cache_sig = SCons.Sig.MD5.collect([ninfo.bsig, self.path])
-        subdir = string.upper(cache_sig[0])
+        children =  self.children()
+        sigs = map(lambda n: n.get_cachedir_csig(), children)
+        executor = self.get_executor()
+        sigs.append(SCons.Sig.MD5.signature(executor))
+        sigs.append(self.path)
+        self.cachesig = SCons.Sig.MD5.collect(sigs)
+        return self.cachesig
+
+    def cachepath(self):
+        if not self.fs.CachePath:
+            return None, None
+        cachesig = self.get_cachesig()
+        subdir = string.upper(cachesig[0])
         dir = os.path.join(self.fs.CachePath, subdir)
-        return dir, os.path.join(dir, cache_sig)
+        return dir, os.path.join(dir, cachesig)
 
     def must_be_a_Dir(self):
         """Called to make sure a Node is a Dir.  Since we're already a

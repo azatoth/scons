@@ -55,6 +55,11 @@ import SCons.Executor
 import SCons.SConsign
 import SCons.Util
 
+from SCons.Debug import Trace
+
+def classname(obj):
+    return string.split(str(obj.__class__), '.')[-1]
+
 # Node states
 #
 # These are in "priority" order, so that the maximum value for any
@@ -107,8 +112,6 @@ class NodeInfoBase:
         initialization method to call for future use.
         """
         pass
-    def __cmp__(self, other):
-        return cmp(self.__dict__, other.__dict__)
     def update(self, node):
         pass
     def merge(self, other):
@@ -134,6 +137,14 @@ class NodeInfoBase:
                 f = field + ': ' + f
             fields.append(f)
         return fields
+    def current(self, prev, target, source, type=None):
+        return None
+    current_target = current
+    current_source = current
+    current_timestamp = current
+    current_content = current
+    def current_state(self, prev, target, source, type=None):
+        return (source.state == SCons.Node.up_to_date)
 
 class BuildInfoBase:
     """
@@ -150,8 +161,8 @@ class BuildInfoBase:
         self.bdependsigs = []
         self.bimplicitsigs = []
         self.bactsig = None
-    def __cmp__(self, other):
-        return cmp(self.ninfo, other.ninfo)
+#    def __cmp__(self, other):
+#        return cmp(self.ninfo, other.ninfo)
     def set_ninfo(self, ninfo):
         self.ninfo = ninfo
     def update(self, node):
@@ -562,12 +573,10 @@ class Node:
                     else:
                         nodes.append(n)
                 self._add_child(self.implicit, self.implicit_dict, nodes)
-                calc = build_env.get_calculator()
-                if implicit_deps_unchanged or self.current(calc):
+                if implicit_deps_unchanged or self.current():
                     return
-                # one of this node's sources has changed, so
-                # we need to recalculate the implicit deps,
-                # and the bsig:
+                # one of this node's sources has changed,
+                # so we must recalculate the implicit deps:
                 self.implicit = []
                 self.implicit_dict = {}
                 self._children_reset()
@@ -609,31 +618,6 @@ class Node:
     NodeInfo = NodeInfoBase
     BuildInfo = BuildInfoBase
 
-    def calculator(self):
-        import SCons.Defaults
-        
-        env = self.env or SCons.Defaults.DefaultEnvironment()
-        return env.get_calculator()
-
-    def calc_signature(self, calc=None):
-        """
-        Select and calculate the appropriate build signature for a node.
-        __cacheable__
-
-        self - the node
-        calc - the signature calculation module
-        returns - the signature
-        """
-        if self.is_derived():
-            import SCons.Defaults
-
-            env = self.env or SCons.Defaults.DefaultEnvironment()
-            if env.use_build_signature():
-                return self.get_bsig(calc)
-        elif not self.rexists():
-            return None
-        return self.get_csig(calc)
-
     def new_ninfo(self):
         ninfo = self.NodeInfo(self)
         ninfo.update(self)
@@ -653,23 +637,8 @@ class Node:
         return binfo
 
     def get_binfo(self):
-        try:
-            return self.binfo
-        except AttributeError:
-            self.binfo = self.new_binfo()
-            return self.binfo
-
-    def del_binfo(self):
-        """Delete the build info from this node."""
-        try:
-            delattr(self, 'binfo')
-        except AttributeError:
-            pass
-
-    def gen_binfo(self, calc=None, scan=1):
         """
-        Generate a node's build signature, the digested signatures
-        of its dependency files and build information.
+        Fetch a node's build information.
 
         node - the node whose sources will be collected
         cache - alternate node to use for the signature cache
@@ -681,18 +650,14 @@ class Node:
         what's wanted.
         __cacheable__
         """
+        try:
+            return self.binfo
+        except AttributeError:
+            pass
 
-        if calc is None:
-            calc = self.calculator()
-
-        binfo = self.get_binfo()
-
-        if scan:
-            self.scan()
+        binfo = self.binfo = self.new_binfo()
 
         executor = self.get_executor()
-        def calc_signature(node, calc=calc):
-            return node.calc_signature(calc)
 
         sources = executor.process_sources(None, self.ignore)
 
@@ -710,15 +675,10 @@ class Node:
         dependsigs = map(get_ninfo, depends)
         implicitsigs = map(get_ninfo, implicit)
 
-        sigs = map(calc_signature, sources + depends + implicit)
-        #sigs = map(lambda ni: ni.csig, sourcesigs + dependsigs + implicitsigs)
-
         if self.has_builder():
             binfo.bact = str(executor)
-            binfo.bactsig = calc.module.signature(executor)
-            #import SCons.Sig.MD5
-            #binfo.bactsig = SCons.Sig.MD5.signature(executor)
-            sigs.append(binfo.bactsig)
+            import SCons.Sig.MD5
+            binfo.bactsig = SCons.Sig.MD5.signature(executor)
 
         binfo.bsources = sources
         binfo.bdepends = depends
@@ -728,27 +688,22 @@ class Node:
         binfo.bdependsigs = dependsigs
         binfo.bimplicitsigs = implicitsigs
 
-        binfo.ninfo.bsig = calc.module.collect(filter(None, sigs))
-
         return binfo
 
-    def get_bsig(self, calc=None):
-        binfo = self.get_binfo()
+    def del_binfo(self):
+        """Delete the build info from this node."""
         try:
-            return binfo.ninfo.bsig
+            delattr(self, 'binfo')
         except AttributeError:
-            self.binfo = self.gen_binfo(calc)
-            return self.binfo.ninfo.bsig
+            pass
 
-    def get_csig(self, calc=None):
+    def get_csig(self):
         try:
             return self.ninfo.csig
         except AttributeError:
             ninfo = self.get_ninfo()
-            if calc is None:
-                calc = self.calculator()
-            csig = ninfo.csig = calc.module.signature(self)
-            return csig
+            import SCons.Sig.MD5
+            return SCons.Sig.MD5.signature(self)
 
     def store_info(self, obj):
         """Make the build signature permanent (that is, store it in the
@@ -876,7 +831,7 @@ class Node:
     def _children_reset(self):
         "__cache_reset__"
         # We need to let the Executor clear out any calculated
-        # bsig info that it's cached so we can re-calculate it.
+        # build info that it's cached so we can re-calculate it.
         self.executor_cleanup()
 
     def do_not_ignore(self, node):
@@ -931,19 +886,87 @@ class Node:
     def get_state(self):
         return self.state
 
-    def current(self, calc=None):
+    def is_up_to_date(self, node=None):
+        """Returns if the node is up-to-date with respect to stored
+        BuildInfo.  The default is to compare it against our own
+        previously stored BuildInfo, but the stored BuildInfo from another
+        Node (typically one in a Repository) can be used instead."""
+        t = 0
+        if t: Trace('is_up_to_date(%s [%s], %s)' % (self, classname(self), node))
+        if node is None:
+            node = self
+        bi = node.get_stored_info()
+        then = bi.bsourcesigs + bi.bdependsigs + bi.bimplicitsigs
+        children = self.children()
+        if len(then) != len(children):
+            if t: Trace(': len(%s) != len(%s)\n' % (len(then), len(children)))
+            return None
+        env = self.env
+        if not env:
+            import SCons.Defaults
+            env = SCons.Defaults.DefaultEnvironment()
+        src_sig_type = env.get_src_sig_type()
+
+        # Here's the more efficient way we want to do this next loop:
+        #    for child, prev_ni in zip(children, then):
+        # Unfortunately, this seems to cause some sort of odd problem
+        # in 1.5.2 such that it no longer recognizes any builtin names
+        # (xrange, len) inside the SCons.Util.zip() function when called
+        # from SConf.  Since we want to jettson 1.5.2 as soon as 1.0
+        # is out the door anyway, just work around that quirk for now
+        # and be ready to redo this when we update our code to more
+        # modern Python.
+        i = 0
+        while i < len(children):
+            child = children[i]
+            prev_ni = then[i]
+            i = i + 1
+
+            cur_ni = child.get_ninfo()
+            if child.has_builder():
+                import SCons.Action
+                if not SCons.Action.execute_actions:
+                    current = cur_ni.current_state(prev_ni, self, child, None)
+                else:
+                    current = 1
+                if current:
+                    tgt_sig_type = child.get_build_env().get_tgt_sig_type()
+                    if tgt_sig_type == 'source':
+                        current = cur_ni.current_source(prev_ni, self, child, src_sig_type)
+                    elif tgt_sig_type == 'build':
+                        current = cur_ni.current_state(prev_ni, self, child, None)
+                        if current:
+                            current = cur_ni.current_source(prev_ni, self, child, src_sig_type)
+                    else:
+                        current = cur_ni.current_target(prev_ni, self, child, tgt_sig_type)
+            else:
+                current = cur_ni.current_source(prev_ni, self, child, src_sig_type)
+            if not current:
+                if t: Trace(': child %s not current\n' % child)
+                if t: Trace('    prev_ni (%s) = %s\n' % (classname(prev_ni), string.join(prev_ni.format(), ' ')))
+                if t: Trace('    cur_ni  (%s) = %s\n' % (classname(cur_ni), string.join(cur_ni.format(), ' ')))
+                return None
+        executor = self.get_executor()
+        import SCons.Sig.MD5
+        if bi.bactsig != SCons.Sig.MD5.signature(executor):
+            if t: Trace(': bactsig != signature\n')
+            return None
+        if t: Trace(': up to date\n')
+        return 1
+
+    def current(self):
         """Default check for whether the Node is current: unknown Node
         subtypes are always out of date, so they will always get built."""
         return None
 
-    def children_are_up_to_date(self, calc=None):
+    def children_are_up_to_date(self):
         """Alternate check for whether the Node is current:  If all of
         our children were up-to-date, then this Node was up-to-date, too.
 
         The SCons.Node.Alias and SCons.Node.Python.Value subclasses
         rebind their current() method to this method."""
         # Allow the children to calculate their signatures.
-        self.binfo = self.gen_binfo(calc)
+        self.binfo = self.get_binfo()
         if self.always_build:
             return None
         state = 0

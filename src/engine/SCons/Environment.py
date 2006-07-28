@@ -53,9 +53,6 @@ import SCons.Node.FS
 import SCons.Node.Python
 import SCons.Platform
 import SCons.SConsign
-import SCons.Sig
-import SCons.Sig.MD5
-import SCons.Sig.TimeStamp
 import SCons.Subst
 import SCons.Tool
 import SCons.Util
@@ -771,18 +768,6 @@ class Base(SubstitutionEnvironment):
         except KeyError:
             return None
 
-    def get_calculator(self):
-        "__cacheable__"
-        try:
-            module = self._calc_module
-            c = apply(SCons.Sig.Calculator, (module,), CalculatorArgs)
-        except AttributeError:
-            # Note that we're calling get_calculator() here, so the
-            # DefaultEnvironment() must have a _calc_module attribute
-            # to avoid infinite recursion.
-            c = SCons.Defaults.DefaultEnvironment().get_calculator()
-        return c
-
     def get_factory(self, factory, default='File'):
         """Return a factory function for creating Nodes for this
         construction environment.
@@ -860,13 +845,21 @@ class Base(SubstitutionEnvironment):
         """
         self._dict.update(dict)
 
-    def use_build_signature(self):
+    def get_src_sig_type(self):
         try:
-            return self._build_signature
+            return self.src_sig_type
         except AttributeError:
-            b = SCons.Defaults.DefaultEnvironment()._build_signature
-            self._build_signature = b
-            return b
+            t = SCons.Defaults.DefaultEnvironment().src_sig_type
+            self.src_sig_type = t
+            return t
+
+    def get_tgt_sig_type(self):
+        try:
+            return self.tgt_sig_type
+        except AttributeError:
+            t = SCons.Defaults.DefaultEnvironment().tgt_sig_type
+            self.tgt_sig_type = t
+            return t
 
     #######################################################################
     # Public methods for manipulating an Environment.  These begin with
@@ -1596,14 +1589,9 @@ class Base(SubstitutionEnvironment):
 
     def SourceSignatures(self, type):
         type = self.subst(type)
-        if type == 'MD5':
-            import SCons.Sig.MD5
-            self._calc_module = SCons.Sig.MD5
-        elif type == 'timestamp':
-            import SCons.Sig.TimeStamp
-            self._calc_module = SCons.Sig.TimeStamp
-        else:
-            raise UserError, "Unknown source signature type '%s'"%type
+        if not type in ['MD5', 'timestamp']:
+            raise UserError, "Unknown source signature type '%s'" % type
+        self.src_sig_type = type
 
     def Split(self, arg):
         """This function converts a string or list into a list of strings
@@ -1625,12 +1613,9 @@ class Base(SubstitutionEnvironment):
 
     def TargetSignatures(self, type):
         type = self.subst(type)
-        if type == 'build':
-            self._build_signature = 1
-        elif type == 'content':
-            self._build_signature = 0
-        else:
+        if not type in ['build', 'content', 'MD5', 'timestamp', 'source']:
             raise SCons.Errors.UserError, "Unknown target signature type '%s'"%type
+        self.tgt_sig_type = type
 
     def Value(self, value):
         """

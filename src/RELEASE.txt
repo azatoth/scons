@@ -28,6 +28,19 @@ RELEASE 0.96.92 - Mon, 10 Apr 2006 21:08:22 -0400
 
   Please note the following important changes since release 0.96.91:
 
+    --  "content" SIGNATURES ARE NOW THE DEFAULT BEHAVIOR
+
+        The default behavior of SCons is now to use the MD5 checksum of
+        all file contents to decide if any files have changed and should
+        cause rebuilds of their source files.  This means that SCons may
+        decide not to rebuild "downstream" targets if a a given input
+        file is rebuilt to the exact same contents as the last time.
+        The old behavior may preserved by explicity specifying:
+
+            TargetSignatures("build")
+
+        In any of your SConscript files.
+
     --  /opt/bin AND /sw/bin ADDED TO DEFAULT EXECUTION PATH VARIABLES
 
         On all POSIX systems, the default execution PATH variable has had

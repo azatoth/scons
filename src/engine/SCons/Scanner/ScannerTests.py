@@ -26,7 +26,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import sys
 import unittest
 import UserDict
-import SCons.Sig
 
 import SCons.Scanner
 
@@ -55,8 +54,6 @@ class DummyEnvironment(UserDict.UserDict):
         if type(path) != type([]):
             path = [path]
         return map(self.subst, path)
-    def get_calculator(self):
-        return SCons.Sig.default_calc
     def get_factory(self, factory):
         return factory or self.fs.File
 
@@ -361,14 +358,14 @@ class CurrentTestCase(unittest.TestCase):
             def has_builder(self):
                 self.called_has_builder = 1
                 return 1
-            def current(self, sig):
+            def current(self):
                 self.called_current = 1
                 return None
         class IsCurrent(MyNode):
             def has_builder(self):
                 self.called_has_builder = 1
                 return 1
-            def current(self, sig):
+            def current(self):
                 self.called_current = 1
                 return 1
         def func(node, env, path):

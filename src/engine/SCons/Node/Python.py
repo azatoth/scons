@@ -35,6 +35,15 @@ class ValueNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig']
     def update(self, node):
         self.csig = node.get_contents()
+    def current(self, prev, target, source, type):
+        try:
+            return prev.csig == self.csig
+        except AttributeError:
+            return None
+    current_target = current
+    current_source = current
+    current_timestamp = current
+    current_content = current
 
 class ValueBuildInfo(SCons.Node.BuildInfoBase):
     pass

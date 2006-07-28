@@ -3870,10 +3870,17 @@ source_nodes = env.subst('$EXPAND_TO_NODELIST',
 .RI SourceSignatures( type )
 .TP
 .RI env.SourceSignatures( type )
-This function tells SCons what type of signature to use for source files:
+This function tells
+.B scons
+how to decide if a source file
+(a file that is not built from any other files)
+has changed since the last time it
+was used to build a particular target file.
+Legal values are
 .B "MD5"
 or
 .BR "timestamp" .
+
 If the environment method is used,
 the specified type of source signature
 is only used when deciding whether targets
@@ -3883,17 +3890,48 @@ the specified type of source signature becomes the default
 used for all decisions
 about whether targets are up-to-date.
 
-"MD5" means the signature of a source file
-is the MD5 checksum of its contents.
-"timestamp" means the signature of a source file
-is its timestamp (modification time).
+.B "MD5"
+means
+.B scons
+decides that a source file has changed
+if the MD5 checksum of its contents has changed since
+the last time it was used to rebuild a particular target file.
+
+.B "timestamp"
+means
+.B scons
+decides that a source file has changed
+if its timestamp (modification time) is newer than
+the last time it was used to rebuild a particular target file.
+
 There is no different between the two behaviors
 for Python
 .BR Value ()
 node objects.
-"MD5" signatures take longer to compute,
-but are more accurate than "timestamp" signatures.
-The default is "MD5".
+
+.B "MD5"
+signatures take longer to compute,
+but are more accurate than
+.B "timestamp"
+signatures.
+The default value is
+.BR "MD5" .
+
+Note that the default
+.BR TargetSignatures ()
+setting (see below)
+is to use this
+.BR SourceSignatures ()
+setting for any target files that are used
+to build other target files.
+Consequently, changing the value of
+.BR SourceSignatures ()
+will, by default,
+affect the up-to-date decision for all files in the build
+(or all files built with a specific construction environment
+when
+.BR env.SourceSignatures ()
+is used).
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
@@ -3926,13 +3964,25 @@ files = Split("""
 .RI TargetSignatures( type )
 .TP
 .RI env.TargetSignatures( type )
-This function tells SCons what type of signatures to use
-for target files:
-.B "build"
+This function tells
+.B scons
+how to decide if a target file
+(a file that
+.I is
+built from any other files)
+has changed since the last time it
+was used to build some other target file.
+Legal values are
+.BR "build" ;
+.BR "content"
+(or its synonym
+.BR "MD5" );
+.BR "timestamp" ;
 or
-.BR "content" .
+.BR "source" .
+
 If the environment method is used,
-the specified type of signature is only used
+the specified type of target signature is only used
 for targets built with that environment.
 If the global function is used,
 the specified type of signature becomes the default
@@ -3940,16 +3990,94 @@ used for all target files that
 don't have an explicit target signature type
 specified for their environments.
 
-"build" means the signature of a target file
-is made by concatenating all of the
-signatures of all its source files.
-"content" means the signature of a target
-file is an MD5 checksum of its contents.
-"build" signatures are usually faster to compute,
-but "content" signatures can prevent unnecessary rebuilds
+.B "content"
+(or its synonym
+.BR "MD5" )
+means
+.B scons
+decides that a target file has changed
+if the MD5 checksum of its contents has changed since
+the last time it was used to rebuild some other target file.
+This means
+.B scons
+will open up
+MD5 sum the contents
+of target files after they're built,
+and may decide that it does not need to rebuild
+"downstream" target files if a file was
+rebuilt with exactly the same contents as the last time.
+
+.B "timestamp"
+means
+.B scons
+decides that a target file has changed
+if its timestamp (modification time) is newer than
+the last time it was used to rebuild some other target file.
+
+.B "source"
+means
+.B scons
+decides that a target file has changed
+as specified by the corresponding
+.BR SourceSignatures ()
+setting
+.BR "" ( "MD5"
+or
+.BR "timestamp" ).
+This means that
+.B scons
+will treat all input files to a target the same way,
+regardless of whether they are source files
+or have been built from other files.
+
+.B "build"
+means
+.B scons
+decides that a target file has changed
+if it has been rebuilt in this invocation
+or if its content or timestamp have changed
+as specified by the corresponding
+.BR SourceSignatures ()
+setting.
+This "propagates" the status of a rebuilt file
+so that other "downstream" target files
+will always be rebuilt,
+even if the contents or the timestamp
+have not changed.
+
+.B "build"
+signatures are fastest because
+.B "content"
+(or
+.BR "MD5" )
+signatures take longer to compute,
+but are more accurate than
+.B "timestamp"
+signatures,
+and can prevent unnecessary "downstream" rebuilds
 when a target file is rebuilt to the exact same contents
 as the previous build.
-The default is "build".
+The
+.B "source"
+setting provides the most consistent behavior
+when other target files may be rebuilt from
+both source and target input files.
+The default value is
+.BR "source" .
+
+Because the default setting is
+.BR "source" ,
+using
+.BR SourceSignatures ()
+is generally preferable to
+.BR TargetSignatures () ,
+so that the up-to-date decision
+will be consistent for all files
+(or all files built with a specific construction environment).
+Use of
+.BR TargetSignatures ()
+provides specific control for how built target files
+affect their "downstream" dependencies.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP

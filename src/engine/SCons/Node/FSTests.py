@@ -718,35 +718,6 @@ class FileNodeInfoTestCase(_tempdirTestCase):
         assert hasattr(ni, 'timestamp')
         assert hasattr(ni, 'size')
 
-    def test___cmp__(self):
-        """Test comparing File.NodeInfo objects"""
-        f1 = self.fs.File('f1')
-        f2 = self.fs.File('f2')
-
-        ni1 = SCons.Node.FS.FileNodeInfo(f1)
-        ni2 = SCons.Node.FS.FileNodeInfo(f2)
-
-        msg = "cmp(%s, %s) returned %s, not %s"
-
-        c = cmp(ni1, ni2)
-        assert c == 1, msg % (ni1, ni2, c, 1)
-
-        ni1.bsig = 777
-        c = cmp(ni1, ni2)
-        assert c == 1, msg % (ni1.bsig, ni2, c, 1)
-
-        ni2.bsig = 666
-        c = cmp(ni1, ni2)
-        assert c == 1, msg % (ni1.bsig, ni2.bsig, c, 1)
-
-        ni2.bsig = 777
-        c = cmp(ni1, ni2)
-        assert c == 0, msg % (ni1.bsig, ni2.bsig, c, 0)
-
-        ni2.bsig = 888
-        c = cmp(ni1, ni2)
-        assert c == -1, msg % (ni1.bsig, ni2.bsig, c, -1)
-
     def test_update(self):
         """Test updating a File.NodeInfo with on-disk information"""
         test = self.test
@@ -1333,8 +1304,6 @@ class FSTestCase(_tempdirTestCase):
             exc_caught = 1
         assert exc_caught, "Should have caught a TypeError"
 
-        # XXX test calc_signature()
-
         # XXX test current()
 
         d = fs.Dir('dir')
@@ -1918,19 +1887,6 @@ class EntryTestCase(_tempdirTestCase):
 
         test.subdir('e5d')
         test.write('e5f', "e5f\n")
-
-        e5f = fs.Entry('e5f')
-        sig = e5f.calc_signature(MyCalc(666))
-        assert e5f.__class__ is SCons.Node.FS.File, e5f.__class__
-        # This node has no builder, so it just calculates the
-        # signature once: the source content signature.
-        assert sig == 888, sig
-
-        e5n = fs.Entry('e5n')
-        sig = e5n.calc_signature(MyCalc(777))
-        assert e5n.__class__ is SCons.Node.FS.File, e5n.__class__
-        # Doesn't exist, no sources, and no builder: no sig
-        assert sig is None, sig
 
     def test_Entry_Entry_lookup(self):
         """Test looking up an Entry within another Entry"""
@@ -2589,24 +2545,12 @@ class CacheDirTestCase(unittest.TestCase):
             f5 = fs.File("cd.f5")
             f5.binfo = f5.BuildInfo(f5)
             f5.binfo.set_ninfo(f5.NodeInfo(f5))
-            f5.binfo.ninfo.bsig = 'a_fake_bsig'
             cp = f5.cachepath()
-            dirname = os.path.join('cache', 'A')
-            filename = os.path.join(dirname, 'a_fake_bsig')
+            dirname = os.path.join('cache', 'D')
+            filename = os.path.join(dirname, 'd41d8cd98f00b204e9800998ecf8427e')
             assert cp == (dirname, filename), cp
         finally:
             SCons.Sig.MD5.collect = save_collect
-
-        # Verify that no bsig raises an InternalERror
-        f6 = fs.File("cd.f6")
-        f6.binfo = f6.BuildInfo(f6)
-        f6.binfo.set_ninfo(f6.NodeInfo(f6))
-        exc_caught = 0
-        try:
-            cp = f6.cachepath()
-        except SCons.Errors.InternalError:
-            exc_caught = 1
-        assert exc_caught
 
         # Verify that we raise a warning if we can't copy a file to cache.
         save_copy2 = shutil.copy2
@@ -2626,7 +2570,6 @@ class CacheDirTestCase(unittest.TestCase):
             f7 = fs.File(cd_f7)
             f7.binfo = f7.BuildInfo(f7)
             f7.binfo.set_ninfo(f7.NodeInfo(f7))
-            f7.binfo.ninfo.bsig = 'f7_bsig'
 
             warn_caught = 0
             try:
