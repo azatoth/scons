@@ -567,6 +567,14 @@ class NodeTestCase(unittest.TestCase):
         result = node.get_csig()
         assert result == '550a141f12de6341fba65b0ad0433500', result
 
+    def test_get_cachedir_csig(self):
+        """Test content signature calculation for CacheDir
+        """
+        node = SCons.Node.Node()
+        node.get_contents = lambda: 555
+        result = node.get_cachedir_csig()
+        assert result == '15de21c670ae7c3f6f3f1f37029303c9', result
+
     def test_get_binfo(self):
         """Test fetching/creating a build information structure
         """

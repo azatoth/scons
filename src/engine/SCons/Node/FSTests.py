@@ -2419,6 +2419,8 @@ class prepareTestCase(unittest.TestCase):
         dir = fs.Dir("dir")
         dir.prepare()
 
+
+
 class SConstruct_dirTestCase(unittest.TestCase):
     def runTest(self):
         """Test setting the SConstruct directory"""
@@ -2427,13 +2429,37 @@ class SConstruct_dirTestCase(unittest.TestCase):
         fs.set_SConstruct_dir(fs.Dir('xxx'))
         assert fs.SConstruct_dir.path == 'xxx'
 
+
+
 class CacheDirTestCase(unittest.TestCase):
-    def runTest(self):
-        """Test CacheDir functionality"""
-        test = TestCmd(workdir='')
+    def setUp(self):
+        self.fs = SCons.Node.FS.FS()
+        self.fs.CacheDir('cache')
+        self.test = TestCmd(workdir='')
 
-        global built_it
+        def retrieve_succeed(target, source, env, self=self, execute=1):
+            self.retrieved.append(target)
+            return 0
+        def retrieve_fail(target, source, env, self=self, execute=1):
+            self.retrieved.append(target)
+            return 1
 
+        self.retrieve_succeed = retrieve_succeed
+        self.retrieve_fail = retrieve_fail
+
+        self.save_CachePush = SCons.Node.FS.CachePush
+        self.save_CacheRetrieve = SCons.Node.FS.CacheRetrieve
+        self.save_CacheRetrieveSilent = SCons.Node.FS.CacheRetrieveSilent
+        self.save_collect = SCons.Sig.MD5.collect
+
+    def tearDown(self):
+        SCons.Node.FS.CachePush = self.save_CachePush
+        SCons.Node.FS.CacheRetrieve = self.save_CacheRetrieve
+        SCons.Node.FS.CacheRetrieveSilent = self.save_CacheRetrieveSilent
+        SCons.Sig.MD5.collect = self.save_collect
+
+    def test_initialization(self):
+        """Test how CacheDir() initializes an FS object"""
         fs = SCons.Node.FS.FS()
         assert fs.CachePath is None, fs.CachePath
         assert fs.cache_force is None, fs.cache_force
@@ -2442,117 +2468,123 @@ class CacheDirTestCase(unittest.TestCase):
         fs.CacheDir('cache')
         assert fs.CachePath == 'cache', fs.CachePath
 
-        save_CacheRetrieve = SCons.Node.FS.CacheRetrieve
+    def test_CacheDir(self):
+        """Test calling the CacheRetrieve() Action"""
+        global built_it
+
+        fs = self.fs
+        test = self.test
+
         self.retrieved = []
-        def retrieve_succeed(target, source, env, self=self, execute=1):
-            self.retrieved.append(target)
-            return 0
-        def retrieve_fail(target, source, env, self=self, execute=1):
-            self.retrieved.append(target)
-            return 1
 
         f1 = fs.File("cd.f1")
         f1.builder_set(Builder(fs.File))
         f1.env_set(Environment())
-        try:
-            SCons.Node.FS.CacheRetrieve = retrieve_succeed
-            self.retrieved = []
-            built_it = None
 
-            r = f1.retrieve_from_cache()
-            assert r == 1, r
-            assert self.retrieved == [f1], self.retrieved
-            assert built_it is None, built_it
+        SCons.Node.FS.CacheRetrieve = self.retrieve_succeed
+        self.retrieved = []
+        built_it = None
 
-            SCons.Node.FS.CacheRetrieve = retrieve_fail
-            self.retrieved = []
-            built_it = None
+        r = f1.retrieve_from_cache()
+        assert r == 1, r
+        assert self.retrieved == [f1], self.retrieved
+        assert built_it is None, built_it
 
-            r = f1.retrieve_from_cache()
-            assert r is None, r
-            assert self.retrieved == [f1], self.retrieved
-            assert built_it is None, built_it
-        finally:
-            SCons.Node.FS.CacheRetrieve = save_CacheRetrieve
+        SCons.Node.FS.CacheRetrieve = self.retrieve_fail
+        self.retrieved = []
+        built_it = None
 
-        save_CacheRetrieveSilent = SCons.Node.FS.CacheRetrieveSilent
+        r = f1.retrieve_from_cache()
+        assert r is None, r
+        assert self.retrieved == [f1], self.retrieved
+        assert built_it is None, built_it
+
+    def test_CacheRetrieve(self):
+        """Test calling the CacheRetrieveSilent() Action"""
+        global built_it
+
+        fs = self.fs
 
         fs.cache_show = 1
 
         f2 = fs.File("cd.f2")
         f2.builder_set(Builder(fs.File))
         f2.env_set(Environment())
-        try:
-            SCons.Node.FS.CacheRetrieveSilent = retrieve_succeed
-            self.retrieved = []
-            built_it = None
 
-            r = f2.retrieve_from_cache()
-            assert r == 1, r
-            assert self.retrieved == [f2], self.retrieved
-            assert built_it is None, built_it
+        SCons.Node.FS.CacheRetrieveSilent = self.retrieve_succeed
+        self.retrieved = []
+        built_it = None
 
-            SCons.Node.FS.CacheRetrieveSilent = retrieve_fail
-            self.retrieved = []
-            built_it = None
+        r = f2.retrieve_from_cache()
+        assert r == 1, r
+        assert self.retrieved == [f2], self.retrieved
+        assert built_it is None, built_it
 
-            r = f2.retrieve_from_cache()
-            assert r is None, r
-            assert self.retrieved == [f2], self.retrieved
-            assert built_it is None, built_it
-        finally:
-            SCons.Node.FS.CacheRetrieveSilent = save_CacheRetrieveSilent
+        SCons.Node.FS.CacheRetrieveSilent = self.retrieve_fail
+        self.retrieved = []
+        built_it = None
 
-        save_CachePush = SCons.Node.FS.CachePush
-        def push(target, source, env, self=self):
+        r = f2.retrieve_from_cache()
+        assert r is None, r
+        assert self.retrieved == [f2], self.retrieved
+        assert built_it is None, built_it
+
+    def test_CachePush(self):
+        """Test calling CachePush() Action"""
+        fs = self.fs
+        test = self.test
+
+        def fake_push(target, source, env, self=self):
             self.pushed.append(target)
             return 0
-        SCons.Node.FS.CachePush = push
 
-        try:
-            self.pushed = []
+        SCons.Node.FS.CachePush = fake_push
 
-            cd_f3 = test.workpath("cd.f3")
-            f3 = fs.File(cd_f3)
-            f3.built()
-            assert self.pushed == [], self.pushed
-            test.write(cd_f3, "cd.f3\n")
-            f3.built()
-            assert self.pushed == [f3], self.pushed
+        self.pushed = []
 
-            self.pushed = []
+        cd_f3 = test.workpath("cd.f3")
+        f3 = fs.File(cd_f3)
+        f3.built()
+        assert self.pushed == [], self.pushed
+        test.write(cd_f3, "cd.f3\n")
+        f3.built()
+        assert self.pushed == [f3], self.pushed
 
-            cd_f4 = test.workpath("cd.f4")
-            f4 = fs.File(cd_f4)
-            f4.visited()
-            assert self.pushed == [], self.pushed
-            test.write(cd_f4, "cd.f4\n")
-            f4.visited()
-            assert self.pushed == [], self.pushed
-            fs.cache_force = 1
-            f4.visited()
-            assert self.pushed == [f4], self.pushed
-        finally:
-            SCons.Node.FS.CachePush = save_CachePush
+        self.pushed = []
 
-        # Verify how the cachepath() method determines the name
-        # of the file in cache.
+        cd_f4 = test.workpath("cd.f4")
+        f4 = fs.File(cd_f4)
+        f4.visited()
+        assert self.pushed == [], self.pushed
+        test.write(cd_f4, "cd.f4\n")
+        f4.visited()
+        assert self.pushed == [], self.pushed
+        fs.cache_force = 1
+        f4.visited()
+        assert self.pushed == [f4], self.pushed
+
+    def test_cachepath(self):
+        """Test how cachepath() determines the name of CacheDir files"""
+        fs = self.fs
+
         def my_collect(list):
             return list[0]
-        save_collect = SCons.Sig.MD5.collect
-        SCons.Sig.MD5.collect = my_collect
-        try:
-            f5 = fs.File("cd.f5")
-            f5.binfo = f5.BuildInfo(f5)
-            f5.binfo.set_ninfo(f5.NodeInfo(f5))
-            cp = f5.cachepath()
-            dirname = os.path.join('cache', 'D')
-            filename = os.path.join(dirname, 'd41d8cd98f00b204e9800998ecf8427e')
-            assert cp == (dirname, filename), cp
-        finally:
-            SCons.Sig.MD5.collect = save_collect
 
-        # Verify that we raise a warning if we can't copy a file to cache.
+        SCons.Sig.MD5.collect = my_collect
+
+        f5 = fs.File("cd.f5")
+        f5.binfo = f5.BuildInfo(f5)
+        f5.binfo.set_ninfo(f5.NodeInfo(f5))
+        cp = f5.cachepath()
+        dirname = os.path.join('cache', 'D')
+        filename = os.path.join(dirname, 'd41d8cd98f00b204e9800998ecf8427e')
+        assert cp == (dirname, filename), cp
+
+    def test_warn_no_copy(self):
+        """Test raising a warning if we can't copy a file to CacheDir"""
+        fs = self.fs
+        test = self.test
+
         save_copy2 = shutil.copy2
         def copy2(src, dst):
             raise OSError
@@ -2583,33 +2615,45 @@ class CacheDirTestCase(unittest.TestCase):
             SCons.Warnings.warningAsException(old_warn_exceptions)
             SCons.Warnings.suppressWarningClass(SCons.Warnings.CacheWriteErrorWarning)
 
-        # Verify that we don't blow up if there's no strfunction()
-        # for an action.
+    def test_no_strfunction(self):
+        """Test not blowing up if an Action has no strfunction()"""
+        global built_it
+
+        fs = self.fs
+
         act = Action()
         act.strfunction = None
         f8 = fs.File("cd.f8")
         f8.builder_set(Builder(fs.File, action=act))
         f8.env_set(Environment())
-        try:
-            SCons.Node.FS.CacheRetrieveSilent = retrieve_succeed
-            self.retrieved = []
-            built_it = None
 
-            r = f8.retrieve_from_cache()
-            assert r == 1, r
-            assert self.retrieved == [f8], self.retrieved
-            assert built_it is None, built_it
+        SCons.Node.FS.CacheRetrieve = self.retrieve_succeed
 
-            SCons.Node.FS.CacheRetrieveSilent = retrieve_fail
-            self.retrieved = []
-            built_it = None
+        self.retrieved = []
+        built_it = None
 
-            r = f8.retrieve_from_cache()
-            assert r is None, r
-            assert self.retrieved == [f8], self.retrieved
-            assert built_it is None, built_it
-        finally:
-            SCons.Node.FS.CacheRetrieveSilent = save_CacheRetrieveSilent
+        r = f8.retrieve_from_cache()
+        assert r == 1, r
+        assert self.retrieved == [f8], self.retrieved
+        assert built_it is None, built_it
+
+        SCons.Node.FS.CacheRetrieve = self.retrieve_fail
+        self.retrieved = []
+        built_it = None
+
+        r = f8.retrieve_from_cache()
+        assert r is None, r
+        assert self.retrieved == [f8], self.retrieved
+        assert built_it is None, built_it
+
+    def test_get_cachedir_csig(self):
+        fs = self.fs
+
+        f9 = fs.File('f9')
+        r = f9.get_cachedir_csig()
+        assert r == 'd41d8cd98f00b204e9800998ecf8427e', r
+
+
 
 class clearTestCase(unittest.TestCase):
     def runTest(self):
@@ -2658,6 +2702,8 @@ class clearTestCase(unittest.TestCase):
         assert not f.rexists()
         assert str(f) == test.workpath('f'), str(f)
 
+
+
 class disambiguateTestCase(unittest.TestCase):
     def runTest(self):
         """Test calling the disambiguate() method."""
@@ -2698,6 +2744,8 @@ class disambiguateTestCase(unittest.TestCase):
         f = build_efile.disambiguate()
         assert f.__class__ is fff.__class__, f.__class__
 
+
+
 class postprocessTestCase(unittest.TestCase):
     def runTest(self):
         """Test calling the postprocess() method."""
@@ -2711,6 +2759,8 @@ class postprocessTestCase(unittest.TestCase):
 
         f = fs.File('f')
         f.postprocess()
+
+
 
 class SpecialAttrTestCase(unittest.TestCase):
     def runTest(self):
@@ -2867,6 +2917,8 @@ class SpecialAttrTestCase(unittest.TestCase):
             caught = 1
         assert caught, "did not catch expected AttributeError"
 
+
+
 class SaveStringsTestCase(unittest.TestCase):
     def runTest(self):
         """Test caching string values of nodes."""
@@ -2926,6 +2978,8 @@ class SaveStringsTestCase(unittest.TestCase):
         expect = map(os.path.normpath, ['src/f', 'd1/f', 'd0/b', 'd1/b'])
         assert s == expect, 'node str() not cached: %s'%s
 
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(BuildDirTestCase())
@@ -2935,7 +2989,6 @@ if __name__ == "__main__":
     suite.addTest(has_src_builderTestCase())
     suite.addTest(prepareTestCase())
     suite.addTest(SConstruct_dirTestCase())
-    suite.addTest(CacheDirTestCase())
     suite.addTest(clearTestCase())
     suite.addTest(disambiguateTestCase())
     suite.addTest(postprocessTestCase())
@@ -2943,6 +2996,7 @@ if __name__ == "__main__":
     suite.addTest(SaveStringsTestCase())
     tclasses = [
         BaseTestCase,
+        CacheDirTestCase,
         DirTestCase,
         DirBuildInfoTestCase,
         DirNodeInfoTestCase,

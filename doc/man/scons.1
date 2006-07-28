@@ -4134,8 +4134,9 @@ calling
 .BR str( value )
 changes between SCons runs, any targets depending on
 .BR Value( value )
-will be rebuilt.  When using timestamp source signatures, Value nodes'
-timestamps are equal to the system time when the node is created.
+will be rebuilt.
+(This is true even when using timestamps to decide if
+files are up-to-date.)
 
 .ES
 def create(target, source, env):
