@@ -277,19 +277,20 @@ class BuildInfoBaseTestCase(unittest.TestCase):
 
     def test___init__(self):
         """Test BuildInfoBase initialization"""
-        bi = SCons.Node.BuildInfoBase(SCons.Node.Node())
+        n = SCons.Node.Node()
+        bi = SCons.Node.BuildInfoBase(n)
+        bi.set_ninfo(SCons.Node.NodeInfoBase(n))
         assert hasattr(bi, 'ninfo')
-
-        class MyNode(SCons.Node.Node):
-            def NodeInfo(self, node):
-                return 'ninfo initialization'
-        bi = SCons.Node.BuildInfoBase(MyNode())
-        assert bi.ninfo == 'ninfo initialization', bi.ninfo
 
     def test___cmp__(self):
         """Test comparing BuildInfoBase objects"""
-        bi1 = SCons.Node.BuildInfoBase(SCons.Node.Node())
+        n1 = SCons.Node.Node()
+        bi1 = SCons.Node.BuildInfoBase(n1)
+        bi1.set_ninfo(SCons.Node.NodeInfoBase(n1))
+
+        n2 = SCons.Node.Node()
         bi2 = SCons.Node.BuildInfoBase(SCons.Node.Node())
+        bi2.set_ninfo(SCons.Node.NodeInfoBase(n2))
 
         assert bi1 == bi2, "%s != %s" % (bi1.__dict__, bi2.__dict__)
 
@@ -307,8 +308,12 @@ class BuildInfoBaseTestCase(unittest.TestCase):
 
     def test_merge(self):
         """Test merging BuildInfoBase attributes"""
-        bi1 = SCons.Node.BuildInfoBase(SCons.Node.Node())
-        bi2 = SCons.Node.BuildInfoBase(SCons.Node.Node())
+        n1 = SCons.Node.Node()
+        bi1 = SCons.Node.BuildInfoBase(n1)
+        bi1.set_ninfo(SCons.Node.NodeInfoBase(n1))
+        n2 = SCons.Node.Node()
+        bi2 = SCons.Node.BuildInfoBase(n2)
+        bi2.set_ninfo(SCons.Node.NodeInfoBase(n2))
 
         bi1.a1 = 1
         bi1.a2 = 2

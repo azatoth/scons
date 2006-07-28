@@ -161,6 +161,8 @@ class SConfBuildInfo(SCons.Node.FS.FileBuildInfo):
     
     def __init__(self, node, result, string, sig):
         SCons.Node.FS.FileBuildInfo.__init__(self, node)
+        self.set_ninfo(SCons.Node.FS.FileNodeInfo(node))
+        self.ninfo.update(node)
         self.result = result
         self.string = string
         self.ninfo.bsig = sig
@@ -373,7 +375,8 @@ class SConf:
 
     def Finish(self):
         """Call this method after finished with your tests:
-        env = sconf.Finish()"""
+                env = sconf.Finish()
+        """
         self._shutdown()
         return self.env
 

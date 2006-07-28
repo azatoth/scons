@@ -1756,13 +1756,15 @@ class File(Base):
         try:
             stored = self.dir.sconsign().get_entry(self.name)
         except (KeyError, OSError):
-            return FileBuildInfo(self)
+            binfo = self.BuildInfo(self)
+            binfo.set_ninfo(self.NodeInfo(self))
+            return binfo
         else:
             if not hasattr(stored, 'ninfo'):
                 # Transition:  The .sconsign file entry has no NodeInfo
                 # object, which means it's a slightly older BuildInfo.
                 # Copy over the relevant attributes.
-                ninfo = stored.ninfo = FileBuildInfo(self)
+                ninfo = stored.ninfo = self.BuildInfo(self)
                 for attr in ninfo.__dict__.keys():
                     try:
                         setattr(ninfo, attr, getattr(stored, attr))

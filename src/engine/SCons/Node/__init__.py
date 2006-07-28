@@ -116,49 +116,6 @@ class NodeInfoBase:
             self.__dict__[key] = val
     def prepare_dependencies(self):
         pass
-    def format(self):
-        try:
-            field_list = self.field_list
-        except AttributeError:
-            field_list = self.__dict__.keys()
-            field_list.sort()
-        fields = []
-        for field in field_list:
-            try:
-                f = getattr(self, field)
-            except AttributeError:
-                f = None
-            fields.append(str(f))
-        return string.join(fields, " ")
-
-class BuildInfoBase:
-    """
-    The generic base class for build information for a Node.
-
-    This is what gets stored in a .sconsign file for each target file.
-    It contains a NodeInfo instance for this node (signature information
-    that's specific to the type of Node) and direct attributes for the
-    generic build stuff we have to track:  sources, explicit dependencies,
-    implicit dependencies, and action information.
-    """
-    def __init__(self, node):
-        self.ninfo = node.NodeInfo(node)
-        self.bsourcesigs = []
-        self.bdependsigs = []
-        self.bimplicitsigs = []
-        self.bactsig = None
-    def __cmp__(self, other):
-        return cmp(self.ninfo, other.ninfo)
-    def update(self, node):
-        pass
-    def merge(self, other):
-        for key, val in other.__dict__.items():
-            try:
-                merge = self.__dict__[key].merge
-            except (AttributeError, KeyError):
-                self.__dict__[key] = val
-            else:
-                merge(val)
     def format(self, field_list=None, names=0):
         if field_list is None:
             try:
@@ -177,6 +134,36 @@ class BuildInfoBase:
                 f = field + ': ' + f
             fields.append(f)
         return fields
+
+class BuildInfoBase:
+    """
+    The generic base class for build information for a Node.
+
+    This is what gets stored in a .sconsign file for each target file.
+    It contains a NodeInfo instance for this node (signature information
+    that's specific to the type of Node) and direct attributes for the
+    generic build stuff we have to track:  sources, explicit dependencies,
+    implicit dependencies, and action information.
+    """
+    def __init__(self, node):
+        self.bsourcesigs = []
+        self.bdependsigs = []
+        self.bimplicitsigs = []
+        self.bactsig = None
+    def __cmp__(self, other):
+        return cmp(self.ninfo, other.ninfo)
+    def set_ninfo(self, ninfo):
+        self.ninfo = ninfo
+    def update(self, node):
+        pass
+    def merge(self, other):
+        for key, val in other.__dict__.items():
+            try:
+                merge = self.__dict__[key].merge
+            except (AttributeError, KeyError):
+                self.__dict__[key] = val
+            else:
+                merge(val)
 
 class Node:
     """The base Node class, for entities that we know how to
@@ -316,13 +303,6 @@ class Node:
         executor = self.get_executor()
         apply(executor, (self, exitstatfunc), kw)
 
-    def get_ninfo(self):
-        try:
-            return self.ninfo
-        except AttributeError:
-            self.ninfo = self.new_ninfo()
-            return self.ninfo
-
     def built(self):
         """Called just after this node is successfully built."""
 
@@ -348,14 +328,12 @@ class Node:
             # It had build info, so it should be stored in the signature
             # cache.  However, if the build info included a content
             # signature then it must be recalculated before being stored.
-            if not hasattr(new.ninfo, 'csig'):
-                new.ninfo.update(self)
-                self.binfo = new
-            try:
-                self.store_info(self.binfo)
-            except AttributeError:
-                print "built(%s)" % self
-                raise
+            #if not hasattr(new.ninfo, 'csig'):
+            #    new.ninfo.update(self)
+            #    self.binfo = new
+            new.ninfo.update(self)
+            self.binfo = new
+            self.store_info(self.binfo)
 
     def add_to_waiting_s_e(self, node):
         self.waiting_s_e[node] = 1
@@ -661,9 +639,17 @@ class Node:
         ninfo.update(self)
         return ninfo
 
+    def get_ninfo(self):
+        try:
+            return self.ninfo
+        except AttributeError:
+            self.ninfo = self.new_ninfo()
+            return self.ninfo
+
     def new_binfo(self):
         binfo = self.BuildInfo(self)
         binfo.update(self)
+        binfo.set_ninfo(self.get_ninfo())
         return binfo
 
     def get_binfo(self):
@@ -755,13 +741,13 @@ class Node:
             return self.binfo.ninfo.bsig
 
     def get_csig(self, calc=None):
-        binfo = self.get_binfo()
         try:
-            return binfo.ninfo.csig
+            return self.ninfo.csig
         except AttributeError:
+            ninfo = self.get_ninfo()
             if calc is None:
                 calc = self.calculator()
-            csig = binfo.ninfo.csig = calc.module.signature(self)
+            csig = ninfo.csig = calc.module.signature(self)
             return csig
 
     def store_info(self, obj):
