@@ -112,6 +112,11 @@ except AttributeError:
         return result
     __builtin__.zip = zip
 
+def dictify(keys, values, result={}):
+    for k, v in zip(keys, values):
+        result[k] = v
+    return result
+
 _altsep = os.altsep
 if _altsep is None and sys.platform == 'win32':
     # My ActivePython 2.0.1 doesn't set os.altsep!  What gives?

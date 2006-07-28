@@ -46,6 +46,18 @@ class OutBuffer:
     def write(self, str):
         self.buffer = self.buffer + str
 
+class dictifyTestCase(unittest.TestCase):
+    def test_dictify(self):
+        """Test the dictify() function"""
+        r = SCons.Util.dictify(['a', 'b', 'c'], [1, 2, 3])
+        assert r == {'a':1, 'b':2, 'c':3}, r
+
+        r = {}
+        SCons.Util.dictify(['a'], [1], r)
+        SCons.Util.dictify(['b'], [2], r)
+        SCons.Util.dictify(['c'], [3], r)
+        assert r == {'a':1, 'b':2, 'c':3}, r
+
 class UtilTestCase(unittest.TestCase):
     def test_splitext(self):
         assert splitext('foo') == ('foo','')
@@ -73,6 +85,8 @@ class UtilTestCase(unittest.TestCase):
         def always_build(self):
             return 1
         def current(self):
+            return 1
+        def noclean(self):
             return 1
         def noclean(self):
             return 1
@@ -682,6 +696,12 @@ bling
         ], lines
 
 if __name__ == "__main__":
-    suite = unittest.makeSuite(UtilTestCase, 'test_')
+    suite = unittest.TestSuite()
+    tclasses = [ dictifyTestCase,
+                 UtilTestCase,
+               ]
+    for tclass in tclasses:
+        names = unittest.getTestCaseNames(tclass, 'test_')
+        suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
