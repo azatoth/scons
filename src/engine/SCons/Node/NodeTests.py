@@ -264,12 +264,12 @@ class NodeInfoBaseTestCase(unittest.TestCase):
         ni1.zzz = 'z'
 
         f = ni1.format()
-        assert f == 'x y z', f
+        assert f == ['x', 'y', 'z'], f
 
         ni1.field_list = ['xxx', 'zzz', 'aaa']
 
         f = ni1.format()
-        assert f == 'x z None', f
+        assert f == ['x', 'z', 'None'], f
 
 
 

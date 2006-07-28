@@ -799,11 +799,11 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         bi1 = SCons.Node.FS.BuildInfo(f1)
 
         s1sig = SCons.Node.FS.FileNodeInfo(self.fs.File('n1'))
-        s1sig.a = 1
+        s1sig.csig = 1
         d1sig = SCons.Node.FS.FileNodeInfo(self.fs.File('n2'))
-        d1sig.a = 2
+        d1sig.csig = 2
         i1sig = SCons.Node.FS.FileNodeInfo(self.fs.File('n3'))
-        i1sig.a = 3
+        i1sig.csig = 3
 
         bi1.bsources = [self.fs.File('s1')]
         bi1.bdepends = [self.fs.File('d1')]
@@ -813,10 +813,10 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         bi1.bimplicitsigs = [i1sig]
 
         expect_lines = [
-            'None 0',
-            's1: 1 None 0',
-            'd1: 2 None 0',
-            'i1: 3 None 0',
+            'None 0 0',
+            's1: 1 0 0',
+            'd1: 2 0 0',
+            'i1: 3 0 0',
         ]
 
         expect = string.join(expect_lines, '\n')
@@ -2335,7 +2335,7 @@ class stored_infoTestCase(unittest.TestCase):
         f = fs.File('file1', d)
         bi = f.get_stored_info()
         assert bi.ninfo.timestamp == 0, bi.ninfo.timestamp
-        assert bi.ninfo.size == None, bi.ninfo.size
+        assert bi.ninfo.size == 0, bi.ninfo.size
 
         class MySConsign:
             class Null:

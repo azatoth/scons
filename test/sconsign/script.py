@@ -124,52 +124,48 @@ test.run(chdir = 'work1', arguments = '--implicit-cache .')
 
 test.run_sconsign(arguments = "work1/sub1/.sconsign",
          stdout = """\
-hello.exe: \S+ None \d+ \d+
-        hello.obj: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 """)
 
 test.run_sconsign(arguments = "--raw work1/sub1/.sconsign",
          stdout = """\
-hello.exe: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
-        hello.obj: \S+
-hello.obj: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
-        hello.c: \S+
+hello.exe: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+        hello.obj: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+hello.obj: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+        hello.c: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
 """)
 
 test.run_sconsign(arguments = "-v work1/sub1/.sconsign",
          stdout = """\
 hello.exe:
-    bsig: \S+
-    csig: None
+    csig: \S+
     timestamp: \d+
     size: \d+
     implicit:
-        hello.obj: \S+
+        hello.obj:
+            csig: \S+
+            timestamp: \d+
+            size: \d+
 hello.obj:
-    bsig: \S+
-    csig: None
+    csig: \S+
     timestamp: \d+
     size: \d+
     implicit:
-        hello.c: \S+
-""")
-
-test.run_sconsign(arguments = "-b -v work1/sub1/.sconsign",
-         stdout = """\
-hello.exe:
-    bsig: \S+
-hello.obj:
-    bsig: \S+
+        hello.c:
+            csig: \S+
+            timestamp: \d+
+            size: \d+
 """)
 
 test.run_sconsign(arguments = "-c -v work1/sub1/.sconsign",
          stdout = """\
 hello.exe:
-    csig: None
+    csig: \S+
 hello.obj:
-    csig: None
+    csig: \S+
 """)
 
 test.run_sconsign(arguments = "-s -v work1/sub1/.sconsign",
@@ -190,18 +186,18 @@ hello.obj:
 
 test.run_sconsign(arguments = "-e hello.obj work1/sub1/.sconsign",
          stdout = """\
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 """)
 
 test.run_sconsign(arguments = "-e hello.obj -e hello.exe -e hello.obj work1/sub1/.sconsign",
          stdout = """\
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-hello.exe: \S+ None \d+ \d+
-        hello.obj: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 """)
 
 # XXX NOT SURE IF THIS IS RIGHT!
@@ -210,34 +206,34 @@ sub2_inc2_h = re_sep('sub2', 'inc2.h')
 
 test.run_sconsign(arguments = "work1/sub2/.sconsign",
          stdout = """\
-hello.exe: \S+ None \d+ \d+
-        hello.obj: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-        inc1.h: \S+
-        inc2.h: \S+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
+        inc1.h: \S+ \d+ \d+
+        inc2.h: \S+ \d+ \d+
 """)
 
 #test.run_sconsign(arguments = "-i -v work1/sub2/.sconsign",
 #         stdout = """\
 #hello.exe:
 #    implicit:
-#        hello.obj: \S+ None \d+ \d+
+#        hello.obj: \S+ \d+ \d+
 #hello.obj:
 #    implicit:
-#        hello.c: None \S+ \d+ \d+
-#        inc1.h: None \S+ \d+ \d+
-#        inc2.h: None \S+ \d+ \d+
+#        hello.c: \S+ \d+ \d+
+#        inc1.h: \S+ \d+ \d+
+#        inc2.h: \S+ \d+ \d+
 #""")
 
 test.run_sconsign(arguments = "-e hello.obj work1/sub2/.sconsign work1/sub1/.sconsign",
          stdout = """\
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-        inc1.h: \S+
-        inc2.h: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
+        inc1.h: \S+ \d+ \d+
+        inc2.h: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 """)
 
 test.run(chdir = 'work1', arguments = '--clean .')
@@ -257,18 +253,18 @@ test.run(chdir = 'work1', arguments = '. --max-drift=1 --debug=stacktrace')
 
 test.run_sconsign(arguments = "-e hello.exe -e hello.obj work1/sub1/.sconsign",
          stdout = """\
-hello.exe: \S+ None \d+ \d+
-        hello.obj: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 """)
 
 test.run_sconsign(arguments = "-e hello.exe -e hello.obj -r work1/sub1/.sconsign",
          stdout = """\
-hello.exe: \S+ None '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
-        hello.obj: \S+
-hello.obj: \S+ None '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
-        hello.c: \S+
+hello.exe: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
+        hello.obj: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
+hello.obj: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
+        hello.c: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
 """)
 
 
@@ -319,97 +315,97 @@ test.run_sconsign(arguments = "work2/.sconsign")
 test.run_sconsign(arguments = "work2/.sconsign",
          stdout = """\
 === sub1:
-hello.exe: \S+ None \d+ \d+
-        hello.obj: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 === sub2:
-hello.exe: \S+ None \d+ \d+
-        hello.obj: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-        inc1.h: \S+
-        inc2.h: \S+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
+        inc1.h: \S+ \d+ \d+
+        inc2.h: \S+ \d+ \d+
 """)
 
 test.run_sconsign(arguments = "--raw work2/.sconsign",
          stdout = """\
 === sub1:
-hello.exe: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
-        hello.obj: \S+
-hello.obj: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
-        hello.c: \S+
+hello.exe: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+        hello.obj: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+hello.obj: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+        hello.c: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
 === sub2:
-hello.exe: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
-        hello.obj: \S+
-hello.obj: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
-        hello.c: \S+
-        inc1.h: \S+
-        inc2.h: \S+
+hello.exe: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+        hello.obj: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+hello.obj: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+        hello.c: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+        inc1.h: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
+        inc2.h: {'csig': '\S+', 'timestamp': \d+L?, 'size': \d+L?}
 """)
 
 test.run_sconsign(arguments = "-v work2/.sconsign",
          stdout = """\
 === sub1:
 hello.exe:
-    bsig: \S+
-    csig: None
+    csig: \S+
     timestamp: \d+
     size: \d+
     implicit:
-        hello.obj: \S+
+        hello.obj:
+            csig: \S+
+            timestamp: \d+
+            size: \d+
 hello.obj:
-    bsig: \S+
-    csig: None
+    csig: \S+
     timestamp: \d+
     size: \d+
     implicit:
-        hello.c: \S+
+        hello.c:
+            csig: \S+
+            timestamp: \d+
+            size: \d+
 === sub2:
 hello.exe:
-    bsig: \S+
-    csig: None
+    csig: \S+
     timestamp: \d+
     size: \d+
     implicit:
-        hello.obj: \S+
+        hello.obj:
+            csig: \S+
+            timestamp: \d+
+            size: \d+
 hello.obj:
-    bsig: \S+
-    csig: None
+    csig: \S+
     timestamp: \d+
     size: \d+
     implicit:
-        hello.c: \S+
-        inc1.h: \S+
-        inc2.h: \S+
-""")
-
-test.run_sconsign(arguments = "-b -v work2/.sconsign",
-         stdout = """\
-=== sub1:
-hello.exe:
-    bsig: \S+
-hello.obj:
-    bsig: \S+
-=== sub2:
-hello.exe:
-    bsig: \S+
-hello.obj:
-    bsig: \S+
+        hello.c:
+            csig: \S+
+            timestamp: \d+
+            size: \d+
+        inc1.h:
+            csig: \S+
+            timestamp: \d+
+            size: \d+
+        inc2.h:
+            csig: \S+
+            timestamp: \d+
+            size: \d+
 """)
 
 test.run_sconsign(arguments = "-c -v work2/.sconsign",
          stdout = """\
 === sub1:
 hello.exe:
-    csig: None
+    csig: \S+
 hello.obj:
-    csig: None
+    csig: \S+
 === sub2:
 hello.exe:
-    csig: None
+    csig: \S+
 hello.obj:
-    csig: None
+    csig: \S+
 """)
 
 test.run_sconsign(arguments = "-s -v work2/.sconsign",
@@ -443,35 +439,35 @@ hello.obj:
 test.run_sconsign(arguments = "-e hello.obj work2/.sconsign",
          stdout = """\
 === sub1:
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 === sub2:
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-        inc1.h: \S+
-        inc2.h: \S+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
+        inc1.h: \S+ \d+ \d+
+        inc2.h: \S+ \d+ \d+
 """)
 
 test.run_sconsign(arguments = "-e hello.obj -e hello.exe -e hello.obj work2/.sconsign",
          stdout = """\
 === sub1:
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-hello.exe: \S+ None \d+ \d+
-        hello.obj: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 === sub2:
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-        inc1.h: \S+
-        inc2.h: \S+
-hello.exe: \S+ None \d+ \d+
-        hello.obj: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-        inc1.h: \S+
-        inc2.h: \S+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
+        inc1.h: \S+ \d+ \d+
+        inc2.h: \S+ \d+ \d+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
+        inc1.h: \S+ \d+ \d+
+        inc2.h: \S+ \d+ \d+
 """)
 
 #test.run_sconsign(arguments = "-i -v work2/.sconsign",
@@ -510,58 +506,61 @@ time.sleep(1)
 
 test.run(chdir = 'work2', arguments = '. --max-drift=1')
 
-test.run_sconsign(arguments = "-e hello.exe -e hello.obj -d sub1 -f dblite work2/my_sconsign",
+#e_flags = "-e hello.c -e hello.exe -e hello.obj"
+e_flags = "-e hello.exe -e hello.obj"
+
+test.run_sconsign(arguments = "%s -d sub1 -f dblite work2/my_sconsign" % e_flags,
          stdout = """\
 === sub1:
-hello.exe: \d+ None \d+ \d+
-        hello.obj: \d+
-hello.obj: \d+ None \d+ \d+
-        hello.c: \d+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 """)
 
-test.run_sconsign(arguments = "-e hello.exe -e hello.obj -d sub1 -f dblite work2/my_sconsign.dblite",
+test.run_sconsign(arguments = "%s -d sub1 -f dblite work2/my_sconsign.dblite" % e_flags,
          stdout = """\
 === sub1:
-hello.exe: \d+ None \d+ \d+
-        hello.obj: \S+
-hello.obj: \d+ None \d+ \d+
-        hello.c: \S+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 """)
 
-test.run_sconsign(arguments = "-e hello.exe -e hello.obj -d sub1 -f dblite work2/my_sconsign",
+test.run_sconsign(arguments = "%s -d sub1 -f dblite work2/my_sconsign" % e_flags,
          stdout = """\
 === sub1:
-hello.exe: \d+ None \d+ \d+
-        hello.obj: \d+
-hello.obj: \d+ None \d+ \d+
-        hello.c: \d+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 """)
 
-test.run_sconsign(arguments = "-e hello.exe -e hello.obj -d sub1 -f dblite work2/my_sconsign.dblite",
+test.run_sconsign(arguments = "%s -d sub1 -f dblite work2/my_sconsign.dblite" % e_flags,
          stdout = """\
 === sub1:
-hello.exe: \S+ None \d+ \d+
-        hello.obj: \d+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \d+
+hello.exe: \S+ \d+ \d+
+        hello.obj: \S+ \d+ \d+
+hello.obj: \S+ \d+ \d+
+        hello.c: \S+ \d+ \d+
 """)
 
-test.run_sconsign(arguments = "-e hello.exe -e hello.obj -r -d sub1 -f dblite work2/my_sconsign",
+test.run_sconsign(arguments = "%s -r -d sub1 -f dblite work2/my_sconsign" % e_flags,
          stdout = """\
 === sub1:
-hello.exe: \d+ None '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
-        hello.obj: \d+
-hello.obj: \d+ None '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
-        hello.c: \d+
+hello.exe: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
+        hello.obj: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
+hello.obj: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
+        hello.c: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
 """)
 
-test.run_sconsign(arguments = "-e hello.exe -e hello.obj -r -d sub1 -f dblite work2/my_sconsign.dblite",
+test.run_sconsign(arguments = "%s -r -d sub1 -f dblite work2/my_sconsign.dblite" % e_flags,
          stdout = """\
 === sub1:
-hello.exe: \d+ None '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
-        hello.obj: \d+
-hello.obj: \d+ None '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
-        hello.c: \d+
+hello.exe: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
+        hello.obj: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
+hello.obj: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
+        hello.c: \S+ '\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d' \d+
 """)
 
 ##############################################################################

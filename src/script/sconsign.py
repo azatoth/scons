@@ -201,7 +201,6 @@ Print_Entries = []
 Print_Flags = Flagger()
 Verbose = 0
 Readable = 0
-Raw = 0
 
 def default_mapper(entry, name):
     try:
@@ -228,7 +227,7 @@ def map_bkids(entry, name):
         return None
     result = []
     for i in xrange(len(bkids)):
-        result.append("%s: %s" % (bkids[i], bkidsigs[i]))
+        result.append(nodeinfo_string(bkids[i], bkidsigs[i], "        "))
     if result == []:
         return None
     return string.join(result, "\n        ")
@@ -253,31 +252,33 @@ def field(name, entry, verbose=Verbose):
     return val
 
 def nodeinfo_raw(name, ninfo, prefix=""):
-    # This does essentially what the pprint module does,
-    # except that it sorts the keys for deterministic output.
+    # This just formats the dictionary, which we would normally use str()
+    # to do, except that we want the keys sorted for deterministic output.
     d = ninfo.__dict__
-    keys = d.keys()
-    keys.sort()
+    try:
+        keys = ninfo.field_list
+    except AttributeError:
+        keys = d.keys()
+        keys.sort()
     l = []
     for k in keys:
         l.append('%s: %s' % (repr(k), repr(d[k])))
     return name + ': {' + string.join(l, ', ') + '}'
 
-def nodeinfo_string(name, ninfo, prefix=""):
-    fieldlist = ["bsig", "csig", "timestamp", "size"]
+def nodeinfo_cooked(name, ninfo, prefix=""):
+    field_list = ['csig', 'timestamp', 'size']
     f = lambda x, ni=ninfo, v=Verbose: field(x, ni, v)
-    outlist = [name+":"] + filter(None, map(f, fieldlist))
+    outlist = [name+':'] + filter(None, map(f, field_list))
     if Verbose:
-        sep = "\n    " + prefix
+        sep = '\n    ' + prefix
     else:
-        sep = " "
+        sep = ' '
     return string.join(outlist, sep)
 
+nodeinfo_string = nodeinfo_cooked
+
 def printfield(name, entry, prefix=""):
-    if Raw:
-        print nodeinfo_raw(name, entry.ninfo, prefix)
-    else:
-        print nodeinfo_string(name, entry.ninfo, prefix)
+    print nodeinfo_string(name, entry.ninfo, prefix)
 
     outlist = field("implicit", entry, 0)
     if outlist:
@@ -378,7 +379,6 @@ import getopt
 helpstr = """\
 Usage: sconsign [OPTIONS] FILE [...]
 Options:
-  -b, --bsig                  Print build signature information.
   -c, --csig                  Print content signature information.
   -d DIR, --dir=DIR           Print only info about DIR.
   -e ENTRY, --entry=ENTRY     Print only info about ENTRY.
@@ -393,16 +393,14 @@ Options:
 """
 
 opts, args = getopt.getopt(sys.argv[1:], "bcd:e:f:hirstv",
-                            ['bsig', 'csig', 'dir=', 'entry=',
+                            ['csig', 'dir=', 'entry=',
                              'format=', 'help', 'implicit',
                              'raw', 'readable',
                              'size', 'timestamp', 'verbose'])
 
 
 for o, a in opts:
-    if o in ('-b', '--bsig'):
-        Print_Flags['bsig'] = 1
-    elif o in ('-c', '--csig'):
+    if o in ('-c', '--csig'):
         Print_Flags['csig'] = 1
     elif o in ('-d', '--dir'):
         Print_Directories.append(a)
@@ -428,7 +426,7 @@ for o, a in opts:
     elif o in ('-i', '--implicit'):
         Print_Flags['implicit'] = 1
     elif o in ('--raw',):
-        Raw = 1
+        nodeinfo_string = nodeinfo_raw
     elif o in ('-r', '--readable'):
         Readable = 1
     elif o in ('-s', '--size'):

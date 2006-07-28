@@ -133,7 +133,7 @@ class NodeInfoBase:
 
 class BuildInfoBase:
     """
-    The generic base clasee for build information for a Node.
+    The generic base class for build information for a Node.
 
     This is what gets stored in a .sconsign file for each target file.
     It contains a NodeInfo instance for this node (signature information
@@ -149,6 +149,8 @@ class BuildInfoBase:
         self.bactsig = None
     def __cmp__(self, other):
         return cmp(self.ninfo, other.ninfo)
+    def update(self, node):
+        pass
     def merge(self, other):
         for key, val in other.__dict__.items():
             try:
@@ -157,6 +159,24 @@ class BuildInfoBase:
                 self.__dict__[key] = val
             else:
                 merge(val)
+    def format(self, field_list=None, names=0):
+        if field_list is None:
+            try:
+                field_list = self.field_list
+            except AttributeError:
+                field_list = self.__dict__.keys()
+                field_list.sort()
+        fields = []
+        for field in field_list:
+            try:
+                f = getattr(self, field)
+            except AttributeError:
+                f = None
+            f = str(f)
+            if names:
+                f = field + ': ' + f
+            fields.append(f)
+        return fields
 
 class Node:
     """The base Node class, for entities that we know how to
@@ -296,6 +316,13 @@ class Node:
         executor = self.get_executor()
         apply(executor, (self, exitstatfunc), kw)
 
+    def get_ninfo(self):
+        try:
+            return self.ninfo
+        except AttributeError:
+            self.ninfo = self.new_ninfo()
+            return self.ninfo
+
     def built(self):
         """Called just after this node is successfully built."""
 
@@ -321,12 +348,14 @@ class Node:
             # It had build info, so it should be stored in the signature
             # cache.  However, if the build info included a content
             # signature then it must be recalculated before being stored.
-            if hasattr(new.ninfo, 'csig'):
-                self.get_csig()
-            else:
+            if not hasattr(new.ninfo, 'csig'):
                 new.ninfo.update(self)
                 self.binfo = new
-            self.store_info(self.binfo)
+            try:
+                self.store_info(self.binfo)
+            except AttributeError:
+                print "built(%s)" % self
+                raise
 
     def add_to_waiting_s_e(self, node):
         self.waiting_s_e[node] = 1
@@ -628,10 +657,14 @@ class Node:
         return self.get_csig(calc)
 
     def new_ninfo(self):
-        return self.NodeInfo(self)
+        ninfo = self.NodeInfo(self)
+        ninfo.update(self)
+        return ninfo
 
     def new_binfo(self):
-        return self.BuildInfo(self)
+        binfo = self.BuildInfo(self)
+        binfo.update(self)
+        return binfo
 
     def get_binfo(self):
         try:
@@ -676,7 +709,6 @@ class Node:
             return node.calc_signature(calc)
 
         sources = executor.process_sources(None, self.ignore)
-        sourcesigs = executor.process_sources(calc_signature, self.ignore)
 
         depends = self.depends
         implicit = self.implicit or []
@@ -685,14 +717,21 @@ class Node:
             depends = filter(self.do_not_ignore, depends)
             implicit = filter(self.do_not_ignore, implicit)
 
-        dependsigs = map(calc_signature, depends)
-        implicitsigs = map(calc_signature, implicit)
+        def get_ninfo(node):
+            return node.get_ninfo()
 
-        sigs = sourcesigs + dependsigs + implicitsigs
+        sourcesigs = map(get_ninfo, sources)
+        dependsigs = map(get_ninfo, depends)
+        implicitsigs = map(get_ninfo, implicit)
+
+        sigs = map(calc_signature, sources + depends + implicit)
+        #sigs = map(lambda ni: ni.csig, sourcesigs + dependsigs + implicitsigs)
 
         if self.has_builder():
             binfo.bact = str(executor)
             binfo.bactsig = calc.module.signature(executor)
+            #import SCons.Sig.MD5
+            #binfo.bactsig = SCons.Sig.MD5.signature(executor)
             sigs.append(binfo.bactsig)
 
         binfo.bsources = sources

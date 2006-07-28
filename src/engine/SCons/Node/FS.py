@@ -1596,13 +1596,22 @@ class RootDir(Dir):
         return _null
 
 class FileNodeInfo(SCons.Node.NodeInfoBase):
+    field_list = ['csig', 'timestamp', 'size']
     def __init__(self, node):
         SCons.Node.NodeInfoBase.__init__(self, node)
-        self.update(node)
+        self.timestamp = 0
+        self.size = 0
     def __cmp__(self, other):
-        try: return cmp(self.bsig, other.bsig)
-        except AttributeError: return 1
+        try:
+             return cmp(self.bsig, other.bsig)
+        except AttributeError:
+            #return 1
+            try:
+                return cmp(self.csig, other.csig)
+            except AttributeError:
+                return 1
     def update(self, node):
+        self.csig = node.get_csig()
         self.timestamp = node.get_timestamp()
         self.size = node.getsize()
 
@@ -1655,12 +1664,13 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
                 pass
             else:
                 setattr(self, attr, map(Entry_func, val))
-    def format(self):
-        result = [ self.ninfo.format() ]
+    def format(self, names=0):
+        result = [string.join(self.ninfo.format(names=names), ' ')]
         bkids = self.bsources + self.bdepends + self.bimplicit
         bkidsigs = self.bsourcesigs + self.bdependsigs + self.bimplicitsigs
         for i in xrange(len(bkids)):
-            result.append(str(bkids[i]) + ': ' + bkidsigs[i].format())
+            result.append(str(bkids[i]) + ': ' +
+                          string.join(bkidsigs[i].format(names=names), ' '))
         return string.join(result, '\n')
 
 class NodeInfo(FileNodeInfo):
@@ -1746,13 +1756,13 @@ class File(Base):
         try:
             stored = self.dir.sconsign().get_entry(self.name)
         except (KeyError, OSError):
-            return self.new_binfo()
+            return FileBuildInfo(self)
         else:
             if not hasattr(stored, 'ninfo'):
                 # Transition:  The .sconsign file entry has no NodeInfo
                 # object, which means it's a slightly older BuildInfo.
                 # Copy over the relevant attributes.
-                ninfo = stored.ninfo = self.new_ninfo()
+                ninfo = stored.ninfo = FileBuildInfo(self)
                 for attr in ninfo.__dict__.keys():
                     try:
                         setattr(ninfo, attr, getattr(stored, attr))
@@ -1951,6 +1961,28 @@ class File(Base):
     # SIGNATURE SUBSYSTEM
     #
 
+# XXX with the base implementation of get_ninfo(), the following tests fail:
+#	test\Configure.py
+#	test\Delete.py
+#	test\option--max-drift.py
+#
+# XXX with this implementation of get_ninfo(), the following tests fail:
+#	test\Configure.py
+#	test\Delete.py
+#	test\chained-build.py
+#
+#    def get_ninfo(self):
+#        ninfo = SCons.Node.Node.get_ninfo(self)
+#        if not self.has_builder():
+#            max_drift = self.fs.max_drift
+#            mtime = self.get_timestamp()
+#            if max_drift >= 0 and (time.time() - mtime) > max_drift:
+#                ninfo.update(self)
+#                binfo = self.get_binfo()
+#                binfo.ninfo = ninfo
+#                self.store_info(binfo)
+#        return ninfo
+
     def get_csig(self, calc=None):
         """
         Generate a node's content signature, the digested signature
@@ -1969,29 +2001,24 @@ class File(Base):
             calc = self.calculator()
 
         max_drift = self.fs.max_drift
-        mtime = self.get_timestamp()
-        use_stored = max_drift >= 0 and (time.time() - mtime) > max_drift
-
-        csig = None
-        if use_stored:
+        if max_drift > 0:
+            mtime = self.get_timestamp()
+            if (time.time() - mtime) > max_drift:
+                old = self.get_stored_info().ninfo
+                try:
+                    if old.timestamp and old.csig and old.timestamp == mtime:
+                        return old.csig
+                except AttributeError:
+                    pass
+        elif max_drift == 0:
             old = self.get_stored_info().ninfo
             try:
-                if old.timestamp and old.csig and old.timestamp == mtime:
-                    csig = old.csig
+                return old.csig
             except AttributeError:
                 pass
-        if csig is None:
-            csig = calc.module.signature(self)
-
-        binfo = self.get_binfo()
-        ninfo = binfo.ninfo
-        ninfo.csig = csig
-        ninfo.update(self)
-
-        if use_stored:
-            self.store_info(binfo)
-
-        return csig
+        #import SCons.Sig.MD5
+        #return SCons.Sig.MD5.signature(self)
+        return calc.module.signature(self)
 
     #
     #

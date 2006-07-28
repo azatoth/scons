@@ -32,7 +32,9 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import SCons.Node
 
 class ValueNodeInfo(SCons.Node.NodeInfoBase):
-    pass
+    field_list = ['csig']
+    def update(self, node):
+        self.csig = node.get_contents()
 
 class ValueBuildInfo(SCons.Node.BuildInfoBase):
     pass
