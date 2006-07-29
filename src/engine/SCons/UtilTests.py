@@ -84,7 +84,7 @@ class UtilTestCase(unittest.TestCase):
             return 1
         def always_build(self):
             return 1
-        def current(self):
+        def is_up_to_date(self):
             return 1
         def noclean(self):
             return 1

@@ -188,7 +188,7 @@ class SConfTestCase(unittest.TestCase):
                         pass
                     def clear(self):
                         pass
-                    def current(self, calc=None):
+                    def is_up_to_date(self):
                         return None
                     def prepare(self):
                         pass

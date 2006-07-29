@@ -522,11 +522,11 @@ class NodeTestCase(unittest.TestCase):
         assert t == [], t
         assert m == None, m
 
-    def test_current(self):
-        """Test the default current() method
+    def test_is_up_to_date(self):
+        """Test the default is_up_to_date() method
         """
         node = SCons.Node.Node()
-        assert node.current() is None
+        assert node.is_up_to_date() is None
 
     def test_children_are_up_to_date(self):
         """Test the children_are_up_to_date() method used by subclasses
@@ -990,10 +990,6 @@ class NodeTestCase(unittest.TestCase):
         class StoredNode(MyNode):
             def get_stored_implicit(self):
                 return ['implicit1', 'implicit2']
-
-        class NotCurrent:
-            def current(self, node, sig):
-                return None
 
         save_implicit_cache = SCons.Node.implicit_cache
         save_implicit_deps_changed = SCons.Node.implicit_deps_changed

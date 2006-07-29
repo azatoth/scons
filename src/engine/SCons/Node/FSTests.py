@@ -1197,15 +1197,15 @@ class FSTestCase(_tempdirTestCase):
         f = fs.File('f_local')
         assert f._local == 0
 
-        #XXX test current() for directories
+        #XXX test_is_up_to_date() for directories
 
-        #XXX test sconsign() for directories
+        #XXX test_sconsign() for directories
 
-        #XXX test set_signature() for directories
+        #XXX test_set_signature() for directories
 
-        #XXX test build() for directories
+        #XXX test_build() for directories
 
-        #XXX test root()
+        #XXX test_root()
 
         # test Entry.get_contents()
         e = fs.Entry('does_not_exist')
@@ -1305,7 +1305,7 @@ class FSTestCase(_tempdirTestCase):
             exc_caught = 1
         assert exc_caught, "Should have caught a TypeError"
 
-        # XXX test current()
+        # XXX test_is_up_to_date()
 
         d = fs.Dir('dir')
         r = d.remove()
@@ -2190,9 +2190,7 @@ class RepositoryTestCase(_tempdirTestCase):
         finally:
             test.unlink(["rep3", "contents"])
 
-    #def test calc_signature(self):
-
-    #def test current(self):
+    #def test_is_up_to_date(self):
 
 
 

@@ -1173,10 +1173,7 @@ class FS(LocalFS):
         return targets, message
 
 class DirNodeInfo(SCons.Node.NodeInfoBase):
-    current_target = SCons.Node.NodeInfoBase.current_state
-    current_source = SCons.Node.NodeInfoBase.current_state
-    current_timestamp = SCons.Node.NodeInfoBase.current_state
-    current_content = SCons.Node.NodeInfoBase.current_state
+    pass
 
 class DirBuildInfo(SCons.Node.BuildInfoBase):
     pass
@@ -1401,7 +1398,9 @@ class Dir(Base):
     def do_duplicate(self, src):
         pass
 
-    def current(self):
+    changed_since_last_build = SCons.Node.Node.state_has_changed
+
+    def is_up_to_date(self):
         """If any child is not up-to-date, then this directory isn't,
         either."""
         if not self.builder is MkdirBuilder and not self.exists():
@@ -1612,71 +1611,8 @@ class FileNodeInfo(SCons.Node.NodeInfoBase):
         self.size = 0
     def update(self, node):
         self.csig = node.get_csig()
-        #Trace('update(%s): %s\n' % (node, self.csig))
         self.timestamp = node.get_timestamp()
         self.size = node.getsize()
-    def current_target(self, prev, target, source, type):
-        func = {
-            'MD5' : self.current_content,
-            'content' : self.current_content,
-            'timestamp' : self.current_timestamp,
-            'build' : self.current_state,
-        }[type]
-        return func(prev, target, source, type)
-    def current_source(self, prev, target, source, type):
-        func = {
-            'MD5' : self.current_content,
-            'timestamp' : self.current_timestamp,
-        }[type]
-        return func(prev, target, source, type)
-    def current_timestamp(self, prev, target, source, type=None):
-        try:
-            return target.get_timestamp() >= self.timestamp
-        except AttributeError:
-            return None
-    def current_content(self, prev, target, source, type=None):
-        try:
-            return prev.csig == self.csig
-        except AttributeError:
-            return None
-
-_FileNodeInfo = FileNodeInfo
-
-force_trace = 0
-
-class TraceFileNodeInfo(_FileNodeInfo):
-    def current_target(self, prev, target, source, type):
-        r = _FileNodeInfo.current_target(self, prev, target, source, type)
-        if not r or force_trace:
-            Trace('current_target(%s, %s, %s): %s\n' % (target, source, type, r))
-        return r
-    def current_source(self, prev, target, source, type):
-        r = _FileNodeInfo.current_source(self, prev, target, source, type)
-        if not r or force_trace:
-            Trace('current_source(%s, %s, %s): %s\n' % (target, source, type, r))
-        return r
-    def current_timestamp(self, prev, target, source, type):
-        r = _FileNodeInfo.current_timestamp(self, prev, target, source, type)
-        if not r or force_trace:
-            Trace('current_timestamp(%s, %s, %s): %s\n' % (target, source, type, r))
-        return r
-    def current_content(self, prev, target, source, type):
-        r = _FileNodeInfo.current_content(self, prev, target, source, type)
-        if not r or force_trace:
-            Trace('current_content(%s, %s, %s): %s\n' % (target, source, type, r))
-            try:
-                Trace('  prev.csig %s\n' % (prev.csig))
-                Trace('  self.csig %s\n' % (self.csig))
-            except AttributeError:
-                pass
-        return r
-    def current_state(self, prev, target, source, type):
-        r = _FileNodeInfo.current_state(self, prev, target, source, type)
-        if not r or force_trace:
-            Trace('current_state(%s, %s, %s): %s\n' % (target, source, type, r))
-        return r
-
-#FileNodeInfo = TraceFileNodeInfo
 
 class FileBuildInfo(SCons.Node.BuildInfoBase):
     def __init__(self, node):
@@ -2106,8 +2042,51 @@ class File(Base):
     #
     #
     #
+    def changed_timestamp(self, target, prev_ni):
+        cur_ni = self.get_ninfo()
+        try:
+            return cur_ni.timestamp > target.get_timestamp()
+        except AttributeError:
+            return None
 
-    def current(self):
+    def changed_content(self, target, prev_ni):
+        cur_ni = self.get_ninfo()
+        try:
+            return cur_ni.csig != prev_ni.csig
+        except AttributeError:
+            return None
+
+    def changed_state(self, target, prev_ni):
+        return (self.state != SCons.Node.up_to_date)
+
+    def changed_since_last_build(self, target, prev_ni, src_sig_type):
+        """Returns True if this file has changed since the last time
+        the specified target was built.
+        """
+        func = {
+            'MD5' : self.changed_content,
+            'content' : self.changed_content,
+            'timestamp' : self.changed_timestamp,
+            'build' : self.changed_state,
+        }
+        if self.has_builder():
+            import SCons.Action
+            if not SCons.Action.execute_actions:
+                if self.changed_state(target, prev_ni):
+                    return 1
+            tgt_sig_type = self.get_build_env().get_tgt_sig_type()
+            if tgt_sig_type == 'build':
+                if self.changed_state(target, prev_ni):
+                    return 1
+                return func[src_sig_type](target, prev_ni)
+            elif tgt_sig_type == 'source':
+                return func[src_sig_type](target, prev_ni)
+            else:
+                return func[tgt_sig_type](target, prev_ni)
+        else:
+            return func[src_sig_type](target, prev_ni)
+
+    def is_up_to_date(self):
         self.binfo = self.get_binfo()
         return self._cur2()
     def _cur2(self):
@@ -2121,8 +2100,8 @@ class File(Base):
             r = self.rfile()
             if r != self:
                 # ...but there is one in a Repository...
-                if self.is_up_to_date(r):
-                    #Trace(' is_up_to_date(%s):' % r)
+                if not self.changed(r):
+                    #Trace(' changed(%s):' % r)
                     # ...and it's even up-to-date...
                     if self._local:
                         # ...and they'd like a local copy.
@@ -2133,8 +2112,8 @@ class File(Base):
             #Trace(' None\n')
             return None
         else:
-            return self.is_up_to_date()
-            #r = self.is_up_to_date()
+            return not self.changed()
+            #r = self.changed()
             #Trace(' self.exists():  %s\n' % r)
             #return r
 

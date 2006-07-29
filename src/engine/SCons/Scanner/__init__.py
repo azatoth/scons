@@ -296,7 +296,7 @@ class Current(Base):
 
     def __init__(self, *args, **kw):
         def current_check(node, env):
-            return not node.has_builder() or node.current()
+            return not node.has_builder() or node.is_up_to_date()
         kw['scan_check'] = current_check
         apply(Base.__init__, (self,) + args, kw)
 

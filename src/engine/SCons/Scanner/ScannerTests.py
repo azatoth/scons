@@ -346,7 +346,7 @@ class CurrentTestCase(unittest.TestCase):
         class MyNode:
             def __init__(self):
                 self.called_has_builder = None
-                self.called_current = None
+                self.called_is_up_to_date = None
                 self.func_called = None
             def rexists(self):
                 return 1
@@ -358,15 +358,15 @@ class CurrentTestCase(unittest.TestCase):
             def has_builder(self):
                 self.called_has_builder = 1
                 return 1
-            def current(self):
-                self.called_current = 1
+            def is_up_to_date(self):
+                self.called_is_up_to_date = 1
                 return None
         class IsCurrent(MyNode):
             def has_builder(self):
                 self.called_has_builder = 1
                 return 1
-            def current(self):
-                self.called_current = 1
+            def is_up_to_date(self):
+                self.called_is_up_to_date = 1
                 return 1
         def func(node, env, path):
             node.func_called = 1
@@ -377,17 +377,17 @@ class CurrentTestCase(unittest.TestCase):
         hnb = HasNoBuilder()
         s(hnb, env, path)
         self.failUnless(hnb.called_has_builder, "did not call has_builder()")
-        self.failUnless(not hnb.called_current, "did call current()")
+        self.failUnless(not hnb.called_is_up_to_date, "did call is_up_to_date()")
         self.failUnless(hnb.func_called, "did not call func()")
         inc = IsNotCurrent()
         s(inc, env, path)
         self.failUnless(inc.called_has_builder, "did not call has_builder()")
-        self.failUnless(inc.called_current, "did not call current()")
+        self.failUnless(inc.called_is_up_to_date, "did not call is_up_to_date()")
         self.failUnless(not inc.func_called, "did call func()")
         ic = IsCurrent()
         s(ic, env, path)
         self.failUnless(ic.called_has_builder, "did not call has_builder()")
-        self.failUnless(ic.called_current, "did not call current()")
+        self.failUnless(ic.called_is_up_to_date, "did not call is_up_to_date()")
         self.failUnless(ic.func_called, "did not call func()")
 
 class ClassicTestCase(unittest.TestCase):

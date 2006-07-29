@@ -251,7 +251,7 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                 if cache_mode == CACHE:
                     t.set_state(SCons.Node.up_to_date)
                 else:
-                    is_up_to_date = (is_up_to_date and t.is_up_to_date())
+                    is_up_to_date = (is_up_to_date and not t.changed())
                 cached_error = cached_error or bi.result
             else:
                 # the node hasn't been built in a SConf context or doesn't

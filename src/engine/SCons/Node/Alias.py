@@ -57,10 +57,7 @@ class AliasNameSpace(UserDict.UserDict):
             return None
 
 class AliasNodeInfo(SCons.Node.NodeInfoBase):
-    current_target = SCons.Node.NodeInfoBase.current_state
-    current_source = SCons.Node.NodeInfoBase.current_state
-    current_timestamp = SCons.Node.NodeInfoBase.current_state
-    current_content = SCons.Node.NodeInfoBase.current_state
+    pass
 
 class AliasBuildInfo(SCons.Node.BuildInfoBase):
     pass
@@ -78,7 +75,7 @@ class Alias(SCons.Node.Node):
         return self.name
 
     really_build = SCons.Node.Node.build
-    current = SCons.Node.Node.children_are_up_to_date
+    is_up_to_date = SCons.Node.Node.children_are_up_to_date
 
     def is_under(self, dir):
         # Make Alias nodes get built regardless of
@@ -99,6 +96,8 @@ class Alias(SCons.Node.Node):
     #
     #
     #
+
+    changed_since_last_build = SCons.Node.Node.state_has_changed
 
     def build(self):
         """A "builder" for aliases."""

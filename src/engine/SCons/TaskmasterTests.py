@@ -137,18 +137,8 @@ class Node:
     def store_bsig(self):
         pass
 
-    def calculator(self):
-        class Calc:
-            def bsig(self, node):
-                return node._bsig_val
-            def current(self, node, sig):
-                return node._current_val
-        return Calc()
-
-    def current(self, calc=None):
-        if calc is None:
-            calc = self.calculator()
-        return calc.current(self, calc.bsig(self))
+    def is_up_to_date(self):
+        return self._current_val
     
     def depends_on(self, nodes):
         for node in nodes:

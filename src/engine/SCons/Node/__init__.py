@@ -137,14 +137,6 @@ class NodeInfoBase:
                 f = field + ': ' + f
             fields.append(f)
         return fields
-    def current(self, prev, target, source, type=None):
-        return None
-    current_target = current
-    current_source = current
-    current_timestamp = current
-    current_content = current
-    def current_state(self, prev, target, source, type=None):
-        return (source.state == SCons.Node.up_to_date)
 
 class BuildInfoBase:
     """
@@ -573,7 +565,7 @@ class Node:
                     else:
                         nodes.append(n)
                 self._add_child(self.implicit, self.implicit_dict, nodes)
-                if implicit_deps_unchanged or self.current():
+                if implicit_deps_unchanged or self.is_up_to_date():
                     return
                 # one of this node's sources has changed,
                 # so we must recalculate the implicit deps:
@@ -887,7 +879,10 @@ class Node:
     def get_state(self):
         return self.state
 
-    def is_up_to_date(self, node=None):
+    def state_has_changed(self, target, prev_ni, src_sig_type):
+        return (self.state != SCons.Node.up_to_date)
+
+    def changed(self, node=None):
         """Returns if the node is up-to-date with respect to stored
         BuildInfo.  The default is to compare it against our own
         previously stored BuildInfo, but the stored BuildInfo from another
@@ -901,7 +896,7 @@ class Node:
         children = self.children()
         if len(then) != len(children):
             if t: Trace(': len(%s) != len(%s)\n' % (len(then), len(children)))
-            return None
+            return 1
         env = self.env
         if not env:
             import SCons.Defaults
@@ -923,39 +918,17 @@ class Node:
             prev_ni = then[i]
             i = i + 1
 
-            cur_ni = child.get_ninfo()
-            if child.has_builder():
-                import SCons.Action
-                if not SCons.Action.execute_actions:
-                    current = cur_ni.current_state(prev_ni, self, child, None)
-                else:
-                    current = 1
-                if current:
-                    tgt_sig_type = child.get_build_env().get_tgt_sig_type()
-                    if tgt_sig_type == 'source':
-                        current = cur_ni.current_source(prev_ni, self, child, src_sig_type)
-                    elif tgt_sig_type == 'build':
-                        current = cur_ni.current_state(prev_ni, self, child, None)
-                        if current:
-                            current = cur_ni.current_source(prev_ni, self, child, src_sig_type)
-                    else:
-                        current = cur_ni.current_target(prev_ni, self, child, tgt_sig_type)
-            else:
-                current = cur_ni.current_source(prev_ni, self, child, src_sig_type)
-            if not current:
-                if t: Trace(': child %s not current\n' % child)
-                if t: Trace('    prev_ni (%s) = %s\n' % (classname(prev_ni), string.join(prev_ni.format(), ' ')))
-                if t: Trace('    cur_ni  (%s) = %s\n' % (classname(cur_ni), string.join(cur_ni.format(), ' ')))
-                return None
+            if child.changed_since_last_build(self, prev_ni, src_sig_type):
+                return 1
         contents = self.get_executor().get_contents()
         import SCons.Util
         if bi.bactsig != SCons.Util.MD5signature(contents):
             if t: Trace(': bactsig != signature\n')
-            return None
+            return 1
         if t: Trace(': up to date\n')
-        return 1
+        return None
 
-    def current(self):
+    def is_up_to_date(self):
         """Default check for whether the Node is current: unknown Node
         subtypes are always out of date, so they will always get built."""
         return None

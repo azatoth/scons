@@ -250,7 +250,7 @@ class Task:
         """
         self.out_of_date = []
         for t in self.targets:
-            if t.disambiguate().current():
+            if t.disambiguate().is_up_to_date():
                 t.set_state(SCons.Node.up_to_date)
             else:
                 self.out_of_date.append(t)

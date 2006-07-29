@@ -35,15 +35,6 @@ class ValueNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig']
     def update(self, node):
         self.csig = node.get_contents()
-    def current(self, prev, target, source, type):
-        try:
-            return prev.csig == self.csig
-        except AttributeError:
-            return None
-    current_target = current
-    current_source = current
-    current_timestamp = current
-    current_content = current
 
 class ValueBuildInfo(SCons.Node.BuildInfoBase):
     pass
@@ -67,7 +58,7 @@ class Value(SCons.Node.Node):
         """A "builder" for Values."""
         pass
 
-    current = SCons.Node.Node.children_are_up_to_date
+    is_up_to_date = SCons.Node.Node.children_are_up_to_date
 
     def is_under(self, dir):
         # Make Value nodes get built regardless of 
@@ -82,6 +73,13 @@ class Value(SCons.Node.Node):
         for kid in self.children(None):
             contents = contents + kid.get_contents()
         return contents
+
+    def changed_since_last_build(self, target, prev_ni, src_sig_type):
+        cur_ni = self.get_ninfo()
+        try:
+            return cur_ni.csig != prev_ni.csig
+        except AttributeError:
+            return None
 
     def get_csig(self, calc=None):
         """Because we're a Python value node and don't have a real
