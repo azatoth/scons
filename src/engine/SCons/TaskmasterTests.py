@@ -137,6 +137,9 @@ class Node:
     def store_bsig(self):
         pass
 
+    def is_pseudo_derived(self):
+        pass
+
     def is_up_to_date(self):
         return self._current_val
     

@@ -368,7 +368,9 @@ class testnode (SCons.Node.Node):
         self.expect_to_be = SCons.Node.executed
 
 class goodnode (testnode):
-    pass
+    def __init__(self):
+        SCons.Node.Node.__init__(self)
+        self.expect_to_be = SCons.Node.up_to_date
 
 class slowgoodnode (goodnode):
     def prepare(self):
@@ -471,8 +473,9 @@ class _SConsTaskTest(unittest.TestCase):
         # mislabelling of results).
 
         for N in testnodes:
-            self.failUnless(N.get_state() in [SCons.Node.no_state, N.expect_to_be],
-                            "node ran but got unexpected result")
+            state = N.get_state()
+            self.failUnless(state in [SCons.Node.no_state, N.expect_to_be],
+                            "Node %s got unexpected result: %s" % (N, state))
 
         self.failUnless(filter(lambda N: N.get_state(), testnodes),
                         "no nodes ran at all.")

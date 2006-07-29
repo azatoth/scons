@@ -44,7 +44,9 @@ expect_stdout = test.wrap_stdout("""\
 Taskmaster: '.': children:
     ['SConstruct', 'file.in', 'file.mid', 'file.out']
     waiting on unstarted children:
-    ['file.mid', 'file.out']
+    ['SConstruct', 'file.in', 'file.mid', 'file.out']
+Taskmaster: 'SConstruct': evaluating SConstruct
+Taskmaster: 'file.in': evaluating file.in
 Taskmaster: 'file.mid': children:
     ['file.in']
     evaluating file.mid
@@ -78,7 +80,9 @@ expect_trace = """\
 Taskmaster: '.': children:
     ['SConstruct', 'file.in', 'file.mid', 'file.out']
     waiting on unstarted children:
-    ['file.mid', 'file.out']
+    ['SConstruct', 'file.in', 'file.mid', 'file.out']
+Taskmaster: 'SConstruct': evaluating SConstruct
+Taskmaster: 'file.in': evaluating file.in
 Taskmaster: 'file.mid': children:
     ['file.in']
     evaluating file.mid

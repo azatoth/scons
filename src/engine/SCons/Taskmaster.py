@@ -250,7 +250,8 @@ class Task:
         """
         self.out_of_date = []
         for t in self.targets:
-            if t.disambiguate().is_up_to_date():
+            t.disambiguate().is_pseudo_derived()
+            if not t.has_builder() or t.is_up_to_date():
                 t.set_state(SCons.Node.up_to_date)
             else:
                 self.out_of_date.append(t)
@@ -427,16 +428,14 @@ class Taskmaster:
                 c.sort()
                 T.write(' children:\n    %s\n   ' % c)
 
-            childinfo = map(lambda N: (N.get_state(),
-                                       N.is_derived() or N.is_pseudo_derived(),
-                                       N), children)
+            childstate = map(lambda N: (N, N.get_state()), children)
 
             # Skip this node if any of its children have failed.  This
             # catches the case where we're descending a top-level target
             # and one of our children failed while trying to be built
             # by a *previous* descent of an earlier top-level target.
-            failed_children = filter(lambda I: I[0] == SCons.Node.failed,
-                                     childinfo)
+            failed_children = filter(lambda I: I[1] == SCons.Node.failed,
+                                     childstate)
             if failed_children:
                 node.set_state(SCons.Node.failed)
                 if S: S.child_failed = S.child_failed + 1
@@ -447,22 +446,18 @@ class Taskmaster:
                 continue
 
             # Detect dependency cycles:
-            pending_nodes = filter(lambda I: I[0] == SCons.Node.pending, childinfo)
+            pending_nodes = filter(lambda I: I[1] == SCons.Node.pending, childstate)
             if pending_nodes:
                 for p in pending_nodes:
-                    cycle = find_cycle([p[2], node])
+                    cycle = find_cycle([p[0], node])
                     if cycle:
                         desc = "Dependency cycle: " + string.join(map(str, cycle), " -> ")
                         if T: T.write(' dependency cycle\n')
                         raise SCons.Errors.UserError, desc
 
-            # Select all of the dependencies that are derived targets
-            # (that is, children who have builders or are side effects).
-            derived_children = filter(lambda I: I[1], childinfo)
-
-            not_started = filter(lambda I: not I[0], derived_children)
+            not_started = filter(lambda I: not I[1], childstate)
             if not_started:
-                not_started = map(lambda I: I[2], not_started)
+                not_started = map(lambda I: I[0], not_started)
 
                 # We're waiting on one more derived targets that have
                 # not yet started building.  Add this node to the
@@ -495,9 +490,9 @@ class Taskmaster:
                     T.write(' waiting on unstarted children:\n    %s\n' % c)
                 continue
 
-            not_built = filter(lambda I: I[0] <= SCons.Node.executing, derived_children)
+            not_built = filter(lambda I: I[1] <= SCons.Node.executing, childstate)
             if not_built:
-                not_built = map(lambda I: I[2], not_built)
+                not_built = map(lambda I: I[0], not_built)
 
                 # We're waiting on one or more derived targets that have
                 # started building but not yet finished.  Add this node
@@ -548,9 +543,11 @@ class Taskmaster:
             return None
 
         try:
-            tlist = node.builder.targets(node)
+            targets_method = node.builder.targets
         except AttributeError:
             tlist = [node]
+        else:
+            tlist = targets_method(node)
 
         task = self.tasker(self, tlist, node is self.current_top, node)
         try:

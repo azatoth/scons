@@ -206,7 +206,7 @@ class SConfBuildTask(SCons.Taskmaster.Task):
         """
         if not isinstance(bi, SConfBuildInfo):
             SCons.Warnings.warn(SConfWarning,
-              "The stored build information has an unexpected class.")
+              "The stored build information has an unexpected class: %s" % bi.__class__)
         else:
             self.display("The original builder output was:\n" +
                          string.replace("  |" + str(bi.string),
@@ -241,26 +241,41 @@ class SConfBuildTask(SCons.Taskmaster.Task):
         #       cached_error  is 1, if the node(s) are up_to_date, but the
         #                           build will fail
         #       cachable      is 0, if some nodes are not in our cache
+        T = 0
         is_up_to_date = 1
         cached_error = 0
         cachable = 1
         from SCons.Debug import Trace
         for t in self.targets:
+            if T: Trace('%s' % (t))
             bi = t.get_stored_info()
             if isinstance(bi, SConfBuildInfo):
+                if T: Trace(': SConfBuildInfo')
                 if cache_mode == CACHE:
                     t.set_state(SCons.Node.up_to_date)
+                    if T: Trace(': set_state(up_to-date)\n')
                 else:
-                    is_up_to_date = (is_up_to_date and not t.changed())
+                    if is_up_to_date:
+                        if T: Trace(': get_state() %s' % t.get_state())
+                        if T: Trace(': changed() %s' % t.changed())
+                    is_up_to_date = (is_up_to_date and
+                                     (t.get_state() == SCons.Node.up_to_date or
+                                      not t.changed()))
+                    if T: Trace(': is_up_to_date %s\n' % is_up_to_date)
                 cached_error = cached_error or bi.result
             else:
+                if T: Trace(': else')
                 # the node hasn't been built in a SConf context or doesn't
                 # exist
                 cachable = 0
-                is_up_to_date = 0
+                is_up_to_date = t.get_state() == SCons.Node.up_to_date
+                if T: Trace(': is_up_to_date %s\n' % is_up_to_date)
         return (is_up_to_date, cached_error, cachable)
 
     def execute(self):
+        if not self.targets[0].has_builder():
+            return
+
         sconf = sconf_global
 
         is_up_to_date, cached_error, cachable = self.collect_node_states()
@@ -297,11 +312,9 @@ class SConfBuildTask(SCons.Taskmaster.Task):
             except SystemExit:
                 exc_value = sys.exc_info()[1]
                 raise SCons.Errors.ExplicitExit(self.targets[0],exc_value.code)
-            except:
+            except Exception, e:
                 for t in self.targets:
                     binfo = t.get_binfo()
-                    #Trace('except: %s: %s\n' % (t, repr(t)))
-                    #Trace('except: %s: binfo = %s\n' % (t, binfo))
                     binfo.__class__ = SConfBuildInfo
                     binfo.set_build_result(1, s.getvalue())
                     # We'd like to do this as follows:
@@ -311,12 +324,10 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                     # regular FileNodeInfo if the target is itself a
                     # regular File.
                     t.dir.sconsign().set_entry(t.name, binfo)
-                raise
+                raise e
             else:
                 for t in self.targets:
                     binfo = t.get_binfo()
-                    #Trace('else:   %s: %s\n' % (t, repr(t)))
-                    #Trace('else:   %s: binfo = %s\n' % (t, binfo))
                     binfo.__class__ = SConfBuildInfo
                     binfo.set_build_result(0, s.getvalue())
                     # We'd like to do this as follows:

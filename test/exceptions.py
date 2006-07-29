@@ -62,7 +62,7 @@ test.run(arguments = "-j2 foo.out", stderr = expected_stderr, status = 2)
 
 
 # Verify that exceptions caused by exit values of builder actions are
-# correectly signalled, for both Serial and Parallel jobs.
+# correctly signalled, for both Serial and Parallel jobs.
 
 test.write('myfail.py', r"""\
 import sys
@@ -104,24 +104,28 @@ test.run(arguments = '.', status = 2, stderr = expected_stderr)
 # In Parallel task mode, we will get all three exceptions.
 
 expected_stderr_list = [
-  expected_stderr,
-  "scons: \*\*\* Source `f2\.in' not found, needed by target `f2'\.  Stop\.\n",
-  string.replace(expected_stderr, 'f1', 'f3')
-  ]
-  
-# Unfortunately, we aren't guaranteed what order we will get the
-# exceptions in...
-orders = [ (1,2,3), (1,3,2), (2,1,3), (2,3,1), (3,1,2), (3,2,1) ]
-otexts = []
-for A,B,C in orders:
-    otexts.append("%s%s%s"%(expected_stderr_list[A-1],
-                            expected_stderr_list[B-1],
-                            expected_stderr_list[C-1]))
-                           
-                      
-expected_stderrs = "(" + string.join(otexts, "|") + ")"
+    "scons: *** [f1] Error 1\n",
+    "scons: *** Source `f2.in' not found, needed by target `f2'.  Stop.\n",
+    "scons: *** [f3] Error 1\n",
+]
 
-test.run(arguments = '-j3 .', status = 2, stderr = expected_stderrs)
+# To get all three exceptions simultaneously, we must execute -j7 to
+# create one thread each for the SConstruct file and f[123] and f[123].in.
+
+test.run(arguments = '-j7 .', status = 2, stderr = None)
+
+missing = []
+for es in expected_stderr_list:
+    if string.find(test.stderr(), es) == -1:
+        missing.append(es)
+
+if missing:
+    sys.stderr.write("Missing the following lines from stderr:\n")
+    for m in missing:
+        sys.stderr.write(m)
+    sys.stderr.write('STDERR ===============================================\n')
+    sys.stderr.write(test.stderr())
+    test.fail_test(1)
 
 
 test.pass_test()

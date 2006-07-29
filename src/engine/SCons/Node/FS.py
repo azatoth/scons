@@ -2030,14 +2030,11 @@ class File(Base):
         elif max_drift == 0:
             old = self.get_stored_info().ninfo
             try:
-                #Trace('1 get_csig(%s): %s\n' % (self, old.csig))
                 return old.csig
             except AttributeError:
                 pass
            
-        r = SCons.Util.MD5signature(self.get_contents())
-        #Trace('2 get_csig(%s): %s\n' % (self, r))
-        return r
+        return SCons.Util.MD5signature(self.get_contents())
 
     #
     #
@@ -2093,29 +2090,29 @@ class File(Base):
         "__cacheable__"
         if self.always_build:
             return None
-        #Trace('_cur2(%s):' % self)
+        T = 0
+        if T: Trace('_cur2(%s):' % self)
         if not self.exists():
-            #Trace(' not self.exists():')
+            if T: Trace(' not self.exists():')
             # The file doesn't exist locally...
             r = self.rfile()
             if r != self:
                 # ...but there is one in a Repository...
                 if not self.changed(r):
-                    #Trace(' changed(%s):' % r)
+                    if T: Trace(' changed(%s):' % r)
                     # ...and it's even up-to-date...
                     if self._local:
                         # ...and they'd like a local copy.
                         LocalCopy(self, r, None)
                         self.store_info(self.get_binfo())
-                    #Trace(' 1\n')
+                    if T: Trace(' 1\n')
                     return 1
-            #Trace(' None\n')
+            if T: Trace(' None\n')
             return None
         else:
-            return not self.changed()
-            #r = self.changed()
-            #Trace(' self.exists():  %s\n' % r)
-            #return r
+            r = self.changed()
+            if T: Trace(' self.exists():  %s\n' % r)
+            return not r
 
     def rfile(self):
         "__cacheable__"
@@ -2153,7 +2150,7 @@ class File(Base):
             pass
 
         cachedir, cachefile = self.cachepath()
-        if os.path.exists(cachefile):
+        if not self.exists() and os.path.exists(cachefile):
             contents = open(cachefile, 'rb').read()
             self.cachedir_csig = SCons.Util.MD5signature(contents)
         else:
