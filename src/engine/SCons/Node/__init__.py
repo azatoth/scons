@@ -882,11 +882,19 @@ class Node:
     def state_has_changed(self, target, prev_ni, src_sig_type):
         return (self.state != SCons.Node.up_to_date)
 
+    def get_env(self):
+        env = self.env
+        if not env:
+            import SCons.Defaults
+            env = SCons.Defaults.DefaultEnvironment()
+        return env
+
     def changed(self, node=None):
-        """Returns if the node is up-to-date with respect to stored
-        BuildInfo.  The default is to compare it against our own
-        previously stored BuildInfo, but the stored BuildInfo from another
-        Node (typically one in a Repository) can be used instead."""
+        """Returns if the node is up-to-date with respect to the BuildInfo
+        stored last time it was built.  The default behavior is to compare
+        it against our own previously stored BuildInfo, but the stored
+        BuildInfo from another Node (typically one in a Repository)
+        can be used instead."""
         t = 0
         if t: Trace('is_up_to_date(%s [%s], %s)' % (self, classname(self), node))
         if node is None:
@@ -897,11 +905,8 @@ class Node:
         if len(then) != len(children):
             if t: Trace(': len(%s) != len(%s)\n' % (len(then), len(children)))
             return 1
-        env = self.env
-        if not env:
-            import SCons.Defaults
-            env = SCons.Defaults.DefaultEnvironment()
-        src_sig_type = env.get_src_sig_type()
+
+        src_sig_type = self.get_env().get_src_sig_type()
 
         # Here's the more efficient way we want to do this next loop:
         #    for child, prev_ni in zip(children, then):
@@ -1065,6 +1070,8 @@ class Node:
         # its string.
         stringify = lambda s, E=self.dir.Entry: str(E(s))
 
+        src_sig_type = self.get_env().get_src_sig_type()
+
         lines = []
 
         removed = filter(lambda x, nk=new_bkids: not x in nk, old_bkids)
@@ -1076,7 +1083,7 @@ class Node:
         for k in new_bkids:
             if not k in old_bkids:
                 lines.append("`%s' is a new dependency\n" % stringify(k))
-            elif osig[k] != nsig[k]:
+            elif k.changed_since_last_build(self, osig[k], src_sig_type):
                 lines.append("`%s' changed\n" % stringify(k))
 
         if len(lines) == 0 and old_bkids != new_bkids:
