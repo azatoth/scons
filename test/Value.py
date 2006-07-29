@@ -33,13 +33,9 @@ import TestCmd
 
 test = TestSCons.TestSCons(match=TestCmd.match_re)
 
-# Run all of the tests with both types of source signature
-# to make sure there's no difference in behavior.
-for source_signature in ['MD5', 'timestamp']:
+python = TestSCons.python
 
-    print "Testing Value node with source signatures:", source_signature
-
-    test.write('SConstruct', """
+SConstruct_content = """
 SourceSignatures(r'%(source_signature)s')
 
 class Custom:
@@ -55,20 +51,27 @@ def create(target, source, env):
 
 env = Environment()
 env['BUILDERS']['B'] = Builder(action = create)
-env['BUILDERS']['S'] = Builder(action = "%(python)s put $SOURCES into $TARGET")
+env['BUILDERS']['S'] = Builder(action = r"%(python)s put.py $SOURCES into $TARGET")
 env.B('f1.out', Value(P))
 env.B('f2.out', env.Value(L))
 env.B('f3.out', Value(C))
 env.S('f4.out', Value(L))
-""" % {'source_signature':source_signature,
-       'python':TestSCons.python})
+"""
 
-    test.write('put', """
+test.write('put.py', """\
 import os
 import string
 import sys
 open(sys.argv[-1],'wb').write(string.join(sys.argv[1:-2]))
 """)
+
+# Run all of the tests with both types of source signature
+# to make sure there's no difference in behavior.
+for source_signature in ['MD5', 'timestamp']:
+
+    print "Testing Value node with source signatures:", source_signature
+
+    test.write('SConstruct', SConstruct_content % locals())
 
     test.run(arguments='-c')
     test.run()
