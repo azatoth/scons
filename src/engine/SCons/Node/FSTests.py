@@ -35,6 +35,7 @@ import stat
 
 import SCons.Errors
 import SCons.Node.FS
+import SCons.Util
 import SCons.Warnings
 
 built_it = None
@@ -2450,13 +2451,13 @@ class CacheDirTestCase(unittest.TestCase):
         self.save_CachePush = SCons.Node.FS.CachePush
         self.save_CacheRetrieve = SCons.Node.FS.CacheRetrieve
         self.save_CacheRetrieveSilent = SCons.Node.FS.CacheRetrieveSilent
-        self.save_collect = SCons.Sig.MD5.collect
+        self.save_collect = SCons.Util.MD5collect
 
     def tearDown(self):
         SCons.Node.FS.CachePush = self.save_CachePush
         SCons.Node.FS.CacheRetrieve = self.save_CacheRetrieve
         SCons.Node.FS.CacheRetrieveSilent = self.save_CacheRetrieveSilent
-        SCons.Sig.MD5.collect = self.save_collect
+        SCons.Util.MD5collect = self.save_collect
 
     def test_initialization(self):
         """Test how CacheDir() initializes an FS object"""
@@ -2570,7 +2571,7 @@ class CacheDirTestCase(unittest.TestCase):
         def my_collect(list):
             return list[0]
 
-        SCons.Sig.MD5.collect = my_collect
+        SCons.Util.MD5collect = my_collect
 
         f5 = fs.File("cd.f5")
         f5.binfo = f5.BuildInfo(f5)

@@ -695,9 +695,29 @@ bling
             'bling\n',
         ], lines
 
+class MD5TestCase(unittest.TestCase):
+
+    def test_collect(self):
+        """Test collecting a list of signatures into a new signature value
+        """
+        s = map(MD5signature, ('111', '222', '333'))
+        
+        assert '698d51a19d8a121ce581499d7b701668' == MD5collect(s[0:1])
+        assert '8980c988edc2c78cc43ccb718c06efd5' == MD5collect(s[0:2])
+        assert '53fd88c84ff8a285eb6e0a687e55b8c7' == MD5collect(s)
+
+    def test_MD5signature(self):
+        """Test generating a signature"""
+        s = MD5signature('111')
+        assert '698d51a19d8a121ce581499d7b701668' == s, s
+
+        s = MD5signature('222')
+        assert 'bcbe3365e6ac95ea2c0343a2395834dd' == s, s
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     tclasses = [ dictifyTestCase,
+                 MD5TestCase,
                  UtilTestCase,
                ]
     for tclass in tclasses:

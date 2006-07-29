@@ -677,8 +677,7 @@ class Node:
 
         if self.has_builder():
             binfo.bact = str(executor)
-            import SCons.Sig.MD5
-            binfo.bactsig = SCons.Sig.MD5.signature(executor)
+            binfo.bactsig = SCons.Util.MD5signature(executor.get_contents())
 
         binfo.bsources = sources
         binfo.bdepends = depends
@@ -702,8 +701,7 @@ class Node:
             return self.ninfo.csig
         except AttributeError:
             ninfo = self.get_ninfo()
-            import SCons.Sig.MD5
-            return SCons.Sig.MD5.signature(self)
+            return SCons.Util.MD5signature(self.get_contents())
 
     def get_cachedir_csig(self):
         return self.get_csig()
@@ -949,9 +947,9 @@ class Node:
                 if t: Trace('    prev_ni (%s) = %s\n' % (classname(prev_ni), string.join(prev_ni.format(), ' ')))
                 if t: Trace('    cur_ni  (%s) = %s\n' % (classname(cur_ni), string.join(cur_ni.format(), ' ')))
                 return None
-        executor = self.get_executor()
-        import SCons.Sig.MD5
-        if bi.bactsig != SCons.Sig.MD5.signature(executor):
+        contents = self.get_executor().get_contents()
+        import SCons.Util
+        if bi.bactsig != SCons.Util.MD5signature(contents):
             if t: Trace(': bactsig != signature\n')
             return None
         if t: Trace(': up to date\n')

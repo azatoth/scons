@@ -48,7 +48,6 @@ import SCons.Action
 from SCons.Debug import logInstanceCreation
 import SCons.Errors
 import SCons.Node
-import SCons.Sig.MD5
 import SCons.Subst
 import SCons.Util
 import SCons.Warnings
@@ -2100,7 +2099,7 @@ class File(Base):
             except AttributeError:
                 pass
            
-        r = SCons.Sig.MD5.signature(self)
+        r = SCons.Util.MD5signature(self.get_contents())
         #Trace('2 get_csig(%s): %s\n' % (self, r))
         return r
 
@@ -2177,7 +2176,7 @@ class File(Base):
         cachedir, cachefile = self.cachepath()
         if os.path.exists(cachefile):
             contents = open(cachefile, 'rb').read()
-            self.cachedir_csig = SCons.Sig.MD5.new_md5(contents).hexdigest()
+            self.cachedir_csig = SCons.Util.MD5signature(contents)
         else:
             self.cachedir_csig = self.get_csig()
         return self.cachedir_csig
@@ -2194,9 +2193,9 @@ class File(Base):
         children =  self.children()
         sigs = map(lambda n: n.get_cachedir_csig(), children)
         executor = self.get_executor()
-        sigs.append(SCons.Sig.MD5.signature(executor))
+        sigs.append(SCons.Util.MD5signature(executor.get_contents()))
         sigs.append(self.path)
-        self.cachesig = SCons.Sig.MD5.collect(sigs)
+        self.cachesig = SCons.Util.MD5collect(sigs)
         return self.cachesig
 
     def cachepath(self):

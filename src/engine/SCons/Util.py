@@ -991,3 +991,55 @@ class LogicalLines:
                 break
             result.append(line)
         return result
+
+
+
+import imp
+file, name, desc = imp.find_module('md5')
+try:
+    md5 = imp.load_module('md5', file, name, desc)
+finally:
+    if file:
+        file.close()
+
+try:
+    md5.new('').hexdigest
+except AttributeError:
+    # The md5 objects created by the module have no native hexdigest()
+    # method (*cough* 1.5.2 *cough*) so provide an equivalent.
+    class new_md5:
+        def __init__(self, s):
+            self.m = md5.new(str(s))
+        #def copy(self):
+        #    return self.m.copy()
+        def digest(self):
+            return self.m.digest()
+        def hexdigest(self):
+            h = string.hexdigits
+            r = ''
+            for c in self.m.digest():
+                i = ord(c)
+                r = r + h[(i >> 4) & 0xF] + h[i & 0xF]
+            return r
+        def update(self, s):
+            return self.m.update(s)
+
+else:
+    new_md5 = lambda s: md5.new(str(s))
+
+def MD5signature(string):
+    """Generate a signature for an object
+    """
+    return new_md5(string).hexdigest()
+
+def MD5collect(signatures):
+    """
+    Collects a list of signatures into an aggregate signature.
+
+    signatures - a list of signatures
+    returns - the aggregate signature
+    """
+    if len(signatures) == 1:
+        return signatures[0]
+    else:
+        return MD5signature(string.join(signatures, ', '))

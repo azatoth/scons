@@ -348,7 +348,6 @@ arguments = {
                           "SCons.Platform",
                           "SCons.Scanner",
                           "SCons.Script",
-                          "SCons.Sig",
                           "SCons.Tool"],
     'package_dir'      : {'' : 'engine'},
     'data_files'       : [('man/man1', ["scons.1", "sconsign.1"])],

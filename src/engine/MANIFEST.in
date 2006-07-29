@@ -48,9 +48,6 @@ SCons/SConsign.py
 SCons/Script/Main.py
 SCons/Script/SConscript.py
 SCons/Script/__init__.py
-SCons/Sig/__init__.py
-SCons/Sig/MD5.py
-SCons/Sig/TimeStamp.py
 SCons/Subst.py
 SCons/Taskmaster.py
 SCons/Tool/__init__.py

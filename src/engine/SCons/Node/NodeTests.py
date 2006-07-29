@@ -995,13 +995,9 @@ class NodeTestCase(unittest.TestCase):
             def current(self, node, sig):
                 return None
 
-        import SCons.Sig
-
-        save_default_calc = SCons.Sig.default_calc
         save_implicit_cache = SCons.Node.implicit_cache
         save_implicit_deps_changed = SCons.Node.implicit_deps_changed
         save_implicit_deps_unchanged = SCons.Node.implicit_deps_unchanged
-        SCons.Sig.default_calc = NotCurrent()
         SCons.Node.implicit_cache = 1
         SCons.Node.implicit_deps_changed = None
         SCons.Node.implicit_deps_unchanged = None
@@ -1016,7 +1012,6 @@ class NodeTestCase(unittest.TestCase):
             assert sn.children() == [], sn.children()
 
         finally:
-            SCons.Sig.default_calc = save_default_calc
             SCons.Node.implicit_cache = save_implicit_cache
             SCons.Node.implicit_deps_changed = save_implicit_deps_changed
             SCons.Node.implicit_deps_unchanged = save_implicit_deps_unchanged

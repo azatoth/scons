@@ -31,8 +31,8 @@ other modules:
 
     get_contents()
         Fetches the "contents" of an Action for signature calculation.
-        This is what the Sig/*.py subsystem uses to decide if a target
-        needs to be rebuilt because its action changed.
+        This is what gets MD5 checksumm'ed to decide if a target needs
+        to be rebuilt because its action changed.
 
     genstring()
         Returns a string representation of the Action *without*
