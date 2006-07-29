@@ -209,6 +209,14 @@ def default_mapper(entry, name):
         val = None
     return str(val)
 
+def map_action(entry, name):
+    try:
+        bact = entry.bact
+        bactsig = entry.bactsig
+    except AttributeError:
+        return None
+    return '%s [%s]' % (bactsig, bact)
+
 def map_timestamp(entry, name):
     try:
         timestamp = entry.timestamp
@@ -233,6 +241,7 @@ def map_bkids(entry, name):
     return string.join(result, "\n        ")
 
 map_field = {
+    'action'    : map_action,
     'timestamp' : map_timestamp,
     'bkids'     : map_bkids,
 }
@@ -262,7 +271,7 @@ def nodeinfo_raw(name, ninfo, prefix=""):
         keys.sort()
     l = []
     for k in keys:
-        l.append('%s: %s' % (repr(k), repr(d[k])))
+        l.append('%s: %s' % (repr(k), repr(d.get(k))))
     return name + ': {' + string.join(l, ', ') + '}'
 
 def nodeinfo_cooked(name, ninfo, prefix=""):
@@ -285,6 +294,12 @@ def printfield(name, entry, prefix=""):
         if Verbose:
             print "    implicit:"
         print "        " + outlist
+    outact = field("action", entry, 0)
+    if outact:
+        if Verbose:
+            print "    action: " + outact
+        else:
+            print "        " + outact
 
 def printentries(entries):
     if Print_Entries:
@@ -379,6 +394,7 @@ import getopt
 helpstr = """\
 Usage: sconsign [OPTIONS] FILE [...]
 Options:
+  -a, --act, --action         Print build action information.
   -c, --csig                  Print content signature information.
   -d DIR, --dir=DIR           Print only info about DIR.
   -e ENTRY, --entry=ENTRY     Print only info about ENTRY.
@@ -392,15 +408,18 @@ Options:
   -v, --verbose               Verbose, describe each field.
 """
 
-opts, args = getopt.getopt(sys.argv[1:], "bcd:e:f:hirstv",
-                            ['csig', 'dir=', 'entry=',
+opts, args = getopt.getopt(sys.argv[1:], "abcd:e:f:hirstv",
+                            ['act', 'action',
+                             'csig', 'dir=', 'entry=',
                              'format=', 'help', 'implicit',
                              'raw', 'readable',
                              'size', 'timestamp', 'verbose'])
 
 
 for o, a in opts:
-    if o in ('-c', '--csig'):
+    if o in ('-a', '--act', '--action'):
+        Print_Flags['action'] = 1
+    elif o in ('-c', '--csig'):
         Print_Flags['csig'] = 1
     elif o in ('-d', '--dir'):
         Print_Directories.append(a)
