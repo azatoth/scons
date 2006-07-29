@@ -72,9 +72,19 @@ class Node:
             cache_text.append(self.name + " retrieved")
         return self.cached
 
+    def make_ready(self):
+        pass
+
+    def prepare(self):
+        self.prepared = 1
+
     def build(self):
         global built_text
         built_text = self.name + " built"
+
+    def built(self):
+        global built_text
+        built_text = built_text + " really"
 
     def has_builder(self):
         return not self.builder is None
@@ -85,16 +95,9 @@ class Node:
     def alter_targets(self):
         return self.alttargets, None
 
-    def built(self):
-        global built_text
-        built_text = built_text + " really"
-
     def visited(self):
         global visited_nodes
         visited_nodes.append(self.name)
-
-    def prepare(self):
-        self.prepared = 1
 
     def children(self):
         if not self.scanned:

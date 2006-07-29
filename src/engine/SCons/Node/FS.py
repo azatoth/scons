@@ -1338,11 +1338,22 @@ class Dir(Base):
         self.clear()
         return scanner(self, env, path)
 
+    #
+    # Taskmaster interface subsystem
+    #
+
+    def prepare(self):
+        pass
+
     def build(self, **kw):
         """A null "builder" for directories."""
         global MkdirBuilder
         if not self.builder is MkdirBuilder:
             apply(SCons.Node.Node.build, [self,], kw)
+
+    #
+    #
+    #
 
     def _create(self):
         """Create this directory, silently and without worrying about
@@ -1391,9 +1402,6 @@ class Dir(Base):
         """Return aggregate contents of all our children."""
         contents = map(lambda n: n.get_contents(), self.children())
         return  string.join(contents, '')
-
-    def prepare(self):
-        pass
 
     def do_duplicate(self, src):
         pass
@@ -1857,6 +1865,21 @@ class File(Base):
         if self.fs.CachePath and self.fs.cache_force and self.exists():
             CachePush(self, None, None)
 
+    def find_src_builder(self):
+        if self.rexists():
+            return None
+        scb = self.dir.src_builder()
+        if scb is _null:
+            if diskcheck_sccs(self.dir, self.name):
+                scb = get_DefaultSCCSBuilder()
+            elif diskcheck_rcs(self.dir, self.name):
+                scb = get_DefaultRCSBuilder()
+            else:
+                scb = None
+        if scb is not None:
+            self.builder_set(scb)
+        return scb
+
     def has_src_builder(self):
         """Return whether this Node has a source builder or not.
 
@@ -1871,20 +1894,7 @@ class File(Base):
         try:
             scb = self.sbuilder
         except AttributeError:
-            if self.rexists():
-                scb = None
-            else:
-                scb = self.dir.src_builder()
-                if scb is _null:
-                    if diskcheck_sccs(self.dir, self.name):
-                        scb = get_DefaultSCCSBuilder()
-                    elif diskcheck_rcs(self.dir, self.name):
-                        scb = get_DefaultRCSBuilder()
-                    else:
-                        scb = None
-                if scb is not None:
-                    self.builder_set(scb)
-            self.sbuilder = scb
+            scb = self.sbuilder = self.find_src_builder()
         return not scb is None
 
     def alter_targets(self):
@@ -1901,7 +1911,15 @@ class File(Base):
     def _rmv_existing(self):
         '__cache_reset__'
         Unlink(self, [], None)
-        
+
+    #
+    # Taskmaster interface subsystem
+    #
+
+    def make_ready(self):
+        self.disambiguate()
+        self.has_src_builder()
+
     def prepare(self):
         """Prepare for this file to be created."""
         SCons.Node.Node.prepare(self)
@@ -1916,6 +1934,10 @@ class File(Base):
                 except SCons.Errors.StopError, drive:
                     desc = "No drive `%s' for target `%s'." % (drive, self)
                     raise SCons.Errors.StopError, desc
+
+    #
+    #
+    #
 
     def remove(self):
         """Remove this file."""
@@ -2084,10 +2106,6 @@ class File(Base):
             return func[src_sig_type](target, prev_ni)
 
     def is_up_to_date(self):
-        self.binfo = self.get_binfo()
-        return self._cur2()
-    def _cur2(self):
-        "__cacheable__"
         if self.always_build:
             return None
         T = 0

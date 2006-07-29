@@ -88,8 +88,13 @@ class Action:
         return 0
     def show(self, string):
         pass
+    def get_contents(self, target, source, env):
+        return ""
+    def genstring(self, target, source, env):
+        return ""
     def strfunction(self, targets, sources, env):
         return ""
+
 class Builder:
     def __init__(self, factory, action=Action()):
         self.factory = factory

@@ -292,12 +292,58 @@ class Node:
         """
         return 0
 
+    #
+    # Taskmaster interface subsystem
+    #
+
+    def make_ready(self):
+        """Get a Node ready for evaluation.
+
+        This is called before the Taskmaster decides if the Node is
+        up-to-date or not.  Overriding this method allows for a Node
+        subclass to be disambiguated if necessary, or for an implicit
+        source builder to be attached.
+        """
+        pass
+
+    def prepare(self):
+        """Prepare for this Node to be built.
+
+        This is called after the Taskmaster has decided that the Node
+        is out-of-date and must be rebuilt, but before actually calling
+        the method to build the Node.
+
+        This default implemenation checks that all children either exist
+        or are derived, and initializes the BuildInfo structure that
+        will hold the information about how this node is, uh, built.
+
+        Overriding this method allows for for a Node subclass to remove
+        the underlying file from the file system.  Note that subclass
+        methods should call this base class method to get the child
+        check and the BuildInfo structure.
+        """
+        l = self.depends
+        if not self.implicit is None:
+            l = l + self.implicit
+        missing_sources = self.get_executor().get_missing_sources() \
+                          + filter(lambda c: c.missing(), l)
+        if missing_sources:
+            desc = "Source `%s' not found, needed by target `%s'." % (missing_sources[0], self)
+            raise SCons.Errors.StopError, desc
+
+        self.binfo = self.get_binfo()
+
     def build(self, **kw):
         """Actually build the node.
 
+        This is called by the Taskmaster after it's decided that the
+        Node is out-of-date and must be rebuilt, and after the prepare()
+        method has gotten everything, uh, prepared.
+
         This method is called from multiple threads in a parallel build,
-        so only do thread safe stuff here. Do thread unsafe stuff in
-        built().
+        so only do thread safe stuff here. Do thread unsafe stuff
+        in built().
+
         """
         def exitstatfunc(stat, node=self):
             if stat:
@@ -340,6 +386,10 @@ class Node:
 
     def add_to_waiting_s_e(self, node):
         self.waiting_s_e[node] = 1
+
+    #
+    #
+    #
 
     def add_to_waiting_parents(self, node):
         self.waiting_parents[node] = 1
@@ -396,8 +446,7 @@ class Node:
         except AttributeError:
             # There was no explicit builder for this Node, so initialize
             # the self.builder attribute to None now.
-            self.builder = None
-            b = self.builder
+            b = self.builder = None
         return not b is None
 
     def set_explicit(self, is_explicit):
@@ -744,20 +793,6 @@ class Node:
                not self.is_pseudo_derived() and \
                not self.linked and \
                not self.rexists()
-    
-    def prepare(self):
-        """Prepare for this Node to be created.
-        The default implemenation checks that all children either exist
-        or are derived.
-        """
-        l = self.depends
-        if not self.implicit is None:
-            l = l + self.implicit
-        missing_sources = self.get_executor().get_missing_sources() \
-                          + filter(lambda c: c.missing(), l)
-        if missing_sources:
-            desc = "Source `%s' not found, needed by target `%s'." % (missing_sources[0], self)
-            raise SCons.Errors.StopError, desc
 
     def remove(self):
         """Remove this Node:  no-op by default."""
