@@ -2047,14 +2047,14 @@ class File(Base):
         try:
             return cur_ni.timestamp > target.get_timestamp()
         except AttributeError:
-            return None
+            return 1
 
     def changed_content(self, target, prev_ni):
         cur_ni = self.get_ninfo()
         try:
             return cur_ni.csig != prev_ni.csig
         except AttributeError:
-            return None
+            return 1
 
     def changed_state(self, target, prev_ni):
         return (self.state != SCons.Node.up_to_date)
