@@ -112,6 +112,8 @@ test.must_not_exist(test.workpath('bar.out'))
 test.must_not_exist(test.workpath('blat.out'))
 test.must_not_exist(test.workpath('log.txt'))
 
+test.run(arguments = "-j 4 .")
+
 build_lines =  [
     'build(["bar.out"], ["bar.in"])', 
     'build(["blat.out"], ["blat.in"])', 
@@ -121,10 +123,17 @@ build_lines =  [
     'build(["%s"], ["%s"])' % (os.path.join('subdir', 'out.out'),
                            os.path.join('subdir', 'out.txt')),
 ]
-test.run(arguments = "-j 4 .")
 output = test.stdout()
+missing = []
 for line in build_lines:
-    test.fail_test(string.find(output, line) == -1)
+    if string.find(output, line) == -1:
+        missing.append(line)
+if missing:
+    print "Missing the following lines from STDOUT:"
+    print string.join(missing, '\n')
+    print "STDOUT ============================================================"
+    print test.stdout(),
+    test.fail_test()
 
 log_lines = [
     'bar.in -> bar.out',
@@ -132,8 +141,16 @@ log_lines = [
     'foo.in -> foo.out',
 ]
 log = test.read('log.txt')
+missing = []
 for line in log_lines:
-    test.fail_test(string.find(log, line) == -1)
+    if string.find(log, line) == -1:
+        missing.append(line)
+if missing:
+    print "Missing the following lines from log.txt:"
+    print string.join(missing, '\n')
+    print "log.txt ==========================================================="
+    print log,
+    test.fail_test()
 
 test.write('SConstruct', 
 """
