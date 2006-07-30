@@ -492,14 +492,6 @@ class Node:
         """
         return self.has_builder() or self.side_effect
 
-    def is_pseudo_derived(self):
-        """
-        Returns true iff this node is built, but should use a source path
-        when duplicate=0 and should contribute a content signature (i.e.
-        source signature) when used as a source for other derived files.
-        """
-        return 0
-
     def alter_targets(self):
         """Return a list of alternate targets for this Node.
         """
@@ -793,7 +785,6 @@ class Node:
     def missing(self):
         """__cacheable__"""
         return not self.is_derived() and \
-               not self.is_pseudo_derived() and \
                not self.linked and \
                not self.rexists()
 

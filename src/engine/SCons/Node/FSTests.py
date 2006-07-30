@@ -1683,15 +1683,11 @@ class DirTestCase(_tempdirTestCase):
 
         derived_f = src0.File('derived-f')
         derived_f.is_derived = return_true
-        pseudo_f = src0.File('pseudo-f')
-        pseudo_f.is_pseudo_derived = return_true
         exists_f = src0.File('exists-f')
         exists_f.exists = return_true
 
         derived_e = src0.Entry('derived-e')
         derived_e.is_derived = return_true
-        pseudo_e = src0.Entry('pseudo-e')
-        pseudo_e.is_pseudo_derived = return_true
         exists_e = src0.Entry('exists-e')
         exists_e.exists = return_true
 
@@ -1706,8 +1702,6 @@ class DirTestCase(_tempdirTestCase):
 
         n = src0.srcdir_find_file('derived-f')
         check(n, ['src0/derived-f', 'src0'])
-        n = src0.srcdir_find_file('pseudo-f')
-        check(n, ['src0/pseudo-f', 'src0'])
         n = src0.srcdir_find_file('exists-f')
         check(n, ['src0/exists-f', 'src0'])
         n = src0.srcdir_find_file('on-disk-f1')
@@ -1715,8 +1709,6 @@ class DirTestCase(_tempdirTestCase):
 
         n = src0.srcdir_find_file('derived-e')
         check(n, ['src0/derived-e', 'src0'])
-        n = src0.srcdir_find_file('pseudo-e')
-        check(n, ['src0/pseudo-e', 'src0'])
         n = src0.srcdir_find_file('exists-e')
         check(n, ['src0/exists-e', 'src0'])
         n = src0.srcdir_find_file('on-disk-e1')
@@ -1728,8 +1720,6 @@ class DirTestCase(_tempdirTestCase):
 
         n = bld0.srcdir_find_file('derived-f')
         check(n, ['src0/derived-f', 'bld0'])
-        n = bld0.srcdir_find_file('pseudo-f')
-        check(n, ['src0/pseudo-f', 'bld0'])
         n = bld0.srcdir_find_file('exists-f')
         check(n, ['src0/exists-f', 'bld0'])
         n = bld0.srcdir_find_file('on-disk-f2')
@@ -1737,8 +1727,6 @@ class DirTestCase(_tempdirTestCase):
 
         n = bld0.srcdir_find_file('derived-e')
         check(n, ['src0/derived-e', 'bld0'])
-        n = bld0.srcdir_find_file('pseudo-e')
-        check(n, ['src0/pseudo-e', 'bld0'])
         n = bld0.srcdir_find_file('exists-e')
         check(n, ['src0/exists-e', 'bld0'])
         n = bld0.srcdir_find_file('on-disk-e2')
@@ -1756,15 +1744,11 @@ class DirTestCase(_tempdirTestCase):
 
         derived_f = src1.File('derived-f')
         derived_f.is_derived = return_true
-        pseudo_f = src1.File('pseudo-f')
-        pseudo_f.is_pseudo_derived = return_true
         exists_f = src1.File('exists-f')
         exists_f.exists = return_true
 
         derived_e = src1.Entry('derived-e')
         derived_e.is_derived = return_true
-        pseudo_e = src1.Entry('pseudo-e')
-        pseudo_e.is_pseudo_derived = return_true
         exists_e = src1.Entry('exists-e')
         exists_e.exists = return_true
 
@@ -1774,8 +1758,6 @@ class DirTestCase(_tempdirTestCase):
 
         n = src1.srcdir_find_file('derived-f')
         check(n, ['src1/derived-f', 'src1'])
-        n = src1.srcdir_find_file('pseudo-f')
-        check(n, ['src1/pseudo-f', 'src1'])
         n = src1.srcdir_find_file('exists-f')
         check(n, ['src1/exists-f', 'src1'])
         n = src1.srcdir_find_file('on-disk-f1')
@@ -1783,8 +1765,6 @@ class DirTestCase(_tempdirTestCase):
 
         n = src1.srcdir_find_file('derived-e')
         check(n, ['src1/derived-e', 'src1'])
-        n = src1.srcdir_find_file('pseudo-e')
-        check(n, ['src1/pseudo-e', 'src1'])
         n = src1.srcdir_find_file('exists-e')
         check(n, ['src1/exists-e', 'src1'])
         n = src1.srcdir_find_file('on-disk-e1')
@@ -1796,8 +1776,6 @@ class DirTestCase(_tempdirTestCase):
 
         n = bld1.srcdir_find_file('derived-f')
         check(n, ['bld1/derived-f', 'src1'])
-        n = bld1.srcdir_find_file('pseudo-f')
-        check(n, ['bld1/pseudo-f', 'src1'])
         n = bld1.srcdir_find_file('exists-f')
         check(n, ['bld1/exists-f', 'src1'])
         n = bld1.srcdir_find_file('on-disk-f2')
@@ -1805,8 +1783,6 @@ class DirTestCase(_tempdirTestCase):
 
         n = bld1.srcdir_find_file('derived-e')
         check(n, ['bld1/derived-e', 'src1'])
-        n = bld1.srcdir_find_file('pseudo-e')
-        check(n, ['bld1/pseudo-e', 'src1'])
         n = bld1.srcdir_find_file('exists-e')
         check(n, ['bld1/exists-e', 'src1'])
         n = bld1.srcdir_find_file('on-disk-e2')

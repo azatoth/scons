@@ -1520,7 +1520,7 @@ class Dir(Base):
         """__cacheable__"""
         def func(node):
             if (isinstance(node, File) or isinstance(node, Entry)) and \
-               (node.is_derived() or node.is_pseudo_derived() or node.exists()):
+               (node.is_derived() or node.exists()):
                     return node
             return None
 
@@ -1906,10 +1906,6 @@ class File(Base):
         if self.is_derived():
             return [], None
         return self.fs.build_dir_target_climb(self, self.dir, [self.name])
-
-    def is_pseudo_derived(self):
-        "__cacheable__"
-        return self.has_src_builder()
 
     def _rmv_existing(self):
         '__cache_reset__'
