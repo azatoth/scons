@@ -1591,6 +1591,8 @@ class Base(SubstitutionEnvironment):
         type = self.subst(type)
         if not type in ['MD5', 'timestamp']:
             raise UserError, "Unknown source signature type '%s'" % type
+        if type == 'MD5' and not SCons.Util.md5:
+            raise UserError, "MD5 signatures are not available in this version of Python."
         self.src_sig_type = type
 
     def Split(self, arg):
@@ -1615,6 +1617,8 @@ class Base(SubstitutionEnvironment):
         type = self.subst(type)
         if not type in ['build', 'content', 'MD5', 'timestamp', 'source']:
             raise SCons.Errors.UserError, "Unknown target signature type '%s'"%type
+        if type in ['MD5', 'content'] and not SCons.Util.md5:
+            raise UserError, "MD5 signatures are not available in this version of Python."
         self.tgt_sig_type = type
 
     def Value(self, value):

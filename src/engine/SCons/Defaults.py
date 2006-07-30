@@ -62,8 +62,12 @@ _default_env = None
 def DefaultEnvironment(*args, **kw):
     global _default_env
     if not _default_env:
+        import SCons.Util
         _default_env = apply(SCons.Environment.Environment, args, kw)
-        _default_env.src_sig_type = 'MD5'
+        if SCons.Util.md5:
+            _default_env.src_sig_type = 'MD5'
+        else:
+            _default_env.src_sig_type = 'timestamp'
         _default_env.tgt_sig_type = 'source'
     return _default_env
 

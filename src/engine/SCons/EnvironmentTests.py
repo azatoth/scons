@@ -2879,6 +2879,8 @@ def generate(env):
 
     def test_SourceSignatures(type):
         """Test the SourceSignatures() method"""
+        import SCons.Errors
+
         env = type.TestEnvironment(M = 'MD5', T = 'timestamp')
 
         exc_caught = None
@@ -2900,6 +2902,19 @@ def generate(env):
         env.SourceSignatures('$T')
         assert env.src_sig_type == 'timestamp', env.src_sig_type
 
+        try:
+            import SCons.Util
+            save_md5 = SCons.Util.md5
+            SCons.Util.md5 = None
+            try:
+                env.SourceSignatures('MD5')
+            except SCons.Errors.UserError:
+                pass
+            else:
+                self.fail('Did not catch expected UserError')
+        finally:
+            SCons.Util.md5 = save_md5
+
     def test_Split(self):
         """Test the Split() method"""
         env = self.TestEnvironment(FOO='fff', BAR='bbb')
@@ -2918,6 +2933,8 @@ def generate(env):
 
     def test_TargetSignatures(type):
         """Test the TargetSignatures() method"""
+        import SCons.Errors
+
         env = type.TestEnvironment(B = 'build', C = 'content')
 
         exc_caught = None
@@ -2945,6 +2962,25 @@ def generate(env):
 
         env.TargetSignatures('timestamp')
         assert env.tgt_sig_type == 'timestamp', env.tgt_sig_type
+
+        try:
+            import SCons.Util
+            save_md5 = SCons.Util.md5
+            SCons.Util.md5 = None
+            try:
+                env.TargetSignatures('MD5')
+            except SCons.Errors.UserError:
+                pass
+            else:
+                self.fail('Did not catch expected UserError')
+            try:
+                env.TargetSignatures('content')
+            except SCons.Errors.UserError:
+                pass
+            else:
+                self.fail('Did not catch expected UserError')
+        finally:
+            SCons.Util.md5 = save_md5
 
     def test_Value(self):
         """Test creating a Value() object
