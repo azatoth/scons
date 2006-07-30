@@ -117,11 +117,7 @@ class Base:
     methods for fetching and storing the individual bits of information
     that make up signature entry.
     """
-    def __init__(self, module=None):
-        """
-        module - the signature module being used
-        """
-
+    def __init__(self):
         self.entries = {}
         self.dirty = 0
 
@@ -147,8 +143,8 @@ class DB(Base):
     from a global .sconsign.db* file--the actual file suffix is
     determined by the specified database module.
     """
-    def __init__(self, dir, module=None):
-        Base.__init__(self, module)
+    def __init__(self, dir):
+        Base.__init__(self)
 
         self.dir = dir
 
@@ -211,12 +207,11 @@ class DB(Base):
                 syncmethod()
 
 class Dir(Base):
-    def __init__(self, fp=None, module=None):
+    def __init__(self, fp=None):
         """
         fp - file pointer to read entries from
-        module - the signature module being used
         """
-        Base.__init__(self, module)
+        Base.__init__(self)
 
         if fp:
             self.entries = cPickle.load(fp)
@@ -228,10 +223,9 @@ class DirFile(Dir):
     """
     Encapsulates reading and writing a per-directory .sconsign file.
     """
-    def __init__(self, dir, module=None):
+    def __init__(self, dir):
         """
         dir - the directory for the file
-        module - the signature module being used
         """
 
         self.dir = dir
@@ -243,7 +237,7 @@ class DirFile(Dir):
             fp = None
 
         try:
-            Dir.__init__(self, fp, module)
+            Dir.__init__(self, fp)
         except KeyboardInterrupt:
             raise
         except:

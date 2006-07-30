@@ -40,13 +40,6 @@ class BuildInfo:
     def convert_from_sconsign(self, dir, name):
         self.c_from_s = 1
 
-class DummyModule:
-    def to_string(self, sig):
-        return str(sig)
-
-    def from_string(self, sig):
-        return int(sig)
-
 class FS:
     def __init__(self, top):
         self.Top = top
@@ -102,7 +95,7 @@ class BaseTestCase(SConsignTestCase):
         fff = BuildInfo('fff')
         fff.arg = 'fff arg'
 
-        f = SCons.SConsign.Base(DummyModule())
+        f = SCons.SConsign.Base()
         f.set_entry('ddd', ddd)
         f.set_entry('eee', eee)
 
@@ -166,7 +159,7 @@ class SConsignDirFileTestCase(SConsignTestCase):
         bi_foo = BuildInfo('foo')
         bi_bar = BuildInfo('bar')
 
-        f = SCons.SConsign.DirFile(DummyNode(), DummyModule())
+        f = SCons.SConsign.DirFile(DummyNode())
         f.set_entry('foo', bi_foo)
         f.set_entry('bar', bi_bar)
 
@@ -263,7 +256,7 @@ class writeTestCase(SConsignTestCase):
         SCons.SConsign.DataBase = {}
         SCons.SConsign.File(file, fake_dbm)
 
-        f = SCons.SConsign.DB(DummyNode(), DummyModule())
+        f = SCons.SConsign.DB(DummyNode())
 
         bi_foo = BuildInfo('foo')
         bi_bar = BuildInfo('bar')
