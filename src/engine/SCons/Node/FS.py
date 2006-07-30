@@ -2082,7 +2082,7 @@ class File(Base):
     def changed_state(self, target, prev_ni):
         return (self.state != SCons.Node.up_to_date)
 
-    def changed_since_last_build(self, target, prev_ni, src_sig_type):
+    def changed_since_last_build(self, target, prev_ni, tgt_sig_type, src_sig_type):
         """Returns True if this file has changed since the last time
         the specified target was built.
         """
@@ -2097,7 +2097,6 @@ class File(Base):
             if not SCons.Action.execute_actions:
                 if self.changed_state(target, prev_ni):
                     return 1
-            tgt_sig_type = self.get_build_env().get_tgt_sig_type()
             if tgt_sig_type == 'build':
                 if self.changed_state(target, prev_ni):
                     return 1
