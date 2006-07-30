@@ -167,14 +167,10 @@ class SConsignDirFileTestCase(SConsignTestCase):
         assert e == bi_foo, e
         assert e.name == 'foo', e.name
 
-        assert bi_foo.c_from_s, bi_foo.c_from_s
-
         e = f.get_entry('bar')
         assert e == bi_bar, e
         assert e.name == 'bar', e.name
         assert not hasattr(e, 'arg'), e
-
-        assert bi_bar.c_from_s, bi_bar.c_from_s
 
         bbb = BuildInfo('bbb')
         bbb.arg = 'bbb arg'

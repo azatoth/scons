@@ -352,8 +352,13 @@ class Do_SConsignDB:
                     print_e = e
                 sys.stderr.write("sconsign: %s\n" % (print_e))
                 return
-        except:
+        except KeyboardInterrupt:
+            raise
+        except cPickle.UnpicklingError:
             sys.stderr.write("sconsign: ignoring invalid `%s' file `%s'\n" % (self.dbm_name, fname))
+            return
+        except Exception, e:
+            sys.stderr.write("sconsign: ignoring invalid `%s' file `%s': %s\n" % (self.dbm_name, fname, e))
             return
 
         if Print_Directories:
@@ -382,8 +387,13 @@ def Do_SConsignDir(name):
         return
     try:
         sconsign = SCons.SConsign.Dir(fp)
-    except:
-        sys.stderr.write("sconsign: ignoring invalid .sconsign file `%s'\n" % name)
+    except KeyboardInterrupt:
+        raise
+    except cPickle.UnpicklingError:
+        sys.stderr.write("sconsign: ignoring invalid .sconsign file `%s'\n" % (name))
+        return
+    except Exception, e:
+        sys.stderr.write("sconsign: ignoring invalid .sconsign file `%s': %s\n" % (name, e))
         return
     printentries(sconsign.entries)
 

@@ -73,13 +73,13 @@ test.write('bar.h', """
 stree = """
 [E B   C ]+-foo.xxx
 [E B   C ]  +-foo.ooo
-[E       ]  | +-foo.c
-[E       ]  | +-foo.h
-[E       ]  | +-bar.h
+[E     C ]  | +-foo.c
+[E     C ]  | +-foo.h
+[E     C ]  | +-bar.h
 [E B   C ]  +-bar.ooo
-[E       ]    +-bar.c
-[E       ]    +-bar.h
-[E       ]    +-foo.h
+[E     C ]    +-bar.c
+[E     C ]    +-bar.h
+[E     C ]    +-foo.h
 """
 
 test.run(arguments = "--debug=stree foo.xxx")
@@ -98,13 +98,13 @@ stree2 = """
 
 [  B     ]+-foo.xxx
 [  B     ]  +-foo.ooo
-[E       ]  | +-foo.c
-[E       ]  | +-foo.h
-[E       ]  | +-bar.h
+[E     C ]  | +-foo.c
+[E     C ]  | +-foo.h
+[E     C ]  | +-bar.h
 [  B     ]  +-bar.ooo
-[E       ]    +-bar.c
-[E       ]    +-bar.h
-[E       ]    +-foo.h
+[E     C ]    +-bar.c
+[E     C ]    +-bar.h
+[E     C ]    +-foo.h
 """
 
 test.run(arguments = '-c foo.xxx')

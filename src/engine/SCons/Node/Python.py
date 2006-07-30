@@ -33,8 +33,6 @@ import SCons.Node
 
 class ValueNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig']
-    def update(self, node):
-        self.csig = node.get_contents()
 
 class ValueBuildInfo(SCons.Node.BuildInfoBase):
     pass
@@ -53,6 +51,9 @@ class Value(SCons.Node.Node):
 
     def __str__(self):
         return repr(self.value)
+
+    def make_ready(self):
+        self.get_csig()
 
     def build(self):
         """A "builder" for Values."""
@@ -75,23 +76,20 @@ class Value(SCons.Node.Node):
         return contents
 
     def changed_since_last_build(self, target, prev_ni, src_sig_type):
-        cur_ni = self.get_ninfo()
+        cur_csig = self.get_csig()
         try:
-            return cur_ni.csig != prev_ni.csig
+            return cur_csig != prev_ni.csig
         except AttributeError:
-            return None
+            return 1
 
     def get_csig(self, calc=None):
         """Because we're a Python value node and don't have a real
         timestamp, we get to ignore the calculator and just use the
         value contents."""
         try:
-            binfo = self.binfo
+            return self.binfo.ninfo.csig
         except AttributeError:
-            binfo = self.binfo = self.new_binfo()
-        try:
-            return binfo.ninfo.csig
-        except AttributeError:
-            binfo.ninfo.csig = self.get_contents()
-            self.store_info(binfo)
-            return binfo.ninfo.csig
+            pass
+        contents = self.get_contents()
+        self.get_binfo().ninfo.csig = contents
+        return contents

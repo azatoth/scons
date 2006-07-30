@@ -141,7 +141,7 @@ class DB(Base):
     """
     A Base subclass that reads and writes signature information
     from a global .sconsign.db* file--the actual file suffix is
-    determined by the specified database module.
+    determined by the database module.
     """
     def __init__(self, dir):
         Base.__init__(self)
@@ -207,17 +207,23 @@ class DB(Base):
                 syncmethod()
 
 class Dir(Base):
-    def __init__(self, fp=None):
+    def __init__(self, fp=None, dir=None):
         """
         fp - file pointer to read entries from
         """
         Base.__init__(self)
 
-        if fp:
-            self.entries = cPickle.load(fp)
-            if type(self.entries) is not type({}):
-                self.entries = {}
-                raise TypeError
+        if not fp:
+            return
+
+        self.entries = cPickle.load(fp)
+        if type(self.entries) is not type({}):
+            self.entries = {}
+            raise TypeError
+
+        if dir:
+            for key, entry in self.entries.items():
+                entry.convert_from_sconsign(dir, key)
 
 class DirFile(Dir):
     """
@@ -237,7 +243,7 @@ class DirFile(Dir):
             fp = None
 
         try:
-            Dir.__init__(self, fp)
+            Dir.__init__(self, fp, dir)
         except KeyboardInterrupt:
             raise
         except:
@@ -246,15 +252,6 @@ class DirFile(Dir):
 
         global sig_files
         sig_files.append(self)
-
-    def get_entry(self, filename):
-        """
-        Fetch the specified entry attribute, converting from .sconsign
-        format to in-memory format.
-        """
-        entry = Dir.get_entry(self, filename)
-        entry.convert_from_sconsign(self.dir, filename)
-        return entry
 
     def write(self, sync=1):
         """

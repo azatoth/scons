@@ -721,8 +721,7 @@ class FileNodeInfoTestCase(_tempdirTestCase):
         """Test FileNodeInfo initialization"""
         fff = self.fs.File('fff')
         ni = SCons.Node.FS.FileNodeInfo(fff)
-        assert hasattr(ni, 'timestamp')
-        assert hasattr(ni, 'size')
+        assert isinstance(ni, SCons.Node.FS.FileNodeInfo)
 
     def test_update(self):
         """Test updating a File.NodeInfo with on-disk information"""
@@ -736,8 +735,20 @@ class FileNodeInfoTestCase(_tempdirTestCase):
 
         test.write('fff', "fff\n")
 
-        assert ni.timestamp != os.path.getmtime('fff'), ni.timestamp
-        assert ni.size != os.path.getsize('fff'), ni.size
+        ni.update(fff)
+
+        assert not hasattr(ni, 'timestamp')
+        assert not hasattr(ni, 'size')
+
+        ni.timestamp = 0
+        ni.size = 0
+
+        ni.update(fff)
+
+        mtime = os.path.getmtime('fff')
+        assert mtime == ni.timestamp, (mtime, ni.timestamp)
+        size = os.path.getsize('fff')
+        assert size == ni.size, (size, ni.size)
 
         fff.clear()
         ni.update(fff)
@@ -780,9 +791,9 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         s1sig = SCons.Node.FS.FileNodeInfo(self.fs.File('n1'))
         s1sig.csig = 1
         d1sig = SCons.Node.FS.FileNodeInfo(self.fs.File('n2'))
-        d1sig.csig = 2
+        d1sig.timestamp = 2
         i1sig = SCons.Node.FS.FileNodeInfo(self.fs.File('n3'))
-        i1sig.csig = 3
+        i1sig.size = 3
 
         bi1.bsources = [self.fs.File('s1')]
         bi1.bdepends = [self.fs.File('d1')]
@@ -790,17 +801,20 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         bi1.bsourcesigs = [s1sig]
         bi1.bdependsigs = [d1sig]
         bi1.bimplicitsigs = [i1sig]
+        bi1.bact = 'action'
+        bi1.bactsig = 'actionsig'
 
         expect_lines = [
-            'None 0 0',
-            's1: 1 0 0',
-            'd1: 2 0 0',
-            'i1: 3 0 0',
+            'None None None',
+            's1: 1 None None',
+            'd1: None 2 None',
+            'i1: None None 3',
+            'actionsig [action]',
         ]
 
         expect = string.join(expect_lines, '\n')
         format = bi1.format()
-        assert format == expect, (repr(format), repr(expect))
+        assert format == expect, (repr(expect), repr(format))
 
 class FSTestCase(_tempdirTestCase):
     def test_runTest(self):
@@ -2296,8 +2310,7 @@ class stored_infoTestCase(unittest.TestCase):
         d = fs.Dir('sub')
         f = fs.File('file1', d)
         bi = f.get_stored_info()
-        assert bi.ninfo.timestamp == 0, bi.ninfo.timestamp
-        assert bi.ninfo.size == 0, bi.ninfo.size
+        assert hasattr(bi, 'ninfo')
 
         class MySConsign:
             class Null:

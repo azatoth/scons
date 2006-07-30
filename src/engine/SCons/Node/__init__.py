@@ -113,7 +113,16 @@ class NodeInfoBase:
         """
         pass
     def update(self, node):
-        pass
+        try:
+            field_list = self.field_list
+        except AttributeError:
+            return
+        for f in field_list:
+            if hasattr(self, f):
+                delattr(self, f)
+                func = getattr(node, 'get_' + f)
+                x = func()
+                setattr(self, f, func())
     def merge(self, other):
         for key, val in other.__dict__.items():
             self.__dict__[key] = val
@@ -153,12 +162,8 @@ class BuildInfoBase:
         self.bdependsigs = []
         self.bimplicitsigs = []
         self.bactsig = None
-#    def __cmp__(self, other):
-#        return cmp(self.ninfo, other.ninfo)
     def set_ninfo(self, ninfo):
         self.ninfo = ninfo
-    def update(self, node):
-        pass
     def merge(self, other):
         for key, val in other.__dict__.items():
             try:
@@ -661,7 +666,6 @@ class Node:
 
     def new_ninfo(self):
         ninfo = self.NodeInfo(self)
-        ninfo.update(self)
         return ninfo
 
     def get_ninfo(self):
@@ -673,7 +677,6 @@ class Node:
 
     def new_binfo(self):
         binfo = self.BuildInfo(self)
-        binfo.update(self)
         binfo.set_ninfo(self.get_ninfo())
         return binfo
 
@@ -931,7 +934,7 @@ class Node:
         BuildInfo from another Node (typically one in a Repository)
         can be used instead."""
         t = 0
-        if t: Trace('is_up_to_date(%s [%s], %s)' % (self, classname(self), node))
+        if t: Trace('changed(%s [%s], %s)' % (self, classname(self), node))
         if node is None:
             node = self
         bi = node.get_stored_info()
@@ -962,9 +965,11 @@ class Node:
                 return 1
         contents = self.get_executor().get_contents()
         import SCons.Util
-        if bi.bactsig != SCons.Util.MD5signature(contents):
-            if t: Trace(': bactsig != signature\n')
-            return 1
+        if self.has_builder():
+            newsig = SCons.Util.MD5signature(contents)
+            if bi.bactsig != newsig:
+                if t: Trace(': bactsig %s != newsig %s\n' % (bi.bactsig, newsig))
+                return 1
         if t: Trace(': up to date\n')
         return None
 

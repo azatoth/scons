@@ -1613,14 +1613,6 @@ class RootDir(Dir):
 
 class FileNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig', 'timestamp', 'size']
-    def __init__(self, node):
-        SCons.Node.NodeInfoBase.__init__(self, node)
-        self.timestamp = 0
-        self.size = 0
-    def update(self, node):
-        self.csig = node.get_csig()
-        self.timestamp = node.get_timestamp()
-        self.size = node.getsize()
 
 class FileBuildInfo(SCons.Node.BuildInfoBase):
     def __init__(self, node):
@@ -1678,6 +1670,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         for i in xrange(len(bkids)):
             result.append(str(bkids[i]) + ': ' +
                           string.join(bkidsigs[i].format(names=names), ' '))
+        result.append('%s [%s]' % (self.bactsig, self.bact))
         return string.join(result, '\n')
 
 class NodeInfo(FileNodeInfo):
@@ -1743,11 +1736,29 @@ class File(Base):
             return ''
         return open(self.rfile().abspath, "rb").read()
 
-    def get_timestamp(self):
+    def get_size(self):
+        try:
+            return self.binfo.ninfo.size
+        except AttributeError:
+            pass
         if self.rexists():
-            return self.rfile().getmtime()
+            size = self.rfile().getsize()
         else:
-            return 0
+            size = 0
+        self.get_binfo().ninfo.size = size
+        return size
+
+    def get_timestamp(self):
+        try:
+            return self.binfo.ninfo.timestamp
+        except AttributeError:
+            pass
+        if self.rexists():
+            timestamp = self.rfile().getmtime()
+        else:
+            timestamp = 0
+        self.get_binfo().ninfo.timestamp = timestamp
+        return timestamp
 
     def store_info(self, obj):
         # Merge our build information into the already-stored entry.
@@ -1755,14 +1766,6 @@ class File(Base):
         # in one build (SConstruct file) is a source in a different build.
         # See test/chained-build.py for the use case.
         entry = self.get_stored_info()
-        #try:
-        #    Trace('store_info(%s): %s\n' % (self, obj.csig))
-        #except AttributeError:
-        #    pass
-        #try:
-        #    Trace('store_info(%s): %s\n' % (self, entry.csig))
-        #except AttributeError:
-        #    pass
         entry.merge(obj)
         self.dir.sconsign().set_entry(self.name, entry)
 
@@ -1920,6 +1923,51 @@ class File(Base):
         self.disambiguate()
         self.has_src_builder()
 
+        binfo = self.get_binfo()
+
+        mtime = self.get_timestamp()
+        self.get_size()
+
+        csig = None
+
+        old = self.get_stored_info()
+
+        max_drift = self.fs.max_drift
+        if max_drift > 0:
+            if (time.time() - mtime) > max_drift:
+                n = old.ninfo
+                try:
+                    if n.timestamp and n.csig and n.timestamp == mtime:
+                        csig = n.csig
+                except AttributeError:
+                    pass
+        elif max_drift == 0:
+            old = self.get_stored_info()
+            try:
+                csig = old.ninfo.csig
+            except AttributeError:
+                pass
+
+        if csig:
+            binfo.ninfo.csig = csig
+        else:
+            self.get_csig()
+
+        if not self.has_builder():
+            for attr in ['bsources', 'bsourcesigs',
+                         'bdepends', 'bdependsigs',
+                         'bimplicit', 'bimplicitsigs',
+                         'bact', 'bactsig']:
+                try:
+                    x = getattr(old, attr)
+                except AttributeError:
+                    pass
+                else:
+                    if x:
+                        setattr(binfo, attr, x)
+
+            self.store_info(binfo)
+
     def prepare(self):
         """Prepare for this file to be created."""
         SCons.Node.Node.prepare(self)
@@ -1992,39 +2040,6 @@ class File(Base):
     # SIGNATURE SUBSYSTEM
     #
 
-# XXX with the base implementation of get_ninfo(), the following tests fail:
-#	test\Configure.py
-#	test\Delete.py
-#	test\option--max-drift.py
-#
-# XXX with this implementation of get_ninfo(), the following tests fail:
-#	test\Configure.py
-#	test\Delete.py
-#	test\chained-build.py
-#
-#    def get_ninfo(self):
-#        ninfo = SCons.Node.Node.get_ninfo(self)
-#        if not self.has_builder():
-#            max_drift = self.fs.max_drift
-#            mtime = self.get_timestamp()
-#            if max_drift >= 0 and (time.time() - mtime) > max_drift:
-#                ninfo.update(self)
-#                binfo = self.get_binfo()
-#                binfo.ninfo = ninfo
-#                self.store_info(binfo)
-#        return ninfo
-
-#    def new_binfo(self):
-#        binfo = SCons.Node.Node.new_binfo(self)
-#        if not self.has_builder():
-#            #max_drift = self.fs.max_drift
-#            #mtime = self.get_timestamp()
-#            #if max_drift >= 0 and (time.time() - mtime) > max_drift:
-#            #    #self.dir.sconsign().set_entry(self.name, binfo)
-#            #    self.store_info(binfo)
-#            self.store_info(binfo)
-#        return binfo
-
     def get_csig(self):
         """
         Generate a node's content signature, the digested signature
@@ -2038,40 +2053,33 @@ class File(Base):
             return self.binfo.ninfo.csig
         except AttributeError:
             pass
-
-        max_drift = self.fs.max_drift
-        if max_drift > 0:
-            mtime = self.get_timestamp()
-            if (time.time() - mtime) > max_drift:
-                old = self.get_stored_info().ninfo
-                try:
-                    if old.timestamp and old.csig and old.timestamp == mtime:
-                        return old.csig
-                except AttributeError:
-                    pass
-        elif max_drift == 0:
-            old = self.get_stored_info().ninfo
-            try:
-                return old.csig
-            except AttributeError:
-                pass
            
-        return SCons.Util.MD5signature(self.get_contents())
+        try:
+            contents = self.get_contents()
+        except IOError:
+            # This can happen if there's actually a directory on-disk,
+            # which can be the case if they've disabled disk checks,
+            # or if an action with a File target actually happens to
+            # create a same-named directory by mistake.
+            csig = None
+        else:
+            csig = SCons.Util.MD5signature(contents)
+            self.get_binfo().ninfo.csig = csig
+        return csig
 
     #
     #
     #
     def changed_timestamp(self, target, prev_ni):
-        cur_ni = self.get_ninfo()
         try:
-            return cur_ni.timestamp > target.get_timestamp()
+            return self.get_timestamp() > target.get_timestamp()
         except AttributeError:
             return 1
 
     def changed_content(self, target, prev_ni):
-        cur_ni = self.get_ninfo()
+        cur_csig = self.get_csig()
         try:
-            return cur_ni.csig != prev_ni.csig
+            return cur_csig != prev_ni.csig
         except AttributeError:
             return 1
 
@@ -2109,7 +2117,7 @@ class File(Base):
         if self.always_build:
             return None
         T = 0
-        if T: Trace('_cur2(%s):' % self)
+        if T: Trace('is_up_to_date(%s):' % self)
         if not self.exists():
             if T: Trace(' not self.exists():')
             # The file doesn't exist locally...
