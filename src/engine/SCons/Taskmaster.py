@@ -250,7 +250,7 @@ class Task:
         """
         self.out_of_date = []
         for t in self.targets:
-            t.make_ready()
+            t.disambiguate().make_ready()
             if not t.has_builder() or t.is_up_to_date():
                 t.set_state(SCons.Node.up_to_date)
             else:
