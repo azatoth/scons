@@ -51,6 +51,12 @@ RELEASE 0.97 - XXX
 
   - Support cleaning and scanning SWIG-generated files.
 
+  From Baptiste Lepilleur:
+
+  - Try using zipimport if we can't import Tool or Platform modules
+    using the normal "imp" module.  This allows SCons to be packaged
+    using py2exe's all-in-one-zip-file approach.
+
   From Sanjoy Mahajan:
 
   - Change use of $SOURCES to $SOURCE in all TeX-related Tool modules.
