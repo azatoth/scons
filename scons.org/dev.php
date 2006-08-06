@@ -59,6 +59,9 @@ Subject to change and improvement.
 <div class="linkdesc">
 The <span class="sconslogo">SCons</span> project page at
 <a href="http://www.tigris.org">Tigris.org</a>.
+This is the center of active SCons development,
+hosting the main source code repository
+and issue tracker (bugs, patches, tasks, etc.).
 </div>
 </div>
 
@@ -69,33 +72,30 @@ The <span class="sconslogo">SCons</span> project page at
 <div class="linkdesc">
 The <span class="sconslogo">SCons</span> project page at
 <a href="http://sourceforge.net">SourceForge</a>.
+This is where we used to development, but no longer.
+It's now mostly of historic interest,
+although it's also the origination site for downloads.
 </div>
 </div>
 
 <div class="link">
 <div class="linkname">
-<a href="http://aegis.sourceforge.net/cgi-bin/aegis.cgi?">Aegis&nbsp;repository</a>
+Archive of the latest checked-in source in
+<a href="ftp://ftp.scons.org/scons-src-latest.tar.gz">.tar.gz</a>
+or
+<a href="ftp://ftp.scons.org/scons-src-latest.tar.zip">.zip</a>
 </div>
 <div class="linkdesc">
-The browsable Aegis repository at
-<a href="http://sourceforge.net">SourceForge</a>,
-with listing service provided by Peter Miller,
-the author of Aegis.
-Click through to the <emphasis>scons</emphasis>
-project and branches to get a view of what's going on
-with <span class="sconslogo">SCons</span> development.
+The whole source tree in easy-to-download form.
 Updated whenever a change is made to <span class="sconslogo">SCons</span>.
-</div>
-</div>
-
-<div class="link">
-<div class="linkname">
-<a href="scons.ae">Current&nbsp;aedist&nbsp;baseline</a>
-</div>
-<div class="linkdesc">
-The Aegis snapshot of the current <span
-class="sconslogo">SCons</span> baseline.
-Updated whenever a change is made to <span class="sconslogo">SCons</span>.
+(Note that the source tree in these archives
+is mostly for packaging and testing of SCons;
+consult the <tt>README</tt> file for
+information about how to build packages and
+install SCons from the source tree.
+It's <emphasis>not</emphasis> handled by
+executing <tt>python setup.py</tt> directly
+from this package.)
 </div>
 </div>
 
@@ -106,13 +106,22 @@ Updated whenever a change is made to <span class="sconslogo">SCons</span>.
 <div class="linkdesc">
 The browsable Subversion repository at
 <a href="http://www.tigris.org">Tigris.org</a>.
-Updated whenever a change is made to <span class="sconslogo">SCons</span>.
+Most active development is carried out on subsidiary
+<tt>branches/</tt>.
+The <tt>trunk/</tt> contains whatever approved changes
+have been promoted from the
+See the 
+<a href="http://scons.tigris.org/branching.html">Branching</a></td>
+page at our tigris.org project page
+for a description of the different
+branches
+and how we handle branch management.
 </div>
 </div>
 
 <div class="link">
 <div class="linkname">
-<a href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/scons/">CVS&nbsp;repository</a></td>
+<a href="http://scons.cvs.sourceforge.net/scons/">CVS&nbsp;repository</a></td>
 </div>
 <div class="linkdesc">
 The browsable CVS repository at
@@ -133,6 +142,32 @@ on which <span class="sconslogo">SCons</span> itself was based.
 This is now of more interest as an historical document,
 since the current design has changed significantly
 as we figured out how to make things easier.
+</div>
+</div>
+
+<div class="link">
+<div class="linkname">
+<a href="http://aegis.sourceforge.net/cgi-bin/aeget">Aegis&nbsp;repository</a>
+</div>
+<div class="linkdesc">
+The browsable Aegis repository at
+<a href="http://sourceforge.net">SourceForge</a>,
+with listing service provided by Peter Miller, the author of Aegis.
+Click through to the <emphasis>scons</emphasis>
+project and branches to get a view of what's going on
+with <span class="sconslogo">SCons</span> development.
+Updated whenever a change is made to <span class="sconslogo">SCons</span>.
+</div>
+</div>
+
+<div class="link">
+<div class="linkname">
+<a href="ftp://ftp.scons.org/scons.ae">Current&nbsp;aedist&nbsp;baseline</a>
+</div>
+<div class="linkdesc">
+The Aegis snapshot of the current <span
+class="sconslogo">SCons</span> baseline.
+Updated whenever a change is made to <span class="sconslogo">SCons</span>.
 </div>
 </div>
 
