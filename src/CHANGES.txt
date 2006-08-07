@@ -51,7 +51,7 @@ RELEASE 0.97 - XXX
 
   - Support cleaning and scanning SWIG-generated files.
 
-  From Baptiste Lepilleur:
+  From Jean-Baptiste Lab:
 
   - Try using zipimport if we can't import Tool or Platform modules
     using the normal "imp" module.  This allows SCons to be packaged
@@ -108,6 +108,10 @@ RELEASE 0.97 - XXX
   From Atul Varma:
 
   - Fix detection of Visual C++ Express Edition.
+
+  From Nicolas Vigier:
+
+  - Fix finding Fortran modules in build directories.
 
   From Johan Zander:
 
