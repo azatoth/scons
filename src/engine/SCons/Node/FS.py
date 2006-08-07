@@ -95,10 +95,33 @@ def save_strings(val):
 # there should be *no* changes to the external file system(s)...
 #
 
-def _copy_func(src, dest):
+if hasattr(os, 'link'):
+    def _hardlink_func(fs, src, dst):
+        # If the source is a symlink, we can't just hard-link to it
+        # because a relative symlink may point somewhere completely
+        # different.  We must disambiguate the symlink and then
+        # hard-link the final destination file.
+        while fs.islink(src):
+            link = fs.readlink(src)
+            if not os.path.isabs(link):
+                src = link
+            else:
+                src = os.path.join(os.path.dirname(src), link)
+        fs.link(src, dst)
+else:
+    _hardlink_func = None
+
+if hasattr(os, 'symlink'):
+    def _softlink_func(fs, src, dst):
+        fs.symlink(src, dst)
+else:
+    _softlink_func = None
+
+def _copy_func(fs, src, dest):
     shutil.copy2(src, dest)
-    st=os.stat(src)
-    os.chmod(dest, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
+    st = fs.stat(src)
+    fs.chmod(dest, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
+
 
 Valid_Duplicates = ['hard-soft-copy', 'soft-hard-copy',
                     'hard-copy', 'soft-copy', 'copy']
@@ -113,16 +136,6 @@ def set_duplicate(duplicate):
     # underlying implementations.  We do this inside this function,
     # not in the top-level module code, so that we can remap os.link
     # and os.symlink for testing purposes.
-    try:
-        _hardlink_func = os.link
-    except AttributeError:
-        _hardlink_func = None
-
-    try:
-        _softlink_func = os.symlink
-    except AttributeError:
-        _softlink_func = None
-
     link_dict = {
         'hard' : _hardlink_func,
         'soft' : _softlink_func,
@@ -152,10 +165,11 @@ def LinkFunc(target, source, env):
     if not Link_Funcs:
         # Set a default order of link functions.
         set_duplicate('hard-soft-copy')
+    fs = source[0].fs
     # Now link the files with the previously specified order.
     for func in Link_Funcs:
         try:
-            func(src,dest)
+            func(fs, src, dest)
             break
         except (IOError, OSError):
             # An OSError indicates something happened like a permissions
@@ -834,6 +848,14 @@ class LocalFS:
     else:
         def islink(self, path):
             return 0                    # no symlinks
+
+    if hasattr(os, 'readlink'):
+        def readlink(self, file):
+            return os.readlink(file)
+    else:
+        def readlink(self, file):
+            return ''
+
 
 if SCons.Memoize.use_old_memoization():
     _FSBase = LocalFS

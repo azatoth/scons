@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test how we handle dangling symlinks as source files.
+XXX Put a description of the test here.
 """
 
 import os
@@ -38,16 +38,27 @@ if not hasattr(os, 'symlink'):
     print "No os.symlink() method, no symlinks to test."
     test.no_result(1)
 
+test.subdir('obj',
+            ['obj', 'subdir'],
+            'src',
+            'srcdir')
+
 test.write('SConstruct', """
-Command('file.out', 'file.in', Copy('$TARGET', '$SOURCE'))
+env = Environment()
+BuildDir('obj/subdir', 'src')
+Program('hello', ['obj/subdir/main.c'])
 """)
 
-test.symlink('nonexistent', 'file.in')
+test.write(['srcdir', 'main.c'], r"""
+int
+main(int ac, char *argv[])
+{
+    printf("srcdir/main.c\n");
+}
+""")
 
-expect = """\
-scons: *** Source `file.in' not found, needed by target `file.out'.  Stop.
-"""
+os.symlink('../srcdir/main.c', 'src/main.c')
 
-test.run(arguments = '.', status = 2, stderr = expect)
+test.run(arguments = '.')
 
 test.pass_test()

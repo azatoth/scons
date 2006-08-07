@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test how we handle dangling symlinks as source files.
+Test how we handle #includes of dangling symlinks.
 """
 
 import os
@@ -38,15 +38,21 @@ if not hasattr(os, 'symlink'):
     print "No os.symlink() method, no symlinks to test."
     test.no_result(1)
 
+foo_obj = 'foo' + TestSCons._obj
+
 test.write('SConstruct', """
-Command('file.out', 'file.in', Copy('$TARGET', '$SOURCE'))
+Program('foo.c')
 """)
 
-test.symlink('nonexistent', 'file.in')
+test.write('foo.c', """\
+#include "foo.h"
+""")
+
+test.symlink('nonexistent', 'foo.h')
 
 expect = """\
-scons: *** Source `file.in' not found, needed by target `file.out'.  Stop.
-"""
+scons: *** Source `foo.h' not found, needed by target `%s'.  Stop.
+"""% foo_obj
 
 test.run(arguments = '.', status = 2, stderr = expect)
 

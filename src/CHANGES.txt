@@ -113,6 +113,9 @@ RELEASE 0.97 - XXX
 
   - Fix finding Fortran modules in build directories.
 
+  - Fix use of BuildDir() when the source file in the source directory
+    is a symlink with a relative path.
+
   From Johan Zander:
 
   - Fix missing os.path.join() when constructing the $FRAMEWORKSDKDIR/bin.
