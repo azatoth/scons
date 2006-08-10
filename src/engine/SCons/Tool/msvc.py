@@ -519,7 +519,7 @@ def _get_msvc8_default_paths(env, version, suite, use_mfc_dirs):
         if SCons.Util.can_read_reg and paths.has_key('FRAMEWORKSDKDIR'):
             include_paths.append( os.path.join( paths['FRAMEWORKSDKDIR'], 'include' ) )
             lib_paths.append( os.path.join( paths['FRAMEWORKSDKDIR'], 'lib' ) )
-            exe_paths.append( paths['FRAMEWORKSDKDIR'], 'bin' )
+            exe_paths.append( os.path.join( paths['FRAMEWORKSDKDIR'], 'bin' ) )
 
         if SCons.Util.can_read_reg and paths.has_key('FRAMEWORKDIR') and paths.has_key('FRAMEWORKVERSION'):
             exe_paths.append( os.path.join( paths['FRAMEWORKDIR'], paths['FRAMEWORKVERSION'] ) )
