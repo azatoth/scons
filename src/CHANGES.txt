@@ -47,6 +47,9 @@ RELEASE 0.97 - XXX
     This will become the default behavior as we add more functionality
     to the QMTest side.
 
+  - Let linking on mingw use the default function that chooses $CC (gcc)
+    or $CXX (g++) depending on whether there are any C++ source files.
+
   From Arve Knudsen:
 
   - Support cleaning and scanning SWIG-generated files.
