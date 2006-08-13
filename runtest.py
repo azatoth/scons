@@ -109,7 +109,7 @@ print_passed_summary = None
 scons = None
 scons_exec = None
 outputfile = None
-qmtest = None
+qmtest = 1
 testlistfile = None
 version = ''
 print_times = None
@@ -137,6 +137,7 @@ Options:
   -h, --help                  Print this message and exit.
   -l, --list                  List available tests and exit.
   -n, --no-exec               No execute, just print command lines.
+  --noqmtest                  Execute tests directly, not using QMTest.
   -o FILE, --output FILE      Print test results to FILE.
   -P Python                   Use the specified Python interpreter.
   -p PACKAGE, --package PACKAGE
@@ -167,7 +168,7 @@ Options:
 opts, args = getopt.getopt(sys.argv[1:], "ab:df:hlno:P:p:qv:Xx:t",
                             ['all', 'aegis', 'baseline=',
                              'debug', 'file=', 'help',
-                             'list', 'no-exec', 'output=',
+                             'list', 'no-exec', 'noqmtest', 'output=',
                              'package=', 'passed', 'python=',
                              'qmtest', 'quiet', 'spe=',
                              'version=', 'exec=', 'time',
@@ -191,6 +192,8 @@ for o, a in opts:
         list_only = 1
     elif o in ['-n', '--no-exec']:
         execute_tests = None
+    elif o in ['--noqmtest']:
+        qmtest = None
     elif o in ['-o', '--output']:
         if a != '-' and not os.path.isabs(a):
             a = os.path.join(cwd, a)
@@ -476,6 +479,8 @@ if package:
         scons_lib_dir = os.path.join(test_dir, dir[package], 'lib', l)
         pythonpath_dir = scons_lib_dir
 
+    scons_runtest_dir = os.path.join(cwd, 'build')
+
 else:
     sd = None
     ld = None
@@ -529,6 +534,8 @@ else:
     else:
         base = baseline
 
+    scons_runtest_dir = base
+
     scons_script_dir = sd or os.path.join(base, 'src', 'script')
 
     scons_lib_dir = ld or os.path.join(base, 'src', 'engine')
@@ -548,6 +555,7 @@ elif scons_lib_dir:
 if scons_exec:
     os.environ['SCONS_EXEC'] = '1'
 
+os.environ['SCONS_RUNTEST_DIR'] = scons_runtest_dir
 os.environ['SCONS_SCRIPT_DIR'] = scons_script_dir
 os.environ['SCONS_CWD'] = cwd
 

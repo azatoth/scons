@@ -70,7 +70,7 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream=sc
        1 (100%%) tests PASS
 """ % locals()
 
-test.run(arguments = '--qmtest -P %s test' % mypython_py,
+test.run(arguments = '-P %s test' % mypython_py,
          stdout = expect)
 
 test.must_match(mypython_out, """\

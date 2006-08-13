@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 #
 # __COPYRIGHT__
@@ -25,36 +26,57 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test how we handle a no-results test specified on the command line.
+Test that the --noqmtest option invokes tests directly via Python, not
+using qmtest, as an explicit (*not* automatic) fall back in case qmtest
+isn't available or is misbehaving.
 """
 
+import os.path
+
 import TestRuntest
+
+python = TestRuntest.python
 
 test = TestRuntest.TestRuntest()
 
 test.subdir('test')
 
-test.write_no_result_test(['test', 'no_result.py'])
+test_pass_py = os.path.join('test', 'pass.py')
+test_fail_py = os.path.join('test', 'fail.py')
+test_no_result_py = os.path.join('test', 'no_result.py')
 
-expect = r"""qmtest.py run --output baseline.qmr --format none --result-stream=scons_tdb.AegisBaselineStream test/no_result.py
---- TEST RESULTS -------------------------------------------------------------
+workpath_pass_py = test.workpath(test_pass_py)
+workpath_fail_py = test.workpath(test_fail_py)
+workpath_no_result_py = test.workpath(test_no_result_py)
 
-  test/no_result.py                             : NO_RESULT
+test.write_failing_test(test_fail_py)
+test.write_no_result_test(test_no_result_py)
+test.write_passing_test(test_pass_py)
 
-    NO RESULT TEST STDOUT
+expect_stdout = """\
+%(python)s -tt %(workpath_fail_py)s
+FAILING TEST STDOUT
+%(python)s -tt %(workpath_no_result_py)s
+NO RESULT TEST STDOUT
+%(python)s -tt %(workpath_pass_py)s
+PASSING TEST STDOUT
 
-    NO RESULT TEST STDERR
+Failed the following test:
+\t%(test_fail_py)s
 
---- TESTS WITH UNEXPECTED OUTCOMES -------------------------------------------
+NO RESULT from the following test:
+\t%(test_no_result_py)s
+""" % locals()
 
-  test/no_result.py                             : NO_RESULT
-
-
---- STATISTICS ---------------------------------------------------------------
-
-       1 (100%) tests unexpected NO_RESULT
+expect_stderr = """\
+FAILING TEST STDERR
+NO RESULT TEST STDERR
+PASSING TEST STDERR
 """
 
-test.run(arguments = '-b . test/no_result.py', stdout = expect)
+test.run(arguments = '--noqmtest test/*.py',
+         status = 1,
+         stdout = expect_stdout,
+         stderr = expect_stderr)
 
 test.pass_test()

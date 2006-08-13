@@ -53,6 +53,6 @@ expect = r"""qmtest.py run --output baseline.qmr --format none --result-stream=s
        1 (100%) tests unexpected PASS
 """
 
-test.run(arguments = '--qmtest -b . test/pass.py', stdout = expect)
+test.run(arguments = '-b . test/pass.py', stdout = expect)
 
 test.pass_test()

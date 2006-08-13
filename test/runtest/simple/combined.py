@@ -78,6 +78,6 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream=sc
        1 ( 33%) tests NO_RESULT
 """
 
-test.run(arguments = '--qmtest test', stdout = expect)
+test.run(arguments = 'test', stdout = expect)
 
 test.pass_test()
