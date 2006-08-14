@@ -1,0 +1,234 @@
+"""SCons.Tool.Packaging.packager
+"""
+
+#
+# __COPYRIGHT__
+# 
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+# KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+import os
+import SCons.Defaults
+
+class Packager:
+    """ abstract superclass of all packagers.
+
+    Defines the minimal set of function which need to be implemented in order
+    to create a new packager.
+    """
+    def __init__(self):
+        self.specfile_suffix = '.spec'
+
+    def create_builder(self, env, kw):
+        raise Exception( "%s does not implement create_builder()" % (self.__class__.__name_) )
+
+    def add_targets(self, kw):
+        """ In the absence of a target this method creates a default one of
+        the spec given in the kw argument.
+        """
+        if not kw.has_key('target'):
+            projectname, version = kw['projectname'], kw['version']
+            kw['target'] = [ "%s-%s"%(projectname,version) ]
+
+        return kw
+
+class BinaryPackager(Packager):
+    """ abstract superclass for all packagers creating a binary package.
+
+    Binary packagers are seperated from source packager by their requirement to
+    create a specfile or manifest file. This file contains the contents of the
+    binary packager together with some information about specific files.
+
+    This superclass provides two needed facilities:
+     * it's specfile_emitter function sets up the correct list of source file
+       and warns about files with no InstallBuilder attached.
+    """
+    def create_specfile_targets(self, kw):
+        """ returns the specfile target name(s).
+
+        This function is called by specfile_emitter to find out the specfiles
+        target name.
+        """
+        p, v = kw['projectname'], kw['version']
+        return '%s-%s' % ( p, v )
+
+    def specfile_emitter(self, target, source, env):
+        """ adds the to build specfile to the source list.
+        """
+        tag_factories = [ LocationTagFactory() ]
+
+        def has_no_install_location(file):
+            tags = file.get_tags(factories=tag_factories)
+            return not tags.has_key('install_location')
+
+        # check if all source file belong into this package.
+        if len( filter( has_no_install_location, source ) ) != 0:
+            raise SCons.Errors.UserError( 'There are files which have no Install() Builder attached and are therefore not packageable' )
+
+        # All source files have an InstallBuilder attached and we don't want our
+        # package to be dependent on the *installed* files but only on the
+        # files that will be installed. Therefore we only care for sources of
+        # the files in the source list.
+        n_source = []
+        for s in source:
+            for n_s in s.sources:
+                n_s.set_tags( s.get_tags() )
+                n_source.append( n_s )
+        source = n_source
+
+        # create a specfile action that is executed for building the specfile
+        specfile_action = SCons.Action.Action( self.build_specfile,
+                                               self.string_specfile,
+                                               varlist=[ 'SPEC' ] )
+
+        # create a specfile Builder with the right sources attached.
+        specfile_builder = SCons.Builder.Builder( action = self.build_specfile,
+                                                  suffix = self.specfile_suffix )
+
+        specfile = apply( specfile_builder, [ env ], {
+                          'target' : self.create_specfile_targets(env['SPEC']),
+                          'source' : source } )
+
+        source.extend( specfile )
+        return ( target, source )
+
+    def string_specfile(self, target, source, env):
+        return "building specfile %s"%(target[0].abspath)
+
+    def build_specfile(self, target, source, env):
+        """ this function is called to build the specfile of name "target"
+        from the source list and the settings in "env"
+        """
+        raise Exception( 'class does not implement build_specfile()' )
+
+class SourcePackager(Packager):
+    """ abstract superclass for all packagers which generate a source package.
+
+    They are seperated from other packager by the their package_root attribute.
+    Since before a source package is created with the help of a Tar or Zip
+    builder their content needs to be moved to a package_root. For example the
+    project foo with version 1.2.3, will get its files placed in foo-1.2.3/.
+    """
+    def create_package_root(self,kw):
+        """ creates the package_r oot for a given specification dict.
+        """
+        try:
+            return kw['package_root']
+        except KeyError:
+            projectname, version = kw['projectname'], kw['version']
+            return "%s-%s"%(projectname,version)
+
+    def package_root_emitter(self,src_package_root):
+        """This emitter changes the source to be rooted in the given package_root.
+        """
+        def package_root_emitter(target, source, env):
+            new_source = []
+            for s in source:
+                # XXX: convert the src package root to a Dir()?
+                filename = os.path.join( src_package_root, env.strip_abs_path( s.get_path() ) )
+                new_s    = env.Command( source = s,
+                                        target = filename,
+                                        action = SCons.Defaults.Copy( '$TARGET', '$SOURCE' ),
+                                      )[0]
+
+                # store the tags of our original file in the new file.
+                new_s.set_tags( s.get_tags( factories=[ LocationTagFactory() ] ) )
+
+                new_source.append( new_s )
+
+            return (target, new_source)
+
+        return package_root_emitter
+
+class TagFactory:
+    """An instance of this class has the responsibility to generate additional
+    tags for a SCons.Node.FS.File instance.
+
+    Subclasses have to be callable. This class definition is informally
+    describing the interface.
+    """
+
+    def __call__(self, file, current_tag_dict):
+        """ This call has to return additional tags in the form of a dict.
+        """
+        pass
+
+    def attach_additional_info(self, info=None):
+        pass
+
+class LocationTagFactory(TagFactory):
+    """ This class creates the "location" tag, which describes the install
+    location of a given file.
+
+    This is done by analyzing the builder of a given file for a InstallBuilder,
+    from this builder the install location is deduced.
+    """
+
+    def __call__(self, file, current_tag_dict):
+        if current_tag_dict.has_key('install_location'):
+            return {}
+
+        if file.has_builder() and\
+           file.builder == SCons.Environment.InstallBuilder and\
+           file.has_explicit_builder():
+            return { 'install_location' : file.builder.targets( file ) }
+        else:
+            return {}
+
+class SimpleTagCompiler:
+    def __init__(self, tagset, mandatory=1):
+        self.tagset    = tagset
+        self.mandatory = mandatory
+
+    def compile(self, values):
+        """ compiles the tagset and returns a str containing the result
+        """
+        def is_international(tag):
+            return tag.endswith('_')
+
+        def get_country_code(tag):
+            return tag[-2:]
+
+        def strip_country_code(tag):
+            return tag[:-2]
+
+        replacements = self.tagset.items()
+
+        str = ""
+        for key, replacement in [ (k,v) for k,v in replacements if not is_international(k) ]:
+            try:
+                str += replacement % values[key]
+            except KeyError, e:
+                if self.mandatory:
+                    raise e
+
+        for key, replacement in [ (k,v) for k,v in replacements if is_international(k) ]:
+            try:
+                int_values_for_key = [ (get_country_code(k),v) for k,v in values.items() if strip_country_code(k) == key ]
+                for v in int_values_for_key:
+                    str += replacement % v
+            except KeyError, e:
+                if self.mandatory:
+                    raise e
+
+        return str
+

@@ -28,11 +28,13 @@ The zip SRC packager.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Tool.Packaging
+from packager import SourcePackager
 
-def create_builder(env, keywords=None):
-    builder = env.get_builder('Zip')
-    emitter = SCons.Tool.Packaging.get_src_package_root_emitter(keywords['package_root'])
-    builder.push_emitter(emitter)
-    builder.set_suffix('zip')
-    return builder
+class ZipPackager(SourcePackager):
+    def create_builder(self, env, kw=None):
+        builder         = env.get_builder('Zip')
+        package_root    = self.create_package_root(kw)
+        emitter         = self.package_root_emitter(package_root)
+        builder.push_emitter(emitter)
+        builder.set_suffix('zip')
+        return builder

@@ -52,6 +52,7 @@ int main( int argc, char* argv[] )
 """)
 
     test.write('SConstruct', """
+# -*- coding: iso-8859-15 -*-
 import os
 
 prog = Install( '/bin', Program( 'main.c' ) )
@@ -70,7 +71,7 @@ Package( projectname    = 'foo',
          description    = 'this should be really long',
          description_de = 'das sollte wirklich lang sein',
          description_fr = 'ceci devrait être vraiment long',
-         source         = [ 'main.c', 'SConstruct', prog ],
+         source         = [ prog ],
         )
 
 Alias ( 'install', prog )
@@ -137,7 +138,7 @@ Package( projectname    = 'foo',
          description    = 'this should be really long',
          description_de = 'das sollte wirklich lang sein',
          description_fr = 'ceci devrait être vraiment long',
-         source         = [ 'main.c', 'SConstruct', prog, man_pages ],
+         source         = [ prog, man_pages ],
         )
 )
 

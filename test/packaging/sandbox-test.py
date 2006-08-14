@@ -53,6 +53,7 @@ SharedLibrary( 'foobar', src_files )
 
 Package( projectname = 'libfoobar',
          version     = '1.2.3',
+         type        = 'targz',
          source      = src_files + include_files )
 
 Package( projectname = 'libfoobar',

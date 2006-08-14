@@ -28,12 +28,14 @@ The tarbz2 SRC packager.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Tool.Packaging
+from packager import SourcePackager
 
-def create_builder(env, keywords=None):
-    env['TARFLAGS']  = env['TARFLAGS'] + "-j"
-    builder = env.get_builder('Tar')
-    emitter = SCons.Tool.Packaging.get_src_package_root_emitter(keywords['package_root'])
-    builder.push_emitter(emitter)
-    builder.set_suffix('tar.bz2')
-    return builder
+class TarBz2Packager(SourcePackager):
+    def create_builder(self, env, kw=None):
+        env['TARFLAGS'] = env['TARFLAGS'] + "-j"
+        builder         = env.get_builder('Tar')
+        package_root    = self.create_package_root(kw)
+        emitter         = self.package_root_emitter(package_root)
+        builder.push_emitter(emitter)
+        builder.set_suffix('tar.bz2')
+        return builder

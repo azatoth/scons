@@ -1704,33 +1704,19 @@ class Base(SubstitutionEnvironment):
     def Package(self, **kw):
         """ Entry point for the package tool.
         """
-        # choose a default one
+        # choose a default package type if none is supplied.
         if not kw.has_key('type'):
             kw['type'] = 'zip'
 
-        packager = SCons.Tool.Packaging.get_packager(self, kw)
-
         if not kw.has_key('source'):
             raise SCons.Errors.UserError, "No source for Package() given"
-
-        if not kw.has_key('package_root'):
-            kw['package_root'] = SCons.Tool.Packaging.create_default_package_root(kw)
 
         kw['source_factory'] = self.fs.Entry
         kw['target_factory'] = self.fs.Entry
 
         self.arg2nodes( kw['source'], self.fs.Entry )
 
-        builders = []
-        for p in packager:
-            if not kw.has_key('target') or kw['target']==None:
-                kw['target'] = SCons.Tool.Packaging.create_default_target(kw, p)
-
-            builder = p.create_builder(self, keywords=kw)
-            builders.append(builder)
-
-        return map( lambda x: apply(x, [self], kw), builders )
-
+        return SCons.Tool.Packaging.get_targets(self, kw)
 
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction

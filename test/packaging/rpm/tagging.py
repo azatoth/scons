@@ -66,7 +66,7 @@ Package( projectname    = 'foo',
          packageversion = 0,
          x_rpm_Group    = 'Applicatio/fu',
          description    = 'this shoudl be reallly really long',
-         source         = [ 'src/main.c', 'SConstruct', prog_install ],
+         source         = [ prog_install ],
         )
 """)
 
@@ -75,7 +75,7 @@ Package( projectname    = 'foo',
   test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
   test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
   test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.i386.rpm').read()=='/bin/main\n')
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.src.rpm').read()=='foo-1.2.3-0.src.rpm.tar.gz\nfoo-1.2.3.spec\n')
+  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.src.rpm').read()=='foo-1.2.3-0.tar.gz\nfoo-1.2.3.spec\n')
   test.fail_test( not '(0755, root, users) /bin/main' in file('foo-1.2.3.spec').read() )
 
 test.pass_test()
