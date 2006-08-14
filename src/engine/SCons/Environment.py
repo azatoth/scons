@@ -1515,24 +1515,24 @@ class Base(SubstitutionEnvironment):
         return tlist
 
     def Install(self, dir, source):
-        """Install specified files in the given directory. Prepend the DESTDIR argument to absolute and relative paths."""
+        """Install specified files in the given directory. Prepend the --install-sandbox argument to absolute and relative paths."""
         destdir = None
 
         try:
             import SCons.Script
             args    = SCons.Script.ARGUMENTS
-            destdir = self.arg2nodes( args['DESTDIR'], self.fs.Dir )[0]
+            destdir = self.arg2nodes( args['--install-sandbox'], self.fs.Dir )[0]
         except TypeError:
-            raise SCons.Errors.UserError, "DESTDIR `%s' of Install() is a file, but should be a directory." % str(args['DESTDIR'])
+            raise SCons.Errors.UserError, "--install-sandbox `%s' of Install() is a file, but should be a directory." % str(args['--install-sandbox'])
         except KeyError:
-            # DESTDIR undefined
+            # --install-sandbox undefined
             pass
 
         try:
             if destdir:
                 # Handle the case where the sources are specfied as absolute paths,
                 # where we need to convert them to relative ones, so we really get
-                # them relative to DESTDIR.
+                # them relative to --install-sandbox.
                 _dir   = self.strip_abs_path( dir )
                 dnodes = self.arg2nodes( _dir, destdir.Dir)
             else:
@@ -1562,13 +1562,13 @@ class Base(SubstitutionEnvironment):
         try:
             import SCons.Script
             args    = SCons.Script.ARGUMENTS
-            destdir = self.arg2nodes( args['DESTDIR'], self.fs.Dir )[0]
+            destdir = self.arg2nodes( args['--install-sandbox'], self.fs.Dir )[0]
 
             targets = self.arg2nodes( target, lambda x: destdir.Entry( self.strip_abs_path( x ) ) )
         except TypeError:
-            raise SCons.Errors.UserError, "DESTDIR `%s' of Install() is a file, but should be a directory." % str(args['destdir'])
+            raise SCons.Errors.UserError, "--install-sandbox `%s' of Install() is a file, but should be a directory." % str(args['destdir'])
         except KeyError:
-            # DESTDIR undefined
+            # --install-sandbox undefined
             pass
 
         sources = self.arg2nodes(source, self.fs.File)
