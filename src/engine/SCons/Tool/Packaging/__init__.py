@@ -41,7 +41,7 @@ packagers = {
     'targz'  : targz.TarGzPackager(),
     'zip'    : zip.ZipPackager(),
     'rpm'    : rpm.RpmPackager(),
-    'msi'    : msi,
+    'msi'    : msi.MsiPackager(),
 }
 
 def get_targets(env, kw):

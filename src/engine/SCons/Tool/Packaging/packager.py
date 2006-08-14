@@ -108,8 +108,8 @@ class BinaryPackager(Packager):
                           'target' : self.create_specfile_targets(env['SPEC']),
                           'source' : source } )
 
-        source.extend( specfile )
-        return ( target, source )
+        specfile.extend( source )
+        return ( target, specfile )
 
     def string_specfile(self, target, source, env):
         return "building specfile %s"%(target[0].abspath)

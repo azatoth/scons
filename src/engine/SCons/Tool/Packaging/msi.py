@@ -42,36 +42,40 @@ class MsiPackager(BinaryPackager):
         self.filename_set = []
         self.id_set = {}
 
-    def create_builder(env, kw=None):
+        self.specfile_suffix = '.wxs'
+
+    def create_builder(self, env, kw=None):
         # the wxs_builder is kind of hacked, calling the object_builder and 
         # linker_builder with the correct files.
-
-        wxsfile_action = SCons.Action.Action( self.build_wxsfile,
-                                              self.string_wxsfile,
-                                              varlist=[ 'MSISPEC' ] )
 
         def attach_candle(source, target, env):
             ''' This emitter attaches the candle.exe to the call chain.
             '''
-            p, v          = env['MSISPEC']['projectname'], env['MSISPEC']['version']
+            build_dir = target[0].get_dir()
+
+            p, v          = env['SPEC']['projectname'], env['SPEC']['version']
             wxiobj_target = build_dir.File( '%s-%s.wxiobj' % ( p, v ) )
 
             wxi_builder = SCons.Builder.Builder(
-                action      = '$WIXCANDLECOM',
-                emitter     = self.specfile_emitter,
-                src_suffix  = '.wxs',)
+                action  = '$WIXCANDLECOM',
+                emitter = self.specfile_emitter,
+                src_suffix = '.wxs' )
 
-            wxi_file = apply( wxi_builder, [env], { 'source' : wxs_file,
-                                                    'target' : wxiobj_target, } )[0]
+            wxi_file = apply( wxi_builder, [env], { 'source' : source,
+                                                    'target' : wxiobj_target, } )
 
             return (target, wxi_file)
+
+        def blubb():
+            raise Exception
 
         linker_builder = SCons.Builder.Builder(
             action      = '$WIXLIGHTCOM',
             emitter     = attach_candle,
+            suffix      = '.msi',
             src_suffix  = '.wxiobj')
 
-        env['MSISPEC'] = kw
+        env['SPEC'] = kw
 
         return linker_builder
 
@@ -116,14 +120,14 @@ class MsiPackager(BinaryPackager):
     def gen_dos_short_file_name(self, file):
         """ see http://support.microsoft.com/default.aspx?scid=kb;en-us;Q142982
         """
-        if is_dos_short_file_name(file):
+        if self.is_dos_short_file_name(file):
             return file
 
         fname, ext = os.path.splitext(file)
 
         # first try if it suffices to convert to upper
         file = file.upper()
-        if is_dos_short_file_name(file):
+        if self.is_dos_short_file_name(file):
             return file
 
         for x in [ '.', '"', '/', '[', ']', ':', ';', '=', ',', ' ' ]:
@@ -141,7 +145,7 @@ class MsiPackager(BinaryPackager):
             duplicate = shortname in self.filename_set
             num += 1
 
-        assert( is_dos_short_file_name(shortname) ), 'shortname is %s, longname is %s' % (shortname, file)
+        assert( self.is_dos_short_file_name(shortname) ), 'shortname is %s, longname is %s' % (shortname, file)
         self.filename_set.append(shortname)
         return shortname
 
@@ -252,13 +256,13 @@ class MsiPackager(BinaryPackager):
 
         d3 = doc.createElement( 'Directory' )
         d3.attributes['Id']       = 'vendor_folder'
-        d3.attributes['Name']     = escape( gen_dos_short_file_name( spec['vendor'] ) )
+        d3.attributes['Name']     = escape( self.gen_dos_short_file_name( spec['vendor'] ) )
         d3.attributes['LongName'] = escape( spec['vendor'] )
 
         d4 = doc.createElement( 'Directory' )
         project_folder            = "%s-%s" % (spec['projectname'], spec['version'])
         d4.attributes['Id']       = 'MY_DEFAULT_FOLDER'
-        d4.attributes['Name']     = escape( gen_dos_short_file_name( project_folder ) )
+        d4.attributes['Name']     = escape( self.gen_dos_short_file_name( project_folder ) )
         d4.attributes['LongName'] = escape( project_folder )
 
         d1.childNodes.append( d2 )
@@ -280,8 +284,8 @@ class MsiPackager(BinaryPackager):
 
         Features are specficied with the 'x_msi_feature' or 'doc' FileTag.
         """
-        root       = create_default_directory_layout(root, spec)
-        components = create_feature_dict( files )
+        root       = self.create_default_directory_layout(root, spec)
+        components = self.create_feature_dict( files )
         factory    = Document()
 
         def get_directory( node, dir ):
@@ -314,9 +318,9 @@ class MsiPackager(BinaryPackager):
             for d in dir_parts:
                 nDirectory = factory.createElement( 'Directory' )
                 nDirectory.attributes['LongName'] = escape( d )
-                nDirectory.attributes['Name']     = escape( gen_dos_short_file_name( d ) )
+                nDirectory.attributes['Name']     = escape( self.gen_dos_short_file_name( d ) )
                 upper_dir += d
-                nDirectory.attributes['Id']       = convert_to_id( upper_dir )
+                nDirectory.attributes['Id']       = self.convert_to_id( upper_dir )
 
                 Directory.childNodes.append( nDirectory )
                 Directory = nDirectory
@@ -387,7 +391,7 @@ class MsiPackager(BinaryPackager):
         Feature.attributes['Description']           = escape( spec['summary'] )
         Feature.attributes['Display']               = 'expand'
 
-        for (feature, files) in create_feature_dict(files).items():
+        for (feature, files) in self.create_feature_dict(files).items():
             SubFeature   = factory.createElement('Feature')
             SubFeature.attributes['Id']    = self.convert_to_id( feature )
             SubFeature.attributes['Title'] = ('Main Part',feature)[feature!='default']
@@ -409,7 +413,7 @@ class MsiPackager(BinaryPackager):
             # reference.
             for f in files:
                 ComponentRef = factory.createElement('ComponentRef')
-                ComponentRef.attributes['Id'] = convert_to_id( os.path.basename(f.get_path()) )
+                ComponentRef.attributes['Id'] = self.convert_to_id( os.path.basename(f.get_path()) )
                 SubFeature.childNodes.append(ComponentRef)
 
             Feature.childNodes.append(SubFeature)
