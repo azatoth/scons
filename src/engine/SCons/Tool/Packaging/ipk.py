@@ -122,20 +122,21 @@ Description: $x_ipk_description
         """
         output_files = {}
         def get_file( file ):
-            target = filter( lambda x: x.get_path().rfind(file) != -1, target )[0]
+            target_file = filter( lambda x: x.get_path().rfind(file) != -1, target )[0]
             if not output_files.has_key(file):
-                output_files[file] = open(file, 'w')
+                output_files[file] = open(target_file.abspath, 'w')
 
             return output_files[file]
 
         for f in source:
             tags = f.get_tags()
             if tags.has_key( 'conf' ):
-                get_file( 'conffiles' ).write( tags['install_location'] )
+                get_file( 'conffiles' ).write( tags['install_location'][0].get_path() )
+                get_file( 'conffiles' ).write( '\n' )
 
         for str in 'postrm prerm postinst preinst'.split():
             if env.has_key( "x_ipk_%s" % str ):
                 get_file( str ).write( env[str] )
 
-        for f in output_files:
+        for f in output_files.values():
             f.close()
