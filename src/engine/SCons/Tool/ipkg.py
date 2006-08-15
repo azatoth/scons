@@ -1,11 +1,18 @@
-"""SCons.Tool.Packaging
+"""SCons.Tool.ipkg
 
-SCons Packaging Tool.
+Tool-specific initialization for ipkg.
+
+There normally shouldn't be any need to import this module directly.
+It will usually be imported through the generic SCons.Tool.Tool()
+selection method.
+
+The ipkg tool calls the ipkg-build. Its only argument should be the 
+packages fake_root.
 """
 
 #
 # __COPYRIGHT__
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -28,42 +35,25 @@ SCons Packaging Tool.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Errors
-import SCons.Environment
+import SCons.Builder
+from os import popen
+from os.path import dirname
 
-import os
-import SCons.Defaults
-
-import tarbz2, targz, zip, rpm, msi, ipk
-
-packagers = {
-    'tarbz2' : tarbz2.TarBz2Packager(),
-    'targz'  : targz.TarGzPackager(),
-    'zip'    : zip.ZipPackager(),
-    'rpm'    : rpm.RpmPackager(),
-    'msi'    : msi.MsiPackager(),
-    'ipk'    : ipk.IpkPackager(),
-}
-
-def get_targets(env, kw):
-    """ creates the target for the given packager types, completly setup
-    with its dependencies.
-    """
-    type = kw['type']
-    if SCons.Util.is_String( type ):
-        type = [ type ]
-
-    env['SPEC'] = kw
-
+def generate(env):
+    """Add Builders and construction variables for ipkg to an Environment."""
     try:
-        selected_packagers = []
-        for t in type:
-            selected_packagers.append(packagers.get(t))
-        targets = []
-        for p in selected_packagers:
-            builder = p.create_builder(env, kw)
-            target  = apply( builder, [env], p.add_targets(kw) )
-            targets.extend(target)
-
+        bld = env['BUILDERS']['Ipkg']
     except KeyError:
-        raise SCons.Errors.UserError( 'packager %s not available' % t )
+        bld = SCons.Builder.Builder( action  = '$IPKGCOM',
+                                     suffix  = '$IPKGSUFFIX',
+                                     source_scanner = None,
+                                     target_scanner = None)
+        env['BUILDERS']['Ipkg'] = bld
+
+    env['IPKG']        = 'ipkg-build'
+    env['IPKGFLAGS']   = SCons.Util.CLVar('')
+    env['IPKGCOM']     = '$IPKG $IPKGFLAGS ${SOURCE}'
+    env['IPKGSUFFIX']  = '.ipk'
+
+def exists(env):
+    return env.Detect('ipkg-build')

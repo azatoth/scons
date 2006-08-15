@@ -105,7 +105,7 @@ class BinaryPackager(Packager):
                                                   suffix = self.specfile_suffix )
 
         specfile = apply( specfile_builder, [ env ], {
-                          'target' : self.create_specfile_targets(env['SPEC']),
+                          'target' : self.create_specfile_targets(env),
                           'source' : source } )
 
         specfile.extend( source )
