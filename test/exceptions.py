@@ -25,6 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
+import re
 import string
 import sys
 import TestSCons
@@ -34,7 +35,9 @@ python = TestSCons.python
 
 test = TestSCons.TestSCons(match = TestCmd.match_re_dotall)
 
-test.write('SConstruct', """
+SConstruct_path = test.workpath('SConstruct')
+
+test.write(SConstruct_path, """\
 def func(source = None, target = None, env = None):
     raise "func exception"
 B = Builder(action = func)
@@ -51,10 +54,10 @@ Traceback \((most recent call|innermost) last\):
 )*(  File ".+", line \d+, in \S+
 )*(  File ".+", line \d+, in \S+
     [^\n]+
-)*  File "SConstruct", line 3, in func
+)*  File "%s", line 2, in func
     raise "func exception"
 func exception
-"""
+""" % re.escape(SConstruct_path)
 
 test.run(arguments = "foo.out", stderr = expected_stderr, status = 2)
 
@@ -69,7 +72,7 @@ import sys
 sys.exit(1)
 """)
 
-test.write('SConstruct', """
+test.write(SConstruct_path, """
 Fail = Builder(action = r'%s myfail.py $TARGETS $SOURCE')
 env = Environment(BUILDERS = { 'Fail' : Fail })
 env.Fail(target = 'f1', source = 'f1.in')
@@ -87,7 +90,7 @@ test.run(arguments = '-j2 .', status = 2, stderr = expected_stderr)
 # even if the exception is raised during the Task.prepare()
 # [Node.prepare()]
 
-test.write('SConstruct', """
+test.write(SConstruct_path, """
 Fail = Builder(action = r'%s myfail.py $TARGETS $SOURCE')
 env = Environment(BUILDERS = { 'Fail' : Fail })
 env.Fail(target = 'f1', source = 'f1.in')

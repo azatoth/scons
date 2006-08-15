@@ -85,7 +85,7 @@ a.append(2)
 
 test.run(status = 2, stderr = """\
 AttributeError: 'int' object has no attribute 'append':
-  File "SConstruct", line 2:
+  File ".+SConstruct", line 2:
     a.append\(2\)
 """)
 
@@ -98,7 +98,7 @@ a == 1
 
 test.run(status = 2, stderr = """\
 NameError: [^\n]*
-  File "SConstruct", line 1:
+  File ".+SConstruct", line 1:
     a == 1
 """)
 
@@ -110,7 +110,7 @@ a ! x
 """)
 
 test.run(stdout = "scons: Reading SConscript files ...\n",
-         stderr = """  File "SConstruct", line 2
+         stderr = """  File ".+SConstruct", line 2
 
     a ! x
 
@@ -130,7 +130,7 @@ a[2] = 3
 
 test.run(status = 2, stderr = """\
 TypeError: object does not support item assignment:
-  File "SConstruct", line 2:
+  File ".+SConstruct", line 2:
     a\[2\] = 3
 """)
 
@@ -146,7 +146,7 @@ raise SCons.Errors.UserError, 'Depends() require both sources and targets.'
 test.run(stdout = "scons: Reading SConscript files ...\n",
          stderr = """
 scons: \*\*\* Depends\(\) require both sources and targets.
-File "SConstruct", line 4, in \?
+File ".+SConstruct", line 4, in \?
 """, status=2)
 
 
@@ -163,7 +163,7 @@ test.run(stdout = "scons: Reading SConscript files ...\ninternal error\n",
   File ".+", line \d+, in .+
   File ".+", line \d+, in .+
   File ".+", line \d+, in .+
-  File "SConstruct", line \d+, in \?
+  File ".+SConstruct", line \d+, in \?
     raise InternalError, 'error inside'
 InternalError: error inside
 """, status=2)

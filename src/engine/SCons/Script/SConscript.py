@@ -176,7 +176,7 @@ def _SConscript(fs, *files, **kw):
                 # fs match so we can open the SConscript.
                 fs.chdir(top, change_os_dir=1)
                 if f.rexists():
-                    _file_ = open(f.rstr(), "r")
+                    _file_ = open(f.rfile().get_abspath(), "r")
                 elif f.has_src_builder():
                     # The SConscript file apparently exists in a source
                     # code management system.  Build it, but then clear
@@ -185,7 +185,7 @@ def _SConscript(fs, *files, **kw):
                     f.build()
                     f.builder_set(None)
                     if f.exists():
-                        _file_ = open(str(f), "r")
+                        _file_ = open(f.get_abspath(), "r")
                 if _file_:
                     # Chdir to the SConscript directory.  Use a path
                     # name relative to the SConstruct file so that if

@@ -108,6 +108,10 @@ RELEASE 0.97 - XXX
 
   - Initial infrastructure for running SCons tests under QMTest.
 
+  From Dobes Vandermeer:
+
+  - In stack traces, print the full paths of SConscript files.
+
   From Atul Varma:
 
   - Fix detection of Visual C++ Express Edition.
