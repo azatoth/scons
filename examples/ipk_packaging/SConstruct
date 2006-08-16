@@ -2,7 +2,7 @@ prog = Install( '/bin/', Program( 'main.c') )
 
 Package( projectname        = 'foo',
          version            = '1.2.3',
-         x_ipk_architecture = 'arm',
+         architecture       = 'arm',
          x_ipk_maintainer   = 'user <user@somehost.net>',
          x_ipk_priority     = 'optional',
          x_ipk_source       = 'http://ftp.gnu.org/foo-1.2.3.tar.gz',

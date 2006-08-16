@@ -60,7 +60,7 @@ class IpkPackager(BinaryPackager, SourcePackager):
             kw['target'] = [ "%s_%s_%s.ipk" % (projectname, version, architecture) ]
 
         except KeyError, e:
-            raise SCons.Error.UserError( "Missing PackageTag '%s' for IPK packager" % e.args[0] )
+            raise SCons.Errors.UserError( "Missing PackageTag '%s' for IPK packager" % e.args[0] )
 
         return kw
 
@@ -100,7 +100,7 @@ class IpkPackager(BinaryPackager, SourcePackager):
             env['x_ipk_priority']
             env['x_ipk_section']
             env['x_ipk_source']
-            env['x_ipk_architecture']
+            env['architecture']
             env['x_ipk_maintainer']
             env['x_ipk_depends']
             env['x_ipk_description']
@@ -111,7 +111,7 @@ Version: $version
 Priority: $x_ipk_priority
 Section: $x_ipk_section
 Source: $x_ipk_source
-Architecture: $x_ipk_architecture
+Architecture: $architecture
 Maintainer: $x_ipk_maintainer
 Depends: $x_ipk_depends
 Description: $x_ipk_description
