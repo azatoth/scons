@@ -39,22 +39,28 @@ class IpkPackager(BinaryPackager, SourcePackager):
         env['IPKGGROUP'] = os.popen('id -gn').read().strip()
         env['IPKGFLAGS'] = SCons.Util.CLVar('-o $IPKGUSER -g $IPKGGROUP')
         env['IPKGCOM']   = '$IPKG $IPKGFLAGS ${SOURCE.get_path().replace("/CONTROL/control","")}'
-        ipkbuilder.push_emitter(self.specfile_emitter)
 
         self.pkg_root    = "%s-%s" % ( kw['projectname'], kw['version'] )
         pkg_root_emitter = SourcePackager.package_root_emitter(self, self.pkg_root)
-        ipkbuilder.push_emitter( pkg_root_emitter )
+
+        ipkbuilder.push_emitter(self.specfile_emitter)
+        ipkbuilder.push_emitter(pkg_root_emitter)
+        ipkbuilder.push_emitter(self.strip_install_emitter)
 
         return ipkbuilder
 
     def add_targets(self, kw):
         """ tries to guess the filenames of the generated IPKG files.
         """
-        version      = kw['version']
-        projectname  = kw['projectname']
-        architecture = kw['x_ipk_architecture']
+        try:
+            version      = kw['version']
+            projectname  = kw['projectname']
+            architecture = kw['architecture']
 
-        kw['target'] = [ "%s_%s_%s.ipk" % (projectname, version, architecture) ]
+            kw['target'] = [ "%s_%s_%s.ipk" % (projectname, version, architecture) ]
+
+        except KeyError, e:
+            raise SCons.Error.UserError( "Missing PackageTag '%s' for IPK packager" % e.args[0] )
 
         return kw
 

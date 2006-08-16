@@ -802,8 +802,11 @@ class OptParser(OptionParser):
                         metavar="WARNING-SPEC",
                         help="Enable or disable warnings.")
 
-        self.add_option('-Y', '--repository', nargs=1, action="append",
+        self.add_option('-Y', '--repository', '--srcdir', nargs=1, action="append",
                         help="Search REPOSITORY for source and target files.")
+
+        self.add_option('--install-sandbox', type="string", dest="install_sandbox",
+                        help="A directory where all installed files will be placed.")
 
         self.add_option('-e', '--environment-overrides', action="callback",
                         callback=opt_not_yet,

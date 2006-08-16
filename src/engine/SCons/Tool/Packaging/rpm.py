@@ -41,26 +41,34 @@ class RpmPackager(BinaryPackager):
 
         rpmbuilder.push_emitter(self.targz_emitter)
         rpmbuilder.push_emitter(self.specfile_emitter)
+        rpmbuilder.push_emitter(self.strip_install_emitter)
 
         return rpmbuilder
 
     def add_targets(self, kw):
         """ tries to guess the filenames of the generated RPMS files.
         """
-        version        = kw['version']
-        projectname    = kw['projectname']
-        packageversion = kw['packageversion']
+        try:
+            version           = kw['version']
+            projectname       = kw['projectname']
+            packageversion    = kw['packageversion']
+            buildarchitecture = 'i386'
 
-        # XXX: this should be guessed by inspecting compilerflags?!?! how to get
-        # them?
-        buildarchitecture = 'i386'
+            if kw.has_key('architecture'):
+                buildarchitecture = kw['architecture']
 
-        srcrpm = '%s-%s-%s.src.rpm' % (projectname, version, packageversion)
-        binrpm = srcrpm.replace( 'src', buildarchitecture )
+            srcrpm = '%s-%s-%s.src.rpm' % (projectname, version, packageversion)
+            binrpm = srcrpm.replace( 'src', buildarchitecture )
 
-        kw['target'] = [ srcrpm, binrpm ]
+            kw['target'] = [ srcrpm, binrpm ]
+
+        except KeyError, e:
+            raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
 
         return kw
+
+    def create_specfile_targets(self, env):
+        return "%s-%s.spec" % (env['projectname'], env['version'])
 
     def build_specfile(self, target, source, env):
         """ Builds a RPM specfile from a dictionary with string metadata and
@@ -82,6 +90,8 @@ class RpmPackager(BinaryPackager):
         builder = TarGzPackager().create_builder(env)
 
         # XXX: this might be  inrobust!
+        # the rpm tool depends on a source package, until this is chagned
+        # this hack needs to be here that tries to pack all sources in.
         # <nastyHack>
         sources = []
         def add_sources(files):
@@ -237,8 +247,7 @@ class RpmPackager(BinaryPackager):
             str += SimpleTagCompiler(supported_tags, mandatory=0).compile( tags )
 
             str += ' '
-            str += tags['install_location'][0].get_path()
+            str += tags['install_location'].get_path()
             str += '\n\n'
 
         return str
-

@@ -13,7 +13,7 @@ Package( projectname    = 'foo',
          packageversion = 0,
          x_rpm_Group    = 'Application/office',
          description    = 'this should be reallly really long',
-         source         = [ 'main.c', 'SConstruct', prog_install ],
+         source         = [ prog_install ],
         )
 
 Alias( 'install', prog_install )

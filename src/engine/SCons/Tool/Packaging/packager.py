@@ -51,6 +51,37 @@ class Packager:
 
         return kw
 
+    def strip_install_emitter(self, target, source, env):
+        """ this emitter assert that all files in source have an InstallBuilder
+        attached. We take their sources and copy over the file tags, so the
+        the builder this emitter is attached to is independent of the *installed*
+        files.
+        """
+        tag_factories = [ LocationTagFactory() ]
+
+        def has_no_install_location(file):
+            tags = file.get_tags(factories=tag_factories)
+            return not tags.has_key('install_location')
+
+        # check if all source file belong into this package.
+        files = filter( has_no_install_location, source )
+        if len( files ) != 0:
+            raise SCons.Errors.UserError( "There are files which have no Install() Builder attached and are therefore not packageable\n%s" % map( lambda x: x.get_path(), files ) )
+
+        # All source files have an InstallBuilder attached and we don't want our
+        # package to be dependent on the *installed* files but only on the
+        # files that will be installed. Therefore we only care for sources of
+        # the files in the source list.
+        n_source = []
+        for s in source:
+            for n_s in s.sources:
+                n_s.set_tags( s.get_tags() )
+                n_source.append( n_s )
+        source = n_source
+
+        return ( target, source )
+
+
 class BinaryPackager(Packager):
     """ abstract superclass for all packagers creating a binary package.
 
@@ -74,27 +105,6 @@ class BinaryPackager(Packager):
     def specfile_emitter(self, target, source, env):
         """ adds the to build specfile to the source list.
         """
-        tag_factories = [ LocationTagFactory() ]
-
-        def has_no_install_location(file):
-            tags = file.get_tags(factories=tag_factories)
-            return not tags.has_key('install_location')
-
-        # check if all source file belong into this package.
-        if len( filter( has_no_install_location, source ) ) != 0:
-            raise SCons.Errors.UserError( 'There are files which have no Install() Builder attached and are therefore not packageable' )
-
-        # All source files have an InstallBuilder attached and we don't want our
-        # package to be dependent on the *installed* files but only on the
-        # files that will be installed. Therefore we only care for sources of
-        # the files in the source list.
-        n_source = []
-        for s in source:
-            for n_s in s.sources:
-                n_s.set_tags( s.get_tags() )
-                n_source.append( n_s )
-        source = n_source
-
         # create a specfile action that is executed for building the specfile
         specfile_action = SCons.Action.Action( self.build_specfile,
                                                self.string_specfile,
@@ -137,22 +147,32 @@ class SourcePackager(Packager):
             projectname, version = kw['projectname'], kw['version']
             return "%s-%s"%(projectname,version)
 
-    def package_root_emitter(self,src_package_root):
-        """This emitter changes the source to be rooted in the given package_root.
-        """
+    def package_root_emitter(self, pkg_root):
         def package_root_emitter(target, source, env):
+            """ This emitter copies the sources to the src_package_root directory:
+             * if a source has an install_location, not its original name is
+               used but the one specified in the 'install_location' tag.
+             * else its original name is used.
+             * if the source file is already in the src_package_root directory, 
+               nothing will be done.
+            """
             new_source = []
-            for s in source:
-                # XXX: convert the src package root to a Dir()?
-                filename = os.path.join( src_package_root, env.strip_abs_path( s.get_path() ) )
-                new_s    = env.Command( source = s,
-                                        target = filename,
-                                        action = SCons.Defaults.Copy( '$TARGET', '$SOURCE' ),
-                                      )[0]
+            for s in [ x for x in source if os.path.dirname(x.get_path()).rfind(pkg_root) == -1 ]:
+                tags     = s.get_tags()
+                new_s    = None
+
+                if tags.has_key( 'install_location' ):
+                    my_target = tags['install_location'].get_path()
+                else:
+                    my_target = env.strip_abs_path(s.get_path())
+
+                new_s = env.Command( source = s,
+                                     target = os.path.join( pkg_root, env.strip_abs_path( my_target ) ),
+                                     action = SCons.Defaults.Copy( '$TARGET', '$SOURCE' ),
+                                    )[0]
 
                 # store the tags of our original file in the new file.
-                new_s.set_tags( s.get_tags( factories=[ LocationTagFactory() ] ) )
-
+                new_s.set_tags( s.get_tags() )
                 new_source.append( new_s )
 
             return (target, new_source)
@@ -190,7 +210,7 @@ class LocationTagFactory(TagFactory):
         if file.has_builder() and\
            file.builder == SCons.Environment.InstallBuilder and\
            file.has_explicit_builder():
-            return { 'install_location' : file.builder.targets( file ) }
+            return { 'install_location' : file.builder.targets( file )[0] }
         else:
             return {}
 
