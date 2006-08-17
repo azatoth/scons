@@ -52,6 +52,7 @@ Package( projectname    = 'foo',
          x_rpm_Group    = 'Application/office',
          description    = 'this should be really long',
          source         = [ prog ],
+         source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
         )
 """)
 

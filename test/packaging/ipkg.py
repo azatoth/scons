@@ -60,10 +60,10 @@ Package( type    = 'ipk',
  When you modify this example, be sure to change the Package, Version,
  Maintainer, Depends, and Description fields.''',
 
-  x_ipk_source   = 'http://gnu.org/foo-0.0.tar.gz',
+  source_url     = 'http://gnu.org/foo-0.0.tar.gz',
   x_ipk_section  = 'extras',
   x_ipk_priority = 'optional',
-  x_ipk_architecture = 'arm',
+  architecture   = 'arm',
   x_ipk_maintainer   = 'Familiar User <user@somehost.net>',
   x_ipk_depends  = 'libc6, grep', )
 """)

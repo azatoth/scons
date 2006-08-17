@@ -72,6 +72,7 @@ Package( projectname    = 'foo',
          description_de = 'das sollte wirklich lang sein',
          description_fr = 'ceci devrait être vraiment long',
          source         = [ prog ],
+         source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
         )
 
 Alias ( 'install', prog )
@@ -139,6 +140,7 @@ Package( projectname    = 'foo',
          description_de = 'das sollte wirklich lang sein',
          description_fr = 'ceci devrait être vraiment long',
          source         = [ prog, man_pages ],
+         source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
         )
 )
 

@@ -99,7 +99,7 @@ class IpkPackager(BinaryPackager, SourcePackager):
             env['version']
             env['x_ipk_priority']
             env['x_ipk_section']
-            env['x_ipk_source']
+            env['source_url']
             env['architecture']
             env['x_ipk_maintainer']
             env['x_ipk_depends']
@@ -110,7 +110,7 @@ Package: $projectname
 Version: $version
 Priority: $x_ipk_priority
 Section: $x_ipk_section
-Source: $x_ipk_source
+Source: $source_url
 Architecture: $architecture
 Maintainer: $x_ipk_maintainer
 Depends: $x_ipk_depends
@@ -137,7 +137,7 @@ Description: $x_ipk_description
         for f in source:
             tags = f.get_tags()
             if tags.has_key( 'conf' ):
-                get_file( 'conffiles' ).write( tags['install_location'][0].get_path() )
+                get_file( 'conffiles' ).write( tags['install_location'].get_path() )
                 get_file( 'conffiles' ).write( '\n' )
 
         for str in 'postrm prerm postinst preinst'.split():

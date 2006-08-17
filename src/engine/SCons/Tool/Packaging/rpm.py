@@ -113,14 +113,13 @@ class RpmPackager(BinaryPackager):
         package_root    = targz.create_package_root(env)
         builder.emitter = targz.package_root_emitter(package_root, honor_install_location=0)
 
-        target_s = "%s-%s-%s.tar.gz" % (env['projectname'],
-                                        env['version'],
-                                        env['packageversion'])
+        # as the source contains the url of the source package this rpm package
+        # is built from, we extract the target name
+        target_s = env['source_url'].split('/')[-1]
         tarball  = apply( builder, [env],
                           { 'source' : sources,
                             'target' : target_s } )
 
-        env['x_rpm_Source'] = tarball[0].get_path()
 
         return (target, tarball)
 
@@ -191,6 +190,7 @@ class RpmPackager(BinaryPackager):
         optional_header_fields = {
             'vendor'              : 'Vendor: %s\n',
             'url'                 : 'Url: %s\n',
+            'source_url'          : 'Source: %s\n',
             'summary_'            : 'Summary(%s): %s\n',
             'x_rpm_Distribution'  : 'Distribution: %s\n',
             'x_rpm_Icon'          : 'Icon: %s\n',
@@ -211,7 +211,6 @@ class RpmPackager(BinaryPackager):
             'x_rpm_Conflicts'     : 'Conflicts: %s\n',
 
             # internal use
-            'x_rpm_Source'        : 'Source: %s\n',
             'x_rpm_BuildRoot'     : 'BuildRoot: %s\n', }
 
         # fill in default values:
