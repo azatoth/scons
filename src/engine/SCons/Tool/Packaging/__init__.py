@@ -59,7 +59,8 @@ def get_targets(env, kw):
     with its dependencies.
     """
     global type
-    type = kw['type'] or type
+    if kw.has_key( 'type' ):
+        type = kw['type']
     if SCons.Util.is_String( type ):
         type = [ type ]
 
