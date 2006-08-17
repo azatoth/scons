@@ -177,14 +177,6 @@ Touch = ActionFactory(touch_func,
                       lambda file: 'Touch("%s")' % file)
 
 # Internal utility functions
-def copyFunc(dest, source, env):
-    """Install a source file into a destination by copying it (and its
-    permission/mode bits)."""
-    shutil.copy2(source, dest)
-    st = os.stat(source)
-    os.chmod(dest, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
-    return 0
-
 def _concat(prefix, list, suffix, env, f=lambda x: x, target=None, source=None):
     """Creates a new list from 'list' by first interpolating each
     element in the list using the 'env' dictionary and then calling f
@@ -338,13 +330,11 @@ ConstructionEnvironment = {
     'SCANNERS'      : [],
     'CONFIGUREDIR'  : '#/.sconf_temp',
     'CONFIGURELOG'  : '#/config.log',
-    'INSTALLSTR'    : 'Install file: "$SOURCE" as "$TARGET"',
     'CPPSUFFIXES'   : SCons.Tool.CSuffixes,
     'DSUFFIXES'     : SCons.Tool.DSuffixes,
     'IDLSUFFIXES'   : SCons.Tool.IDLSuffixes,
     'LATEXSUFFIXES' : SCons.Tool.LaTeXSuffixes,
     'ENV'           : {},
-    'INSTALL'       : copyFunc,
     '_concat'       : _concat,
     '_defines'      : _defines,
     '_stripixes'    : _stripixes,

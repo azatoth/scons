@@ -146,7 +146,7 @@ Alias ( 'install', [ prog, man_pages ] )
 """)
 
 
-    test.run(arguments='DESTDIR=blubb install', stderr = None)
+    test.run(arguments='--install-sandbox=blubb install', stderr = None)
 
     test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
     test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )

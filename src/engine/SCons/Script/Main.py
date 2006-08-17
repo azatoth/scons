@@ -805,7 +805,10 @@ class OptParser(OptionParser):
         self.add_option('-Y', '--repository', '--srcdir', nargs=1, action="append",
                         help="Search REPOSITORY for source and target files.")
 
-        self.add_option('--install-sandbox', type="string", dest="install_sandbox",
+        import SCons.Tool.install
+        self.add_option('--install-sandbox', type="string", action="callback",
+                        callback=SCons.Tool.install.set_install_sandbox, nargs=1,
+                        metavar='DESTDIR',
                         help="A directory where all installed files will be placed.")
 
         self.add_option('-e', '--environment-overrides', action="callback",

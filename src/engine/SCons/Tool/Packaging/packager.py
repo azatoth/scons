@@ -208,13 +208,26 @@ class LocationTagFactory(TagFactory):
             return {}
 
         if file.has_builder() and\
-           file.builder == SCons.Environment.InstallBuilder and\
+           file.builder.name == "InstallBuilder" and\
            file.has_explicit_builder():
             return { 'install_location' : file.builder.targets( file )[0] }
         else:
             return {}
 
 class SimpleTagCompiler:
+    """ This class is a simple string substition utility:
+    the replacement specfication is stored in the tagset dictionary, something
+    like:
+     { "abc"  : "cdef %s ",
+       "abc_" : "cdef %s %s" }
+
+    the compile function gets a value dictionary, which may look like:
+    { "abc"    : "ghij",
+      "abc_gh" : "ij" }
+
+    The resulting string will be:
+     "cdef ghij cdef gh ij"
+    """
     def __init__(self, tagset, mandatory=1):
         self.tagset    = tagset
         self.mandatory = mandatory

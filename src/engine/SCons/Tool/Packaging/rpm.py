@@ -146,8 +146,7 @@ class RpmPackager(BinaryPackager):
 
         # Default prep, build, install and clean rules
         if not spec.has_key('x_rpm_Prep'):
-            spec['x_rpm_Prep']  = 'rm -rf $RPM_BUILD_ROOT\n'
-            spec['x_rpm_Prep'] += '%setup -q'
+            spec['x_rpm_Prep'] = '%setup -q'
 
         if not spec.has_key('x_rpm_Build'):
             spec['x_rpm_Build'] = 'mkdir $RPM_BUILD_ROOT'

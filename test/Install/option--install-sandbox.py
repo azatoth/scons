@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test the DESTDIR argument for Install() and InstallAs().
+Test the --install-sandbox commandline option for Install() and InstallAs().
 """
 
 import os.path
@@ -55,15 +55,14 @@ test.write(['subdir', 'file3.in'], "subdir/file3.in\n")
 subdir_file3_in = os.path.join('subdir', 'file3.in')
 file1_out       = target+os.path.join( target, os.path.join( destdir, 'file1.out' ) )
 expect = test.wrap_stdout("""\
-Install file: "file2.in" as "%s"
-Install file: "%s" as "%s"
+Install file: "file2.in %s" as "%s %s"
 Install file: "file1.out" as "%s"
-""" % ( os.path.join( target, 'file2.out' ),
-        subdir_file3_in,
+""" % ( subdir_file3_in,
+        os.path.join( target, 'file2.out' ),
         os.path.join( target, subdir_file3_in.replace( 'in', 'out' ) ),
         file1_out, ) )
 
-test.run(arguments = 'DESTDIR=%s' % destdir, stdout=expect)
+test.run(arguments = '--install-sandbox=%s' % destdir, stdout=expect)
 
 test.fail_test(test.read(file1_out) != "file1.out\n")
 test.fail_test(test.read('destination/file2.out') != "file2.in\n")

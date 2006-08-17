@@ -75,23 +75,6 @@ CalculatorArgs = {}
 # which seem to mess up its ability to reference SCons directly.
 UserError = SCons.Errors.UserError
 
-def installFunc(target, source, env):
-    """Install a source file into a target using the function specified
-    as the INSTALL construction variable."""
-    try:
-        install = env['INSTALL']
-    except KeyError:
-        raise SCons.Errors.UserError('Missing INSTALL construction variable.')
-    return install(target[0].abspath, source[0].path, env)
-
-def installString(target, source, env):
-    return env.subst_target_source(env['INSTALLSTR'], 0, target, source)
-
-installAction = SCons.Action.Action(installFunc, installString)
-
-InstallBuilder = SCons.Builder.Builder(action=installAction,
-                                       name='InstallBuilder')
-
 def alias_builder(env, target, source):
     pass
 
@@ -1514,7 +1497,7 @@ class Base(SubstitutionEnvironment):
             t.add_ignore(dlist)
         return tlist
 
-    def Install(self, dir, source):
+    def Install_old(self, dir, source):
         """Install specified files in the given directory. Prepend the --install-sandbox argument to absolute and relative paths."""
         destdir = None
 
@@ -1552,10 +1535,10 @@ class Base(SubstitutionEnvironment):
         for dnode in dnodes:
             for src in sources:
                 target = self.fs.File(src.name, dnode)
-                tgt.extend(InstallBuilder(self, target, src))
+                tgt.extend(self['BUILDERS']['Install'](self, target, src))
         return tgt
 
-    def InstallAs(self, target, source):
+    def InstallAs_old(self, target, source):
         """Install sources as targets."""
         targets = self.arg2nodes(target, self.fs.File)
 
@@ -1574,7 +1557,7 @@ class Base(SubstitutionEnvironment):
         sources = self.arg2nodes(source, self.fs.File)
         result = []
         for src, tgt in map(lambda x, y: (x, y), sources, targets):
-            result.extend(InstallBuilder(self, tgt, src))
+            result.extend(self['BUILDERS']['Install'](self, tgt, src))
         return result
 
     def Literal(self, string):
