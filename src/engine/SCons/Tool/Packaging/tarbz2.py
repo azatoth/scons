@@ -32,10 +32,13 @@ from packager import SourcePackager
 
 class TarBz2Packager(SourcePackager):
     def create_builder(self, env, kw=None):
-        env['TARFLAGS'] = env['TARFLAGS'] + "-j"
-        builder         = env.get_builder('Tar')
-        package_root    = self.create_package_root(kw)
-        emitter         = self.package_root_emitter(package_root)
+        env['TARFLAGS'] = "-jc"
+        builder = env.get_builder('Tar')
+        if kw:
+            package_root = self.create_package_root(kw)
+        else:
+            package_root = self.create_package_root(env)
+        emitter = self.package_root_emitter(package_root)
         builder.push_emitter(emitter)
         builder.set_suffix('tar.bz2')
         return builder

@@ -32,9 +32,12 @@ from packager import SourcePackager
 
 class ZipPackager(SourcePackager):
     def create_builder(self, env, kw=None):
-        builder         = env.get_builder('Zip')
-        package_root    = self.create_package_root(kw)
-        emitter         = self.package_root_emitter(package_root)
+        builder = env.get_builder('Zip')
+        if kw:
+            package_root = self.create_package_root(kw)
+        else:
+            package_root = self.create_package_root(env)
+        emitter = self.package_root_emitter(package_root)
         builder.push_emitter(emitter)
         builder.set_suffix('zip')
         return builder

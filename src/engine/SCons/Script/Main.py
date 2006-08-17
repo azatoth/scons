@@ -811,6 +811,14 @@ class OptParser(OptionParser):
                         metavar='DESTDIR',
                         help="A directory where all installed files will be placed.")
 
+        import SCons.Tool.Packaging
+        self.add_option('--package-type', type='string', action='callback',
+                        callback=SCons.Tool.Packaging.set_package_type, nargs=1,
+                        metavar='TYPE',
+                        help='The type of package which Package() shall create.'+
+                             'Must be one of '+
+                             str(SCons.Tool.Packaging.packagers.keys()))
+
         self.add_option('-e', '--environment-overrides', action="callback",
                         callback=opt_not_yet,
                         # help="Environment variables override makefiles."

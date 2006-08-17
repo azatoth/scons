@@ -32,14 +32,13 @@ from packager import SourcePackager
 
 class TarGzPackager(SourcePackager):
     def create_builder(self, env, kw=None):
-        env['TARFLAGS']  = env['TARFLAGS'] + "-z"
-        builder          = env.get_builder('Tar')
-        package_root     = ""
+        env['TARFLAGS']  = '-zc'
+        builder = env.get_builder('Tar')
         if kw:
             package_root = self.create_package_root(kw)
         else:
             package_root = self.create_package_root(env)
-        emitter          = self.package_root_emitter(package_root)
+        emitter = self.package_root_emitter(package_root)
         builder.push_emitter(emitter)
         builder.set_suffix('tar.gz')
         return builder

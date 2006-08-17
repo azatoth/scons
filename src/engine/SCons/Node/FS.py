@@ -719,6 +719,9 @@ class Base(SCons.Node.Node):
 
         return self.tags
 
+    def clear_tags(self):
+        self.tags = {}
+
 
 class Entry(Base):
     """This is the class for generic Node.FS entries--that is, things

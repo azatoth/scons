@@ -87,7 +87,8 @@ class RpmPackager(BinaryPackager):
     def targz_emitter(self, target, source, env):
         """ Puts all source files into a tar.gz file.
         """
-        builder = TarGzPackager().create_builder(env)
+        targz   = TarGzPackager()
+        builder = targz.create_builder(env)
 
         # XXX: this might be  inrobust!
         # the rpm tool depends on a source package, until this is chagned
@@ -107,9 +108,19 @@ class RpmPackager(BinaryPackager):
         sources.extend(map(env.fs.File, glob('SConscript')))
         # </nastyHack>
 
-        tarball = apply( builder, [env], { 'target' : "%s-%s-%s.tar.gz" %
-                         ( env['projectname'], env['version'], env['packageversion'] ),
-                         'source' : sources } )
+        # create a special emitter, which does not honor the install_location
+        # tag, so we get a real *source* package.
+        package_root    = targz.create_package_root(env)
+        builder.emitter = targz.package_root_emitter(package_root, honor_install_location=0)
+
+        target_s = "%s-%s-%s.tar.gz" % (env['projectname'],
+                                        env['version'],
+                                        env['packageversion'])
+        tarball  = apply( builder, [env],
+                          { 'source' : sources,
+                            'target' : target_s } )
+
+        print str(target)
 
         env['x_rpm_Source'] = tarball[0].get_path()
 
@@ -146,13 +157,14 @@ class RpmPackager(BinaryPackager):
 
         # Default prep, build, install and clean rules
         if not spec.has_key('x_rpm_Prep'):
-            spec['x_rpm_Prep'] = '%setup -q'
+            spec['x_rpm_Prep'] = 'rm -rf $RPM_BUILD_ROOT'
+            spec['x_rpm_Prep'] += '\n%setup -q'
 
         if not spec.has_key('x_rpm_Build'):
             spec['x_rpm_Build'] = 'mkdir $RPM_BUILD_ROOT'
 
         if not spec.has_key('x_rpm_Install'):
-            spec['x_rpm_Install'] = 'scons --install-sandbox=$RPM_BUILD_ROOT install'
+            spec['x_rpm_Install'] = 'scons --install-sandbox=$RPM_BUILD_ROOT $RPM_BUILD_ROOT'
 
         if not spec.has_key('x_rpm_Clean'):
             spec['x_rpm_Clean'] = 'rm -rf $RPM_BUILD_ROOT'

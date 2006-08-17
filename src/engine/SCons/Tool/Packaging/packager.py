@@ -147,7 +147,7 @@ class SourcePackager(Packager):
             projectname, version = kw['projectname'], kw['version']
             return "%s-%s"%(projectname,version)
 
-    def package_root_emitter(self, pkg_root):
+    def package_root_emitter(self, pkg_root, honor_install_location=1):
         def package_root_emitter(target, source, env):
             """ This emitter copies the sources to the src_package_root directory:
              * if a source has an install_location, not its original name is
@@ -161,7 +161,7 @@ class SourcePackager(Packager):
                 tags     = s.get_tags()
                 new_s    = None
 
-                if tags.has_key( 'install_location' ):
+                if tags.has_key( 'install_location' ) and honor_install_location:
                     my_target = tags['install_location'].get_path()
                 else:
                     my_target = env.strip_abs_path(s.get_path())

@@ -1497,84 +1497,6 @@ class Base(SubstitutionEnvironment):
             t.add_ignore(dlist)
         return tlist
 
-    def Install_old(self, dir, source):
-        """Install specified files in the given directory. Prepend the --install-sandbox argument to absolute and relative paths."""
-        destdir = None
-
-        try:
-            import SCons.Script
-            args    = SCons.Script.ARGUMENTS
-            destdir = self.arg2nodes( args['--install-sandbox'], self.fs.Dir )[0]
-        except TypeError:
-            raise SCons.Errors.UserError, "--install-sandbox `%s' of Install() is a file, but should be a directory." % str(args['--install-sandbox'])
-        except KeyError:
-            # --install-sandbox undefined
-            pass
-
-        try:
-            if destdir:
-                # Handle the case where the sources are specfied as absolute paths,
-                # where we need to convert them to relative ones, so we really get
-                # them relative to --install-sandbox.
-                _dir   = self.strip_abs_path( dir )
-                dnodes = self.arg2nodes( _dir, destdir.Dir)
-            else:
-                dnodes = self.arg2nodes(dir, self.fs.Dir)
-        except TypeError, e:
-            print str(e)
-            raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
-
-        try:
-            sources = self.arg2nodes(source, self.fs.File)
-        except TypeError:
-            if SCons.Util.is_List(source):
-                raise SCons.Errors.UserError, "Source `%s' of Install() contains one or more non-files.  Install() source must be one or more files." % repr(map(str, source))
-            else:
-                raise SCons.Errors.UserError, "Source `%s' of Install() is not a file.  Install() source must be one or more files." % str(source)
-        tgt = []
-        for dnode in dnodes:
-            for src in sources:
-                target = self.fs.File(src.name, dnode)
-                tgt.extend(self['BUILDERS']['Install'](self, target, src))
-        return tgt
-
-    def InstallAs_old(self, target, source):
-        """Install sources as targets."""
-        targets = self.arg2nodes(target, self.fs.File)
-
-        try:
-            import SCons.Script
-            args    = SCons.Script.ARGUMENTS
-            destdir = self.arg2nodes( args['--install-sandbox'], self.fs.Dir )[0]
-
-            targets = self.arg2nodes( target, lambda x: destdir.Entry( self.strip_abs_path( x ) ) )
-        except TypeError:
-            raise SCons.Errors.UserError, "--install-sandbox `%s' of Install() is a file, but should be a directory." % str(args['destdir'])
-        except KeyError:
-            # --install-sandbox undefined
-            pass
-
-        sources = self.arg2nodes(source, self.fs.File)
-        result = []
-        for src, tgt in map(lambda x, y: (x, y), sources, targets):
-            result.extend(self['BUILDERS']['Install'](self, tgt, src))
-        return result
-
-    def Literal(self, string):
-        return SCons.Subst.Literal(string)
-
-    def Local(self, *targets):
-        ret = []
-        for targ in targets:
-            if isinstance(targ, SCons.Node.Node):
-                targ.set_local()
-                ret.append(targ)
-            else:
-                for t in self.arg2nodes(targ, self.fs.Entry):
-                   t.set_local()
-                   ret.append(t)
-        return ret
-
     def Precious(self, *targets):
         tlist = []
         for t in targets:
@@ -1687,10 +1609,6 @@ class Base(SubstitutionEnvironment):
     def Package(self, **kw):
         """ Entry point for the package tool.
         """
-        # choose a default package type if none is supplied.
-        if not kw.has_key('type'):
-            kw['type'] = 'zip'
-
         if not kw.has_key('source'):
             raise SCons.Errors.UserError, "No source for Package() given"
 

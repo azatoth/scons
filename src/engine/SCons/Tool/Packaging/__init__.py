@@ -36,6 +36,15 @@ import SCons.Defaults
 
 import tarbz2, targz, zip, rpm, msi, ipk
 
+#
+# Functions to handle options of the Packager.
+#
+type = [ 'tarbz2' ]
+
+def set_package_type(option, opt, value, parser):
+    global type
+    type = value
+
 packagers = {
     'tarbz2' : tarbz2.TarBz2Packager(),
     'targz'  : targz.TarGzPackager(),
@@ -49,7 +58,8 @@ def get_targets(env, kw):
     """ creates the target for the given packager types, completly setup
     with its dependencies.
     """
-    type = kw['type']
+    global type
+    type = kw['type'] or type
     if SCons.Util.is_String( type ):
         type = [ type ]
 
@@ -64,6 +74,8 @@ def get_targets(env, kw):
             builder = p.create_builder(env, kw)
             target  = apply( builder, [env], p.add_targets(kw) )
             targets.extend(target)
+
+        env.Alias( 'package', targets )
 
     except KeyError:
         raise SCons.Errors.UserError( 'packager %s not available' % t )
