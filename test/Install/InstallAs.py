@@ -63,8 +63,8 @@ install_file3_out = os.path.join('install', 'file3.out')
 subdir_file3_in = os.path.join('subdir', 'file3.in')
 
 expect = test.wrap_stdout("""\
-Install file: "file1.in" as "%(install_file1_out)s"
-Install file: "file2.in %(subdir_file3_in)s" as "%(install_file2_out)s %(install_file3_out)s"
+Install file(s): "file1.in" as "%(install_file1_out)s"
+Install file(s): "file2.in %(subdir_file3_in)s" as "%(install_file2_out)s %(install_file3_out)s"
 """ % locals())
 
 test.run(arguments = '.', stdout=expect)

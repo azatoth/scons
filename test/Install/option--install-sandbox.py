@@ -55,8 +55,8 @@ test.write(['subdir', 'file3.in'], "subdir/file3.in\n")
 subdir_file3_in = os.path.join('subdir', 'file3.in')
 file1_out       = target+os.path.join( target, os.path.join( destdir, 'file1.out' ) )
 expect = test.wrap_stdout("""\
-Install file: "file2.in %s" as "%s %s"
-Install file: "file1.out" as "%s"
+Install file(s): "file2.in %s" as "%s %s"
+Install file(s): "file1.out" as "%s"
 """ % ( subdir_file3_in,
         os.path.join( target, 'file2.out' ),
         os.path.join( target, subdir_file3_in.replace( 'in', 'out' ) ),

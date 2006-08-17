@@ -135,7 +135,7 @@ def generate(env):
             name           = 'InstallAsBuilder')
 
 
-    env['INSTALLSTR'] = 'Install file: "$SOURCES" as "$TARGETS"',
+    env['INSTALLSTR'] = 'Install file(s): "$SOURCES" as "$TARGETS"',
     env['INSTALL']    = copyFunc
 
 def exists(env):
