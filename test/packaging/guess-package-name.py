@@ -59,6 +59,7 @@ int main( int argc, char* argv[] )
 Program( 'src/main.c' )
 Package( projectname = 'libfoo',
          version     = '1.2.3',
+         type        = 'src_zip',
          source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
@@ -74,6 +75,7 @@ Package( projectname = 'libfoo',
 Program( 'src/main.c' )
 Package( projectname = 'libfoo',
          version     = '1.2.3',
+         type        = 'src_targz',
          target      = 'src.tar.gz',
          source      = [ 'src/main.c', 'SConstruct' ] )
 """)
@@ -90,7 +92,7 @@ Package( projectname = 'libfoo',
 Program( 'src/main.c' )
 Package( projectname = 'libfoo',
          version     = '1.2.3',
-         type        = 'tarbz2',
+         type        = 'src_tarbz2',
          source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 

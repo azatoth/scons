@@ -28,7 +28,7 @@ The tarbz2 SRC packager.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-from packager import SourcePackager
+from packager import SourcePackager, BinaryPackager
 
 class TarBz2Packager(SourcePackager):
     def create_builder(self, env, kw=None):
@@ -38,7 +38,14 @@ class TarBz2Packager(SourcePackager):
             package_root = self.create_package_root(kw)
         else:
             package_root = self.create_package_root(env)
+
         emitter = self.package_root_emitter(package_root)
         builder.push_emitter(emitter)
         builder.set_suffix('tar.bz2')
+        return builder
+
+class BinaryTarBz2Packager(TarBz2Packager):
+    def create_builder(self, env, kw=None):
+        builder = TarBz2Packager.create_builder(self, env, kw)
+        builder.push_emitter(self.strip_install_emitter)
         return builder

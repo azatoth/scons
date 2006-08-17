@@ -27,12 +27,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 """
 This tests the SRC 'targz' packager, which does the following:
  - create a targz package containing the specified files.
-
-TODO:
- - add configurable install targets to the SConstruct for a given
-   set of file categories. Configuration options are conforming the ones
-   of the GNU Coding Standard. see:
-   http://www.gnu.org/prep/standards/html_node/Managing-Releases.html#Managing-Releases
 """
 
 import os
@@ -56,7 +50,7 @@ int main( int argc, char* argv[] )
 
   test.write('SConstruct', """
 Program( 'src/main.c' )
-Package( type         = 'targz',
+Package( type         = 'src_targz',
          target       = 'src.tar.gz',
          package_root = 'test',
          source       = [ 'src/main.c', 'SConstruct' ] )

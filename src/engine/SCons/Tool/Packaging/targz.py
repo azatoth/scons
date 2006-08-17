@@ -42,3 +42,9 @@ class TarGzPackager(SourcePackager):
         builder.push_emitter(emitter)
         builder.set_suffix('tar.gz')
         return builder
+
+class BinaryTarGzPackager(TarGzPackager):
+    def create_builder(self, env, kw=None):
+        builder = TarGzPackager.create_builder(self, env, kw)
+        builder.push_emitter(self.strip_install_emitter)
+        return builder

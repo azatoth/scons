@@ -39,16 +39,19 @@ import tarbz2, targz, zip, rpm, msi, ipk
 #
 # Functions to handle options of the Packager.
 #
-type = [ 'tarbz2' ]
+type = [ 'src_tarbz2' ]
 
 def set_package_type(option, opt, value, parser):
     global type
     type = value
 
 packagers = {
-    'tarbz2' : tarbz2.TarBz2Packager(),
-    'targz'  : targz.TarGzPackager(),
-    'zip'    : zip.ZipPackager(),
+    'src_tarbz2' : tarbz2.TarBz2Packager(),
+    'src_targz'  : targz.TarGzPackager(),
+    'src_zip'    : zip.ZipPackager(),
+    'tarbz2' : tarbz2.BinaryTarBz2Packager(),
+    'targz'  : targz.BinaryTarGzPackager(),
+    'zip'    : zip.BinaryZipPackager(),
     'rpm'    : rpm.RpmPackager(),
     'msi'    : msi.MsiPackager(),
     'ipk'    : ipk.IpkPackager(),

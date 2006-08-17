@@ -39,8 +39,7 @@ tar = test.detect('TAR', 'tar')
 
 if tar:
   #
-  # TEST: builddir usage. XXX
-  # Hmm, how to create a new target node under a specified buildDir????
+  # TEST: builddir usage.
   #
   test.subdir('src')
   test.subdir('build')
@@ -52,15 +51,15 @@ BuildDir('build', 'src')
 Package( projectname  = 'libfoo',
          package_root = 'build/libfoo',
          version      = '1.2.3',
+         type         = 'src_zip',
+         target       = 'build/libfoo-1.2.3.zip',
          source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(stderr = None)
 
-  test.fail_test( not os.path.exists( 'libfoo-1.2.3.zip' ) )
-  #test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.zip' ) )
+  test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.zip' ) )
 
-  #
   # TEST: builddir not placed in archive
   # XXX: BuildDir should be stripped.
   #
@@ -73,9 +72,8 @@ Package( projectname  = 'libfoo',
   test.write('SConstruct', """
 BuildDir('build', 'src')
 Package( projectname  = 'libfoo',
-         package_root = 'build/libfoo',
          version      = '1.2.3',
-         type         = 'targz',
+         type         = 'src_targz',
          source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 
@@ -84,10 +82,8 @@ Package( projectname  = 'libfoo',
   test.fail_test( not os.path.exists( 'libfoo-1.2.3.tar.gz' ) )
 
   os.popen( 'tar -C temp -xzf %s'%test.workpath('libfoo-1.2.3.tar.gz') )
-  test.fail_test( not os.path.exists( 'temp/build/libfoo/src/main.c' ) )
-  test.fail_test( not os.path.exists( 'temp/build/libfoo/SConstruct' ) )
 
-#  test.fail_test( not os.path.exists( 'temp/libfoo/src/main.c' ) )
-#  test.fail_test( not os.path.exists( 'temp/libfoo/SConstruct' ) )
+  test.fail_test( not os.path.exists( 'temp/libfoo-1.2.3/src/main.c' ) )
+  test.fail_test( not os.path.exists( 'temp/libfoo-1.2.3/SConstruct' ) )
 
 test.pass_test()

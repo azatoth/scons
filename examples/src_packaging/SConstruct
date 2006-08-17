@@ -7,5 +7,5 @@ SharedLibrary( 'foobar', src_files )
 
 Package( projectname = 'libfoobar',
          version     = '1.2.3',
-         type        = [ 'zip', 'targz' ],
+         type        = [ 'src_zip', 'src_targz', 'src_tarbz2' ],
          source      = src_files + include_files + [ 'SConstruct' ] )

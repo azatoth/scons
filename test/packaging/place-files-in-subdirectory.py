@@ -48,6 +48,7 @@ if tar:
   test.write('SConstruct', """
 Package( projectname  = 'libfoo',
          package_root = 'libfoo',
+         type         = 'src_zip',
          version      = '1.2.3',
          source       = [ 'src/main.c', 'SConstruct' ] )
 """)
@@ -68,6 +69,7 @@ Package( projectname  = 'libfoo',
   test.write('SConstruct', """
 Package( projectname = 'libfoo',
          version     = '1.2.3',
+         type        = 'src_zip',
          target      = 'src.zip',
          source      = [ 'src/main.c', 'SConstruct' ] )
 """)
@@ -89,7 +91,7 @@ Package( projectname = 'libfoo',
   test.write('SConstruct', """
 Package( projectname = 'libfoo',
          version     = '1.2.3',
-         type        = 'targz',
+         type        = 'src_targz',
          source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 

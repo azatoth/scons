@@ -50,7 +50,7 @@ int main( int argc, char* argv[] )
 
   test.write('SConstruct', """
 Program( 'src/main.c' )
-Package( type         = 'zip',
+Package( type         = 'src_zip',
          target       = 'src.zip',
          package_root = 'test',
          source       = [ 'src/main.c', 'SConstruct' ] )

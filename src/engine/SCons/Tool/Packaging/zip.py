@@ -37,7 +37,15 @@ class ZipPackager(SourcePackager):
             package_root = self.create_package_root(kw)
         else:
             package_root = self.create_package_root(env)
+
         emitter = self.package_root_emitter(package_root)
         builder.push_emitter(emitter)
         builder.set_suffix('zip')
         return builder
+
+class BinaryZipPackager(ZipPackager):
+    def create_builder(self, env, kw=None):
+        builder = ZipPackager.create_builder(self, env, kw)
+        builder.push_emitter(self.strip_install_emitter)
+        return builder
+

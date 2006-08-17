@@ -18,7 +18,7 @@ Default( Package( projectname    = 'foo',
          description    = 'this should be really long',
          description_de = 'das sollte wirklich lang sein',
          description_fr = 'ceci devrait être vraiment long',
-         source         = [ 'main.c', 'SConstruct', prog_install ],
+         source         = [ prog_install ],
         ) )
 
 Alias ( 'install', prog_install )

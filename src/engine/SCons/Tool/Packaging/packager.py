@@ -157,23 +157,26 @@ class SourcePackager(Packager):
                nothing will be done.
             """
             new_source = []
-            for s in [ x for x in source if os.path.dirname(x.get_path()).rfind(pkg_root) == -1 ]:
-                tags     = s.get_tags()
-                new_s    = None
-
-                if tags.has_key( 'install_location' ) and honor_install_location:
-                    my_target = tags['install_location'].get_path()
+            for s in source:
+                if os.path.dirname(s.get_path()).rfind(pkg_root) != -1:
+                    new_source.append(s)
                 else:
-                    my_target = env.strip_abs_path(s.get_path())
+                    tags     = s.get_tags()
+                    new_s    = None
 
-                new_s = env.Command( source = s,
-                                     target = os.path.join( pkg_root, env.strip_abs_path( my_target ) ),
-                                     action = SCons.Defaults.Copy( '$TARGET', '$SOURCE' ),
-                                    )[0]
+                    if tags.has_key( 'install_location' ) and honor_install_location:
+                        my_target = env.strip_abs_path(tags['install_location'].get_path())
+                    else:
+                        my_target = env.strip_abs_path(s.get_path())
 
-                # store the tags of our original file in the new file.
-                new_s.set_tags( s.get_tags() )
-                new_source.append( new_s )
+                    new_s = env.Command( source = s,
+                                         target = os.path.join( pkg_root, my_target ),
+                                         action = SCons.Defaults.Copy( '$TARGET', '$SOURCE' ),
+                                        )[0]
+
+                    # store the tags of our original file in the new file.
+                    new_s.set_tags( s.get_tags() )
+                    new_source.append( new_s )
 
             return (target, new_source)
 

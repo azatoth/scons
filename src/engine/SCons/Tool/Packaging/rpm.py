@@ -120,8 +120,6 @@ class RpmPackager(BinaryPackager):
                           { 'source' : sources,
                             'target' : target_s } )
 
-        print str(target)
-
         env['x_rpm_Source'] = tarball[0].get_path()
 
         return (target, tarball)
