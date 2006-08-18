@@ -304,6 +304,8 @@ GlobalDefaultEnvironmentFunctions = [
     'TargetSignatures',
     'Value',
     'Tag',
+    'FindInstalledFiles',
+    'FindSourceFiles',
 ]
 
 GlobalDefaultBuilders = [

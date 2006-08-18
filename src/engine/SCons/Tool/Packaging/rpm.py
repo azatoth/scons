@@ -115,7 +115,11 @@ class RpmPackager(BinaryPackager):
 
         # as the source contains the url of the source package this rpm package
         # is built from, we extract the target name
-        target_s = env['source_url'].split('/')[-1]
+        try:
+            target_s = env['source_url'].split('/')[-1]
+        except KeyError, e:
+            raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
+
         tarball  = apply( builder, [env],
                           { 'source' : sources,
                             'target' : target_s } )

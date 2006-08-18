@@ -13,6 +13,7 @@ Package( projectname    = 'foo',
          packageversion = 0,
          x_rpm_Group    = 'Application/office',
          description    = 'this should be reallly really long',
+         source_url     = 'http://foo.org/foo-1.2.3.tar.gz',
          source         = [ prog_install ],
         )
 

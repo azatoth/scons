@@ -5,5 +5,7 @@
 <class-directory>
  <class kind="database" name="scons_tdb.Database"/>
  <class kind="test" name="scons_tdb.Test"/>
- <class kind="result_stream" name="scons_tdb.ResultStream"/>
+ <class kind="result_stream" name="scons_tdb.AegisChangeStream"/>
+ <class kind="result_stream" name="scons_tdb.AegisBaselineStream"/>
+ <class kind="result_stream" name="scons_tdb.AegisBatchStream"/>
 </class-directory>

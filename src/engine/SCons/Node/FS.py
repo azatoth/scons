@@ -53,8 +53,6 @@ import SCons.Subst
 import SCons.Util
 import SCons.Warnings
 
-from SCons.Debug import Trace
-
 # The max_drift value:  by default, use a cached signature value for
 # any file that's been untouched for more than two days.
 default_max_drift = 2*24*60*60
@@ -703,7 +701,7 @@ class Base(SCons.Node.Node):
         for factory in factories:
             generated_tags = apply( factory, [ self, self.tags ], {} )
             # XXX: instead of update, we could perhaps use the attached
-            # BuildInfo and its merge function !!
+            # BuildInfo and its merge function ?!?!
             if generated_tags:
                 self.tags.update( generated_tags )
 
@@ -722,6 +720,9 @@ class Base(SCons.Node.Node):
     def clear_tags(self):
         self.tags = {}
 
+    def RDirs(self, pathlist):
+        """Search for a list of directories in the Repository list."""
+        return self.fs.Rfindalldirs(pathlist, self.cwd)
 
 class Entry(Base):
     """This is the class for generic Node.FS entries--that is, things
@@ -735,7 +736,7 @@ class Entry(Base):
         pass
 
     def disambiguate(self):
-        if self.isdir():
+        if self.isdir() or self.srcnode().isdir():
             self.__class__ = Dir
             self._morph()
         else:
@@ -1742,10 +1743,6 @@ class File(Base):
         """Create a file node named 'name' relative to
         the SConscript directory of this file."""
         return self.fs.File(name, self.cwd)
-
-    def RDirs(self, pathlist):
-        """Search for a list of directories in the Repository list."""
-        return self.fs.Rfindalldirs(pathlist, self.cwd)
 
     #def generate_build_dict(self):
     #    """Return an appropriate dictionary of values for building

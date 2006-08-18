@@ -91,6 +91,10 @@ def create_install_targets(target, source, env):
 
     return (n_target, source)
 
+def add_targets_to_INSTALLED_FILES(target, source, env):
+    env['_INSTALLED_FILES'].extend(target)
+    return (target, source)
+
 class sandbox_factory:
     def __init__(self, env, dir):
         self.env = env
@@ -125,18 +129,20 @@ def generate(env):
             source_factory = env.fs.File,
             multi          = 1,
             emitter        = [ dir_argument_override,
-                               create_install_targets ],
+                               create_install_targets,
+                               add_targets_to_INSTALLED_FILES, ],
             name           = 'InstallBuilder')
 
         env['BUILDERS']['InstallAs'] = SCons.Builder.Builder(
             action         = installas_action,
             target_factory = target_factory.File,
             source_factory = env.fs.File,
+            emitter        = [ add_targets_to_INSTALLED_FILES, ],
             name           = 'InstallAsBuilder')
 
-
-    env['INSTALLSTR'] = 'Install file(s): "$SOURCES" as "$TARGETS"',
-    env['INSTALL']    = copyFunc
+        env['_INSTALLED_FILES'] = []
+        env['INSTALLSTR']       = 'Install file(s): "$SOURCES" as "$TARGETS"',
+        env['INSTALL']          = copyFunc
 
 def exists(env):
     return 1

@@ -537,7 +537,7 @@ class SubstitutionEnvironment:
             #  -symbolic       (linker global binding)
             #  -R dir          (deprecated linker rpath)
             # IBM compilers may also accept -qframeworkdir=foo
-
+    
             params = string.split(arg)
             append_next_arg_to = None   # for multi-word args
             for arg in params:
@@ -618,7 +618,7 @@ class SubstitutionEnvironment:
                     append_next_arg_to = arg
                 else:
                     dict['CCFLAGS'].append(arg)
-
+    
         for arg in flags:
             do_parse(arg, do_parse)
         return dict
@@ -1592,7 +1592,7 @@ class Base(SubstitutionEnvironment):
         return SCons.Node.Python.Value(value)
 
     def Tag(self, source, *args, **kw):
-        """
+        """ Tag a file with the given arguments.
         """
         nodes = self.arg2nodes(source, self.fs.Entry)
 
@@ -1618,6 +1618,33 @@ class Base(SubstitutionEnvironment):
         self.arg2nodes( kw['source'], self.fs.Entry )
 
         return SCons.Tool.Packaging.get_targets(self, kw)
+
+    def FindSourceFiles(self):
+        """ returns a list of all source files.
+        """
+        dir = self.arg2nodes('.', self.fs.Dir)[0]
+
+        sources = []
+        def build_source(ss):
+            for s in ss:
+                if s.__class__==SCons.Node.FS.Dir:
+                    build_source(s.all_children())
+                elif len(s.sources)==0:
+                    sources.append(s)
+                else:
+                    build_source(s.sources)
+        build_source(dir.all_children())
+
+        # remove duplicates
+        return list(set(sources))
+
+    def FindInstalledFiles(self):
+        """ returns of all files installed beneath dir.
+        """
+        if self.has_key('_INSTALLED_FILES'):
+            return self['_INSTALLED_FILES']
+        else:
+            return []
 
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction
