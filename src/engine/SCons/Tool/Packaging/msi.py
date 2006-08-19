@@ -106,6 +106,10 @@ class MsiPackager(BinaryPackager):
             # write the xml to a file
             file.write( doc.toprettyxml() )
 
+            # call a user specified function
+            if env.has_key('change_specfile'):
+                env['change_specfile'](target, source)
+
         except KeyError, e:
             raise SCons.Errors.UserError( '"%s" package field for MSI is missing.' % e.args[0] )
 

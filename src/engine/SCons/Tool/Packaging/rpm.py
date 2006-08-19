@@ -75,11 +75,17 @@ class RpmPackager(BinaryPackager):
         by analyzing a tree of nodes.
         """
         file = open(target[0].abspath, 'w')
+        str  = ""
 
         try:
             file.write( self.build_specfile_header(env) )
             file.write( self.build_specfile_sections(env) )
             file.write( self.build_specfile_filesection(env, source) )
+            file.close()
+
+            # call a user specified function
+            if env.has_key('change_specfile'):
+                env['change_specfile'](target, source)
 
         except KeyError, e:
             raise SCons.Errors.UserError( '"%s" package field for RPM is missing.' % e.args[0] )

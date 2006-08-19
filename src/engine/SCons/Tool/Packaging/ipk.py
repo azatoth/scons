@@ -116,9 +116,15 @@ Maintainer: $x_ipk_maintainer
 Depends: $x_ipk_depends
 Description: $x_ipk_description
 """
+
             control_file.write( env.subst(content) )
             control_file.close()
             self.handle_other_control_files(target, source, env)
+
+            # call a user specified function
+            if env.has_key('change_specfile'):
+                content += env['change_specfile'](target, source)
+
         except KeyError, e:
             raise SCons.Errors.UserError( '"%s" package field for IPK is missing.' % e.args[0] )
 
