@@ -75,6 +75,9 @@ def stringFunc(target, source, env):
 #
 def dir_argument_override(target, source, env):
     """ The dir argument to the Install Builder overrides all targets.
+
+    This exists to be compatible with the old Install() target, which also 
+    accepted a dir argument.
     """
     if env.has_key('dir'):
         target = env.arg2nodes( env['dir'], env.fs.Dir )

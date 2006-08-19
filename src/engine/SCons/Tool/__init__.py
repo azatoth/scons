@@ -435,7 +435,7 @@ def tool_list(platform, env):
 
     other_tools = FindAllTools(['BitKeeper', 'CVS',
                                 'dmd',
-                                'install',
+                                'install', 'filesystem',
                                 'dvipdf', 'dvips', 'gs',
                                 'jar', 'javac', 'javah',
                                 'latex', 'lex',
