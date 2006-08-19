@@ -335,7 +335,7 @@ class MsiPackager(BinaryPackager):
 
         for file in files:
             tags = file.get_tags( tag_factories )
-            drive, path = os.path.splitdrive( tags['install_location'][0].get_path() )
+            drive, path = os.path.splitdrive( tags['install_location'].get_path() )
             filename = os.path.basename( path )
             dirname  = os.path.dirname( path )
 
