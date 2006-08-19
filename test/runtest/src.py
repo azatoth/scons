@@ -47,7 +47,7 @@ test.write_passing_test(['src', 'suite', 'passTests.py'])
 # NOTE:  The "test/fail.py : FAIL" and "test/pass.py : PASS" lines both
 # have spaces at the end.
 
-expect = r"""qmtest.py run --output results.qmr --format none --result-stream=scons_tdb.AegisChangeStream src
+expect = r"""qmtest.py run --output results.qmr --format none --result-stream='scons_tdb.AegisChangeStream' src
 --- TEST RESULTS -------------------------------------------------------------
 
   src/passTests.py                              : PASS    

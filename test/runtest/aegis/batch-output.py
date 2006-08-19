@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test how we handle a no-results test specified on the command line.
+Test writing Aegis batch output to a file.
 """
 
 import TestRuntest
@@ -34,29 +34,25 @@ test = TestRuntest.TestRuntest()
 
 test.subdir('test')
 
+test.write_failing_test(['test', 'fail.py'])
+
 test.write_no_result_test(['test', 'no_result.py'])
 
-expect = r"""qmtest.py run --output results.qmr --format none --result-stream='scons_tdb.AegisChangeStream' test/no_result.py
---- TEST RESULTS -------------------------------------------------------------
+test.write_passing_test(['test', 'pass.py'])
 
-  test/no_result.py                             : NO_RESULT
+test.run(arguments = '-o aegis.out --aegis test')
 
-    NO RESULT TEST STDOUT
-
-    NO RESULT TEST STDERR
-
---- TESTS THAT DID NOT PASS --------------------------------------------------
-
-  test/no_result.py                             : NO_RESULT
-
-
---- STATISTICS ---------------------------------------------------------------
-
-       1        tests total
-
-       1 (100%) tests NO_RESULT
+expect = """\
+test_result = [
+    { file_name = "test/fail.py";
+      exit_status = 1; },
+    { file_name = "test/no_result.py";
+      exit_status = 2; },
+    { file_name = "test/pass.py";
+      exit_status = 0; },
+];
 """
 
-test.run(arguments = 'test/no_result.py', stdout = expect)
+test.must_match('aegis.out', expect)
 
 test.pass_test()

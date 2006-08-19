@@ -53,6 +53,22 @@ sys.stderr.write('PASSING TEST STDERR\\n')
 sys.exit(0)
 """
 
+fake_scons_py = """
+__version__ = '1.2.3'
+__build__ = 'D123'
+__buildsys__ = 'fake_system'
+__date__ = 'Jan 1 1970'
+__developer__ = 'Anonymous'
+"""
+
+fake___init___py = """
+__version__ = '4.5.6'
+__build__ = 'D456'
+__buildsys__ = 'another_fake_system'
+__date__ = 'Dec 31 1999'
+__developer__ = 'John Doe'
+"""
+
 class TestRuntest(TestCommon):
     """Class for testing the runtest.py script.
 
@@ -126,6 +142,17 @@ class TestRuntest(TestCommon):
 
         os.environ['PYTHONPATH'] = ''
         os.environ['SCONS_SOURCE_PATH_EXECUTABLE'] = ''
+
+    def write_fake_scons_source_tree(self):
+        os.mkdir('src')
+        os.mkdir('src/script')
+        self.write('src/script/scons.py', fake_scons_py)
+
+        os.mkdir('src/engine')
+        os.mkdir('src/engine/SCons')
+        self.write('src/engine/SCons/__init__.py', fake___init___py)
+        os.mkdir('src/engine/SCons/Script')
+        self.write('src/engine/SCons/Script/__init__.py', fake___init___py)
 
     def write_failing_test(self, name):
         self.write(name, failing_test_template)

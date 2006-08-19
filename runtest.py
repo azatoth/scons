@@ -583,33 +583,48 @@ if old_pythonpath:
 
 if qmtest:
     if baseline:
-        result_stream = 'AegisBaselineStream'
+        aegis_result_stream = 'scons_tdb.AegisBaselineStream'
         qmr_file = 'baseline.qmr'
     else:
-        result_stream = 'AegisChangeStream'
+        aegis_result_stream = 'scons_tdb.AegisChangeStream'
         qmr_file = 'results.qmr'
+
+    if print_times:
+        aegis_result_stream = aegis_result_stream + '(print_time="1")'
+
     #qmtest = r'D:\Applications\python23\scripts\qmtest.py'
     qmtest = 'qmtest.py'
-    qmtest_args = [
-                qmtest,
+
+    qmtest_args = [ qmtest, ]
+
+    if format == '--aegis':
+        dir = os.path.join(cwd, 'build')
+        if not os.path.isdir(dir):
+            dir = cwd
+        qmtest_args.extend(['-D', dir])
+
+    qmtest_args.extend([
                 'run',
                 '--output %s' % qmr_file,
                 '--format none',
-                '--result-stream=scons_tdb.%s' % result_stream,
-              ]
+                '--result-stream=\'%s\'' % aegis_result_stream,
+              ])
 
     if python:
         qmtest_args.append('--context python=%s' % python)
 
-    if print_times:
-        qmtest_args.append('--context print_time=1')
-
     if outputfile:
-        #rs = '--result-stream=scons_tdb.AegisBatchStream(results_file=\\"%s\\")' % outputfile
-        rs = '\'--result-stream=scons_tdb.AegisBatchStream(results_file="%s")\'' % outputfile
+        if format == '--xml':
+            rsclass = 'scons_tdb.SConsXMLResultStream'
+        else:
+            rsclass = 'scons_tdb.AegisBatchStream'
+        rs = '\'--result-stream=%s(filename="%s")\'' % (rsclass, outputfile)
         qmtest_args.append(rs)
 
-    os.environ['SCONS'] = os.path.join(cwd, 'src', 'script', 'scons.py')
+    if format == '--aegis':
+        args = map(lambda x: string.replace(x, cwd+os.sep, ''), args)
+    else:
+        os.environ['SCONS'] = os.path.join(cwd, 'src', 'script', 'scons.py')
 
     cmd = string.join(qmtest_args + args, ' ')
     if printcommand:
