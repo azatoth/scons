@@ -90,7 +90,7 @@ def create_install_targets(target, source, env):
     n_target = []
     for t in target:
         for s in source:
-            n_target.append( env.fs.File(s.name, t) )
+            n_target.append( env.fs.Entry(s.name, t) )
 
     return (n_target, source)
 
@@ -148,7 +148,8 @@ def generate(env):
             multi          = 1,
             emitter        = [ dir_argument_override,
                                create_install_targets,
-                               create_distinct_builders, ],
+                               create_distinct_builders,
+                               add_targets_to_INSTALLED_FILES, ],
             name           = 'InstallBuilder')
 
         env['BUILDERS']['InstallAs'] = SCons.Builder.Builder(

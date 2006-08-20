@@ -853,18 +853,14 @@ class Base(SubstitutionEnvironment):
             return b
 
     def strip_abs_path(self, source):
-        """ strips the absolute path dir from the absolute source pathname. If one of them is not absolute nothing is changed.
+        """ makes an absolute path name to a relative pathname.
         """
-        source = os.path.realpath(source)
         if os.path.isabs( source ):
-            drive_s,x = os.path.splitdrive( source )
-            source    = source[source.find(drive_s):]
+            drive_s,source = os.path.splitdrive( source )
 
-            if source[0] == os.sep:
-                source = source[1:]
-
-            if source[0] == os.sep:
-                source = source[1:]
+            if not drive_s:
+                import re
+                source=re.compile("/*(.*)").findall(source)[0]
 
         assert( not os.path.isabs( source ) ), source
         return source
@@ -1623,21 +1619,33 @@ class Base(SubstitutionEnvironment):
 
         return SCons.Tool.Packaging.get_targets(self, kw)
 
-    def FindSourceFiles(self):
+    def FindSourceFiles(self, node='.'):
         """ returns a list of all source files.
         """
-        dir = self.arg2nodes('.', self.fs.Dir)[0]
+        node = self.arg2nodes(node, self.fs.Entry)[0]
 
         sources = []
         def build_source(ss):
             for s in ss:
                 if s.__class__==SCons.Node.FS.Dir:
                     build_source(s.all_children())
-                elif len(s.sources)==0:
+                elif len(s.sources)==0 and s.__class__==SCons.Node.FS.File:
                     sources.append(s)
                 else:
                     build_source(s.sources)
-        build_source(dir.all_children())
+        build_source(node.all_children())
+
+        # now strip the build_node from the sources by calling the srcnode
+        # function
+        def get_final_srcnode(file):
+            srcnode = file.srcnode()
+            while srcnode != file.srcnode():
+                srcnode = file.srcnode()
+            return srcnode
+
+        # get the final srcnode for all nodes, this means stripping any
+        # attached build node.
+        map( get_final_srcnode, sources )
 
         # remove duplicates
         return list(set(sources))

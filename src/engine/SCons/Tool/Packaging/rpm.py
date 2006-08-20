@@ -57,7 +57,7 @@ class Rpm(BinaryPackager):
         if kw.has_key('architecture'):
             buildarchitecture = kw['architecture']
 
-        srcrpm = '%s-%s-%s.src.rpm' % (projectname, version, packageversion)
+        srcrpm = '%s-%s-%s.src\.rpm' % (projectname, version, packageversion)
         binrpm = srcrpm.replace( 'src', buildarchitecture )
 
         kw['target'] = [ srcrpm, binrpm ]
@@ -96,23 +96,15 @@ class Rpm(BinaryPackager):
         # XXX: this might be  inrobust!
         # the rpm tool depends on a source package, until this is chagned
         # this hack needs to be here that tries to pack all sources in.
-        # <nastyHack>
-        sources = []
-        def add_sources(files):
-            for f in files:
-                if f.sources == [] or f.get_path().find('.spec') != -1:
-                    sources.append(f)
-                else:
-                    add_sources(f.sources)
-        add_sources(source)
-
-        sources.append(env.fs.File('SConstruct'))
-        from glob import glob
-        sources.extend(map(env.fs.File, glob('SConscript')))
-
+        sources = env.FindSourceFiles()
         if env.has_key('x_rpm_additional_source_files'):
             sources.extend( env.arg2nodes( env['x_rpm_additional_source_files'], env.fs.Entry ) )
-        # </nastyHack>
+
+        # filter out the target we are building the source list for.
+        sources = [ s for s in sources if not (s in target) ]
+
+        # find the .spec file for rpm and add it
+        sources.extend( [ s for s in source if str(s).rfind('.spec') != -1 ] )
 
         # create a special emitter, which does not honor the install_location
         # tag, so we get a real *source* package.
@@ -257,7 +249,6 @@ class Rpm(BinaryPackager):
         tag_factories = [ LocationTagFactory() ]
 
         for file in files:
-            print "%s %s %s %s"%(file.__hash__(), file.get_path(), file.get_tags(), file.get_stored_info().bsourcesigs)
             tags = file.get_tags( tag_factories )
 
             str += SimpleTagCompiler(supported_tags, mandatory=0).compile( tags )

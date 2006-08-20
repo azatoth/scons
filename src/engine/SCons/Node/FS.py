@@ -705,7 +705,6 @@ class Base(SCons.Node.Node):
             if generated_tags:
                 self.tags.update( generated_tags )
 
-        # copy tag information to all srcnodes!!
         srcnodes = [ x.srcnode() for x in [self] if x.srcnode() != x ]
         map( lambda x: x.set_tags(self.tags), srcnodes )
 
@@ -719,7 +718,6 @@ class Base(SCons.Node.Node):
         else:
             apply( self.tags.update, e, kw )
 
-        # copy tag information to all srcnodes!!
         srcnodes = [ x.srcnode() for x in [self] if x.srcnode() != x ]
         map( lambda x: x.set_tags(self.tags), srcnodes )
 

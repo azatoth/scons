@@ -37,6 +37,17 @@ def generate(env):
         env['BUILDERS']['CopyTo']
         env['BUILDERS']['MoveTo']
     except KeyError, e:
+        def create_distinct_builders(target, source, env):
+            """ changes the target and source list to only include file and recursively
+            attaching the builder to all other targets and sources still in the list.
+            """
+            bld = env['BUILDERS']['InstallAs']
+
+            for t,s in zip(target[1:], source[1:]):
+                bld(env, target=t, source=s)
+
+            return (target[:1], source[:1])
+
         def copy_action_func(target, source, env):
             assert( len(target) == len(source) ), "\ntarget: %s\nsource: %s" %(map(str, target),map(str, source))
 
@@ -56,14 +67,15 @@ def generate(env):
         env['BUILDERS']['CopyTo'] = SCons.Builder.Builder(
                                      action         = copy_action,
                                      target_factory = env.fs.Entry,
-                                     source_factory = env.fs.File,
+                                     source_factory = env.fs.Entry,
                                      multi          = 1,
-                                     emitter        = [ create_install_targets ] )
+                                     emitter        = [ create_install_targets,
+                                                        create_distinct_builders, ] )
 
         env['BUILDERS']['CopyAs'] = SCons.Builder.Builder(
                                      action         = copy_action,
                                      target_factory = env.fs.Entry,
-                                     source_factory = env.fs.File,
+                                     source_factory = env.fs.Entry,
                                      multi          = 1)
 
 

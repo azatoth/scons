@@ -81,7 +81,7 @@ def build_rpm(target, source, env):
 
         for output, input in zip( output_files, target ):
             rpm_output = os.path.basename(output)
-            expected   = os.path.basename(input.get_path())
+            expected   = os.path.basename(input.get_path()).replace('\.rpm','.rpm')
 
             assert expected == rpm_output, "got %s but expected %s" % (rpm_output, expected)
             shutil.copy( output, input.abspath )
