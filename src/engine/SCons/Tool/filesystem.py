@@ -38,7 +38,7 @@ def generate(env):
         env['BUILDERS']['MoveTo']
     except KeyError, e:
         def copy_action_func(target, source, env):
-            assert( len(target) == len(source) )
+            assert( len(target) == len(source) ), "\ntarget: %s\nsource: %s" %(map(str, target),map(str, source))
 
             for t, s in zip(target, source):
                 if copyFunc(t.get_path(), s.get_path(), env):

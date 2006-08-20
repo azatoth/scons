@@ -30,7 +30,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 from packager import SourcePackager, BinaryPackager
 
-class TarBz2Packager(SourcePackager):
+class TarBz2(SourcePackager):
     def create_builder(self, env, kw=None):
         env['TARFLAGS'] = "-jc"
         builder = env.get_builder('Tar')
@@ -44,8 +44,8 @@ class TarBz2Packager(SourcePackager):
         builder.set_suffix('tar.bz2')
         return builder
 
-class BinaryTarBz2Packager(TarBz2Packager):
+class BinaryTarBz2(TarBz2):
     def create_builder(self, env, kw=None):
-        builder = TarBz2Packager.create_builder(self, env, kw)
+        builder = TarBz2.create_builder(self, env, kw)
         builder.push_emitter(self.strip_install_emitter)
         return builder

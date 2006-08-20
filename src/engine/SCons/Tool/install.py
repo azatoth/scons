@@ -95,8 +95,23 @@ def create_install_targets(target, source, env):
     return (n_target, source)
 
 def add_targets_to_INSTALLED_FILES(target, source, env):
-    env['_INSTALLED_FILES'].extend(target)
+    """ an emitter that adds all files to the list in the _INSTALLED_FILES
+    variable in env.
+    """
+    files = env['_INSTALLED_FILES']
+    files.extend( [ x for x in target if not x in files ] )
     return (target, source)
+
+def create_distinct_builders(target, source, env):
+    """ changes the target and source list to only include file and recursively
+    attaching the builder to all other targets and sources still in the list.
+    """
+    bld = env['BUILDERS']['InstallAs']
+
+    for t,s in zip(target[1:], source[1:]):
+        bld(env, target=t, source=s)
+
+    return (target[:1], source[:1])
 
 class sandbox_factory:
     def __init__(self, env, dir):
@@ -133,14 +148,15 @@ def generate(env):
             multi          = 1,
             emitter        = [ dir_argument_override,
                                create_install_targets,
-                               add_targets_to_INSTALLED_FILES, ],
+                               create_distinct_builders, ],
             name           = 'InstallBuilder')
 
         env['BUILDERS']['InstallAs'] = SCons.Builder.Builder(
             action         = installas_action,
             target_factory = target_factory.File,
             source_factory = env.fs.File,
-            emitter        = [ add_targets_to_INSTALLED_FILES, ],
+            emitter        = [ create_distinct_builders,
+                               add_targets_to_INSTALLED_FILES, ],
             name           = 'InstallAsBuilder')
 
         env['_INSTALLED_FILES'] = []

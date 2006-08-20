@@ -31,7 +31,7 @@ import os
 
 from packager import SourcePackager, BinaryPackager, LocationTagFactory, SimpleTagCompiler
 
-class IpkPackager(BinaryPackager, SourcePackager):
+class Ipk(BinaryPackager, SourcePackager):
     def create_builder(self, env, kw=None):
         SCons.Tool.Tool( 'ipkg' ).generate(env)
         ipkbuilder = env['BUILDERS']['Ipkg']
@@ -52,15 +52,11 @@ class IpkPackager(BinaryPackager, SourcePackager):
     def add_targets(self, kw):
         """ tries to guess the filenames of the generated IPKG files.
         """
-        try:
-            version      = kw['version']
-            projectname  = kw['projectname']
-            architecture = kw['architecture']
+        version      = kw['version']
+        projectname  = kw['projectname']
+        architecture = kw['architecture']
 
-            kw['target'] = [ "%s_%s_%s.ipk" % (projectname, version, architecture) ]
-
-        except KeyError, e:
-            raise SCons.Errors.UserError( "Missing PackageTag '%s' for IPK packager" % e.args[0] )
+        kw['target'] = [ "%s_%s_%s.ipk" % (projectname, version, architecture) ]
 
         return kw
 

@@ -301,6 +301,7 @@ class _ActionAction(ActionBase):
             target = [target]
         if not SCons.Util.is_List(source):
             source = [source]
+
         if exitstatfunc is _null: exitstatfunc = self.exitstatfunc
         if presub is _null:  presub = self.presub
         if show is _null:  show = print_actions
@@ -346,6 +347,7 @@ class _ActionAction(ActionBase):
                     os.chdir(save_cwd)
         if s and save_cwd:
             print_func('os.chdir(%s)' % repr(save_cwd), target, source, env)
+
         return stat
 
 

@@ -32,9 +32,9 @@ import SCons.Builder
 import os
 
 from packager import BinaryPackager, LocationTagFactory, SimpleTagCompiler
-from targz import TarGzPackager
+from targz import TarGz
 
-class RpmPackager(BinaryPackager):
+class Rpm(BinaryPackager):
     def create_builder(self, env, kw=None):
         rpmbuilder      = env.get_builder('Rpm')
         env['RPMFLAGS'] = SCons.Util.CLVar('-ta')
@@ -48,22 +48,19 @@ class RpmPackager(BinaryPackager):
     def add_targets(self, kw):
         """ tries to guess the filenames of the generated RPMS files.
         """
-        try:
-            version           = kw['version']
-            projectname       = kw['projectname']
-            packageversion    = kw['packageversion']
-            buildarchitecture = 'i386'
+        version           = kw['version']
+        projectname       = kw['projectname']
+        packageversion    = kw['packageversion']
+        # XXX: this shoudl be guessed depending on the env.
+        buildarchitecture = 'i386'
 
-            if kw.has_key('architecture'):
-                buildarchitecture = kw['architecture']
+        if kw.has_key('architecture'):
+            buildarchitecture = kw['architecture']
 
-            srcrpm = '%s-%s-%s.src.rpm' % (projectname, version, packageversion)
-            binrpm = srcrpm.replace( 'src', buildarchitecture )
+        srcrpm = '%s-%s-%s.src.rpm' % (projectname, version, packageversion)
+        binrpm = srcrpm.replace( 'src', buildarchitecture )
 
-            kw['target'] = [ srcrpm, binrpm ]
-
-        except KeyError, e:
-            raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
+        kw['target'] = [ srcrpm, binrpm ]
 
         return kw
 
@@ -93,7 +90,7 @@ class RpmPackager(BinaryPackager):
     def targz_emitter(self, target, source, env):
         """ Puts all source files into a tar.gz file.
         """
-        targz   = TarGzPackager()
+        targz   = TarGz()
         builder = targz.create_builder(env)
 
         # XXX: this might be  inrobust!
@@ -112,6 +109,9 @@ class RpmPackager(BinaryPackager):
         sources.append(env.fs.File('SConstruct'))
         from glob import glob
         sources.extend(map(env.fs.File, glob('SConscript')))
+
+        if env.has_key('x_rpm_additional_source_files'):
+            sources.extend( env.arg2nodes( env['x_rpm_additional_source_files'], env.fs.Entry ) )
         # </nastyHack>
 
         # create a special emitter, which does not honor the install_location
@@ -122,14 +122,11 @@ class RpmPackager(BinaryPackager):
         # as the source contains the url of the source package this rpm package
         # is built from, we extract the target name
         try:
-            target_s = env['source_url'].split('/')[-1]
+            tarball = env['source_url'].split('/')[-1]
         except KeyError, e:
             raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
 
-        tarball  = apply( builder, [env],
-                          { 'source' : sources,
-                            'target' : target_s } )
-
+        tarball = builder(env, source=sources, target=tarball)
 
         return (target, tarball)
 
@@ -260,12 +257,13 @@ class RpmPackager(BinaryPackager):
         tag_factories = [ LocationTagFactory() ]
 
         for file in files:
+            print "%s %s %s %s"%(file.__hash__(), file.get_path(), file.get_tags(), file.get_stored_info().bsourcesigs)
             tags = file.get_tags( tag_factories )
 
             str += SimpleTagCompiler(supported_tags, mandatory=0).compile( tags )
 
             str += ' '
-            str += tags['install_location'].get_path()
+            str += tags['install_location']
             str += '\n\n'
 
         return str

@@ -60,8 +60,7 @@ class Packager:
         tag_factories = [ LocationTagFactory() ]
 
         def has_no_install_location(file):
-            tags = file.get_tags(factories=tag_factories)
-            return not tags.has_key('install_location')
+            return not (file.builder.name == 'InstallBuilder' or file.builder.name == 'InstallAsBuilder')
 
         # check if all source file belong into this package.
         files = filter( has_no_install_location, source )
@@ -73,13 +72,13 @@ class Packager:
         # files that will be installed. Therefore we only care for sources of
         # the files in the source list.
         n_source = []
-        for s in source:
-            for n_s in s.sources:
-                n_s.set_tags( s.get_tags() )
-                n_source.append( n_s )
-        source = n_source
 
-        return ( target, source )
+        for s in source:
+            n_s = s.sources[0]
+            n_s.set_tags( s.get_tags(tag_factories) )
+            n_source.append( n_s )
+
+        return ( target, n_source )
 
 
 class BinaryPackager(Packager):
@@ -90,7 +89,7 @@ class BinaryPackager(Packager):
     binary packager together with some information about specific files.
 
     This superclass provides two needed facilities:
-     * it's specfile_emitter function sets up the correct list of source file
+     * its specfile_emitter function sets up the correct list of source file
        and warns about files with no InstallBuilder attached.
     """
     def create_specfile_targets(self, kw):
@@ -165,14 +164,11 @@ class SourcePackager(Packager):
                     new_s    = None
 
                     if tags.has_key( 'install_location' ) and honor_install_location:
-                        my_target = env.strip_abs_path(tags['install_location'].get_path())
+                        my_target = env.strip_abs_path(tags['install_location'])
                     else:
                         my_target = env.strip_abs_path(s.get_path())
 
-                    new_s = env.Command( source = s,
-                                         target = os.path.join( pkg_root, my_target ),
-                                         action = SCons.Defaults.Copy( '$TARGET', '$SOURCE' ),
-                                        )[0]
+                    new_s = env.CopyAs( os.path.join( pkg_root, my_target ), s )[0]
 
                     # store the tags of our original file in the new file.
                     new_s.set_tags( s.get_tags() )
@@ -211,9 +207,10 @@ class LocationTagFactory(TagFactory):
             return {}
 
         if file.has_builder() and\
-           file.builder.name == "InstallBuilder" and\
+           (file.builder.name == "InstallBuilder" or\
+            file.builder.name == "InstallAsBuilder") and\
            file.has_explicit_builder():
-            return { 'install_location' : file.builder.targets( file )[0] }
+            return { 'install_location' : file.get_path() }
         else:
             return {}
 

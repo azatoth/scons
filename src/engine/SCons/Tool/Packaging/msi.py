@@ -36,7 +36,7 @@ from packager import BinaryPackager, LocationTagFactory
 from xml.dom.minidom import *
 from xml.sax.saxutils import escape
 
-class MsiPackager(BinaryPackager):
+class Msi(BinaryPackager):
     def __init__(self):
         BinaryPackager.__init__(self)
         self.filename_set = []

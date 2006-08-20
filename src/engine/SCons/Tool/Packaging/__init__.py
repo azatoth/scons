@@ -46,15 +46,15 @@ def set_package_type(option, opt, value, parser):
     type = value
 
 packagers = {
-    'src_tarbz2' : tarbz2.TarBz2Packager(),
-    'src_targz'  : targz.TarGzPackager(),
-    'src_zip'    : zip.ZipPackager(),
-    'tarbz2' : tarbz2.BinaryTarBz2Packager(),
-    'targz'  : targz.BinaryTarGzPackager(),
-    'zip'    : zip.BinaryZipPackager(),
-    'rpm'    : rpm.RpmPackager(),
-    'msi'    : msi.MsiPackager(),
-    'ipk'    : ipk.IpkPackager(),
+    'src_tarbz2' : tarbz2.TarBz2(),
+    'src_targz'  : targz.TarGz(),
+    'src_zip'    : zip.Zip(),
+    'tarbz2' : tarbz2.BinaryTarBz2(),
+    'targz'  : targz.BinaryTarGz(),
+    'zip'    : zip.BinaryZip(),
+    'rpm'    : rpm.Rpm(),
+    'msi'    : msi.Msi(),
+    'ipk'    : ipk.Ipk(),
 }
 
 def get_targets(env, kw):
@@ -69,17 +69,21 @@ def get_targets(env, kw):
 
     env['SPEC'] = kw
 
+    selected_packagers = []
+    for t in type:
+        try:
+            selected_packagers.append(packagers[t])
+        except KeyError:
+            raise SCons.Errors.UserError( 'packager %s not available' % t )
+
     try:
-        selected_packagers = []
-        for t in type:
-            selected_packagers.append(packagers.get(t))
         targets = []
         for p in selected_packagers:
             builder = p.create_builder(env, kw)
             target  = apply( builder, [env], p.add_targets(kw) )
             targets.extend(target)
 
-        env.Alias( 'package', targets )
+    except KeyError, e:
+        raise SCons.Errors.UserError( "Missing PackageTag '%s' for %s packager" % (e.args[0],p.__class__.__name__) )
 
-    except KeyError:
-        raise SCons.Errors.UserError( 'packager %s not available' % t )
+    env.Alias( 'package', targets )

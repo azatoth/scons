@@ -855,6 +855,7 @@ class Base(SubstitutionEnvironment):
     def strip_abs_path(self, source):
         """ strips the absolute path dir from the absolute source pathname. If one of them is not absolute nothing is changed.
         """
+        source = os.path.realpath(source)
         if os.path.isabs( source ):
             drive_s,x = os.path.splitdrive( source )
             source    = source[source.find(drive_s):]
@@ -862,7 +863,10 @@ class Base(SubstitutionEnvironment):
             if source[0] == os.sep:
                 source = source[1:]
 
-        assert( not os.path.isabs( source ) )
+            if source[0] == os.sep:
+                source = source[1:]
+
+        assert( not os.path.isabs( source ) ), source
         return source
 
 

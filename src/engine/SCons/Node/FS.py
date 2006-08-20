@@ -699,11 +699,15 @@ class Base(SCons.Node.Node):
         tags.
         """
         for factory in factories:
-            generated_tags = apply( factory, [ self, self.tags ], {} )
+            generated_tags = factory(self, self.tags)
             # XXX: instead of update, we could perhaps use the attached
             # BuildInfo and its merge function ?!?!
             if generated_tags:
                 self.tags.update( generated_tags )
+
+        # copy tag information to all srcnodes!!
+        srcnodes = [ x.srcnode() for x in [self] if x.srcnode() != x ]
+        map( lambda x: x.set_tags(self.tags), srcnodes )
 
         return self.tags
 
@@ -715,10 +719,11 @@ class Base(SCons.Node.Node):
         else:
             apply( self.tags.update, e, kw )
 
-        return self.tags
+        # copy tag information to all srcnodes!!
+        srcnodes = [ x.srcnode() for x in [self] if x.srcnode() != x ]
+        map( lambda x: x.set_tags(self.tags), srcnodes )
 
-    def clear_tags(self):
-        self.tags = {}
+        return self.tags
 
     def RDirs(self, pathlist):
         """Search for a list of directories in the Repository list."""
@@ -1280,7 +1285,6 @@ class Dir(Base):
     def Dir(self, name):
         """Create a directory node named 'name' relative to this directory."""
         dir = self.fs.Dir(name, self)
-        assert( os.path.commonprefix( [ self.abspath, dir.abspath ] ) == self.abspath ), "Internal Error: %s has to be relative to %s but is not" %( dir.abspath, self.abspath )
         return dir
 
     def File(self, name):

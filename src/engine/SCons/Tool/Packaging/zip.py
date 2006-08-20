@@ -30,7 +30,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 from packager import SourcePackager
 
-class ZipPackager(SourcePackager):
+class Zip(SourcePackager):
     def create_builder(self, env, kw=None):
         builder = env.get_builder('Zip')
         if kw:
@@ -43,9 +43,9 @@ class ZipPackager(SourcePackager):
         builder.set_suffix('zip')
         return builder
 
-class BinaryZipPackager(ZipPackager):
+class BinaryZip(Zip):
     def create_builder(self, env, kw=None):
-        builder = ZipPackager.create_builder(self, env, kw)
+        builder = Zip.create_builder(self, env, kw)
         builder.push_emitter(self.strip_install_emitter)
         return builder
 

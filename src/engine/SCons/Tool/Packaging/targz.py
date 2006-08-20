@@ -30,7 +30,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 from packager import SourcePackager
 
-class TarGzPackager(SourcePackager):
+class TarGz(SourcePackager):
     def create_builder(self, env, kw=None):
         env['TARFLAGS']  = '-zc'
         builder = env.get_builder('Tar')
@@ -43,8 +43,8 @@ class TarGzPackager(SourcePackager):
         builder.set_suffix('tar.gz')
         return builder
 
-class BinaryTarGzPackager(TarGzPackager):
+class BinaryTarGz(TarGz):
     def create_builder(self, env, kw=None):
-        builder = TarGzPackager.create_builder(self, env, kw)
+        builder = TarGz.create_builder(self, env, kw)
         builder.push_emitter(self.strip_install_emitter)
         return builder
