@@ -141,8 +141,8 @@ class Msi(BinaryPackager):
         # Thisis~1.txt, Thisis~2.txt etc.
         duplicate, num = not None, 1
         while duplicate:
-            shortname = "%s~%s" % (fname[:7-len(str(num))].upper(),\
-                                   str(num))
+            shortname = "%s%s" % (fname[:8-len(str(num))].upper(),\
+                                  str(num))
             if len( ext ) >= 2:
                 shortname = "%s%s" % (shortname, ext[:4].upper())
 
