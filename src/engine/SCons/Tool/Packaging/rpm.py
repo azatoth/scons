@@ -57,7 +57,7 @@ class Rpm(BinaryPackager):
         if kw.has_key('architecture'):
             buildarchitecture = kw['architecture']
 
-        srcrpm = '%s-%s-%s.src\.rpm' % (projectname, version, packageversion)
+        srcrpm = '%s-%s-%s.src.rpm' % (projectname, version, packageversion)
         binrpm = srcrpm.replace( 'src', buildarchitecture )
 
         kw['target'] = [ srcrpm, binrpm ]

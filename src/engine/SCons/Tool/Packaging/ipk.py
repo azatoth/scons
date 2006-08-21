@@ -138,7 +138,7 @@ Description: $x_ipk_description
 
         for f in source:
             tags = f.get_tags()
-            if tags.has_key( 'conf' ):
+            if tags.has_key( 'config' ):
                 get_file( 'conffiles' ).write( tags['install_location'].get_path() )
                 get_file( 'conffiles' ).write( '\n' )
 
