@@ -114,8 +114,12 @@ def exec_spawn(l, env):
     try:
         result = os.spawnve(os.P_WAIT, l[0], l, env)
     except OSError, e:
-        result = exitvalmap[e[0]]
-        sys.stderr.write("scons: %s: %s\n" % (l[0], e[1]))
+        try:
+            result = exitvalmap[e[0]]	
+            sys.stderr.write("scons: %s: %s\n" % (l[0], e[1]))
+        except KeyError:
+            result = 127
+            sys.stderr.write("scons: unknown OSError exception code %d - %s: %s\n" % (e[0], l[0], e[1]))
     return result
 
 def spawn(sh, escape, cmd, args, env):
