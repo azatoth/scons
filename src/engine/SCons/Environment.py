@@ -858,9 +858,11 @@ class Base(SubstitutionEnvironment):
         if os.path.isabs( source ):
             drive_s,source = os.path.splitdrive( source )
 
+            import re
             if not drive_s:
-                import re
                 source=re.compile("/*(.*)").findall(source)[0]
+            else:
+                source=source[1:]
 
         assert( not os.path.isabs( source ) ), source
         return source

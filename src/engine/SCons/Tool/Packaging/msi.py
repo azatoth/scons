@@ -56,15 +56,15 @@ class Msi(BinaryPackager):
             p, v          = env['SPEC']['projectname'], env['SPEC']['version']
             wxiobj_target = build_dir.File( '%s-%s.wxiobj' % ( p, v ) )
 
-            wxi_builder = SCons.Builder.Builder(
+            wxs_builder = SCons.Builder.Builder(
                 action  = '$WIXCANDLECOM',
-                emitter = self.specfile_emitter,
+                emitter = [ self.strip_install_emitter, self.specfile_emitter ],
                 src_suffix = '.wxs' )
 
-            wxi_file = apply( wxi_builder, [env], { 'source' : source,
+            wxs_file = apply( wxs_builder, [env], { 'source' : source,
                                                     'target' : wxiobj_target, } )
 
-            return (target, wxi_file)
+            return (target, wxs_file)
 
         def blubb():
             raise Exception
@@ -135,7 +135,7 @@ class Msi(BinaryPackager):
             return file
 
         for x in [ '.', '"', '/', '[', ']', ':', ';', '=', ',', ' ' ]:
-            fname.replace(x, '')
+            fname=fname.replace(x, '')
 
         # check if we already generated a filename with the same number:
         # Thisis~1.txt, Thisis~2.txt etc.
@@ -335,7 +335,7 @@ class Msi(BinaryPackager):
 
         for file in files:
             tags = file.get_tags( tag_factories )
-            drive, path = os.path.splitdrive( tags['install_location'].get_path() )
+            drive, path = os.path.splitdrive( tags['install_location'] )
             filename = os.path.basename( path )
             dirname  = os.path.dirname( path )
 
@@ -353,7 +353,7 @@ class Msi(BinaryPackager):
                 tags['x_msi_shortname'] = self.gen_dos_short_file_name( filename )
 
             if not tags.has_key('x_msi_source'):
-                tags['x_msi_source'] = filename
+                tags['x_msi_source'] = file.get_path()
 
             File = factory.createElement( 'File' )
             File.attributes['LongName'] = escape( tags['x_msi_longname'] )
@@ -451,9 +451,11 @@ class Msi(BinaryPackager):
 
         if name!='' or text!='':
             file = open( os.path.join(directory.get_path(), 'License.rtf'), 'w' )
-            file.write('{\\rtf\r\n')
-            file.write(name+'\r\n\r\n')
-            file.write(text)
+            file.write('{\\rtf')
+            if text!='':
+                 file.write(text.replace('\n', '\\par '))
+            else:
+                 file.write(name+'\\par\\par')
             file.write('}')
             file.close()
 

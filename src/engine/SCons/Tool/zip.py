@@ -67,4 +67,4 @@ def generate(env):
     env['ZIPSUFFIX']  = '.zip'
 
 def exists(env):
-    return env.Detect('rpmbuild')
+    return 1

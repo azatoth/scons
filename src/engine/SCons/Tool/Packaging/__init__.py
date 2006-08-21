@@ -39,8 +39,7 @@ import tarbz2, targz, zip, rpm, msi, ipk
 #
 # Functions to handle options of the Packager.
 #
-type = [ 'src_tarbz2' ]
-
+type = None
 def set_package_type(option, opt, value, parser):
     global type
     type = value
@@ -62,8 +61,15 @@ def get_targets(env, kw):
     with its dependencies.
     """
     global type
-    if kw.has_key( 'type' ):
-        type = kw['type']
+    if not type:
+        print type
+        if kw.has_key( 'type' ):
+            type = kw['type']
+        else:
+            if env['BUILDERS'].has_key('Tar'):
+                type = 'src_tarbz2'
+            else:
+                type = 'src_zip'
     if SCons.Util.is_String( type ):
         type = [ type ]
 
