@@ -60,7 +60,7 @@ class Packager:
         tag_factories = [ LocationTagFactory() ]
 
         def has_no_install_location(file):
-            return not (file.builder.name == 'InstallBuilder' or file.builder.name == 'InstallAsBuilder')
+            return not ( file.has_builder() and (file.builder.name == 'InstallBuilder' or file.builder.name == 'InstallAsBuilder') )
 
         # check if all source file belong into this package.
         files = filter( has_no_install_location, source )
