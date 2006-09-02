@@ -29,7 +29,7 @@ Validate that $FORTRANMODDIR values get expanded correctly on Fortran
 command lines relative to the appropriate subdirectory.
 """
 
-import sys
+import os.path
 
 import TestSCons
 
@@ -63,11 +63,23 @@ for l in infile.readlines():
 sys.exit(0)
 """)
 
+test.write('myar.py', """\
+import sys
+t = open(sys.argv[1], 'wb')
+for s in sys.argv[2:]:
+    t.write(open(s, 'rb').read())
+t.close
+sys.exit(0)
+""")
+
 test.write('SConstruct', """\
 env = Environment(FORTRANMODDIRPREFIX = '-M',
                   FORTRANMODDIR = 'modules',
                   F90 = r'%(python)s myfortran.py f90',
-                  FORTRAN = r'%(python)s myfortran.py fortran')
+                  FORTRAN = r'%(python)s myfortran.py fortran',
+                  AR = 'myar.py',
+                  ARCOM = r'%(python)s $AR $TARGET $SOURCES',
+                  RANLIBCOM = '')
 Export('env')
 objs = SConscript('subdir/SConscript')
 env.Library('bidule', objs)
@@ -94,7 +106,10 @@ end module
 
 test.run(arguments = '.')
 
-test.must_match(['subdir', 'build', 'somemodule.mod'],
-                "myfortran.py wrote subdir/build/somemodule.mod\n")
+somemodule = os.path.join('subdir', 'build', 'somemodule.mod')
+
+expect = "myfortran.py wrote %s\n" % somemodule
+
+test.must_match(['subdir', 'build', 'somemodule.mod'], expect)
 
 test.pass_test()
