@@ -90,7 +90,11 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
             ret = os.spawnve(os.P_WAIT, sh, args, env)
         except OSError, e:
             # catch any error
-            ret = exitvalmap[e[0]]
+            try:
+                ret = exitvalmap[e[0]]
+            except KeyError:
+                result = 127
+                sys.stderr.write("scons: unknown OSError exception code %d - %s: %s\n" % (e[0], cmd, e[1]))
             if stderr != None:
                 stderr.write("scons: %s: %s\n" % (cmd, e[1]))
         # copy child output from tempfiles to our streams
@@ -115,11 +119,18 @@ def exec_spawn(l, env):
         result = os.spawnve(os.P_WAIT, l[0], l, env)
     except OSError, e:
         try:
-            result = exitvalmap[e[0]]	
+            result = exitvalmap[e[0]]
             sys.stderr.write("scons: %s: %s\n" % (l[0], e[1]))
         except KeyError:
             result = 127
-            sys.stderr.write("scons: unknown OSError exception code %d - %s: %s\n" % (e[0], l[0], e[1]))
+            if len(l) > 2:
+                if len(l[2]) < 1000:
+                    command = string.join(l[0:3])
+                else:
+                    command = l[0]
+            else:
+                command = l[0]
+            sys.stderr.write("scons: unknown OSError exception code %d - '%s': %s\n" % (e[0], command, e[1]))
     return result
 
 def spawn(sh, escape, cmd, args, env):

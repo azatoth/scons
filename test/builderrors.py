@@ -120,4 +120,59 @@ err = test.stderr()
 test.fail_test(string.find(err, 'Exception') != -1 or \
                string.find(err, 'Traceback') != -1)
 
+
+# Test ETOOLONG (arg list too long).  This is not in exitvalmap,
+# but that shouldn't cause a scons traceback.
+long_cmd = "foobarxyz" * 100000
+test.write('SConstruct', """
+env=Environment()
+if env['PLATFORM'] == 'posix':
+    from SCons.Platform.posix import fork_spawn
+    env['SPAWN'] = fork_spawn
+env.Command(target='longcmd.out', source=[], action='echo %s')
+"""%long_cmd)
+
+test.run(status=2, stderr=None)
+err = test.stderr()
+test.fail_test(string.find(err, 'Exception') != -1 or \
+               string.find(err, 'Traceback') != -1)
+test.fail_test(string.find(err, "too long") == -1 and # posix
+	       string.find(err, "nvalid argument") == -1) # win32
+
+
+# Test bad shell ('./one' is a dir, so it can't be used as a shell).
+# This will also give an exit status not in exitvalmap,
+# with error "Permission denied".
+test.write('SConstruct', """
+env=Environment()
+if env['PLATFORM'] == 'posix':
+    from SCons.Platform.posix import fork_spawn
+    env['SPAWN'] = fork_spawn
+env['SHELL'] = 'one'
+env.Command(target='badshell.out', source=[], action='foo')
+""")
+
+test.run(status=2, stderr=None)
+err = test.stderr()
+test.fail_test(string.find(err, 'Exception') != -1 or \
+               string.find(err, 'Traceback') != -1)
+test.fail_test(string.find(err, "ermission") == -1 and \
+	       string.find(err, "such file") == -1)
+
+
+# Test command with exit status -1.
+# Should not give traceback.
+test.write('SConstruct', """
+import os
+env = Environment(ENV = os.environ)
+env.Command('dummy.txt', None, ['python -c "import sys; sys.exit(-1)"'])
+""")
+
+test.run(status=2, stderr=None)
+err = test.stderr()
+test.fail_test(string.find(err, 'Exception') != -1 or \
+               string.find(err, 'Traceback') != -1)
+
+
+# No tests failed; OK.
 test.pass_test()
