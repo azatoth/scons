@@ -40,7 +40,7 @@ test.write_no_result_test(['test', 'no_result.py'])
 
 test.write_passing_test(['test', 'pass.py'])
 
-test.run(arguments = '-o aegis.out --aegis test')
+test.run(arguments = '-o aegis.out --aegis test', status=1)
 
 expect = """\
 test_result = [
@@ -53,6 +53,8 @@ test_result = [
 ];
 """
 
-test.must_match('aegis.out', expect)
+# The mode is 'r' (not default 'rb') because QMTest opens the file
+# description on which we write as non-binary.
+test.must_match('aegis.out', expect, mode='r')
 
 test.pass_test()

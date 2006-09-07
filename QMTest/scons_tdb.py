@@ -396,7 +396,11 @@ class AegisBatchStream(FileResultStream):
         self._outcomes[test_id] = exit_status
     def Summarize(self):
         self.file.write('test_result = [\n')
-        for file_name, exit_status in self._outcomes.items():
+        file_names = self._outcomes.keys()
+        file_names.sort()
+        for file_name in file_names:
+            exit_status = self._outcomes[file_name]
+            file_name = string.replace(file_name, '\\', '/')
             self.file.write('    { file_name = "%s";\n' % file_name)
             self.file.write('      exit_status = %s; },\n' % exit_status)
         self.file.write('];\n')
@@ -425,7 +429,7 @@ class Test(AegisTest):
         and fails otherwise. The program output is logged, but not validated."""
 
         command = RedirectedExecutable()
-        args = [context.get('python', 'python'), self.script]
+        args = [context.get('python', sys.executable), self.script]
         status = command.Run(args, os.environ)
         if not check_exit_status(result, 'Test.', self.script, status):
             # In case of failure record exit code, stdout, and stderr.

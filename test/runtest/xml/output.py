@@ -28,11 +28,25 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test writing XML output to a file.
 """
 
+import os.path
 import re
+import sys
 
 import TestRuntest
 
 test = TestRuntest.TestRuntest()
+
+test_fail_py = re.escape(os.path.join('test', 'fail.py'))
+test_no_result_py = re.escape(os.path.join('test', 'no_result.py'))
+test_pass_py = re.escape(os.path.join('test', 'pass.py'))
+
+# sys.stdout and sys.stderr are open non-binary ('w' instead of 'wb')
+# so the lines written on Windows are terminated \r\n, not just \n.  The
+# expressions below use 'cr' as the optional carriage return character.
+if sys.platform in ['win32']:
+    cr = '\r'
+else:
+    cr = ''
 
 test.subdir('test')
 
@@ -44,7 +58,7 @@ test.write_no_result_test(['test', 'no_result.py'])
 
 test.write_passing_test(['test', 'pass.py'])
 
-test.run(arguments = '-o xml.out --xml test')
+test.run(arguments = '-o xml.out --xml test', status = 1)
 
 expect_engine = """\
 <annotation key="scons_test\\.engine">
@@ -79,16 +93,16 @@ expect_os_environ = """\
 """
 
 expect_fail = """\
- <result id="test/fail\\.py" kind="test" outcome="FAIL">
-  <annotation name="Test.exit_code">
+ <result id="%(test_fail_py)s" kind="test" outcome="FAIL">
+  <annotation name="Test\\.exit_code">
    &quot;1&quot;
   </annotation>
   <annotation name="Test\\.stderr">
-   &quot;&lt;pre&gt;FAILING TEST STDERR
+   &quot;&lt;pre&gt;FAILING TEST STDERR%(cr)s
 &lt;/pre&gt;&quot;
   </annotation>
   <annotation name="Test\\.stdout">
-   &quot;&lt;pre&gt;FAILING TEST STDOUT
+   &quot;&lt;pre&gt;FAILING TEST STDOUT%(cr)s
 &lt;/pre&gt;&quot;
   </annotation>
   <annotation name="qmtest\\.cause">
@@ -104,19 +118,19 @@ expect_fail = """\
    &quot;local&quot;
   </annotation>
  </result>
-"""
+""" % locals()
 
 expect_no_result = """\
- <result id="test/no_result\\.py" kind="test" outcome="FAIL">
+ <result id="%(test_no_result_py)s" kind="test" outcome="FAIL">
   <annotation name="Test.exit_code">
    &quot;2&quot;
   </annotation>
   <annotation name="Test\\.stderr">
-   &quot;&lt;pre&gt;NO RESULT TEST STDERR
+   &quot;&lt;pre&gt;NO RESULT TEST STDERR%(cr)s
 &lt;/pre&gt;&quot;
   </annotation>
   <annotation name="Test\\.stdout">
-   &quot;&lt;pre&gt;NO RESULT TEST STDOUT
+   &quot;&lt;pre&gt;NO RESULT TEST STDOUT%(cr)s
 &lt;/pre&gt;&quot;
   </annotation>
   <annotation name="qmtest\\.cause">
@@ -132,10 +146,10 @@ expect_no_result = """\
    &quot;local&quot;
   </annotation>
  </result>
-"""
+""" % locals()
 
 expect_pass = """\
- <result id="test/pass\\.py" kind="test" outcome="PASS">
+ <result id="%(test_pass_py)s" kind="test" outcome="PASS">
   <annotation name="qmtest\\.end_time">
    &quot;[\\d.]+&quot;
   </annotation>
@@ -146,9 +160,9 @@ expect_pass = """\
    &quot;local&quot;
   </annotation>
  </result>
-"""
+""" % locals()
 
-xml_out = test.read('xml.out')
+xml_out = test.read('xml.out', 'r')
 
 expect = [
     expect_engine,

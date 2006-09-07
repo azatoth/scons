@@ -96,6 +96,9 @@ import string
 import sys
 import time
 
+if not hasattr(os, 'WEXITSTATUS'):
+    os.WEXITSTATUS = lambda x: x
+
 all = 0
 baseline = 0
 debug = ''
@@ -590,9 +593,8 @@ if qmtest:
         qmr_file = 'results.qmr'
 
     if print_times:
-        aegis_result_stream = aegis_result_stream + '(print_time="1")'
+        aegis_result_stream = aegis_result_stream + "(print_time='1')"
 
-    #qmtest = r'D:\Applications\python23\scripts\qmtest.py'
     qmtest = 'qmtest.py'
 
     qmtest_args = [ qmtest, ]
@@ -607,7 +609,7 @@ if qmtest:
                 'run',
                 '--output %s' % qmr_file,
                 '--format none',
-                '--result-stream=\'%s\'' % aegis_result_stream,
+                '--result-stream="%s"' % aegis_result_stream,
               ])
 
     if python:
@@ -618,7 +620,8 @@ if qmtest:
             rsclass = 'scons_tdb.SConsXMLResultStream'
         else:
             rsclass = 'scons_tdb.AegisBatchStream'
-        rs = '\'--result-stream=%s(filename="%s")\'' % (rsclass, outputfile)
+        qof = "r'" + outputfile + "'"
+        rs = '--result-stream="%s(filename=%s)"' % (rsclass, qof)
         qmtest_args.append(rs)
 
     if format == '--aegis':
@@ -632,7 +635,7 @@ if qmtest:
         sys.stdout.flush()
     status = 0
     if execute_tests:
-        status = os.system(cmd)
+        status = os.WEXITSTATUS(os.system(cmd))
     sys.exit(status)
 
 #try:
