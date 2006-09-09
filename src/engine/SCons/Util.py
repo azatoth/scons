@@ -986,3 +986,18 @@ class LogicalLines:
                 break
             result.append(line)
         return result
+
+def strip_abs_path(path):
+    """ makes an absolute path name to a relative pathname.
+    """
+    if os.path.isabs(path):
+        drive_s,path = os.path.splitdrive(path)
+
+        import re
+        if not drive_s:
+            path=re.compile("/*(.*)").findall(path)[0]
+        else:
+            path=path[1:]
+
+    assert( not os.path.isabs( path ) ), path
+    return path

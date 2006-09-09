@@ -30,7 +30,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 import SCons
-from SCons.Tool.install import copyFunc, create_install_targets
+from SCons.Tool.install import copyFunc
 
 def generate(env):
     try:
@@ -69,8 +69,7 @@ def generate(env):
                                      target_factory = env.fs.Entry,
                                      source_factory = env.fs.Entry,
                                      multi          = 1,
-                                     emitter        = [ create_install_targets,
-                                                        create_distinct_builders, ] )
+                                     emitter        = [ create_distinct_builders, ] )
 
         env['BUILDERS']['CopyAs'] = SCons.Builder.Builder(
                                      action         = copy_action,

@@ -85,6 +85,8 @@ class Tool:
         module = self._tool_module()
         self.generate = module.generate
         self.exists = module.exists
+        if hasattr(module, 'options'):
+            self.options = module.options
 
     def _tool_module(self):
         oldpythonpath = sys.path
@@ -151,6 +153,17 @@ class Tool:
             else:
                 kw = self.init_kw
         env.Append(TOOLS = [ self.name ])
+        if hasattr(self, 'options'):
+            from SCons.Options import Options
+            from SCons.Script import ARGUMENTS, help_text
+            current_help=SCons.Script.help_text or ''
+            if not env.has_key('options'):
+                env['options']=Options(args=ARGUMENTS)
+            opts=env['options']
+            self.options(opts)
+            opts.Update(env)
+            new_help=opts.GenerateHelpText(env)
+            env.Help(new_help.replace(current_help, ''))
         apply(self.generate, ( env, ) + args, kw)
 
     def __str__(self):

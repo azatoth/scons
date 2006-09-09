@@ -391,11 +391,17 @@ class OptionParser:
                 return
             elif arg[0:2] == "--":
                 # process a single long option (possibly with value(s))
-                self._process_long_opt(rargs, values)
+                try:
+                    self._process_long_opt(rargs, values)
+                except BadOptionError, e:
+                    if self.allow_interspersed_args:
+                        largs.append(arg)
+                    else:
+                        raise e
             elif arg[:1] == "-" and len(arg) > 1:
                 # process a cluster of short options (possibly with
                 # value(s) for the last one only)
-                self._process_short_opts(rargs, values)
+                self._process_short_opts(rargs, values, largs)
             elif self.allow_interspersed_args:
                 largs.append(arg)
                 del rargs[0]
@@ -468,7 +474,7 @@ class OptionParser:
 
         option.process(opt, value, values, self)
 
-    def _process_short_opts (self, rargs, values):
+    def _process_short_opts (self, rargs, values, largs):
         arg = rargs.pop(0)
         stop = 0
         i = 1
@@ -478,7 +484,11 @@ class OptionParser:
             i = i+1                      # we have consumed a character
 
             if not option:
-                self.error("no such option: %s" % opt)
+                if self.allow_interspersed_args:
+                    largs.append(opt)
+                    continue
+                else:
+                    raise self.error("no such option: %s" % opt)
             if option.takes_value():
                 # Any characters left in arg?  Pretend they're the
                 # next arg, and stop consuming characters of arg.

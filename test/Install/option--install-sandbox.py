@@ -55,12 +55,14 @@ test.write(['subdir', 'file3.in'], "subdir/file3.in\n")
 subdir_file3_in = os.path.join('subdir', 'file3.in')
 file1_out       = target+os.path.join( target, os.path.join( destdir, 'file1.out' ) )
 expect = test.wrap_stdout("""\
-Install file(s): "file2.in %s" as "%s %s"
-Install file(s): "file1.out" as "%s"
-""" % ( subdir_file3_in,
-        os.path.join( target, 'file2.out' ),
+Install file: "file2.in" as "%s"
+Install file: "%s" as "%s"
+Install file: "file1.out" as "%s"
+""" % ( os.path.join( target, 'file2.out' ),
+        subdir_file3_in,
         os.path.join( target, subdir_file3_in.replace( 'in', 'out' ) ),
-        file1_out, ) )
+        file1_out,
+       ) )
 
 test.run(arguments = '--install-sandbox=%s' % destdir, stdout=expect)
 

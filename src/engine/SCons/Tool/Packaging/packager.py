@@ -28,6 +28,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import SCons.Defaults
+from SCons.Util import strip_abs_path
 
 class Packager:
     """ abstract superclass of all packagers.
@@ -164,9 +165,9 @@ class SourcePackager(Packager):
                     new_s    = None
 
                     if tags.has_key( 'install_location' ) and honor_install_location:
-                        my_target = env.strip_abs_path(tags['install_location'])
+                        my_target = strip_abs_path(tags['install_location'])
                     else:
-                        my_target = env.strip_abs_path(s.get_path())
+                        my_target = strip_abs_path(s.get_path())
 
                     new_s = env.CopyAs( os.path.join( pkg_root, my_target ), s )[0]
 

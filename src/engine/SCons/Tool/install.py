@@ -29,17 +29,13 @@ selection method.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-import SCons
+import SCons.Action
 import shutil, os, stat
+from SCons.Util import strip_abs_path
 
 #
-# Functions to handle options of the install Builder.
-#
-install_sandbox = None
-
-def set_install_sandbox(option, opt, value, parser):
-    global install_sandbox
-    install_sandbox = value
+# We keep track of *all* installed files.
+_INSTALLED_FILES = []
 
 #
 # Functions doing the actual work of the Install Builder.
@@ -73,57 +69,29 @@ def stringFunc(target, source, env):
 #
 # Emitter functions
 #
-def dir_argument_override(target, source, env):
-    """ The dir argument to the Install Builder overrides all targets.
-
-    This exists to be compatible with the old Install() target, which also 
-    accepted a dir argument.
-    """
-    if env.has_key('dir'):
-        target = env.arg2nodes( env['dir'], env.fs.Dir )
-
-    return (target, source)
-
-def create_install_targets(target, source, env):
-    """ create all install targets.
-    """
-    n_target = []
-    for t in target:
-        for s in source:
-            n_target.append( env.fs.Entry(s.name, t) )
-
-    return (n_target, source)
-
 def add_targets_to_INSTALLED_FILES(target, source, env):
     """ an emitter that adds all files to the list in the _INSTALLED_FILES
     variable in env.
     """
-    files = env['_INSTALLED_FILES']
+    global _INSTALLED_FILES
+    files = _INSTALLED_FILES
     files.extend( [ x for x in target if not x in files ] )
     return (target, source)
 
-def create_distinct_builders(target, source, env):
-    """ changes the target and source list to only include file and recursively
-    attaching the builder to all other targets and sources still in the list.
+class DESTDIR_factory:
+    """ a node factory, where all files will be relative to the dir supplied
+    in the constructor.
     """
-    bld = env['BUILDERS']['InstallAs']
-
-    for t,s in zip(target[1:], source[1:]):
-        bld(env, target=t, source=s)
-
-    return (target[:1], source[:1])
-
-class sandbox_factory:
     def __init__(self, env, dir):
         self.env = env
         self.dir = env.arg2nodes( dir, env.fs.Dir )[0]
 
-    def File(self, name):
-        name = self.env.strip_abs_path(name)
-        return self.dir.File(name)
+    def Entry(self, name):
+        name = strip_abs_path(name)
+        return self.dir.Entry(name)
 
     def Dir(self, name):
-        name = self.env.strip_abs_path(name)
+        name = strip_abs_path(name)
         return self.dir.Dir(name)
 
 #
@@ -137,32 +105,67 @@ def generate(env):
         env['BUILDERS']['Install']
         env['BUILDERS']['InstallAs']
     except KeyError, e:
-        target_factory = env.fs
-        if install_sandbox:
-            target_factory = sandbox_factory(env, install_sandbox)
+        if env.has_key('DESTDIR'):
+            target_factory = DESTDIR_factory(env, env.subst('$DESTDIR'))
+        else:
+            target_factory = env.fs
 
-        env['BUILDERS']['Install'] = SCons.Builder.Builder(
+        InstallBuilder = SCons.Builder.Builder(
             action         = install_action,
-            target_factory = target_factory.Dir,
+            target_factory = target_factory.Entry,
             source_factory = env.fs.File,
             multi          = 1,
-            emitter        = [ dir_argument_override,
-                               create_install_targets,
-                               create_distinct_builders,
-                               add_targets_to_INSTALLED_FILES, ],
+            emitter        = [ add_targets_to_INSTALLED_FILES, ],
             name           = 'InstallBuilder')
 
-        env['BUILDERS']['InstallAs'] = SCons.Builder.Builder(
-            action         = installas_action,
-            target_factory = target_factory.File,
-            source_factory = env.fs.File,
-            emitter        = [ create_distinct_builders,
-                               add_targets_to_INSTALLED_FILES, ],
-            name           = 'InstallAsBuilder')
+        def InstallBuilderWrapper(env, target, source, dir=None):
+            if target and dir:
+                raise SCons.Errors.UserError, "Both target and dir defined for Install(), only one may be defined."
+            if not dir:
+                dir=target
+            try:
+                dnodes = env.arg2nodes(dir, target_factory.Dir)
+            except TypeError:
+                raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
+            try:
+                sources = env.arg2nodes(source, env.fs.File)
+            except TypeError:
+                if SCons.Util.is_List(source):
+                    raise SCons.Errors.UserError, "Source `%s' of Install() contains one or more non-files.  Install() source must be one or more files." % repr(map(str, source))
+                else:
+                    raise SCons.Errors.UserError, "Source `%s' of Install() is not a file.  Install() source must be one or more files." % str(source)
+            tgt = []
+            for dnode in dnodes:
+                for src in sources:
+                    target = env.fs.File(src.name, dnode)
+                    tgt.extend(InstallBuilder(env, target, src))
+            return tgt
 
-        env['_INSTALLED_FILES'] = []
-        env['INSTALLSTR']       = 'Install file(s): "$SOURCES" as "$TARGETS"',
-        env['INSTALL']          = copyFunc
+        def InstallAsBuilderWrapper(env, target, source):
+            result = []
+            for src, tgt in map(lambda x, y: (x, y), source, target):
+                result.extend(InstallBuilder(env, tgt, src))
+            return result
+
+        env['BUILDERS']['Install']   = InstallBuilderWrapper
+        env['BUILDERS']['InstallAs'] = InstallAsBuilderWrapper
+
+        env['INSTALLSTR'] = 'Install file: "$SOURCES" as "$TARGETS"',
+        env['INSTALL']    = copyFunc
 
 def exists(env):
     return 1
+
+def options(opts):
+    from SCons.Options import PathOption
+
+    opts.AddOptions(
+        PathOption( [ 'DESTDIR', '--install-sandbox' ], default=None,
+                    help='A directory under which all installed files will be placed.',
+                    validator=PathOption.PathIsDirCreate,
+                  ),
+
+        PathOption( [ 'prefix', '--install-prefix' ], default='/usr/local',
+                    help='The prefix which can be configured for every installed files.'
+                  ),
+    )

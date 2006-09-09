@@ -852,22 +852,6 @@ class Base(SubstitutionEnvironment):
             self._build_signature = b
             return b
 
-    def strip_abs_path(self, source):
-        """ makes an absolute path name to a relative pathname.
-        """
-        if os.path.isabs( source ):
-            drive_s,source = os.path.splitdrive( source )
-
-            import re
-            if not drive_s:
-                source=re.compile("/*(.*)").findall(source)[0]
-            else:
-                source=source[1:]
-
-        assert( not os.path.isabs( source ) ), source
-        return source
-
-
     #######################################################################
     # Public methods for manipulating an Environment.  These begin with
     # upper-case letters.  The essential characteristic of methods in
@@ -1655,9 +1639,11 @@ class Base(SubstitutionEnvironment):
     def FindInstalledFiles(self):
         """ returns of all files installed beneath dir.
         """
-        if self.has_key('_INSTALLED_FILES'):
-            return self['_INSTALLED_FILES']
-        else:
+        try:
+            self['Builders']['Install']
+            from SCons.Tool import install
+            return install._INSTALLED_FILES
+        except KeyError:
             return []
 
 class OverrideEnvironment(Base):
