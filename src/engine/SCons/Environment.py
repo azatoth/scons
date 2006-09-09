@@ -1632,10 +1632,10 @@ class Base(SubstitutionEnvironment):
         else:
             raise SCons.Errors.UserError, "Unknown target signature type '%s'"%type
 
-    def Value(self, value):
+    def Value(self, value, built_value=None):
         """
         """
-        return SCons.Node.Python.Value(value)
+        return SCons.Node.Python.Value(value, built_value)
 
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction

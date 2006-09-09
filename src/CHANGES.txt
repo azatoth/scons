@@ -10,6 +10,10 @@
 
 RELEASE 0.97 - XXX
 
+  From Anonymous:
+
+  - Allow Python Value Nodes to be Builder targets.
+
   From Ken Boortz:
 
   - Enhance ParseConfig() to recognize options that begin with '+'.

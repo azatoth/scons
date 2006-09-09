@@ -2956,6 +2956,9 @@ def generate(env):
         assert not v1 is v2
         assert v1.value == v2.value
 
+        v3 = env.Value('c', 'build-c')
+        assert v3.value == 'c', v3.value
+
 
 
     def test_Environment_global_variable(type):

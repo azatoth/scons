@@ -3997,17 +3997,31 @@ env.Tool('opengl', toolpath = ['build/tools'])
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI Value( value )
+.RI Value( value ", [" built_value ])
 .TP
-.RI env.Value( value )
+.RI env.Value( value ", [" built_value ])
 Returns a Node object representing the specified Python value.  Value
-nodes can be used as dependencies of targets.  If the result of
+Nodes can be used as dependencies of targets.  If the result of
 calling
 .BR str( value )
 changes between SCons runs, any targets depending on
 .BR Value( value )
-will be rebuilt.  When using timestamp source signatures, Value nodes'
-timestamps are equal to the system time when the node is created.
+will be rebuilt.  When using timestamp source signatures, Value Nodes'
+timestamps are equal to the system time when the Node is created.
+
+The returned Value Node object has a
+.BR write ()
+method that can be used to "build" a Value Node
+by setting a new value.
+The optional
+.I built_value
+argument can be specified 
+when the Value Node is created
+to indicate the Node should already be considered
+"built."
+There is a corresponding
+.BR read ()
+method that will return the built value of the Node.
 
 .ES
 def create(target, source, env):
@@ -4018,6 +4032,15 @@ prefix = ARGUMENTS.get('prefix', '/usr/local')
 env = Environment()
 env['BUILDERS']['Config'] = Builder(action = create)
 env.Config(target = 'package-config', source = Value(prefix))
+
+def build_value(target, source, env):
+    target[0].write(source[0].get_contents())
+
+output = env.Value('before')
+input = env.Value('after')
+
+env['BUILDERS']['UpdateValue'] = Builder(action = build_value)
+env.UpdateValue(target = Value(output), source = Value(input))
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
