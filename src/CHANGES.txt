@@ -120,6 +120,12 @@ RELEASE 0.97 - XXX
 
   - Fix detection of Visual C++ Express Edition.
 
+  From Dobes Vandermeer:
+
+  - Let the src_dir option to the SConscript() function affect all the 
+    the source file paths, instead of treating all source files paths
+    as relative to the SConscript directory itself.
+
   From Nicolas Vigier:
 
   - Fix finding Fortran modules in build directories.
