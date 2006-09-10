@@ -286,3 +286,14 @@ file_template =
 		body = "${read_file ${source template/test.py abs}}";
 	},
 ];
+
+/*
+ * Command for distributing changes from Aegis to all of the repositories
+ * we want to mirror the information.
+ *
+ * XXX Uncomment after upgrading to an Aegis version that supports this.
+
+integrate_pass_notify_command =
+        "$sh ${s bin/scons-cdist} -p $project $change";
+ *
+ */
