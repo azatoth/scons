@@ -1291,8 +1291,21 @@ def _exec_main():
         import pdb
         pdb.Pdb().runcall(_main, args, parser)
     elif options.profile_file:
-        import profile
-        prof = profile.Profile()
+        from profile import Profile
+
+        # Some versions of Python 2.4 shipped a profiler that had the
+        # wrong 'c_exception' entry in its dispatch table.  Make sure
+        # we have the right one.  (This may put an unnecessary entry
+        # in the table in earlier versions of Python, but its presence
+        # shouldn't hurt anything).
+        try:
+            dispatch = Profile.dispatch
+        except AttributeError:
+            pass
+        else:
+            dispatch['c_exception'] = Profile.trace_dispatch_return
+
+        prof = Profile()
         try:
             prof.runcall(_main, args, parser)
         except SystemExit:

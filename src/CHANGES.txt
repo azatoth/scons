@@ -54,6 +54,9 @@ RELEASE 0.97 - XXX
   - Let linking on mingw use the default function that chooses $CC (gcc)
     or $CXX (g++) depending on whether there are any C++ source files.
 
+  - Work around a bug in early versions of the Python 2.4 profile module
+    that caused the --profile= option to fail.
+
   From Arve Knudsen:
 
   - Support cleaning and scanning SWIG-generated files.
