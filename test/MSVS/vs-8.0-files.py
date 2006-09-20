@@ -153,7 +153,7 @@ expected_vcprojfile = """\
 
 
 SConscript_contents = """\
-env=Environment(MSVS_VERSION = '8.0')
+env=Environment(tools=['msvs'], MSVS_VERSION = '8.0')
 
 testsrc = ['test1.cpp', 'test2.cpp']
 testincs = ['sdk.h']
@@ -273,7 +273,7 @@ The real workspace file is here:
 test.subdir('work3')
 
 test.write(['work3', 'SConstruct'], """\
-env=Environment(MSVS_VERSION = '8.0')
+env=Environment(tools=['msvs'], MSVS_VERSION = '8.0')
 
 testsrc = ['test1.cpp', 'test2.cpp']
 testincs = ['sdk.h']

@@ -738,10 +738,17 @@ class _GenerateV7DSP(_DSPGenerator):
             commonprefix = None
             if len(sources) > 1:
                 s = map(os.path.normpath, sources)
-                cp = os.path.commonprefix(s)
+                # take the dirname because the prefix may include parts
+                # of the filenames (e.g. if you have 'dir\abcd' and
+                # 'dir\acde' then the cp will be 'dir\a' )
+                cp = os.path.dirname( os.path.commonprefix(s) )
                 if cp and s[0][len(cp)] == os.sep:
-                    sources = map(lambda s, l=len(cp): s[l:], sources)
+                    # +1 because the filename starts after the separator
+                    sources = map(lambda s, l=len(cp)+1: s[l:], sources)
                     commonprefix = cp
+            elif len(sources) == 1:
+                commonprefix = os.path.dirname( sources[0] )
+                sources[0] = os.path.basename( sources[0] )
 
             hierarchy = makeHierarchy(sources)
             printSources(hierarchy, commonprefix=commonprefix)

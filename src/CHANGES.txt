@@ -14,6 +14,11 @@ RELEASE 0.97 - XXX
 
   - Allow Python Value Nodes to be Builder targets.
 
+  From Matthias:
+
+  - Only filter Visual Studio common filename prefixes on complete
+    directory names.
+
   From Ken Boortz:
 
   - Enhance ParseConfig() to recognize options that begin with '+'.
