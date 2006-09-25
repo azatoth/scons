@@ -56,6 +56,8 @@ bar.Program(target = 'b', source = obj)
 """ % python)
 
 test.write('foo.c', r"""
+#include <stdio.h>
+
 void
 library_function(void)
 {
@@ -64,6 +66,8 @@ library_function(void)
 """)
 
 test.write('bar.c', r"""
+#include <stdio.h>
+
 void
 library_function(void)
 {
@@ -72,6 +76,9 @@ library_function(void)
 """)
 
 test.write('main.c', r"""
+#include <stdio.h>
+#include <stdlib.h>
+
 int
 main(int argc, char *argv[])
 {

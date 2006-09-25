@@ -158,6 +158,8 @@ CacheDir(r'%s')
 """ % (test.workpath('cache')))
 
 test.write(['src2', 'hello.c'], r"""\
+#include <stdio.h>
+#include <stdlib.h>
 int
 main(int argc, char *argv[])
 {

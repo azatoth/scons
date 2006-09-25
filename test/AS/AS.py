@@ -226,6 +226,9 @@ name:
 """)
 
     test.write('aaa_main.c', r"""
+#include <stdlib.h>
+#include <stdio.h>
+
 extern char name[];
 
 int
@@ -238,6 +241,9 @@ main(int argc, char *argv[])
 """)
 
     test.write('bbb_main.c', r"""
+#include <stdlib.h>
+#include <stdio.h>
+
 extern char name[];
 
 int
@@ -250,6 +256,9 @@ main(int argc, char *argv[])
 """)
 
     test.write('ccc_main.c', r"""
+#include <stdlib.h>
+#include <stdio.h>
+
 extern char name[];
 
 int

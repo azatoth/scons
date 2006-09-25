@@ -164,6 +164,9 @@ bar.Program(target = 'bar', source = 'bar.c')
 """ % python)
 
 test.write('foo.c', r"""
+#include <stdio.h>
+#include <stdlib.h>
+
 int
 main(int argc, char *argv[])
 {
@@ -174,6 +177,9 @@ main(int argc, char *argv[])
 """)
 
 test.write('bar.c', r"""
+#include <stdio.h>
+#include <stdlib.h>
+
 int
 main(int argc, char *argv[])
 {

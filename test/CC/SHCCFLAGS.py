@@ -79,6 +79,8 @@ EXPORTS
 """)
 
 test.write('prog.c', r"""
+#include <stdio.h>
+
 void
 doIt()
 {

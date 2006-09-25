@@ -69,6 +69,8 @@ env.Default(exe)
 
 test.write('main.c', """\
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdio.h>
 int
 main(int argc, char *argv[])
 {

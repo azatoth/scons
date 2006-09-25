@@ -64,6 +64,7 @@ bar.Program(target = 'b', source = main)
 """ % python)
 
 test.write('foo.c', r"""
+#include <stdio.h>
 void
 library_function(void)
 {
@@ -72,6 +73,8 @@ library_function(void)
 """)
 
 test.write('bar.c', r"""
+#include <stdio.h>
+
 void
 library_function(void)
 {
@@ -80,6 +83,7 @@ library_function(void)
 """)
 
 test.write('main.c', r"""
+#include <stdlib.h>
 int
 main(int argc, char *argv[])
 {
