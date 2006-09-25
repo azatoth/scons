@@ -27,9 +27,11 @@ from TestCommon import __all__
 
 __all__.extend([ 'TestRuntest',
                  'python',
+                 '_python_',
                ])
 
 python = python_executable
+_python_ = '"' + python_executable + '"'
 
 
 failing_test_template = """\

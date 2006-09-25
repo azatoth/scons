@@ -32,10 +32,12 @@ isn't available or is misbehaving.
 """
 
 import os.path
+import re
 
 import TestRuntest
 
 python = TestRuntest.python
+_python_ = TestRuntest._python_
 
 test = TestRuntest.TestRuntest()
 
@@ -53,12 +55,17 @@ test.write_failing_test(test_fail_py)
 test.write_no_result_test(test_no_result_py)
 test.write_passing_test(test_pass_py)
 
+if re.search('\s', python):
+    expect_python = _python_
+else:
+    expect_python = python
+
 expect_stdout = """\
-%(python)s -tt %(workpath_fail_py)s
+%(expect_python)s -tt %(workpath_fail_py)s
 FAILING TEST STDOUT
-%(python)s -tt %(workpath_no_result_py)s
+%(expect_python)s -tt %(workpath_no_result_py)s
 NO RESULT TEST STDOUT
-%(python)s -tt %(workpath_pass_py)s
+%(expect_python)s -tt %(workpath_pass_py)s
 PASSING TEST STDOUT
 
 Failed the following test:

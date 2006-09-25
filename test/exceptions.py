@@ -31,7 +31,7 @@ import sys
 import TestSCons
 import TestCmd
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons(match = TestCmd.match_re_dotall)
 
@@ -73,10 +73,10 @@ sys.exit(1)
 """)
 
 test.write(SConstruct_path, """
-Fail = Builder(action = r'%s myfail.py $TARGETS $SOURCE')
+Fail = Builder(action = r'%(_python_)s myfail.py $TARGETS $SOURCE')
 env = Environment(BUILDERS = { 'Fail' : Fail })
 env.Fail(target = 'f1', source = 'f1.in')
-""" % (python))
+""" % locals())
 
 test.write('f1.in', "f1.in\n")
 
@@ -91,12 +91,12 @@ test.run(arguments = '-j2 .', status = 2, stderr = expected_stderr)
 # [Node.prepare()]
 
 test.write(SConstruct_path, """
-Fail = Builder(action = r'%s myfail.py $TARGETS $SOURCE')
+Fail = Builder(action = r'%(_python_)s myfail.py $TARGETS $SOURCE')
 env = Environment(BUILDERS = { 'Fail' : Fail })
 env.Fail(target = 'f1', source = 'f1.in')
 env.Fail(target = 'f2', source = 'f2.in')
 env.Fail(target = 'f3', source = 'f3.in')
-""" % (python))
+""" % locals())
 
 # f2.in is not created to cause a Task.prepare exception
 test.write('f3.in', 'f3.in\n')

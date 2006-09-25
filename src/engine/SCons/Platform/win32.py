@@ -139,9 +139,15 @@ def spawn(sh, escape, cmd, args, env):
         return 127
     return exec_spawn([sh, '/C', escape(string.join(args))], env)
 
-# Windows does not allow special characters in file names anyway, so
-# no need for a complex escape function, we will just quote the arg.
-escape = lambda x: '"' + x + '"'
+# Windows does not allow special characters in file names anyway, so no
+# need for a complex escape function, we will just quote the arg, except
+# that "cmd /c" requires that if an argument ends with a backslash it
+# needs to be escaped so as not to interfere with closing double quote
+# that we add.
+def escape(x):
+    if x[-1] == '\\':
+        x = x + '\\'
+    return '"' + x + '"'
 
 # Get the windows system directory name
 def get_system_root():

@@ -595,15 +595,17 @@ sys.exit(1)
 
         save_stderr = sys.stderr
 
+        python = '"' + sys.executable + '"'
+
         try:
-            cmd = '%s %s' % (sys.executable, test.workpath('stdout.py'))
+            cmd = '%s %s' % (python, test.workpath('stdout.py'))
             output = env.backtick(cmd)
 
             assert output == 'this came from stdout.py\n', output
 
             sys.stderr = StringIO.StringIO()
 
-            cmd = '%s %s' % (sys.executable, test.workpath('stderr.py'))
+            cmd = '%s %s' % (python, test.workpath('stderr.py'))
             output = env.backtick(cmd)
             errout = sys.stderr.getvalue()
 
@@ -612,7 +614,7 @@ sys.exit(1)
 
             sys.stderr = StringIO.StringIO()
 
-            cmd = '%s %s' % (sys.executable, test.workpath('fail.py'))
+            cmd = '%s %s' % (python, test.workpath('fail.py'))
             try:
                 env.backtick(cmd)
             except OSError, e:

@@ -29,7 +29,7 @@ import string
 import sys
 import TestSCons
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
@@ -60,9 +60,9 @@ sys.exit(0)
 
 test.write('SConstruct', """
 env = Environment(tools = ['rmic'],
-                  RMIC = r'%s myrmic.py')
+                  RMIC = r'%(_python_)s myrmic.py')
 env.RMIC(target = 'outdir', source = 'test1.java')
-""" % (python))
+""" % locals())
 
 test.write('test1.java', """\
 test1.java

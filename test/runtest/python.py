@@ -29,6 +29,7 @@ Test that the -P option lets us specify a Python version to use.
 """
 
 import os.path
+import re
 import sys
 
 if not hasattr(os.path, 'pardir'):
@@ -40,10 +41,15 @@ test = TestRuntest.TestRuntest()
 
 test_pass_py = os.path.join('test', 'pass.py')
 
-head, python = os.path.split(sys.executable)
+head, python = os.path.split(TestRuntest.python)
 head, dir = os.path.split(head)
 
 mypython = os.path.join(head, dir, os.path.pardir, dir, python)
+
+if re.search('\s', mypython):
+    _mypython_ = '"' + mypython + '"'
+else:
+    _mypython_ = mypython
 
 test.subdir('test')
 
@@ -52,7 +58,7 @@ test.write_passing_test(['test', 'pass.py'])
 # NOTE:  The "test/fail.py : FAIL" and "test/pass.py : PASS" lines both
 # have spaces at the end.
 
-expect = r"""qmtest.py run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" --context python=%(mypython)s test
+expect = r"""qmtest.py run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" --context python="%(mypython)s" test
 --- TEST RESULTS -------------------------------------------------------------
 
   %(test_pass_py)s                                  : PASS    
@@ -69,6 +75,6 @@ expect = r"""qmtest.py run --output results.qmr --format none --result-stream="s
        1 (100%%) tests PASS
 """ % locals()
 
-test.run(arguments = '-P %s test' % mypython, stdout = expect)
+test.run(arguments = '-P %s test' % _mypython_, stdout = expect)
 
 test.pass_test()

@@ -33,7 +33,7 @@ import string
 import sys
 import TestSCons
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
@@ -49,7 +49,7 @@ sys.exit(0)
 """)
 
 test.write('SConstruct', """
-env = Environment(ASPPCOM = r'%(python)s myas.py $TARGET $SOURCE',
+env = Environment(ASPPCOM = r'%(_python_)s myas.py $TARGET $SOURCE',
                   OBJSUFFIX = '.obj')
 env.Object(target = 'test1', source = 'test1.spp')
 env.Object(target = 'test2', source = 'test2.SPP')

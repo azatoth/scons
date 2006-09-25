@@ -55,6 +55,7 @@ else:
 work_cnt = 0
 work_dir = None
 python = TestSCons.python
+_python_ = TestSCons._python_
 test = TestSCons.TestSCons()
 _obj = TestSCons._obj
 _exe = TestSCons._exe
@@ -615,9 +616,9 @@ def CustomTest(*args):
     return 0
 conf = env.Configure(custom_tests = {'MyTest' : CustomTest})
 if not conf.MyTest():
-    env.Command("hello", [], "%s cmd.py $TARGET")
+    env.Command("hello", [], '%(_python_)s cmd.py $TARGET')
 env = conf.Finish()
-""" % python)
+""" % locals())
     test.run(chdir=work_dir, stderr="Hello World on stderr\n")
 
     # 4.2 test that calling Configure from a builder results in a

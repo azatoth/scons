@@ -29,7 +29,7 @@ import string
 import sys
 import TestSCons
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
@@ -47,13 +47,13 @@ sys.exit(exitval)
 """)
 
 test.write(['one', 'SConstruct'], """
-B0 = Builder(action = r'%s ../build.py 0 $TARGET $SOURCES')
-B1 = Builder(action = r'%s ../build.py 1 $TARGET $SOURCES')
+B0 = Builder(action = r'%(_python_)s ../build.py 0 $TARGET $SOURCES')
+B1 = Builder(action = r'%(_python_)s ../build.py 1 $TARGET $SOURCES')
 env = Environment(BUILDERS = { 'B0' : B0, 'B1' : B1 })
 env.B1(target = 'f1.out', source = 'f1.in')
 env.B0(target = 'f2.out', source = 'f2.in')
 env.B0(target = 'f3.out', source = 'f3.in')
-""" % (python, python))
+""" % locals())
 
 test.write(['one', 'f1.in'], "one/f1.in\n")
 test.write(['one', 'f2.in'], "one/f2.in\n")
@@ -67,13 +67,13 @@ test.fail_test(os.path.exists(test.workpath('f2.out')))
 test.fail_test(os.path.exists(test.workpath('f3.out')))
 
 test.write(['two', 'SConstruct'], """
-B0 = Builder(action = r'%s ../build.py 0 $TARGET $SOURCES')
-B1 = Builder(action = r'%s ../build.py 1 $TARGET $SOURCES')
+B0 = Builder(action = r'%(_python_)s ../build.py 0 $TARGET $SOURCES')
+B1 = Builder(action = r'%(_python_)s ../build.py 1 $TARGET $SOURCES')
 env = Environment(BUILDERS = { 'B0': B0, 'B1' : B1 })
 env.B0(target = 'f1.out', source = 'f1.in')
 env.B1(target = 'f2.out', source = 'f2.in')
 env.B0(target = 'f3.out', source = 'f3.in')
-""" % (python, python))
+""" % locals())
 
 test.write(['two', 'f1.in'], "two/f1.in\n")
 test.write(['two', 'f2.in'], "two/f2.in\n")
@@ -87,13 +87,13 @@ test.fail_test(os.path.exists(test.workpath('f2.out')))
 test.fail_test(os.path.exists(test.workpath('f3.out')))
 
 test.write(['three', 'SConstruct'], """
-B0 = Builder(action = r'%s ../build.py 0 $TARGET $SOURCES')
-B1 = Builder(action = r'%s ../build.py 1 $TARGET $SOURCES')
+B0 = Builder(action = r'%(_python_)s ../build.py 0 $TARGET $SOURCES')
+B1 = Builder(action = r'%(_python_)s ../build.py 1 $TARGET $SOURCES')
 env = Environment(BUILDERS = { 'B0' : B0, 'B1': B1 })
 env.B0(target = 'f1.out', source = 'f1.in')
 env.B0(target = 'f2.out', source = 'f2.in')
 env.B1(target = 'f3.out', source = 'f3.in')
-""" % (python, python))
+""" % locals())
 
 test.write(['three', 'f1.in'], "three/f1.in\n")
 test.write(['three', 'f2.in'], "three/f2.in\n")

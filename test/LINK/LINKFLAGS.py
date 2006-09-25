@@ -29,7 +29,7 @@ import string
 import sys
 import TestSCons
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 _exe = TestSCons._exe
 
 test = TestSCons.TestSCons()
@@ -45,11 +45,11 @@ os.system(string.join(args, " "))
 
 test.write('SConstruct', """
 foo = Environment()
-bar = Environment(LINK = foo.subst(r'%s wrapper.py $LINK'),
+bar = Environment(LINK = foo.subst(r'%(_python_)s wrapper.py $LINK'),
                   LINKFLAGS = foo.subst('$LINKFLAGS fake_link_flag'))
 foo.Program(target = 'foo', source = 'foo.c')
 bar.Program(target = 'bar', source = 'bar.c')
-""" % python)
+""" % locals())
 
 test.write('foo.c', r"""
 #include <stdio.h>

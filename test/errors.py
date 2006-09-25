@@ -29,7 +29,7 @@ import TestSCons
 import string
 import sys
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons(match = TestCmd.match_re_dotall)
 
@@ -178,8 +178,10 @@ sys.exit(2)
 # Test ...
 test.write('SConstruct', """
 env=Environment()
-Default(env.Command(['one.out', 'two.out'], ['foo.in'], action=r'%s build.py'))
-"""%python)
+Default(env.Command(['one.out', 'two.out'],
+                    ['foo.in'],
+                    action=r'%(_python_)s build.py'))
+""" % locals())
 
 test.run(status=2, stderr="scons: \\*\\*\\* \\[one.out\\] Error 2\n")
 

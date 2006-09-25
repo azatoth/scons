@@ -30,7 +30,7 @@ import string
 import sys
 import TestSCons
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 _exe = TestSCons._exe
 
@@ -53,7 +53,7 @@ test.write('SConstruct', """
 foo = Environment(LIBS = ['foo'], LIBPATH = ['.'])
 ranlib = foo.Dictionary('RANLIB')
 bar = Environment(LIBS = ['bar'], LIBPATH = ['.'],
-                  RANLIB = r'%s wrapper.py ' + ranlib)
+                  RANLIB = r'%(_python_)s wrapper.py ' + ranlib)
 foo.Library(target = 'foo', source = 'foo.c')
 bar.Library(target = 'bar', source = 'bar.c')
 
@@ -61,7 +61,7 @@ main = foo.Object('main', 'main.c')
 
 foo.Program(target = 'f', source = main)
 bar.Program(target = 'b', source = main)
-""" % python)
+""" % locals())
 
 test.write('foo.c', r"""
 #include <stdio.h>

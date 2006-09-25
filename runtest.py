@@ -613,7 +613,7 @@ if qmtest:
               ])
 
     if python:
-        qmtest_args.append('--context python=%s' % python)
+        qmtest_args.append('--context python="%s"' % python)
 
     if outputfile:
         if format == '--xml':

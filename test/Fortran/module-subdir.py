@@ -33,7 +33,7 @@ import os.path
 
 import TestSCons
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
@@ -75,10 +75,10 @@ sys.exit(0)
 test.write('SConstruct', """\
 env = Environment(FORTRANMODDIRPREFIX = '-M',
                   FORTRANMODDIR = 'modules',
-                  F90 = r'%(python)s myfortran.py f90',
-                  FORTRAN = r'%(python)s myfortran.py fortran',
+                  F90 = r'%(_python_)s myfortran.py f90',
+                  FORTRAN = r'%(_python_)s myfortran.py fortran',
                   AR = 'myar.py',
-                  ARCOM = r'%(python)s $AR $TARGET $SOURCES',
+                  ARCOM = r'%(_python_)s $AR $TARGET $SOURCES',
                   RANLIBCOM = '')
 Export('env')
 objs = SConscript('subdir/SConscript')
