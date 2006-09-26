@@ -588,29 +588,29 @@ def _create_path(plist):
             path = path + '/' + d
     return path
 
+def version_string(label, module):
+    fmt = "\t%s: v%s.%s, %s, by %s on %s\n"
+    return fmt % (label,
+                  module.__version__,
+                  module.__build__,
+                  module.__date__,
+                  module.__developer__,
+                  module.__buildsys__)
 
 class OptParser(OptionParser):
     def __init__(self):
         import __main__
-        import SCons
+
         parts = ["SCons by Steven Knight et al.:\n"]
         try:
-            parts.append("\tscript: v%s.%s, %s, by %s on %s\n" % (__main__.__version__,
-                                                                  __main__.__build__,
-                                                                  __main__.__date__,
-                                                                  __main__.__developer__,
-                                                                  __main__.__buildsys__))
+            parts.append(version_string("script", __main__))
         except KeyboardInterrupt:
             raise
         except:
             # On Windows there is no scons.py, so there is no
             # __main__.__version__, hence there is no script version.
             pass 
-        parts.append("\tengine: v%s.%s, %s, by %s on %s\n" % (SCons.__version__,
-                                                              SCons.__build__,
-                                                              SCons.__date__,
-                                                              SCons.__developer__,
-                                                              SCons.__buildsys__))
+        parts.append(version_string("engine", SCons))
         parts.append("__COPYRIGHT__")
         OptionParser.__init__(self, version=string.join(parts, ''),
                               usage="usage: scons [OPTION] [TARGET] ...")

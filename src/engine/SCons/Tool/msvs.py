@@ -297,7 +297,7 @@ class _DSPGenerator:
         for n in sourcenames:
             self.sources[n].sort(lambda a, b: cmp(a.lower(), b.lower()))
 
-        def AddConfig(variant, buildtarget, outdir, runfile, cmdargs):
+        def AddConfig(self, variant, buildtarget, outdir, runfile, cmdargs, dspfile=dspfile):
             config = Config()
             config.buildtarget = buildtarget
             config.outdir = outdir
@@ -316,7 +316,7 @@ class _DSPGenerator:
             print "Adding '" + self.name + ' - ' + config.variant + '|' + config.platform + "' to '" + str(dspfile) + "'"
 
         for i in range(len(variants)):
-            AddConfig(variants[i], buildtarget[i], outdir[i], runfile[i], cmdargs)
+            AddConfig(self, variants[i], buildtarget[i], outdir[i], runfile[i], cmdargs)
 
         self.platforms = []
         for key in self.configs.keys():
@@ -690,6 +690,29 @@ class _GenerateV7DSP(_DSPGenerator):
             pdata = base64.encodestring(pdata)
             self.file.write(pdata + '-->\n')
 
+    def printSources(self, hierarchy, commonprefix):
+        sorteditems = hierarchy.items()
+        sorteditems.sort(lambda a, b: cmp(a[0].lower(), b[0].lower()))
+
+        # First folders, then files
+        for key, value in sorteditems:
+            if SCons.Util.is_Dict(value):
+                self.file.write('\t\t\t<Filter\n'
+                                '\t\t\t\tName="%s"\n'
+                                '\t\t\t\tFilter="">\n' % (key))
+                self.printSources(value, commonprefix)
+                self.file.write('\t\t\t</Filter>\n')
+
+        for key, value in sorteditems:
+            if SCons.Util.is_String(value):
+                file = value
+                if commonprefix:
+                    file = os.path.join(commonprefix, value)
+                file = os.path.normpath(file)
+                self.file.write('\t\t\t<File\n'
+                                '\t\t\t\tRelativePath="%s">\n'
+                                '\t\t\t</File>\n' % (file))
+
     def PrintSourceFiles(self):
         categories = {'Source Files': 'cpp;c;cxx;l;y;def;odl;idl;hpj;bat',
                       'Header Files': 'h;hpp;hxx;hm;inl',
@@ -707,30 +730,6 @@ class _GenerateV7DSP(_DSPGenerator):
                 self.file.write('\t\t<Filter\n'
                                 '\t\t\tName="%s"\n'
                                 '\t\t\tFilter="%s">\n' % (kind, categories[kind]))
-
-
-            def printSources(hierarchy, commonprefix):
-                sorteditems = hierarchy.items()
-                sorteditems.sort(lambda a, b: cmp(a[0].lower(), b[0].lower()))
-
-                # First folders, then files
-                for key, value in sorteditems:
-                    if SCons.Util.is_Dict(value):
-                        self.file.write('\t\t\t<Filter\n'
-                                        '\t\t\t\tName="%s"\n'
-                                        '\t\t\t\tFilter="">\n' % (key))
-                        printSources(value, commonprefix)
-                        self.file.write('\t\t\t</Filter>\n')
-
-                for key, value in sorteditems:
-                    if SCons.Util.is_String(value):
-                        file = value
-                        if commonprefix:
-                            file = os.path.join(commonprefix, value)
-                        file = os.path.normpath(file)
-                        self.file.write('\t\t\t<File\n'
-                                        '\t\t\t\tRelativePath="%s">\n'
-                                        '\t\t\t</File>\n' % (file))
 
             sources = self.sources[kind]
 
@@ -751,7 +750,7 @@ class _GenerateV7DSP(_DSPGenerator):
                 sources[0] = os.path.basename( sources[0] )
 
             hierarchy = makeHierarchy(sources)
-            printSources(hierarchy, commonprefix=commonprefix)
+            self.printSources(hierarchy, commonprefix=commonprefix)
 
             if len(cats)>1:
                 self.file.write('\t\t</Filter>\n')
@@ -880,7 +879,7 @@ class _GenerateV7DSW(_DSWGenerator):
         if self.nokeep == 0 and os.path.exists(self.dswfile):
             self.Parse()
 
-        def AddConfig(variant):
+        def AddConfig(self, variant, dswfile=dswfile):
             config = Config()
 
             match = re.match('(.*)\|(.*)', variant)
@@ -899,10 +898,10 @@ class _GenerateV7DSW(_DSWGenerator):
                   "You must specify a 'variant' argument (i.e. 'Debug' or " +\
                   "'Release') to create an MSVS Solution File."
         elif SCons.Util.is_String(env['variant']):
-            AddConfig(env['variant'])
+            AddConfig(self, env['variant'])
         elif SCons.Util.is_List(env['variant']):
             for variant in env['variant']:
-                AddConfig(variant)
+                AddConfig(self, variant)
 
         self.platforms = []
         for key in self.configs.keys():
