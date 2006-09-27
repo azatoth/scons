@@ -67,6 +67,9 @@ RELEASE 0.97 - XXX
   - Work around a bug in early versions of the Python 2.4 profile module
     that caused the --profile= option to fail.
 
+  - Only call Options validators and converters once when initializing a
+    construction environment.
+
   From Arve Knudsen:
 
   - Support cleaning and scanning SWIG-generated files.

@@ -742,8 +742,19 @@ class Base(SubstitutionEnvironment):
         # environment before calling the tools, because they may use
         # some of them during initialization.
         apply(self.Replace, (), kw)
+        keys = kw.keys()
         if options:
+            keys = keys + options.keys()
             options.Update(self)
+
+        save = {}
+        for k in keys:
+            try:
+                save[k] = self._dict[k]
+            except KeyError:
+                # No value may have been set if they tried to pass in a
+                # reserved variable name like TARGETS.
+                pass
 
         if tools is None:
             tools = self._dict.get('TOOLS', None)
@@ -751,12 +762,10 @@ class Base(SubstitutionEnvironment):
                 tools = ['default']
         apply_tools(self, tools, toolpath)
 
-        # Now re-apply the passed-in variables and customizable options
+        # Now re-apply the passed-in variables and customized options
         # to the environment, since the values the user set explicitly
         # should override any values set by the tools.
-        apply(self.Replace, (), kw)
-        if options:
-            options.Update(self)
+        apply(self.Replace, (), save)
 
     #######################################################################
     # Utility methods that are primarily for internal use by SCons.
