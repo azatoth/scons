@@ -1133,32 +1133,24 @@ def GenerateDSW(dswfile, source, env):
 def get_default_visualstudio_version(env):
     """Returns the version set in the env, or the latest version
     installed, if it can find it, or '6.0' if all else fails.  Also
-    updated the environment with what it found."""
+    updates the environment with what it found."""
 
-    version = '6.0'
-    versions = [version]
+    versions = ['6.0']
 
     if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
-        env['MSVS'] = {}    
-
-        if env['MSVS'].has_key('VERSIONS'):
-            versions = env['MSVS']['VERSIONS']
-        elif SCons.Util.can_read_reg:
-            v = get_visualstudio_versions()
-            if v:
-                versions = v
-        if env.has_key('MSVS_VERSION'):
-            version = env['MSVS_VERSION']
-        else:
-            version = versions[0] #use highest version by default
-
-        env['MSVS_VERSION'] = version
-        env['MSVS']['VERSIONS'] = versions
-        env['MSVS']['VERSION'] = version
+        v = get_visualstudio_versions()
+        if v:
+            versions = v
+        env['MSVS'] = {'VERSIONS' : versions}
     else:
-        version = env['MSVS']['VERSION']
+        versions = env['MSVS'].get('VERSIONS', versions)
 
-    return version
+    if not env.has_key('MSVS_VERSION'):
+        env['MSVS_VERSION'] = versions[0] #use highest version by default
+
+    env['MSVS']['VERSION'] = env['MSVS_VERSION']
+
+    return env['MSVS_VERSION']
 
 def get_visualstudio_versions():
     """

@@ -74,6 +74,11 @@ RELEASE 0.97 - XXX
 
   - Support cleaning and scanning SWIG-generated files.
 
+  From Carsten Koch:
+
+  - Allow selection of Visual Studio version by setting $MSVS_VERSION
+    after construction environment initialization.
+
   From Jean-Baptiste Lab:
 
   - Try using zipimport if we can't import Tool or Platform modules
