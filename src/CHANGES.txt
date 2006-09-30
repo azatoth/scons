@@ -98,6 +98,11 @@ RELEASE 0.97 - XXX
   - Prevent scanning the TeX .aux file for additional files from
     trying to remove it twice when the -c option is used.
 
+  From Leanid Nazdrynau:
+
+  - Give the MSVC RES (resource) Builder a src_builder list and a .rc
+    src_suffix so other builders can generate .rc files.
+
   From Greg Noel:
 
   - Add an env.ParseFlags() method that provides separate logic for
