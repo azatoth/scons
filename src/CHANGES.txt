@@ -70,6 +70,10 @@ RELEASE 0.97 - XXX
   - Only call Options validators and converters once when initializing a
     construction environment.
 
+  - Fix the ability of env.Append() and env.Prepend(), in all known Python
+    versions, to handle different input value types when the construction
+    variable being updated is a dictionary.
+
   From Arve Knudsen:
 
   - Support cleaning and scanning SWIG-generated files.

@@ -23,6 +23,7 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import copy
 import os
 import string
 import StringIO
@@ -1232,6 +1233,8 @@ def exists(env):
         b2 = Environment()['BUILDERS']
         assert b1 == b2, diff_dict(b1, b2)
 
+        import UserDict
+        UD = UserDict.UserDict
         import UserList
         UL = UserList.UserList
 
@@ -1262,6 +1265,18 @@ def exists(env):
             UL(['i6']), UL([]),         UL(['i6']),
             UL(['i7']), [''],           UL(['i7', '']),
             UL(['i8']), UL(['']),       UL(['i8', '']),
+
+            {'d1':1},   'D1',           {'d1':1, 'D1':None},
+            {'d2':1},   ['D2'],         {'d2':1, 'D2':None},
+            {'d3':1},   UL(['D3']),     {'d3':1, 'D3':None},
+            {'d4':1},   {'D4':1},       {'d4':1, 'D4':1},
+            {'d5':1},   UD({'D5':1}),   UD({'d5':1, 'D5':1}),
+
+            UD({'u1':1}), 'U1',         UD({'u1':1, 'U1':None}),
+            UD({'u2':1}), ['U2'],       UD({'u2':1, 'U2':None}),
+            UD({'u3':1}), UL(['U3']),   UD({'u3':1, 'U3':None}),
+            UD({'u4':1}), {'U4':1},     UD({'u4':1, 'U4':1}),
+            UD({'u5':1}), UD({'U5':1}), UD({'u5':1, 'U5':1}),
 
             '',         'M1',           'M1',
             '',         ['M2'],         ['M2'],
@@ -1313,14 +1328,21 @@ def exists(env):
         failed = 0
         while cases:
             input, append, expect = cases[:3]
-            env['XXX'] = input
-            env.Append(XXX = append)
-            result = env['XXX']
-            if result != expect:
+            env['XXX'] = copy.copy(input)
+            try:
+                env.Append(XXX = append)
+            except Exception, e:
                 if failed == 0: print
-                print "    %s Append %s => %s did not match %s" % \
-                      (repr(input), repr(append), repr(result), repr(expect))
+                print "    %s Append %s exception: %s" % \
+                      (repr(input), repr(append), e)
                 failed = failed + 1
+            else:
+                result = env['XXX']
+                if result != expect:
+                    if failed == 0: print
+                    print "    %s Append %s => %s did not match %s" % \
+                          (repr(input), repr(append), repr(result), repr(expect))
+                    failed = failed + 1
             del cases[:3]
         assert failed == 0, "%d Append() cases failed" % failed
 
@@ -1804,6 +1826,8 @@ f5: \
     def test_Prepend(self):
         """Test prepending to construction variables in an Environment
         """
+        import UserDict
+        UD = UserDict.UserDict
         import UserList
         UL = UserList.UserList
 
@@ -1834,6 +1858,18 @@ f5: \
             UL(['i6']), UL([]),         UL(['i6']),
             UL(['i7']), [''],           UL(['', 'i7']),
             UL(['i8']), UL(['']),       UL(['', 'i8']),
+
+            {'d1':1},   'D1',           {'d1':1, 'D1':None},
+            {'d2':1},   ['D2'],         {'d2':1, 'D2':None},
+            {'d3':1},   UL(['D3']),     {'d3':1, 'D3':None},
+            {'d4':1},   {'D4':1},       {'d4':1, 'D4':1},
+            {'d5':1},   UD({'D5':1}),   UD({'d5':1, 'D5':1}),
+
+            UD({'u1':1}), 'U1',         UD({'u1':1, 'U1':None}),
+            UD({'u2':1}), ['U2'],       UD({'u2':1, 'U2':None}),
+            UD({'u3':1}), UL(['U3']),   UD({'u3':1, 'U3':None}),
+            UD({'u4':1}), {'U4':1},     UD({'u4':1, 'U4':1}),
+            UD({'u5':1}), UD({'U5':1}), UD({'u5':1, 'U5':1}),
 
             '',         'M1',           'M1',
             '',         ['M2'],         ['M2'],
@@ -1885,14 +1921,21 @@ f5: \
         failed = 0
         while cases:
             input, prepend, expect = cases[:3]
-            env['XXX'] = input
-            env.Prepend(XXX = prepend)
-            result = env['XXX']
-            if result != expect:
+            env['XXX'] = copy.copy(input)
+            try:
+                env.Prepend(XXX = prepend)
+            except Exception, e:
                 if failed == 0: print
-                print "    %s Prepend %s => %s did not match %s" % \
-                      (repr(input), repr(prepend), repr(result), repr(expect))
+                print "    %s Prepend %s exception: %s" % \
+                      (repr(input), repr(prepend), e)
                 failed = failed + 1
+            else:
+                result = env['XXX']
+                if result != expect:
+                    if failed == 0: print
+                    print "    %s Prepend %s => %s did not match %s" % \
+                          (repr(input), repr(prepend), repr(result), repr(expect))
+                    failed = failed + 1
             del cases[:3]
         assert failed == 0, "%d Prepend() cases failed" % failed
 

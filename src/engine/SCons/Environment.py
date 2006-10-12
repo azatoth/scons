@@ -908,14 +908,14 @@ class Base(SubstitutionEnvironment):
                     # together.  This will work in most cases, when the
                     # original and new values are of compatible types.
                     self._dict[key] = orig + val
-                except TypeError:
+                except (KeyError, TypeError):
                     try:
                         # Try to update a dictionary value with another.
                         # If orig isn't a dictionary, it won't have an
                         # update() method; if val isn't a dictionary,
                         # it won't have a keys() method.  Either way,
                         # it's an AttributeError.
-                        orig.update(val)
+                        update_dict = orig.update
                     except AttributeError:
                         try:
                             # Check if the original is a list.
@@ -934,6 +934,15 @@ class Base(SubstitutionEnvironment):
                             # value to it (if there's a value to append).
                             if val:
                                 add_to_orig(val)
+                    else:
+                        try:
+                            update_dict(val)
+                        except (AttributeError, TypeError, ValueError):
+                            if SCons.Util.is_List(val):
+                                for v in val:
+                                    orig[v] = None
+                            else:
+                                orig[val] = None
         self.scanner_map_delete(kw)
 
     def AppendENVPath(self, name, newpath, envname = 'ENV', sep = os.pathsep):
@@ -1147,14 +1156,14 @@ class Base(SubstitutionEnvironment):
                     # together.  This will work in most cases, when the
                     # original and new values are of compatible types.
                     self._dict[key] = val + orig
-                except TypeError:
+                except (KeyError, TypeError):
                     try:
                         # Try to update a dictionary value with another.
                         # If orig isn't a dictionary, it won't have an
                         # update() method; if val isn't a dictionary,
                         # it won't have a keys() method.  Either way,
                         # it's an AttributeError.
-                        orig.update(val)
+                        update_dict = orig.update
                     except AttributeError:
                         try:
                             # Check if the added value is a list.
@@ -1173,6 +1182,15 @@ class Base(SubstitutionEnvironment):
                             if orig:
                                 add_to_val(orig)
                             self._dict[key] = val
+                    else:
+                        try:
+                            update_dict(val)
+                        except (AttributeError, TypeError, ValueError):
+                            if SCons.Util.is_List(val):
+                                for v in val:
+                                    orig[v] = None
+                            else:
+                                orig[val] = None
         self.scanner_map_delete(kw)
 
     def PrependENVPath(self, name, newpath, envname = 'ENV', sep = os.pathsep):
