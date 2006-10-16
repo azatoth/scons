@@ -107,6 +107,10 @@ RELEASE 0.97 - XXX
   - Give the MSVC RES (resource) Builder a src_builder list and a .rc
     src_suffix so other builders can generate .rc files.
 
+  From Matthew A. Nicholson:
+
+  - Enhance Install() and InstallAs() to handle directory trees as sources.
+
   From Greg Noel:
 
   - Add an env.ParseFlags() method that provides separate logic for

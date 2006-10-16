@@ -2713,23 +2713,23 @@ def generate(env):
         for tnode in tgt:
             assert tnode.builder == InstallBuilder
 
-        exc_caught = None
-        try:
-            tgt = env.Install('export', 'export')
-        except SCons.Errors.UserError, e:
-            exc_caught = 1
-        assert exc_caught, "UserError should be thrown when Install() target is not a file."
-        match = str(e) == "Source `export' of Install() is not a file.  Install() source must be one or more files."
-        assert match, e
+        tgt = env.Install('export', 'build')
+        paths = map(str, tgt)
+        paths.sort()
+        expect = ['export/build']
+        assert paths == expect, paths
+        for tnode in tgt:
+            assert tnode.builder == InstallBuilder
 
-        exc_caught = None
-        try:
-            tgt = env.Install('export', ['export', 'build/foo1'])
-        except SCons.Errors.UserError, e:
-            exc_caught = 1
-        assert exc_caught, "UserError should be thrown when Install() target containins non-files."
-        match = str(e) == "Source `['export', 'build/foo1']' of Install() contains one or more non-files.  Install() source must be one or more files."
-        assert match, e
+        tgt = env.Install('export', ['build', 'build/foo1'])
+        paths = map(str, tgt)
+        paths.sort()
+        expect = ['export/build', 'export/foo1']
+        assert paths == expect, paths
+        for tnode in tgt:
+            assert tnode.builder == InstallBuilder
+
+        env.File('export/foo1')
 
         exc_caught = None
         try:
@@ -2737,8 +2737,8 @@ def generate(env):
         except SCons.Errors.UserError, e:
             exc_caught = 1
         assert exc_caught, "UserError should be thrown reversing the order of Install() targets."
-        match = str(e) == "Target `export/foo1' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?"
-        assert match, e
+        expect = "Target `export/foo1' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?"
+        assert str(e) == expect, e
 
     def test_InstallAs(self):
         """Test the InstallAs method"""

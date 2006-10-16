@@ -84,7 +84,11 @@ def installFunc(target, source, env):
     return install(target[0].path, source[0].path, env)
 
 def installString(target, source, env):
-    return env.subst_target_source(env['INSTALLSTR'], 0, target, source)
+    s = env.get('INSTALLSTR', '')
+    if callable(s):
+        return s(target[0].path, source[0].path, env)
+    else:
+        return env.subst_target_source(s, 0, target, source)
 
 installAction = SCons.Action.Action(installFunc, installString)
 
@@ -1536,25 +1540,37 @@ class Base(SubstitutionEnvironment):
         try:
             dnodes = self.arg2nodes(dir, self.fs.Dir)
         except TypeError:
-            raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
+            fmt = "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?"
+            raise SCons.Errors.UserError, fmt % str(dir)
         try:
-            sources = self.arg2nodes(source, self.fs.File)
+            sources = self.arg2nodes(source, self.fs.Entry)
         except TypeError:
             if SCons.Util.is_List(source):
-                raise SCons.Errors.UserError, "Source `%s' of Install() contains one or more non-files.  Install() source must be one or more files." % repr(map(str, source))
+                s = repr(map(str, source))
             else:
-                raise SCons.Errors.UserError, "Source `%s' of Install() is not a file.  Install() source must be one or more files." % str(source)
+                s = str(source)
+            fmt = "Source `%s' of Install() is neither a file nor a directory.  Install() source must be one or more files or directories"
+            raise SCons.Errors.UserError, fmt % s
         tgt = []
         for dnode in dnodes:
             for src in sources:
-                target = self.fs.File(src.name, dnode)
+                target = self.fs.Entry(src.name, dnode)
                 tgt.extend(InstallBuilder(self, target, src))
         return tgt
 
     def InstallAs(self, target, source):
         """Install sources as targets."""
-        sources = self.arg2nodes(source, self.fs.File)
-        targets = self.arg2nodes(target, self.fs.File)
+        sources = self.arg2nodes(source, self.fs.Entry)
+        targets = self.arg2nodes(target, self.fs.Entry)
+        if len(sources) != len(targets):
+            if not SCons.Util.is_List(target):
+                target = [target]
+            if not SCons.Util.is_List(source):
+                source = [source]
+            t = repr(map(str, target))
+            s = repr(map(str, source))
+            fmt = "Target (%s) and source (%s) lists of InstallAs() must be the same length."
+            raise SCons.Errors.UserError, fmt % (t, s)
         result = []
         for src, tgt in map(lambda x, y: (x, y), sources, targets):
             result.extend(InstallBuilder(self, tgt, src))

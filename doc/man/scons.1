@@ -2759,8 +2759,11 @@ Import("*")
 .RI Install( dir ", " source )
 .TP
 .RI env.Install( dir ", " source )
-Installs one or more files in a destination directory.
-The file names remain the same.
+Installs one or more source files or directories
+in a destination directory
+.IR dir .
+The names of the specified source files or directories
+remain the same within the destination directory.
 
 .ES
 env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
@@ -2771,11 +2774,15 @@ env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
 .RI InstallAs( target ", " source )
 .TP
 .RI env.InstallAs( target ", " source )
-Installs one or more files as specific file names,
-allowing changing a file name as part of the
-installation.
-It is an error if the target and source
-list different numbers of files.
+Installs one or more source files or directories
+to specific names,
+allowing changing a file or directory name
+as part of the installation.
+It is an error if the
+.I target
+and
+.I source
+arguments list different numbers of files or directories.
 
 .ES
 env.InstallAs(target = '/usr/local/bin/foo',
