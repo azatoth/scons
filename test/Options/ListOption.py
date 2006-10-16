@@ -39,7 +39,8 @@ SConstruct_path = test.workpath('SConstruct')
 
 def check(expect):
     result = string.split(test.stdout(), '\n')
-    assert result[1:len(expect)+1] == expect, (result[1:len(expect)+1], expect)
+    r = result[1:len(expect)+1]
+    assert r == expect, (r, expect)
 
 
 

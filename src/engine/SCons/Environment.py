@@ -762,10 +762,11 @@ class Base(SubstitutionEnvironment):
                 tools = ['default']
         apply_tools(self, tools, toolpath)
 
-        # Now re-apply the passed-in variables and customized options
+        # Now restore the passed-in variables and customized options
         # to the environment, since the values the user set explicitly
         # should override any values set by the tools.
-        apply(self.Replace, (), save)
+        for key, val in save.items():
+            self._dict[key] = val
 
     #######################################################################
     # Utility methods that are primarily for internal use by SCons.
