@@ -905,19 +905,19 @@ class Base(SubstitutionEnvironment):
                 self._dict[key] = val
             else:
                 try:
-                    # Most straightforward:  just try to add them
-                    # together.  This will work in most cases, when the
-                    # original and new values are of compatible types.
-                    self._dict[key] = orig + val
-                except (KeyError, TypeError):
+                    # Check if the original looks like a dictionary.
+                    # If it is, we can't just try adding the value because
+                    # dictionaries don't have __add__() methods, and
+                    # things like UserList will incorrectly coerce the
+                    # original dict to a list (which we don't want).
+                    update_dict = orig.update
+                except AttributeError:
                     try:
-                        # Try to update a dictionary value with another.
-                        # If orig isn't a dictionary, it won't have an
-                        # update() method; if val isn't a dictionary,
-                        # it won't have a keys() method.  Either way,
-                        # it's an AttributeError.
-                        update_dict = orig.update
-                    except AttributeError:
+                        # Most straightforward:  just try to add them
+                        # together.  This will work in most cases, when the
+                        # original and new values are of compatible types.
+                        self._dict[key] = orig + val
+                    except (KeyError, TypeError):
                         try:
                             # Check if the original is a list.
                             add_to_orig = orig.append
@@ -935,15 +935,17 @@ class Base(SubstitutionEnvironment):
                             # value to it (if there's a value to append).
                             if val:
                                 add_to_orig(val)
+                else:
+                    # The original looks like a dictionary, so update it
+                    # based on what we think the value looks like.
+                    if SCons.Util.is_List(val):
+                        for v in val:
+                            orig[v] = None
                     else:
                         try:
                             update_dict(val)
                         except (AttributeError, TypeError, ValueError):
-                            if SCons.Util.is_List(val):
-                                for v in val:
-                                    orig[v] = None
-                            else:
-                                orig[val] = None
+                            orig[val] = None
         self.scanner_map_delete(kw)
 
     def AppendENVPath(self, name, newpath, envname = 'ENV', sep = os.pathsep):
@@ -1153,19 +1155,19 @@ class Base(SubstitutionEnvironment):
                 self._dict[key] = val
             else:
                 try:
-                    # Most straightforward:  just try to add them
-                    # together.  This will work in most cases, when the
-                    # original and new values are of compatible types.
-                    self._dict[key] = val + orig
-                except (KeyError, TypeError):
+                    # Check if the original looks like a dictionary.
+                    # If it is, we can't just try adding the value because
+                    # dictionaries don't have __add__() methods, and
+                    # things like UserList will incorrectly coerce the
+                    # original dict to a list (which we don't want).
+                    update_dict = orig.update
+                except AttributeError:
                     try:
-                        # Try to update a dictionary value with another.
-                        # If orig isn't a dictionary, it won't have an
-                        # update() method; if val isn't a dictionary,
-                        # it won't have a keys() method.  Either way,
-                        # it's an AttributeError.
-                        update_dict = orig.update
-                    except AttributeError:
+                        # Most straightforward:  just try to add them
+                        # together.  This will work in most cases, when the
+                        # original and new values are of compatible types.
+                        self._dict[key] = val + orig
+                    except (KeyError, TypeError):
                         try:
                             # Check if the added value is a list.
                             add_to_val = val.append
@@ -1183,15 +1185,17 @@ class Base(SubstitutionEnvironment):
                             if orig:
                                 add_to_val(orig)
                             self._dict[key] = val
+                else:
+                    # The original looks like a dictionary, so update it
+                    # based on what we think the value looks like.
+                    if SCons.Util.is_List(val):
+                        for v in val:
+                            orig[v] = None
                     else:
                         try:
                             update_dict(val)
                         except (AttributeError, TypeError, ValueError):
-                            if SCons.Util.is_List(val):
-                                for v in val:
-                                    orig[v] = None
-                            else:
-                                orig[val] = None
+                            orig[val] = None
         self.scanner_map_delete(kw)
 
     def PrependENVPath(self, name, newpath, envname = 'ENV', sep = os.pathsep):
