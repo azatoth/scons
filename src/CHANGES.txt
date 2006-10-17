@@ -111,6 +111,10 @@ RELEASE 0.97 - XXX
 
   - Enhance Install() and InstallAs() to handle directory trees as sources.
 
+  From Jan Nijtmans:
+
+  - Don't use the -fPIC flag when using gcc on Windows (e.g. MinGW).
+
   From Greg Noel:
 
   - Add an env.ParseFlags() method that provides separate logic for
