@@ -538,7 +538,7 @@ class Node:
         # Here's where we implement --implicit-cache.
         if implicit_cache and not implicit_deps_changed:
             implicit = self.get_stored_implicit()
-            if implicit:
+            if implicit is not None:
                 factory = build_env.get_factory(self.builder.source_factory)
                 nodes = []
                 for i in implicit:

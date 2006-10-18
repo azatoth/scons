@@ -89,6 +89,10 @@ RELEASE 0.97 - XXX
     using the normal "imp" module.  This allows SCons to be packaged
     using py2exe's all-in-one-zip-file approach.
 
+  From Ben Liblit:
+
+  - Do not re-scan files if the scanner returns no implicit dependencies.
+
   From Sanjoy Mahajan:
 
   - Change use of $SOURCES to $SOURCE in all TeX-related Tool modules.
