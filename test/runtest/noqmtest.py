@@ -33,13 +33,14 @@ isn't available or is misbehaving.
 
 import os.path
 import re
+import string
 
 import TestRuntest
 
 python = TestRuntest.python
 _python_ = TestRuntest._python_
 
-test = TestRuntest.TestRuntest()
+test = TestRuntest.TestRuntest(noqmtest=1)
 
 test.subdir('test')
 
@@ -81,7 +82,13 @@ NO RESULT TEST STDERR
 PASSING TEST STDERR
 """
 
-test.run(arguments = '--noqmtest test/*.py',
+testlist = [
+    test_fail_py,
+    test_no_result_py,
+    test_pass_py,
+]
+
+test.run(arguments = '--noqmtest %s' % string.join(testlist),
          status = 1,
          stdout = expect_stdout,
          stderr = expect_stderr)

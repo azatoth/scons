@@ -109,8 +109,21 @@ class TestRuntest(TestCommon):
             kw['match'] = match_exact
         if not kw.has_key('workdir'):
             kw['workdir'] = ''
+
+        try:
+            noqmtest = kw['noqmtest']
+        except KeyError:
+            noqmtest = 0
+        else:
+            del kw['noqmtest']
+
         orig_cwd = os.getcwd()
         apply(TestCommon.__init__, [self], kw)
+  
+        if not noqmtest:
+            qmtest_py = self.where_is('qmtest.py')
+            if not qmtest_py:
+                self.skip_test("Could not find 'qmtest.py'; skipping test(s).\n")
 
         things_to_copy = [
             'runtest.py',
@@ -144,6 +157,36 @@ class TestRuntest(TestCommon):
 
         os.environ['PYTHONPATH'] = ''
         os.environ['SCONS_SOURCE_PATH_EXECUTABLE'] = ''
+
+    def skip_test(self, message="Skipping test.\n"):
+        """Skips a test.
+
+        Proper test-skipping behavior is dependent on whether we're being
+        executed as part of development of a change under Aegis.
+
+        Technically, skipping a test is a NO RESULT, but Aegis will
+        treat that as a test failure and prevent the change from going
+        to the next step.  We don't want to force anyone using Aegis
+        to have to install absolutely every tool used by the tests,
+        so we actually report to Aegis that a skipped test has PASSED
+        so that the workflow isn't held up.
+        """
+        if message:
+            sys.stdout.write(message)
+            sys.stdout.flush()
+        devdir = os.popen("aesub '$dd' 2>/dev/null", "r").read()[:-1]
+        intdir = os.popen("aesub '$intd' 2>/dev/null", "r").read()[:-1]
+        if devdir and self._cwd[:len(devdir)] == devdir or \
+           intdir and self._cwd[:len(intdir)] == intdir:
+            # We're under the development directory for this change,
+            # so this is an Aegis invocation; pass the test (exit 0).
+            self.pass_test()
+        else:
+            # skip=1 means skip this function when showing where this
+            # result came from.  They only care about the line where the
+            # script called test.skip_test(), not the line number where
+            # we call test.no_result().
+            self.no_result(skip=1)
 
     def write_fake_scons_source_tree(self):
         os.mkdir('src')
