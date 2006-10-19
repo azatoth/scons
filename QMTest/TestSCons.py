@@ -399,12 +399,12 @@ void my_qt_symbol(const char *arg) {
 }
 """)
 
-        self.write(['qt', 'lib', 'SConstruct'], r"""
+        self.write([dir, 'lib', 'SConstruct'], r"""
 env = Environment()
-env.StaticLibrary( 'myqt', 'my_qobject.cpp' )
+env.SharedLibrary( 'myqt', 'my_qobject.cpp' )
 """)
 
-        self.run(chdir = self.workpath('qt', 'lib'),
+        self.run(chdir = self.workpath(dir, 'lib'),
                  arguments = '.',
                  stderr = noisy_ar,
                  match = self.match_re_dotall)
@@ -413,6 +413,7 @@ env.StaticLibrary( 'myqt', 'my_qobject.cpp' )
         self.QT_LIB = 'myqt'
         self.QT_MOC = '%s %s' % (python, self.workpath(dir, 'bin', 'mymoc.py'))
         self.QT_UIC = '%s %s' % (python, self.workpath(dir, 'bin', 'myuic.py'))
+        self.QT_LIB_DIR = self.workpath(dir, 'lib')
 
     def Qt_create_SConstruct(self, place):
         if type(place) is type([]):

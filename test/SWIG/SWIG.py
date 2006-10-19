@@ -145,7 +145,6 @@ os.system(string.join(sys.argv[1:], " "))
     test.write('SConstruct', """
 foo = Environment(SWIGFLAGS='-python',
                   CPPPATH='%(platform_sys_prefix)s/include/python%(version)s/',
-                  SHCCFLAGS='',
                   LDMODULEPREFIX='%(ldmodule_prefix)s',
                   LDMODULESUFFIX='%(_dll)s',
                   FRAMEWORKSFLAGS='%(frameworks)s',
@@ -228,7 +227,6 @@ This is bar.c!
     test.write('SConstruct', """
 foo = Environment(SWIGFLAGS='-python',
                   CPPPATH='%(platform_sys_prefix)s/include/python%(version)s/',
-                  SHCCFLAGS='',
                   LDMODULEPREFIX='%(ldmodule_prefix)s',
                   LDMODULESUFFIX='%(_dll)s',
                   FRAMEWORKSFLAGS='%(frameworks)s',
@@ -254,7 +252,6 @@ foo.LoadableModule(target = 'modulename', source = ['module.i'])
     test.write('SConstruct', """
 foo = Environment(SWIGFLAGS='-python',
                   CPPPATH='%(platform_sys_prefix)s/include/python%(version)s/',
-                  SHCCFLAGS='',
                   LDMODULEPREFIX='%(ldmodule_prefix)s',
                   LDMODULESUFFIX='%(_dll)s',
                   FRAMEWORKSFLAGS='%(frameworks)s',

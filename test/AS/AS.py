@@ -111,7 +111,6 @@ sys.exit(0)
 
 test.write('SConstruct', """
 env = Environment(LINK = r'%(_python_)s mylink.py',
-                  LINKFLAGS = [],
                   AS = r'%(_python_)s myas.py',
                   CC = r'%(_python_)s myas.py')
 env.Program(target = 'test1', source = 'test1.s')
