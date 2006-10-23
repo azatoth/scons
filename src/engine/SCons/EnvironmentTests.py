@@ -1398,7 +1398,7 @@ def exists(env):
         assert(env1['ENV']['PATH'] == r'C:\dir\num\one;C:\dir\num\two;C:\dir\num\three')
         assert(env1['MYENV']['MYPATH'] == r'C:\mydir\num\two;C:\mydir\num\three;C:\mydir\num\one')
 
-    def test_AppendUnique(self):
+    def tttest_AppendUnique(self):
         """Test appending to unique values to construction variables
 
         This strips values that are already present when lists are
@@ -1440,6 +1440,33 @@ def exists(env):
         assert env['BBB5'] == ['b5', 'b5.new'], env['BBB5']
         assert env['CCC1'] == 'c1', env['CCC1']
         assert env['CCC2'] == ['c2'], env['CCC2']
+
+        env['CLVar'] = CLVar([])
+        env.AppendUnique(CLVar = 'bar')
+        result = env['CLVar']
+        if sys.version[0] == '1':
+            # Python 1.5.2 has a quirky behavior where CLVar([]) actually
+            # matches '' and [] due to different __coerce__() semantics
+            # in the UserList implementation.  It isn't worth a lot of
+            # effort to get this corner case to work identically (support
+            # for Python 1.5 support will die soon anyway), so just treat
+            # it separately for now.
+            assert result == 'bar', result
+        else:
+            assert isinstance(result, CLVar), repr(result)
+            assert result == ['bar'], result
+
+        env['CLVar'] = CLVar(['abc'])
+        env.AppendUnique(CLVar = 'bar')
+        result = env['CLVar']
+        assert isinstance(result, CLVar), repr(result)
+        assert result == ['abc', 'bar'], result
+
+        env['CLVar'] = CLVar(['bar'])
+        env.AppendUnique(CLVar = 'bar')
+        result = env['CLVar']
+        assert isinstance(result, CLVar), repr(result)
+        assert result == ['bar'], result
 
     def test_Copy(self):
         """Test construction environment copying
@@ -1986,7 +2013,7 @@ f5: \
         assert(env1['ENV']['PATH'] == r'C:\dir\num\three;C:\dir\num\two;C:\dir\num\one')
         assert(env1['MYENV']['MYPATH'] == r'C:\mydir\num\one;C:\mydir\num\three;C:\mydir\num\two')
 
-    def test_PrependUnique(self):
+    def tttest_PrependUnique(self):
         """Test prepending unique values to construction variables
 
         This strips values that are already present when lists are
@@ -2027,6 +2054,33 @@ f5: \
         assert env['BBB5'] == ['b5.new', 'b5'], env['BBB5']
         assert env['CCC1'] == 'c1', env['CCC1']
         assert env['CCC2'] == ['c2'], env['CCC2']
+
+        env['CLVar'] = CLVar([])
+        env.PrependUnique(CLVar = 'bar')
+        result = env['CLVar']
+        if sys.version[0] == '1':
+            # Python 1.5.2 has a quirky behavior where CLVar([]) actually
+            # matches '' and [] due to different __coerce__() semantics
+            # in the UserList implementation.  It isn't worth a lot of
+            # effort to get this corner case to work identically (support
+            # for Python 1.5 support will die soon anyway), so just treat
+            # it separately for now.
+            assert result == 'bar', result
+        else:
+            assert isinstance(result, CLVar), repr(result)
+            assert result == ['bar'], result
+
+        env['CLVar'] = CLVar(['abc'])
+        env.PrependUnique(CLVar = 'bar')
+        result = env['CLVar']
+        assert isinstance(result, CLVar), repr(result)
+        assert result == ['bar', 'abc'], result
+
+        env['CLVar'] = CLVar(['bar'])
+        env.PrependUnique(CLVar = 'bar')
+        result = env['CLVar']
+        assert isinstance(result, CLVar), repr(result)
+        assert result == ['bar'], result
 
     def test_Replace(self):
         """Test replacing construction variables in an Environment
@@ -3471,7 +3525,7 @@ if __name__ == "__main__":
                  OverrideEnvironmentTestCase,
                  NoSubstitutionProxyTestCase ]
     for tclass in tclasses:
-        names = unittest.getTestCaseNames(tclass, 'test_')
+        names = unittest.getTestCaseNames(tclass, 'tttest_')
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
