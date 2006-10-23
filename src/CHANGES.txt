@@ -74,6 +74,9 @@ RELEASE 0.97 - XXX
     versions, to handle different input value types when the construction
     variable being updated is a dictionary.
 
+  - Add a --cache-debug option for information about what files it's
+    looking for in a CacheDir().
+
   From Arve Knudsen:
 
   - Support cleaning and scanning SWIG-generated files.

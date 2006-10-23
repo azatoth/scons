@@ -227,13 +227,15 @@ def CacheRetrieveFunc(target, source, env):
     t = target[0]
     fs = t.fs
     cachedir, cachefile = t.cachepath()
-    if fs.exists(cachefile):
-        if SCons.Action.execute_actions:
-            fs.copy2(cachefile, t.path)
-            st = fs.stat(cachefile)
-            fs.chmod(t.path, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
-        return 0
-    return 1
+    if not fs.exists(cachefile):
+        fs.CacheDebug('CacheRetrieve(%s):  %s not in cache\n', t, cachefile)
+        return 1
+    fs.CacheDebug('CacheRetrieve(%s):  retrieving from %s\n', t, cachefile)
+    if SCons.Action.execute_actions:
+        fs.copy2(cachefile, t.path)
+        st = fs.stat(cachefile)
+        fs.chmod(t.path, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
+    return 0
 
 def CacheRetrieveString(target, source, env):
     t = target[0]
@@ -251,8 +253,17 @@ def CachePushFunc(target, source, env):
     fs = t.fs
     cachedir, cachefile = t.cachepath()
     if fs.exists(cachefile):
-        # Don't bother copying it if it's already there.
+        # Don't bother copying it if it's already there.  Note that
+        # usually this "shouldn't happen" because if the file already
+        # existed in cache, we'd have retrieved the file from there,
+        # not built it.  This can happen, though, in a race, if some
+        # other person running the same build pushes their copy to
+        # the cache after we decide we need to build it but before our
+        # build completes.
+        fs.CacheDebug('CachePush(%s):  %s already exists in cache\n', t, cachefile)
         return
+
+    fs.CacheDebug('CachePush(%s):  pushing to %s\n', t, cachefile)
 
     if not fs.isdir(cachedir):
         fs.makedirs(cachedir)
@@ -272,7 +283,6 @@ def CachePushFunc(target, source, env):
         SCons.Warnings.warn(SCons.Warnings.CacheWriteErrorWarning,
                             "Unable to copy %s to cache. Cache file is %s"
                                 % (str(target), cachefile))
-        return
 
 CachePush = SCons.Action.Action(CachePushFunc, None)
 
@@ -1161,6 +1171,21 @@ class FS(LocalFS):
             result.extend(dir.get_all_rdirs())
         return result
 
+    def CacheDebugWrite(self, fmt, target, cachefile):
+        self.CacheDebugFP.write(fmt % (target, os.path.split(cachefile)[1]))
+
+    def CacheDebugQuiet(self, fmt, target, cachefile):
+        pass
+
+    CacheDebug = CacheDebugQuiet
+
+    def CacheDebugEnable(self, file):
+        if file == '-':
+            self.CacheDebugFP = sys.stdout
+        else:
+            self.CacheDebugFP = open(file, 'w')
+        self.CacheDebug = self.CacheDebugWrite
+
     def CacheDir(self, path):
         self.CachePath = path
 
@@ -1840,10 +1865,13 @@ class File(Base):
             if self.fs.cache_show:
                 if CacheRetrieveSilent(self, [], None, execute=1) == 0:
                     self.build(presub=0, execute=0)
+                    self.set_state(SCons.Node.executed)
                     return 1
             elif CacheRetrieve(self, [], None, execute=1) == 0:
+                self.set_state(SCons.Node.executed)
                 return 1
         return None
+
 
     def built(self):
         """Called just after this node is successfully built.

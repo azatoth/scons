@@ -630,6 +630,10 @@ class OptParser(OptionParser):
                         metavar="DIR",
                         help="Change to DIR before doing anything.")
 
+        self.add_option('--cache-debug', action="store",
+                        dest="cache_debug", metavar="FILE",
+                        help="Print CacheDir debug info to FILE.")
+
         self.add_option('--cache-disable', '--no-cache',
                         action="store_true", dest='cache_disable', default=0,
                         help="Do not retrieve built targets from CacheDir.")
@@ -1048,6 +1052,9 @@ def _main(args, parser):
         display.set_mode(0)
     if options.silent:
         SCons.Action.print_actions = None
+
+    if options.cache_debug:
+        fs.CacheDebugEnable(options.cache_debug)
     if options.cache_disable:
         def disable(self): pass
         fs.CacheDir = disable

@@ -421,6 +421,24 @@ Will not remove any targets specified by the
 function.
 
 .TP
+.RI --cache-debug= file
+Print debug information about the
+.BR CacheDir ()
+derived-file caching
+to the specified
+.IR file .
+If
+.I file
+is
+.B \-
+(a hyphen),
+the debug information are printed to the standard output.
+The printed messages describe what signature file names are
+being looked for in, retrieved from, or written to the
+.BR CacheDir ()
+directory tree.
+
+.TP
 --cache-disable, --no-cache
 Disable the derived-file caching specified by
 .BR CacheDir ().
