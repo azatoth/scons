@@ -1823,7 +1823,7 @@ class File(Base):
         __cacheable__"""
         if not scanner:
             return []
-        return map(lambda N: N.disambiguate(), scanner(self, env, path))
+        return scanner(self, env, path)
 
     def _createDir(self):
         # ensure that the directories for this node are

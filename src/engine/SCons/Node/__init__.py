@@ -474,6 +474,7 @@ class Node:
             d = filter(lambda x, seen=seen: not seen.has_key(x),
                        n.get_found_includes(env, scanner, path))
             if d:
+                d = map(lambda N: N.disambiguate(), d)
                 deps.extend(d)
                 for n in d:
                     seen[n] = 1
