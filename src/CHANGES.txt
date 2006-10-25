@@ -28,6 +28,11 @@ RELEASE 0.97 - XXX
 
   - Enhance ParseConfig() to recognize options that begin with '+'.
 
+  From John Calcote, Elliot Murphy:
+
+  - Document ways to override the CCPDBFLAGS variable to use the
+    Microsoft linker's /Zi option instead of the default /Z7.
+
   From Christopher Drexler:
 
   - Make SCons aware bibtex must be called if any \include files
@@ -76,6 +81,9 @@ RELEASE 0.97 - XXX
 
   - Add a --cache-debug option for information about what files it's
     looking for in a CacheDir().
+
+  - Document the difference in construction variable expansion between
+    {Action,Builder}() and env.{Action,Builder}().
 
   From Arve Knudsen:
 

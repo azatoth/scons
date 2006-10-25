@@ -1730,6 +1730,24 @@ the specified
 See the section "Action Objects,"
 below, for a complete explanation of the arguments and behavior.
 
+Note that the 
+.BR env.Action ()
+form of the invocation will expand
+construction variables in any arguments strings,
+including the
+.I action
+argument,
+at the time it is called
+using the construction variables in the
+.B env
+construction environment through which
+.BR env.Action ()
+was called.
+The
+.BR Action ()
+form delays all variable expansion
+until the Action object is actually used.
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
 .RI AddPostAction( target ", " action )
@@ -2010,6 +2028,24 @@ the specified
 .IR action .
 See the section "Builder Objects,"
 below, for a complete explanation of the arguments and behavior.
+
+Note that the 
+.BR env.Builder ()
+form of the invocation will expand
+construction variables in any arguments strings,
+including the
+.I action
+argument,
+at the time it is called
+using the construction variables in the
+.B env
+construction environment through which
+.BR env.Builder ()
+was called.
+The
+.BR Builder ()
+form delays all variable expansion
+until after the Builder object is actually called.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
