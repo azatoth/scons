@@ -111,7 +111,6 @@ print_passed_summary = None
 scons = None
 scons_exec = None
 outputfile = None
-qmtest = 1
 testlistfile = None
 version = ''
 print_times = None
@@ -207,7 +206,7 @@ for o, a in opts:
     elif o in ['-P', '--python']:
         python = a
     elif o in ['--qmtest']:
-        qmtest = 1
+        qmtest = 'qmtest.py'
     elif o in ['-q', '--quiet']:
         printcommand = 0
     elif o in ['--sp']:
@@ -249,6 +248,16 @@ def whereis(file):
             if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
                 return f
     return None
+
+try:
+    qmtest
+except NameError:
+    q = 'qmtest.py'
+    qmtest = whereis(q)
+    if qmtest:
+        qmtest = q
+    else:
+        sys.stderr.write('Warning:  %s not found on $PATH, assuming --noqmtest option.\n' % q)
 
 aegis = whereis('aegis')
 
@@ -593,8 +602,6 @@ if qmtest:
 
     if print_times:
         aegis_result_stream = aegis_result_stream + "(print_time='1')"
-
-    qmtest = 'qmtest.py'
 
     qmtest_args = [ qmtest, ]
 
