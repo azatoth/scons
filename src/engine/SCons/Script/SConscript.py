@@ -235,7 +235,16 @@ def _SConscript(fs, *files, **kw):
                     # SConscript can base the printed frames at this
                     # level and not show SCons internals as well.
                     call_stack[-1].globals.update({stack_bottom:1})
-                    exec _file_ in call_stack[-1].globals
+                    old_file = call_stack[-1].globals.get('__file__')
+                    try:
+                        del call_stack[-1].globals['__file__']
+                    except KeyError:
+                        pass
+                    try:
+                        exec _file_ in call_stack[-1].globals
+                    finally:
+                        if old_file is not None:
+                            call_stack[-1].globals.update({__file__:old_file})
                 else:
                     SCons.Warnings.warn(SCons.Warnings.MissingSConscriptWarning,
                              "Ignoring missing SConscript '%s'" % f.path)
