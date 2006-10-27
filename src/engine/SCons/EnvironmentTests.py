@@ -1398,7 +1398,7 @@ def exists(env):
         assert(env1['ENV']['PATH'] == r'C:\dir\num\one;C:\dir\num\two;C:\dir\num\three')
         assert(env1['MYENV']['MYPATH'] == r'C:\mydir\num\two;C:\mydir\num\three;C:\mydir\num\one')
 
-    def tttest_AppendUnique(self):
+    def test_AppendUnique(self):
         """Test appending to unique values to construction variables
 
         This strips values that are already present when lists are
@@ -2013,7 +2013,7 @@ f5: \
         assert(env1['ENV']['PATH'] == r'C:\dir\num\three;C:\dir\num\two;C:\dir\num\one')
         assert(env1['MYENV']['MYPATH'] == r'C:\mydir\num\one;C:\mydir\num\three;C:\mydir\num\two')
 
-    def tttest_PrependUnique(self):
+    def test_PrependUnique(self):
         """Test prepending unique values to construction variables
 
         This strips values that are already present when lists are
@@ -3525,7 +3525,7 @@ if __name__ == "__main__":
                  OverrideEnvironmentTestCase,
                  NoSubstitutionProxyTestCase ]
     for tclass in tclasses:
-        names = unittest.getTestCaseNames(tclass, 'tttest_')
+        names = unittest.getTestCaseNames(tclass, 'test_')
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
