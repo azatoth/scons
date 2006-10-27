@@ -120,13 +120,6 @@ spe = None
 
 cwd = os.getcwd()
 
-if sys.platform == 'win32' or os.name == 'java':
-    lib_dir = os.path.join(sys.exec_prefix, "Lib")
-else:
-    # The hard-coded "python" here is the directory name,
-    # not an executable, so it's all right.
-    lib_dir = os.path.join(sys.exec_prefix, "lib", "python" + sys.version[0:3])
-
 helpstr = """\
 Usage: runtest.py [OPTIONS] [TEST ...]
 Options:
@@ -181,7 +174,11 @@ for o, a in opts:
     elif o in ['-b', '--baseline']:
         baseline = a
     elif o in ['-d', '--debug']:
-        debug = os.path.join(lib_dir, "pdb.py")
+        for dir in sys.path:
+            pdb = os.path.join(dir, 'pdb.py')
+            if os.path.exists(pdb):
+                debug = pdb
+                break
     elif o in ['-f', '--file']:
         if not os.path.isabs(a):
             a = os.path.join(cwd, a)
