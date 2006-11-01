@@ -48,7 +48,7 @@ RELEASE 0.97 - XXX
 
   - Preserve white space in display Action strfunction strings.
 
-  From James Y. Knight:
+  From James Y. Knight and Gerard Patel:
 
   - Support creation of shared object files from assembly language.
 
@@ -193,6 +193,11 @@ RELEASE 0.97 - XXX
 
   - Fix use of BuildDir() when the source file in the source directory
     is a symlink with a relative path.
+
+  From Edward Wang:
+
+  - Fix the Memoizer when the SCons Python modules are executed from
+    .pyo files at different locations from where they were compiled.
 
   From Johan Zander:
 
