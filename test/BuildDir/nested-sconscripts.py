@@ -60,6 +60,5 @@ test.write(['src', 'md', 'test', 'SConscript'], """\
 """)
 
 test.run(chdir='src')
-print test.stdout()
 
 test.pass_test()
