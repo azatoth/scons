@@ -48,6 +48,10 @@ RELEASE 0.97 - XXX
 
   - Preserve white space in display Action strfunction strings.
 
+  From James Y. Knight:
+
+  - Support creation of shared object files from assembly language.
+
   From Steven Knight:
 
   - Speed up the Taskmaster significantly by avoiding unnecessary
