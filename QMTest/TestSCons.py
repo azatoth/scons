@@ -24,6 +24,14 @@ import sys
 from TestCommon import *
 from TestCommon import __all__
 
+# Some tests which verify that SCons has been packaged properly need to
+# look for specific version file names.  Replicating the version number
+# here provides independent verification that what we packaged conforms
+# to what we expect.  (If we derived the version number from the same
+# data driving the build we might miss errors if the logic breaks.)
+
+SConsVersion = '0.96.92'
+
 __all__.extend([ 'TestSCons',
                  'python',
                  '_exe',
@@ -105,6 +113,8 @@ class TestSCons(TestCommon):
     eliminating the need to begin every test with the same repeated
     initializations.
     """
+
+    scons_version = SConsVersion
 
     def __init__(self, **kw):
         """Initialize an SCons testing object.
