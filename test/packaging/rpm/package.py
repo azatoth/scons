@@ -31,23 +31,26 @@ Test the ability to create a really simple rpm package.
 import os
 import TestSCons
 
+machine = TestSCons.machine
 python = TestSCons.python
 
 test = TestSCons.TestSCons()
 
 rpm = test.Environment().WhereIs('rpm')
 
-if rpm:
-  test.subdir('src')
+if not rpm:
+    test.skip_test('rpm not found, skipping test\n')
 
-  test.write( [ 'src', 'main.c' ], r"""
+test.subdir('src')
+
+test.write( [ 'src', 'main.c' ], r"""
 int main( int argc, char* argv[] )
 {
   return 0;
 }
-  """)
+""")
 
-  test.write('SConstruct', """
+test.write('SConstruct', """
 import os
 
 prog = Install( '/bin/' , Program( 'src/main.c')  )
@@ -59,7 +62,7 @@ Package( projectname    = 'foo',
          license        = 'gpl',
          summary        = 'balalalalal',
          x_rpm_Group    = 'Application/fu',
-         description    = 'this should be reallly really long',
+         description    = 'this should be really really long',
          source         = [ prog ],
          source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
         )
@@ -67,12 +70,15 @@ Package( projectname    = 'foo',
 Alias( 'install', prog )
 """)
 
-  test.run(arguments='', stderr = None)
+test.run(arguments='', stderr = None)
 
-  test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
-  test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.i386.rpm').read()=='/bin/main\n')
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.src.rpm').read()=='foo-1.2.3.spec\nfoo-1.2.3.tar.gz\n')
-  test.fail_test( os.path.exists( 'bin/main' ) )
+src_rpm = 'foo-1.2.3-0.src.rpm'
+machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine
+
+test.must_exist( machine_rpm )
+test.must_exist( src_rpm )
+test.must_not_exist( 'bin/main' )
+test.fail_test( not os.popen('rpm -qpl %s' % machine_rpm).read()=='/bin/main\n')
+test.fail_test( not os.popen('rpm -qpl %s' % src_rpm).read()=='foo-1.2.3.spec\nfoo-1.2.3.tar.gz\n')
 
 test.pass_test()

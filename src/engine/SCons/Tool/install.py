@@ -150,7 +150,14 @@ def generate(env):
         env['BUILDERS']['Install']   = InstallBuilderWrapper
         env['BUILDERS']['InstallAs'] = InstallAsBuilderWrapper
 
+    try:
+        env['INSTALLSTR']
+    except KeyError:
         env['INSTALLSTR'] = 'Install file: "$SOURCES" as "$TARGETS"',
+
+    try:
+        env['INSTALL']
+    except KeyError:
         env['INSTALL']    = copyFunc
 
 def exists(env):

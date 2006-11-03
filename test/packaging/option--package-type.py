@@ -30,15 +30,18 @@ Test the --package-type option.
 import os
 import TestSCons
 
+machine = TestSCons.machine
 python = TestSCons.python
 
 test = TestSCons.TestSCons()
 
 rpm = test.Environment().WhereIs('rpm')
 
-if rpm:
-    test.write( 'main.c', '' )
-    test.write('SConstruct', """
+if not rpm:
+    test.skip_test('rpm not found, skipping test\n')
+
+test.write( 'main.c', '' )
+test.write('SConstruct', """
 # -*- coding: iso-8859-15 -*-
 import os
 
@@ -49,6 +52,7 @@ Package( projectname    = 'foo',
          license        = 'gpl',
          summary        = 'hello',
          packageversion = 0,
+         x_rpm_Install    = 'pwd\\necho $PATH\\nscons --install-sandbox=$RPM_BUILD_ROOT $RPM_BUILD_ROOT',
          x_rpm_Group    = 'Application/office',
          description    = 'this should be really long',
          source         = [ prog ],
@@ -56,12 +60,15 @@ Package( projectname    = 'foo',
         )
 """)
 
-    test.run(arguments='package --package-type=rpm', stderr = None)
+test.run(arguments='package --package-type=rpm', stderr = None)
 
-    test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
-    test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
+src_rpm = 'foo-1.2.3-0.src.rpm'
+machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine
 
-    test.fail_test( os.path.exists( 'bin/main.c' ) )
-    test.fail_test( os.path.exists( '/bin/main.c' ) )
+test.must_exist( src_rpm )
+test.must_exist( machine_rpm )
+
+test.must_not_exist( 'bin/main.c' )
+test.must_not_exist( '/bin/main.c' )
 
 test.pass_test()

@@ -163,7 +163,15 @@ class Tool:
             self.options(opts)
             opts.Update(env)
             new_help=opts.GenerateHelpText(env)
-            env.Help(new_help.replace(current_help, ''))
+            try:
+                Help = env.Help
+            except AttributeError:
+                # If there's no env.Help() method, we're likely
+                # introspecting directly on an Environment.Base object
+                # for our own purposes.  Don't die.
+                pass
+            else:
+                Help(new_help.replace(current_help, ''))
         apply(self.generate, ( env, ) + args, kw)
 
     def __str__(self):

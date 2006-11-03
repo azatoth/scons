@@ -262,6 +262,8 @@ class Options:
     format_ = '\n%s: %s\n    default: %s\n    actual: %s\n    aliases: %s\n'
 
     def FormatOptionHelpText(self, env, key, help, default, actual, aliases=[]):
+        # Don't display the key name itself as an alias.
+        aliases = filter(lambda a, k=key: a != key, aliases)
         if len(aliases)==0:
             return self.format % (key, help, default, actual)
         else:

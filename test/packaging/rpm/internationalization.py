@@ -34,24 +34,27 @@ These are x-rpm-Group, description, summary and the lang_xx file tag.
 import os
 import TestSCons
 
+machine = TestSCons.machine
 python = TestSCons.python
 
 test = TestSCons.TestSCons()
 
 rpm = test.Environment().WhereIs('rpm')
 
-if rpm:
-    #
-    # test INTERNATIONAL PACKAGE META-DATA
-    #
-    test.write( [ 'main.c' ], r"""
+if not rpm:
+    test.skip_test('rpm not found, skipping test\n')
+
+#
+# test INTERNATIONAL PACKAGE META-DATA
+#
+test.write( [ 'main.c' ], r"""
 int main( int argc, char* argv[] )
 {
   return 0;
 }
 """)
 
-    test.write('SConstruct', """
+test.write('SConstruct', """
 # -*- coding: iso-8859-15 -*-
 import os
 
@@ -78,39 +81,54 @@ Package( projectname    = 'foo',
 Alias ( 'install', prog )
 """)
 
-    test.run(arguments='', stderr = None)
+test.run(arguments='', stderr = None)
 
-    test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
-    test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
+src_rpm = 'foo-1.2.3-0.src.rpm'
+machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine
 
-    test.fail_test( os.path.exists( 'bin/main' ) )
+test.must_exist( src_rpm )
+test.must_exist( machine_rpm )
 
-    cmd = 'LANGUAGE=%s && rpm -qp --queryformat \'%%{GROUP}-%%{SUMMARY}-%%{DESCRIPTION}\' %s'
-    out = os.popen( cmd % ('de', test.workpath('foo-1.2.3-0.i386.rpm') ) ).read()
-    test.fail_test( not out == 'Applikation/büro-hallo-das sollte wirklich lang sein' )
-    out = os.popen( cmd % ('fr', test.workpath('foo-1.2.3-0.i386.rpm') )).read()
-    test.fail_test( not out == 'Application/bureau-bonjour-ceci devrait être vraiment long' )
-    out = os.popen( cmd % ('en', test.workpath('foo-1.2.3-0.i386.rpm') ) ).read()
-    test.fail_test( not out == 'Application/office-hello-this should be really long' )
-    out = os.popen( cmd % ('ae', test.workpath('foo-1.2.3-0.i386.rpm') ) ).read()
-    test.fail_test( not out == 'Application/office-hello-this should be really long' )
+test.fail_test( os.path.exists( 'bin/main' ) )
 
-    #
-    # test INTERNATIONAL PACKAGE TAGS
-    #
+save_LANGUAGE = os.environ.get('LANGUAGE', '')
 
-    test.write( [ 'main.c' ], r"""
+cmd = 'rpm -qp --queryformat \'%%{GROUP}-%%{SUMMARY}-%%{DESCRIPTION}\' %s'
+
+os.environ['LANGUAGE'] = 'de'
+out = os.popen( cmd % test.workpath(machine_rpm) ).read()
+test.fail_test( out != 'Applikation/büro-hallo-das sollte wirklich lang sein' )
+
+os.environ['LANGUAGE'] = 'fr'
+out = os.popen( cmd % test.workpath(machine_rpm) ).read()
+test.fail_test( out != 'Application/bureau-bonjour-ceci devrait être vraiment long' )
+
+os.environ['LANGUAGE'] = 'en'
+out = os.popen( cmd % test.workpath(machine_rpm) ).read()
+test.fail_test( out != 'Application/office-hello-this should be really long' )
+
+os.environ['LANGUAGE'] = 'ae'
+out = os.popen( cmd % test.workpath(machine_rpm) ).read()
+test.fail_test( out != 'Application/office-hello-this should be really long' )
+
+os.environ['LANGUAGE'] = save_LANGUAGE
+
+#
+# test INTERNATIONAL PACKAGE TAGS
+#
+
+test.write( [ 'main.c' ], r"""
 int main( int argc, char* argv[] )
 {
   return 0;
 }
 """)
 
-    test.write( ['man.de'], '' )
-    test.write( ['man.en'], '' )
-    test.write( ['man.fr'], '' )
+test.write( ['man.de'], '' )
+test.write( ['man.en'], '' )
+test.write( ['man.fr'], '' )
 
-    test.write('SConstruct', """
+test.write('SConstruct', """
 # -*- coding: iso-8859-15 -*-
 import os
 
@@ -148,9 +166,9 @@ Alias ( 'install', [ prog, man_pages ] )
 """)
 
 
-    test.run(arguments='--install-sandbox=blubb install', stderr = None)
+test.run(arguments='--install-sandbox=blubb install', stderr = None)
 
-    test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
-    test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
+test.must_exist( src_rpm )
+test.must_exist( machine_rpm )
 
 test.pass_test()

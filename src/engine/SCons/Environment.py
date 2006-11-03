@@ -1483,6 +1483,21 @@ class Base(SubstitutionEnvironment):
             t.add_ignore(dlist)
         return tlist
 
+    def Literal(self, string):
+        return SCons.Subst.Literal(string)
+
+    def Local(self, *targets):
+        ret = []
+        for targ in targets:
+            if isinstance(targ, SCons.Node.Node):
+                targ.set_local()
+                ret.append(targ)
+            else:
+                for t in self.arg2nodes(targ, self.fs.Entry):
+                   t.set_local()
+                   ret.append(t)
+        return ret
+
     def Precious(self, *targets):
         tlist = []
         for t in targets:
@@ -1634,7 +1649,12 @@ class Base(SubstitutionEnvironment):
         map( get_final_srcnode, sources )
 
         # remove duplicates
-        return list(set(sources))
+        # Can't use set() until Python 2.4.
+        #return list(set(sources))
+        u = {}
+        for s in sources:
+            u[s] = 1
+        return u.keys()
 
     def FindInstalledFiles(self):
         """ returns of all files installed beneath dir.

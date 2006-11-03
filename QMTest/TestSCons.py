@@ -25,6 +25,7 @@ from TestCommon import *
 from TestCommon import __all__
 
 __all__.extend([ 'TestSCons',
+                 'machine',
                  'python',
                  '_exe',
                  '_obj',
@@ -35,6 +36,7 @@ __all__.extend([ 'TestSCons',
                  '_dll'
                ])
 
+machine = os.uname()[4]
 python = python_executable
 _exe = exe_suffix
 _obj = obj_suffix

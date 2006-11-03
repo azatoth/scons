@@ -37,13 +37,15 @@ test = TestSCons.TestSCons()
 
 tar = test.detect('TAR', 'tar')
 
-if tar:
-   test.subdir('src')
+if not tar:
+    test.skip_test('tar not found, skipping test\n')
 
-   test.write([ 'src', 'foobar.h' ], '')
-   test.write([ 'src', 'foobar.c' ], '')
+test.subdir('src')
 
-   test.write('SConstruct', """
+test.write([ 'src', 'foobar.h' ], '')
+test.write([ 'src', 'foobar.c' ], '')
+
+test.write('SConstruct', """
 from glob import glob
 
 src_files = glob( 'src/*.c' )
@@ -62,9 +64,9 @@ Package( projectname = 'libfoobar',
          source      = src_files + include_files )
 """)
 
-   test.run(stderr=None)
+test.run(stderr=None)
 
-   test.fail_test( not os.path.exists( 'libfoobar-1.2.3.tar.gz' ) )
-   test.fail_test( not os.path.exists( 'libfoobar-1.2.3.zip' ) )
+test.must_exist( 'libfoobar-1.2.3.tar.gz' )
+test.must_exist( 'libfoobar-1.2.3.zip' )
 
 test.pass_test()

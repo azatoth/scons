@@ -711,8 +711,8 @@ class OptParser(OptionParser):
             SCons.Node.FS.set_duplicate(value)
         self.add_option('--duplicate', action="callback", type="string",
                         callback=opt_duplicate, nargs=1, dest="duplicate",
-                        help="Set the preferred duplication methods. Must be one of "
-                        + string.join(SCons.Node.FS.Valid_Duplicates, ", "))
+                        help="Set the preferred duplication methods. Must be one of: "
+                        + string.join(SCons.Node.FS.Valid_Duplicates, ", ") + '.')
 
         self.add_option('-f', '--file', '--makefile', '--sconstruct',
                         action="append", nargs=1,
@@ -764,6 +764,16 @@ class OptParser(OptionParser):
                         '--recon', action="store_true", dest='noexec',
                         default=0, help="Don't build; just print commands.")
 
+        import SCons.Tool.Packaging
+        self.add_option('--package-type', type='string', action='callback',
+                        callback=SCons.Tool.Packaging.set_package_type, nargs=1,
+                        metavar='TYPE',
+                        help='The type of Package() to create. ' +
+                             'Must be one of:  ' +
+                             string.join(SCons.Tool.Packaging.packagers.keys(), ', ') +
+                             '.'
+                             )
+
         self.add_option('--profile', action="store",
                         dest="profile_file", metavar="FILE",
                         help="Profile SCons and put results in FILE.")
@@ -804,14 +814,6 @@ class OptParser(OptionParser):
 
         self.add_option('-Y', '--repository', '--srcdir', nargs=1, action="append",
                         help="Search REPOSITORY for source and target files.")
-
-        import SCons.Tool.Packaging
-        self.add_option('--package-type', type='string', action='callback',
-                        callback=SCons.Tool.Packaging.set_package_type, nargs=1,
-                        metavar='TYPE',
-                        help='The type of package which Package() shall create.'+
-                             'Must be one of '+
-                             str(SCons.Tool.Packaging.packagers.keys()))
 
         self.add_option('-e', '--environment-overrides', action="callback",
                         callback=opt_not_yet,

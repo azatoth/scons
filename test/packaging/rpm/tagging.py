@@ -31,52 +31,58 @@ Test the ability to add file tags
 import os
 import TestSCons
 
+machine = TestSCons.machine
 python = TestSCons.python
 
 test = TestSCons.TestSCons()
 
 rpm = test.Environment().WhereIs('rpm')
 
-if rpm:
-  #
-  # Test adding a attr tag to the built program.
-  #
-  test.subdir('src')
+if not rpm:
+    test.skip_test('rpm not found, skipping test\n')
 
-  test.write( [ 'src', 'main.c' ], r"""
+#
+# Test adding an attr tag to the built program.
+#
+test.subdir('src')
+
+test.write( [ 'src', 'main.c' ], r"""
 int main( int argc, char* argv[] )
 {
-  return 0;
+return 0;
 }
-  """)
+""")
 
-  test.write('SConstruct', """
+test.write('SConstruct', """
 import os
 
-install_dir  = os.path.join( ARGUMENTS.get('prefix', '/'), 'bin/' )
+install_dir= os.path.join( ARGUMENTS.get('prefix', '/'), 'bin/' )
 prog_install = Install( install_dir , Program( 'src/main.c' ) )
 Tag( prog_install, unix_attr = '(0755, root, users)' )
 Alias( 'install', prog_install )
 
-Package( projectname    = 'foo',
+Package( projectname  = 'foo',
          version        = '1.2.3',
          type           = 'rpm',
          license        = 'gpl',
          summary        = 'balalalalal',
          packageversion = 0,
          x_rpm_Group    = 'Applicatio/fu',
-         description    = 'this shoudl be reallly really long',
+         description    = 'this should be really really long',
          source         = [ prog_install ],
          source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
-        )
+      )
 """)
 
-  test.run(arguments='', stderr = None)
+test.run(arguments='', stderr = None)
 
-  test.fail_test( not os.path.exists( 'foo-1.2.3-0.i386.rpm' ) )
-  test.fail_test( not os.path.exists( 'foo-1.2.3-0.src.rpm' ) )
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.i386.rpm').read()=='/bin/main\n')
-  test.fail_test( not os.popen('rpm -qpl foo-1.2.3-0.src.rpm').read()=='foo-1.2.3.spec\nfoo-1.2.3.tar.gz\n')
-  test.fail_test( not '(0755, root, users) /bin/main' in file('foo-1.2.3.spec').read() )
+src_rpm = 'foo-1.2.3-0.src.rpm'
+machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine
+
+test.must_exist( machine_rpm )
+test.must_exist( src_rpm )
+test.fail_test( not os.popen('rpm -qpl %s' % machine_rpm).read()=='/bin/main\n')
+test.fail_test( not os.popen('rpm -qpl %s' % src_rpm).read()=='foo-1.2.3.spec\nfoo-1.2.3.tar.gz\n')
+test.fail_test( not '(0755, root, users) /bin/main' in file('foo-1.2.3.spec').read() )
 
 test.pass_test()
