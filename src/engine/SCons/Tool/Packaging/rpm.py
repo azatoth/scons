@@ -54,7 +54,14 @@ class Rpm(BinaryPackager):
         # This should be overridable from the construction environment.
         # Guessing based on what os.uname() returns at least allows it
         # to work for both i386 and x86_64 Linux systems.
+        archmap = {
+            'i686'  : 'i386',
+            'i586'  : 'i386',
+            'i486'  : 'i386',
+        }
+
         buildarchitecture = os.uname()[4]
+        buildarchitecture = archmap.get(buildarchitecture, buildarchitecture)
 
         if kw.has_key('architecture'):
             buildarchitecture = kw['architecture']

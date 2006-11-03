@@ -36,7 +36,14 @@ __all__.extend([ 'TestSCons',
                  '_dll'
                ])
 
+machine_map = {
+    'i686'  : 'i386',
+    'i586'  : 'i386',
+    'i486'  : 'i386',
+}
+
 machine = os.uname()[4]
+machine = machine_map.get(machine, machine)
 python = python_executable
 _exe = exe_suffix
 _obj = obj_suffix
