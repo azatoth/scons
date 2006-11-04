@@ -28,24 +28,11 @@ The tarbz2 SRC packager.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-from packager import SourcePackager, BinaryPackager
+from SCons.Tool.packaging import stripinstall_emitter, packageroot_emitter
 
-class TarBz2(SourcePackager):
-    def create_builder(self, env, kw=None):
-        env['TARFLAGS'] = "-jc"
-        builder = env.get_builder('Tar')
-        if kw:
-            package_root = self.create_package_root(kw)
-        else:
-            package_root = self.create_package_root(env)
-
-        emitter = self.package_root_emitter(package_root)
-        builder.push_emitter(emitter)
-        builder.set_suffix('tar.bz2')
-        return builder
-
-class BinaryTarBz2(TarBz2):
-    def create_builder(self, env, kw=None):
-        builder = TarBz2.create_builder(self, env, kw)
-        builder.push_emitter(self.strip_install_emitter)
-        return builder
+def package(env, target, source, packageroot, **kw):
+    bld = env['BUILDERS']['Tar']
+    bld.set_suffix('.tar.gz')
+    bld.push_emitter(packageroot_emitter(packageroot))
+    bld.push_emitter(stripinstall_emitter())
+    return bld(env, target, source, TARFLAGS='-jc')

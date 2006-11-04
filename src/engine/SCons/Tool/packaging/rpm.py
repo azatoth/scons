@@ -51,17 +51,8 @@ class Rpm(BinaryPackager):
         version           = kw['version']
         projectname       = kw['projectname']
         packageversion    = kw['packageversion']
-        # This should be overridable from the construction environment.
-        # Guessing based on what os.uname() returns at least allows it
-        # to work for both i386 and x86_64 Linux systems.
-        archmap = {
-            'i686'  : 'i386',
-            'i586'  : 'i386',
-            'i486'  : 'i386',
-        }
-
-        buildarchitecture = os.uname()[4]
-        buildarchitecture = archmap.get(buildarchitecture, buildarchitecture)
+        # XXX: this shoudl be guessed depending on the env.
+        buildarchitecture = 'i386'
 
         if kw.has_key('architecture'):
             buildarchitecture = kw['architecture']
