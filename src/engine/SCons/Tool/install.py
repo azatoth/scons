@@ -31,7 +31,7 @@ selection method.
 #
 import SCons.Action
 import shutil, os, stat
-from SCons.Util import strip_abs_path
+from SCons.Util import make_path_relative
 
 #
 # We keep track of *all* installed files.
@@ -87,11 +87,11 @@ class DESTDIR_factory:
         self.dir = env.arg2nodes( dir, env.fs.Dir )[0]
 
     def Entry(self, name):
-        name = strip_abs_path(name)
+        name = make_path_relative(name)
         return self.dir.Entry(name)
 
     def Dir(self, name):
-        name = strip_abs_path(name)
+        name = make_path_relative(name)
         return self.dir.Dir(name)
 
 #

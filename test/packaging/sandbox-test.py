@@ -53,15 +53,17 @@ include_files = glob( 'src/*.h' )
 
 SharedLibrary( 'foobar', src_files )
 
-Package( projectname = 'libfoobar',
-         version     = '1.2.3',
-         type        = 'targz',
-         source      = src_files + include_files )
+env = Environment(tools=['default', 'packaging'])
 
-Package( projectname = 'libfoobar',
-         version     = '1.2.3',
-         type        = 'zip',
-         source      = src_files + include_files )
+env.Package( projectname = 'libfoobar',
+             version     = '1.2.3',
+             type        = 'targz',
+             source      = src_files + include_files )
+
+env.Package( projectname = 'libfoobar',
+             version     = '1.2.3',
+             type        = 'zip',
+             source      = src_files + include_files )
 """)
 
 test.run(stderr=None)

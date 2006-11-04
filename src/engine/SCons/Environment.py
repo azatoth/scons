@@ -58,7 +58,6 @@ import SCons.Sig.MD5
 import SCons.Sig.TimeStamp
 import SCons.Subst
 import SCons.Tool
-import SCons.Tool.Packaging
 import SCons.Util
 import SCons.Warnings
 
@@ -1591,34 +1590,6 @@ class Base(SubstitutionEnvironment):
         """
         """
         return SCons.Node.Python.Value(value)
-
-    def Tag(self, source, *args, **kw):
-        """ Tag a file with the given arguments.
-        """
-        nodes = self.arg2nodes(source, self.fs.Entry)
-
-        if len(kw) == 0 and len(args) == 0:
-            raise SCons.Errors.UserError, "No tags for PackageTag() given."
-
-        # XXX: sanity checks
-        for x in args:
-            kw[x] = ''
-
-        for n in nodes:
-            n.set_tags( kw )
-
-    def Package(self, **kw):
-        """ Entry point for the package tool.
-        """
-        if not kw.has_key('source'):
-            raise SCons.Errors.UserError, "No source for Package() given"
-
-        kw['source_factory'] = self.fs.Entry
-        kw['target_factory'] = self.fs.Entry
-
-        self.arg2nodes( kw['source'], self.fs.Entry )
-
-        return SCons.Tool.Packaging.get_targets(self, kw)
 
     def FindSourceFiles(self, node='.'):
         """ returns a list of all source files.

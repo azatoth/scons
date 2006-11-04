@@ -77,9 +77,5 @@ def generate(env):
                                      source_factory = env.fs.Entry,
                                      multi          = 1)
 
-
-
-
-
 def exists(env):
     return 1

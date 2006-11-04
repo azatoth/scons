@@ -37,9 +37,7 @@ import os
 import TestSCons
 
 python = TestSCons.python
-
 test = TestSCons.TestSCons()
-
 tar = test.detect('TAR', 'tar')
 
 if tar:
@@ -56,11 +54,12 @@ int main( int argc, char* argv[] )
   """)
 
   test.write('SConstruct', """
-Program( 'src/main.c' )
-Package( projectname = 'libfoo',
-         version     = '1.2.3',
-         type        = 'src_zip',
-         source      = [ 'src/main.c', 'SConstruct' ] )
+env=Environment(tools=['default', 'packaging'])
+env.Program( 'src/main.c' )
+env.Package( projectname = 'libfoo',
+             version     = '1.2.3',
+             type        = 'zip',
+             source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(options="--debug=stacktrace", stderr = None)
@@ -72,12 +71,13 @@ Package( projectname = 'libfoo',
   #
 
   test.write('SConstruct', """
-Program( 'src/main.c' )
-Package( projectname = 'libfoo',
-         version     = '1.2.3',
-         type        = 'src_targz',
-         target      = 'src.tar.gz',
-         source      = [ 'src/main.c', 'SConstruct' ] )
+env=Environment(tools=['default', 'packaging'])
+env.Program( 'src/main.c' )
+env.Package( projectname = 'libfoo',
+             version     = '1.2.3',
+             type        = 'src_targz',
+             target      = 'src.tar.gz',
+             source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(stderr = None)
@@ -89,11 +89,12 @@ Package( projectname = 'libfoo',
   #
 
   test.write('SConstruct', """
-Program( 'src/main.c' )
-Package( projectname = 'libfoo',
-         version     = '1.2.3',
-         type        = 'src_tarbz2',
-         source      = [ 'src/main.c', 'SConstruct' ] )
+env=Environment(tools=['default', 'packaging'])
+env.Program( 'src/main.c' )
+env.Package( projectname = 'libfoo',
+             version     = '1.2.3',
+             type        = 'src_tarbz2',
+             source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(stderr = None)

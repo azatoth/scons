@@ -46,11 +46,12 @@ if tar:
   test.write('src/main.c', '')
 
   test.write('SConstruct', """
-Package( projectname  = 'libfoo',
-         package_root = 'libfoo',
-         type         = 'src_zip',
-         version      = '1.2.3',
-         source       = [ 'src/main.c', 'SConstruct' ] )
+env = Environment(tools=['default', 'packaging'])
+env.Package( projectname = 'libfoo',
+             packageroot = 'libfoo',
+             type        = 'src_zip',
+             version     = '1.2.3',
+             source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(arguments='libfoo-1.2.3.zip', stderr = None)
@@ -67,11 +68,12 @@ Package( projectname  = 'libfoo',
   test.write('src/main.c', '')
 
   test.write('SConstruct', """
-Package( projectname = 'libfoo',
-         version     = '1.2.3',
-         type        = 'src_zip',
-         target      = 'src.zip',
-         source      = [ 'src/main.c', 'SConstruct' ] )
+env = Environment(tools=['default', 'packaging'])
+env.Package( projectname = 'libfoo',
+             version     = '1.2.3',
+             type        = 'src_zip',
+             target      = 'src.zip',
+             source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(stderr = None)
@@ -89,10 +91,11 @@ Package( projectname = 'libfoo',
   test.write('src/main.c', '')
 
   test.write('SConstruct', """
-Package( projectname = 'libfoo',
-         version     = '1.2.3',
-         type        = 'src_targz',
-         source      = [ 'src/main.c', 'SConstruct' ] )
+env = Environment(tools=['default', 'packaging'])
+env.Package( projectname = 'libfoo',
+             version     = '1.2.3',
+             type        = 'src_targz',
+             source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
   test.run(stderr = None)

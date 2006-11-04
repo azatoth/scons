@@ -25,10 +25,8 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-This tests the SRC zip packager, which does the following:
- - create a zip package from the specified files
+Test stripping the InstallBuilder of the Package source file.
 """
-
 import os
 import TestSCons
 
@@ -36,29 +34,27 @@ python = TestSCons.python
 
 test = TestSCons.TestSCons()
 
-tar = test.detect('ZIP', 'zip')
-
-if tar:
-  test.subdir('src')
-
-  test.write( [ 'src', 'main.c' ], r"""
-int main( int argc, char* argv[] )
-{
-  return 0;
-}
-  """)
-
-  test.write('SConstruct', """
-Program( 'src/main.c' )
+test.write( 'main.c', '' )
+test.write('SConstruct', """
+prog = Install( '/bin', 'main.c' )
 env=Environment(tools=['default', 'packaging'])
-env.Package( type         = 'src_zip',
-             target       = 'src.zip',
-             packageroot  = 'test',
-             source       = [ 'src/main.c', 'SConstruct' ] )
+env.Package( projectname    = 'foo',
+             version        = '1.2.3',
+             source         = [ prog ],
+            )
 """)
 
-  test.run(arguments='', stderr = None)
+expected = """scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Building targets ...
+Copy file(s): "main.c" to "foo-1.2.3/bin/main.c"
+tar -zc -f foo-1.2.3.tar.gz foo-1.2.3/bin/main.c
+scons: done building targets.
+"""
 
-  test.fail_test( not os.path.exists( 'src.zip' ) )
+test.run(arguments='', stderr = None, stdout=expected)
+
+test.fail_test( os.path.exists( 'bin/main.c' ) )
+test.fail_test( os.path.exists( '/bin/main.c' ) )
 
 test.pass_test()

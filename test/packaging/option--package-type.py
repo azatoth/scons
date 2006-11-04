@@ -47,17 +47,17 @@ import os
 
 prog = Install( '/bin', 'main.c' )
 
-Package( projectname    = 'foo',
-         version        = '1.2.3',
-         license        = 'gpl',
-         summary        = 'hello',
-         packageversion = 0,
-         x_rpm_Install    = 'pwd\\necho $PATH\\nscons --install-sandbox=$RPM_BUILD_ROOT $RPM_BUILD_ROOT',
-         x_rpm_Group    = 'Application/office',
-         description    = 'this should be really long',
-         source         = [ prog ],
-         source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
-        )
+env=Environment(tools=['default', 'packaging'])
+env.Package( projectname    = 'foo',
+             version        = '1.2.3',
+             license        = 'gpl',
+             summary        = 'hello',
+             packageversion = 0,
+             x_rpm_Group    = 'Application/office',
+             description    = 'this should be really long',
+             source         = [ prog ],
+             source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
+            )
 """)
 
 test.run(arguments='package --package-type=rpm', stderr = None)

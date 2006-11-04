@@ -987,7 +987,7 @@ class LogicalLines:
             result.append(line)
         return result
 
-def strip_abs_path(path):
+def make_path_relative(path):
     """ makes an absolute path name to a relative pathname.
     """
     if os.path.isabs(path):

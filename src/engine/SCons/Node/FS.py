@@ -685,44 +685,6 @@ class Base(SCons.Node.Node):
     def target_from_source(self, prefix, suffix, splitext=SCons.Util.splitext):
         return self.dir.Entry(prefix + splitext(self.name)[0] + suffix)
 
-    def get_tags(self, factories=[]):
-        """ returns a dict of information known about the file.
-
-        This list is partly build from outside, primarily from the PackageTag()
-        builder and from analyzing the attached builders.
-
-        For example finding that this node has the Install Builder attached, it
-        will get a "location" tag with the value of the install directory. This
-        is done by the SCons.Tool.Packaging.LocationTagFactory.
-
-        Factories is a list of TagFactory that will be used to create additional
-        tags.
-        """
-        for factory in factories:
-            generated_tags = factory(self, self.tags)
-            # XXX: instead of update, we could perhaps use the attached
-            # BuildInfo and its merge function ?!?!
-            if generated_tags:
-                self.tags.update( generated_tags )
-
-        srcnodes = [ x.srcnode() for x in [self] if x.srcnode() != x ]
-        map( lambda x: x.set_tags(self.tags), srcnodes )
-
-        return self.tags
-
-    def set_tags(self, e=[], **kw):
-        """ set the given tags in the directory.
-        """
-        if SCons.Util.is_Dict( e ):
-            apply( self.tags.update, [e], kw )
-        else:
-            apply( self.tags.update, e, kw )
-
-        srcnodes = [ x.srcnode() for x in [self] if x.srcnode() != x ]
-        map( lambda x: x.set_tags(self.tags), srcnodes )
-
-        return self.tags
-
     def RDirs(self, pathlist):
         """Search for a list of directories in the Repository list."""
         return self.fs.Rfindalldirs(pathlist, self.cwd)
