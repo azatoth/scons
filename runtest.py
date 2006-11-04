@@ -250,7 +250,6 @@ else:
     def whereis(file):
         for dir in string.split(os.environ['PATH'], os.pathsep):
             f = os.path.join(dir, file)
-            print f
             if os.path.isfile(f):
                 try:
                     st = os.stat(f)
