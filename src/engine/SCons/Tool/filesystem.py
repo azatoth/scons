@@ -41,7 +41,7 @@ def generate(env):
             """ changes the target and source list to only include file and recursively
             attaching the builder to all other targets and sources still in the list.
             """
-            bld = env['BUILDERS']['InstallAs']
+            bld = env['BUILDERS']['CopyTo']
 
             for t,s in zip(target[1:], source[1:]):
                 bld(env, target=t, source=s)
