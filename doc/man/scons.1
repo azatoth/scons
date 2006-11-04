@@ -421,6 +421,24 @@ Will not remove any targets specified by the
 function.
 
 .TP
+.RI --cache-debug= file
+Print debug information about the
+.BR CacheDir ()
+derived-file caching
+to the specified
+.IR file .
+If
+.I file
+is
+.B \-
+(a hyphen),
+the debug information are printed to the standard output.
+The printed messages describe what signature file names are
+being looked for in, retrieved from, or written to the
+.BR CacheDir ()
+directory tree.
+
+.TP
 --cache-disable, --no-cache
 Disable the derived-file caching specified by
 .BR CacheDir ().
@@ -1145,14 +1163,14 @@ would override the built-in gcc tool.
 Also note that the toolpath is
 stored in the environment for use
 by later calls to
-.BR Copy ()
+.BR Clone ()
 and
 .BR Tool ()
 methods:
 
 .ES
 base = Environment(toolpath=['custom_path'])
-derived = base.Copy(tools=['custom_tool'])
+derived = base.Clone(tools=['custom_tool'])
 derived.CustomBuilder()
 .EE
 
@@ -1712,6 +1730,24 @@ the specified
 See the section "Action Objects,"
 below, for a complete explanation of the arguments and behavior.
 
+Note that the 
+.BR env.Action ()
+form of the invocation will expand
+construction variables in any arguments strings,
+including the
+.I action
+argument,
+at the time it is called
+using the construction variables in the
+.B env
+construction environment through which
+.BR env.Action ()
+was called.
+The
+.BR Action ()
+form delays all variable expansion
+until the Action object is actually used.
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
 .RI AddPostAction( target ", " action )
@@ -1993,6 +2029,24 @@ the specified
 See the section "Builder Objects,"
 below, for a complete explanation of the arguments and behavior.
 
+Note that the 
+.BR env.Builder ()
+form of the invocation will expand
+construction variables in any arguments strings,
+including the
+.I action
+argument,
+at the time it is called
+using the construction variables in the
+.B env
+construction environment through which
+.BR env.Builder ()
+was called.
+The
+.BR Builder ()
+form delays all variable expansion
+until after the Builder object is actually called.
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
 .RI CacheDir( cache_dir )
@@ -2220,7 +2274,7 @@ below, for a complete explanation of the arguments and behavior.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI env.Copy([ key = val ", ...])"
+.RI env.Clone([ key = val ", ...])"
 Return a separate copy of a construction environment.
 If there are any keyword arguments specified,
 they are added to the returned copy,
@@ -2228,8 +2282,8 @@ overwriting any existing values
 for the keywords.
 
 .ES
-env2 = env.Copy()
-env3 = env.Copy(CCFLAGS = '-g')
+env2 = env.Clone()
+env3 = env.Clone(CCFLAGS = '-g')
 .EE
 .IP
 Additionally, a list of tools and a toolpath may be specified, as in
@@ -2237,8 +2291,15 @@ the Environment constructor:
 
 .ES
 def MyTool(env): env['FOO'] = 'bar'
-env4 = env.Copy(tools = ['msvc', MyTool])
+env4 = env.Clone(tools = ['msvc', MyTool])
 .EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI env.Copy([ key = val ", ...])"
+A synonym for
+env.Clone().
+(This will probably be officially deprecated some day.)
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
@@ -2759,8 +2820,11 @@ Import("*")
 .RI Install( dir ", " source )
 .TP
 .RI env.Install( dir ", " source )
-Installs one or more files in a destination directory.
-The file names remain the same.
+Installs one or more source files or directories
+in a destination directory
+.IR dir .
+The names of the specified source files or directories
+remain the same within the destination directory.
 
 .ES
 env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
@@ -2771,11 +2835,15 @@ env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
 .RI InstallAs( target ", " source )
 .TP
 .RI env.InstallAs( target ", " source )
-Installs one or more files as specific file names,
-allowing changing a file name as part of the
-installation.
-It is an error if the target and source
-list different numbers of files.
+Installs one or more source files or directories
+to specific names,
+allowing changing a file or directory name
+as part of the installation.
+It is an error if the
+.I target
+and
+.I source
+arguments list different numbers of files or directories.
 
 .ES
 env.InstallAs(target = '/usr/local/bin/foo',
@@ -3997,17 +4065,31 @@ env.Tool('opengl', toolpath = ['build/tools'])
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI Value( value )
+.RI Value( value ", [" built_value ])
 .TP
-.RI env.Value( value )
+.RI env.Value( value ", [" built_value ])
 Returns a Node object representing the specified Python value.  Value
-nodes can be used as dependencies of targets.  If the result of
+Nodes can be used as dependencies of targets.  If the result of
 calling
 .BR str( value )
 changes between SCons runs, any targets depending on
 .BR Value( value )
-will be rebuilt.  When using timestamp source signatures, Value nodes'
-timestamps are equal to the system time when the node is created.
+will be rebuilt.  When using timestamp source signatures, Value Nodes'
+timestamps are equal to the system time when the Node is created.
+
+The returned Value Node object has a
+.BR write ()
+method that can be used to "build" a Value Node
+by setting a new value.
+The optional
+.I built_value
+argument can be specified 
+when the Value Node is created
+to indicate the Node should already be considered
+"built."
+There is a corresponding
+.BR read ()
+method that will return the built value of the Node.
 
 .ES
 def create(target, source, env):
@@ -4018,6 +4100,15 @@ prefix = ARGUMENTS.get('prefix', '/usr/local')
 env = Environment()
 env['BUILDERS']['Config'] = Builder(action = create)
 env.Config(target = 'package-config', source = Value(prefix))
+
+def build_value(target, source, env):
+    target[0].write(source[0].get_contents())
+
+output = env.Value('before')
+input = env.Value('after')
+
+env['BUILDERS']['UpdateValue'] = Builder(action = build_value)
+env.UpdateValue(target = Value(output), source = Value(input))
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -4316,11 +4407,11 @@ env = Environment(CC="cc")
 .EE
 
 or when copying a construction environment using the 
-.B Copy 
+.B Clone 
 method:
 
 .ES
-env2 = env.Copy(CC="cl.exe")
+env2 = env.Clone(CC="cl.exe")
 .EE
 
 .SS Configure Contexts

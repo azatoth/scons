@@ -86,11 +86,13 @@ test.write(['work1', 'SConstruct'], """
 SConsignFile(None)
 env1 = Environment(PROGSUFFIX = '.exe', OBJSUFFIX = '.obj')
 env1.Program('sub1/hello.c')
-env2 = env1.Copy(CPPPATH = ['sub2'])
+env2 = env1.Clone(CPPPATH = ['sub2'])
 env2.Program('sub2/hello.c')
 """)
 
 test.write(['work1', 'sub1', 'hello.c'], r"""\
+#include <stdio.h>
+#include <stdlib.h>
 int
 main(int argc, char *argv[])
 {
@@ -101,6 +103,8 @@ main(int argc, char *argv[])
 """)
 
 test.write(['work1', 'sub2', 'hello.c'], r"""\
+#include <stdio.h>
+#include <stdlib.h>
 #include <inc1.h>
 #include <inc2.h>
 int
@@ -247,7 +251,7 @@ SourceSignatures('timestamp')
 TargetSignatures('content')
 env1 = Environment(PROGSUFFIX = '.exe', OBJSUFFIX = '.obj')
 env1.Program('sub1/hello.c')
-env2 = env1.Copy(CPPPATH = ['sub2'])
+env2 = env1.Clone(CPPPATH = ['sub2'])
 env2.Program('sub2/hello.c')
 """)
 
@@ -278,11 +282,13 @@ test.write(['work2', 'SConstruct'], """
 SConsignFile()
 env1 = Environment(PROGSUFFIX = '.exe', OBJSUFFIX = '.obj')
 env1.Program('sub1/hello.c')
-env2 = env1.Copy(CPPPATH = ['sub2'])
+env2 = env1.Clone(CPPPATH = ['sub2'])
 env2.Program('sub2/hello.c')
 """)
 
 test.write(['work2', 'sub1', 'hello.c'], r"""\
+#include <stdio.h>
+#include <stdlib.h>
 int
 main(int argc, char *argv[])
 {
@@ -293,6 +299,8 @@ main(int argc, char *argv[])
 """)
 
 test.write(['work2', 'sub2', 'hello.c'], r"""\
+#include <stdio.h>
+#include <stdlib.h>
 #include <inc1.h>
 #include <inc2.h>
 int
@@ -502,7 +510,7 @@ SourceSignatures('timestamp')
 TargetSignatures('content')
 env1 = Environment(PROGSUFFIX = '.exe', OBJSUFFIX = '.obj')
 env1.Program('sub1/hello.c')
-env2 = env1.Copy(CPPPATH = ['sub2'])
+env2 = env1.Clone(CPPPATH = ['sub2'])
 env2.Program('sub2/hello.c')
 """)
 

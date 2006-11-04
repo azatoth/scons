@@ -177,6 +177,7 @@ Touch = ActionFactory(touch_func,
                       lambda file: 'Touch("%s")' % file)
 
 # Internal utility functions
+
 def _concat(prefix, list, suffix, env, f=lambda x: x, target=None, source=None):
     """Creates a new list from 'list' by first interpolating each
     element in the list using the 'env' dictionary and then calling f
@@ -332,9 +333,9 @@ ConstructionEnvironment = {
     'CONFIGURELOG'  : '#/config.log',
     'CPPSUFFIXES'   : SCons.Tool.CSuffixes,
     'DSUFFIXES'     : SCons.Tool.DSuffixes,
+    'ENV'           : {},
     'IDLSUFFIXES'   : SCons.Tool.IDLSuffixes,
     'LATEXSUFFIXES' : SCons.Tool.LaTeXSuffixes,
-    'ENV'           : {},
     '_concat'       : _concat,
     '_defines'      : _defines,
     '_stripixes'    : _stripixes,

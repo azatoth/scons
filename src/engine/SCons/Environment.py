@@ -453,7 +453,7 @@ class SubstitutionEnvironment:
         the overrides dictionaries.  "overrides" is a dictionary that
         will override the variables of this environment.
 
-        This function is much more efficient than Copy() or creating
+        This function is much more efficient than Clone() or creating
         a new Environment because it doesn't copy the construction
         environment dictionary, it just wraps the underlying construction
         environment, and doesn't even create a wrapper object if there
@@ -725,8 +725,19 @@ class Base(SubstitutionEnvironment):
         # environment before calling the tools, because they may use
         # some of them during initialization.
         apply(self.Replace, (), kw)
+        keys = kw.keys()
         if options:
+            keys = keys + options.keys()
             options.Update(self)
+
+        save = {}
+        for k in keys:
+            try:
+                save[k] = self._dict[k]
+            except KeyError:
+                # No value may have been set if they tried to pass in a
+                # reserved variable name like TARGETS.
+                pass
 
         if tools is None:
             tools = self._dict.get('TOOLS', None)
@@ -734,12 +745,11 @@ class Base(SubstitutionEnvironment):
                 tools = ['default']
         apply_tools(self, tools, toolpath)
 
-        # Now re-apply the passed-in variables and customizable options
+        # Now restore the passed-in variables and customized options
         # to the environment, since the values the user set explicitly
         # should override any values set by the tools.
-        apply(self.Replace, (), kw)
-        if options:
-            options.Update(self)
+        for key, val in save.items():
+            self._dict[key] = val
 
     #######################################################################
     # Utility methods that are primarily for internal use by SCons.
@@ -878,19 +888,19 @@ class Base(SubstitutionEnvironment):
                 self._dict[key] = val
             else:
                 try:
-                    # Most straightforward:  just try to add them
-                    # together.  This will work in most cases, when the
-                    # original and new values are of compatible types.
-                    self._dict[key] = orig + val
-                except TypeError:
+                    # Check if the original looks like a dictionary.
+                    # If it is, we can't just try adding the value because
+                    # dictionaries don't have __add__() methods, and
+                    # things like UserList will incorrectly coerce the
+                    # original dict to a list (which we don't want).
+                    update_dict = orig.update
+                except AttributeError:
                     try:
-                        # Try to update a dictionary value with another.
-                        # If orig isn't a dictionary, it won't have an
-                        # update() method; if val isn't a dictionary,
-                        # it won't have a keys() method.  Either way,
-                        # it's an AttributeError.
-                        orig.update(val)
-                    except AttributeError:
+                        # Most straightforward:  just try to add them
+                        # together.  This will work in most cases, when the
+                        # original and new values are of compatible types.
+                        self._dict[key] = orig + val
+                    except (KeyError, TypeError):
                         try:
                             # Check if the original is a list.
                             add_to_orig = orig.append
@@ -908,6 +918,17 @@ class Base(SubstitutionEnvironment):
                             # value to it (if there's a value to append).
                             if val:
                                 add_to_orig(val)
+                else:
+                    # The original looks like a dictionary, so update it
+                    # based on what we think the value looks like.
+                    if SCons.Util.is_List(val):
+                        for v in val:
+                            orig[v] = None
+                    else:
+                        try:
+                            update_dict(val)
+                        except (AttributeError, TypeError, ValueError):
+                            orig[val] = None
         self.scanner_map_delete(kw)
 
     def AppendENVPath(self, name, newpath, envname = 'ENV', sep = os.pathsep):
@@ -935,7 +956,7 @@ class Base(SubstitutionEnvironment):
         """
         kw = copy_non_reserved_keywords(kw)
         for key, val in kw.items():
-            if not self._dict.has_key(key) or not self._dict[key]:
+            if not self._dict.has_key(key) or self._dict[key] in ('', None):
                 self._dict[key] = val
             elif SCons.Util.is_Dict(self._dict[key]) and \
                  SCons.Util.is_Dict(val):
@@ -957,7 +978,7 @@ class Base(SubstitutionEnvironment):
                     self._dict[key] = self._dict[key] + val
         self.scanner_map_delete(kw)
 
-    def Copy(self, tools=[], toolpath=None, **kw):
+    def Clone(self, tools=[], toolpath=None, **kw):
         """Return a copy of a construction Environment.  The
         copy is like a Python "deep copy"--that is, independent
         copies are made recursively of each objects--except that
@@ -981,8 +1002,11 @@ class Base(SubstitutionEnvironment):
         for key, value in kw.items():
             new[key] = SCons.Subst.scons_subst_once(value, self, key)
         apply(clone.Replace, (), new)
-        if __debug__: logInstanceCreation(self, 'Environment.EnvironmentCopy')
+        if __debug__: logInstanceCreation(self, 'Environment.EnvironmentClone')
         return clone
+
+    def Copy(self, *args, **kw):
+        return apply(self.Clone, args, kw)
 
     def Detect(self, progs):
         """Return the first available program in progs.  __cacheable__
@@ -1117,19 +1141,19 @@ class Base(SubstitutionEnvironment):
                 self._dict[key] = val
             else:
                 try:
-                    # Most straightforward:  just try to add them
-                    # together.  This will work in most cases, when the
-                    # original and new values are of compatible types.
-                    self._dict[key] = val + orig
-                except TypeError:
+                    # Check if the original looks like a dictionary.
+                    # If it is, we can't just try adding the value because
+                    # dictionaries don't have __add__() methods, and
+                    # things like UserList will incorrectly coerce the
+                    # original dict to a list (which we don't want).
+                    update_dict = orig.update
+                except AttributeError:
                     try:
-                        # Try to update a dictionary value with another.
-                        # If orig isn't a dictionary, it won't have an
-                        # update() method; if val isn't a dictionary,
-                        # it won't have a keys() method.  Either way,
-                        # it's an AttributeError.
-                        orig.update(val)
-                    except AttributeError:
+                        # Most straightforward:  just try to add them
+                        # together.  This will work in most cases, when the
+                        # original and new values are of compatible types.
+                        self._dict[key] = val + orig
+                    except (KeyError, TypeError):
                         try:
                             # Check if the added value is a list.
                             add_to_val = val.append
@@ -1147,6 +1171,17 @@ class Base(SubstitutionEnvironment):
                             if orig:
                                 add_to_val(orig)
                             self._dict[key] = val
+                else:
+                    # The original looks like a dictionary, so update it
+                    # based on what we think the value looks like.
+                    if SCons.Util.is_List(val):
+                        for v in val:
+                            orig[v] = None
+                    else:
+                        try:
+                            update_dict(val)
+                        except (AttributeError, TypeError, ValueError):
+                            orig[val] = None
         self.scanner_map_delete(kw)
 
     def PrependENVPath(self, name, newpath, envname = 'ENV', sep = os.pathsep):
@@ -1174,7 +1209,7 @@ class Base(SubstitutionEnvironment):
         """
         kw = copy_non_reserved_keywords(kw)
         for key, val in kw.items():
-            if not self._dict.has_key(key) or not self._dict[key]:
+            if not self._dict.has_key(key) or self._dict[key] in ('', None):
                 self._dict[key] = val
             elif SCons.Util.is_Dict(self._dict[key]) and \
                  SCons.Util.is_Dict(val):
@@ -1586,10 +1621,10 @@ class Base(SubstitutionEnvironment):
         else:
             raise SCons.Errors.UserError, "Unknown target signature type '%s'"%type
 
-    def Value(self, value):
+    def Value(self, value, built_value=None):
         """
         """
-        return SCons.Node.Python.Value(value)
+        return SCons.Node.Python.Value(value, built_value)
 
     def FindSourceFiles(self, node='.'):
         """ returns a list of all source files.

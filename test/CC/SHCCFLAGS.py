@@ -28,15 +28,12 @@ import sys
 import TestSCons
 import os
 import string
-
-if sys.platform == 'win32':
-    fooflags = '/nologo -DFOO'
-    barflags = '/nologo -DBAR'
-else:
-    fooflags = '-DFOO'
-    barflags = '-DBAR'
     
 test = TestSCons.TestSCons()
+
+e = test.Environment()
+fooflags = e['SHCCFLAGS'] + ' -DFOO'
+barflags = e['SHCCFLAGS'] + ' -DBAR'
 
 if os.name == 'posix':
     os.environ['LD_LIBRARY_PATH'] = '.'
@@ -53,11 +50,11 @@ foo.SharedLibrary(target = 'foo', source = foo_obj)
 bar_obj = bar.SharedObject(target = 'bar', source = 'prog.c')
 bar.SharedLibrary(target = 'bar', source = bar_obj)
 
-fooMain = foo.Copy(LIBS='foo', LIBPATH='.')
+fooMain = foo.Clone(LIBS='foo', LIBPATH='.')
 foomain_obj = fooMain.Object(target='foomain', source='main.c')
 fooMain.Program(target='fooprog', source=foomain_obj)
 
-barMain = bar.Copy(LIBS='bar', LIBPATH='.')
+barMain = bar.Clone(LIBS='bar', LIBPATH='.')
 barmain_obj = barMain.Object(target='barmain', source='main.c')
 barMain.Program(target='barprog', source=barmain_obj)
 """ % (fooflags, barflags))
@@ -79,6 +76,8 @@ EXPORTS
 """)
 
 test.write('prog.c', r"""
+#include <stdio.h>
+
 void
 doIt()
 {
@@ -117,7 +116,7 @@ bar.SharedLibrary(target = 'foo', source = foo_obj)
 bar_obj = bar.SharedObject(target = 'bar', source = 'prog.c')
 bar.SharedLibrary(target = 'bar', source = bar_obj)
 
-barMain = bar.Copy(LIBS='bar', LIBPATH='.')
+barMain = bar.Clone(LIBS='bar', LIBPATH='.')
 foomain_obj = barMain.Object(target='foomain', source='main.c')
 barmain_obj = barMain.Object(target='barmain', source='main.c')
 barMain.Program(target='barprog', source=foomain_obj)

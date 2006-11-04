@@ -809,7 +809,7 @@ for p in [ scons ]:
 
         rpm_files.sort()
         rpm_files_str = string.join(rpm_files, "\n") + "\n"
-        rpm_spec_env = env.Copy(RPM_FILES = rpm_files_str)
+        rpm_spec_env = env.Clone(RPM_FILES = rpm_files_str)
         rpm_spec_action = Action(spec_function, varlist=['RPM_FILES'])
         rpm_spec_env.Command(specfile, specfile_in, rpm_spec_action)
 
@@ -913,12 +913,14 @@ for p in [ scons ]:
     env.Command(local_targets, build_src_files, commands)
 
     scons_LICENSE = os.path.join(local, 'scons-LICENSE')
-    env.SCons_revision(scons_LICENSE, 'LICENSE-local')
-    local_targets.append(scons_LICENSE)
+    l = env.SCons_revision(scons_LICENSE, 'LICENSE-local')
+    local_targets.append(l)
+    Local(l)
 
     scons_README = os.path.join(local, 'scons-README')
-    env.SCons_revision(scons_README, 'README-local')
-    local_targets.append(scons_README)
+    l = env.SCons_revision(scons_README, 'README-local')
+    local_targets.append(l)
+    Local(l)
 
     if gzip:
         env.Command(local_tar_gz,

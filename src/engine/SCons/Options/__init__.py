@@ -92,6 +92,11 @@ class Options:
 
         self.options.append(option)
 
+    def keys(self):
+        """
+        Returns the keywords for the options
+        """
+        return map(lambda o: o.key, self.options)
 
     def Add(self, key, help="", default=None, validator=None, converter=None, **kw):
         """
@@ -115,7 +120,6 @@ class Options:
             raise SCons.Errors.UserError, "Illegal Options.Add() key `%s'" % str(key)
 
         self._do_add(key, help, default, validator, converter)
-
 
     def AddOptions(self, *optlist):
         """

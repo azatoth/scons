@@ -41,11 +41,23 @@ _INSTALLED_FILES = []
 # Functions doing the actual work of the Install Builder.
 #
 def copyFunc(dest, source, env):
-    """Install a source file into a destination by copying it (and its
-    permission/mode bits)."""
-    shutil.copy2(source, dest)
-    st = os.stat(source)
-    os.chmod(dest, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
+    """Install a source file or directory into a destination by copying,
+    (including copying permission/mode bits)."""
+
+    if os.path.isdir(source):
+        if os.path.exists(dest):
+            if not os.path.isdir(dest):
+                raise SCons.Errors.UserError, "cannot overwrite non-directory `%s' with a directory `%s'" % (str(dest), str(source))
+        else:
+            parent = os.path.split(dest)[0]
+            if not os.path.exists(parent):
+                os.makedirs(parent)
+        shutil.copytree(source, dest)
+    else:
+        shutil.copy2(source, dest)
+        st = os.stat(source)
+        os.chmod(dest, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
+
     return 0
 
 def installFunc(target, source, env):
@@ -64,7 +76,16 @@ def installFunc(target, source, env):
     return 0
 
 def stringFunc(target, source, env):
-    return env.subst_target_source(env['INSTALLSTR'], 0, target, source)
+    installstr = env.get('INSTALLSTR')
+    if installstr:
+        return env.subst_target_source(installstr, 0, target, source)
+    target = str(target[0])
+    source = str(source[0])
+    if os.path.isdir(source):
+        type = 'directory'
+    else:
+        type = 'file'
+    return 'Install %s: "%s" as "%s"' % (type, source, target)
 
 #
 # Emitter functions
@@ -113,7 +134,7 @@ def generate(env):
         InstallBuilder = SCons.Builder.Builder(
             action         = install_action,
             target_factory = target_factory.Entry,
-            source_factory = env.fs.File,
+            source_factory = env.fs.Entry,
             multi          = 1,
             emitter        = [ add_targets_to_INSTALLED_FILES, ],
             name           = 'InstallBuilder')
@@ -127,13 +148,7 @@ def generate(env):
                 dnodes = env.arg2nodes(dir, target_factory.Dir)
             except TypeError:
                 raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
-            try:
-                sources = env.arg2nodes(source, env.fs.File)
-            except TypeError:
-                if SCons.Util.is_List(source):
-                    raise SCons.Errors.UserError, "Source `%s' of Install() contains one or more non-files.  Install() source must be one or more files." % repr(map(str, source))
-                else:
-                    raise SCons.Errors.UserError, "Source `%s' of Install() is not a file.  Install() source must be one or more files." % str(source)
+            sources = env.arg2nodes(source, env.fs.Entry)
             tgt = []
             for dnode in dnodes:
                 for src in sources:
@@ -150,10 +165,17 @@ def generate(env):
         env['BUILDERS']['Install']   = InstallBuilderWrapper
         env['BUILDERS']['InstallAs'] = InstallAsBuilderWrapper
 
-    try:
-        env['INSTALLSTR']
-    except KeyError:
-        env['INSTALLSTR'] = 'Install file: "$SOURCES" as "$TARGETS"',
+    # We'd like to initialize this doing something like the following,
+    # but there isn't yet support for a ${SOURCE.type} expansion that
+    # will print "file" or "directory" depending on what's being
+    # installed.  For now we punt by not initializing it, and letting
+    # the stringFunc() that we put in the action fall back to the
+    # hand-crafted default string if it's not set.
+    #
+    #try:
+    #    env['INSTALLSTR']
+    #except KeyError:
+    #    env['INSTALLSTR'] = 'Install ${SOURCE.type}: "$SOURCES" as "$TARGETS"'
 
     try:
         env['INSTALL']

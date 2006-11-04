@@ -29,21 +29,18 @@ import TestSCons
 import os
 import string
 
-if sys.platform == 'win32':
-    _obj = '.obj'
-    fooflags = '/nologo -DFOO'
-    barflags = '/nologo -DBAR'
-else:
-    _obj = '.o'
-    fooflags = '-DFOO'
-    barflags = '-DBAR'
-    
+_obj = TestSCons._obj
+
 if os.name == 'posix':
     os.environ['LD_LIBRARY_PATH'] = '.'
 if string.find(sys.platform, 'irix') > -1:
     os.environ['LD_LIBRARYN32_PATH'] = '.'
 
 test = TestSCons.TestSCons()
+
+e = test.Environment()
+fooflags = e['SHCXXFLAGS'] + ' -DFOO'
+barflags = e['SHCXXFLAGS'] + ' -DBAR'
 
 test.write('SConstruct', """
 foo = Environment(SHCXXFLAGS = '%s', WINDOWS_INSERT_DEF=1)
@@ -53,11 +50,11 @@ bar.SharedObject(target = 'bar%s', source = 'prog.cpp')
 foo.SharedLibrary(target = 'foo', source = 'foo%s')
 bar.SharedLibrary(target = 'bar', source = 'bar%s')
 
-fooMain = foo.Copy(LIBS='foo', LIBPATH='.')
+fooMain = foo.Clone(LIBS='foo', LIBPATH='.')
 foo_obj = fooMain.Object(target='foomain', source='main.c')
 fooMain.Program(target='fooprog', source=foo_obj)
 
-barMain = bar.Copy(LIBS='bar', LIBPATH='.')
+barMain = bar.Clone(LIBS='bar', LIBPATH='.')
 bar_obj = barMain.Object(target='barmain', source='main.c')
 barMain.Program(target='barprog', source=bar_obj)
 """ % (fooflags, barflags, _obj, _obj, _obj, _obj))
@@ -117,7 +114,7 @@ bar.SharedObject(target = 'bar%s', source = 'prog.cpp')
 bar.SharedLibrary(target = 'foo', source = 'foo%s')
 bar.SharedLibrary(target = 'bar', source = 'bar%s')
 
-barMain = bar.Copy(LIBS='bar', LIBPATH='.')
+barMain = bar.Clone(LIBS='bar', LIBPATH='.')
 foo_obj = barMain.Object(target='foomain', source='main.c')
 bar_obj = barMain.Object(target='barmain', source='main.c')
 barMain.Program(target='barprog', source=foo_obj)

@@ -55,10 +55,10 @@ test_list = [
 ]
 env = Environment(CPPDEFPREFIX='-D', CPPDEFSUFFIX='')
 for i in test_list:
-    print env.Copy(CPPDEFINES=i).subst('$_CPPDEFFLAGS')
+    print env.Clone(CPPDEFINES=i).subst('$_CPPDEFFLAGS')
 env = Environment(CPPDEFPREFIX='|', CPPDEFSUFFIX='|')
 for i in test_list:
-    print env.Copy(CPPDEFINES=i).subst('$_CPPDEFFLAGS')
+    print env.Clone(CPPDEFINES=i).subst('$_CPPDEFFLAGS')
 """)
 
 expect = test.wrap_stdout(build_str="scons: `.' is up to date.\n", 
@@ -87,6 +87,9 @@ baz.Program(target = 'baz', source = 'baz.cpp')
 """)
 
 test.write('prog.c', r"""
+#include <stdio.h>
+#include <stdlib.h>
+
 int
 main(int argc, char *argv[])
 {
