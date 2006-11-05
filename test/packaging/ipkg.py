@@ -35,7 +35,10 @@ python = TestSCons.python
 test = TestSCons.TestSCons()
 ipkg = test.Environment().WhereIs('ipkg-build')
 
-if ipkg:
+
+if not ipkg:
+  test.skip_test("ipkg-build not found, skipping test\n")
+else:
   test.write( 'main.c', r"""
 int main(int argc, char *argv[])
 {
@@ -107,5 +110,3 @@ env.Ipkg( [ env.Dir( 'foo-0.0' ), prog ] )
 
   test.run(arguments='', stderr = None)
   test.fail_test( not os.path.exists( 'foo_0.0_arm.ipk' ) )
-
-test.pass_test()
