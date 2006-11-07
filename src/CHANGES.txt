@@ -8,6 +8,10 @@
 
 
 
+RELEASE 0.97 - XXX
+
+
+
 RELEASE 0.96.93 - Mon, 06 Nov 2006 00:44:11 -0600
 
   NOTE:  This is a pre-release of 0.97 for testing purposes.
@@ -175,7 +179,7 @@ RELEASE 0.96.93 - Mon, 06 Nov 2006 00:44:11 -0600
 
   - Initial infrastructure for running SCons tests under QMTest.
 
-  From Sohail Sumani:
+  From Sohail Somani:
 
   - Fix tests that fail due to gcc warnings.
 
