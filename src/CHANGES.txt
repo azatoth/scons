@@ -10,6 +10,12 @@
 
 RELEASE 0.97 - XXX
 
+  From Jay Kint:
+
+  - Alleviate long command line issues on Windows by executing command
+    lines directly via os.spawnv() if the command line doesn't need
+    shell interpretation (has no pipes, redirection, etc.).
+
   From John Pye:
 
   - Fix env.MergeFlags() appending to construction variable value of None.
