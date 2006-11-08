@@ -10,6 +10,10 @@
 
 RELEASE 0.97 - XXX
 
+  From John Pye:
+
+  - Fix env.MergeFlags() appending to construction variable value of None.
+
 
 
 RELEASE 0.96.93 - Mon, 06 Nov 2006 00:44:11 -0600

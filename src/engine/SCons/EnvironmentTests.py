@@ -728,6 +728,10 @@ sys.exit(1)
         env.MergeFlags('-X')
         assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
 
+        env = SubstitutionEnvironment(CCFLAGS=None)
+        env.MergeFlags('-Y')
+        assert env['CCFLAGS'] == ['-Y'], env['CCFLAGS']
+
         env = SubstitutionEnvironment()
         env.MergeFlags({'A':['aaa'], 'B':['bbb']})
         assert env['A'] == ['aaa'], env['A']

@@ -663,8 +663,10 @@ class SubstitutionEnvironment:
             except KeyError:
                 orig = value
             else:
-                if len(orig) == 0: orig = []
-                elif not SCons.Util.is_List(orig): orig = [orig]
+                if not orig:
+                    orig = []
+                elif not SCons.Util.is_List(orig): 
+                    orig = [orig]
                 orig = orig + value
             t = []
             if key[-4:] == 'PATH':
