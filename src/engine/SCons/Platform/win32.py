@@ -134,7 +134,7 @@ def exec_spawn(l, env):
             sys.stderr.write("scons: unknown OSError exception code %d - '%s': %s\n" % (e[0], command, e[1]))
     return result
 
-cmd_chars_re = re.compile('[|<>%;&]')
+cmd_chars_re = re.compile('[|<>%&]')
 
 def spawn(sh, escape, cmd, args, env):
     if not sh:
