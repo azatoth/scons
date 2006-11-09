@@ -43,7 +43,13 @@ import SCons.Node.FS
 import SCons.Util
 
 warning_rerun_re = re.compile("^LaTeX Warning:.*Rerun", re.MULTILINE)
-undefined_references_re = re.compile("^LaTeX Warning:.*undefined references", re.MULTILINE)
+
+rerun_citations_str = "^LaTeX Warning:.*\n.*Rerun to get citations correct"
+rerun_citations_re = re.compile(rerun_citations_str, re.MULTILINE)
+
+undefined_references_str = "^LaTeX Warning:.*undefined references"
+undefined_references_re = re.compile(undefined_references_str, re.MULTILINE)
+
 openout_aux_re = re.compile(r"\\openout.*`(.*\.aux)'")
 
 # An Action sufficient to build any generic tex file.
@@ -104,6 +110,7 @@ def InternalLaTeXAuxAction(XXXLaTeXAction, target = None, source= None, env=None
             break
         content = open(logfilename, "rb").read()
         if not warning_rerun_re.search(content) and \
+           not rerun_citations_re.search(content) and \
            not undefined_references_re.search(content):
             break
         XXXLaTeXAction(target, source, env)

@@ -16,6 +16,11 @@ RELEASE 0.97 - XXX
     lines directly via os.spawnv() if the command line doesn't need
     shell interpretation (has no pipes, redirection, etc.).
 
+  From Dmitry Mikhin:
+
+  - Return LaTeX if "Rerun to get citations correct" shows up on the next
+    line after the "Warning:" string.
+
   From John Pye:
 
   - Fix env.MergeFlags() appending to construction variable value of None.
