@@ -34,7 +34,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
-import re
 import string
 import sys
 import tempfile
@@ -134,22 +133,11 @@ def exec_spawn(l, env):
             sys.stderr.write("scons: unknown OSError exception code %d - '%s': %s\n" % (e[0], command, e[1]))
     return result
 
-cmd_chars_re = re.compile('[|<>%&]')
-
 def spawn(sh, escape, cmd, args, env):
     if not sh:
         sys.stderr.write("scons: Could not find command interpreter, is it in your PATH?\n")
         return 127
-    line = string.join(args)
-    if not cmd_chars_re.search(line):
-        # There are no characters that require interpretation by cmd,
-        # so try to execute the command directly (if we find it).
-        path = env.get('PATH', '')
-        pathext = env.get('PATHEXT', '')
-        command = SCons.Util.WhereIs(args[0], path, pathext)
-        if command:
-            return exec_spawn([escape(command)] + args[1:], env)
-    return exec_spawn([sh, '/C', escape(line)], env)
+    return exec_spawn([sh, '/C', escape(string.join(args))], env)
 
 # Windows does not allow special characters in file names anyway, so no
 # need for a complex escape function, we will just quote the arg, except
