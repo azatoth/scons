@@ -166,6 +166,8 @@ import whichdb
 import SCons.SConsign
 
 def my_whichdb(filename):
+    if filename[-7:] == ".dblite":
+        return "SCons.dblite"
     try:
         f = open(filename + ".dblite", "rb")
         f.close()

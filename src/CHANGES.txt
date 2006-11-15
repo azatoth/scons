@@ -10,6 +10,12 @@
 
 RELEASE 0.97 - XXX
 
+  From Mark Brown:
+
+  - Fix the "sconsign" script when the .sconsign.dblite file is explicitly
+    specified on the command line (and not intuited from the old way of
+    calling it with just ".sconsign").
+
   From Jay Kint:
 
   - Alleviate long command line issues on Windows by executing command

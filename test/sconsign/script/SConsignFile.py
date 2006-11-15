@@ -25,23 +25,18 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that the sconsign script works when using an individual
-.sconsign file in each directory (SConsignFile(None)).
+Verify that the sconsign script works with files generated when
+using the signatures in an SConsignFile().
 """
 
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
-def re_sep(*args):
-    import os.path
-    import re
-    return re.escape(apply(os.path.join, args))
-
 test.subdir('sub1', 'sub2')
 
-test.write(['SConstruct'], """
-SConsignFile(None)
+test.write(['SConstruct'], """\
+SConsignFile()
 env1 = Environment(PROGSUFFIX = '.exe', OBJSUFFIX = '.obj')
 env1.Program('sub1/hello.c')
 env2 = env1.Clone(CPPPATH = ['sub2'])
@@ -84,24 +79,41 @@ test.write(['sub2', 'inc2.h'], r"""\
 
 test.run(arguments = '--implicit-cache .')
 
-test.run_sconsign(arguments = "sub1/.sconsign",
+test.run_sconsign(arguments = ".sconsign",
          stdout = """\
+=== sub1:
 hello.exe: \S+ None \d+ \d+
         hello.obj: \S+
 hello.obj: \S+ None \d+ \d+
         hello.c: \S+
+=== sub2:
+hello.exe: \S+ None \d+ \d+
+        hello.obj: \S+
+hello.obj: \S+ None \d+ \d+
+        hello.c: \S+
+        inc1.h: \S+
+        inc2.h: \S+
 """)
 
-test.run_sconsign(arguments = "--raw sub1/.sconsign",
+test.run_sconsign(arguments = "--raw .sconsign",
          stdout = """\
+=== sub1:
 hello.exe: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
         hello.obj: \S+
 hello.obj: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
         hello.c: \S+
+=== sub2:
+hello.exe: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
+        hello.obj: \S+
+hello.obj: {'bsig': '\S+', 'size': \d+L?, 'timestamp': \d+}
+        hello.c: \S+
+        inc1.h: \S+
+        inc2.h: \S+
 """)
 
-test.run_sconsign(arguments = "-v sub1/.sconsign",
+test.run_sconsign(arguments = "-v .sconsign",
          stdout = """\
+=== sub1:
 hello.exe:
     bsig: \S+
     csig: None
@@ -116,62 +128,107 @@ hello.obj:
     size: \d+
     implicit:
         hello.c: \S+
+=== sub2:
+hello.exe:
+    bsig: \S+
+    csig: None
+    timestamp: \d+
+    size: \d+
+    implicit:
+        hello.obj: \S+
+hello.obj:
+    bsig: \S+
+    csig: None
+    timestamp: \d+
+    size: \d+
+    implicit:
+        hello.c: \S+
+        inc1.h: \S+
+        inc2.h: \S+
 """)
 
-test.run_sconsign(arguments = "-b -v sub1/.sconsign",
+test.run_sconsign(arguments = "-b -v .sconsign",
          stdout = """\
+=== sub1:
+hello.exe:
+    bsig: \S+
+hello.obj:
+    bsig: \S+
+=== sub2:
 hello.exe:
     bsig: \S+
 hello.obj:
     bsig: \S+
 """)
 
-test.run_sconsign(arguments = "-c -v sub1/.sconsign",
+test.run_sconsign(arguments = "-c -v .sconsign",
          stdout = """\
+=== sub1:
+hello.exe:
+    csig: None
+hello.obj:
+    csig: None
+=== sub2:
 hello.exe:
     csig: None
 hello.obj:
     csig: None
 """)
 
-test.run_sconsign(arguments = "-s -v sub1/.sconsign",
+test.run_sconsign(arguments = "-s -v .sconsign",
          stdout = """\
+=== sub1:
+hello.exe:
+    size: \d+
+hello.obj:
+    size: \d+
+=== sub2:
 hello.exe:
     size: \d+
 hello.obj:
     size: \d+
 """)
 
-test.run_sconsign(arguments = "-t -v sub1/.sconsign",
+test.run_sconsign(arguments = "-t -v .sconsign",
          stdout = """\
+=== sub1:
+hello.exe:
+    timestamp: \d+
+hello.obj:
+    timestamp: \d+
+=== sub2:
 hello.exe:
     timestamp: \d+
 hello.obj:
     timestamp: \d+
 """)
 
-test.run_sconsign(arguments = "-e hello.obj sub1/.sconsign",
+test.run_sconsign(arguments = "-e hello.obj .sconsign",
          stdout = """\
+=== sub1:
 hello.obj: \S+ None \d+ \d+
         hello.c: \S+
+=== sub2:
+hello.obj: \S+ None \d+ \d+
+        hello.c: \S+
+        inc1.h: \S+
+        inc2.h: \S+
 """)
 
-test.run_sconsign(arguments = "-e hello.obj -e hello.exe -e hello.obj sub1/.sconsign",
+test.run_sconsign(arguments = "-e hello.obj -e hello.exe -e hello.obj .sconsign",
          stdout = """\
+=== sub1:
 hello.obj: \S+ None \d+ \d+
         hello.c: \S+
 hello.exe: \S+ None \d+ \d+
         hello.obj: \S+
 hello.obj: \S+ None \d+ \d+
         hello.c: \S+
-""")
-
-# XXX NOT SURE IF THIS IS RIGHT!
-sub2_inc1_h = re_sep('sub2', 'inc1.h')
-sub2_inc2_h = re_sep('sub2', 'inc2.h')
-
-test.run_sconsign(arguments = "sub2/.sconsign",
-         stdout = """\
+=== sub2:
+hello.obj: \S+ None \d+ \d+
+        hello.c: \S+
+        inc1.h: \S+
+        inc2.h: \S+
 hello.exe: \S+ None \d+ \d+
         hello.obj: \S+
 hello.obj: \S+ None \d+ \d+
@@ -180,26 +237,24 @@ hello.obj: \S+ None \d+ \d+
         inc2.h: \S+
 """)
 
-#test.run_sconsign(arguments = "-i -v sub2/.sconsign",
+#test.run_sconsign(arguments = "-i -v .sconsign",
 #         stdout = """\
+#=== sub1:
 #hello.exe:
 #    implicit:
-#        hello.obj: \S+ None \d+ \d+
+#        hello.obj: \S+
 #hello.obj:
 #    implicit:
-#        hello.c: None \S+ \d+ \d+
-#        inc1.h: None \S+ \d+ \d+
-#        inc2.h: None \S+ \d+ \d+
+#        hello.c: \S+
+#=== sub2:
+#hello.exe:
+#    implicit:
+#        hello.obj: \S+
+#hello.obj:
+#    implicit:
+#        hello.c: \S+
+#        inc1.h: \S+
+#        inc2.h: \S+
 #""")
-
-test.run_sconsign(arguments = "-e hello.obj sub2/.sconsign sub1/.sconsign",
-         stdout = """\
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-        inc1.h: \S+
-        inc2.h: \S+
-hello.obj: \S+ None \d+ \d+
-        hello.c: \S+
-""")
 
 test.pass_test()
