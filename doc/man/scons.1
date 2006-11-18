@@ -4925,7 +4925,7 @@ The recommended way to handle an invalid value is
 to raise an exception (see example below).
 .I converter
 is called to convert the value before putting it in the environment, and
-should take a single argument: value.
+should take either a value, or the value and environment, as parameters.
 The
 .I converter
 must return a value,

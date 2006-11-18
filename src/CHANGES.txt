@@ -31,6 +31,11 @@ RELEASE 0.97 - XXX
 
   - Fix env.MergeFlags() appending to construction variable value of None.
 
+  From Jonathan Ultis:
+
+  - Allow Options converters to take the construction environment as
+    an optional argument.
+
 
 
 RELEASE 0.96.93 - Mon, 06 Nov 2006 00:44:11 -0600
