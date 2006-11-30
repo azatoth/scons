@@ -1334,26 +1334,33 @@ class Dir(Base):
     def rel_path(self, other):
         """Return a path to "other" relative to this directory.
         __cacheable__"""
-        if isinstance(other, Dir):
-            name = []
-        else:
-            try:
-                name = [other.name]
-                other = other.dir
-            except AttributeError:
-                return str(other)
         if self is other:
-            return name and name[0] or '.'
-        i = 0
-        for x, y in map(None, self.path_elements, other.path_elements):
-            if not x is y:
-                break
-            i = i + 1
-        path_elems = ['..']*(len(self.path_elements)-i) \
-                   + map(lambda n: n.name, other.path_elements[i:]) \
-                   + name
+
+            result = '.'
+
+        elif not other in self.path_elements:
+
+            try:
+                other_dir = other.dir
+            except AttributeError:
+                result = str(other)
+            else:
+                dir_rel_path = self.rel_path(other_dir)
+                if dir_rel_path == '.':
+                    result = other.name
+                else:
+                    result = dir_rel_path + os.sep + other.name
+
+        else:
+
+            i = self.path_elements.index(other) + 1
+
+            path_elems = ['..'] * (len(self.path_elements) - i) \
+                         + map(lambda n: n.name, other.path_elements[i:])
              
-        return string.join(path_elems, os.sep)
+            result = string.join(path_elems, os.sep)
+
+        return result
 
     def get_env_scanner(self, env, kw={}):
         return SCons.Defaults.DirEntryScanner
