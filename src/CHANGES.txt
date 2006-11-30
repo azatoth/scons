@@ -18,8 +18,11 @@ RELEASE 0.97 - XXX
 
   From Steven Knight:
 
-  - Speed up the rel_path() method used to generate path names that
-    get put into the .sconsign* file(s).
+  - Speed up the Node.FS.Dir.rel_path() method used to generate path names
+    that get put into the .sconsign* file(s).
+
+  - Optimize Node.FS.Base.get_suffix() by computing the suffix once, up
+    front, when we set the Node's name.  (Duh...)
 
   From Dmitry Mikhin:
 

@@ -531,6 +531,7 @@ class Base(SCons.Node.Node):
         SCons.Node.Node.__init__(self)
 
         self.name = name
+        self.suffix = SCons.Util.splitext(name)[1]
         self.fs = fs
 
         assert directory, "A directory must be provided"
@@ -562,8 +563,7 @@ class Base(SCons.Node.Node):
         return self.dir
 
     def get_suffix(self):
-        "__cacheable__"
-        return SCons.Util.splitext(self.name)[1]
+        return self.suffix
 
     def rfile(self):
         return self
