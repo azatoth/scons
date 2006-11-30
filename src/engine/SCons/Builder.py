@@ -367,9 +367,6 @@ class BuilderBase:
     nodes (files) from input nodes (files).
     """
 
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
-
     def __init__(self,  action = None,
                         prefix = '',
                         suffix = '',
@@ -637,7 +634,6 @@ class BuilderBase:
         return env.subst(suffix)
 
     def src_suffixes(self, env):
-        "__cacheable__"
         return map(lambda x, s=self, e=env: e.subst(x), self.src_suffix)
 
     def set_src_suffix(self, src_suffix):
@@ -673,13 +669,7 @@ class BuilderBase:
         """
         self.emitter[suffix] = emitter
 
-if SCons.Memoize.use_old_memoization():
-    _Base = BuilderBase
-    class BuilderBase(SCons.Memoize.Memoizer, _Base):
-        "Cache-backed version of BuilderBase"
-        def __init__(self, *args, **kw):
-            apply(_Base.__init__, (self,)+args, kw)
-            SCons.Memoize.Memoizer.__init__(self)
+
 
 class ListBuilder(SCons.Util.Proxy):
     """A Proxy to support building an array of targets (for example,
@@ -739,7 +729,6 @@ class MultiStepBuilder(BuilderBase):
         self.src_builder = src_builder
 
     def _get_sdict(self, env):
-        "__cacheable__"
         sdict = {}
         for bld in self.src_builder:
             if SCons.Util.is_String(bld):
@@ -813,7 +802,6 @@ class MultiStepBuilder(BuilderBase):
     def src_suffixes(self, env):
         """Return a list of the src_suffix attributes for all
         src_builders of this Builder.
-        __cacheable__
         """
         suffixes = BuilderBase.src_suffixes(self, env)
         for builder in self.get_src_builders(env):

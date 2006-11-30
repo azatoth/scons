@@ -97,9 +97,6 @@ class Base:
     straightforward, single-pass scanning of a single file.
     """
 
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
-
     def __init__(self,
                  function,
                  name = "NONE",
@@ -257,14 +254,6 @@ class Base:
 
     recurse_nodes = _recurse_no_nodes
 
-if SCons.Memoize.use_old_memoization():
-    _Base = Base
-    class Base(SCons.Memoize.Memoizer, _Base):
-        "Cache-backed version of Scanner Base"
-        def __init__(self, *args, **kw):
-            apply(_Base.__init__, (self,)+args, kw)
-            SCons.Memoize.Memoizer.__init__(self)
-
 
 class Selector(Base):
     """
@@ -333,7 +322,6 @@ class Classic(Current):
         apply(Current.__init__, (self,) + args, kw)
 
     def find_include(self, include, source_dir, path):
-        "__cacheable__"
         if callable(path): path = path()
         n = SCons.Node.FS.find_file(include, (source_dir,) + tuple(path))
         return n, include
@@ -342,7 +330,6 @@ class Classic(Current):
         return SCons.Node.FS._my_normcase(include)
 
     def scan(self, node, path=()):
-        "__cacheable__"
 
         # cache the includes list in node so we only scan it once:
         if node.includes != None:
@@ -384,7 +371,6 @@ class ClassicCPP(Classic):
     the contained filename in group 1.
     """
     def find_include(self, include, source_dir, path):
-        "__cacheable__"
         if callable(path):
             path = path()   #kwq: extend callable to find_file...
 

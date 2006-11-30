@@ -31,7 +31,7 @@
 .fi
 .RE
 ..
-.TH SCONS 1 "December 2005"
+.TH SCONS 1 "December 2006"
 .SH NAME
 scons \- a software construction tool
 .SH SYNOPSIS
@@ -602,10 +602,11 @@ $ scons --debug=includes foo.o
 
 .TP
 --debug=memoizer
-Prints a summary of hits and misses in the Memoizer,
-the internal SCons subsystem for caching
-various values in memory instead of
-recomputing them each time they're needed.
+Prints a summary of hits and misses using the Memoizer,
+an internal subsystem that counts
+how often SCons uses cached values in memory
+instead of recomputing them each time they're needed.
+Only available when using Python 2.2 or later.
 
 .TP
 --debug=memory
@@ -615,19 +616,7 @@ and before and after building targets.
 
 .TP
 --debug=nomemoizer
-Disables use of the Memoizer,
-the internal SCons subsystem for caching
-various values in memory instead of
-recomputing them each time they're needed.
-This provides more accurate counts of the
-underlying function calls in the 
-Python profiler output when using the
-.RI --profile=
-option.
-(When the Memoizer is used,
-the profiler counts all
-memoized functions as being executed
-by the Memoizer's wrapper calls.)
+A deprecated option preserved for backwards compatibility.
 
 .TP
 --debug=objects

@@ -473,10 +473,11 @@ class ClassicTestCase(unittest.TestCase):
         ret = s.function(n, env, ('foo3',))
         assert ret == ['def'], ret
 
-        # Verify that overall scan results are cached even if individual
-        # results are de-cached
-        ret = s.function(n, env, ('foo2',))
-        assert ret == ['abc'], 'caching inactive; got: %s'%ret
+        # We no longer cache overall scan results, which would be returned
+        # if individual results are de-cached.  If we ever restore that
+        # functionality, this test goes back here.
+        #ret = s.function(n, env, ('foo2',))
+        #assert ret == ['abc'], 'caching inactive; got: %s'%ret
 
         # Verify that it sorts what it finds.
         n.includes = ['xyz', 'uvw']

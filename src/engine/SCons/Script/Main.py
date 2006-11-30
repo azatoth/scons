@@ -309,6 +309,7 @@ command_time = 0
 exit_status = 0 # exit status, assume success by default
 repositories = []
 num_jobs = 1 # this is modifed by SConscript.SetJobs()
+delayed_warnings = []
 
 diskcheck_all = SCons.Node.FS.diskcheck_types()
 diskcheck_option_set = None
@@ -671,12 +672,13 @@ class OptParser(OptionParser):
                              "build all Default() targets.")
 
         debug_options = ["count", "dtree", "explain", "findlibs",
-                         "includes", "memoizer", "memory",
-                         "nomemoizer", "objects",
+                         "includes", "memoizer", "memory", "objects",
                          "pdb", "presub", "stacktrace", "stree",
                          "time", "tree"]
 
-        def opt_debug(option, opt, value, parser, debug_options=debug_options):
+        deprecated_debug_options = [ "nomemoizer", ]
+
+        def opt_debug(option, opt, value, parser, debug_options=debug_options, deprecated_debug_options=deprecated_debug_options):
             if value in debug_options:
                 try:
                     if parser.values.debug is None:
@@ -684,6 +686,9 @@ class OptParser(OptionParser):
                 except AttributeError:
                     parser.values.debug = []
                 parser.values.debug.append(value)
+            elif value in deprecated_debug_options:
+                w = "The --debug=%s option is deprecated and has no effect." % value
+                delayed_warnings.append((SCons.Warnings.DeprecatedWarning, w))
             else:
                 raise OptionValueError("Warning:  %s is not a valid debug type" % value)
         self.add_option('--debug', action="callback", type="string",
@@ -954,6 +959,7 @@ def _main(args, parser):
                          SCons.Warnings.DeprecatedWarning,
                          SCons.Warnings.DuplicateEnvironmentWarning,
                          SCons.Warnings.MissingSConscriptWarning,
+                         SCons.Warnings.NoMetaclassSupportWarning,
                          SCons.Warnings.NoParallelSupportWarning,
                          SCons.Warnings.MisleadingKeywordsWarning, ]
     for warning in default_warnings:
@@ -961,6 +967,9 @@ def _main(args, parser):
     SCons.Warnings._warningOut = _scons_internal_warning
     if options.warn:
         _setup_warn(options.warn)
+
+    for warning_type, message in delayed_warnings:
+        SCons.Warnings.warn(warning_type, message)
 
     # Next, we want to create the FS object that represents the outside
     # world's file system, as that's central to a lot of initialization.
@@ -1353,8 +1362,7 @@ def main():
         #SCons.Debug.dumpLoggedInstances('*')
 
     if print_memoizer:
-        print "Memoizer (memory cache) hits and misses:"
-        SCons.Memoize.Dump()
+        SCons.Memoize.Dump("Memoizer (memory cache) hits and misses:")
 
     # Dump any development debug info that may have been enabled.
     # These are purely for internal debugging during development, so

@@ -78,7 +78,6 @@ class F90Scanner(SCons.Scanner.Classic):
         apply(SCons.Scanner.Current.__init__, (self,) + args, kw)
 
     def scan(self, node, env, path=()):
-        "__cacheable__"
 
         # cache the includes list in node so we only scan it once:
         if node.includes != None:

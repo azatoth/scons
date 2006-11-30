@@ -183,6 +183,7 @@ def _SConscript(fs, *files, **kw):
                     # the builder so that it doesn't get built *again*
                     # during the actual build phase.
                     f.build()
+                    f.built()
                     f.builder_set(None)
                     if f.exists():
                         _file_ = open(f.get_abspath(), "r")

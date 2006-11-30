@@ -24,6 +24,12 @@ RELEASE 0.97 - XXX
   - Optimize Node.FS.Base.get_suffix() by computing the suffix once, up
     front, when we set the Node's name.  (Duh...)
 
+  - Reduce the Memoizer's responsibilities to simply counting hits and
+    misses when the --debug=memoizer option is used, not to actually
+    handling the key calculation and memoization itself.  This speeds
+    up some configurations significantly, and should cause no functional
+    differences.
+
   From Dmitry Mikhin:
 
   - Return LaTeX if "Rerun to get citations correct" shows up on the next
