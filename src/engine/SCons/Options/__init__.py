@@ -164,9 +164,9 @@ class Options:
                 value = env.subst('${%s}'%option.key)
                 try:
                     try:
-                        env[option.key] = option.converter(value, env)
-                    except TypeError:
                         env[option.key] = option.converter(value)
+                    except TypeError:
+                        env[option.key] = option.converter(value, env)
                 except ValueError, x:
                     raise SCons.Errors.UserError, 'Error converting option: %s\n%s'%(option.key, x)
 
