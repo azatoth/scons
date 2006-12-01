@@ -32,6 +32,11 @@ import TestSCons_time
 
 test = TestSCons_time.TestSCons_time()
 
+try:
+    import pstats
+except ImportError:
+    test.skip_test('No pstats module, skipping test.\n')
+
 content = """\
 def _main():
     pass

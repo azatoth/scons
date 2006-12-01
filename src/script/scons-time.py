@@ -35,7 +35,6 @@ import getopt
 import glob
 import os
 import re
-import pstats
 import shutil
 import string
 import sys
@@ -592,6 +591,13 @@ class SConsTimer:
         """
         Returns the file, line number, function name, and cumulative time.
         """
+        try:
+            import pstats
+        except ImportError, e:
+            sys.stderr.write('%s: func: %s\n' % (self.name, e))
+            sys.stderr.write('%s  This version of Python is missing the profiler.\n' % self.name_spaces)
+            sys.stderr.write('%s  Cannot use the "func" subcommand.\n' % self.name_spaces)
+            sys.exit(1)
         statistics = pstats.Stats(file).stats
         matches = [ e for e in statistics.items() if e[0][2] == function ]
         r = matches[0]

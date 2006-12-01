@@ -35,6 +35,11 @@ import TestSCons_time
 
 test = TestSCons_time.TestSCons_time(match = TestSCons_time.match_re)
 
+try:
+    import pstats
+except ImportError:
+    test.skip_test('No pstats module, skipping test.\n')
+
 test.subdir('profs')
 
 input = """\
