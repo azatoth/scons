@@ -997,10 +997,10 @@ class FS(LocalFS):
 
         if not path_orig:
             try:
-                md = self._memo['_do_Lookup']
+                md = self._memo['_doLookup']
             except KeyError:
                 md = {}
-                self._memo['_do_Lookup'] = md
+                self._memo['_doLookup'] = md
             md[memo_key] = directory
             return directory
 
@@ -1054,10 +1054,10 @@ class FS(LocalFS):
             result = self.__checkClass(e, fsclass)
 
         try:
-            md = self._memo['_do_Lookup']
+            md = self._memo['_doLookup']
         except KeyError:
             md = {}
-            self._memo['_do_Lookup'] = md
+            self._memo['_doLookup'] = md
         md[memo_key] = result
 
         return result 

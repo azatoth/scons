@@ -35,6 +35,10 @@ RELEASE 0.97 - XXX
     various information from those timings, and displaying them in
     different formats.
 
+  From Ben Leslie:
+
+  - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().
+
   From Dmitry Mikhin:
 
   - Return LaTeX if "Rerun to get citations correct" shows up on the next
