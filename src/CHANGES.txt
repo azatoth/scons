@@ -16,6 +16,10 @@ RELEASE 0.97 - XXX
     lines directly via os.spawnv() if the command line doesn't need
     shell interpretation (has no pipes, redirection, etc.).
 
+  From Walter Franzini:
+
+  - Exclude additional Debian packaging files from the copyright check.
+
   From Steven Knight:
 
   - Speed up the Node.FS.Dir.rel_path() method used to generate path names
