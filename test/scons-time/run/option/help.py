@@ -1,7 +1,4 @@
-#
-# SConscript file for external packages we need.
-#
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -25,35 +22,38 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os.path
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-Import('env')
+"""
+Verify that the run -h option (and variants) prints help.
+"""
 
-files = [
-    'classes.qmc',
-    'configuration',
-    'scons_tdb.py',
-    'TestCmd.py',
-    'TestCommon.py',
-    'TestRuntest.py',
-    'TestSCons.py',
-    'TestSConsign.py',
-    'TestSCons_time.py',
-    'unittest.py',
+import TestSCons_time
+
+test = TestSCons_time.TestSCons_time()
+
+expect = [
+    "Usage: scons-time run [OPTIONS] [FILE ...]\n",
+    "  -h, --help                    Print this help and exit\n",
+    "  -n, --no-exec                 No execute, just print command lines\n",
+    "  -q, --quiet                   Don't print command lines\n",
+    "  -v, --verbose                 Display output of commands\n",
 ]
 
-def copy(target, source, env):
-    t = str(target[0])
-    s = str(source[0])
-    open(t, 'wb').write(open(s, 'rb').read())
+test.run(arguments = 'run -h')
 
-for file in files:
-    # Guarantee that real copies of these files always exist in
-    # build/QMTest.  If there's a symlink there, then this is an Aegis
-    # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', 'QMTest', file)
-    if os.path.islink(p):
-        os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
-    Local(sp)
+test.must_contain_all_lines('Standard output', test.stdout(), expect)
+
+test.run(arguments = 'run -?')
+
+test.must_contain_all_lines('Standard output', test.stdout(), expect)
+
+test.run(arguments = 'run --help')
+
+test.must_contain_all_lines('Standard output', test.stdout(), expect)
+
+test.run(arguments = 'help run')
+
+test.must_contain_all_lines('Standard output', test.stdout(), expect)
+
+test.pass_test()

@@ -1,7 +1,4 @@
-#
-# SConscript file for external packages we need.
-#
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -25,35 +22,32 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os.path
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-Import('env')
+"""
+Verify use of the --func and --function options to select functions
+other than the default _main().
+"""
 
-files = [
-    'classes.qmc',
-    'configuration',
-    'scons_tdb.py',
-    'TestCmd.py',
-    'TestCommon.py',
-    'TestRuntest.py',
-    'TestSCons.py',
-    'TestSConsign.py',
-    'TestSCons_time.py',
-    'unittest.py',
-]
+import TestSCons_time
 
-def copy(target, source, env):
-    t = str(target[0])
-    s = str(source[0])
-    open(t, 'wb').write(open(s, 'rb').read())
+test = TestSCons_time.TestSCons_time(match = TestSCons_time.match_re)
 
-for file in files:
-    # Guarantee that real copies of these files always exist in
-    # build/QMTest.  If there's a symlink there, then this is an Aegis
-    # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', 'QMTest', file)
-    if os.path.islink(p):
-        os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
-    Local(sp)
+test.profile_data('foo.prof', 'prof.py', '_main', """\
+def f1():
+    pass
+def f3():
+    pass
+def _main():
+    f1()
+    f3()
+""")
+
+expect1 = r'\d.\d\d\d prof\.py:1\(f1\)' + '\n'
+expect3 = r'\d.\d\d\d prof\.py:3\(f3\)' + '\n'
+
+test.run(arguments = 'func --func f1 foo.prof', stdout = expect1)
+
+test.run(arguments = 'func --function f3 foo.prof', stdout = expect3)
+
+test.pass_test()

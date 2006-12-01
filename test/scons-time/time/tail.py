@@ -1,7 +1,4 @@
-#
-# SConscript file for external packages we need.
-#
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -25,35 +22,34 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os.path
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-Import('env')
+"""
+Verify that the time subcommand only prints results for the last number
+of files specified with the -t and --tail options.
+"""
 
-files = [
-    'classes.qmc',
-    'configuration',
-    'scons_tdb.py',
-    'TestCmd.py',
-    'TestCommon.py',
-    'TestRuntest.py',
-    'TestSCons.py',
-    'TestSConsign.py',
-    'TestSCons_time.py',
-    'unittest.py',
-]
+import TestSCons_time
 
-def copy(target, source, env):
-    t = str(target[0])
-    s = str(source[0])
-    open(t, 'wb').write(open(s, 'rb').read())
+test = TestSCons_time.TestSCons_time()
 
-for file in files:
-    # Guarantee that real copies of these files always exist in
-    # build/QMTest.  If there's a symlink there, then this is an Aegis
-    # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', 'QMTest', file)
-    if os.path.islink(p):
-        os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
-    Local(sp)
+
+header = '       Total  SConscripts        SCons     commands\n'
+
+lines = []
+
+line_fmt = '   11.123456    22.234567    33.345678    44.456789    %s\n'
+
+for i in xrange(9):
+    logfile_name = 'foo-%s.log' % i
+    test.fake_logfile(logfile_name)
+    lines.append(line_fmt % logfile_name)
+
+expect3 = [header] + lines[-3:]
+expect5 = [header] + lines[-5:]
+
+test.run(arguments = 'time -t 3 foo-*.log', stdout = ''.join(expect3))
+
+test.run(arguments = 'time --tail 5 foo-*.log', stdout = ''.join(expect5))
+
+test.pass_test()

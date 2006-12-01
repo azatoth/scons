@@ -453,6 +453,7 @@ scons_script = {
                             'LICENSE.txt'       : '../LICENSE.txt',
                             'scons'             : 'scons.py',
                             'sconsign'          : 'sconsign.py',
+                            'scons-time'        : 'scons-time.py',
                            },
 
         'buildermap'    : {},
@@ -460,6 +461,7 @@ scons_script = {
         'extra_rpm_files' : [
                             'scons-' + version,
                             'sconsign-' + version,
+                            'scons-time-' + version,
                           ],
 
         'explicit_deps' : {
@@ -490,6 +492,7 @@ scons = {
                             'os_spawnv_fix.diff',
                             'scons.1',
                             'sconsign.1',
+                            'scons-time.1',
                             'script/scons.bat',
                             'setup.cfg',
                             'setup.py',
@@ -498,11 +501,13 @@ scons = {
         'filemap'       : {
                             'scons.1' : '../build/doc/man/scons.1',
                             'sconsign.1' : '../build/doc/man/sconsign.1',
+                            'scons-time.1' : '../build/doc/man/scons-time.1',
                           },
 
         'buildermap'    : {
                             'scons.1' : env.SOElim,
                             'sconsign.1' : env.SOElim,
+                            'scons-time.1' : env.SOElim,
                           },
 
         'subpkgs'       : [ python_scons, scons_script ],

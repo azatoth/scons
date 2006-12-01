@@ -1,7 +1,4 @@
-#
-# SConscript file for external packages we need.
-#
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -25,35 +22,27 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os.path
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-Import('env')
+"""
+Verify the run --number option specifies the run number.
+"""
 
-files = [
-    'classes.qmc',
-    'configuration',
-    'scons_tdb.py',
-    'TestCmd.py',
-    'TestCommon.py',
-    'TestRuntest.py',
-    'TestSCons.py',
-    'TestSConsign.py',
-    'TestSCons_time.py',
-    'unittest.py',
-]
+import TestSCons_time
 
-def copy(target, source, env):
-    t = str(target[0])
-    s = str(source[0])
-    open(t, 'wb').write(open(s, 'rb').read())
+test = TestSCons_time.TestSCons_time()
 
-for file in files:
-    # Guarantee that real copies of these files always exist in
-    # build/QMTest.  If there's a symlink there, then this is an Aegis
-    # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', 'QMTest', file)
-    if os.path.islink(p):
-        os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
-    Local(sp)
+test.write_fake_scons_py()
+
+test.write_sample_project('foo.tar.gz')
+
+test.run(arguments = 'run --number 77 foo.tar.gz')
+
+test.must_exist('foo-077-0.log',
+                'foo-077-0.prof',
+                'foo-077-1.log',
+                'foo-077-1.prof',
+                'foo-077-2.log',
+                'foo-077-2.prof')
+
+test.pass_test()

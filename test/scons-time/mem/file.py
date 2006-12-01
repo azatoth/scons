@@ -1,7 +1,4 @@
-#
-# SConscript file for external packages we need.
-#
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -25,35 +22,50 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os.path
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-Import('env')
+"""
+Verify that config files specified with the -f and --file options
+affect how the mem subcommand processes things.
+"""
 
-files = [
-    'classes.qmc',
-    'configuration',
-    'scons_tdb.py',
-    'TestCmd.py',
-    'TestCommon.py',
-    'TestRuntest.py',
-    'TestSCons.py',
-    'TestSConsign.py',
-    'TestSCons_time.py',
-    'unittest.py',
-]
+import TestSCons_time
 
-def copy(target, source, env):
-    t = str(target[0])
-    s = str(source[0])
-    open(t, 'wb').write(open(s, 'rb').read())
+test = TestSCons_time.TestSCons_time()
 
-for file in files:
-    # Guarantee that real copies of these files always exist in
-    # build/QMTest.  If there's a symlink there, then this is an Aegis
-    # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', 'QMTest', file)
-    if os.path.islink(p):
-        os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
-    Local(sp)
+test.fake_logfile('foo-001-0.log')
+
+test.fake_logfile('foo-002-0.log')
+
+
+test.write('st1.conf', """\
+prefix = 'foo-001'
+""")
+
+expect1 = """\
+    pre-read    post-read    pre-build   post-build
+        1000         2000         3000         4000    foo-001-0.log
+"""
+
+test.run(arguments = 'mem -f st1.conf', stdout = expect1)
+
+
+test.write('st2.conf', """\
+prefix = 'foo'
+title = 'ST2.CONF TITLE'
+""")
+
+expect2 = \
+r"""set title "ST2.CONF TITLE"
+set key bottom left
+plot '-' title "Startup" with lines lt 1
+# Startup
+1 4000.000
+2 4000.000
+e
+"""
+
+test.run(arguments = 'mem --file st2.conf --fmt gnuplot', stdout = expect2)
+
+
+test.pass_test()

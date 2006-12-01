@@ -30,6 +30,11 @@ RELEASE 0.97 - XXX
     up some configurations significantly, and should cause no functional
     differences.
 
+  - Add a new scons-time script with subcommands for generating
+    consistent timing output from SCons configurations, extracting
+    various information from those timings, and displaying them in
+    different formats.
+
   From Dmitry Mikhin:
 
   - Return LaTeX if "Rerun to get citations correct" shows up on the next

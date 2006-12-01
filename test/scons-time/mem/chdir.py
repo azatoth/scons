@@ -1,7 +1,4 @@
-#
-# SConscript file for external packages we need.
-#
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -25,35 +22,36 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+"""
+Verify that the mem -C and --chdir options change directory before
+globbing for files.
+"""
+
 import os.path
 
-Import('env')
+import TestSCons_time
 
-files = [
-    'classes.qmc',
-    'configuration',
-    'scons_tdb.py',
-    'TestCmd.py',
-    'TestCommon.py',
-    'TestRuntest.py',
-    'TestSCons.py',
-    'TestSConsign.py',
-    'TestSCons_time.py',
-    'unittest.py',
+test = TestSCons_time.TestSCons_time()
+
+test.subdir('logs')
+
+lines = [
+    '    pre-read    post-read    pre-build   post-build\n'
 ]
 
-def copy(target, source, env):
-    t = str(target[0])
-    s = str(source[0])
-    open(t, 'wb').write(open(s, 'rb').read())
+line_fmt = '        1000         2000         3000         4000    %s\n'
 
-for file in files:
-    # Guarantee that real copies of these files always exist in
-    # build/QMTest.  If there's a symlink there, then this is an Aegis
-    # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', 'QMTest', file)
-    if os.path.islink(p):
-        os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
-    Local(sp)
+for i in xrange(9):
+    logfile_name = os.path.join('logs', 'foo-%s.log' % i)
+    test.fake_logfile(logfile_name)
+    lines.append(line_fmt % logfile_name)
+
+expect = ''.join(lines)
+
+test.run(arguments = 'mem -C logs foo-*.log', stdout = expect)
+
+test.run(arguments = 'mem --chdir logs foo-?.log', stdout = expect)
+
+test.pass_test()

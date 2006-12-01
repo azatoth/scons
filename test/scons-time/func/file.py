@@ -1,7 +1,4 @@
-#
-# SConscript file for external packages we need.
-#
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -25,35 +22,54 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os.path
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-Import('env')
+"""
+Verify that config files specified with the -f and --file options
+affect how the func subcommand processes things.
+"""
 
-files = [
-    'classes.qmc',
-    'configuration',
-    'scons_tdb.py',
-    'TestCmd.py',
-    'TestCommon.py',
-    'TestRuntest.py',
-    'TestSCons.py',
-    'TestSConsign.py',
-    'TestSCons_time.py',
-    'unittest.py',
-]
+import TestSCons_time
 
-def copy(target, source, env):
-    t = str(target[0])
-    s = str(source[0])
-    open(t, 'wb').write(open(s, 'rb').read())
+test = TestSCons_time.TestSCons_time(match = TestSCons_time.match_re)
 
-for file in files:
-    # Guarantee that real copies of these files always exist in
-    # build/QMTest.  If there's a symlink there, then this is an Aegis
-    # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', 'QMTest', file)
-    if os.path.islink(p):
-        os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
-    Local(sp)
+test.profile_data('foo-001-0.prof', 'prof1.py', '_main', """\
+def _main():
+    pass
+""")
+
+test.profile_data('foo-002-0.prof', 'prof2.py', '_main', """\
+# line 1 (intentional comment to adjust starting line numbers)
+def _main():
+    pass
+""")
+
+
+test.write('st1.conf', """\
+prefix = 'foo-001'
+""")
+
+expect1 = r'\d.\d\d\d prof1\.py:1\(_main\)' + '\n'
+
+test.run(arguments = 'func -f st1.conf', stdout = expect1)
+
+
+test.write('st2.conf', """\
+prefix = 'foo'
+title = 'ST2.CONF TITLE'
+""")
+
+expect2 = \
+r"""set title "ST2.CONF TITLE"
+set key bottom left
+plot '-' title "Startup" with lines lt 1
+# Startup
+1 0.000
+2 0.000
+e
+"""
+
+test.run(arguments = 'func --file st2.conf --fmt gnuplot', stdout = expect2)
+
+
+test.pass_test()

@@ -1,7 +1,4 @@
-#
-# SConscript file for external packages we need.
-#
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -25,35 +22,38 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os.path
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-Import('env')
+"""
+Verify that the func -C and --chdir options change directory before
+globbing for files.
+"""
 
-files = [
-    'classes.qmc',
-    'configuration',
-    'scons_tdb.py',
-    'TestCmd.py',
-    'TestCommon.py',
-    'TestRuntest.py',
-    'TestSCons.py',
-    'TestSConsign.py',
-    'TestSCons_time.py',
-    'unittest.py',
-]
+import re
 
-def copy(target, source, env):
-    t = str(target[0])
-    s = str(source[0])
-    open(t, 'wb').write(open(s, 'rb').read())
+import TestSCons_time
 
-for file in files:
-    # Guarantee that real copies of these files always exist in
-    # build/QMTest.  If there's a symlink there, then this is an Aegis
-    # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', 'QMTest', file)
-    if os.path.islink(p):
-        os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
-    Local(sp)
+test = TestSCons_time.TestSCons_time(match = TestSCons_time.match_re)
+
+test.subdir('profs')
+
+input = """\
+def _main():
+    pass
+"""
+
+expect = []
+for i in xrange(9):
+    i = str(i)
+    test.subdir(i)
+    test.profile_data('profs/foo-%s.prof' % i, '%s/prof.py' % i, '_main', input)
+    s = r'\d.\d\d\d %s/prof\.py:1\(_main\)' % re.escape(test.workpath(i))
+    expect.append(s + '\n')
+
+expect = ''.join(expect)
+
+test.run(arguments = 'func -C profs foo-*.prof', stdout = expect)
+
+test.run(arguments = 'func --chdir profs foo-?.prof', stdout = expect)
+
+test.pass_test()
