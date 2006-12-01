@@ -48,6 +48,10 @@ RELEASE 0.97 - XXX
   - Return LaTeX if "Rerun to get citations correct" shows up on the next
     line after the "Warning:" string.
 
+  From Gary Oberbrunner:
+
+  - Add #include lines to fix portability issues in two tests.
+
   From John Pye:
 
   - Fix env.MergeFlags() appending to construction variable value of None.
