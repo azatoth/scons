@@ -4,7 +4,9 @@
 # See the README file for an overview of how SCons is built and tested.
 #
 
-copyright_years = '2001, 2002, 2003, 2004'
+# When this gets changed, you also need to change test/option-v.py
+# so it looks for the right string.
+copyright_years = '2001, 2002, 2003, 2004, 2005, 2006'
 
 #
 # __COPYRIGHT__
