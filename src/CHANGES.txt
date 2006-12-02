@@ -52,6 +52,8 @@ RELEASE 0.97 - XXX
 
   - Add #include lines to fix portability issues in two tests.
 
+  - Eliminate some unnecessary os.path.normpath() calls.
+
   From John Pye:
 
   - Fix env.MergeFlags() appending to construction variable value of None.

@@ -1087,7 +1087,8 @@ class FS(LocalFS):
                 # Correct such that '#/foo' is equivalent
                 # to '#foo'.
                 name = name[1:]
-            name = os.path.join('.', os.path.normpath(name))
+            name = os.path.normpath(os.path.join('.', name))
+            return (name, directory)
         elif not directory:
             directory = self._cwd
         return (os.path.normpath(name), directory)
