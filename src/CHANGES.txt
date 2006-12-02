@@ -10,6 +10,10 @@
 
 RELEASE 0.97 - XXX
 
+  From Anonymous:
+
+  - Allow arbitrary white space after a SWIG %module declaration.
+
   From Jay Kint:
 
   - Alleviate long command line issues on Windows by executing command
