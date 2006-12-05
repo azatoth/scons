@@ -711,9 +711,48 @@ class Base(SCons.Node.Node):
     def target_from_source(self, prefix, suffix, splitext=SCons.Util.splitext):
         return self.dir.Entry(prefix + splitext(self.name)[0] + suffix)
 
+    def _Rfindalldirs_key(self, pathlist):
+        return pathlist
+
+    memoizer_counters.append(SCons.Memoize.CountDict('Rfindalldirs', _Rfindalldirs_key))
+
+    def Rfindalldirs(self, pathlist):
+        """
+        Return all of the directories for a given path list, including
+        corresponding "backing" directories in any repositories.
+
+        The Node lookups are relative to this Node (typically a
+        directory), so memoizing result saves cycles from looking
+        up the same path for each target in a given directory.
+        """
+        try:
+            memo_dict = self._memo['Rfindalldirs']
+        except KeyError:
+            memo_dict = {}
+            self._memo['Rfindalldirs'] = memo_dict
+        else:
+            try:
+                return memo_dict[pathlist]
+            except KeyError:
+                pass
+
+        create_dir_relative_to_self = self.Dir
+        result = []
+        for path in pathlist:
+            if isinstance(path, SCons.Node.Node):
+                result.append(path)
+            else:
+                dir = create_dir_relative_to_self(path)
+                result.extend(dir.get_all_rdirs())
+
+        memo_dict[pathlist] = result
+
+        return result
+
     def RDirs(self, pathlist):
         """Search for a list of directories in the Repository list."""
-        return self.fs.Rfindalldirs(pathlist, self.cwd)
+        cwd = self.cwd or self.fs._cwd
+        return cwd.Rfindalldirs(pathlist)
 
 class Entry(Base):
     """This is the class for generic Node.FS entries--that is, things
@@ -1137,7 +1176,6 @@ class FS(LocalFS):
         This method will raise TypeError if a directory is found at the
         specified path.
         """
-
         return self.Entry(name, directory, create, File)
     
     def Dir(self, name, directory = None, create = 1):
@@ -1150,7 +1188,6 @@ class FS(LocalFS):
         This method will raise TypeError if a normal file is found at the
         specified path.
         """
-
         return self.Entry(name, directory, create, Dir)
     
     def BuildDir(self, build_dir, src_dir, duplicate=1):
@@ -1175,21 +1212,6 @@ class FS(LocalFS):
             if not isinstance(d, SCons.Node.Node):
                 d = self.Dir(d)
             self.Top.addRepository(d)
-
-    def Rfindalldirs(self, pathlist, cwd):
-        if SCons.Util.is_String(pathlist):
-            pathlist = string.split(pathlist, os.pathsep)
-        if not SCons.Util.is_List(pathlist):
-            pathlist = [pathlist]
-        result = []
-        for path in filter(None, pathlist):
-            if isinstance(path, SCons.Node.Node):
-                result.append(path)
-                continue
-            path, dir = self._transformPath(path, cwd)
-            dir = dir.Dir(path)
-            result.extend(dir.get_all_rdirs())
-        return result
 
     def CacheDebugWrite(self, fmt, target, cachefile):
         self.CacheDebugFP.write(fmt % (target, os.path.split(cachefile)[1]))

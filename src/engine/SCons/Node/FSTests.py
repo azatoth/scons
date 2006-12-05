@@ -2133,25 +2133,25 @@ class RepositoryTestCase(_tempdirTestCase):
         rep2_sub_d1 = fs.Dir(test.workpath('rep2', 'sub', 'd1'))
         rep3_sub_d1 = fs.Dir(test.workpath('rep3', 'sub', 'd1'))
 
-        r = fs.Rfindalldirs(d1, fs.Top)
+        r = fs.Top.Rfindalldirs((d1,))
         assert r == [d1], map(str, r)
 
-        r = fs.Rfindalldirs([d1, d2], fs.Top)
+        r = fs.Top.Rfindalldirs((d1, d2))
         assert r == [d1, d2], map(str, r)
 
-        r = fs.Rfindalldirs('d1', fs.Top)
+        r = fs.Top.Rfindalldirs(('d1',))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1], map(str, r)
 
-        r = fs.Rfindalldirs('#d1', fs.Top)
+        r = fs.Top.Rfindalldirs(('#d1',))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1], map(str, r)
 
-        r = fs.Rfindalldirs('d1', sub)
+        r = sub.Rfindalldirs(('d1',))
         assert r == [sub_d1, rep1_sub_d1, rep2_sub_d1, rep3_sub_d1], map(str, r)
 
-        r = fs.Rfindalldirs('#d1', sub)
+        r = sub.Rfindalldirs(('#d1',))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1], map(str, r)
 
-        r = fs.Rfindalldirs(['d1', d2], fs.Top)
+        r = fs.Top.Rfindalldirs(('d1', d2))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1, d2], map(str, r)
 
     def test_rexists(self):

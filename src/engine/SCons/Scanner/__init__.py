@@ -61,7 +61,8 @@ class _Binder:
         return self._val
     def __str__(self):
         return str(self._val)
-        #debug: return 'B<%s>'%str(self._val)
+    def __repr__(self):
+        return '<_Binder %s>' % str(self._val)
 
 BinderDict = {}
 
@@ -80,15 +81,17 @@ class FindPathDirs:
     def __init__(self, variable):
         self.variable = variable
     def __call__(self, env, dir, target=None, source=None, argument=None):
-        # The goal is that we've made caching this unnecessary
-        # because the caching takes place at higher layers.
+        import SCons.PathList
         try:
             path = env[self.variable]
         except KeyError:
             return ()
 
-        path = env.subst_path(path, target=target, source=source)
-        path_tuple = tuple(env.fs.Rfindalldirs(path, dir))
+        path = SCons.PathList.PathList(path).subst_path(env, target, source)
+
+        dir = dir or env.fs._cwd
+        path_tuple = tuple(dir.Rfindalldirs(path))
+
         return Binder(path_tuple)
 
 class Base:
