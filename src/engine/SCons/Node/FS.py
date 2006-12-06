@@ -346,9 +346,20 @@ class DiskChecker:
             self.set_ignore()
 
 def do_diskcheck_match(node, predicate, errorfmt):
-    path = node.abspath
-    if predicate(path):
-        raise TypeError, errorfmt % path
+    result = predicate()
+    try:
+        # If calling the predicate() cached a None value from stat(),
+        # remove it so it doesn't interfere with later attempts to
+        # build this Node as we walk the DAG.  (This isn't a great way
+        # to do this, we're reaching into an interface that doesn't
+        # really belong to us, but it's all about performance, so
+        # for now we'll just document the dependency...)
+        if node._memo['stat'] is None:
+            del node._memo['stat']
+    except (AttributeError, KeyError):
+        pass
+    if result:
+        raise TypeError, errorfmt % node.abspath
 
 def ignore_diskcheck_match(node, predicate, errorfmt):
     pass
@@ -1305,8 +1316,8 @@ class Dir(Base):
         self.get_executor().set_action_list(self.builder.action)
 
     def diskcheck_match(self):
-        diskcheck_match(self, self.fs.isfile,
-                           "File %s found where directory expected.")
+        diskcheck_match(self, self.isfile,
+                        "File %s found where directory expected.")
 
     def __clearRepositoryCache(self, duplicate=None):
         """Called when we change the repository(ies) for a directory.
@@ -1814,8 +1825,8 @@ class File(Base):
     BuildInfo = FileBuildInfo
 
     def diskcheck_match(self):
-        diskcheck_match(self, self.fs.isdir,
-                           "Directory %s found where file expected.")
+        diskcheck_match(self, self.isdir,
+                        "Directory %s found where file expected.")
 
     def __init__(self, name, directory, fs):
         if __debug__: logInstanceCreation(self, 'Node.FS.File')

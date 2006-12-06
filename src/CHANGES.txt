@@ -43,6 +43,8 @@ RELEASE 0.97 - XXX
     various information from those timings, and displaying them in
     different formats.
 
+  - Reduce some unnecessary stat() calls from on-disk entry type checks.
+
   From Ben Leslie:
 
   - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().
