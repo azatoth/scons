@@ -1003,9 +1003,15 @@ class FS(LocalFS):
         """
         memo_key = (fsclass, name, directory)
         try:
-            return self._memo['_doLookup'][memo_key]
+            memo_dict = self._memo['_doLookup']
         except KeyError:
-            pass
+            memo_dict = {}
+            self._memo['_doLookup'] = memo_dict
+        else:
+            try:
+                return memo_dict[memo_key]
+            except KeyError:
+                pass
 
         if not name:
             # This is a stupid hack to compensate for the fact that the
@@ -1046,12 +1052,7 @@ class FS(LocalFS):
                     self.Root[''] = directory
 
         if not path_orig:
-            try:
-                md = self._memo['_doLookup']
-            except KeyError:
-                md = {}
-                self._memo['_doLookup'] = md
-            md[memo_key] = directory
+            memo_dict[memo_key] = directory
             return directory
 
         last_orig = path_orig.pop()     # strip last element
@@ -1103,12 +1104,7 @@ class FS(LocalFS):
         else:
             result = self.__checkClass(e, fsclass)
 
-        try:
-            md = self._memo['_doLookup']
-        except KeyError:
-            md = {}
-            self._memo['_doLookup'] = md
-        md[memo_key] = result
+        memo_dict[memo_key] = result
 
         return result 
 
@@ -1407,9 +1403,15 @@ class Dir(Base):
         """Return a path to "other" relative to this directory.
         """
         try:
-            return self._memo['rel_path'][other]
+            memo_dict = self._memo['rel_path']
         except KeyError:
-            pass
+            memo_dict = {}
+            self._memo['rel_path'] = memo_dict
+        else:
+            try:
+                return memo_dict[other]
+            except KeyError:
+                pass
 
         if self is other:
 
@@ -1437,12 +1439,7 @@ class Dir(Base):
              
             result = string.join(path_elems, os.sep)
 
-        try:
-            md = self._memo['rel_path']
-        except KeyError:
-            md = {}
-            self._memo['rel_path'] = md
-        md[other] = result
+        memo_dict[other] = result
 
         return result
 
@@ -1928,21 +1925,23 @@ class File(Base):
         """
         memo_key = (id(env), id(scanner), path)
         try:
-            return self._memo['get_found_includes'][memo_key]
+            memo_dict = self._memo['get_found_includes']
         except KeyError:
-            pass
+            memo_dict = {}
+            self._memo['get_found_includes'] = memo_dict
+        else:
+            try:
+                return memo_dict[memo_key]
+            except KeyError:
+                pass
 
         if scanner:
             result = scanner(self, env, path)
         else:
             result = []
 
-        try:
-            md = self._memo['get_found_includes']
-        except KeyError:
-            md = {}
-            self._memo['get_found_includes'] = md
-        md[memo_key] = result
+        memo_dict[memo_key] = result
+
         return result
 
     def _createDir(self):
