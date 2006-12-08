@@ -24,6 +24,11 @@ RELEASE 0.97 - XXX
 
   - Exclude additional Debian packaging files from the copyright check.
 
+  From Paolo Invernizzi:
+
+  - Have the D compiler Tool use $SMART_LINKCOM logic for linking
+    shared libraries as well as static libraries.
+
   From Steven Knight:
 
   - Speed up the Node.FS.Dir.rel_path() method used to generate path names
