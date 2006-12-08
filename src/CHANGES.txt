@@ -24,6 +24,11 @@ RELEASE 0.97 - XXX
 
   - Exclude additional Debian packaging files from the copyright check.
 
+  From Fawad Halim:
+
+  - Handle the conflict between the impending Python 2.6 'as' keyword
+    and our Tool/as.py module name.
+
   From Steven Knight:
 
   - Speed up the Node.FS.Dir.rel_path() method used to generate path names
