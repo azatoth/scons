@@ -2786,7 +2786,7 @@ def generate(env):
         tgt = env.Install('export', 'build')
         paths = map(str, tgt)
         paths.sort()
-        expect = ['export/build']
+        expect = [os.path.join('export', 'build')]
         assert paths == expect, paths
         for tnode in tgt:
             assert tnode.builder == InstallBuilder
@@ -2794,7 +2794,10 @@ def generate(env):
         tgt = env.Install('export', ['build', 'build/foo1'])
         paths = map(str, tgt)
         paths.sort()
-        expect = ['export/build', 'export/foo1']
+        expect = [
+            os.path.join('export/build'),
+            os.path.join('export/foo1'),
+        ]
         assert paths == expect, paths
         for tnode in tgt:
             assert tnode.builder == InstallBuilder

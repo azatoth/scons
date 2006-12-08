@@ -740,14 +740,22 @@ class FileNodeInfoTestCase(_tempdirTestCase):
 
         test.write('fff', "fff\n")
 
-        assert ni.timestamp != os.path.getmtime('fff'), ni.timestamp
-        assert ni.size != os.path.getsize('fff'), ni.size
+        st = os.stat('fff')
+
+        mtime = st[stat.ST_MTIME]
+        assert ni.timestamp != mtime, (ni.timestamp, mtime)
+        size = st[stat.ST_SIZE]
+        assert ni.size != size, (ni.size, size)
 
         fff.clear()
         ni.update(fff)
 
-        assert ni.timestamp == os.path.getmtime('fff'), ni.timestamp
-        assert ni.size == os.path.getsize('fff'), ni.size
+        st = os.stat('fff')
+
+        mtime = st[stat.ST_MTIME]
+        assert ni.timestamp == mtime, (ni.timestamp, mtime)
+        size = st[stat.ST_SIZE]
+        assert ni.size == size, (ni.size, size)
 
 class FileBuildInfoTestCase(_tempdirTestCase):
     def test___init__(self):

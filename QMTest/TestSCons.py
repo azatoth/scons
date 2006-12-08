@@ -303,6 +303,28 @@ class TestSCons(TestCommon):
             i = i + 1
         return "Actual matched the expected output???"
 
+    def python_file_line(self, file, line):
+        """
+        Returns a Python error line for output comparisons.
+
+        The exec of the traceback line gives us the correct format for
+        this version of Python.  Before 2.5, this yielded:
+
+            File "<string>", line 1, ?
+
+        Python 2.5 changed this to:
+
+            File "<string>", line 1, <module>
+
+        We stick the requested file name and line number in the right
+        places, abstracting out the version difference.
+        """
+        exec 'import traceback; x = traceback.format_stack()[-1]'
+        x = string.lstrip(x)
+        x = string.replace(x, '<string>', file)
+        x = string.replace(x, 'line 1,', 'line %s,' % line)
+        return x
+
     def java_ENV(self):
         """
         Return a default external environment that uses a local Java SDK

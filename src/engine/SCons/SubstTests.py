@@ -470,9 +470,12 @@ class SubstTestCase(unittest.TestCase):
         try:
             scons_subst('$foo.bar.3.0', env)
         except SCons.Errors.UserError, e:
-            expect1 = "Syntax error `invalid syntax' trying to evaluate `$foo.bar.3.0'"
-            expect2 = "Syntax error `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'"
-            assert str(e) in [expect1, expect2], e
+            expect = [
+                "Syntax error `invalid syntax' trying to evaluate `$foo.bar.3.0'",
+                "Syntax error `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'",
+                "Syntax error `invalid syntax (<string>, line 1)' trying to evaluate `$foo.bar.3.0'",
+            ]
+            assert str(e) in expect, e
         else:
             raise AssertionError, "did not catch expected UserError"
 
@@ -944,9 +947,12 @@ class SubstTestCase(unittest.TestCase):
         try:
             scons_subst_list('$foo.bar.3.0', env)
         except SCons.Errors.UserError, e:
-            expect1 = "Syntax error `invalid syntax' trying to evaluate `$foo.bar.3.0'"
-            expect2 = "Syntax error `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'"
-            assert str(e) in [expect1, expect2], e
+            expect = [
+                "Syntax error `invalid syntax' trying to evaluate `$foo.bar.3.0'",
+                "Syntax error `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'",
+                "Syntax error `invalid syntax (<string>, line 1)' trying to evaluate `$foo.bar.3.0'",
+            ]
+            assert str(e) in expect, e
         else:
             raise AssertionError, "did not catch expected SyntaxError"
 
