@@ -185,7 +185,6 @@ def generate(env):
         # if it is not there. (very bad)
         env['ARCOM'] = '$SMART_ARCOM '
         env['LINKCOM'] = '$SMART_LINKCOM '
-        env['SHLINKCOM'] = '$SMART_LINKCOM '
     else: # assuming linux
         linkcom = env.get('LINKCOM')
         try:
@@ -206,7 +205,6 @@ def generate(env):
             env['SMART_LINKCOM'] = smart_link[linkcom] = _smartLink
 
         env['LINKCOM'] = '$SMART_LINKCOM '
-        env['SHLINKCOM'] = '$SMART_LINKCOM '
 
 def exists(env):
     return env.Detect('dmd')
