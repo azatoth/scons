@@ -1227,9 +1227,9 @@ class FSTestCase(_tempdirTestCase):
         exc_caught = 0
         try:
             e.get_contents()
-        except AttributeError:
+        except SCons.Errors.UserError:
             exc_caught = 1
-        assert exc_caught, "Should have caught an AttributError"
+        assert exc_caught, "Should have caught an IOError"
 
         test.write("file", "file\n")
         try:
@@ -1869,9 +1869,9 @@ class EntryTestCase(_tempdirTestCase):
         exc_caught = None
         try:
             e3n.get_contents()
-        except AttributeError:
+        except SCons.Errors.UserError:
             exc_caught = 1
-        assert exc_caught, "did not catch expected AttributeError"
+        assert exc_caught, "did not catch expected SCons.Errors.UserError"
 
         test.subdir('e4d')
         test.write('e4f', "e4f\n")

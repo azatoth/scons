@@ -65,6 +65,10 @@ RELEASE 0.97 - XXX
 
   - Eliminate some unnecessary os.path.normpath() calls.
 
+  From Tom Parker:
+
+  - Have the error message print the missing file that Qt can't find.
+
   From John Pye:
 
   - Fix env.MergeFlags() appending to construction variable value of None.

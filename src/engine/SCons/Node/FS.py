@@ -813,7 +813,8 @@ class Entry(Base):
             return self.get_contents()
         if self.islink():
             return ''             # avoid errors for dangling symlinks
-        raise AttributeError
+        msg = "No such file or directory: '%s'" % self.abspath
+        raise SCons.Errors.UserError, msg
 
     def must_be_a_Dir(self):
         """Called to make sure a Node is a Dir.  Since we're an
