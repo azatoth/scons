@@ -70,6 +70,11 @@ RELEASE 0.97 - XXX
     specified on the command line (and not intuited from the old way of
     calling it with just ".sconsign").
 
+  From Sohail Somain:
+
+  - Have the mslink.py Tool only look for a 'link' executable on Windows
+    systems.
+
   From Jonathan Ultis:
 
   - Allow Options converters to take the construction environment as
