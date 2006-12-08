@@ -54,26 +54,6 @@ def Scanner(function, *args, **kw):
         return apply(Base, (function,) + args, kw)
 
 
-class _Binder:
-    def __init__(self, bindval):
-        self._val = bindval
-    def __call__(self):
-        return self._val
-    def __str__(self):
-        return str(self._val)
-    def __repr__(self):
-        return '<_Binder %s>' % str(self._val)
-
-BinderDict = {}
-
-def Binder(path):
-    try:
-        return BinderDict[path]
-    except KeyError:
-        b = _Binder(path)
-        BinderDict[path] = b
-        return b
-
 
 class FindPathDirs:
     """A class to bind a specific *PATH variable name to a function that
@@ -87,12 +67,11 @@ class FindPathDirs:
         except KeyError:
             return ()
 
-        path = SCons.PathList.PathList(path).subst_path(env, target, source)
-
         dir = dir or env.fs._cwd
-        path_tuple = tuple(dir.Rfindalldirs(path))
+        path = SCons.PathList.PathList(path).subst_path(env, target, source)
+        return tuple(dir.Rfindalldirs(path))
 
-        return Binder(path_tuple)
+
 
 class Base:
     """
@@ -325,7 +304,6 @@ class Classic(Current):
         apply(Current.__init__, (self,) + args, kw)
 
     def find_include(self, include, source_dir, path):
-        if callable(path): path = path()
         n = SCons.Node.FS.find_file(include, (source_dir,) + tuple(path))
         return n, include
 
@@ -349,6 +327,8 @@ class Classic(Current):
         # is actually found in a Repository or locally.
         nodes = []
         source_dir = node.get_dir()
+        if callable(path):
+            path = path()
         for include in includes:
             n, i = self.find_include(include, source_dir, path)
 
@@ -374,13 +354,10 @@ class ClassicCPP(Classic):
     the contained filename in group 1.
     """
     def find_include(self, include, source_dir, path):
-        if callable(path):
-            path = path()   #kwq: extend callable to find_file...
-
         if include[0] == '"':
-            paths = Binder( (source_dir,) + tuple(path) )
+            paths = (source_dir,) + tuple(path)
         else:
-            paths = Binder( tuple(path) + (source_dir,) )
+            paths = tuple(path) + (source_dir,)
 
         n = SCons.Node.FS.find_file(include[1], paths)
 

@@ -2231,6 +2231,7 @@ class find_fileTestCase(unittest.TestCase):
         """Testing find_file function"""
         test = TestCmd(workdir = '')
         test.write('./foo', 'Some file\n')
+        test.write('./foo2', 'Another file\n')
         test.subdir('same')
         test.subdir('bar')
         test.write(['bar', 'on_disk'], 'Another file\n')
@@ -2245,7 +2246,7 @@ class find_fileTestCase(unittest.TestCase):
         node_pseudo = fs.File(test.workpath('pseudo'))
         node_pseudo.set_src_builder(1) # Any non-zero value.
 
-        paths = map(fs.Dir, ['.', 'same', './bar'])
+        paths = tuple(map(fs.Dir, ['.', 'same', './bar']))
         nodes = [SCons.Node.FS.find_file('foo', paths)]
         nodes.append(SCons.Node.FS.find_file('baz', paths))
         nodes.append(SCons.Node.FS.find_file('pseudo', paths))
@@ -2269,19 +2270,18 @@ class find_fileTestCase(unittest.TestCase):
         try:
             sio = StringIO.StringIO()
             sys.stdout = sio
-            SCons.Node.FS.find_file('foo', paths, verbose="xyz")
-            expect = "  xyz: looking for 'foo' in '.' ...\n" + \
-                     "  xyz: ... FOUND 'foo' in '.'\n"
+            SCons.Node.FS.find_file('foo2', paths, verbose="xyz")
+            expect = "  xyz: looking for 'foo2' in '.' ...\n" + \
+                     "  xyz: ... FOUND 'foo2' in '.'\n"
             c = sio.getvalue()
             assert c == expect, c
 
             sio = StringIO.StringIO()
             sys.stdout = sio
-            SCons.Node.FS.find_file('baz', paths, verbose=1)
-            expect = "  find_file: looking for 'baz' in '.' ...\n" + \
-                     "  find_file: looking for 'baz' in 'same' ...\n" + \
-                     "  find_file: looking for 'baz' in 'bar' ...\n" + \
-                     "  find_file: ... FOUND 'baz' in 'bar'\n"
+            SCons.Node.FS.find_file('baz2', paths, verbose=1)
+            expect = "  find_file: looking for 'baz2' in '.' ...\n" + \
+                     "  find_file: looking for 'baz2' in 'same' ...\n" + \
+                     "  find_file: looking for 'baz2' in 'bar' ...\n"
             c = sio.getvalue()
             assert c == expect, c
 

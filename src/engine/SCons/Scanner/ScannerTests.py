@@ -502,8 +502,6 @@ class ClassicCPPTestCase(unittest.TestCase):
         s = SCons.Scanner.ClassicCPP("Test", [], None, "")
 
         def _find_file(filename, paths):
-            if callable(paths):
-                paths = paths()
             return paths[0]+'/'+filename
 
         save = SCons.Node.FS.find_file

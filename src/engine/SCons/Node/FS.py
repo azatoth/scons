@@ -1644,7 +1644,23 @@ class Dir(Base):
                     return srcnode
         return None
 
+    def _srcdir_find_file_key(self, filename):
+        return filename
+
+    memoizer_counters.append(SCons.Memoize.CountDict('srcdir_find_file', _srcdir_find_file_key))
+
     def srcdir_find_file(self, filename):
+        try:
+            memo_dict = self._memo['srcdir_find_file']
+        except KeyError:
+            memo_dict = {}
+            self._memo['srcdir_find_file'] = memo_dict
+        else:
+            try:
+                return memo_dict[filename]
+            except KeyError:
+                pass
+
         def func(node):
             if (isinstance(node, File) or isinstance(node, Entry)) and \
                (node.is_derived() or node.is_pseudo_derived() or node.exists()):
@@ -1658,7 +1674,9 @@ class Dir(Base):
             except KeyError: node = rdir.file_on_disk(filename)
             else: node = func(node)
             if node:
-                return node, self
+                result = (node, self)
+                memo_dict[filename] = result
+                return result
 
         for srcdir in self.srcdir_list():
             for rdir in srcdir.get_all_rdirs():
@@ -1666,9 +1684,13 @@ class Dir(Base):
                 except KeyError: node = rdir.file_on_disk(filename)
                 else: node = func(node)
                 if node:
-                    return File(filename, self, self.fs), srcdir
+                    result = (File(filename, self, self.fs), srcdir)
+                    memo_dict[filename] = result
+                    return result
 
-        return None, None
+        result = (None, None)
+        memo_dict[filename] = result
+        return result
 
     def dir_on_disk(self, name):
         if self.entry_exists_on_disk(name):
@@ -2257,73 +2279,82 @@ class File(Base):
 
 default_fs = None
 
-def find_file(filename, paths, verbose=None):
+class FileFinder:
     """
-    find_file(str, [Dir()]) -> [nodes]
-
-    filename - a filename to find
-    paths - a list of directory path *nodes* to search in.  Can be
-            represented as a list, a tuple, or a callable that is
-            called with no arguments and returns the list or tuple.
-
-    returns - the node created from the found file.
-
-    Find a node corresponding to either a derived file or a file
-    that exists already.
-
-    Only the first file found is returned, and none is returned
-    if no file is found.
     """
-    if verbose:
-        if not SCons.Util.is_String(verbose):
-            verbose = "find_file"
-        if not callable(verbose):
-            verbose = '  %s: ' % verbose
-            verbose = lambda s, v=verbose: sys.stdout.write(v + s)
-    else:
-        verbose = lambda x: x
+    if SCons.Memoize.use_memoizer:
+        __metaclass__ = SCons.Memoize.Memoized_Metaclass
 
-    if callable(paths):
-        paths = paths()
+    memoizer_counters = []
 
-    # Give Entries a chance to morph into Dirs.
-    paths = map(lambda p: p.must_be_a_Dir(), paths)
+    def __init__(self):
+        self._memo = {}
 
-    filedir, filename = os.path.split(filename)
-    if filedir:
-        def filedir_lookup(p, fd=filedir):
+    def _find_file_key(self, filename, paths, verbose=None):
+        return (filename, paths)
+        
+    memoizer_counters.append(SCons.Memoize.CountDict('find_file', _find_file_key))
+
+    def find_file(self, filename, paths, verbose=None):
+        """
+        find_file(str, [Dir()]) -> [nodes]
+
+        filename - a filename to find
+        paths - a list of directory path *nodes* to search in.  Can be
+                represented as a list, a tuple, or a callable that is
+                called with no arguments and returns the list or tuple.
+
+        returns - the node created from the found file.
+
+        Find a node corresponding to either a derived file or a file
+        that exists already.
+
+        Only the first file found is returned, and none is returned
+        if no file is found.
+        """
+        memo_key = self._find_file_key(filename, paths)
+        try:
+            memo_dict = self._memo['find_file']
+        except KeyError:
+            memo_dict = {}
+            self._memo['find_file'] = memo_dict
+        else:
             try:
-                return p.Dir(fd)
-            except TypeError:
-                # We tried to look up a Dir, but it seems there's already
-                # a File (or something else) there.  No big.
-                return None
-        paths = filter(None, map(filedir_lookup, paths))
+                return memo_dict[memo_key]
+            except KeyError:
+                pass
 
-    result = None
-    for dir in paths:
-        verbose("looking for '%s' in '%s' ...\n" % (filename, dir))
-        node, d = dir.srcdir_find_file(filename)
-        if node:
-            verbose("... FOUND '%s' in '%s'\n" % (filename, d))
-            result = node
-            break
-    return result
+        if verbose:
+            if not SCons.Util.is_String(verbose):
+                verbose = "find_file"
+            if not callable(verbose):
+                verbose = '  %s: ' % verbose
+                verbose = lambda s, v=verbose: sys.stdout.write(v + s)
+        else:
+            verbose = lambda x: x
 
-def find_files(filenames, paths):
-    """
-    find_files([str], [Dir()]) -> [nodes]
+        filedir, filename = os.path.split(filename)
+        if filedir:
+            def filedir_lookup(p, fd=filedir):
+                try:
+                    return p.Dir(fd)
+                except TypeError:
+                    # We tried to look up a Dir, but it seems there's
+                    # already a File (or something else) there.  No big.
+                    return None
+            paths = filter(None, map(filedir_lookup, paths))
 
-    filenames - a list of filenames to find
-    paths - a list of directory path *nodes* to search in
+        result = None
+        for dir in paths:
+            verbose("looking for '%s' in '%s' ...\n" % (filename, dir))
+            node, d = dir.srcdir_find_file(filename)
+            if node:
+                verbose("... FOUND '%s' in '%s'\n" % (filename, d))
+                result = node
+                break
 
-    returns - the nodes created from the found files.
+        memo_dict[memo_key] = result
 
-    Finds nodes corresponding to either derived files or files
-    that exist already.
+        return result
 
-    Only the first file found is returned for each filename,
-    and any files that aren't found are ignored.
-    """
-    nodes = map(lambda x, paths=paths: find_file(x, paths), filenames)
-    return filter(None, nodes)
+find_file = FileFinder().find_file

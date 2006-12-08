@@ -60,7 +60,6 @@ class LaTeX(SCons.Scanner.Classic):
     def sort_key(self, include):
         return SCons.Node.FS._my_normcase(self.latex_name(include))
     def find_include(self, include, source_dir, path):
-        if callable(path): path=path()
         i = SCons.Node.FS.find_file(self.latex_name(include),
                                     (source_dir,) + path)
         return i, include
