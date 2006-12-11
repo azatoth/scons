@@ -1960,6 +1960,7 @@ class File(Base):
 
         if scanner:
             result = scanner(self, env, path)
+            result = map(lambda N: N.disambiguate(), result)
         else:
             result = []
 

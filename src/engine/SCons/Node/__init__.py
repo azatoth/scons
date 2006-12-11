@@ -479,7 +479,6 @@ class Node:
             d = filter(lambda x, seen=seen: not seen.has_key(x),
                        n.get_found_includes(env, scanner, path))
             if d:
-                d = map(lambda N: N.disambiguate(), d)
                 deps.extend(d)
                 for n in d:
                     seen[n] = 1
@@ -690,7 +689,7 @@ class Node:
         def calc_signature(node, calc=calc):
             return node.calc_signature(calc)
 
-        sources = executor.process_sources(None, self.ignore)
+        sources = executor.get_unignored_sources(self.ignore)
         sourcesigs = executor.process_sources(calc_signature, self.ignore)
 
         depends = self.depends

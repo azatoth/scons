@@ -228,14 +228,55 @@ class Executor:
         """
         return filter(lambda s: s.missing(), self.sources)
 
-    def get_unignored_sources(self, ignore):
+    def _get_unignored_sources_key(self, ignore=()):
+        return tuple(ignore)
+
+    memoizer_counters.append(SCons.Memoize.CountDict('get_unignored_sources', _get_unignored_sources_key))
+
+    def get_unignored_sources(self, ignore=()):
+        ignore = tuple(ignore)
+        try:
+            memo_dict = self._memo['get_unignored_sources']
+        except KeyError:
+            memo_dict = {}
+            self._memo['get_unignored_sources'] = memo_dict
+        else:
+            try:
+                return memo_dict[ignore]
+            except KeyError:
+                pass
+
         sourcelist = self.sources
         if ignore:
             sourcelist = filter(lambda s, i=ignore: not s in i, sourcelist)
+
+        memo_dict[ignore] = sourcelist
+
         return sourcelist
 
-    def process_sources(self, func, ignore=[]):
-        return map(func, self.get_unignored_sources(ignore))
+    def _process_sources_key(self, func, ignore=()):
+        return (func, tuple(ignore))
+
+    memoizer_counters.append(SCons.Memoize.CountDict('process_sources', _process_sources_key))
+
+    def process_sources(self, func, ignore=()):
+        memo_key = (func, tuple(ignore))
+        try:
+            memo_dict = self._memo['process_sources']
+        except KeyError:
+            memo_dict = {}
+            self._memo['process_sources'] = memo_dict
+        else:
+            try:
+                return memo_dict[memo_key]
+            except KeyError:
+                pass
+
+        result = map(func, self.get_unignored_sources(ignore))
+
+        memo_dict[memo_key] = result
+
+        return result
 
 
 _Executor = Executor
