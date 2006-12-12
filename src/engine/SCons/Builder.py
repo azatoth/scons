@@ -608,6 +608,16 @@ class BuilderBase:
             ekw = self.executor_kw.copy()
             ekw['chdir'] = chdir
         if kw:
+            if kw.has_key('srcdir'):
+                def prependDirIfRelative(f, srcdir=kw['srcdir']):
+                    import os.path
+                    if SCons.Util.is_String(f) and not os.path.isabs(f):
+                        f = os.path.join(srcdir, f)
+                    return f
+                if not SCons.Util.is_List(source):
+                    source = [source]
+                source = map(prependDirIfRelative, source)
+                del kw['srcdir']
             if self.overrides:
                 env_kw = self.overrides.copy()
                 env_kw.update(kw)

@@ -86,6 +86,11 @@ RELEASE 0.97 - XXX
   - Have the mslink.py Tool only look for a 'link' executable on Windows
     systems.
 
+  From Vaclav Smilauer:
+
+  - Add support for a "srcdir" keyword argument when calling a Builder,
+    which will add a srcdir prefix to all non-relative string sources.
+
   From Jonathan Ultis:
 
   - Allow Options converters to take the construction environment as

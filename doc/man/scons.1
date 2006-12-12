@@ -1371,6 +1371,28 @@ env.Program(source = 'bar.c')
 env.Program('bar.c')
 .EE
 
+As a convenience, a
+.B srcdir
+keyword argument may be specified
+when calling a Builder.
+When specified,
+all source file strings that are not absolute paths
+will be interpreted relative to the specified
+.BR srcdir .
+The following example will build the
+.B build/prog
+(or
+.B build/prog.exe
+on Windows)
+program from the files
+.B src/f1.c
+and
+.BR src/f2.c :
+
+.ES
+env.Program('build/prog', ['f1.c', 'f2.c'], srcdir='src')
+.EE
+
 It is possible to override or add construction variables when calling a
 builder method by passing additional keyword arguments.
 These overridden or added
