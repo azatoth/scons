@@ -50,6 +50,8 @@ RELEASE 0.97 - XXX
 
   - Reduce some unnecessary stat() calls from on-disk entry type checks.
 
+  - Fix SideEffect() when used with -j, which was badly broken in 0.96.93.
+
   From Ben Leslie:
 
   - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().
