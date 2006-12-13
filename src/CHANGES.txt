@@ -56,6 +56,19 @@ RELEASE 0.97 - XXX
 
   - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().
 
+  From Rob Managan, Dmitry Mikhin and Joel B. Mohler:
+
+  - Handle TeX/LaTeX files in subdirectories by changing directory
+    before invoking TeX/LaTeX.
+
+  - Scan LaTeX files for \bibliography lines.
+
+  - Support multiple file names in a "\bibliography{file1,file2}" string.
+
+  - Handle TeX warnings about undefined citations.
+
+  - Support re-running LaTeX if necessary due to a Table of Contents.
+
   From Dmitry Mikhin:
 
   - Return LaTeX if "Rerun to get citations correct" shows up on the next
