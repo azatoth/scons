@@ -215,7 +215,10 @@ def _concat(prefix, list, suffix, env, f=lambda x: x, target=None, source=None):
 
     if SCons.Util.is_List(list):
         list = SCons.Util.flatten(list)
-    list = f(SCons.PathList.PathList(list).subst_path(env, target, source))
+
+    l = f(SCons.PathList.PathList(list).subst_path(env, target, source))
+    if not l is None:
+        list = l
 
     result = []
 

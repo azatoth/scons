@@ -380,13 +380,15 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
                         except AttributeError, e:
                             raise SCons.Errors.UserError, \
                                   "Error trying to evaluate `%s': %s" % (s, e)
-                        except (IndexError, NameError, TypeError):
+                        except (IndexError, NameError):
                             return ''
-                        except SyntaxError,e:
+                        except (SyntaxError, TypeError), e:
+                            n = e.__class__.__name__
+                            msg = "%s `%s' trying to evaluate `%s'" % (n,e,s)
                             if self.target:
-                                raise SCons.Errors.BuildError, (self.target[0], "Syntax error `%s' trying to evaluate `%s'" % (e,s))
+                                raise SCons.Errors.BuildError, (self.target[0], msg)
                             else:
-                                raise SCons.Errors.UserError, "Syntax error `%s' trying to evaluate `%s'" % (e,s)
+                                raise SCons.Errors.UserError, msg
                     else:
                         if lvars.has_key(key):
                             s = lvars[key]
@@ -593,13 +595,16 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
                         except AttributeError, e:
                             raise SCons.Errors.UserError, \
                                   "Error trying to evaluate `%s': %s" % (s, e)
-                        except (IndexError, NameError, TypeError):
+                        except (IndexError, NameError):
                             return
-                        except SyntaxError,e:
+                        except (SyntaxError, TypeError), e:
+                            n = e.__class__.__name__
+                            msg = "%s `%s' trying to evaluate `%s'" % (n,e,s)
                             if self.target:
-                                raise SCons.Errors.BuildError, (self.target[0], "Syntax error `%s' trying to evaluate `%s'" % (e,s))
+
+                                raise SCons.Errors.BuildError, (self.target[0], msg)
                             else:
-                                raise SCons.Errors.UserError, "Syntax error `%s' trying to evaluate `%s'" % (e,s)
+                                raise SCons.Errors.UserError, msg
                     else:
                         if lvars.has_key(key):
                             s = lvars[key]

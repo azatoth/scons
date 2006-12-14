@@ -52,6 +52,9 @@ RELEASE 0.97 - XXX
 
   - Fix SideEffect() when used with -j, which was badly broken in 0.96.93.
 
+  - Propagate TypeError exceptions when evaluating construction variable
+    expansions up the stack, so users can see what's going on.
+
   From Ben Leslie:
 
   - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().
