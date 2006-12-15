@@ -61,6 +61,10 @@ RELEASE 0.97 - XXX
     creating a phantom Node that can interfere with dependencies on
     directory contents.
 
+  - Add an AllowSubstExceptions() function that gives the SConscript
+    files control over what exceptions cause a string to expand to ''
+    vs. terminating processing with an error.
+
   From Ben Leslie:
 
   - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().

@@ -462,8 +462,8 @@ class SubstTestCase(unittest.TestCase):
             scons_subst('${foo.bar}', env, gvars={'foo':Foo()})
         except SCons.Errors.UserError, e:
             expect = [
-                "Error trying to evaluate `${foo.bar}': bar",
-                "Error trying to evaluate `${foo.bar}': Foo instance has no attribute 'bar'",
+                "AttributeError `bar' trying to evaluate `${foo.bar}'",
+                "AttributeError `Foo instance has no attribute 'bar'' trying to evaluate `${foo.bar}'",
             ]
             assert str(e) in expect, e
         else:
@@ -971,8 +971,8 @@ class SubstTestCase(unittest.TestCase):
             scons_subst_list('${foo.bar}', env, gvars={'foo':Foo()})
         except SCons.Errors.UserError, e:
             expect = [
-                "Error trying to evaluate `${foo.bar}': bar",
-                "Error trying to evaluate `${foo.bar}': Foo instance has no attribute 'bar'",
+                "AttributeError `bar' trying to evaluate `${foo.bar}'",
+                "AttributeError `Foo instance has no attribute 'bar'' trying to evaluate `${foo.bar}'",
             ]
             assert str(e) in expect, e
         else:

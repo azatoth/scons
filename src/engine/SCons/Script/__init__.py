@@ -81,6 +81,7 @@ import SCons.Options
 import SCons.Platform
 import SCons.Scanner
 import SCons.SConf
+import SCons.Subst
 import SCons.Tool
 import SCons.Util
 import SCons.Defaults
@@ -131,6 +132,7 @@ call_stack              = _SConscript.call_stack
 
 #
 Action                  = SCons.Action.Action
+AllowSubstExceptions    = SCons.Subst.SetAllowableExceptions
 BoolOption              = SCons.Options.BoolOption
 Builder                 = SCons.Builder.Builder
 Configure               = _SConscript.Configure

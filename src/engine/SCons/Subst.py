@@ -44,6 +44,24 @@ _strconv = [SCons.Util.to_String,
             SCons.Util.to_String,
             SCons.Util.to_String_for_signature]
 
+
+
+AllowableExceptions = (IndexError, NameError)
+
+def SetAllowableExceptions(*excepts):
+    global AllowableExceptions
+    AllowableExceptions = filter(None, excepts)
+
+def raise_exception(exception, target, s):
+    name = exception.__class__.__name__
+    msg = "%s `%s' trying to evaluate `%s'" % (name, exception, s)
+    if target:
+        raise SCons.Errors.BuildError, (target[0], msg)
+    else:
+        raise SCons.Errors.UserError, msg
+
+
+
 class Literal:
     """A wrapper for a string.  If you use this object wrapped
     around a string, then it will be interpreted as literal.
@@ -377,23 +395,19 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
                             key = key[1:-1]
                         try:
                             s = eval(key, self.gvars, lvars)
-                        except AttributeError, e:
-                            raise SCons.Errors.UserError, \
-                                  "Error trying to evaluate `%s': %s" % (s, e)
-                        except (IndexError, NameError):
-                            return ''
-                        except (SyntaxError, TypeError), e:
-                            n = e.__class__.__name__
-                            msg = "%s `%s' trying to evaluate `%s'" % (n,e,s)
-                            if self.target:
-                                raise SCons.Errors.BuildError, (self.target[0], msg)
-                            else:
-                                raise SCons.Errors.UserError, msg
+                        except KeyboardInterrupt:
+                            raise
+                        except Exception, e:
+                            if e.__class__ in AllowableExceptions:
+                                return ''
+                            raise_exception(e, self.target, s)
                     else:
                         if lvars.has_key(key):
                             s = lvars[key]
                         elif self.gvars.has_key(key):
                             s = self.gvars[key]
+                        elif not NameError in AllowableExceptions:
+                            raise_exception(NameError(key), self.target, s)
                         else:
                             return ''
     
@@ -592,24 +606,19 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
                             key = key[1:-1]
                         try:
                             s = eval(key, self.gvars, lvars)
-                        except AttributeError, e:
-                            raise SCons.Errors.UserError, \
-                                  "Error trying to evaluate `%s': %s" % (s, e)
-                        except (IndexError, NameError):
-                            return
-                        except (SyntaxError, TypeError), e:
-                            n = e.__class__.__name__
-                            msg = "%s `%s' trying to evaluate `%s'" % (n,e,s)
-                            if self.target:
-
-                                raise SCons.Errors.BuildError, (self.target[0], msg)
-                            else:
-                                raise SCons.Errors.UserError, msg
+                        except KeyboardInterrupt:
+                            raise
+                        except Exception, e:
+                            if e.__class__ in AllowableExceptions:
+                                return
+                            raise_exception(e, self.target, s)
                     else:
                         if lvars.has_key(key):
                             s = lvars[key]
                         elif self.gvars.has_key(key):
                             s = self.gvars[key]
+                        elif not NameError in AllowableExceptions:
+                            raise_exception(NameError(), self.target, s)
                         else:
                             return
 
