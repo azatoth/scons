@@ -950,6 +950,8 @@ class SConscriptSettableOptions:
     
 
 def _main(args, parser):
+    global exit_status
+
     # Here's where everything really happens.
 
     # First order of business:  set up default warnings and and then
@@ -1028,7 +1030,8 @@ def _main(args, parser):
             # Give them the options usage now, before we fail
             # trying to read a non-existent SConstruct file.
             parser.print_help()
-            sys.exit(0)
+            exit_status = 0
+            return
         raise SCons.Errors.UserError, "No SConstruct file found."
 
     if scripts[0] == "-":
@@ -1114,7 +1117,6 @@ def _main(args, parser):
         # reading SConscript files and haven't started building
         # things yet, stop regardless of whether they used -i or -k
         # or anything else.
-        global exit_status
         sys.stderr.write("scons: *** %s  Stop.\n" % e)
         exit_status = 2
         sys.exit(exit_status)
@@ -1143,7 +1145,8 @@ def _main(args, parser):
         else:
             print help_text
             print "Use scons -H for help about command-line options."
-        sys.exit(0)
+        exit_status = 0
+        return
 
     # Now that we've read the SConscripts we can set the options
     # that are SConscript settable:
@@ -1294,12 +1297,9 @@ def _main(args, parser):
     count_stats.append(('post-', 'build'))
 
 def _exec_main():
-    all_args = sys.argv[1:]
-    try:
-        all_args = string.split(os.environ['SCONSFLAGS']) + all_args
-    except KeyError:
-            # it's OK if there's no SCONSFLAGS
-            pass
+    sconsflags = os.environ.get('SCONSFLAGS', '')
+    all_args = string.split(sconsflags) + sys.argv[1:]
+
     parser = OptParser()
     global options
     options, args = parser.parse_args(all_args)
