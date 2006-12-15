@@ -33,7 +33,10 @@ from SCons.Tool.packaging import packageroot_emitter
 def package(env, target, source, packageroot, **kw):
     bld = env['BUILDERS']['Tar']
     bld.set_suffix('.tar.gz')
-    bld.push_emitter(packageroot_emitter(packageroot))
+    h=0
+    if kw.has_key('honor_install_location'):
+        h=kw['honor_install_location']
+    bld.push_emitter(packageroot_emitter(packageroot, honor_install_location=h))
     return bld(env, target, source, TARFLAGS='-zc')
 
 # class BinaryTarGz(TarGz):

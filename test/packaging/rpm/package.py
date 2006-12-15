@@ -53,21 +53,23 @@ int main( int argc, char* argv[] )
 test.write('SConstruct', """
 import os
 
-prog = Install( '/bin/' , Program( 'src/main.c')  )
+env=Environment(tools=['default', 'packaging'])
 
-Package( projectname    = 'foo',
-         version        = '1.2.3',
-         packageversion = 0,
-         type           = 'rpm',
-         license        = 'gpl',
-         summary        = 'balalalalal',
-         x_rpm_Group    = 'Application/fu',
-         description    = 'this should be really really long',
-         source         = [ prog ],
-         source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
-        )
+prog = env.Install( '/bin/' , Program( 'src/main.c')  )
 
-Alias( 'install', prog )
+env.Package( projectname    = 'foo',
+             version        = '1.2.3',
+             packageversion = 0,
+             type           = 'rpm',
+             license        = 'gpl',
+             summary        = 'balalalalal',
+             x_rpm_Group    = 'Application/fu',
+             description    = 'this should be really really long',
+             source         = [ prog ],
+             source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
+            )
+
+env.Alias( 'install', prog )
 """)
 
 test.run(arguments='', stderr = None)

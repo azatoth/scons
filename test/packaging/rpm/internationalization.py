@@ -58,27 +58,28 @@ test.write('SConstruct', """
 # -*- coding: iso-8859-15 -*-
 import os
 
-prog = Install( '/bin', Program( 'main.c' ) )
+env  = Environment(tools=['default', 'packaging'])
+prog = env.Install( '/bin', Program( 'main.c' ) )
 
-Package( projectname    = 'foo',
-         version        = '1.2.3',
-         type           = 'rpm',
-         license        = 'gpl',
-         summary        = 'hello',
-         summary_de     = 'hallo',
-         summary_fr     = 'bonjour',
-         packageversion = 0,
-         x_rpm_Group    = 'Application/office',
-         x_rpm_Group_de = 'Applikation/büro',
-         x_rpm_Group_fr = 'Application/bureau',
-         description    = 'this should be really long',
-         description_de = 'das sollte wirklich lang sein',
-         description_fr = 'ceci devrait être vraiment long',
-         source         = [ prog ],
-         source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
-        )
+env.Package( projectname    = 'foo',
+             version        = '1.2.3',
+             type           = 'rpm',
+             license        = 'gpl',
+             summary        = 'hello',
+             summary_de     = 'hallo',
+             summary_fr     = 'bonjour',
+             packageversion = 0,
+             x_rpm_Group    = 'Application/office',
+             x_rpm_Group_de = 'Applikation/büro',
+             x_rpm_Group_fr = 'Application/bureau',
+             description    = 'this should be really long',
+             description_de = 'das sollte wirklich lang sein',
+             description_fr = 'ceci devrait être vraiment long',
+             source         = [ prog ],
+             source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
+            )
 
-Alias ( 'install', prog )
+env.Alias ( 'install', prog )
 """)
 
 test.run(arguments='', stderr = None)
@@ -132,37 +133,36 @@ test.write('SConstruct', """
 # -*- coding: iso-8859-15 -*-
 import os
 
-prog = Install( '/bin', Program( 'main.c' ) )
+env  = Environment(tools=['default', 'packaging'])
+prog = env.Install( '/bin', Program( 'main.c' ) )
 
 man_pages = Flatten( [
-  Install( '/usr/share/man/de', 'man.de' ),
-  Install( '/usr/share/man/en', 'man.en' ),
-  Install( '/usr/share/man/fr', 'man.fr' )
+  env.Install( '/usr/share/man/de', 'man.de' ),
+  env.Install( '/usr/share/man/en', 'man.en' ),
+  env.Install( '/usr/share/man/fr', 'man.fr' )
 ] )
 
-Tag( man_pages, 'lang_de', 'doc', 'source' )
+env.Tag( man_pages, 'lang_de', 'doc')
 
-Default (
-Package( projectname    = 'foo',
-         version        = '1.2.3',
-         type           = 'rpm',
-         license        = 'gpl',
-         summary        = 'hello',
-         summary_de     = 'hallo',
-         summary_fr     = 'bonjour',
-         packageversion = 0,
-         x_rpm_Group    = 'Application/office',
-         x_rpm_Group_de = 'Applikation/büro',
-         x_rpm_Group_fr = 'Application/bureau',
-         description    = 'this should be really long',
-         description_de = 'das sollte wirklich lang sein',
-         description_fr = 'ceci devrait être vraiment long',
-         source         = [ prog, man_pages ],
-         source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
-        )
-)
+env.Package( projectname    = 'foo',
+             version        = '1.2.3',
+             type           = 'rpm',
+             license        = 'gpl',
+             summary        = 'hello',
+             summary_de     = 'hallo',
+             summary_fr     = 'bonjour',
+             packageversion = 0,
+             x_rpm_Group    = 'Application/office',
+             x_rpm_Group_de = 'Applikation/büro',
+             x_rpm_Group_fr = 'Application/bureau',
+             description    = 'this should be really long',
+             description_de = 'das sollte wirklich lang sein',
+             description_fr = 'ceci devrait être vraiment long',
+             source         = [ prog, man_pages ],
+             source_url     = 'http://foo.org/foo-1.2.3.tar.gz',
+            )
 
-Alias ( 'install', [ prog, man_pages ] )
+env.Alias ( 'install', [ prog, man_pages ] )
 """)
 
 

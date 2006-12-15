@@ -123,4 +123,5 @@ Alias( 'install', [ f1, f2, f3, f4 ] )
   test.fail_test( not elements[2].attributes['Title'].value == 'Documentation' )
   test.fail_test( not elements[3].attributes['Title'].value == 'Java Part' )
 
-test.pass_test()
+else:
+  test.no_result()

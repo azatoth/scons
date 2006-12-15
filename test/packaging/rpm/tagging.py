@@ -56,22 +56,23 @@ return 0;
 test.write('SConstruct', """
 import os
 
+env = Environment(tools=['default', 'packaging'])
 install_dir= os.path.join( ARGUMENTS.get('prefix', '/'), 'bin/' )
-prog_install = Install( install_dir , Program( 'src/main.c' ) )
-Tag( prog_install, unix_attr = '(0755, root, users)' )
-Alias( 'install', prog_install )
+prog_install = env.Install( install_dir , Program( 'src/main.c' ) )
+env.Tag( prog_install, unix_attr = '(0755, root, users)' )
+env.Alias( 'install', prog_install )
 
-Package( projectname  = 'foo',
-         version        = '1.2.3',
-         type           = 'rpm',
-         license        = 'gpl',
-         summary        = 'balalalalal',
-         packageversion = 0,
-         x_rpm_Group    = 'Applicatio/fu',
-         description    = 'this should be really really long',
-         source         = [ prog_install ],
-         source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
-      )
+env.Package( projectname  = 'foo',
+             version        = '1.2.3',
+             type           = 'rpm',
+             license        = 'gpl',
+             summary        = 'balalalalal',
+             packageversion = 0,
+             x_rpm_Group    = 'Applicatio/fu',
+             description    = 'this should be really really long',
+             source         = [ prog_install ],
+             source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
+          )
 """)
 
 test.run(arguments='', stderr = None)

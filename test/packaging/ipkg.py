@@ -35,9 +35,8 @@ python = TestSCons.python
 test = TestSCons.TestSCons()
 ipkg = test.Environment().WhereIs('ipkg-build')
 
-
 if not ipkg:
-  test.skip_test("ipkg-build not found, skipping test\n")
+  test.no_result("ipkg-build not found, skipping test\n")
 else:
   test.write( 'main.c', r"""
 int main(int argc, char *argv[])
@@ -49,29 +48,43 @@ int main(int argc, char *argv[])
   test.write( 'foo.conf', '' )
 
   test.write( 'SConstruct', r"""
-prog = Install( 'bin/', Program( 'main.c') )
-conf = Install( 'etc/', File( 'foo.conf' ) )
-Tag( conf, 'conf' )
-Package( type    = 'ipk',
-  source         = [ prog, conf ],
-  projectname    = 'foo',
-  version        = '0.0',
-  summary        = 'foo is the ever-present example program -- it does everything',
-  description    = '''foo is not a real package. This is simply an example that you
- may modify if you wish.
- .
- When you modify this example, be sure to change the Package, Version,
- Maintainer, Depends, and Description fields.''',
+env=Environment(tools=['default', 'packaging'])
+prog = env.Install( 'bin/', Program( 'main.c') )
+conf = env.Install( 'etc/', File( 'foo.conf' ) )
+env.Tag( conf, 'conf', 'mehr', 'und mehr' )
+env.Package( type      = 'ipk',
+      source           = [ prog, conf ],
+      projectname      = 'foo',
+      version          = '0.0',
+      summary          = 'foo is the ever-present example program -- it does everything',
+      description      = '''foo is not a real package. This is simply an example that you
+may modify if you wish.
+.
+When you modify this example, be sure to change the Package, Version,
+Maintainer, Depends, and Description fields.''',
 
-  source_url     = 'http://gnu.org/foo-0.0.tar.gz',
-  x_ipk_section  = 'extras',
-  x_ipk_priority = 'optional',
-  architecture   = 'arm',
-  x_ipk_maintainer   = 'Familiar User <user@somehost.net>',
-  x_ipk_depends  = 'libc6, grep', )
+      source_url       = 'http://gnu.org/foo-0.0.tar.gz',
+      x_ipk_section    = 'extras',
+      x_ipk_priority   = 'optional',
+      architecture     = 'arm',
+      x_ipk_maintainer = 'Familiar User <user@somehost.net>',
+      x_ipk_depends    = 'libc6, grep', )
 """)
 
-  test.run(arguments="--debug=stacktrace")
+  expected="""scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Building targets ...
+gcc -o main.o -c main.c
+gcc -o main main.o
+Copy file(s): "main" to "foo-0.0/bin/main"
+Copy file(s): "foo.conf" to "foo-0.0/etc/foo.conf"
+build_specfiles(["foo-0.0/CONTROL/control", "foo-0.0/CONTROL/conffiles", "foo-0.0/CONTROL/postrm", "foo-0.0/CONTROL/prerm", "foo-0.0/CONTROL/postinst", "foo-0.0/CONTROL/preinst"], ["foo-0.0/bin/main", "foo-0.0/etc/foo.conf"])
+ipkg-build -o phil -g users foo-0.0
+Packaged contents of foo-0.0 into %s/foo_0.0_arm.ipk
+scons: done building targets.
+"""%test.workpath()
+
+  test.run(arguments="--debug=stacktrace foo_0.0_arm.ipk", stdout=expected)
   test.fail_test( not os.path.exists( 'foo-0.0/CONTROL/control' ) )
   test.fail_test( not os.path.exists( 'foo_0.0_arm.ipk' ) )
 

@@ -29,79 +29,89 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import SCons.Builder
 import os
 
-from packager import SourcePackager, BinaryPackager, LocationTagFactory, SimpleTagCompiler
+from SCons.Tool.packaging import stripinstall_emitter, packageroot_emitter
 
-class Ipk(BinaryPackager, SourcePackager):
-    def create_builder(self, env, kw=None):
-        SCons.Tool.Tool( 'ipkg' ).generate(env)
-        ipkbuilder = env['BUILDERS']['Ipkg']
-        env['IPKGUSER']  = os.popen('id -un').read().strip()
-        env['IPKGGROUP'] = os.popen('id -gn').read().strip()
-        env['IPKGFLAGS'] = SCons.Util.CLVar('-o $IPKGUSER -g $IPKGGROUP')
-        env['IPKGCOM']   = '$IPKG $IPKGFLAGS ${SOURCE.get_path().replace("/CONTROL/control","")}'
+def package(env, target, source, packageroot, projectname, version, description,
+            architecture, summary, x_ipk_priority, x_ipk_section, source_url,
+            x_ipk_maintainer, x_ipk_depends, **kw):
+    """ this function prepares the packageroot directory for packaging with the
+    ipkg builder.
+    """
+    SCons.Tool.Tool('ipkg').generate(env)
 
-        self.pkg_root    = "%s-%s" % ( kw['projectname'], kw['version'] )
-        pkg_root_emitter = SourcePackager.package_root_emitter(self, self.pkg_root)
+    bld = env['BUILDERS']['Ipkg']
+    env['IPKGUSER']  = os.popen('id -un').read().strip()
+    env['IPKGGROUP'] = os.popen('id -gn').read().strip()
+    env['IPKGFLAGS'] = SCons.Util.CLVar('-o $IPKGUSER -g $IPKGGROUP')
+    env['IPKGCOM']   = '$IPKG $IPKGFLAGS ${SOURCE.get_path().replace("/CONTROL/control","")}'
 
-        ipkbuilder.push_emitter(self.specfile_emitter)
-        ipkbuilder.push_emitter(pkg_root_emitter)
-        ipkbuilder.push_emitter(self.strip_install_emitter)
+    bld.push_emitter(gen_ipk_specfiles)
+    bld.push_emitter(packageroot_emitter(packageroot))
+    bld.push_emitter(stripinstall_emitter())
 
-        return ipkbuilder
+    # override the default target.
+    if str(target[0])=="%s-%s"%(projectname, version):
+        target=[ "%s_%s_%s.ipk"%(projectname, version, architecture) ]
 
-    def add_targets(self, kw):
-        """ tries to guess the filenames of the generated IPKG files.
-        """
-        version      = kw['version']
-        projectname  = kw['projectname']
-        architecture = kw['architecture']
+    # now call the ipk builder to actually build the packet.
+    loc=locals()
+    del loc['kw']
+    kw.update(loc)
+    del kw['source']
+    del kw['target']
+    del kw['env']
+    return apply(bld, [env, target, source], kw)
 
-        kw['target'] = [ "%s_%s_%s.ipk" % (projectname, version, architecture) ]
+def gen_ipk_specfiles(target, source, env):
+    # create the specfile builder
+    s_bld=SCons.Builder.Builder(action=build_specfiles)
 
-        return kw
+    # create the specfile targets
+    spec_target=[]
+    proot=env.fs.Dir(env['packageroot'])
+    control=proot.Dir('CONTROL')
+    spec_target.append(control.File('control'))
+    spec_target.append(control.File('conffiles'))
+    spec_target.append(control.File('postrm'))
+    spec_target.append(control.File('prerm'))
+    spec_target.append(control.File('postinst'))
+    spec_target.append(control.File('preinst'))
 
-    def create_specfile_targets(self, env):
-        """ returns the specfile target names.
-        """
-        targets  = []
-        pkg_root = env.Dir( self.pkg_root )
-        #targets.append( pkg_root )
-        control  = pkg_root.Dir( 'CONTROL' )
-        targets.append( control.File( 'control' ) )
-        targets.append( control.File( 'conffiles' ) )
-        targets.append( control.File( 'postrm' ) )
-        targets.append( control.File( 'prerm' ) )
-        targets.append( control.File( 'postinst' ) )
-        targets.append( control.File( 'preinst' ) )
-        return targets
+    # apply the builder to the specfile targets
+    n_source=s_bld(env, target=spec_target, source=source)
+    n_source.extend(source)
+    source=n_source
 
-    def build_specfile(self, target, source, env):
-        """ Builds the CONTROL/control file from the target list by finding the
-        PackageMetaData in the env dictionary.
+    return (target, source)
 
-        Afterwards the list of files is copied in.
-        """
-        control_target   = filter( lambda x: x.get_path().rfind('control') != -1, target )[0]
-        control_file     = open(control_target.abspath, 'w')
-
+def build_specfiles(source, target, env):
+    """ filter the targets for the needed files and use the variables in env
+    to create the specfile.
+    """
+    #
+    # At first we care for the CONTROL/control file, which is the main file for ipk.
+    #
+    # For this we need to open multiple files in random order, so we store into
+    # a dict so they can be easily accessed.
+    #
+    #
+    opened_files={}
+    def open_file(needle, haystack):
         try:
-            # XXX: portability
-            if not env.has_key('x_ipk_description'):
-                env['x_ipk_description'] = "%s\n %s" % ( env['summary'],
-                                                        env['description'].replace( '\n', '\n ' ) )
+            return opened_files[needle]
+        except KeyError:
+            file=filter(lambda x: x.get_path().rfind(needle)!=-1, haystack)[0]
+            opened_files[needle]=open(file.abspath, 'w')
+            return opened_files[needle]
 
-            # assert that the mandatory field are there.
-            env['projectname']
-            env['version']
-            env['x_ipk_priority']
-            env['x_ipk_section']
-            env['source_url']
-            env['architecture']
-            env['x_ipk_maintainer']
-            env['x_ipk_depends']
-            env['x_ipk_description']
+    control_file=open_file('control', target)
 
-            content = """
+    if not env.has_key('x_ipk_description'):
+        env['x_ipk_description']="%s\n %s"%(env['summary'],
+                                            env['description'].replace('\n', '\n '))
+
+
+    content = """
 Package: $projectname
 Version: $version
 Priority: $x_ipk_priority
@@ -113,38 +123,38 @@ Depends: $x_ipk_depends
 Description: $x_ipk_description
 """
 
-            control_file.write( env.subst(content) )
-            control_file.close()
-            self.handle_other_control_files(target, source, env)
+    control_file.write(env.subst(content))
 
-            # call a user specified function
-            if env.has_key('change_specfile'):
-                content += env['change_specfile'](target, source)
+    #
+    # now handle the various other files, which purpose it is to set post-, 
+    # pre-scripts and mark files as config files.
+    #
+    # We do so by filtering the source files for files which are marked with
+    # the "config" tag and afterwards we do the same for x_ipk_postrm,
+    # x_ipk_prerm, x_ipk_postinst and x_ipk_preinst tags.
+    #
+    # The first one will write the name of the file into the file
+    # CONTROL/configfiles, the latter add the content of the x_ipk_* variable
+    # into the same named file.
+    #
+    for f in [x for x in source if 'packaging_config' in dir(x)]:
+        config=open_file('conffiles')
+        config.write(f.packaging_install_location)
+        config.write('\n')
 
-        except KeyError, e:
-            raise SCons.Errors.UserError( '"%s" package field for IPK is missing.' % e.args[0] )
+    for str in 'postrm prerm postinst preinst'.split():
+        name="packaging_x_ipk_%s"%str
+        for f in [x for x in source if name in dir(x)]:
+            file=open_file(name)
+            file.write(env[str])
 
-    def handle_other_control_files(self, target, source, env):
-        """ this function cares for CONTROL/conffiles, CONTROL/post*, CONTROL/pre*
-        files.
-        """
-        output_files = {}
-        def get_file( file ):
-            target_file = filter( lambda x: x.get_path().rfind(file) != -1, target )[0]
-            if not output_files.has_key(file):
-                output_files[file] = open(target_file.abspath, 'w')
+    #
+    # close all opened files
+    for f in opened_files.values():
+        f.close()
 
-            return output_files[file]
+    # call a user specified function
+    if env.has_key('change_specfile'):
+        content += env['change_specfile'](target)
 
-        for f in source:
-            tags = f.get_tags()
-            if tags.has_key( 'config' ):
-                get_file( 'conffiles' ).write( tags['install_location'].get_path() )
-                get_file( 'conffiles' ).write( '\n' )
-
-        for str in 'postrm prerm postinst preinst'.split():
-            if env.has_key( "x_ipk_%s" % str ):
-                get_file( str ).write( env[str] )
-
-        for f in output_files.values():
-            f.close()
+    return 0

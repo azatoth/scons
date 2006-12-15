@@ -164,5 +164,6 @@ Package( projectname    = 'foo',
   componentrefs = features[2].getElementsByTagName( 'ComponentRef' ) 
   test.fail_test( not componentrefs[0].attributes['Id'].value == 'filedll_a' )
 
-test.pass_test()
+else:
+  test.no_result()
 

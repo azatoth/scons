@@ -40,14 +40,13 @@ rpm = test.Environment().WhereIs('rpm')
 if not rpm:
     test.skip_test('rpm not found, skipping test\n')
 
-test.write( 'main.c', '' )
+test.write( 'main', '' )
 test.write('SConstruct', """
 # -*- coding: iso-8859-15 -*-
 import os
 
-prog = Install( '/bin', 'main.c' )
-
 env=Environment(tools=['default', 'packaging'])
+prog=env.Install( '/bin', 'main' )
 env.Package( projectname    = 'foo',
              version        = '1.2.3',
              license        = 'gpl',
@@ -55,12 +54,13 @@ env.Package( projectname    = 'foo',
              packageversion = 0,
              x_rpm_Group    = 'Application/office',
              description    = 'this should be really long',
+             type           = ARGUMENTS.get('package-type'),
              source         = [ prog ],
              source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
             )
 """)
 
-test.run(arguments='package --package-type=rpm', stderr = None)
+test.run(arguments='package package-type=rpm', stderr = None)
 
 src_rpm = 'foo-1.2.3-0.src.rpm'
 machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine

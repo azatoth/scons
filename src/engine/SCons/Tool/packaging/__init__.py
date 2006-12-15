@@ -39,28 +39,43 @@ import SCons.Defaults
 
 __all__ = [ 'tarbz', 'targz', 'zip', 'rpm', 'msi', 'ipk' ]
 
-
 #
 # Utility and Builder function
 #
-def Tag(env, target, source=None, *args, **kw):
-    """ Tag a file with the given arguments. This functin effectively calls the 
-    set_tags() function of Node.Fs object.
+def Tag(env, target, source, *more_tags, **kw_tags):
+    """ Tag a file with the given arguments, just sets the accordingly named
+    attribute on the file object.
+
+    TODO: FIXME
     """
-    nodes = env.arg2nodes(source, env.fs.Entry)
+    if not target:
+        target=source
+        first_tag=None
+    else:
+        first_tag=source
 
-    if len(kw) == 0 and len(args) == 0:
-        raise UserError, "No tags for PackageTag() given."
+    if first_tag:
+        kw_tags[first_tag[0]] = ''
 
-    if source:
-        raise UserError, "Source argument given, but will not be used."
+    if len(kw_tags) == 0 and len(more_tags) == 0:
+        raise UserError, "No tags given."
 
     # XXX: sanity checks
-    for x in args:
-        kw[x] = ''
+    for x in more_tags:
+        kw_tags[x] = ''
+
+    if not SCons.Util.is_List(target):
+        target=[target]
 
     for t in target:
-        n.set_tags( kw )
+        for (k,v) in kw_tags.items():
+            # all file tags have to start with packaging_, so we can later
+            # differentiate between "normal" object attributes and the
+            # packaging attributes. As the user should not be bothered with
+            # that, the prefix will be added here if missing.
+            if not k.startswith('packaging_'):
+                k='packaging_'+k
+            setattr(t, k, v)
 
 def Package(env, target=None, source=None, **kw):
     """ Entry point for the package tool.
@@ -69,7 +84,7 @@ def Package(env, target=None, source=None, **kw):
     if not source:
         raise UserError, "No source for Package() given"
 
-    if not kw.has_key('type'):
+    if not kw.has_key('type') or kw['type']==None:
         if env['BUILDERS'].has_key('Tar'):
             kw['type']='targz'
         elif env['BUILDERS'].has_key('Zip'):
@@ -123,18 +138,18 @@ def Package(env, target=None, source=None, **kw):
                                       % (e.args[0],packager.__name__) )
     except TypeError, e:
         # this exception means that a needed argument for the packager is
-        # missing. As our packagers get their "tags" as a named function
-        # argument we need to find out which one is missing.
+        # missing. As our packagers get their "tags" as named function
+        # arguments we need to find out which one is missing.
         from inspect import getargspec
         args,varargs,varkw,defaults=getargspec(packager.package)
         if defaults!=None:
-            args=args[:-len(defaults)] # throw away argument with default values
+            args=args[:-len(defaults)] # throw away arguments with default values
         map(args.remove, 'env target source'.split())
         # now remove any args for which we have a value in kw.
         args=[x for x in args if not kw.has_key(x)]
 
         if len(args)==0:
-            raise
+            raise # must be a different error, so reraise
         elif len(args)==1:
             raise SCons.Errors.UserError( "Missing PackageTag '%s' for %s packager"\
                                           % (args[0],packager.__name__) )
@@ -211,7 +226,7 @@ def exists(env):
 
 def options(opts):
     opts.AddOptions(
-        EnumOption( [ 'type', '--type' ],
+        EnumOption( [ 'type', '--package-type' ],
                     'the type of package to build',
                     None, map( str, __all__ )
                   )
@@ -276,11 +291,12 @@ def stripinstall_emitter():
     def strip_install_emitter(target, source, env):
         def has_no_install_location(file):
             return not (file.has_builder() and\
+                hasattr(file.builder, 'name') and\
                 (file.builder.name=="InstallBuilder" or\
                  file.builder.name=="InstallAsBuilder"))
 
         if len(filter(has_no_install_location, source)):
-            warn(Warning, "there are file to package with have no\
+            warn(Warning, "there are file to package which have no\
             InstallBuilder attached, this might lead to irreproducible packages")
 
         n_source=[]
