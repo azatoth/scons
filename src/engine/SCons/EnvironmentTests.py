@@ -2795,8 +2795,8 @@ def generate(env):
         paths = map(str, tgt)
         paths.sort()
         expect = [
-            os.path.join('export/build'),
-            os.path.join('export/foo1'),
+            os.path.join('export', 'build'),
+            os.path.join('export', 'foo1'),
         ]
         assert paths == expect, paths
         for tnode in tgt:
