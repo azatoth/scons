@@ -55,6 +55,12 @@ RELEASE 0.97 - XXX
   - Propagate TypeError exceptions when evaluating construction variable
     expansions up the stack, so users can see what's going on.
 
+  - When disambiguating a Node.FS.Entry into a Dir or File, don't look
+    in the on-disk source directory until we've confirmed there's no
+    on-disk entry locally and there *is* one in the srcdir.  This avoids
+    creating a phantom Node that can interfere with dependencies on
+    directory contents.
+
   From Ben Leslie:
 
   - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().

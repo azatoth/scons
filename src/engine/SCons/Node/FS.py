@@ -777,13 +777,35 @@ class Entry(Base):
         pass
 
     def disambiguate(self):
-        if self.isdir() or self.srcnode().isdir():
+        """
+        """
+        if self.isdir():
             self.__class__ = Dir
             self._morph()
-        else:
+        elif self.isfile():
             self.__class__ = File
             self._morph()
             self.clear()
+        else:
+            # There was nothing on-disk at this location, so look in
+            # the src directory.
+            #
+            # We can't just use self.srcnode() straight away because
+            # that would create an actual Node for this file in the src
+            # directory, and there might not be one.  Instead, use the
+            # dir_on_disk() method to see if there's something on-disk
+            # with that name, in which case we can go ahead and call
+            # self.srcnode() to create the right type of entry.
+            srcdir = self.dir.srcnode()
+            if srcdir != self.dir and \
+               srcdir.entry_exists_on_disk(self.name) and \
+               self.srcnode().isdir():
+                self.__class__ = Dir
+                self._morph()
+            else:
+                self.__class__ = File
+                self._morph()
+                self.clear()
         return self
 
     def rfile(self):

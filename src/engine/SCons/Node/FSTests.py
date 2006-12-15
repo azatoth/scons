@@ -2725,11 +2725,28 @@ class disambiguateTestCase(unittest.TestCase):
         f = efile.disambiguate()
         assert f.__class__ is fff.__class__, f.__class__
 
+        test.subdir('build')
+        test.subdir(['build', 'bdir'])
+        test.write(['build', 'bfile'], "build/bfile\n")
+
         test.subdir('src')
+        test.write(['src', 'bdir'], "src/bdir\n")
+        test.subdir(['src', 'bfile'])
+
         test.subdir(['src', 'edir'])
         test.write(['src', 'efile'], "src/efile\n")
 
         fs.BuildDir(test.workpath('build'), test.workpath('src'))
+
+        build_bdir = fs.Entry(test.workpath('build/bdir'))
+        d = build_bdir.disambiguate()
+        assert d is build_bdir, d
+        assert d.__class__ is ddd.__class__, d.__class__
+
+        build_bfile = fs.Entry(test.workpath('build/bfile'))
+        f = build_bfile.disambiguate()
+        assert f is build_bfile, f
+        assert f.__class__ is fff.__class__, f.__class__
 
         build_edir = fs.Entry(test.workpath('build/edir'))
         d = build_edir.disambiguate()
@@ -2737,6 +2754,10 @@ class disambiguateTestCase(unittest.TestCase):
 
         build_efile = fs.Entry(test.workpath('build/efile'))
         f = build_efile.disambiguate()
+        assert f.__class__ is fff.__class__, f.__class__
+
+        build_nonexistant = fs.Entry(test.workpath('build/nonexistant'))
+        f = build_nonexistant.disambiguate()
         assert f.__class__ is fff.__class__, f.__class__
 
 class postprocessTestCase(unittest.TestCase):
