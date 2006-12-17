@@ -54,7 +54,6 @@ import SCons.Node.Python
 import SCons.Platform
 import SCons.SConsign
 import SCons.Sig
-import SCons.Sig.MD5
 import SCons.Sig.TimeStamp
 import SCons.Subst
 import SCons.Tool
@@ -1667,8 +1666,15 @@ class Base(SubstitutionEnvironment):
     def SourceSignatures(self, type):
         type = self.subst(type)
         if type == 'MD5':
-            import SCons.Sig.MD5
-            self._calc_module = SCons.Sig.MD5
+            try:
+                import SCons.Sig.MD5
+            except ImportError:
+                msg = "No MD5 module available, using time stamps"
+                SCons.Warnings.warn(SCons.Warnings.NoMD5ModuleWarning, msg)
+                import SCons.Sig.TimeStamp
+                self._calc_module = SCons.Sig.TimeStamp
+            else:
+                self._calc_module = SCons.Sig.MD5
         elif type == 'timestamp':
             import SCons.Sig.TimeStamp
             self._calc_module = SCons.Sig.TimeStamp

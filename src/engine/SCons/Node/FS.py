@@ -48,7 +48,6 @@ import SCons.Action
 from SCons.Debug import logInstanceCreation
 import SCons.Errors
 import SCons.Node
-import SCons.Sig.MD5
 import SCons.Subst
 import SCons.Util
 import SCons.Warnings
@@ -1259,7 +1258,13 @@ class FS(LocalFS):
         self.CacheDebug = self.CacheDebugWrite
 
     def CacheDir(self, path):
-        self.CachePath = path
+        try:
+            import SCons.Sig.MD5
+        except ImportError:
+            msg = "No MD5 module available, CacheDir() not supported"
+            SCons.Warnings.warn(SCons.Warnings.NoMD5ModuleWarning, msg)
+        else:
+            self.CachePath = path
 
     def build_dir_target_climb(self, orig, dir, tail):
         """Create targets in corresponding build directories
@@ -2285,12 +2290,15 @@ class File(Base):
             return None, None
         ninfo = self.get_binfo().ninfo
         if not hasattr(ninfo, 'bsig'):
+            import SCons.Errors
             raise SCons.Errors.InternalError, "cachepath(%s) found no bsig" % self.path
         elif ninfo.bsig is None:
+            import SCons.Errors
             raise SCons.Errors.InternalError, "cachepath(%s) found a bsig of None" % self.path
         # Add the path to the cache signature, because multiple
         # targets built by the same action will all have the same
         # build signature, and we have to differentiate them somehow.
+        import SCons.Sig.MD5
         cache_sig = SCons.Sig.MD5.collect([ninfo.bsig, self.path])
         subdir = string.upper(cache_sig[0])
         dir = os.path.join(self.fs.CachePath, subdir)
