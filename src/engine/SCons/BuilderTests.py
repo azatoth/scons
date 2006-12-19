@@ -716,8 +716,8 @@ class BuilderTestCase(unittest.TestCase):
             assert 0
         
         
-    def test_ListBuilder(self):
-        """Testing ListBuilder class."""
+    def test_lists(self):
+        """Testing handling lists of targets and source"""
         def function2(target, source, env, tlist = [outfile, outfile2], **kw):
             for t in target:
                 open(str(t), 'w').write("function2\n")
@@ -1406,17 +1406,6 @@ class BuilderTestCase(unittest.TestCase):
             assert B.get_name(env) == 'bldr1'
         for B in b3.get_src_builders(env2):
             assert B.get_name(env2) == 'B1'
-
-        tgts = b1(env, target = [outfile, outfile2], source='moo')
-        for t in tgts:
-            name = t.builder.get_name(env)
-            assert name == 'ListBuilder(bldr1)', name
-            # The following are not symbolically correct, because the
-            # ListBuilder was only created on behalf of env, so it
-            # would probably be OK if better correctness
-            # env-to-builder mappings caused this to fail in the
-            # future.
-            assert t.builder.get_name(env2) == 'ListBuilder(B1)'
 
         tgt = b4(env, target = 'moo', source='cow')
         assert tgt[0].builder.get_name(env) == 'bldr4'

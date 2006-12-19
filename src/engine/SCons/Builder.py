@@ -29,7 +29,7 @@ There is (at present) one subclasses:
         to turn the .y into a .c, the .c into a .o, and the .o into an
         executable program.
 
-There is also two proxies that look like Builders:
+There is also a proxy that looks like a Builder:
 
     CompositeBuilder
 
@@ -38,11 +38,6 @@ There is also two proxies that look like Builders:
         action.  This is so that we can invoke different actions
         (compilers, compile options) for different flavors of source
         files.
-
-    ListBuilder
-
-        This proxies for a Builder *invocation* where the target
-        is a list of files, not a single file.
 
 Builders and their proxies have the following public interface methods
 used by other modules:
@@ -304,7 +299,7 @@ def _node_errors(builder, env, tlist, slist):
     # were specified.
     for t in tlist:
         if t.side_effect:
-            raise UserError, "Multiple ways to build the same target were specified for: %s" % str(t)
+            raise UserError, "Multiple ways to build the same target were specified for: %s" % t
         if t.has_explicit_builder():
             if not t.env is None and not t.env is env:
                 action = t.builder.action
@@ -312,22 +307,21 @@ def _node_errors(builder, env, tlist, slist):
                 contents = action.get_contents(tlist, slist, env)
 
                 if t_contents == contents:
-                    SCons.Warnings.warn(SCons.Warnings.DuplicateEnvironmentWarning,
-                                        "Two different environments were specified for target %s,\n\tbut they appear to have the same action: %s"%(str(t), action.genstring(tlist, slist, t.env)))
-
+                    msg = "Two different environments were specified for target %s,\n\tbut they appear to have the same action: %s" % (t, action.genstring(tlist, slist, t.env))
+                    SCons.Warnings.warn(SCons.Warnings.DuplicateEnvironmentWarning, msg)
                 else:
-                    raise UserError, "Two environments with different actions were specified for the same target: %s"%str(t)
-
+                    msg = "Two environments with different actions were specified for the same target: %s" % t
+                    raise UserError, msg
             if builder.multi:
                 if t.builder != builder:
-                    if isinstance(t.builder, ListBuilder) and isinstance(builder, ListBuilder) and t.builder.builder == builder.builder:
-                        raise UserError, "Two different target sets have a target in common: %s"%str(t)
-                    else:
-                        raise UserError, "Two different builders (%s and %s) were specified for the same target: %s"%(t.builder.get_name(env), builder.get_name(env), str(t))
-                elif isinstance(t.builder, ListBuilder) ^ isinstance(builder, ListBuilder):
-                    raise UserError, "Cannot build same target `%s' as singular and list"%str(t)
+                    msg = "Two different builders (%s and %s) were specified for the same target: %s" % (t.builder.get_name(env), builder.get_name(env), t)
+                    raise UserError, msg
+                if t.get_executor().targets != tlist:
+                    msg = "Two different target lists have a target in common: %s  (from %s and from %s)" % (t, map(str, t.get_executor().targets), map(str, tlist))
+                    raise UserError, msg
             elif t.sources != slist:
-                raise UserError, "Multiple ways to build the same target were specified for: %s  (from %s and from %s)" % (str(t), map(str,t.sources), map(str,slist))
+                msg = "Multiple ways to build the same target were specified for: %s  (from %s and from %s)" % (t, map(str, t.sources), map(str, slist))
+                raise UserError, msg
 
     if builder.single_source:
         if len(slist) > 1:
@@ -570,31 +564,26 @@ class BuilderBase:
         
         tlist, slist = self._create_nodes(env, target, source)
 
-        if len(tlist) == 1:
-            builder = self
-        else:
-            builder = ListBuilder(self, env, tlist)
-
         # Check for errors with the specified target/source lists.
-        _node_errors(builder, env, tlist, slist)
+        _node_errors(self, env, tlist, slist)
 
         # The targets are fine, so find or make the appropriate Executor to
         # build this particular list of targets from this particular list of
         # sources.
-        if builder.multi:
-            get_executor = builder.get_multi_executor
+        if self.multi:
+            get_executor = self.get_multi_executor
         else:
-            get_executor = builder.get_single_executor
+            get_executor = self.get_single_executor
         executor = get_executor(env, tlist, slist, executor_kw)
 
         # Now set up the relevant information in the target Nodes themselves.
         for t in tlist:
             t.cwd = env.fs.getcwd()
-            t.builder_set(builder)
+            t.builder_set(self)
             t.env_set(env)
             t.add_source(slist)
             t.set_executor(executor)
-            t.set_explicit(builder.is_explicit)
+            t.set_explicit(self.is_explicit)
 
         return SCons.Node.NodeList(tlist)
 
@@ -711,34 +700,6 @@ class BuilderBase:
         appropriate method to call for the Builder in question.
         """
         self.emitter[suffix] = emitter
-
-
-
-class ListBuilder(SCons.Util.Proxy):
-    """A Proxy to support building an array of targets (for example,
-    foo.o and foo.h from foo.y) from a single Action execution.
-    """
-
-    def __init__(self, builder, env, tlist):
-        if __debug__: logInstanceCreation(self, 'Builder.ListBuilder')
-        SCons.Util.Proxy.__init__(self, builder)
-        self.builder = builder
-        self.target_scanner = builder.target_scanner
-        self.source_scanner = builder.source_scanner
-        self.env = env
-        self.tlist = tlist
-        self.multi = builder.multi
-        self.single_source = builder.single_source
-
-    def targets(self, node):
-        """Return the list of targets for this builder instance.
-        """
-        return self.tlist
-
-    def get_name(self, env):
-        """Attempts to get the name of the Builder."""
-
-        return "ListBuilder(%s)" % self.builder.get_name(env)
 
 class MultiStepBuilder(BuilderBase):
     """This is a builder subclass that can build targets in
