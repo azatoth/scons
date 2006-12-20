@@ -42,8 +42,11 @@ def build(env, target, source):
 def build2(env, target, source):
     build(env, target, source)
 
-B = Builder(action=build, multi=1)
-C = Builder(action=build2, multi=1)
+# Put the names on the Builder objects and in the environment so
+# the error output should be consistent regardless of Python version
+# or how we mess with the Builder internals.
+B = Builder(action=build, multi=1, name='B')
+C = Builder(action=build2, multi=1, name='C')
 env = Environment(BUILDERS = { 'B' : B, 'C' : C })
 env.B(target = 'file8.out', source = 'file8.in')
 env.C(target = 'file8.out', source = 'file8.in')
