@@ -512,6 +512,7 @@ class SubstitutionEnvironment:
         """
         dict = {
             'ASFLAGS'       : [],
+            'CFLAGS'        : [],
             'CCFLAGS'       : [],
             'CPPDEFINES'    : [],
             'CPPFLAGS'      : [],
@@ -640,6 +641,8 @@ class SubstitutionEnvironment:
                 elif arg == '-pthread':
                     dict['CCFLAGS'].append(arg)
                     dict['LINKFLAGS'].append(arg)
+                elif arg[:5] == '-std=':
+                    dict['CFLAGS'].append(arg) # C only
                 elif arg[0] == '+':
                     dict['CCFLAGS'].append(arg)
                     dict['LINKFLAGS'].append(arg)

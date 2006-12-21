@@ -96,6 +96,9 @@ RELEASE 0.97 - XXX
 
   - Eliminate some unnecessary os.path.normpath() calls.
 
+  - Add a $CFLAGS variable for C-specific options, leaving $CCFLAGS
+    for options common to C and C++.
+
   From Tom Parker:
 
   - Have the error message print the missing file that Qt can't find.
