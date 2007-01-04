@@ -2031,16 +2031,23 @@ class File(Base):
         b = self.is_derived()
         if not b and not self.has_src_builder():
             return None
+
+        retrieved = None
         if b and self.fs.CachePath:
             if self.fs.cache_show:
                 if CacheRetrieveSilent(self, [], None, execute=1) == 0:
                     self.build(presub=0, execute=0)
-                    self.set_state(SCons.Node.executed)
-                    return 1
-            elif CacheRetrieve(self, [], None, execute=1) == 0:
+                    retrieved = 1
+            else:
+                if CacheRetrieve(self, [], None, execute=1) == 0:
+                    retrieved = 1
+            if retrieved:
+                # Record build signature information, but don't
+                # push it out to cache.  (We just got it from there!)
                 self.set_state(SCons.Node.executed)
-                return 1
-        return None
+                SCons.Node.Node.built(self)
+
+        return retrieved
 
 
     def built(self):

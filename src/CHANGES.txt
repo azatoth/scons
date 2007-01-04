@@ -68,6 +68,9 @@ RELEASE 0.97 - XXX
   - Allow the f90.py and f95.py Tool modules to compile earlier source
     source files of earlier Fortran version.
 
+  - Fix storing signatures of files retrieved from CacheDir() so they're
+    correctly identified as up-to-date next invocation.
+
   From Ben Leslie:
 
   - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().
