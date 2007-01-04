@@ -775,7 +775,7 @@ class Entry(Base):
     def diskcheck_match(self):
         pass
 
-    def disambiguate(self):
+    def disambiguate(self, must_exist=None):
         """
         """
         if self.isdir():
@@ -801,6 +801,9 @@ class Entry(Base):
                self.srcnode().isdir():
                 self.__class__ = Dir
                 self._morph()
+            elif must_exist:
+                msg = "No such file or directory: '%s'" % self.abspath
+                raise SCons.Errors.UserError, msg
             else:
                 self.__class__ = File
                 self._morph()
@@ -824,18 +827,14 @@ class Entry(Base):
         Since this should return the real contents from the file
         system, we check to see into what sort of subclass we should
         morph this Entry."""
-        if self.isfile():
-            self.__class__ = File
-            self._morph()
+        try:
+            self = self.disambiguate(must_exist=1)
+        except SCons.Errors.UserError, e:
+            if self.islink():
+                return ''
+            raise e
+        else:
             return self.get_contents()
-        if self.isdir():
-            self.__class__ = Dir
-            self._morph()
-            return self.get_contents()
-        if self.islink():
-            return ''             # avoid errors for dangling symlinks
-        msg = "No such file or directory: '%s'" % self.abspath
-        raise SCons.Errors.UserError, msg
 
     def must_be_a_Dir(self):
         """Called to make sure a Node is a Dir.  Since we're an
