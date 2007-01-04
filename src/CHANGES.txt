@@ -116,6 +116,17 @@ RELEASE 0.97 - XXX
     specified on the command line (and not intuited from the old way of
     calling it with just ".sconsign").
 
+  From Jose Pablo Ezequiel "Pupeno" Fernandez Silva:
+
+  - Give the 'lex' tool knowledge of the additional target files produced
+    by the flex "--header-file=" and "--tables-file=" options.
+
+  - Give the 'yacc' tool knowledge of the additional target files produced
+    by the bison "-g", "--defines=" and "--graph=" options.
+
+  - Generate intermediate files with Objective C file suffixes (.m) when
+    the lex and yacc source files have appropriate suffixes (.lm and .ym).
+
   From Sohail Somain:
 
   - Have the mslink.py Tool only look for a 'link' executable on Windows

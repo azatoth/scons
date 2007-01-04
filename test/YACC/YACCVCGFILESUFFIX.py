@@ -24,51 +24,63 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import os.path
-import string
-import sys
+"""
+Test setting the YACCVCGFILESUFFIX variable.
+"""
+
 import TestSCons
 
 _python_ = TestSCons._python_
-_exe   = TestSCons._exe
 
 test = TestSCons.TestSCons()
 
 
 
-test.write('mylex.py', """
+test.write('myyacc.py', """\
 import getopt
+import os.path
 import string
 import sys
-cmd_opts, args = getopt.getopt(sys.argv[1:], 't', [])
-for a in args:
-    contents = open(a, 'rb').read()
-    sys.stdout.write(string.replace(contents, 'LEX', 'mylex.py'))
+vcg = None
+opts, args = getopt.getopt(sys.argv[1:], 'go:')
+for o, a in opts:
+    if o == '-g':
+        vcg = 1
+    elif o == '-o':
+        outfile = open(a, 'wb')
+for f in args:
+    infile = open(f, 'rb')
+    for l in filter(lambda l: l != '/*yacc*/\\n', infile.readlines()):
+        outfile.write(l)
+outfile.close()
+if vcg:
+    base, ext = os.path.splitext(args[0])
+    open(base+'.vcgsuffix', 'wb').write(string.join(sys.argv)+'\\n')
 sys.exit(0)
 """)
 
 test.write('SConstruct', """
-env = Environment(LEX = r'%(_python_)s mylex.py', tools=['default', 'lex'])
-env.CFile(target = 'aaa', source = 'aaa.l')
-env.CFile(target = 'bbb', source = 'bbb.lex')
-env.CXXFile(target = 'ccc', source = 'ccc.ll')
-env.CXXFile(target = 'ddd', source = 'ddd.lm')
+env = Environment(tools=['default', 'yacc'],
+                  YACC = r'%(_python_)s myyacc.py',
+                  YACCVCGFILESUFFIX = '.vcgsuffix')
+env.CXXFile(target = 'aaa', source = 'aaa.yy')
+env.CXXFile(target = 'bbb', source = 'bbb.yy', YACCFLAGS = '-g')
 """ % locals())
 
-test.write('aaa.l',         "aaa.l\nLEX\n")
-test.write('bbb.lex',       "bbb.lex\nLEX\n")
-test.write('ccc.ll',        "ccc.ll\nLEX\n")
-test.write('ddd.lm',        "ddd.lm\nLEX\n")
+test.write('aaa.yy', "aaa.yy\n/*yacc*/\n")
+test.write('bbb.yy', "bbb.yy\n/*yacc*/\n")
 
-test.run(arguments = '.', stderr = None)
+test.run(arguments = '.')
 
-# Read in with mode='r' because mylex.py implicitley wrote to stdout
-# with mode='w'.
-test.must_match('aaa.c',    "aaa.l\nmylex.py\n",        mode='r')
-test.must_match('bbb.c',    "bbb.lex\nmylex.py\n",      mode='r')
-test.must_match('ccc.cc',   "ccc.ll\nmylex.py\n",       mode='r')
-test.must_match('ddd.m',    "ddd.lm\nmylex.py\n",       mode='r')
+test.must_match('aaa.cc', "aaa.yy\n")
+test.must_not_exist('aaa.vcg')
+test.must_not_exist('aaa.vcgsuffix')
+
+test.must_match('bbb.cc', "bbb.yy\n")
+test.must_not_exist('bbb.vcg')
+test.must_match('bbb.vcgsuffix', "myyacc.py -g -o bbb.cc bbb.yy\n")
+
+test.up_to_date(arguments = '.')
 
 
 

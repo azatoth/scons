@@ -24,51 +24,79 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import os.path
+"""
+Test LEX and LEXFLAGS with a live lex.
+"""
+
 import string
-import sys
+
 import TestSCons
 
+_exe = TestSCons._exe
 _python_ = TestSCons._python_
-_exe   = TestSCons._exe
 
 test = TestSCons.TestSCons()
 
+lex = test.where_is('lex') or test.where_is('flex')
+
+if not lex:
+    test.skip_test('No lex or flex found; skipping test.\n')
 
 
-test.write('mylex.py', """
-import getopt
+
+test.write("wrapper.py", """import os
 import string
 import sys
-cmd_opts, args = getopt.getopt(sys.argv[1:], 't', [])
-for a in args:
-    contents = open(a, 'rb').read()
-    sys.stdout.write(string.replace(contents, 'LEX', 'mylex.py'))
-sys.exit(0)
-""")
+open('%s', 'wb').write("wrapper.py\\n")
+os.system(string.join(sys.argv[1:], " "))
+""" % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
 test.write('SConstruct', """
-env = Environment(LEX = r'%(_python_)s mylex.py', tools=['default', 'lex'])
-env.CFile(target = 'aaa', source = 'aaa.l')
-env.CFile(target = 'bbb', source = 'bbb.lex')
-env.CXXFile(target = 'ccc', source = 'ccc.ll')
-env.CXXFile(target = 'ddd', source = 'ddd.lm')
+foo = Environment()
+lex = foo.Dictionary('LEX')
+bar = Environment(LEX = r'%(_python_)s wrapper.py ' + lex,
+                  LEXFLAGS = '-b')
+foo.Program(target = 'foo', source = 'foo.l')
+bar.Program(target = 'bar', source = 'bar.l')
 """ % locals())
 
-test.write('aaa.l',         "aaa.l\nLEX\n")
-test.write('bbb.lex',       "bbb.lex\nLEX\n")
-test.write('ccc.ll',        "ccc.ll\nLEX\n")
-test.write('ddd.lm',        "ddd.lm\nLEX\n")
+lex = r"""
+%%%%
+a       printf("A%sA");
+b       printf("B%sB");
+%%%%
+int
+yywrap()
+{
+    return 1;
+}
 
-test.run(arguments = '.', stderr = None)
+main()
+{
+    yylex();
+}
+"""
 
-# Read in with mode='r' because mylex.py implicitley wrote to stdout
-# with mode='w'.
-test.must_match('aaa.c',    "aaa.l\nmylex.py\n",        mode='r')
-test.must_match('bbb.c',    "bbb.lex\nmylex.py\n",      mode='r')
-test.must_match('ccc.cc',   "ccc.ll\nmylex.py\n",       mode='r')
-test.must_match('ddd.m',    "ddd.lm\nmylex.py\n",       mode='r')
+test.write('foo.l', lex % ('foo.l', 'foo.l'))
+
+test.write('bar.l', lex % ('bar.l', 'bar.l'))
+
+test.run(arguments = 'foo' + _exe, stderr = None)
+
+test.must_not_exist(test.workpath('wrapper.out'))
+test.must_not_exist(test.workpath('lex.backup'))
+
+test.run(program = test.workpath('foo'), stdin = "a\n", stdout = "Afoo.lA\n")
+
+
+
+
+test.run(arguments = 'bar' + _exe)
+
+test.must_match(test.workpath('wrapper.out'), "wrapper.py\n")
+test.must_exist(test.workpath('lex.backup'))
+
+test.run(program = test.workpath('bar'), stdin = "b\n", stdout = "Bbar.lB\n")
 
 
 
