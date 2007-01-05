@@ -830,9 +830,12 @@ class Entry(Base):
         try:
             self = self.disambiguate(must_exist=1)
         except SCons.Errors.UserError, e:
-            if self.islink():
-                return ''
-            raise e
+            # There was nothing on disk with which to disambiguate
+            # this entry.  Leave it as an Entry, but return a null
+            # string so calls to get_contents() in emitters and the
+            # like (e.g. in qt.py) don't have to disambiguate by hand
+            # or catch the exception.
+            return ''
         else:
             return self.get_contents()
 
