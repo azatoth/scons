@@ -14,6 +14,11 @@ RELEASE 0.97 - XXX
 
   - Allow arbitrary white space after a SWIG %module declaration.
 
+  From Paul:
+
+  - When compiling resources under MinGW, make sure there's a space 
+    between the --include-dir option and its argument.
+
   From Jay Kint:
 
   - Alleviate long command line issues on Windows by executing command
