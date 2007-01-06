@@ -80,6 +80,9 @@ RELEASE 0.97 - XXX
     don't persist across changes to the list of source Builders (so the
     addition of suffixes like .ui by the qt.py Tool module take effect).
 
+  - Enhance the bootstrap.py script to allow it to be used to execute
+    SCons more easily from a checked-out source tree.
+
   From Ben Leslie:
 
   - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().
