@@ -71,6 +71,10 @@ RELEASE 0.97 - XXX
   - Fix storing signatures of files retrieved from CacheDir() so they're
     correctly identified as up-to-date next invocation.
 
+  - Make sure lists of computed source suffixes cached by Builder objects
+    don't persist across changes to the list of source Builders (so the
+    addition of suffixes like .ui by the qt.py Tool module take effect).
+
   From Ben Leslie:
 
   - Fix post-Memoizer value caching misspellings in Node.FS._doLookup().
