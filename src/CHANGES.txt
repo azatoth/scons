@@ -16,6 +16,9 @@ RELEASE 0.97 - XXX
     different drive letters.  (This caused an infinite loop when
     trying to write .sconsign files.)
 
+  - Restore caching the contents of files in memory, which was removed
+    (and not restored) as part of the 0.96.94 Memoizer work.
+
 
 
 RELEASE 0.96.94 - Sun, 07 Jan 2007 18:36:20 -0600
