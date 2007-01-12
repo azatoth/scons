@@ -23,10 +23,8 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import copy
 import os
 import string
-import StringIO
 import sys
 import TestCmd
 import unittest
@@ -202,13 +200,13 @@ class SubstitutionTestCase(unittest.TestCase):
         assert env1 == env2
 
     def test___getitem__(self):
-        """Test fetching a variable from a SubstitutionEnvironment
+        """Test deleting a variable from a SubstitutionEnvironment
         """
         env = SubstitutionEnvironment(XXX = 'x')
         assert env['XXX'] == 'x', env['XXX']
 
     def test___setitem__(self):
-        """Test setting a variable in a SubstitutionEnvironment
+        """Test deleting a variable from a SubstitutionEnvironment
         """
         env1 = SubstitutionEnvironment(XXX = 'x')
         env2 = SubstitutionEnvironment(XXX = 'x', YYY = 'y')
@@ -389,16 +387,6 @@ class SubstitutionTestCase(unittest.TestCase):
         mystr = env.subst("$AAA ${AAA}A ${AAA}B $BBB")
         assert mystr == "c cA cB c", mystr
 
-        # Lists:
-        env = SubstitutionEnvironment(AAA = ['a', 'aa', 'aaa'])
-        mystr = env.subst("$AAA")
-        assert mystr == "a aa aaa", mystr
-
-        # Tuples:
-        env = SubstitutionEnvironment(AAA = ('a', 'aa', 'aaa'))
-        mystr = env.subst("$AAA")
-        assert mystr == "a aa aaa", mystr
-
         t1 = DummyNode('t1')
         t2 = DummyNode('t2')
         s1 = DummyNode('s1')
@@ -574,58 +562,6 @@ class SubstitutionTestCase(unittest.TestCase):
         mystr = env.subst_target_source("$AAA ${AAA}A $BBBB $BBB")
         assert mystr == "a aA b", mystr
 
-    def test_backtick(self):
-        """Test the backtick() method for capturing command output"""
-        env = SubstitutionEnvironment()
-
-        test = TestCmd.TestCmd(workdir = '')
-        test.write('stdout.py', """\
-import sys
-sys.stdout.write('this came from stdout.py\\n')
-sys.exit(0)
-""")
-        test.write('stderr.py', """\
-import sys
-sys.stderr.write('this came from stderr.py\\n')
-sys.exit(0)
-""")
-        test.write('fail.py', """\
-import sys
-sys.exit(1)
-""")
-
-        save_stderr = sys.stderr
-
-        python = '"' + sys.executable + '"'
-
-        try:
-            cmd = '%s %s' % (python, test.workpath('stdout.py'))
-            output = env.backtick(cmd)
-
-            assert output == 'this came from stdout.py\n', output
-
-            sys.stderr = StringIO.StringIO()
-
-            cmd = '%s %s' % (python, test.workpath('stderr.py'))
-            output = env.backtick(cmd)
-            errout = sys.stderr.getvalue()
-
-            assert output == '', output
-            assert errout == 'this came from stderr.py\n', errout
-
-            sys.stderr = StringIO.StringIO()
-
-            cmd = '%s %s' % (python, test.workpath('fail.py'))
-            try:
-                env.backtick(cmd)
-            except OSError, e:
-                assert str(e) == "'%s' exited 1" % cmd, str(e)
-            else:
-                self.fail("did not catch expected OSError")
-
-        finally:
-            sys.stderr = save_stderr
-
     def test_Override(self):
         "Test overriding construction variables"
         env = SubstitutionEnvironment(ONE=1, TWO=2, THREE=3, FOUR=4)
@@ -651,95 +587,6 @@ sys.exit(1)
         assert env2['ONE'] == "won", env2['ONE']
         assert env['ONE'] == 1, env['ONE']
 
-    def test_ParseFlags(self):
-        """Test the ParseFlags() method
-        """
-        env = SubstitutionEnvironment()
-
-        empty = {
-            'ASFLAGS'       : [],
-            'CFLAGS'        : [],
-            'CCFLAGS'       : [],
-            'CPPDEFINES'    : [],
-            'CPPFLAGS'      : [],
-            'CPPPATH'       : [],
-            'FRAMEWORKPATH' : [],
-            'FRAMEWORKS'    : [],
-            'LIBPATH'       : [],
-            'LIBS'          : [],
-            'LINKFLAGS'     : [],
-            'RPATH'         : [],
-        }
-
-        d = env.ParseFlags(None)
-        assert d == empty, d
-
-        d = env.ParseFlags('')
-        assert d == empty, d
-
-        d = env.ParseFlags([])
-        assert d == empty, d
-
-        s = "-I/usr/include/fum -I bar -X\n" + \
-            "-L/usr/fax -L foo -lxxx -l yyy " + \
-            "-Wa,-as -Wl,-link " + \
-            "-Wl,-rpath=rpath1 " + \
-            "-Wl,-R,rpath2 " + \
-            "-Wl,-Rrpath3 " + \
-            "-Wp,-cpp " + \
-            "-std=c99 " + \
-            "-framework Carbon " + \
-            "-frameworkdir=fwd1 " + \
-            "-Ffwd2 " + \
-            "-F fwd3 " + \
-            "-pthread " + \
-            "-mno-cygwin -mwindows " + \
-            "-arch i386 -isysroot /tmp +DD64 " + \
-            "-DFOO -DBAR=value"
-
-        d = env.ParseFlags(s)
-
-        assert d['ASFLAGS'] == ['-as'], d['ASFLAGS']
-        assert d['CFLAGS']  == ['-std=c99']
-        assert d['CCFLAGS'] == ['-X', '-Wa,-as',
-                                  '-pthread', '-mno-cygwin',
-                                  ('-arch', 'i386'), ('-isysroot', '/tmp'),
-                                  '+DD64'], d['CCFLAGS']
-        assert d['CPPDEFINES'] == ['FOO', ['BAR', 'value']], d['CPPDEFINES']
-        assert d['CPPFLAGS'] == ['-Wp,-cpp'], d['CPPFLAGS']
-        assert d['CPPPATH'] == ['/usr/include/fum', 'bar'], d['CPPPATH']
-        assert d['FRAMEWORKPATH'] == ['fwd1', 'fwd2', 'fwd3'], d['FRAMEWORKPATH']
-        assert d['FRAMEWORKS'] == ['Carbon'], d['FRAMEWORKS']
-        assert d['LIBPATH'] == ['/usr/fax', 'foo'], d['LIBPATH']
-        assert d['LIBS'] == ['xxx', 'yyy'], d['LIBS']
-        assert d['LINKFLAGS'] == ['-Wl,-link', '-pthread',
-                                  '-mno-cygwin', '-mwindows',
-                                  ('-arch', 'i386'),
-                                  ('-isysroot', '/tmp'),
-                                  '+DD64'], d['LINKFLAGS']
-        assert d['RPATH'] == ['rpath1', 'rpath2', 'rpath3'], d['RPATH']
-
-
-    def test_MergeFlags(self):
-        """Test the MergeFlags() method
-        """
-        env = SubstitutionEnvironment()
-        env.MergeFlags('')
-        assert env['CCFLAGS'] == [], env['CCFLAGS']
-        env.MergeFlags('-X')
-        assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
-        env.MergeFlags('-X')
-        assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
-
-        env = SubstitutionEnvironment(CCFLAGS=None)
-        env.MergeFlags('-Y')
-        assert env['CCFLAGS'] == ['-Y'], env['CCFLAGS']
-
-        env = SubstitutionEnvironment()
-        env.MergeFlags({'A':['aaa'], 'B':['bbb']})
-        assert env['A'] == ['aaa'], env['A']
-        assert env['B'] == ['bbb'], env['B']
-
 
 
 class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
@@ -756,24 +603,6 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
 
         assert not env1.has_key('__env__')
         assert not env2.has_key('__env__')
-
-    def test_options(self):
-        """Test that options only get applied once."""
-        class FakeOptions:
-            def __init__(self, key, val):
-                self.calls = 0
-                self.key = key
-                self.val = val
-            def keys(self):
-                return [self.key]
-            def Update(self, env):
-                env[self.key] = self.val
-                self.calls = self.calls + 1
-
-        o = FakeOptions('AAA', 'fake_opt')
-        env = Environment(options=o, AAA='keyword_arg')
-        assert o.calls == 1, o.calls
-        assert env['AAA'] == 'fake_opt', env['AAA']
 
     def test_get(self):
         """Test the get() method."""
@@ -841,7 +670,7 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
         assert built_it['out2']
         assert built_it['out3']
 
-        env4 = env3.Clone()
+        env4 = env3.Copy()
         assert env4.builder1.env is env4, "builder1.env (%s) == env3 (%s)?" % (env4.builder1.env, env3)
         assert env4.builder2.env is env4, "builder2.env (%s) == env3 (%s)?" % (env4.builder1.env, env3)
 
@@ -922,7 +751,7 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
         s = map(env.get_scanner, suffixes)
         assert s == [s1, s1, None, s2, s3], s
 
-        env = env.Clone(SCANNERS = [s2])
+        env = env.Copy(SCANNERS = [s2])
         s = map(env.get_scanner, suffixes)
         assert s == [None, None, None, s2, None], s
 
@@ -999,7 +828,7 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
                           LIBLINKSUFFIX = 'bar')
 
         def RDirs(pathlist, fs=env.fs):
-            return fs.Dir('xx').Rfindalldirs(pathlist)
+            return fs.Rfindalldirs(pathlist, fs.Dir('xx'))
 
         env['RDirs'] = RDirs
         flags = env.subst_list('$_LIBFLAGS', 1)[0]
@@ -1240,8 +1069,6 @@ def exists(env):
         b2 = Environment()['BUILDERS']
         assert b1 == b2, diff_dict(b1, b2)
 
-        import UserDict
-        UD = UserDict.UserDict
         import UserList
         UL = UserList.UserList
 
@@ -1272,18 +1099,6 @@ def exists(env):
             UL(['i6']), UL([]),         UL(['i6']),
             UL(['i7']), [''],           UL(['i7', '']),
             UL(['i8']), UL(['']),       UL(['i8', '']),
-
-            {'d1':1},   'D1',           {'d1':1, 'D1':None},
-            {'d2':1},   ['D2'],         {'d2':1, 'D2':None},
-            {'d3':1},   UL(['D3']),     {'d3':1, 'D3':None},
-            {'d4':1},   {'D4':1},       {'d4':1, 'D4':1},
-            {'d5':1},   UD({'D5':1}),   UD({'d5':1, 'D5':1}),
-
-            UD({'u1':1}), 'U1',         UD({'u1':1, 'U1':None}),
-            UD({'u2':1}), ['U2'],       UD({'u2':1, 'U2':None}),
-            UD({'u3':1}), UL(['U3']),   UD({'u3':1, 'U3':None}),
-            UD({'u4':1}), {'U4':1},     UD({'u4':1, 'U4':1}),
-            UD({'u5':1}), UD({'U5':1}), UD({'u5':1, 'U5':1}),
 
             '',         'M1',           'M1',
             '',         ['M2'],         ['M2'],
@@ -1335,21 +1150,14 @@ def exists(env):
         failed = 0
         while cases:
             input, append, expect = cases[:3]
-            env['XXX'] = copy.copy(input)
-            try:
-                env.Append(XXX = append)
-            except Exception, e:
+            env['XXX'] = input
+            env.Append(XXX = append)
+            result = env['XXX']
+            if result != expect:
                 if failed == 0: print
-                print "    %s Append %s exception: %s" % \
-                      (repr(input), repr(append), e)
+                print "    %s Append %s => %s did not match %s" % \
+                      (repr(input), repr(append), repr(result), repr(expect))
                 failed = failed + 1
-            else:
-                result = env['XXX']
-                if result != expect:
-                    if failed == 0: print
-                    print "    %s Append %s => %s did not match %s" % \
-                          (repr(input), repr(append), repr(result), repr(expect))
-                    failed = failed + 1
             del cases[:3]
         assert failed == 0, "%d Append() cases failed" % failed
 
@@ -1448,46 +1256,19 @@ def exists(env):
         assert env['CCC1'] == 'c1', env['CCC1']
         assert env['CCC2'] == ['c2'], env['CCC2']
 
-        env['CLVar'] = CLVar([])
-        env.AppendUnique(CLVar = 'bar')
-        result = env['CLVar']
-        if sys.version[0] == '1':
-            # Python 1.5.2 has a quirky behavior where CLVar([]) actually
-            # matches '' and [] due to different __coerce__() semantics
-            # in the UserList implementation.  It isn't worth a lot of
-            # effort to get this corner case to work identically (support
-            # for Python 1.5 support will die soon anyway), so just treat
-            # it separately for now.
-            assert result == 'bar', result
-        else:
-            assert isinstance(result, CLVar), repr(result)
-            assert result == ['bar'], result
-
-        env['CLVar'] = CLVar(['abc'])
-        env.AppendUnique(CLVar = 'bar')
-        result = env['CLVar']
-        assert isinstance(result, CLVar), repr(result)
-        assert result == ['abc', 'bar'], result
-
-        env['CLVar'] = CLVar(['bar'])
-        env.AppendUnique(CLVar = 'bar')
-        result = env['CLVar']
-        assert isinstance(result, CLVar), repr(result)
-        assert result == ['bar'], result
-
-    def test_Clone(self):
+    def test_Copy(self):
         """Test construction environment copying
 
         Update the copy independently afterwards and check that
         the original remains intact (that is, no dangling
         references point to objects in the copied environment).
-        Clone the original with some construction variable
+        Copy the original with some construction variable
         updates and check that the original remains intact
         and the copy has the updated values.
         """
         env1 = self.TestEnvironment(XXX = 'x', YYY = 'y')
-        env2 = env1.Clone()
-        env1copy = env1.Clone()
+        env2 = env1.Copy()
+        env1copy = env1.Copy()
         assert env1copy == env1copy
         assert env2 == env2
         env2.Replace(YYY = 'yyy')
@@ -1495,7 +1276,7 @@ def exists(env):
         assert env1 != env2
         assert env1 == env1copy
 
-        env3 = env1.Clone(XXX = 'x3', ZZZ = 'z3')
+        env3 = env1.Copy(XXX = 'x3', ZZZ = 'z3')
         assert env3 == env3
         assert env3.Dictionary('XXX') == 'x3'
         assert env3.Dictionary('YYY') == 'y'
@@ -1508,7 +1289,7 @@ def exists(env):
             pass
         env1 = self.TestEnvironment(XXX=TestA(), YYY = [ 1, 2, 3 ],
                            ZZZ = { 1:2, 3:4 })
-        env2=env1.Clone()
+        env2=env1.Copy()
         env2.Dictionary('YYY').append(4)
         env2.Dictionary('ZZZ')[5] = 6
         assert env1.Dictionary('XXX') is env2.Dictionary('XXX')
@@ -1521,7 +1302,7 @@ def exists(env):
         env1 = self.TestEnvironment(BUILDERS = {'b1' : 1})
         assert hasattr(env1, 'b1'), "env1.b1 was not set"
         assert env1.b1.env == env1, "b1.env doesn't point to env1"
-        env2 = env1.Clone(BUILDERS = {'b2' : 2})
+        env2 = env1.Copy(BUILDERS = {'b2' : 2})
         assert env2 is env2
         assert env2 == env2
         assert hasattr(env1, 'b1'), "b1 was mistakenly cleared from env1"
@@ -1536,8 +1317,8 @@ def exists(env):
         def bar(env): env['BAR'] = 2
         def baz(env): env['BAZ'] = 3
         env1 = self.TestEnvironment(tools=[foo])
-        env2 = env1.Clone()
-        env3 = env1.Clone(tools=[bar, baz])
+        env2 = env1.Copy()
+        env3 = env1.Copy(tools=[bar, baz])
 
         assert env1.get('FOO') is 1
         assert env1.get('BAR') is None
@@ -1552,7 +1333,7 @@ def exists(env):
         # Ensure that recursive variable substitution when copying
         # environments works properly.
         env1 = self.TestEnvironment(CCFLAGS = '-DFOO', XYZ = '-DXYZ')
-        env2 = env1.Clone(CCFLAGS = '$CCFLAGS -DBAR',
+        env2 = env1.Copy(CCFLAGS = '$CCFLAGS -DBAR',
                          XYZ = ['-DABC', 'x $XYZ y', '-DDEF'])
         x = env2.get('CCFLAGS')
         assert x == '-DFOO -DBAR', x
@@ -1564,7 +1345,7 @@ def exists(env):
         env1 = self.TestEnvironment(FLAGS = CLVar('flag1 flag2'))
         x = env1.get('FLAGS')
         assert x == ['flag1', 'flag2'], x
-        env2 = env1.Clone()
+        env2 = env1.Copy()
         env2.Append(FLAGS = 'flag3 flag4')
         x = env2.get('FLAGS')
         assert x == ['flag1', 'flag2', 'flag3', 'flag4'], x
@@ -1589,20 +1370,8 @@ def generate(env):
 
         env = self.TestEnvironment(tools=['xxx'], toolpath=[test.workpath('')])
         assert env['XXX'] == 'one', env['XXX']
-        env = env.Clone(tools=['yyy'])
+        env = env.Copy(tools=['yyy'])
         assert env['YYY'] == 'two', env['YYY']
-
-    def test_Copy(self):
-        """Test copying using the old env.Copy() method"""
-        env1 = self.TestEnvironment(XXX = 'x', YYY = 'y')
-        env2 = env1.Copy()
-        env1copy = env1.Copy()
-        assert env1copy == env1copy
-        assert env2 == env2
-        env2.Replace(YYY = 'yyy')
-        assert env2 == env2
-        assert env1 != env2
-        assert env1 == env1copy
 
     def test_Detect(self):
         """Test Detect()ing tools"""
@@ -1719,19 +1488,22 @@ def generate(env):
                           LIBS='',
                           LINKFLAGS=[''],
                           RPATH=[])
-
-        orig_backtick = env.backtick
-        class my_backtick:
+        orig_popen = os.popen
+        class my_popen:
             def __init__(self, save_command, output):
                 self.save_command = save_command
                 self.output = output
             def __call__(self, command):
                 self.save_command.append(command)
-                return self.output
-
+                class fake_file:
+                    def __init__(self, output):
+                        self.output = output
+                    def read(self):
+                        return self.output
+                return fake_file(self.output)
         try:
             save_command = []
-            env.backtick = my_backtick(save_command, 
+            os.popen = my_popen(save_command, 
                                  "-I/usr/include/fum -I bar -X\n" + \
                                  "-L/usr/fax -L foo -lxxx -l yyy " + \
                                  "-Wa,-as -Wl,-link " + \
@@ -1752,7 +1524,7 @@ def generate(env):
             assert env['ASFLAGS'] == ['assembler', '-as'], env['ASFLAGS']
             assert env['CCFLAGS'] == ['', '-X', '-Wa,-as',
                                       '-pthread', '-mno-cygwin',
-                                      ('-arch', 'i386'), ('-isysroot', '/tmp'),
+                                      ['-arch', 'i386'], ['-isysroot', '/tmp'],
                                       '+DD64'], env['CCFLAGS']
             assert env['CPPDEFINES'] == ['FOO', ['BAR', 'value']], env['CPPDEFINES']
             assert env['CPPFLAGS'] == ['', '-Wp,-cpp'], env['CPPFLAGS']
@@ -1763,18 +1535,18 @@ def generate(env):
             assert env['LIBS'] == ['xxx', 'yyy', env.File('abc')], env['LIBS']
             assert env['LINKFLAGS'] == ['', '-Wl,-link', '-pthread',
                                         '-mno-cygwin', '-mwindows',
-                                        ('-arch', 'i386'),
-                                        ('-isysroot', '/tmp'),
+                                        ['-arch', 'i386'],
+                                        ['-isysroot', '/tmp'],
                                         '+DD64'], env['LINKFLAGS']
             assert env['RPATH'] == ['rpath1', 'rpath2', 'rpath3'], env['RPATH']
 
-            env.backtick = my_backtick([], "-Ibar")
+            os.popen = my_popen([], "-Ibar")
             env.ParseConfig("fake2")
             assert env['CPPPATH'] == ['string', '/usr/include/fum', 'bar'], env['CPPPATH']
             env.ParseConfig("fake2", unique=0)
             assert env['CPPPATH'] == ['string', '/usr/include/fum', 'bar', 'bar'], env['CPPPATH']
         finally:
-            env.backtick = orig_backtick
+            os.popen = orig_popen
 
     def test_ParseDepends(self):
         """Test the ParseDepends() method"""
@@ -1872,8 +1644,6 @@ f5: \
     def test_Prepend(self):
         """Test prepending to construction variables in an Environment
         """
-        import UserDict
-        UD = UserDict.UserDict
         import UserList
         UL = UserList.UserList
 
@@ -1904,18 +1674,6 @@ f5: \
             UL(['i6']), UL([]),         UL(['i6']),
             UL(['i7']), [''],           UL(['', 'i7']),
             UL(['i8']), UL(['']),       UL(['', 'i8']),
-
-            {'d1':1},   'D1',           {'d1':1, 'D1':None},
-            {'d2':1},   ['D2'],         {'d2':1, 'D2':None},
-            {'d3':1},   UL(['D3']),     {'d3':1, 'D3':None},
-            {'d4':1},   {'D4':1},       {'d4':1, 'D4':1},
-            {'d5':1},   UD({'D5':1}),   UD({'d5':1, 'D5':1}),
-
-            UD({'u1':1}), 'U1',         UD({'u1':1, 'U1':None}),
-            UD({'u2':1}), ['U2'],       UD({'u2':1, 'U2':None}),
-            UD({'u3':1}), UL(['U3']),   UD({'u3':1, 'U3':None}),
-            UD({'u4':1}), {'U4':1},     UD({'u4':1, 'U4':1}),
-            UD({'u5':1}), UD({'U5':1}), UD({'u5':1, 'U5':1}),
 
             '',         'M1',           'M1',
             '',         ['M2'],         ['M2'],
@@ -1967,21 +1725,14 @@ f5: \
         failed = 0
         while cases:
             input, prepend, expect = cases[:3]
-            env['XXX'] = copy.copy(input)
-            try:
-                env.Prepend(XXX = prepend)
-            except Exception, e:
+            env['XXX'] = input
+            env.Prepend(XXX = prepend)
+            result = env['XXX']
+            if result != expect:
                 if failed == 0: print
-                print "    %s Prepend %s exception: %s" % \
-                      (repr(input), repr(prepend), e)
+                print "    %s Prepend %s => %s did not match %s" % \
+                      (repr(input), repr(prepend), repr(result), repr(expect))
                 failed = failed + 1
-            else:
-                result = env['XXX']
-                if result != expect:
-                    if failed == 0: print
-                    print "    %s Prepend %s => %s did not match %s" % \
-                          (repr(input), repr(prepend), repr(result), repr(expect))
-                    failed = failed + 1
             del cases[:3]
         assert failed == 0, "%d Prepend() cases failed" % failed
 
@@ -2073,33 +1824,6 @@ f5: \
         assert env['BBB5'] == ['b5.new', 'b5'], env['BBB5']
         assert env['CCC1'] == 'c1', env['CCC1']
         assert env['CCC2'] == ['c2'], env['CCC2']
-
-        env['CLVar'] = CLVar([])
-        env.PrependUnique(CLVar = 'bar')
-        result = env['CLVar']
-        if sys.version[0] == '1':
-            # Python 1.5.2 has a quirky behavior where CLVar([]) actually
-            # matches '' and [] due to different __coerce__() semantics
-            # in the UserList implementation.  It isn't worth a lot of
-            # effort to get this corner case to work identically (support
-            # for Python 1.5 support will die soon anyway), so just treat
-            # it separately for now.
-            assert result == 'bar', result
-        else:
-            assert isinstance(result, CLVar), repr(result)
-            assert result == ['bar'], result
-
-        env['CLVar'] = CLVar(['abc'])
-        env.PrependUnique(CLVar = 'bar')
-        result = env['CLVar']
-        assert isinstance(result, CLVar), repr(result)
-        assert result == ['bar', 'abc'], result
-
-        env['CLVar'] = CLVar(['bar'])
-        env.PrependUnique(CLVar = 'bar')
-        result = env['CLVar']
-        assert isinstance(result, CLVar), repr(result)
-        assert result == ['bar'], result
 
     def test_Replace(self):
         """Test replacing construction variables in an Environment
@@ -2283,25 +2007,21 @@ def generate(env):
 
         a = env.Action('foo')
         assert a, a
-        assert a.__class__ is SCons.Action.CommandAction, a.__class__
+        assert a.__class__ is SCons.Action.CommandAction, a
 
         a = env.Action('$FOO')
         assert a, a
-        assert a.__class__ is SCons.Action.CommandAction, a.__class__
-
-        a = env.Action('$$FOO')
-        assert a, a
-        assert a.__class__ is SCons.Action.LazyAction, a.__class__
+        assert a.__class__ is SCons.Action.LazyAction, a
 
         a = env.Action(['$FOO', 'foo'])
         assert a, a
-        assert a.__class__ is SCons.Action.ListAction, a.__class__
+        assert a.__class__ is SCons.Action.ListAction, a
 
         def func(arg):
             pass
         a = env.Action(func)
         assert a, a
-        assert a.__class__ is SCons.Action.FunctionAction, a.__class__
+        assert a.__class__ is SCons.Action.FunctionAction, a
 
     def test_AddPostAction(self):
         """Test the AddPostAction() method"""
@@ -2786,26 +2506,23 @@ def generate(env):
         for tnode in tgt:
             assert tnode.builder == InstallBuilder
 
-        tgt = env.Install('export', 'build')
-        paths = map(str, tgt)
-        paths.sort()
-        expect = [os.path.join('export', 'build')]
-        assert paths == expect, paths
-        for tnode in tgt:
-            assert tnode.builder == InstallBuilder
+        exc_caught = None
+        try:
+            tgt = env.Install('export', 'export')
+        except SCons.Errors.UserError, e:
+            exc_caught = 1
+        assert exc_caught, "UserError should be thrown when Install() target is not a file."
+        match = str(e) == "Source `export' of Install() is not a file.  Install() source must be one or more files."
+        assert match, e
 
-        tgt = env.Install('export', ['build', 'build/foo1'])
-        paths = map(str, tgt)
-        paths.sort()
-        expect = [
-            os.path.join('export', 'build'),
-            os.path.join('export', 'foo1'),
-        ]
-        assert paths == expect, paths
-        for tnode in tgt:
-            assert tnode.builder == InstallBuilder
-
-        env.File('export/foo1')
+        exc_caught = None
+        try:
+            tgt = env.Install('export', ['export', 'build/foo1'])
+        except SCons.Errors.UserError, e:
+            exc_caught = 1
+        assert exc_caught, "UserError should be thrown when Install() target containins non-files."
+        match = str(e) == "Source `['export', 'build/foo1']' of Install() contains one or more non-files.  Install() source must be one or more files."
+        assert match, e
 
         exc_caught = None
         try:
@@ -2813,8 +2530,8 @@ def generate(env):
         except SCons.Errors.UserError, e:
             exc_caught = 1
         assert exc_caught, "UserError should be thrown reversing the order of Install() targets."
-        expect = "Target `export/foo1' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?"
-        assert str(e) == expect, e
+        match = str(e) == "Target `export/foo1' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?"
+        assert match, e
 
     def test_InstallAs(self):
         """Test the InstallAs method"""
@@ -3095,9 +2812,6 @@ def generate(env):
         assert not v1 is v2
         assert v1.value == v2.value
 
-        v3 = env.Value('c', 'build-c')
-        assert v3.value == 'c', v3.value
-
 
 
     def test_Environment_global_variable(type):
@@ -3126,12 +2840,12 @@ def generate(env):
                                    SOURCE = 'source',
                                    TARGET = 'target',
                                    INIT = 'init')
-        bad_msg = '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'
         added.append('INIT')
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert env.has_key(x), \
+                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
 
         env.Append(TARGETS = 'targets',
                    SOURCES = 'sources',
@@ -3142,7 +2856,8 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert env.has_key(x), \
+                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
 
         env.AppendUnique(TARGETS = 'targets',
                          SOURCES = 'sources',
@@ -3153,7 +2868,8 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert env.has_key(x), \
+                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
 
         env.Prepend(TARGETS = 'targets',
                     SOURCES = 'sources',
@@ -3164,7 +2880,8 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert env.has_key(x), \
+                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
 
         env.Prepend(TARGETS = 'targets',
                     SOURCES = 'sources',
@@ -3175,7 +2892,8 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert env.has_key(x), \
+                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
 
         env.Replace(TARGETS = 'targets',
                     SOURCES = 'sources',
@@ -3186,17 +2904,19 @@ def generate(env):
         for x in reserved:
             assert not env.has_key(x), env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert env.has_key(x), \
+                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
 
-        copy = env.Clone(TARGETS = 'targets',
-                         SOURCES = 'sources',
-                         SOURCE = 'source',
-                         TARGET = 'target',
-                         COPY = 'copy')
+        copy = env.Copy(TARGETS = 'targets',
+                        SOURCES = 'sources',
+                        SOURCE = 'source',
+                        TARGET = 'target',
+                        COPY = 'copy')
         for x in reserved:
             assert not copy.has_key(x), env[x]
         for x in added + ['COPY']:
-            assert copy.has_key(x), bad_msg % x
+            assert copy.has_key(x), \
+                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
 
         over = env.Override({'TARGETS' : 'targets',
                              'SOURCES' : 'sources',
@@ -3206,7 +2926,8 @@ def generate(env):
         for x in reserved:
             assert not over.has_key(x), over[x]
         for x in added + ['OVERRIDE']:
-            assert over.has_key(x), bad_msg % x
+            assert over.has_key(x), \
+                   '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'%x
 
 
 
@@ -3363,10 +3084,10 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
     # SourceSignatures()
     # TargetSignatures()
 
-    # It's unlikely Clone() will ever be called this way, so let the
+    # It's unlikely Copy() will ever be called this way, so let the
     # other methods test that handling overridden values works.
-    #def test_Clone(self):
-    #    """Test the OverrideEnvironment Clone() method"""
+    #def test_Copy(self):
+    #    """Test the OverrideEnvironment Copy() method"""
     #    pass
 
     def test_FindIxes(self):
