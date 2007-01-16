@@ -1921,19 +1921,10 @@ class File(Base):
     def scanner_key(self):
         return self.get_suffix()
 
-    memoizer_counters.append(SCons.Memoize.CountValue('get_contents'))
-
     def get_contents(self):
-        try:
-            return self._memo['get_contents']
-        except KeyError:
-            pass
-        if self.rexists():
-            result = open(self.rfile().abspath, "rb").read()
-        else:
-            result = ''
-        self._memo['get_contents'] = result
-        return result
+        if not self.rexists():
+            return ''
+        return open(self.rfile().abspath, "rb").read()
 
     def get_timestamp(self):
         if self.rexists():

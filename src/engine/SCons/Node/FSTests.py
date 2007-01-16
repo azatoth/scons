@@ -1517,22 +1517,6 @@ class FSTestCase(_tempdirTestCase):
         f2 = self.fs.Entry(p)
         assert f1 is f2, (f1, f2)
 
-    def test_get_contents(self):
-        """Test that the get_contents() method caches values"""
-        test = self.test
-
-        test.write('f', "f 1\n")
-
-        f = self.fs.File('f')
-
-        c = f.get_contents()
-        assert c == 'f 1\n', c
-
-        test.write('f', "f 2\n")
-
-        c = f.get_contents()
-        assert c == 'f 1\n', c
-
 
 
 class DirTestCase(_tempdirTestCase):
