@@ -31,7 +31,7 @@
 .fi
 .RE
 ..
-.TH SCONS 1 "December 2005"
+.TH SCONS 1 "__MONTH_YEAR__"
 .SH NAME
 scons \- a software construction tool
 .SH SYNOPSIS
@@ -421,6 +421,24 @@ Will not remove any targets specified by the
 function.
 
 .TP
+.RI --cache-debug= file
+Print debug information about the
+.BR CacheDir ()
+derived-file caching
+to the specified
+.IR file .
+If
+.I file
+is
+.B \-
+(a hyphen),
+the debug information are printed to the standard output.
+The printed messages describe what signature file names are
+being looked for in, retrieved from, or written to the
+.BR CacheDir ()
+directory tree.
+
+.TP
 --cache-disable, --no-cache
 Disable the derived-file caching specified by
 .BR CacheDir ().
@@ -584,10 +602,11 @@ $ scons --debug=includes foo.o
 
 .TP
 --debug=memoizer
-Prints a summary of hits and misses in the Memoizer,
-the internal SCons subsystem for caching
-various values in memory instead of
-recomputing them each time they're needed.
+Prints a summary of hits and misses using the Memoizer,
+an internal subsystem that counts
+how often SCons uses cached values in memory
+instead of recomputing them each time they're needed.
+Only available when using Python 2.2 or later.
 
 .TP
 --debug=memory
@@ -597,19 +616,7 @@ and before and after building targets.
 
 .TP
 --debug=nomemoizer
-Disables use of the Memoizer,
-the internal SCons subsystem for caching
-various values in memory instead of
-recomputing them each time they're needed.
-This provides more accurate counts of the
-underlying function calls in the 
-Python profiler output when using the
-.RI --profile=
-option.
-(When the Memoizer is used,
-the profiler counts all
-memoized functions as being executed
-by the Memoizer's wrapper calls.)
+A deprecated option preserved for backwards compatibility.
 
 .TP
 --debug=objects
@@ -632,7 +639,7 @@ Output looks something like this:
 .ES
 $ scons --debug=presub
 Building myprog.o with action(s):
-  $SHCC $SHCCFLAGS $CPPFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES
+  $SHCC $SHCFLAGS $SHCCFLAGS $CPPFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES
 ...
 .EE
 
@@ -1145,14 +1152,14 @@ would override the built-in gcc tool.
 Also note that the toolpath is
 stored in the environment for use
 by later calls to
-.BR Copy ()
+.BR Clone ()
 and
 .BR Tool ()
 methods:
 
 .ES
 base = Environment(toolpath=['custom_path'])
-derived = base.Copy(tools=['custom_tool'])
+derived = base.Clone(tools=['custom_tool'])
 derived.CustomBuilder()
 .EE
 
@@ -1362,6 +1369,28 @@ env.Program(target = 'bar', source = 'bar.c')
 env.Program('bar', source = 'bar.c')
 env.Program(source = 'bar.c')
 env.Program('bar.c')
+.EE
+
+As a convenience, a
+.B srcdir
+keyword argument may be specified
+when calling a Builder.
+When specified,
+all source file strings that are not absolute paths
+will be interpreted relative to the specified
+.BR srcdir .
+The following example will build the
+.B build/prog
+(or
+.B build/prog.exe
+on Windows)
+program from the files
+.B src/f1.c
+and
+.BR src/f2.c :
+
+.ES
+env.Program('build/prog', ['f1.c', 'f2.c'], srcdir='src')
 .EE
 
 It is possible to override or add construction variables when calling a
@@ -1712,6 +1741,24 @@ the specified
 See the section "Action Objects,"
 below, for a complete explanation of the arguments and behavior.
 
+Note that the 
+.BR env.Action ()
+form of the invocation will expand
+construction variables in any arguments strings,
+including the
+.I action
+argument,
+at the time it is called
+using the construction variables in the
+.B env
+construction environment through which
+.BR env.Action ()
+was called.
+The
+.BR Action ()
+form delays all variable expansion
+until the Action object is actually used.
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
 .RI AddPostAction( target ", " action )
@@ -1776,6 +1823,41 @@ env.Alias('install', ['/usr/local/bin', '/usr/local/lib'])
 env.Alias('install', ['/usr/local/man'])
 
 env.Alias('update', ['file1', 'file2'], "update_database $SOURCES")
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI AllowSubstExceptions([ exception ", ...])"
+Specifies the exceptions that will be allowed
+when expanding construction variables.
+By default,
+any construction variable expansions that generate a
+.B NameError
+or
+.BR IndexError
+exception will expand to a
+.B ''
+(a null string) and not cause scons to fail.
+All exceptions not in the specified list
+will generate an error message
+and terminate processing.
+
+If
+.B AllowSubstExceptions
+is called multiple times,
+each call completely overwrites the previous list
+of allowed exceptions.
+Example:
+
+.ES
+# Requires that all construction variable names exist.
+# (You may wish to do this if you want to enforce strictly
+# that all construction variables must be defined before use.)
+AllowSubstExceptions()
+
+# Also allow a string containing a zero-division expansion
+# like '${1 / 0}' to evalute to ''.
+AllowSubstExceptions(IndexError, NameError, ZeroDivisionError)
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1993,6 +2075,24 @@ the specified
 See the section "Builder Objects,"
 below, for a complete explanation of the arguments and behavior.
 
+Note that the 
+.BR env.Builder ()
+form of the invocation will expand
+construction variables in any arguments strings,
+including the
+.I action
+argument,
+at the time it is called
+using the construction variables in the
+.B env
+construction environment through which
+.BR env.Builder ()
+was called.
+The
+.BR Builder ()
+form delays all variable expansion
+until after the Builder object is actually called.
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
 .RI CacheDir( cache_dir )
@@ -2182,6 +2282,32 @@ env.Command('baz.out', 'baz.in',
 	     rename ])
 .EE
 
+Note that the
+.BR Command ()
+function will usually assume, by default,
+that the specified targets and/or sources are Files,
+if no other part of the configuration
+identifies what type of entry it is.
+If necessary, you can explicitly specify
+that targets or source nodes should
+be treated as directoriese
+by using the
+.BR Dir ()
+or
+.BR env.Dir ()
+functions:
+
+.ES
+env.Command('ddd.list', Dir('ddd'), 'ls -l $SOURCE > $TARGET')
+
+env['DISTDIR'] = 'destination/directory'
+env.Command(env.Dir('$DISTDIR')), None, make_distdir)
+.EE
+
+(Also note that SCons will usually
+automatically create any directory necessary to hold a target file,
+so you normally don't need to create directories by hand.)
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI Configure( env ", [" custom_tests ", " conf_dir ", " log_file ", " config_h ])
@@ -2194,7 +2320,7 @@ below, for a complete explanation of the arguments and behavior.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI env.Copy([ key = val ", ...])"
+.RI env.Clone([ key = val ", ...])"
 Return a separate copy of a construction environment.
 If there are any keyword arguments specified,
 they are added to the returned copy,
@@ -2202,8 +2328,8 @@ overwriting any existing values
 for the keywords.
 
 .ES
-env2 = env.Copy()
-env3 = env.Copy(CCFLAGS = '-g')
+env2 = env.Clone()
+env3 = env.Clone(CCFLAGS = '-g')
 .EE
 .IP
 Additionally, a list of tools and a toolpath may be specified, as in
@@ -2211,8 +2337,15 @@ the Environment constructor:
 
 .ES
 def MyTool(env): env['FOO'] = 'bar'
-env4 = env.Copy(tools = ['msvc', MyTool])
+env4 = env.Clone(tools = ['msvc', MyTool])
 .EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI env.Copy([ key = val ", ...])"
+A synonym for
+env.Clone().
+(This will probably be officially deprecated some day.)
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
@@ -2733,8 +2866,11 @@ Import("*")
 .RI Install( dir ", " source )
 .TP
 .RI env.Install( dir ", " source )
-Installs one or more files in a destination directory.
-The file names remain the same.
+Installs one or more source files or directories
+in a destination directory
+.IR dir .
+The names of the specified source files or directories
+remain the same within the destination directory.
 
 .ES
 env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
@@ -2745,11 +2881,15 @@ env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
 .RI InstallAs( target ", " source )
 .TP
 .RI env.InstallAs( target ", " source )
-Installs one or more files as specific file names,
-allowing changing a file name as part of the
-installation.
-It is an error if the target and source
-list different numbers of files.
+Installs one or more source files or directories
+to specific names,
+allowing changing a file or directory name
+as part of the installation.
+It is an error if the
+.I target
+and
+.I source
+arguments list different numbers of files or directories.
 
 .ES
 env.InstallAs(target = '/usr/local/bin/foo',
@@ -2793,6 +2933,13 @@ it is converted to one by calling
 .B env.ParseFlags()
 on the argument
 before the values are merged.
+Note that
+.I arg
+must be a single value,
+so multiple strings must
+be passed in as a list,
+not as separate arguments to
+.BR env.MergeFlags ().
 
 By default, 
 duplicate values are eliminated;
@@ -2800,6 +2947,13 @@ you can, however, specify
 .B unique=0
 to allow duplicate
 values to be added.
+When eliminating duplicate values,
+any construction variables that end with
+the string
+.B PATH
+keep the left-most unique value.
+All other construction variables keep
+the right-most unique value.
 
 Examples:
 
@@ -2995,12 +3149,14 @@ and added to the following construction variables:
 -mno-cygwin         CCFLAGS, LINKFLAGS
 -mwindows           LINKFLAGS
 -pthread            CCFLAGS, LINKFLAGS
+-std=               CFLAGS
 -Wa,                ASFLAGS, CCFLAGS
 -Wl,-rpath=         RPATH
 -Wl,-R,             RPATH
 -Wl,-R              RPATH
 -Wl,                LINKFLAGS
 -Wp,                CPPFLAGS
+-                   CCFLAGS
 +                   CCFLAGS, LINKFLAGS
 .EE
 
@@ -3956,17 +4112,31 @@ env.Tool('opengl', toolpath = ['build/tools'])
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI Value( value )
+.RI Value( value ", [" built_value ])
 .TP
-.RI env.Value( value )
+.RI env.Value( value ", [" built_value ])
 Returns a Node object representing the specified Python value.  Value
-nodes can be used as dependencies of targets.  If the result of
+Nodes can be used as dependencies of targets.  If the result of
 calling
 .BR str( value )
 changes between SCons runs, any targets depending on
 .BR Value( value )
-will be rebuilt.  When using timestamp source signatures, Value nodes'
-timestamps are equal to the system time when the node is created.
+will be rebuilt.  When using timestamp source signatures, Value Nodes'
+timestamps are equal to the system time when the Node is created.
+
+The returned Value Node object has a
+.BR write ()
+method that can be used to "build" a Value Node
+by setting a new value.
+The optional
+.I built_value
+argument can be specified 
+when the Value Node is created
+to indicate the Node should already be considered
+"built."
+There is a corresponding
+.BR read ()
+method that will return the built value of the Node.
 
 .ES
 def create(target, source, env):
@@ -3977,6 +4147,15 @@ prefix = ARGUMENTS.get('prefix', '/usr/local')
 env = Environment()
 env['BUILDERS']['Config'] = Builder(action = create)
 env.Config(target = 'package-config', source = Value(prefix))
+
+def build_value(target, source, env):
+    target[0].write(source[0].get_contents())
+
+output = env.Value('before')
+input = env.Value('after')
+
+env['BUILDERS']['UpdateValue'] = Builder(action = build_value)
+env.UpdateValue(target = Value(output), source = Value(input))
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -4275,11 +4454,11 @@ env = Environment(CC="cc")
 .EE
 
 or when copying a construction environment using the 
-.B Copy 
+.B Clone 
 method:
 
 .ES
-env2 = env.Copy(CC="cl.exe")
+env2 = env.Clone(CC="cl.exe")
 .EE
 
 .SS Configure Contexts
@@ -4500,10 +4679,13 @@ or a list of library names,
 in which case each library in the list
 will be checked for
 .IR symbol .
-The default
+If 
 .I symbol
-is "main",
-which just check if
+is not set or is
+.BR None ,
+then
+.BR Configure.CheckLib ()
+just checks if
 you can link against the specified
 .IR library .
 The optional
@@ -4517,7 +4699,6 @@ the default is "C".
 The default value for
 .I autoadd
 is 1.
-It is assumed, that the C-language is used.
 This method returns 1 on success and 0 on error.
 
 .TP 
@@ -4543,7 +4724,13 @@ header line being checked for.
 .I language
 may be one of 'C','c','CXX','cxx','C++' and 'c++'.
 .I call
-can be any valid expression (with a trailing ';'). The default is 'main();'.
+can be any valid expression (with a trailing ';').
+If
+.I call
+is not set,
+the default simply checks that you
+can link against the specified
+.IR library .
 .I autoadd
 specifies whether to add the library to the environment (only if the check 
 succeeds). This method returns 1 on success and 0 on error.
@@ -4780,13 +4967,30 @@ the construction variable will
 be added to the construction environment.
 .I validator
 is called to validate the value of the variable, and should take three
-arguments: key, value, and environment
+arguments: key, value, and environment.
+The recommended way to handle an invalid value is
+to raise an exception (see example below).
 .I converter
 is called to convert the value before putting it in the environment, and
-should take a single argument: value. Example:
+should take either a value, or the value and environment, as parameters.
+The
+.I converter
+must return a value,
+which will be converted into a string
+before being validated by the
+.I validator
+(if any)
+and then added to the environment.
+
+Examples:
 
 .ES
 opts.Add('CC', 'The C compiler')
+
+def validate_color(key, val, env):
+    if not val in ['red', 'blue', 'yellow']:
+        raise "Invalid color value '%s'" % val
+opts.Add('COLOR', validator=valid_color)
 .EE
 
 .TP
@@ -5547,6 +5751,48 @@ and
 .I action
 arguments must not both be used for the same Builder.
 
+.IP source_ext_match
+When the specified
+.I action
+argument is a dictionary,
+the default behavior when a builder is passed
+multiple source files is to make sure that the
+extensions of all the source files match.
+If it is legal for this builder to be
+called with a list of source files with different extensions,
+this check can be suppressed by setting
+.B source_ext_match
+to
+.B None
+or some other non-true value.
+When
+.B source_ext_match
+is disable,
+.B scons
+will use the suffix of the first specified
+source file to select the appropriate action from the
+.I action
+dictionary.
+
+In the following example,
+the setting of
+.B source_ext_match
+prevents
+.B scons 
+from exiting with an error
+due to the mismatched suffixes of
+.B foo.in
+and
+.BR foo.extra .
+
+.ES
+b = Builder(action={'.in' : 'build $SOURCES > $TARGET'},
+            source_ext_match = None)
+
+env = Environment(BUILDERS = {'MyBuild':b})
+env.MyBuild('foo.out', ['foo.in', 'foo.extra'])
+.EE
+
 .IP env
 A construction environment that can be used
 to fetch source code using this Builder.
@@ -5609,6 +5855,21 @@ b = Builder(action="build < ${SOURCE.file} > ${TARGET.file}",
 env = Environment(BUILDERS = {'MyBuild' : b})
 env.MyBuild('sub/dir/foo.out', 'sub/dir/foo.in')
 .EE
+
+.B WARNING:
+Python only keeps one current directory
+location for all of the threads.
+This means that use of the
+.B chdir
+argument
+will
+.I not
+work with the SCons
+.B -j
+option,
+because individual worker threads spawned
+by SCons interfere with each other
+when they start changing directory.
 
 .RE
 Any additional keyword arguments supplied
@@ -5769,9 +6030,18 @@ a = Action(build_it)
 
 If the action argument is not one of the above,
 None is returned.
+.PP
 
 The second, optional argument
-is a Python function that returns
+is used to define the output which is printed
+when the Action is actually performed.
+In the absence of this parameter, or if it's an
+empty string, a default output depending on the type of the action
+is used. For example, a command-line action will print
+the executed command. The argument is either a python function
+or a string.
+
+In the first case, it's a function that returns
 a string to be printed to describe the action being executed.
 Like a function to build a file,
 this function takes three arguments:
@@ -5788,6 +6058,13 @@ and
 .B source
 arguments may be lists of Node objects if there is
 more than one target file or source file.
+
+In the second case, you provide the string itself.
+The string typically contains variables, notably
+$TARGET(S) and $SOURCE(S), or consists of just a single
+variable, which is optionally defined somewhere else.
+SCons itself heavily uses the latter variant.
+
 Examples:
 
 .ES
@@ -5799,10 +6076,15 @@ def string_it(target, source, env):
     return "building '%s' from '%s'" % (target[0], source[0])
 
 # Use a positional argument.
-a = Action(build_it, string_it)
+f = Action(build_it, string_it)
+s = Action(build_it, "building '$TARGET' from '$SOURCE'")
 
 # Alternatively, use a keyword argument.
-a = Action(build_it, strfunction=string_it)
+f = Action(build_it, strfunction=string_it)
+s = Action(build_it, cmdstr="building '$TARGET' from '$SOURCE'")
+
+# You can provide a configurable variable.
+l = Action(build_it, '$STRINGIT')
 .EE
 
 The third, also optional argument
@@ -5823,16 +6105,12 @@ def build_it(target, source, env):
     open(target[0], 'w').write(env['XXX'])
     return 0
 
-def string_it(target, source):
-    return "building '%s' from '%s'" % (target[0], source[0])
-
 # Use positional arguments.
-a = Action(build_it, string_it, ['XXX'])
+a = Action(build_it, '$STRINGIT', ['XXX'])
 
 # Alternatively, use a keyword argument.
 a = Action(build_it, varlist=['XXX'])
 .EE
-.PP
 
 The
 .BR Action ()
@@ -5965,7 +6243,7 @@ that
 env = Environment(TMPBUILD = '/tmp/builddir')
 env.Command('foo.out', 'foo.in',
             [Mkdir('$TMPBUILD'),
-             Copy('$TMPBUILD', '${SOURCE.dir}')
+             Copy('$TMPBUILD', '${SOURCE.dir}'),
              "cd $TMPBUILD && make",
              Delete('$TMPBUILD')])
 .EE
@@ -6376,6 +6654,13 @@ Use
 to fetch the name of the file, and
 .B node.get_contents()
 to fetch contents of the file.
+Note that the file is
+.I not
+guaranteed to exist before the scanner is called,
+so the scanner function should check that
+if there's any chance that the scanned file
+might not exist
+(for example, if it's built from other files).
 
 The
 .B env
@@ -6423,10 +6708,14 @@ then it will be expanded
 into a list by the current environment.
 
 .IP path_function
-A Python function that takes
-two or three arguments:
-a construction environment, directory Node,
-and optional argument supplied
+A Python function that takes four or five arguments:
+a construction environment,
+a Node for the directory containing
+the SConscript file in which
+the first target was defined,
+a list of target nodes,
+a list of source nodes,
+and an optional argument supplied
 when the scanner was created.
 The
 .B path_function
