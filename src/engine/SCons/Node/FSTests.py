@@ -1484,7 +1484,7 @@ class FSTestCase(_tempdirTestCase):
                 x_d1,           x_d1,           '.',
                 x_d1,           x_d1_d2,        'd2',
                 x_d1,           y_d1,           r'Y:\d1',
-                x_d1,           y_d1_d2,        r'Y:\d1\d1',
+                x_d1,           y_d1_d2,        r'Y:\d1\d2',
                 x_d1,           y_d2,           r'Y:\d2',
             ]
 
