@@ -29,7 +29,6 @@ SCons string substitution.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import __builtin__
 import re
 import string
 import types
@@ -497,18 +496,18 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
         lvars.update(d)
 
     # We're (most likely) going to eval() things.  If Python doesn't
-    # find a __builtin__ value in the global dictionary used for eval(),
-    # it copies the current __builtin__ values for you.  Avoid this by
+    # find a __builtins__ value in the global dictionary used for eval(),
+    # it copies the current global values for you.  Avoid this by
     # setting it explicitly and then deleting, so we don't pollute the
     # construction environment Dictionary(ies) that are typically used
     # for expansion.
-    gvars['__builtin__'] = __builtin__
+    gvars['__builtins__'] = __builtins__
 
     ss = StringSubber(env, mode, target, source, conv, gvars)
     result = ss.substitute(strSubst, lvars)
 
     try:
-        del gvars['__builtin__']
+        del gvars['__builtins__']
     except KeyError:
         pass
 
@@ -784,8 +783,8 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
         lvars.update(d)
 
     # We're (most likely) going to eval() things.  If Python doesn't
-    # find a __builtin__ value in the global dictionary used for eval(),
-    # it copies the current __builtin__ values for you.  Avoid this by
+    # find a __builtins__ value in the global dictionary used for eval(),
+    # it copies the current global values for you.  Avoid this by
     # setting it explicitly and then deleting, so we don't pollute the
     # construction environment Dictionary(ies) that are typically used
     # for expansion.
