@@ -28,6 +28,11 @@ RELEASE 0.97 - XXX
 
   - Document use of ${} to execute arbitrary Python code.
 
+  From John Pye:
+
+  - Change ParseConfig() to preserve white space in arguments passed in
+    as a list.
+
 
 
 RELEASE 0.96.94 - Sun, 07 Jan 2007 18:36:20 -0600

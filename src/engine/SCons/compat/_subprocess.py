@@ -402,10 +402,22 @@ else:
     import fcntl
     import pickle
 
+    try:
+        fcntl.F_GETFD
+    except AttributeError:
+        fcntl.F_GETFD = 1
+
+    try:
+        fcntl.F_SETFD
+    except AttributeError:
+        fcntl.F_SETFD = 2
+
 __all__ = ["Popen", "PIPE", "STDOUT", "call", "check_call", "CalledProcessError"]
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
+except KeyboardInterrupt:
+    raise       # SCons:  don't swallow keyboard interrupts
 except:
     MAXFD = 256
 
@@ -415,6 +427,32 @@ try:
 except NameError:
     False = 0
     True = 1
+
+try:
+    isinstance(1, int)
+except TypeError:
+    def is_int(obj):
+        return type(obj) == type(1)
+    def is_int_or_long(obj):
+        return type(obj) in (type(1), type(1L))
+else:
+    def is_int(obj):
+        return isinstance(obj, int)
+    def is_int_or_long(obj):
+        return isinstance(obj, (int, long))
+
+try:
+    types.StringTypes
+except AttributeError:
+    try:
+        types.StringTypes = (types.StringType, types.UnicodeType)
+    except AttributeError:
+        types.StringTypes = (types.StringType,)
+    def is_string(obj):
+        return type(obj) in types.StringTypes
+else:
+    def is_string(obj):
+        return isinstance(obj, types.StringTypes)
 
 _active = []
 
@@ -440,7 +478,7 @@ def call(*popenargs, **kwargs):
 
     retcode = call(["ls", "-l"])
     """
-    return Popen(*popenargs, **kwargs).wait()
+    return apply(Popen, popenargs, kwargs).wait()
 
 
 def check_call(*popenargs, **kwargs):
@@ -453,7 +491,7 @@ def check_call(*popenargs, **kwargs):
 
     check_call(["ls", "-l"])
     """
-    retcode = call(*popenargs, **kwargs)
+    retcode = apply(call, popenargs, kwargs)
     cmd = kwargs.get("args")
     if cmd is None:
         cmd = popenargs[0]
@@ -530,6 +568,12 @@ def list2cmdline(seq):
     return ''.join(result)
 
 
+try:
+    object
+except NameError:
+    class object:
+        pass
+
 class Popen(object):
     def __init__(self, args, bufsize=0, executable=None,
                  stdin=None, stdout=None, stderr=None,
@@ -540,7 +584,7 @@ class Popen(object):
         _cleanup()
 
         self._child_created = False
-        if not isinstance(bufsize, (int, long)):
+        if not is_int_or_long(bufsize):
             raise TypeError("bufsize must be an integer")
 
         if mswindows:
@@ -673,7 +717,7 @@ class Popen(object):
                 # Detach and turn into fd
                 p2cwrite = p2cwrite.Detach()
                 p2cwrite = msvcrt.open_osfhandle(p2cwrite, 0)
-            elif isinstance(stdin, int):
+            elif is_int(stdin):
                 p2cread = msvcrt.get_osfhandle(stdin)
             else:
                 # Assuming file-like object
@@ -687,7 +731,7 @@ class Popen(object):
                 # Detach and turn into fd
                 c2pread = c2pread.Detach()
                 c2pread = msvcrt.open_osfhandle(c2pread, 0)
-            elif isinstance(stdout, int):
+            elif is_int(stdout):
                 c2pwrite = msvcrt.get_osfhandle(stdout)
             else:
                 # Assuming file-like object
@@ -703,7 +747,7 @@ class Popen(object):
                 errread = msvcrt.open_osfhandle(errread, 0)
             elif stderr == STDOUT:
                 errwrite = c2pwrite
-            elif isinstance(stderr, int):
+            elif is_int(stderr):
                 errwrite = msvcrt.get_osfhandle(stderr)
             else:
                 # Assuming file-like object
@@ -753,13 +797,13 @@ class Popen(object):
             if startupinfo is None:
                 startupinfo = STARTUPINFO()
             if None not in (p2cread, c2pwrite, errwrite):
-                startupinfo.dwFlags |= STARTF_USESTDHANDLES
+                startupinfo.dwFlags = startupinfo.dwFlags | STARTF_USESTDHANDLES
                 startupinfo.hStdInput = p2cread
                 startupinfo.hStdOutput = c2pwrite
                 startupinfo.hStdError = errwrite
 
             if shell:
-                startupinfo.dwFlags |= STARTF_USESHOWWINDOW
+                startupinfo.dwFlags = startupinfo.dwFlags | STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = SW_HIDE
                 comspec = os.environ.get("COMSPEC", "cmd.exe")
                 args = comspec + " /c " + args
@@ -777,7 +821,7 @@ class Popen(object):
                     # use at xxx" and a hopeful warning about the
                     # stability of your system.  Cost is Ctrl+C wont
                     # kill children.
-                    creationflags |= CREATE_NEW_CONSOLE
+                    creationflags = creationflags | CREATE_NEW_CONSOLE
 
             # Start the process
             try:
@@ -796,7 +840,7 @@ class Popen(object):
                 # a subclass of OSError.  FIXME: We should really
                 # translate errno using _sys_errlist (or simliar), but
                 # how can this be done from Python?
-                raise WindowsError(*e.args)
+                raise apply(WindowsError, e.args)
 
             # Retain the process handle, but close the thread handle
             self._child_created = True
@@ -902,7 +946,7 @@ class Popen(object):
                 pass
             elif stdin == PIPE:
                 p2cread, p2cwrite = os.pipe()
-            elif isinstance(stdin, int):
+            elif is_int(stdin):
                 p2cread = stdin
             else:
                 # Assuming file-like object
@@ -912,7 +956,7 @@ class Popen(object):
                 pass
             elif stdout == PIPE:
                 c2pread, c2pwrite = os.pipe()
-            elif isinstance(stdout, int):
+            elif is_int(stdout):
                 c2pwrite = stdout
             else:
                 # Assuming file-like object
@@ -924,7 +968,7 @@ class Popen(object):
                 errread, errwrite = os.pipe()
             elif stderr == STDOUT:
                 errwrite = c2pwrite
-            elif isinstance(stderr, int):
+            elif is_int(stderr):
                 errwrite = stderr
             else:
                 # Assuming file-like object
@@ -951,6 +995,8 @@ class Popen(object):
                     continue
                 try:
                     os.close(i)
+                except KeyboardInterrupt:
+                    raise       # SCons:  don't swallow keyboard interrupts
                 except:
                     pass
 
@@ -963,7 +1009,7 @@ class Popen(object):
                            errread, errwrite):
             """Execute program (POSIX version)"""
 
-            if isinstance(args, types.StringTypes):
+            if is_string(args):
                 args = [args]
 
             if shell:
@@ -1002,8 +1048,12 @@ class Popen(object):
 
                     # Close pipe fds.  Make sure we don't close the same
                     # fd more than once, or standard fds.
-                    for fd in set((p2cread, c2pwrite, errwrite))-set((0,1,2)):
-                        if fd: os.close(fd)
+                    if p2cread:
+                        os.close(p2cread)
+                    if c2pwrite and c2pwrite not in (p2cread,):
+                        os.close(c2pwrite)
+                    if errwrite and errwrite not in (p2cread, c2pwrite):
+                        os.close(errwrite)
 
                     # Close all other fds, if asked for
                     if close_fds:
@@ -1019,6 +1069,9 @@ class Popen(object):
                         os.execvp(executable, args)
                     else:
                         os.execvpe(executable, args, env)
+
+                except KeyboardInterrupt:
+                    raise       # SCons:  don't swallow keyboard interrupts
 
                 except:
                     exc_type, exc_value, tb = sys.exc_info()
@@ -1190,7 +1243,7 @@ def _demo_posix():
         else:
             print "Error", e.errno
     else:
-        print >>sys.stderr, "Gosh.  No error."
+        sys.stderr.write( "Gosh.  No error.\n" )
 
 
 def _demo_windows():

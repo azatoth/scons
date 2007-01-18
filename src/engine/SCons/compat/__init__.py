@@ -80,6 +80,12 @@ def import_as(module, name):
 import builtins
 
 try:
+    import subprocess
+except ImportError:
+    # Pre-2.4 Python has no subprocess module.
+    import_as('_subprocess', 'subprocess')
+
+try:
     import UserString
 except ImportError:
     # Pre-1.6 Python has no UserString module.
