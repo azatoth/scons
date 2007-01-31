@@ -231,11 +231,11 @@ def uicScannerFunc(node, env, path):
             result.append(dep)
     return result
 
-uicScanner = SCons.Scanner.Scanner(uicScannerFunc,
-                                   name = "UicScanner", 
-                                   node_class = SCons.Node.FS.File,
-                                   node_factory = SCons.Node.FS.File,
-                                   recursive = 0)
+uicScanner = SCons.Scanner.Base(uicScannerFunc,
+                                name = "UicScanner", 
+                                node_class = SCons.Node.FS.File,
+                                node_factory = SCons.Node.FS.File,
+                                recursive = 0)
 
 def generate(env):
     """Add Builders and construction variables for qt to an Environment."""

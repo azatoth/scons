@@ -6739,16 +6739,23 @@ new file types for implicit dependencies.
 Scanner accepts the following arguments:
 
 .IP function
-A Python function that will process
+This can be either:
+1) a Python function that will process
 the Node (file)
 and return a list of strings (file names)
 representing the implicit
-dependencies found in the contents.
-The function takes three or four arguments:
+dependencies found in the contents;
+or:
+2) a dictionary that maps keys
+(typically the file suffix, but see below for more discussion)
+to other Scanners that should be called.
+
+If the argument is actually a Python function,
+the function must take three or four arguments:
 
     def scanner_function(node, env, path):
 
-    def scanner_function(node, env, path, arg):
+    def scanner_function(node, env, path, arg=None):
 
 The
 .B node
