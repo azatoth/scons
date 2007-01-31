@@ -589,6 +589,47 @@ def _create_path(plist):
             path = path + '/' + d
     return path
 
+def _load_site_scons_dir(topdir, site_dir_name=None):
+    """Load the site_scons dir under topdir.
+    Adds site_scons to sys.path, imports site_scons/site_init.py,
+    and adds site_scons/site_tools to default toolpath."""
+    if site_dir_name:
+        err_if_not_found = True       # user specified: err if missing
+    else:
+        site_dir_name = "site_scons"
+        err_if_not_found = False
+        
+    site_dir = os.path.join(topdir.path, site_dir_name)
+    if not os.path.exists(site_dir):
+        if err_if_not_found:
+            raise SCons.Errors.UserError, "site dir %s not found."%site_dir
+        return
+
+    site_init_filename = "site_init.py"
+    site_init_modname = "site_init"
+    site_tools_dirname = "site_tools"
+    sys.path = [site_dir] + sys.path
+    site_init_file = os.path.join(site_dir, site_init_filename)
+    site_tools_dir = os.path.join(site_dir, site_tools_dirname)
+    if os.path.exists(site_init_file):
+        import imp
+        try:
+            fp, pathname, description = imp.find_module(site_init_modname,
+                                                        [site_dir])
+            try:
+                imp.load_module(site_init_modname, fp, pathname, description)
+            finally:
+                if fp:
+                    fp.close()
+        except ImportError, e:
+            sys.stderr.write("Can't import site init file '%s': %s\n"%(site_init_file, e))
+            raise
+        except Exception, e:
+            sys.stderr.write("Site init file '%s' raised exception: %s\n"%(site_init_file, e))
+            raise
+    if os.path.exists(site_tools_dir):
+        SCons.Tool.DefaultToolpath.append(os.path.abspath(site_tools_dir))
+
 def version_string(label, module):
     fmt = "\t%s: v%s.%s, %s, by %s on %s\n"
     return fmt % (label,
@@ -773,6 +814,10 @@ class OptParser(OptionParser):
                         '--recon', action="store_true", dest='noexec',
                         default=0, help="Don't build; just print commands.")
 
+        self.add_option('--no-site-dir', action="store_true",
+                        dest='no_site_dir', default=0,
+                        help="Don't search or use the usual site_scons dir.")
+
         self.add_option('--profile', action="store",
                         dest="profile_file", metavar="FILE",
                         help="Profile SCons and put results in FILE.")
@@ -789,6 +834,10 @@ class OptParser(OptionParser):
 
         self.add_option('-s', '--silent', '--quiet', action="store_true",
                         default=0, help="Don't print commands.")
+
+        self.add_option('--site-dir', action="store",
+                        dest='site_dir', metavar="DIR",
+                        help="Use DIR instead of the usual site_scons dir.")
 
         self.add_option('--taskmastertrace', action="store",
                         dest="taskmastertrace_file", metavar="FILE",
@@ -1076,6 +1125,11 @@ def _main(args, parser):
     if options.cache_show:
         fs.cache_show = 1
 
+    if options.site_dir:
+        _load_site_scons_dir(d, options.site_dir)
+    elif not options.no_site_dir:
+        _load_site_scons_dir(d)
+        
     if options.include_dir:
         sys.path = options.include_dir + sys.path
 

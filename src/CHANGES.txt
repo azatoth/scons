@@ -31,6 +31,12 @@ RELEASE 0.97 - XXX
 
   - Document use of ${} to execute arbitrary Python code.
 
+  - Add support for:
+    1) automatically adding a site_scons subdirectory (in the top-level
+       SConstruct directory) to sys.path (PYTHONPATH);
+    2) automatically importing site_scons/site_init.py;
+    3) automatically adding site_scons/site_tools to the toolpath.
+
   From John Pye:
 
   - Change ParseConfig() to preserve white space in arguments passed in

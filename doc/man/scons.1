@@ -92,6 +92,26 @@ rules exist for building common software components (executable
 programs, object files, libraries), so that for most software
 projects, only the target and input files need be specified.
 
+Before reading the
+.I SConstruct
+file,
+.B scons
+adds looks for a dir named
+.I site_scons
+in the dir containing the
+.I SConstruct
+file; it adds that
+.I site_scons
+to sys.path, reads the file
+.IR site_scons/site_init.py ,
+and adds the directory
+.I site_scons/site_tools
+to the default toolpath, if those exist.  See the
+.I --no-site-dir
+and
+.I --site-dir
+options for more details.
+
 .B scons
 reads and executes the SConscript files as Python scripts,
 so you may use normal Python scripting capabilities
@@ -748,6 +768,18 @@ imported Python modules.  If several
 options
 are used, the directories are searched in the order specified.
 
+.TP 
+.RI --no-site-dir
+Prevents the automatic addition of the standard
+.I site_scons
+dir to
+.IR sys.path .
+Also prevents loading the
+.I site_scons/site_init.py
+module if it exists, and prevents adding
+.I site_scons/site_tools
+to the toolpath.
+
 .TP
 --implicit-cache
 Cache implicit dependencies. This can cause 
@@ -938,6 +970,18 @@ Also suppresses SCons status messages.
 -S, --no-keep-going, --stop
 Ignored for compatibility with GNU 
 .BR make .
+
+.TP 
+.RI --site-dir= dir
+Uses the named dir as the site dir rather than the default
+.I site_scons
+dir.  This dir will get prepended to
+.IR sys.path ,
+the module
+.IR dir /site_init.py
+will get loaded if it exists, and
+.IR dir /site_tools
+will get added to the default toolpath.
 
 .TP
 -t, --touch

@@ -48,6 +48,8 @@ import SCons.Scanner.D
 import SCons.Scanner.LaTeX
 import SCons.Scanner.Prog
 
+DefaultToolpath=[]
+
 CScanner = SCons.Scanner.C.CScanner()
 DScanner = SCons.Scanner.D.DScanner()
 LaTeXScanner = SCons.Scanner.LaTeX.LaTeXScanner()
@@ -78,7 +80,7 @@ for suffix in LaTeXSuffixes:
 class Tool:
     def __init__(self, name, toolpath=[], **kw):
         self.name = name
-        self.toolpath = toolpath
+        self.toolpath = toolpath + DefaultToolpath
         # remember these so we can merge them into the call
         self.init_kw = kw
 
