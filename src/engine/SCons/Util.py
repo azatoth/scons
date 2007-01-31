@@ -37,7 +37,6 @@ import os.path
 import re
 import string
 import sys
-import stat
 import types
 
 from UserDict import UserDict
@@ -567,6 +566,7 @@ elif os.name == 'os2':
 else:
 
     def WhereIs(file, path=None, pathext=None, reject=[]):
+        import stat
         if path is None:
             try:
                 path = os.environ['PATH']
@@ -864,9 +864,10 @@ def unique(s):
         for x in s:
             u[x] = 1
     except TypeError:
-        del u  # move on to the next method
+        pass    # move on to the next method
     else:
         return u.keys()
+    del u
 
     # We can't hash all the elements.  Second fastest is to sort,
     # which brings the equal elements together; then duplicates are
@@ -879,7 +880,7 @@ def unique(s):
         t = list(s)
         t.sort()
     except TypeError:
-        del t  # move on to the next method
+        pass    # move on to the next method
     else:
         assert n > 0
         last = t[0]
@@ -890,6 +891,7 @@ def unique(s):
                 lasti = lasti + 1
             i = i + 1
         return t[:lasti]
+    del t
 
     # Brute force is all that's left.
     u = []

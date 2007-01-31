@@ -636,6 +636,8 @@ class Taskmaster:
             if T: T.write(' evaluating %s\n' % node)
             return node
 
+        return None
+
     def next_task(self):
         """
         Returns the next task to be executed.

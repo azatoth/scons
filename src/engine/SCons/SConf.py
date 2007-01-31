@@ -39,6 +39,7 @@ import types
 import SCons.Action
 import SCons.Builder
 import SCons.Errors
+import SCons.Job
 import SCons.Node.FS
 import SCons.Taskmaster
 import SCons.Util
@@ -141,7 +142,6 @@ def _createSource( target, source, env ):
     fd.write(source[0].get_contents())
     fd.close()
 def _stringSource( target, source, env ):
-    import string
     return (str(target[0]) + ' <-\n  |' +
             string.replace( source[0].get_contents(),
                             '\n', "\n  |" ) )
@@ -229,7 +229,6 @@ class SConfBuildTask(SCons.Taskmaster.Task):
             except AttributeError:
                 # Earlier versions of Python don't have sys.excepthook...
                 def excepthook(type, value, tb):
-                    import traceback
                     traceback.print_tb(tb)
                     print type, value
             apply(excepthook, self.exc_info())

@@ -58,6 +58,8 @@ import UserList
 # the "--debug=memoizer" flag and enable Memoizer before we import any
 # of the other modules that use it.
 
+import Main
+
 _args = sys.argv + string.split(os.environ.get('SCONSFLAGS', ''))
 if "--debug=memoizer" in _args:
     import SCons.Memoize
@@ -68,7 +70,6 @@ if "--debug=memoizer" in _args:
         # Some warning was thrown (inability to --debug=memoizer on
         # Python 1.5.2 because it doesn't have metaclasses).  Arrange
         # for it to be displayed or not after warnings are configured.
-        import Main
         exc_type, exc_value, tb = sys.exc_info()
         Main.delayed_warnings.append(exc_type, exc_value)
 del _args
@@ -85,8 +86,6 @@ import SCons.Subst
 import SCons.Tool
 import SCons.Util
 import SCons.Defaults
-
-import Main
 
 main                    = Main.main
 
@@ -341,6 +340,7 @@ GlobalDefaultBuilders = [
 
 for name in GlobalDefaultEnvironmentFunctions + GlobalDefaultBuilders:
     exec "%s = _SConscript.DefaultEnvironmentCall(%s)" % (name, repr(name))
+del name
 
 # There are a handful of variables that used to live in the
 # Script/SConscript.py module that some SConscript files out there were
@@ -351,6 +351,10 @@ for name in GlobalDefaultEnvironmentFunctions + GlobalDefaultBuilders:
 # maintain backwards compatibility for SConscripts that were reaching in
 # this way by hanging some attributes off the "SConscript" object here.
 SConscript = _SConscript.DefaultEnvironmentCall('SConscript')
+
+# Make SConscript look enough like the module it used to be so
+# that pychecker doesn't barf.
+SConscript.__name__ = 'SConscript'
 
 SConscript.Arguments = ARGUMENTS
 SConscript.ArgList = ARGLIST

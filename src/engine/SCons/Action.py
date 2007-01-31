@@ -100,12 +100,12 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import dis
 import os
 import os.path
-import re
 import string
 import sys
 
 from SCons.Debug import logInstanceCreation
 import SCons.Errors
+import SCons.Executor
 import SCons.Util
 
 class _Null:
@@ -403,7 +403,8 @@ class CommandAction(_ActionAction):
 
     def strfunction(self, target, source, env):
         if not self.cmdstr is None:
-            c = env.subst(self.cmdstr, SCons.Subst.SUBST_RAW, target, source)
+            from SCons.Subst import SUBST_RAW
+            c = env.subst(self.cmdstr, SUBST_RAW, target, source)
             if c:
                 return c
         cmd_list, ignore, silent = self.process(target, source, env)
@@ -421,7 +422,6 @@ class CommandAction(_ActionAction):
         externally.
         """
         from SCons.Subst import escape_list
-        from SCons.Util import is_String, is_List, flatten
 
         try:
             shell = env['SHELL']
@@ -445,6 +445,10 @@ class CommandAction(_ActionAction):
             ENV = default_ENV
 
         # Ensure that the ENV values are all strings:
+        import SCons.Util
+        flatten = SCons.Util.flatten
+        is_String = SCons.Util.is_String
+        is_List = SCons.Util.is_List
         for key, value in ENV.items():
             if not is_String(value):
                 if is_List(value):
@@ -618,7 +622,8 @@ class FunctionAction(_ActionAction):
         if self.cmdstr is None:
             return None
         if not self.cmdstr is _null:
-            c = env.subst(self.cmdstr, SCons.Subst.SUBST_RAW, target, source)
+            from SCons.Subst import SUBST_RAW
+            c = env.subst(self.cmdstr, SUBST_RAW, target, source)
             if c:
                 return c
         def array(a):

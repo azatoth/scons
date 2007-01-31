@@ -56,7 +56,7 @@ __all__ = ('PackageOption', 'True', 'False')
 
 import string
 
-from BoolOption import True, False
+import SCons.compat
 import SCons.Errors
 
 __enable_strings  = (str(True), 'yes', 'true',  'on', 'enable', 'search')
@@ -78,9 +78,9 @@ def _validator(key, val, env, searchfunc):
     """
     # todo: write validator, check for path
     import os
-    if env[key] == False:
+    if env[key] is False:
         pass
-    elif env[key] == True:
+    elif env[key] is True:
         if searchfunc:
             env[key] = searchfunc(key, val)
     elif not os.path.exists(val):

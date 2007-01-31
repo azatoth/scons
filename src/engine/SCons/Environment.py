@@ -38,7 +38,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import copy
 import os
 import os.path
-import popen2
 import string
 from UserDict import UserDict
 
@@ -47,6 +46,7 @@ import SCons.Builder
 from SCons.Debug import logInstanceCreation
 import SCons.Defaults
 import SCons.Errors
+import SCons.Memoize
 import SCons.Node
 import SCons.Node.Alias
 import SCons.Node.FS
@@ -54,7 +54,6 @@ import SCons.Node.Python
 import SCons.Platform
 import SCons.SConsign
 import SCons.Sig
-import SCons.Sig.TimeStamp
 import SCons.Subst
 import SCons.Tool
 import SCons.Util
@@ -620,7 +619,7 @@ class SubstitutionEnvironment:
                     if arg[2:]:
                         append_define(arg[2:])
                     else:
-                        appencd_next_arg_to = 'CPPDEFINES'
+                        append_next_arg_to = 'CPPDEFINES'
                 elif arg == '-framework':
                     append_next_arg_to = 'FRAMEWORKS'
                 elif arg[:14] == '-frameworkdir=':
@@ -1746,7 +1745,7 @@ class OverrideEnvironment(Base):
     def __getattr__(self, name):
         return getattr(self.__dict__['__subject'], name)
     def __setattr__(self, name, value):
-        return setattr(self.__dict__['__subject'], name, value)
+        setattr(self.__dict__['__subject'], name, value)
 
     # Methods that make this class act like a dictionary.
     def __getitem__(self, key):

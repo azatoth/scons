@@ -62,6 +62,7 @@ import SCons.Node
 import SCons.Node.FS
 from SCons.Optik import OptionParser, SUPPRESS_HELP, OptionValueError
 import SCons.SConf
+import SCons.Script
 import SCons.Sig
 import SCons.Taskmaster
 import SCons.Util

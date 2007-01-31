@@ -77,7 +77,6 @@ def recurse(path, searchPath):
     return found
 
 def _scanSwig(node, env, path):
-    import sys
     r = recurse(str(node), [os.path.abspath(os.path.dirname(str(node))), os.path.abspath(os.path.join("include", "swig"))])
     return r
 

@@ -41,6 +41,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import imp
 import sys
 
+import SCons.Builder
 import SCons.Errors
 import SCons.Scanner
 import SCons.Scanner.C

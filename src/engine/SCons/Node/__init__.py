@@ -52,6 +52,7 @@ import UserList
 
 from SCons.Debug import logInstanceCreation
 import SCons.Executor
+import SCons.Memoize
 import SCons.SConsign
 import SCons.Util
 

@@ -695,7 +695,7 @@ sys.exit(1)
             "-pthread " + \
             "-mno-cygwin -mwindows " + \
             "-arch i386 -isysroot /tmp +DD64 " + \
-            "-DFOO -DBAR=value"
+            "-DFOO -DBAR=value -D BAZ"
 
         d = env.ParseFlags(s)
 
@@ -705,7 +705,7 @@ sys.exit(1)
                                   '-pthread', '-mno-cygwin',
                                   ('-arch', 'i386'), ('-isysroot', '/tmp'),
                                   '+DD64'], d['CCFLAGS']
-        assert d['CPPDEFINES'] == ['FOO', ['BAR', 'value']], d['CPPDEFINES']
+        assert d['CPPDEFINES'] == ['FOO', ['BAR', 'value'], 'BAZ'], d['CPPDEFINES']
         assert d['CPPFLAGS'] == ['-Wp,-cpp'], d['CPPFLAGS']
         assert d['CPPPATH'] == ['/usr/include/fum', 'bar'], d['CPPPATH']
         assert d['FRAMEWORKPATH'] == ['fwd1', 'fwd2', 'fwd3'], d['FRAMEWORKPATH']

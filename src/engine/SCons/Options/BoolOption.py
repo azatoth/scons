@@ -40,13 +40,11 @@ __all__ = ('BoolOption', 'True', 'False')
 
 import string
 
+import SCons.compat
 import SCons.Errors
 
 __true_strings  = ('y', 'yes', 'true', 't', '1', 'on' , 'all' )
 __false_strings = ('n', 'no', 'false', 'f', '0', 'off', 'none')
-
-# we need this since SCons should work version indepentant
-True, False = 1, 0
 
 
 def _text2bool(val):

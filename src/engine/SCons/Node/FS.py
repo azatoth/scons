@@ -47,6 +47,7 @@ import cStringIO
 import SCons.Action
 from SCons.Debug import logInstanceCreation
 import SCons.Errors
+import SCons.Memoize
 import SCons.Node
 import SCons.Subst
 import SCons.Util
@@ -829,7 +830,7 @@ class Entry(Base):
         morph this Entry."""
         try:
             self = self.disambiguate(must_exist=1)
-        except SCons.Errors.UserError, e:
+        except SCons.Errors.UserError:
             # There was nothing on disk with which to disambiguate
             # this entry.  Leave it as an Entry, but return a null
             # string so calls to get_contents() in emitters and the
@@ -1054,7 +1055,7 @@ class FS(LocalFS):
         path_norm = string.split(_my_normcase(name), os.sep)
 
         first_orig = path_orig.pop(0)   # strip first element
-        first_norm = path_norm.pop(0)   # strip first element
+        unused = path_norm.pop(0)   # strip first element
 
         drive, path_first = os.path.splitdrive(first_orig)
         if path_first:
@@ -1477,9 +1478,11 @@ class Dir(Base):
         return result
 
     def get_env_scanner(self, env, kw={}):
+        import SCons.Defaults
         return SCons.Defaults.DirEntryScanner
 
     def get_target_scanner(self):
+        import SCons.Defaults
         return SCons.Defaults.DirEntryScanner
 
     def get_found_includes(self, env, scanner, path):
