@@ -27,6 +27,11 @@ RELEASE 0.97 - XXX
   - Fully support Scanners that use a dictionary to map file suffixes
     to other scanners.
 
+  From Leanid Nazdrynau:
+
+  - Fix detection of Java anonymous classes if a newline precedes the
+    opening brace.
+
   From Gary Oberbrunner:
 
   - Document use of ${} to execute arbitrary Python code.
