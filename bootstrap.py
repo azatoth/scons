@@ -23,7 +23,6 @@
 
 import os
 import os.path
-import getopt
 import string
 import sys
 
@@ -49,6 +48,12 @@ All of these begin with the string "bootstrap_":
         Forces a copy of all necessary files.  By default, the
         bootstrap.py script only updates the bootstrap copy if the
         content of the source copy is different.
+
+    --bootstrap_src=DIR
+
+        Searches for the SCons files relative to the specified DIR,
+        then relative to the directory in which this bootstrap.py
+        script is found.
 
     --bootstrap_update
 
@@ -77,17 +82,22 @@ local SConstruct file.
 
 bootstrap_dir = 'bootstrap'
 pass_through_args = []
-search = ['.']
 update_only = None
 
 requires_an_argument = 'bootstrap.py:  %s requires an argument\n'
-
-command_line_args = sys.argv[1:]
 
 def must_copy(dst, src):
     if not os.path.exists(dst):
         return 1
     return open(dst, 'rb').read() != open(src, 'rb').read()
+
+search = [os.path.dirname(sys.argv[0])]
+if search[0] == '': search[0] = '.'
+
+# Note:  We don't use the getopt module to process the command-line
+# arguments because we'd have to teach it about all of the SCons options.
+
+command_line_args = sys.argv[1:]
 
 while command_line_args:
     arg = command_line_args.pop(0)
@@ -98,13 +108,21 @@ while command_line_args:
         except IndexError:
             sys.stderr.write(requires_an_argument % arg)
             sys.exit(1)
-
     elif arg[:16] == '--bootstrap_dir=':
         bootstrap_dir = arg[16:]
 
     elif arg == '--bootstrap_force':
         def must_copy(dst, src):
             return 1
+
+    elif arg == '--bootstrap_src':
+        try:
+            search.insert(0, command_line_args.pop(0))
+        except IndexError:
+            sys.stderr.write(requires_an_argument % arg)
+            sys.exit(1)
+    elif arg[:16] == '--bootstrap_src=':
+        search.insert(0, arg[16:])
 
     elif arg == '--bootstrap_update':
         update_only = 1
@@ -144,8 +162,8 @@ while command_line_args:
 def find(file, search=search):
     for dir in search:
         f = os.path.join(dir, file)
-	if os.path.exists(f):
-	    return os.path.normpath(f)
+        if os.path.exists(f):
+            return os.path.normpath(f)
     sys.stderr.write("could not find `%s' in search path:\n" % file)
     sys.stderr.write("\t" + string.join(search, "\n\t") + "\n")
     sys.exit(2)
