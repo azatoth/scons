@@ -590,8 +590,11 @@ This only works when run under Python 2.1 or later.
 
 .TP
 --debug=dtree
-Print the dependency tree
-after each top-level target is built. This prints out only derived files.
+A synonym for the newer
+.B --tree=derived
+option.
+This will be deprecated in some future release
+and ultimately removed.
 
 .TP
 --debug=explain
@@ -670,9 +673,11 @@ when encountering an otherwise unexplained error.
 
 .TP
 --debug=stree
-Print the dependency tree along with status information.  This is the
-same as the debug=tree option, but additional status information is
-provided for each node in the tree.
+A synonym for the newer
+.B --tree=all,status
+option.
+This will be deprecated in some future release
+and ultimately removed.
 
 .TP
 --debug=time
@@ -683,10 +688,11 @@ SConscript files, and the total time spent executing SCons itself.
 
 .TP
 --debug=tree
-Print the dependency tree
-after each top-level target is built. This prints out the complete
-dependency tree including implicit dependencies and ignored
-dependencies.
+A synonym for the newer
+.B --tree=all
+option.
+This will be deprecated in some future release
+and ultimately removed.
 
 .TP
 .RI --diskcheck= types
@@ -1000,6 +1006,56 @@ evaluates and controls the order in which Nodes are built.
 A file name of
 .B -
 may be used to specify the standard output.
+
+.TP
+.RI -tree= options
+Prints a tree of the dependencies
+after each top-level target is built.
+This prints out some or all of the tree,
+in various formats,
+depending on the
+.I options
+specified:
+
+.TP
+--tree=all
+Print the entire dependency tree
+after each top-level target is built.
+This prints out the complete dependency tree,
+including implicit dependencies and ignored dependencies.
+
+.TP
+--tree=derived
+Restricts the tree output to only derived (target) files,
+not source files.
+
+.TP
+--tree=status
+Prints status information for each displayed node.
+
+.TP
+--tree=prune
+Prunes the tree to avoid repeating dependency information
+for nodes that have already been displayed.
+Any node that has already been displayed
+will have its name printed in
+.BR "[square brackets]" ,
+as an indication that the dependencies
+for that node can be found by searching
+for the relevant output higher up in the tree.
+
+.IP
+Multiple options may be specified,
+separated by commas:
+
+.ES
+# Prints only derived files, with status information:
+scons --tree=derived,status
+
+# Prints all dependencies of target, with status information
+# and pruning dependencies of already-visited Nodes:
+scons --tree=all,prune,status target
+.EE
 
 .TP
 -u, --up, --search-up

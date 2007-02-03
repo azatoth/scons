@@ -233,9 +233,6 @@ def render_tree(root, child_func, prune=0, margin=[0], visited={}):
 
     rname = str(root)
 
-    if visited.has_key(rname):
-        return ""
-
     children = child_func(root)
     retval = ""
     for pipe in margin[:-1]:
@@ -243,6 +240,9 @@ def render_tree(root, child_func, prune=0, margin=[0], visited={}):
             retval = retval + "| "
         else:
             retval = retval + "  "
+
+    if visited.has_key(rname):
+        return retval + "+-[" + rname + "]\n"
 
     retval = retval + "+-" + rname + "\n"
     if not prune:
@@ -276,9 +276,6 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
     """
 
     rname = str(root)
-
-    if visited.has_key(rname):
-        return
 
     if showtags:
 
@@ -314,6 +311,10 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
     def MMM(m):
         return ["  ","| "][m]
     margins = map(MMM, margin[:-1])
+
+    if visited.has_key(rname):
+        print string.join(tags + margins + ['+-[', rname, ']'], '')
+        return
 
     print string.join(tags + margins + ['+-', rname], '')
 

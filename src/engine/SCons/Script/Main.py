@@ -36,6 +36,8 @@ it goes here.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
 import os
 import os.path
 import random
@@ -181,15 +183,8 @@ class BuildTask(SCons.Taskmaster.Task):
     def postprocess(self):
         if self.top:
             t = self.targets[0]
-            if print_tree:
-                print
-                SCons.Util.print_tree(t, get_all_children)
-            if print_stree:
-                print
-                SCons.Util.print_tree(t, get_all_children, showtags=2)
-            if print_dtree:
-                print
-                SCons.Util.print_tree(t, get_derived_children)
+            for tp in tree_printers:
+                tp.display(t)
             if print_includes:
                 tree = t.render_include_tree()
                 if tree:
@@ -292,18 +287,37 @@ class QuestionTask(SCons.Taskmaster.Task):
     def executed(self):
         pass
 
+
+class TreePrinter:
+    def __init__(self, derived=False, prune=False, status=False):
+        self.derived = derived
+        self.prune = prune
+        self.status = status
+    def get_all_children(self, node):
+        return node.all_children()
+    def get_derived_children(self, node):
+        children = node.all_children(None)
+        return filter(lambda x: x.has_builder(), children)
+    def display(self, t):
+        if self.derived:
+            func = self.get_derived_children
+        else:
+            func = self.get_all_children
+        s = self.status and 2 or 0
+        SCons.Util.print_tree(t, func, prune=self.prune, showtags=s)
+
+
 # Global variables
 
+tree_printers = []
+
 keep_going_on_error = 0
-print_dtree = 0
 print_explanations = 0
 print_includes = 0
 print_objects = 0
 print_memoizer = 0
 print_stacktrace = 0
-print_stree = 0
 print_time = 0
-print_tree = 0
 ignore_errors = 0
 sconscript_time = 0
 command_time = 0
@@ -390,12 +404,6 @@ class MemStats(Stats):
 memory_stats = MemStats()
 
 # utility functions
-
-def get_all_children(node): return node.all_children()
-
-def get_derived_children(node):
-    children = node.all_children(None)
-    return filter(lambda x: x.has_builder(), children)
 
 def _scons_syntax_error(e):
     """Handle syntax errors. Print out a message and show where the error
@@ -539,10 +547,10 @@ def _SConstruct_exists(dirname=''):
 
 def _set_globals(options):
     global keep_going_on_error, ignore_errors
-    global count_stats, print_dtree
+    global count_stats
     global print_explanations, print_includes, print_memoizer
-    global print_objects, print_stacktrace, print_stree
-    global print_time, print_tree
+    global print_objects, print_stacktrace, print_time
+    global tree_printers
     global memory_stats
 
     keep_going_on_error = options.keep_going
@@ -556,7 +564,7 @@ def _set_globals(options):
         if "count" in debug_values:
             count_stats.enable(sys.stdout)
         if "dtree" in debug_values:
-            print_dtree = 1
+            tree_printers.append(TreePrinter(derived=True))
         if "explain" in debug_values:
             print_explanations = 1
         if "findlibs" in debug_values:
@@ -574,11 +582,11 @@ def _set_globals(options):
         if "stacktrace" in debug_values:
             print_stacktrace = 1
         if "stree" in debug_values:
-            print_stree = 1
+            tree_printers.append(TreePrinter(status=True))
         if "time" in debug_values:
             print_time = 1
         if "tree" in debug_values:
-            print_tree = 1
+            tree_printers.append(TreePrinter())
     ignore_errors = options.ignore_errors
 
 def _create_path(plist):
@@ -718,7 +726,9 @@ class OptParser(OptionParser):
                          "pdb", "presub", "stacktrace", "stree",
                          "time", "tree"]
 
-        deprecated_debug_options = [ "nomemoizer", ]
+        deprecated_debug_options = {
+            "nomemoizer" : ' and has no effect',
+        }
 
         def opt_debug(option, opt, value, parser, debug_options=debug_options, deprecated_debug_options=deprecated_debug_options):
             if value in debug_options:
@@ -728,8 +738,9 @@ class OptParser(OptionParser):
                 except AttributeError:
                     parser.values.debug = []
                 parser.values.debug.append(value)
-            elif value in deprecated_debug_options:
-                w = "The --debug=%s option is deprecated and has no effect." % value
+            elif value in deprecated_debug_options.keys():
+                msg = deprecated_debug_options[value]
+                w = "The --debug=%s option is deprecated%s." % (value, msg)
                 delayed_warnings.append((SCons.Warnings.DeprecatedWarning, w))
             else:
                 raise OptionValueError("Warning:  %s is not a valid debug type" % value)
@@ -843,6 +854,28 @@ class OptParser(OptionParser):
         self.add_option('--taskmastertrace', action="store",
                         dest="taskmastertrace_file", metavar="FILE",
                         help="Trace Node evaluation to FILE.")
+
+        tree_options = ["all", "derived", "prune", "status"]
+
+        def opt_tree(option, opt, value, parser, tree_options=tree_options):
+            tp = TreePrinter()
+            for o in string.split(value, ','):
+                if o == 'all':
+                    tp.derived = False
+                elif o == 'derived':
+                    tp.derived = True
+                elif o == 'prune':
+                    tp.prune = True
+                elif o == 'status':
+                    tp.status = True
+                else:
+                    raise OptionValueError("Warning:  %s is not a valid --tree option" % o)
+            tree_printers.append(tp)
+
+        self.add_option('--tree', action="callback", type="string",
+                        callback=opt_tree, nargs=1, metavar="OPTIONS",
+                        help="Print a dependency tree in various formats: "
+                             "%s." % string.join(tree_options, ", "))
 
         self.add_option('-u', '--up', '--search-up', action="store_const",
                         dest="climb_up", default=0, const=1,

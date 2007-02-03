@@ -109,12 +109,12 @@ OptParser               = Main.OptParser
 SConscriptSettableOptions = Main.SConscriptSettableOptions
 
 keep_going_on_error     = Main.keep_going_on_error
-print_dtree             = Main.print_dtree
+#print_dtree             = Main.print_dtree
 print_explanations      = Main.print_explanations
 print_includes          = Main.print_includes
 print_objects           = Main.print_objects
 print_time              = Main.print_time
-print_tree              = Main.print_tree
+#print_tree              = Main.print_tree
 memory_stats            = Main.memory_stats
 ignore_errors           = Main.ignore_errors
 #sconscript_time         = Main.sconscript_time

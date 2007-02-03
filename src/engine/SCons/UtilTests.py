@@ -121,6 +121,7 @@ class UtilTestCase(unittest.TestCase):
     +-blat.h
     | +-stdlib.h
     +-bar.h
+      +-[stdlib.h]
 """
 
         lines = string.split(expect, '\n')[:-1]
