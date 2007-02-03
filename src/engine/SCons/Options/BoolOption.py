@@ -36,7 +36,7 @@ Usage example:
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-__all__ = ('BoolOption', 'True', 'False')
+__all__ = ('BoolOption')
 
 import string
 

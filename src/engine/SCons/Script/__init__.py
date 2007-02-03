@@ -58,8 +58,6 @@ import UserList
 # the "--debug=memoizer" flag and enable Memoizer before we import any
 # of the other modules that use it.
 
-import Main
-
 _args = sys.argv + string.split(os.environ.get('SCONSFLAGS', ''))
 if "--debug=memoizer" in _args:
     import SCons.Memoize
@@ -70,6 +68,7 @@ if "--debug=memoizer" in _args:
         # Some warning was thrown (inability to --debug=memoizer on
         # Python 1.5.2 because it doesn't have metaclasses).  Arrange
         # for it to be displayed or not after warnings are configured.
+        import Main
         exc_type, exc_value, tb = sys.exc_info()
         Main.delayed_warnings.append(exc_type, exc_value)
 del _args
@@ -86,6 +85,8 @@ import SCons.Subst
 import SCons.Tool
 import SCons.Util
 import SCons.Defaults
+
+import Main
 
 main                    = Main.main
 
