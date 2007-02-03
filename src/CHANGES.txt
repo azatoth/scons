@@ -47,6 +47,11 @@ RELEASE 0.97 - XXX
   - Change ParseConfig() to preserve white space in arguments passed in
     as a list.
 
+  From David Vitek:
+
+  - Add a NoCache() function to mark targets as unsuitable for propagating
+    to (or retrieving from) a CacheDir().
+
 
 
 RELEASE 0.96.94 - Sun, 07 Jan 2007 18:36:20 -0600

@@ -2218,6 +2218,12 @@ that are equivalent regardless of whether
 a given derived file has been built in-place
 or retrieved from the cache.
 
+The
+.BR NoCache ()
+method can be used to disable caching of specific files.  This can be
+useful if inputs and/or outputs of some tool are impossible to
+predict or prohibitively large.
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
 .RI Clean( targets ", " files_or_dirs )
@@ -3066,6 +3072,46 @@ env.MergeFlags(['!pkg-config gtk+-2.0 --cflags', '-O3'])
 env.MergeFlags(['-O3',
                '!pkg-config gtk+-2.0 --cflags --libs',
                '!pkg-config libpng12 --cflags --libs'])
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI NoCache( target ", ...)"
+.TP
+.RI env.NoCache( target ", ...)"
+Specifies a list of files which should
+.I not
+be cached whenever the 
+.BR CacheDir ()
+method has been activated.
+The specified targets may be a list
+or an individual target.
+Multiple calls to
+.BR NoCache ()
+are legal,
+and prevent each specified target
+from being removed by calls to the
+.B -c
+option.
+
+Multiple files should be specified
+either as separate arguments to the
+.BR NoCache ()
+method, or as a list.
+.BR NoCache ()
+will also accept the return value of any of the construction environment
+Builder methods.
+
+Calling
+.BR NoCache ()
+on directories and other non-File Node types has no effect because
+only File Nodes are cached.
+
+Examples:
+
+.ES
+NoCache('foo.elf')
+NoCache(env.Program('hello', 'hello.c'))
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

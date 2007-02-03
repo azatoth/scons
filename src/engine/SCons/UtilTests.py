@@ -56,6 +56,7 @@ class UtilTestCase(unittest.TestCase):
         def __init__(self, name, children=[]):
             self.children = children
             self.name = name
+            self.nocache = None
         def __str__(self):
             return self.name
         def exists(self):
@@ -100,7 +101,7 @@ class UtilTestCase(unittest.TestCase):
 """
 
         lines = string.split(expect, '\n')[:-1]
-        lines = map(lambda l: '[E BSPACN]'+l, lines)
+        lines = map(lambda l: '[E BSPACN ]'+l, lines)
         withtags = string.join(lines, '\n') + '\n'
 
         return foo, expect, withtags
@@ -123,7 +124,7 @@ class UtilTestCase(unittest.TestCase):
 """
 
         lines = string.split(expect, '\n')[:-1]
-        lines = map(lambda l: '[E BSPACN]'+l, lines)
+        lines = map(lambda l: '[E BSPACN ]'+l, lines)
         withtags = string.join(lines, '\n') + '\n'
 
         return blat_o, expect, withtags

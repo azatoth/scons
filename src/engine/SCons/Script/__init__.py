@@ -289,6 +289,7 @@ GlobalDefaultEnvironmentFunctions = [
     'Depends',
     'Dir',
     'NoClean',
+    'NoCache',
     'Entry',
     'Execute',
     'File',

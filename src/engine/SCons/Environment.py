@@ -1513,6 +1513,15 @@ class Base(SubstitutionEnvironment):
             t.set_noclean()
         return tlist
 
+    def NoCache(self, *targets):
+        """Tags a target so that it will not be cached"""
+        tlist = []
+        for t in targets:
+            tlist.extend(self.arg2nodes(t, self.fs.Entry))
+        for t in tlist:
+            t.set_nocache()
+        return tlist
+
     def Entry(self, name, *args, **kw):
         """
         """

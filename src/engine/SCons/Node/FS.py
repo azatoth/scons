@@ -250,6 +250,8 @@ CacheRetrieveSilent = SCons.Action.Action(CacheRetrieveFunc, None)
 
 def CachePushFunc(target, source, env):
     t = target[0]
+    if t.nocache:
+        return
     fs = t.fs
     cachedir, cachefile = t.cachepath()
     if fs.exists(cachefile):
@@ -2036,6 +2038,8 @@ class File(Base):
 
         Returns true iff the node was successfully retrieved.
         """
+        if self.nocache:
+            return None
         b = self.is_derived()
         if not b and not self.has_src_builder():
             return None
@@ -2301,7 +2305,7 @@ class File(Base):
         return str(self.rfile())
 
     def cachepath(self):
-        if not self.fs.CachePath:
+        if self.nocache or not self.fs.CachePath:
             return None, None
         ninfo = self.get_binfo().ninfo
         if not hasattr(ninfo, 'bsig'):
