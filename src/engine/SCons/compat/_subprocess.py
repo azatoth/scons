@@ -356,6 +356,7 @@ import sys
 mswindows = (sys.platform == "win32")
 
 import os
+import string
 import types
 import traceback
 
@@ -565,7 +566,7 @@ def list2cmdline(seq):
             result.extend(bs_buf)
             result.append('"')
 
-    return ''.join(result)
+    return string.join(result, '')
 
 
 try:
@@ -1048,12 +1049,8 @@ class Popen(object):
 
                     # Close pipe fds.  Make sure we don't close the same
                     # fd more than once, or standard fds.
-                    if p2cread:
-                        os.close(p2cread)
-                    if c2pwrite and c2pwrite not in (p2cread,):
-                        os.close(c2pwrite)
-                    if errwrite and errwrite not in (p2cread, c2pwrite):
-                        os.close(errwrite)
+                    for fd in set((p2cread, c2pwrite, errwrite))-set((0,1,2)):
+                        if fd: os.close(fd)
 
                     # Close all other fds, if asked for
                     if close_fds:
@@ -1079,7 +1076,7 @@ class Popen(object):
                     exc_lines = traceback.format_exception(exc_type,
                                                            exc_value,
                                                            tb)
-                    exc_value.child_traceback = ''.join(exc_lines)
+                    exc_value.child_traceback = string.join(exc_lines, '')
                     os.write(errpipe_write, pickle.dumps(exc_value))
 
                 # This exitcode won't be reported to applications, so it
@@ -1187,9 +1184,9 @@ class Popen(object):
 
             # All data exchanged.  Translate lists into strings.
             if stdout is not None:
-                stdout = ''.join(stdout)
+                stdout = string.join(stdout, '')
             if stderr is not None:
-                stderr = ''.join(stderr)
+                stderr = string.join(stderr, '')
 
             # Translate newlines, if requested.  We cannot let the file
             # object do the translation: It is based on stdio, which is
