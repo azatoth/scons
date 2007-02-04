@@ -1000,8 +1000,9 @@ for file in files:
     p = os.path.join(build_dir, file)
     if os.path.islink(p):
         os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
+    if not os.path.isabs(p):
+        p = '#' + p
+    sp = env.Command(p, file, copy)
     Local(sp)
 
 #
