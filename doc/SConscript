@@ -210,6 +210,15 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
                 'pdf'       : 1,
                 'text'      : 0,
         },
+        # For whenever (if ever?) we start putting developer guide
+        # information in a printable document instead of the wiki.
+        #'developer' : {
+        #        'htmlindex' : 'book1.html',
+        #        'html'      : 1,
+        #        'ps'        : 1,
+        #        'pdf'       : 1,
+        #        'text'      : 0,
+        #},
         'user' : {
                 'htmlindex' : 'book1.html',
                 'html'      : 1,
