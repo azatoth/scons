@@ -172,6 +172,7 @@ check_list = [
             'doc/MANIFEST',
             'doc/python10',
             'doc/reference',
+            'doc/developer/MANIFEST',
             'doc/man/MANIFEST',
             'doc/user/cons.pl',
             'doc/user/MANIFEST',
