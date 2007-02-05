@@ -18,6 +18,11 @@ RELEASE 0.97 - XXX
 
   - Provide a more complete write-your-own-Scanner example in the man page.
 
+  From Ralf W. Grosse-Kunstleve:
+
+  - Contributed upstream Python change to our copied subprocess.py module
+    for more efficient standard input processing.
+
   From Steven Knight:
 
   - Fix the Node.FS.Base.rel_path() method when the two nodes are on
