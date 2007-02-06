@@ -66,7 +66,6 @@ test.run(chdir = 'alpha', arguments = '.')
 
 # Second build, without NoCache there would be a cache hit
 test.run(chdir = 'beta', arguments = '.')
-print test.stdout()
 
 test.must_match(['beta','foo_cached'],      'alpha')
 test.must_match(['beta','foo_notcached'],   'beta')
