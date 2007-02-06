@@ -1180,16 +1180,7 @@ def _main(args, parser):
     SCons.Script._Add_Targets(targets)
     SCons.Script._Add_Arguments(xmit_args)
 
-    class Unbuffered:
-        def __init__(self, file):
-            self.file = file
-        def write(self, arg):
-            self.file.write(arg)
-            self.file.flush()
-        def __getattr__(self, attr):
-            return getattr(self.file, attr)
-
-    sys.stdout = Unbuffered(sys.stdout)
+    sys.stdout = SCons.Util.Unbuffered(sys.stdout)
 
     memory_stats.append('before reading SConscript files:')
     count_stats.append(('pre-', 'read'))

@@ -188,6 +188,11 @@ class Streamer:
         Return everything written to orig since the Streamer was created.
         """
         return self.s.getvalue()
+
+    def flush(self):
+        if self.orig:
+            self.orig.flush()
+        self.s.flush()
         
 
 class SConfBuildTask(SCons.Taskmaster.Task):
@@ -596,7 +601,8 @@ class SConf:
             else:
                 _ac_config_logs[self.logfile] = None
                 log_mode = "w"
-            self.logstream = open(str(self.logfile), log_mode)
+            fp = open(str(self.logfile), log_mode)
+            self.logstream = SCons.Util.Unbuffered(fp)
             # logfile may stay in a build directory, so we tell
             # the build system not to override it with a eventually
             # existing file with the same name in the source directory

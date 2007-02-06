@@ -931,3 +931,16 @@ class LogicalLines:
                 break
             result.append(line)
         return result
+
+class Unbuffered:
+    """
+    A proxy class that wraps a file object, flushing after every write,
+    and delegating everything else to the wrapped object.
+    """
+    def __init__(self, file):
+        self.file = file
+    def write(self, arg):
+        self.file.write(arg)
+        self.file.flush()
+    def __getattr__(self, attr):
+        return getattr(self.file, attr)
