@@ -210,8 +210,6 @@ class Node:
         self.attributes = self.Attrs() # Generic place to stick information about the Node.
         self.side_effect = 0 # true iff this node is a side effect
         self.side_effects = [] # the side effects of building this target
-        self.pre_actions = []
-        self.post_actions = []
         self.linked = 0 # is this node linked to the build directory?
 
         self.clear_memoized_values()
