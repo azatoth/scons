@@ -10,6 +10,15 @@
 
 RELEASE 0.97 - XXX
 
+  From Anatoly:
+
+  - Add the scons.org URL and a package description to the setup.py
+    arguments.
+
+  - Have the Windows installer add a registry entry for scons.bat in the
+    "App Paths" key, so scons.bat can be executed without adding the
+    directory to the %PATH%.  (Python itself works this way.)
+
   From Anonymous:
 
   - Fix looking for default paths in Visual Studio 8.0 (and later).
