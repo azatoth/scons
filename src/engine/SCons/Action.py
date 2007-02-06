@@ -422,6 +422,10 @@ class CommandAction(_ActionAction):
         externally.
         """
         from SCons.Subst import escape_list
+        import SCons.Util
+        flatten = SCons.Util.flatten
+        is_String = SCons.Util.is_String
+        is_List = SCons.Util.is_List
 
         try:
             shell = env['SHELL']
@@ -432,6 +436,9 @@ class CommandAction(_ActionAction):
             spawn = env['SPAWN']
         except KeyError:
             raise SCons.Errors.UserError('Missing SPAWN construction variable.')
+        else:
+            if is_String(spawn):
+                spawn = env.subst(spawn, raw=1, conv=lambda x: x)
 
         escape = env.get('ESCAPE', lambda x: x)
 
@@ -445,10 +452,6 @@ class CommandAction(_ActionAction):
             ENV = default_ENV
 
         # Ensure that the ENV values are all strings:
-        import SCons.Util
-        flatten = SCons.Util.flatten
-        is_String = SCons.Util.is_String
-        is_List = SCons.Util.is_List
         for key, value in ENV.items():
             if not is_String(value):
                 if is_List(value):

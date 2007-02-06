@@ -41,6 +41,9 @@ RELEASE 0.97 - XXX
   - Fully support Scanners that use a dictionary to map file suffixes
     to other scanners.
 
+  - Support delayed evaluation of the $SPAWN variable to allow selection
+    of a function via ${} string expansions.
+
   From Leanid Nazdrynau:
 
   - Fix detection of Java anonymous classes if a newline precedes the
