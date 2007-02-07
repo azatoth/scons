@@ -187,7 +187,7 @@ subdirectories under the repository tree.
       <file name="SConstruct" printme="1">
        env = Environment()
        env.Program('hello.c')
-       Repository('/usr/repository1', '/usr/repository2')
+       Repository('__ROOT__/usr/repository1', '__ROOT__/usr/repository2')
       </file>
       <file name="hello.c">
       int main() { printf("Hello, world!\n"); }
@@ -256,17 +256,15 @@ subdirectories under the repository tree.
       <file name="SConstruct">
        env = Environment()
        env.Program('hello.c')
-       Repository('/usr/repository1', '/usr/repository2')
+       Repository('__ROOT__/usr/repository1', '__ROOT__/usr/repository2')
       </file>
-      <file name="hello.c">
+      <file name="__ROOT__/usr/repository1/hello.c">
       int main() { printf("Hello, world!\n"); }
       </file>
     </scons_example>
 
     <scons_output example="ex2">
       <scons_output_command>scons -Q</scons_output_command>
-      gcc -c /usr/repository1/hello.c -o hello.o
-      gcc -o hello hello.o
     </scons_output>
 
     <para>
@@ -281,9 +279,9 @@ subdirectories under the repository tree.
       <file name="SConstruct">
        env = Environment()
        env.Program('hello.c')
-       Repository('/usr/repository1', '/usr/repository2')
+       Repository('__ROOT__/usr/repository1', '__ROOT__/usr/repository2')
       </file>
-      <file name="hello.c">
+      <file name="__ROOT__/usr/repository2/hello.c">
       int main() { printf("Hello, world!\n"); }
       </file>
     </scons_example>

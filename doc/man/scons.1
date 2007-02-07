@@ -1094,6 +1094,10 @@ Print a message containing the working directory before and
 after other processing.
 
 .TP
+--no-print-directory
+Turn off -w, even if it was turned on implicitly.
+
+.TP
 .RI --warn= type ", --warn=no-" type
 Enable or disable warnings.
 .I type
@@ -1102,6 +1106,20 @@ specifies the type of warnings to be enabled or disabled:
 .TP
 --warn=all, --warn=no-all
 Enables or disables all warnings.
+
+.TP
+--warn=cache-write-error, --warn=no-cache-write-error
+Enables or disables warnings about errors trying to
+write a copy of a built file to a specified
+.BR CacheDir ().
+These warnings are disabled by default.
+
+.TP
+--warn=corrupt-sconsign, --warn=no-corrupt-sconsign
+Enables or disables warnings about unfamiliar signature data in
+.B .sconsign
+files.
+These warnings are enabled by default.
 
 .TP
 --warn=dependency, --warn=no-dependency
@@ -1114,13 +1132,63 @@ Enables or disables warnings about use of deprecated features.
 These warnings are enabled by default.
 
 .TP
---warn=missing-sconscript, --warn=no-missing-sconscript
+--warn=duplicate-environment, --warn=no-duplicate-environment
 Enables or disables warnings about missing SConscript files.
+
+.TP
+--warn=misleading-keywords, --warn=no-misleading-keywords
+Enables or disables warnings about use of the misspelled keywords
+.B targets
+and
+.B sources
+when calling Builders.
+(Note the last
+.B s
+characters, the correct spellings are
+.B target
+and
+.B source.)
 These warnings are enabled by default.
 
 .TP
---no-print-directory
-Turn off -w, even if it was turned on implicitly.
+--warn=missing-sconscript, --warn=no-missing-sconscript
+Enables or disables warnings about attempts to specify a build
+of a target with two different construction environments
+that use the same action.
+These warnings are enabled by default.
+
+.TP
+--warn=no-md5-module, --warn=no-no-md5-module
+Enables or disables warnings about the version of Python
+not having an MD5 checksum module available.
+These warnings are enabled by default.
+
+.TP
+--warn=no-metaclass-support, --warn=no-no-metaclass-support
+Enables or disables warnings about the version of Python
+not supporting metaclasses when the
+.B --debug=memoizer
+option is used.
+These warnings are enabled by default.
+
+.TP
+--warn=no-parallel-support, --warn=no-no-parallel-support
+Enables or disables warnings about the version of Python
+not being able to support parallel builds when the
+.B -j
+option is used.
+These warnings are enabled by default.
+
+.TP
+--warn=reserved-variable, --warn=no-reserved-variable
+Enables or disables warnings about attempts to set the
+reserved construction variable names
+.BR TARGET ,
+.BR TARGETS ,
+.BR SOURCE
+or
+.BR SOURCES .
+These warnings are disabled by default.
 
 .\" .TP
 .\" .RI --write-filenames= file
@@ -2388,6 +2456,7 @@ env.Command('baz.out', 'baz.in',
 	     rename ])
 .EE
 
+.IP
 Note that the
 .BR Command ()
 function will usually assume, by default,
@@ -2410,6 +2479,7 @@ env['DISTDIR'] = 'destination/directory'
 env.Command(env.Dir('$DISTDIR')), None, make_distdir)
 .EE
 
+.IP
 (Also note that SCons will usually
 automatically create any directory necessary to hold a target file,
 so you normally don't need to create directories by hand.)
@@ -2619,6 +2689,7 @@ This SConstruct:
 env=Environment()
 print env.Dump('CCCOM')
 .EE
+.IP
 will print:
 .ES
 '$CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES'
@@ -2628,6 +2699,7 @@ will print:
 env=Environment()
 print env.Dump()
 .EE
+.IP
 will print:
 .ES
 { 'AR': 'ar',
@@ -3360,6 +3432,7 @@ and added to the following construction variables:
 +                   CCFLAGS, LINKFLAGS
 .EE
 
+.IP
 Any other strings not associated with options
 are assumed to be the names of libraries
 and added to the
@@ -5782,6 +5855,7 @@ env.Append(BUILDERS = {'MakeDirectory':MakeDirectoryBuilder})
 env.MakeDirectory('new_directory', [])
 .EE
 
+.IP
 Note that the call to the MakeDirectory Builder
 needs to specify an empty source list
 to make the string represent the builder's target;

@@ -236,7 +236,7 @@ subdirectories under the repository tree.
 
     <screen>
       % <userinput>scons -Q</userinput>
-      cc -c -o hello.o hello.c
+      cc -o hello.o -c hello.c
       cc -o hello hello.o
     </screen>
 
@@ -253,10 +253,8 @@ subdirectories under the repository tree.
 
     <screen>
       % <userinput>scons -Q</userinput>
-      cc -c -o hello.o hello.c
+      cc -o hello.o -c /usr/repository1/hello.c
       cc -o hello hello.o
-      gcc -c /usr/repository1/hello.c -o hello.o
-      gcc -o hello hello.o
     </screen>
 
     <para>
@@ -271,7 +269,7 @@ subdirectories under the repository tree.
 
     <screen>
       % <userinput>scons -Q</userinput>
-      cc -c -o hello.o hello.c
+      cc -o hello.o -c /usr/repository2/hello.c
       cc -o hello hello.o
     </screen>
 
@@ -346,9 +344,9 @@ subdirectories under the repository tree.
     <screen>
       % <userinput>cd /usr/repository1</userinput>
       % <userinput>scons -Q</userinput>
-      cc -c -o file1.o file1.c
-      cc -c -o file2.o file2.c
-      cc -c -o hello.o hello.c
+      cc -o file1.o -c file1.c
+      cc -o file2.o -c file2.c
+      cc -o hello.o -c hello.c
       cc -o hello hello.o file1.o file2.o
     </screen>
 
