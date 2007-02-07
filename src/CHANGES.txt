@@ -69,6 +69,11 @@ RELEASE 0.97 - XXX
   - Add a NoCache() function to mark targets as unsuitable for propagating
     to (or retrieving from) a CacheDir().
 
+  From Ben Webb:
+
+  - If the swig -noproxy option is used, it won't generate a .py file,
+    so don't emit it as a target that we expect to be built.
+
 
 
 RELEASE 0.96.94 - Sun, 07 Jan 2007 18:36:20 -0600

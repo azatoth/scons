@@ -25,12 +25,12 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that the swig tool generates file names that we expect.
+Verify that SCons realizes the -noproxy option means no .py file will
+be created.
 """
 
-import os
-import string
 import sys
+
 import TestSCons
 
 if sys.platform =='darwin':
@@ -41,73 +41,68 @@ if sys.platform =='darwin':
     python = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/python"
     _python_ = '"' + python + '"'
 else:
+    python = TestSCons.python
     _python_ = TestSCons._python_
-    
-_exe   = TestSCons._exe
-_obj   = TestSCons._obj
+
+# swig-python expects specific filenames.
+# the platform specific suffix won't necessarily work.
+if sys.platform == 'win32':
+    _dll = '.dll'
+else:
+    _dll   = '.so' 
 
 test = TestSCons.TestSCons()
 
+swig = test.where_is('swig')
+
+if not swig:
+    test.skip_test('Can not find installed "swig", skipping test.\n')
 
 
-test.write('myswig.py', r"""
-import getopt
-import sys
-opts, args = getopt.getopt(sys.argv[1:], 'c:o:')
-for opt, arg in opts:
-    if opt == '-c': pass
-    elif opt == '-o': out = arg
-infile = open(args[0], 'rb')
-outfile = open(out, 'wb')
-for l in infile.readlines():
-    if l[:4] != 'swig':
-        outfile.write(l)
-sys.exit(0)
+
+version = sys.version[:3] # see also sys.prefix documentation
+
+# handle testing on other platforms:
+ldmodule_prefix = '_'
+
+frameworks = ''
+platform_sys_prefix = sys.prefix
+if sys.platform == 'darwin':
+    # OS X has a built-in Python but no static libpython
+    # so you should link to it using apple's 'framework' scheme.
+    # (see top of file for further explanation)
+    frameworks = '-framework Python'
+    platform_sys_prefix = '/System/Library/Frameworks/Python.framework/Versions/%s/' % version
+
+test.write("dependency.i", """\
+%module dependency
+""")
+
+test.write("dependent.i", """\
+%module dependent
+
+%include dependency.i
 """)
 
 test.write('SConstruct', """
-env = Environment(tools=['default', 'swig'], SWIG = r'%(_python_)s myswig.py')
-env.Program(target = 'test1', source = 'test1.i')
-env.CFile(target = 'test2', source = 'test2.i')
-env.Clone(SWIGFLAGS = '-c++').Program(target = 'test3', source = 'test3.i')
+foo = Environment(SWIGFLAGS=['-python', '-noproxy'],
+                  CPPPATH='%(platform_sys_prefix)s/include/python%(version)s/',
+                  LDMODULEPREFIX='%(ldmodule_prefix)s',
+                  LDMODULESUFFIX='%(_dll)s',
+                  FRAMEWORKSFLAGS='%(frameworks)s',
+                  )
+
+swig = foo.Dictionary('SWIG')
+bar = foo.Clone(SWIG = r'%(_python_)s wrapper.py ' + swig)
+foo.CFile(target = 'dependent', source = ['dependent.i'])
 """ % locals())
 
-test.write('test1.i', r"""
-int
-main(int argc, char *argv[]) {
-        argv[argc++] = "--";
-        printf("test1.i\n");
-        exit (0);
-}
-swig
-""")
+test.run(arguments = '.')
 
-test.write('test2.i', r"""test2.i
-swig
-""")
+# If we mistakenly depend on the .py file that SWIG didn't create
+# (suppressed by the -noproxy option) then the build won't be up-to-date.
+test.up_to_date(arguments = '.')
 
-test.write('test3.i', r"""
-#include <stdio.h>
-#include <stdlib.h>
-int
-main(int argc, char *argv[]) {
-        argv[argc++] = "--";
-        printf("test3.i\n");
-        exit (0);
-}
-swig
-""")
 
-test.run(arguments = '.', stderr = None)
-
-test.run(program = test.workpath('test1' + _exe), stdout = "test1.i\n")
-test.must_exist(test.workpath('test1_wrap.c'))
-test.must_exist(test.workpath('test1_wrap' + _obj))
-
-test.must_match('test2_wrap.c', "test2.i\n")
-
-test.run(program = test.workpath('test3' + _exe), stdout = "test3.i\n")
-test.must_exist(test.workpath('test3_wrap.cc'))
-test.must_exist(test.workpath('test3_wrap' + _obj))
 
 test.pass_test()
