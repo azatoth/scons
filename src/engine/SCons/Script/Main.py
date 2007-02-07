@@ -894,7 +894,8 @@ class OptParser(OptionParser):
                         metavar="WARNING-SPEC",
                         help="Enable or disable warnings.")
 
-        self.add_option('-Y', '--repository', nargs=1, action="append",
+        self.add_option('-Y', '--repository', '--srcdir',
+                        nargs=1, action="append",
                         help="Search REPOSITORY for source and target files.")
 
         self.add_option('-e', '--environment-overrides', action="callback",

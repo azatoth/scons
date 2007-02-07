@@ -44,6 +44,8 @@ RELEASE 0.97 - XXX
   - Support delayed evaluation of the $SPAWN variable to allow selection
     of a function via ${} string expansions.
 
+  - Add --srcdir as a synonym for -Y/--repository.
+
   From Leanid Nazdrynau:
 
   - Fix detection of Java anonymous classes if a newline precedes the
