@@ -1318,8 +1318,14 @@ class Base(SubstitutionEnvironment):
             tool = self.subst(tool)
             if toolpath is None:
                 toolpath = self.get('toolpath', [])
-            toolpath = map(self.subst, toolpath)
-            tool = apply(SCons.Tool.Tool, (tool, toolpath), kw)
+            tp = []
+            for t in map(self.subst, toolpath):
+                dir = self.fs.Dir(t)
+                tp.append(dir.abspath)
+                srcdir = dir.srcnode()
+                if dir != srcdir:
+                    tp.append(srcdir.abspath)
+            tool = apply(SCons.Tool.Tool, (tool, tp), kw)
         tool(self)
 
     def WhereIs(self, prog, path=None, pathext=None, reject=[]):

@@ -48,6 +48,8 @@ RELEASE 0.97 - XXX
 
   - Document limitations of #include "file.h" with Repository().
 
+  - Fix use of a toolpath under the source directory of a BuildDir().
+
   From Leanid Nazdrynau:
 
   - Fix detection of Java anonymous classes if a newline precedes the
