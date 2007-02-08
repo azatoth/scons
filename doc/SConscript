@@ -224,7 +224,7 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
                 'html'      : 1,
                 'ps'        : 1,
                 'pdf'       : 1,
-                'text'      : 0,
+                'text'      : 1,
                 'graphics'  : [
                                 'SCons-win32-install-1.jpg',
                                 'SCons-win32-install-2.jpg',
