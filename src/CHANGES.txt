@@ -70,6 +70,11 @@ RELEASE 0.97 - XXX
   - Change ParseConfig() to preserve white space in arguments passed in
     as a list.
 
+  From a smith:
+
+  - Handle adding explicitly-named Java inner class files (and any
+    other file names that may contain a '$') to Jar files.
+
   From David Vitek:
 
   - Add a NoCache() function to mark targets as unsuitable for propagating
