@@ -725,7 +725,7 @@ sys.exit(1)
         """
         env = SubstitutionEnvironment()
         env.MergeFlags('')
-        assert env['CCFLAGS'] == [], env['CCFLAGS']
+        assert not env.has_key('CCFLAGS'), env['CCFLAGS']
         env.MergeFlags('-X')
         assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
         env.MergeFlags('-X')

@@ -507,17 +507,17 @@ class SubstitutionEnvironment:
         the result of that evaluation is then added to the dict.
         """
         dict = {
-            'ASFLAGS'       : [],
-            'CFLAGS'        : [],
-            'CCFLAGS'       : [],
+            'ASFLAGS'       : SCons.Util.CLVar(''),
+            'CFLAGS'        : SCons.Util.CLVar(''),
+            'CCFLAGS'       : SCons.Util.CLVar(''),
             'CPPDEFINES'    : [],
-            'CPPFLAGS'      : [],
+            'CPPFLAGS'      : SCons.Util.CLVar(''),
             'CPPPATH'       : [],
-            'FRAMEWORKPATH' : [],
-            'FRAMEWORKS'    : [],
+            'FRAMEWORKPATH' : SCons.Util.CLVar(''),
+            'FRAMEWORKS'    : SCons.Util.CLVar(''),
             'LIBPATH'       : [],
             'LIBS'          : [],
-            'LINKFLAGS'     : [],
+            'LINKFLAGS'     : SCons.Util.CLVar(''),
             'RPATH'         : [],
         }
 
@@ -664,7 +664,7 @@ class SubstitutionEnvironment:
             apply(self.Append, (), args)
             return self
         for key, value in args.items():
-            if value == '':
+            if not value:
                 continue
             try:
                 orig = self[key]
@@ -672,10 +672,26 @@ class SubstitutionEnvironment:
                 orig = value
             else:
                 if not orig:
-                    orig = []
-                elif not SCons.Util.is_List(orig): 
-                    orig = [orig]
-                orig = orig + value
+                    orig = value
+                else:
+                    # Add orig and value.  The logic here was lifted from
+                    # part of env.Append() (see there for a lot of comments
+                    # about the order in which things are tried) and is
+                    # used mainly to handle coercion of strings to CLVar to
+                    # "do the right thing" given (e.g.) an original CCFLAGS
+                    # string variable like '-pipe -Wall'.
+                    try:
+                        orig = orig + value
+                    except (KeyError, TypeError):
+                        try:
+                            add_to_orig = orig.append
+                        except AttributeError:
+                            if orig:
+                                value.insert(0, orig)
+                            orig = value
+                        else:
+                            if value:
+                                add_to_orig(value)
             t = []
             if key[-4:] == 'PATH':
                 ### keep left-most occurence
