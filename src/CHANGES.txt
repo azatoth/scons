@@ -46,6 +46,8 @@ RELEASE 0.97 - XXX
 
   - Add --srcdir as a synonym for -Y/--repository.
 
+  - Document limitations of #include "file.h" with Repository().
+
   From Leanid Nazdrynau:
 
   - Fix detection of Java anonymous classes if a newline precedes the

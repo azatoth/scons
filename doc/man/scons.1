@@ -5566,10 +5566,15 @@ which verifies that the specified path exists;
 which verifies that the specified path is an existing file;
 .BR PathOption.PathIsDir ,
 which verifies that the specified path is an existing directory;
-and
 .BR PathOption.PathIsDirCreate ,
-which verifies that the specified path is a directory,
-and will create the specified directory if the path does not exist.
+which verifies that the specified path is a directory
+and will create the specified directory if the path does not exist;
+and
+.BR PathOption.PathAccept ,
+which simply accepts the specific path name argument without validation,
+and which is suitable if you want your users
+to be able to specify a directory path that will be
+created as part of the build process, for example.
 You may supply your own
 .I validator
 function,
