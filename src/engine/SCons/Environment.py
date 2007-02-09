@@ -673,7 +673,7 @@ class SubstitutionEnvironment:
             else:
                 if not orig:
                     orig = value
-                else:
+                elif value:
                     # Add orig and value.  The logic here was lifted from
                     # part of env.Append() (see there for a lot of comments
                     # about the order in which things are tried) and is
@@ -686,12 +686,10 @@ class SubstitutionEnvironment:
                         try:
                             add_to_orig = orig.append
                         except AttributeError:
-                            if orig:
-                                value.insert(0, orig)
+                            value.insert(0, orig)
                             orig = value
                         else:
-                            if value:
-                                add_to_orig(value)
+                            add_to_orig(value)
             t = []
             if key[-4:] == 'PATH':
                 ### keep left-most occurence
@@ -1329,19 +1327,16 @@ class Base(SubstitutionEnvironment):
                 del kw[k]
         apply(self.Replace, (), kw)
 
+    def _find_toolpath_dir(self, tp):
+        return self.fs.Dir(self.subst(tp)).srcnode().abspath
+
     def Tool(self, tool, toolpath=None, **kw):
         if SCons.Util.is_String(tool):
             tool = self.subst(tool)
             if toolpath is None:
                 toolpath = self.get('toolpath', [])
-            tp = []
-            for t in map(self.subst, toolpath):
-                dir = self.fs.Dir(t)
-                tp.append(dir.abspath)
-                srcdir = dir.srcnode()
-                if dir != srcdir:
-                    tp.append(srcdir.abspath)
-            tool = apply(SCons.Tool.Tool, (tool, tp), kw)
+            toolpath = map(self._find_toolpath_dir, toolpath)
+            tool = apply(SCons.Tool.Tool, (tool, toolpath), kw)
         tool(self)
 
     def WhereIs(self, prog, path=None, pathext=None, reject=[]):
