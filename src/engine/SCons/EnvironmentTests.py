@@ -2805,6 +2805,9 @@ def generate(env):
         for tnode in tgt:
             assert tnode.builder == InstallBuilder
 
+        tgt = env.Install('export', 'subdir/#file')
+        assert str(tgt[0]) == os.path.normpath('export/#file'), str(tgt[0])
+
         env.File('export/foo1')
 
         exc_caught = None

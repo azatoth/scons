@@ -50,6 +50,8 @@ RELEASE 0.97 - XXX
 
   - Fix use of a toolpath under the source directory of a BuildDir().
 
+  - Fix env.Install() with a file name portion that begins with '#'.
+
   From Leanid Nazdrynau:
 
   - Fix detection of Java anonymous classes if a newline precedes the

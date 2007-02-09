@@ -1605,7 +1605,10 @@ class Base(SubstitutionEnvironment):
         tgt = []
         for dnode in dnodes:
             for src in sources:
-                target = self.fs.Entry(src.name, dnode)
+                # Prepend './' so the lookup doesn't interpret an initial
+                # '#' on the file name portion as meaning the Node should
+                # be relative to the top-level SConstruct directory.
+                target = self.fs.Entry('.'+os.sep+src.name, dnode)
                 tgt.extend(InstallBuilder(self, target, src))
         return tgt
 
