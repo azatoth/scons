@@ -23,6 +23,8 @@ RELEASE 0.97 - XXX
 
   - Fix looking for default paths in Visual Studio 8.0 (and later).
 
+  - Add -lm to the list of default D libraries for linking.
+
   From Matt Doar:
 
   - Provide a more complete write-your-own-Scanner example in the man page.
@@ -52,6 +54,12 @@ RELEASE 0.97 - XXX
 
   - Fix env.Install() with a file name portion that begins with '#'.
 
+  - Fix ParseConfig()'s handling of multiple options in a string that's
+    replaced a *FLAGS construction variable.
+
+  - Have the C++ tools initialize common C compilation variables ($CCFLAGS,
+    $SHCCFLAGS and $_CCCOMCOM) even if the 'cc' Tool isn't loaded.
+
   From Leanid Nazdrynau:
 
   - Fix detection of Java anonymous classes if a newline precedes the
@@ -74,7 +82,7 @@ RELEASE 0.97 - XXX
 
   From a smith:
 
-  - Handle adding explicitly-named Java inner class files (and any
+  - Fix adding explicitly-named Java inner class files (and any
     other file names that may contain a '$') to Jar files.
 
   From David Vitek:
