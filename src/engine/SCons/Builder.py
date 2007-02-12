@@ -346,11 +346,6 @@ class BuilderBase:
     nodes (files) from input nodes (files).
     """
 
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
-
-    memoizer_counters = []
-
     def __init__(self,  action = None,
                         prefix = '',
                         suffix = '',
@@ -369,7 +364,6 @@ class BuilderBase:
                         src_builder = [],
                         **overrides):
         if __debug__: logInstanceCreation(self, 'Builder.BuilderBase')
-        self._memo = {}
         self.action = action
         self.multi = multi
         if SCons.Util.is_Dict(prefix):
@@ -415,6 +409,9 @@ class BuilderBase:
             src_builder = [ src_builder ]
         self.src_builder = src_builder
 
+    def __hash__(self):
+        return id(self)
+
     def __nonzero__(self):
         raise InternalError, "Do not test for the Node.builder attribute directly; use Node.has_builder() instead"
 
@@ -441,13 +438,12 @@ class BuilderBase:
     def splitext(self, path, env=None):
         if not env:
             env = self.env
-        if env:
-            matchsuf = filter(lambda S,path=path: path[-len(S):] == S,
-                              self.src_suffixes(env))
-            if matchsuf:
-                suf = max(map(None, map(len, matchsuf), matchsuf))[1]
-                return [path[:-len(suf)], path[-len(suf):]]
-        return SCons.Util.splitext(path)
+        suffix = SuffixMap(self, env).find_suffix_match(path)
+        if suffix:
+            l = len(suffix)
+            return path[:-l], path[-l:]
+        else:
+            return SCons.Util.splitext(path)
 
     def get_single_executor(self, env, tlist, slist, executor_kw):
         if not self.action:
@@ -642,17 +638,7 @@ class BuilderBase:
 
     def get_src_suffix(self, env):
         """Get the first src_suffix in the list of src_suffixes."""
-        ret = self.src_suffixes(env)
-        if not ret:
-            return ''
-        return ret[0]
-
-    def targets(self, node):
-        """Return the list of targets for this builder instance.
-
-        For most normal builders, this is just the supplied node.
-        """
-        return [ node ]
+        return SuffixMap(self, env).primary_suffix()
 
     def add_emitter(self, suffix, emitter):
         """Add a suffix-emitter mapping to this Builder.
@@ -671,154 +657,42 @@ class BuilderBase:
         This requires wiping out cached values so that the computed
         lists of source suffixes get re-calculated.
         """
-        self._memo = {}
+        SuffixMapCache.invalidate_builder(builder)
         self.src_builder.append(builder)
 
-    def _get_sdict(self, env):
-        """
-        Returns a dictionary mapping all of the source suffixes of all
-        src_builders of this Builder to the underlying Builder that
-        should be called first.
-
-        This dictionary is used for each target specified, so we save a
-        lot of extra computation by memoizing it for each construction
-        environment.
-
-        Note that this is re-computed each time, not cached, because there
-        might be changes to one of our source Builders (or one of their
-        source Builders, and so on, and so on...) that we can't "see."
-
-        The underlying methods we call cache their computed values,
-        though, so we hope repeatedly aggregating them into a dictionary
-        like this won't be too big a hit.  We may need to look for a
-        better way to do this if performance data show this has turned
-        into a significant bottleneck.
-        """
-        sdict = {}
-        for bld in self.get_src_builders(env):
-            for suf in bld.src_suffixes(env):
-                sdict[suf] = bld
-        return sdict
-        
     def src_builder_sources(self, env, source, overwarn={}):
         source_factory = env.get_factory(self.source_factory)
         slist = env.arg2nodes(source, source_factory)
 
-        sdict = self._get_sdict(env)
-
-        src_suffixes = self.src_suffixes(env)
-
-        lengths_dict = {}
-        for l in map(len, src_suffixes):
-            lengths_dict[l] = None
-        lengths = lengths_dict.keys()
-
-        def match_src_suffix(node, src_suffixes=src_suffixes, lengths=lengths):
-            node_suffixes = map(lambda l, n=node: n.name[-l:], lengths)
-            for suf in src_suffixes:
-                if suf in node_suffixes:
-                    return suf
-            return None
+        smap = SuffixMap(self, env)
 
         result = []
 
         for snode in slist:
-            match_suffix = match_src_suffix(snode)
-            if match_suffix:
-                try:
-                    bld = sdict[match_suffix]
-                except KeyError:
-                    result.append(snode)
-                else:
-                    tlist = bld._execute(env, None, [snode], overwarn)
-                    # If the subsidiary Builder returned more than one
-                    # target, then filter out any sources that this
-                    # Builder isn't capable of building.
-                    if len(tlist) > 1:
-                        tlist = filter(match_src_suffix, tlist)
-                    result.extend(tlist)
-            else:
+            bld = smap.find_builder_for_suffix(snode.name)
+            # Don't use "if not bld in (None, self)" here because
+            # that triggers comparisons using __cmp__; we really
+            # want to know if we're one of these two objects.
+            if bld is None or bld is self:
                 result.append(snode)
+            else:
+                tlist = bld._execute(env, None, [snode], overwarn)
+                # If the subsidiary Builder returned more than one
+                # target, then filter out any sources that this
+                # Builder isn't capable of building.
+                if len(tlist) > 1:
+                    def match_src_suffix(node, smap=smap):
+                        return smap.find_suffix_match(node.name)
+                    tlist = filter(match_src_suffix, tlist)
+
+                result.extend(tlist)
 
         return result
 
-    def _get_src_builders_key(self, env):
-        return id(env)
-
-    memoizer_counters.append(SCons.Memoize.CountDict('get_src_builders', _get_src_builders_key))
-
-    def get_src_builders(self, env):
-        """
-        Returns the list of source Builders for this Builder.
-
-        This exists mainly to look up Builders referenced as
-        strings in the 'BUILDER' variable of the construction
-        environment and cache the result.
-        """
-        memo_key = id(env)
-        try:
-            memo_dict = self._memo['get_src_builders']
-        except KeyError:
-            memo_dict = {}
-            self._memo['get_src_builders'] = memo_dict
-        else:
-            try:
-                return memo_dict[memo_key]
-            except KeyError:
-                pass
-
-        builders = []
-        for bld in self.src_builder:
-            if SCons.Util.is_String(bld):
-                try:
-                    bld = env['BUILDERS'][bld]
-                except KeyError:
-                    continue
-            builders.append(bld)
-
-        memo_dict[memo_key] = builders
-        return builders
-
-    def _subst_src_suffixes_key(self, env):
-        return id(env)
-
-    memoizer_counters.append(SCons.Memoize.CountDict('subst_src_suffixes', _subst_src_suffixes_key))
-
-    def subst_src_suffixes(self, env):
-        """
-        The suffix list may contain construction variable expansions,
-        so we have to evaluate the individual strings.  To avoid doing
-        this over and over, we memoize the results for each construction
-        environment.
-        """
-        memo_key = id(env)
-        try:
-            memo_dict = self._memo['subst_src_suffixes']
-        except KeyError:
-            memo_dict = {}
-            self._memo['subst_src_suffixes'] = memo_dict
-        else:
-            try:
-                return memo_dict[memo_key]
-            except KeyError:
-                pass
-        suffixes = map(lambda x, s=self, e=env: e.subst(x), self.src_suffix)
-        memo_dict[memo_key] = suffixes
-        return suffixes
-
     def src_suffixes(self, env):
-        """
-        Returns the list of source suffixes for all src_builders of this
-        Builder.
+        return SuffixMap(self, env).src_suffixes()
 
-        This is essentially a recursive descent of the src_builder "tree."
-        (This value isn't cached because there may be changes in a
-        src_builder many levels deep that we can't see.)
-        """
-        suffixes = self.subst_src_suffixes(env)
-        for builder in self.get_src_builders(env):
-            suffixes.extend(builder.src_suffixes(env))
-        return suffixes
+
 
 class CompositeBuilder(SCons.Util.Proxy):
     """A Builder Proxy whose main purpose is to always have
@@ -837,3 +711,172 @@ class CompositeBuilder(SCons.Util.Proxy):
     def add_action(self, suffix, action):
         self.cmdgen.add_action(suffix, action)
         self.set_src_suffix(self.cmdgen.src_suffixes())
+
+
+
+class _SuffixMap(UserDict.UserDict):
+    """
+    An object for mapping file suffixes to the corresponding builder.
+
+    We obviously don't want to expand strings and walk trees of
+    src_builder objects every time we search for a file suffix match.
+    This object exists because the mapping of file suffixes to builders
+    has multiple axes of delayed evaluation:
+
+       --  The construction environment typically have variables
+           that define the suffixes we're interested in ($CSUFFIXES,
+           $YACCSUFFIX, etc.).
+
+       --  The Builder objects themselves have src_builder attributes
+           that may be set, which may affect the mapping of suffixes
+           because we have to be aware of *their* src_suffix values.
+
+       --  The value of any source Builder's src_suffix attribute is
+           typically a string that must be looked up in the construction
+           environment's BUILDERS dictionary.
+
+    Upon initialization, a map turns a particular builder's src_suffix
+    and src_builder attributes (the list of suffixes and builders,
+    respectively) into a dictionary that maps the environment-expanded
+    suffixes of any of the source builders to the appropriate Builder.
+    Additional attributes store just the expanded suffixes (used to
+    identify the "primary" suffix of this builder+environment pair),
+    all of the builders used (used in clearing the cached values for any
+    builder that has a new source builder added to it), and a list of all
+    of the lengths of the various source suffixes (used in identifying
+    the longest suffix match).
+    """
+    def __init__(self, builder, env):
+        self.builder = builder
+        self.env = env
+
+        self.my_suffixes = map(lambda x, s=self, e=env: e.subst(x),
+                               builder.src_suffix)
+
+        used = [builder]
+        sdict = {}
+
+        for suffix in self.my_suffixes:
+            sdict[suffix] = builder
+
+        for bld in builder.src_builder:
+            if SCons.Util.is_String(bld):
+                try:
+                    bld = env['BUILDERS'][bld]
+                except KeyError:
+                    continue
+
+            bld_smap = SuffixMap(bld, env)
+
+            for suf in bld_smap.keys():
+                sdict[suf] = bld
+
+            used.extend(bld_smap.builders_used)
+
+        self.builders_used = list(set(used))
+
+        UserDict.UserDict.__init__(self, sdict)
+
+        self.lengths = list(set(map(len, sdict.keys())))
+        self.lengths.sort()
+        self.lengths.reverse()
+
+    def primary_suffix(self):
+        """
+        Returns the expanded primary suffix (first in the list) for
+        this map's builder + construction environment.
+        """
+        if self.my_suffixes:
+            return self.my_suffixes[0]
+        return ''
+
+    def src_suffixes(self):
+        """
+        Returns all of the expanded suffixes for all source builders
+        (expanded via the attached construction environment).
+        """
+        return self.keys()
+
+    def find_suffix_match(self, name):
+        """
+        Returns the longest suffix match from the source suffixes
+        in the map, or None if no match exists.
+        """
+        for l in self.lengths:
+            n = name[-l:]
+            if self.has_key(n):
+                return n
+        return None
+
+    def find_builder_for_suffix(self, name):
+        """
+        Returns the builder for the name's longest-matching suffix.
+        """
+        suffix = self.find_suffix_match(name)
+        return self.get(suffix)
+
+class _SuffixMapCache:
+    """
+    A class to handle caching of Builder Suffix maps.
+
+    This class gets instantiated once and then deleted from the namespace,
+    so it's used as a Singleton (although we don't enforce that in the
+    usual Pythonic ways).  We could have just made the cache a dictionary
+    in the module namespace, but putting it in this class allows us to
+    use the same Memoizer pattern that we use elsewhere to count cache
+    hits and misses.
+    """
+
+    if SCons.Memoize.use_memoizer:
+        __metaclass__ = SCons.Memoize.Memoized_Metaclass
+
+    memoizer_counters = []
+
+    def __init__(self):
+        self._memo = {}
+
+    def _SuffixMap_key(self, builder, env):
+        """
+        Returns the key for memoization of builder + env suffix maps.
+        """
+        return (id(builder), id(env))
+        
+    memoizer_counters.append(SCons.Memoize.CountDict('SuffixMap', _SuffixMap_key))
+
+    def SuffixMap(self, builder, env):
+        """
+        Returns the cached _SuffixMap object for the specified builder
+        and construction environment, creating and caching a new object
+        as necessary.
+        """
+        key = (id(builder), id(env))
+        try:
+            memo_dict = self._memo['SuffixMap']
+        except KeyError:
+            memo_dict = {}
+            self._memo['SuffixMap'] = memo_dict
+        else:
+            try:
+                return memo_dict[key]
+            except KeyError:
+                pass
+
+        result = _SuffixMap(builder, env)
+
+        memo_dict[key] = result
+
+        return result
+
+    def invalidate_builder(self, builder):
+        """
+        Clears all of the cache entries that use the specified Builder.
+        """
+        for key, smap in self._memo.items():
+            if builder in smap.builders_used:
+                del self._memo[key]
+
+SuffixMapCache = _SuffixMapCache()
+
+SuffixMap = SuffixMapCache.SuffixMap
+
+del _SuffixMapCache
