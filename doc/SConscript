@@ -452,7 +452,8 @@ for man_1 in man_page_list:
 # for easy distribution to the web site.
 #
 if tar_deps:
-    tar_list = string.join(map(lambda x: x[11:], tar_list))
+    tar_list = string.join(map(lambda x, b=build+'/': string.replace(x, b, ''),
+                           tar_list))
     env.Command(doc_tar_gz, tar_deps,
-                "tar cf${TAR_HFLAG} - -C build/doc %s | gzip > $TARGET" % tar_list)
+                "tar cf${TAR_HFLAG} - -C %s %s | gzip > $TARGET" % (build, tar_list))
     Local(doc_tar_gz)
