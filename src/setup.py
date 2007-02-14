@@ -37,12 +37,6 @@ man_pages = [
     'scons-time.1',
 ]
 
-man_pages = [
-    'scons.1',
-    'sconsign.1',
-    'scons-time.1',
-]
-
 (head, tail) = os.path.split(sys.argv[0])
 
 if head:
