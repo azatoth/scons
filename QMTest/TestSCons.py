@@ -30,7 +30,7 @@ from TestCommon import __all__
 # to what we expect.  (If we derived the version number from the same
 # data driving the build we might miss errors if the logic breaks.)
 
-SConsVersion = '0.96.94'
+SConsVersion = '0.96.95'
 
 __all__.extend([ 'TestSCons',
                  'python',
