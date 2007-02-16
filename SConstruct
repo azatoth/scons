@@ -862,7 +862,7 @@ for p in [ scons ]:
                     ])
 
         old = os.path.join('lib', 'scons', '')
-        new = os.path.join('lib', 'python2.2', 'site-packages', '')
+        new = os.path.join('lib', 'python' + python_ver, 'site-packages', '')
         def xxx(s, old=old, new=new):
             if s[:len(old)] == old:
                 s = new + s[len(old):]
