@@ -504,7 +504,7 @@ scons = {
                             'sconsign.1',
                             'scons-time.1',
                             'script/scons.bat',
-                            'script/scons-post-install.py',
+                            #'script/scons-post-install.py',
                             'setup.cfg',
                             'setup.py',
                           ],
