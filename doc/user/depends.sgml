@@ -422,7 +422,7 @@ operating system on which the build is performed (as reported by C<uname
 
     <para>
 
-    The &cv-CPPPATH; value
+    The &cv-link-CPPPATH; value
     tells &SCons; to look in the current directory
     (<literal>'.'</literal>)
     for any files included by C source files
@@ -475,7 +475,7 @@ operating system on which the build is performed (as reported by C<uname
 
     <para>
 
-    Like the &cv-LIBPATH; variable,
+    Like the &cv-link-LIBPATH; variable,
     the &cv-CPPPATH; variable
     may be a list of directories,
     or a string separated by
