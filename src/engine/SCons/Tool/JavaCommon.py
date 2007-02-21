@@ -51,8 +51,9 @@ if java_parsing:
     #     any alphanumeric token (keyword, class name, specifier);
     #     the multi-line comment begin and end tokens /* and */;
     #     array declarations "[]";
-    #     semi-colons.
-    _reToken = re.compile(r'(\n|\\\\|//|\\[\'"]|[\'"\{\}\;]|' +
+    #     semi-colons;
+    #     periods.
+    _reToken = re.compile(r'(\n|\\\\|//|\\[\'"]|[\'"\{\}\;\.]|' +
                           r'[A-Za-z_][\w\.]*|/\*|\*/|\[\])')
 
     class OuterState:
@@ -129,6 +130,11 @@ if java_parsing:
                 return self.__getClassState()
             elif token == 'package':
                 return self.__getPackageState()
+            elif token == '.':
+                # Skip the attribute, it might be named "class", in which
+                # case we don't want to treat the following token as
+                # an inner class name...
+                return self.__getSkipState()
             return self
 
         def addAnonClass(self):
