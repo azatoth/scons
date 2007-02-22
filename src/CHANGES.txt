@@ -17,6 +17,10 @@ RELEASE 0.96.96 - XXX
 
   - Don't treat Java ".class" attributes as defining an inner class.
 
+  - Fix a regression when a CPPDEFINES list contains a tuple, the second
+    item of which (the option value) is a construction variable expansion
+    (e.g. $VALUE) and the value of the variable isn't a string.
+
   From Jean-Baptiste Lab:
 
   - Remove hard-coded dependency on Python 2.2 from Debian packaging files.
