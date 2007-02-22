@@ -17,6 +17,9 @@ RELEASE 0.96.96 - XXX
 
   - Don't treat Java ".class" attributes as defining an inner class.
 
+  - Fix detecting an erroneous Java anonymous class when the first
+    non-skipped token after a "new" keyword is a closing brace.
+
   - Fix a regression when a CPPDEFINES list contains a tuple, the second
     item of which (the option value) is a construction variable expansion
     (e.g. $VALUE) and the value of the variable isn't a string.

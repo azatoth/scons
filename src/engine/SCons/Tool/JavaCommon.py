@@ -102,20 +102,26 @@ if java_parsing:
                 self.skipState = ret
                 return ret
 
+        def openBracket(self):
+            self.brackets = self.brackets + 1
+
+        def closeBracket(self):
+            self.brackets = self.brackets - 1
+            if len(self.stackBrackets) and \
+               self.brackets == self.stackBrackets[-1]:
+                self.listOutputs.append(string.join(self.listClasses, '$'))
+                self.listClasses.pop()
+                self.stackBrackets.pop()
+
         def parseToken(self, token):
             if token[:2] == '//':
                 return IgnoreState('\n', self)
             elif token == '/*':
                 return IgnoreState('*/', self)
             elif token == '{':
-                self.brackets = self.brackets + 1
+                self.openBracket()
             elif token == '}':
-                self.brackets = self.brackets - 1
-                if len(self.stackBrackets) and \
-                   self.brackets == self.stackBrackets[-1]:
-                    self.listOutputs.append(string.join(self.listClasses, '$'))
-                    self.listClasses.pop()
-                    self.stackBrackets.pop()
+                self.closeBracket()
             elif token in [ '"', "'" ]:
                 return IgnoreState(token, self)
             elif token == "new":
@@ -141,7 +147,6 @@ if java_parsing:
             """Add an anonymous inner class"""
             clazz = self.listClasses[0]
             self.listOutputs.append('%s$%d' % (clazz, self.nextAnon))
-            self.brackets = self.brackets + 1
             self.nextAnon = self.nextAnon + 1
 
         def setPackage(self, package):
@@ -159,7 +164,10 @@ if java_parsing:
             if token == '\n':
                 return self
             if token == '{':
+                self.outer_state.openBracket()
                 self.outer_state.addAnonClass()
+            elif token == '}':
+                self.outer_state.closeBracket()
             elif token in ['"', "'"]:
                 return IgnoreState(token, self)
             return self.outer_state

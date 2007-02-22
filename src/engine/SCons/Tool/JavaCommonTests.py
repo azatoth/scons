@@ -286,6 +286,21 @@ public abstract class TestClass
         assert classes == ['TestClass$1', 'TestClass$2', 'TestClass'], classes
 
 
+    def test_closing_bracket(self):
+        """Test finding a closing bracket instead of an anonymous class"""
+        pkg_dir, classes = SCons.Tool.JavaCommon.parse_java("""\
+class TestSCons {
+    public static void main(String[] args) {
+        Foo[] fooArray = new Foo[] { new Foo() };
+    }
+}
+
+class Foo { }
+""")
+        assert pkg_dir == None, pkg_dir
+        assert classes == ['TestSCons', 'Foo'], classes
+
+
     def test_dot_class_attributes(self):
         """Test handling ".class" attributes"""
         pkg_dir, classes = SCons.Tool.JavaCommon.parse_java("""\
