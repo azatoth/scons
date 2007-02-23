@@ -27,6 +27,10 @@ RELEASE 0.96.96 - XXX
   - Improve the error message if an IOError (like trying to read a
     directory as a file) occurs while deciding if a node is up-to-date.
 
+  - Fix "maximum recursion" / "unhashable type" errors in $CPPPATH
+    PathList expansion if a subsidiary expansion yields a stringable,
+    non-Node object.
+
   From Jean-Baptiste Lab:
 
   - Remove hard-coded dependency on Python 2.2 from Debian packaging files.

@@ -36,6 +36,7 @@ import os
 import string
 
 import SCons.Memoize
+import SCons.Node
 import SCons.Util
 
 #
@@ -58,10 +59,13 @@ def node_conv(obj):
     try:
         get = obj.get
     except AttributeError:
-        pass
+        if isinstance(obj, SCons.Node.Node):
+            result = obj
+        else:
+            result = str(obj)
     else:
-        obj = get()
-    return obj
+        result = get()
+    return result
 
 class _PathList:
     """
