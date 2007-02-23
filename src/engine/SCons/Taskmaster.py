@@ -272,7 +272,11 @@ class Task:
         """
         self.out_of_date = []
         for t in self.targets:
-            if t.disambiguate().current():
+            try:
+                is_up_to_date = t.disambiguate().current()
+            except EnvironmentError, e:
+                raise SCons.Errors.BuildError(node=t, errstr=e.strerror, filename=e.filename)
+            if is_up_to_date:
                 t.set_state(SCons.Node.up_to_date)
             else:
                 self.out_of_date.append(t)
