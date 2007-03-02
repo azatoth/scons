@@ -54,18 +54,28 @@ build_local     = build_path('scons-local', 'scons-local-'+scons_version)
 build_src       = build_path('scons-src')
 
 class Checker:
-    def __init__(self, directory, search_list = [], remove_list=[]):
+    def __init__(self, directory,
+                 search_list = [],
+                 remove_list = [],
+                 remove_patterns = []):
         self.directory = directory
         self.search_list = search_list
         self.remove_dict = {}
         for r in remove_list:
             self.remove_dict[os.path.join(directory, r)] = 1
+        self.remove_patterns = remove_patterns
 
     def directory_exists(self):
         return os.path.exists(self.directory)
 
-    def remove_path(self, path):
-        return self.remove_dict.get(path)
+    def remove_this(self, name, path):
+        if self.remove_dict.get(path):
+            return 1
+        else:
+            for pattern in self.remove_patterns:
+                if fnmatch.fnmatch(name, pattern):
+                    return 1
+        return 0
 
     def search_this(self, path):
         if self.search_list:
@@ -79,7 +89,7 @@ class Checker:
     def visit(self, result, dirname, names):
         make_path_tuple = lambda n, d=dirname: (n, os.path.join(d, n))
         for name, path in map(make_path_tuple, names):
-            if self.remove_path(path):
+            if self.remove_this(name, path):
                 names.remove(name)
             elif self.search_this(path):
                 body = open(path, 'r').read()
@@ -147,6 +157,10 @@ check_list = [
             'os_spawnv_fix.diff',
             'setup.cfg',
         ],
+        # We run epydoc on the *.py files, which generates *.pyc files.
+        remove_patterns = [
+            '*.pyc'
+        ]
     ),
 
     CheckExpandedCopyright(

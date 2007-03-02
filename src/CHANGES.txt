@@ -31,6 +31,8 @@ RELEASE 0.96.96 - XXX
     PathList expansion if a subsidiary expansion yields a stringable,
     non-Node object.
 
+  - Generate API documentation from the docstrings (using epydoc).
+
   From Jean-Baptiste Lab:
 
   - Remove hard-coded dependency on Python 2.2 from Debian packaging files.
