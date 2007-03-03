@@ -65,7 +65,7 @@
 
     <para>
 
-    Now if we run &SCons; multiple on this example,
+    Now if we run &SCons; multiple times on this example,
     we see that it re-runs the &cp;
     command every time:
 
@@ -248,14 +248,14 @@
                          '.spp',
                          '.SPP'],
         'DSUFFIXES': ['.d'],
-        'Dir': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c43bec&gt;,
-        'Dirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c43c0c&gt;,
+        'Dir': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7bd1eac&gt;,
+        'Dirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7bd1ecc&gt;,
         'ENV': {'PATH': '/usr/local/bin:/opt/bin:/bin:/usr/bin'},
-        'ESCAPE': &lt;function escape at 0xb7b66c34&gt;,
-        'File': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c43c2c&gt;,
+        'ESCAPE': &lt;function escape at 0xb7b35ed4&gt;,
+        'File': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7bd1eec&gt;,
         'IDLSUFFIXES': ['.idl', '.IDL'],
-        'INSTALL': &lt;function installFunc at 0xb7c41f0c&gt;,
-        'INSTALLSTR': &lt;function installStr at 0xb7c41f44&gt;,
+        'INSTALL': &lt;function installFunc at 0xb7bd5144&gt;,
+        'INSTALLSTR': &lt;function installStr at 0xb7bd517c&gt;,
         'LATEXSUFFIXES': ['.tex', '.ltx', '.latex'],
         'LIBPREFIX': 'lib',
         'LIBPREFIXES': '$LIBPREFIX',
@@ -267,16 +267,16 @@
         'PLATFORM': 'posix',
         'PROGPREFIX': '',
         'PROGSUFFIX': '',
-        'PSPAWN': &lt;function piped_env_spawn at 0xb7b66fb4&gt;,
-        'RDirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c43c4c&gt;,
+        'PSPAWN': &lt;function piped_env_spawn at 0xb7b43294&gt;,
+        'RDirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7bd1f0c&gt;,
         'SCANNERS': [],
         'SHELL': 'sh',
         'SHLIBPREFIX': '$LIBPREFIX',
         'SHLIBSUFFIX': '.so',
         'SHOBJPREFIX': '$OBJPREFIX',
         'SHOBJSUFFIX': '$OBJSUFFIX',
-        'SPAWN': &lt;function spawnvpe_spawn at 0xb7b66a74&gt;,
-        'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0xb7bd37ac&gt;,
+        'SPAWN': &lt;function spawnvpe_spawn at 0xb7b35d14&gt;,
+        'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0xb7b6098c&gt;,
         'TEMPFILEPREFIX': '@',
         'TOOLS': [],
         '_CPPDEFFLAGS': '${_defines(CPPDEFPREFIX, CPPDEFINES, CPPDEFSUFFIX, __env__)}',
@@ -284,10 +284,10 @@
         '_LIBDIRFLAGS': '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
         '_LIBFLAGS': '${_concat(LIBLINKPREFIX, LIBS, LIBLINKSUFFIX, __env__)}',
         '__RPATH': '$_RPATH',
-        '_concat': &lt;function _concat at 0xb7c41fb4&gt;,
-        '_defines': &lt;function _defines at 0xb7c47064&gt;,
-        '_installStr': &lt;function installStr at 0xb7c41f44&gt;,
-        '_stripixes': &lt;function _stripixes at 0xb7c4702c&gt;}
+        '_concat': &lt;function _concat at 0xb7bd51ec&gt;,
+        '_defines': &lt;function _defines at 0xb7bd5294&gt;,
+        '_installStr': &lt;function installStr at 0xb7bd517c&gt;,
+        '_stripixes': &lt;function _stripixes at 0xb7bd525c&gt;}
       scons: done reading SConscript files.
       scons: Building targets ...
       scons: `.' is up to date.
@@ -304,9 +304,9 @@
     <screen>
       C:\><userinput>scons</userinput>
       scons: Reading SConscript files ...
-      { 'BUILDERS': {'Object': &lt;SCons.Builder.CompositeBuilder instance at 0xb7b6024c&gt;, 'SharedObject': &lt;SCons.Builder.CompositeBuilder instance at 0xb7b603cc&gt;, 'StaticObject': &lt;SCons.Builder.CompositeBuilder instance at 0xb7b6024c&gt;, 'PCH': &lt;SCons.Builder.BuilderBase instance at 0xb7bd2eac&gt;, 'RES': &lt;SCons.Builder.BuilderBase instance at 0xb7b596ec&gt;},
+      { 'BUILDERS': {'Object': &lt;SCons.Builder.CompositeBuilder instance at 0xb7b2254c&gt;, 'SharedObject': &lt;SCons.Builder.CompositeBuilder instance at 0xb7b226cc&gt;, 'StaticObject': &lt;SCons.Builder.CompositeBuilder instance at 0xb7b2254c&gt;, 'PCH': &lt;SCons.Builder.BuilderBase instance at 0xb7b95fac&gt;, 'RES': &lt;SCons.Builder.BuilderBase instance at 0xb7b199ec&gt;},
         'CC': 'cl',
-        'CCCOM': &lt;SCons.Action.FunctionAction instance at 0xb7b6086c&gt;,
+        'CCCOM': &lt;SCons.Action.FunctionAction instance at 0xb7b22b6c&gt;,
         'CCCOMFLAGS': '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS /c $SOURCES /Fo$TARGET $CCPCHFLAGS $CCPDBFLAGS',
         'CCFLAGS': ['/nologo'],
         'CCPCHFLAGS': ['${(PCH and "/Yu%s /Fp%s"%(PCHSTOP or "",File(PCH))) or ""}'],
@@ -341,20 +341,20 @@
         'CXXFILESUFFIX': '.cc',
         'CXXFLAGS': ['$CCFLAGS', '$(', '/TP', '$)'],
         'DSUFFIXES': ['.d'],
-        'Dir': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c58bec&gt;,
-        'Dirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c58c0c&gt;,
+        'Dir': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c1aeac&gt;,
+        'Dirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c1aecc&gt;,
         'ENV': { 'INCLUDE': 'C:\\Program Files\\Microsoft Visual Studio/VC98\\include',
                  'LIB': 'C:\\Program Files\\Microsoft Visual Studio/VC98\\lib',
                  'PATH': 'C:\\Program Files\\Microsoft Visual Studio\\Common\\tools\\WIN95;C:\\Program Files\\Microsoft Visual Studio\\Common\\MSDev98\\bin;C:\\Program Files\\Microsoft Visual Studio\\Common\\tools;C:\\Program Files\\Microsoft Visual Studio/VC98\\bin',
                  'PATHEXT': '.COM;.EXE;.BAT;.CMD',
                  'SystemRoot': 'C:/WINDOWS'},
-        'ESCAPE': &lt;function escape at 0xb7bc917c&gt;,
-        'File': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c58c2c&gt;,
+        'ESCAPE': &lt;function escape at 0xb7b8f41c&gt;,
+        'File': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c1aeec&gt;,
         'IDLSUFFIXES': ['.idl', '.IDL'],
         'INCPREFIX': '/I',
         'INCSUFFIX': '',
-        'INSTALL': &lt;function installFunc at 0xb7c56f0c&gt;,
-        'INSTALLSTR': &lt;function installStr at 0xb7c56f44&gt;,
+        'INSTALL': &lt;function installFunc at 0xb7c1e144&gt;,
+        'INSTALLSTR': &lt;function installStr at 0xb7c1e17c&gt;,
         'LATEXSUFFIXES': ['.tex', '.ltx', '.latex'],
         'LIBPREFIX': '',
         'LIBPREFIXES': ['$LIBPREFIX'],
@@ -370,14 +370,14 @@
         'PLATFORM': 'win32',
         'PROGPREFIX': '',
         'PROGSUFFIX': '.exe',
-        'PSPAWN': &lt;function piped_spawn at 0xb7bc90d4&gt;,
+        'PSPAWN': &lt;function piped_spawn at 0xb7b8f374&gt;,
         'RC': 'rc',
         'RCCOM': '$RC $_CPPDEFFLAGS $_CPPINCFLAGS $RCFLAGS /fo$TARGET $SOURCES',
         'RCFLAGS': [],
-        'RDirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c58c4c&gt;,
+        'RDirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c1af0c&gt;,
         'SCANNERS': [],
         'SHCC': '$CC',
-        'SHCCCOM': &lt;SCons.Action.FunctionAction instance at 0xb7b608cc&gt;,
+        'SHCCCOM': &lt;SCons.Action.FunctionAction instance at 0xb7b22bcc&gt;,
         'SHCCFLAGS': ['$CCFLAGS'],
         'SHCFLAGS': ['$CFLAGS'],
         'SHCXX': '$CXX',
@@ -388,19 +388,19 @@
         'SHLIBSUFFIX': '.dll',
         'SHOBJPREFIX': '$OBJPREFIX',
         'SHOBJSUFFIX': '$OBJSUFFIX',
-        'SPAWN': &lt;function spawn at 0xb7bc9144&gt;,
+        'SPAWN': &lt;function spawn at 0xb7b8f3e4&gt;,
         'STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME': 1,
-        'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0xb7be87ac&gt;,
+        'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0xb7ba998c&gt;,
         'TEMPFILEPREFIX': '@',
         'TOOLS': ['msvc'],
         '_CPPDEFFLAGS': '${_defines(CPPDEFPREFIX, CPPDEFINES, CPPDEFSUFFIX, __env__)}',
         '_CPPINCFLAGS': '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
         '_LIBDIRFLAGS': '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
         '_LIBFLAGS': '${_concat(LIBLINKPREFIX, LIBS, LIBLINKSUFFIX, __env__)}',
-        '_concat': &lt;function _concat at 0xb7c56fb4&gt;,
-        '_defines': &lt;function _defines at 0xb7c5c064&gt;,
-        '_installStr': &lt;function installStr at 0xb7c56f44&gt;,
-        '_stripixes': &lt;function _stripixes at 0xb7c5c02c&gt;}
+        '_concat': &lt;function _concat at 0xb7c1e1ec&gt;,
+        '_defines': &lt;function _defines at 0xb7c1e294&gt;,
+        '_installStr': &lt;function installStr at 0xb7c1e17c&gt;,
+        '_stripixes': &lt;function _stripixes at 0xb7c1e25c&gt;}
       scons: done reading SConscript files.
       scons: Building targets ...
       scons: `.' is up to date.
@@ -473,3 +473,131 @@
     </screen>
 
   </section>
+
+  <!--
+
+  <section>
+
+  <title>What Dependencies Does &SCons; Know About?  the &tree; Option</title>
+
+    <para>
+
+    XXX explain the - - tree= option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>How is &SCons; Constructing the Command Lines It Executes?  the &debug-presub; Option</title>
+
+    <para>
+
+    XXX explain the - - debug=findlibs option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>Where is &SCons; Searching for Libraries?  the &debug-findlibs; Option</title>
+
+    <para>
+
+    XXX explain the - - debug=findlibs option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>What Implicit Dependencies Did the &SCons; Scanner find?  the &debug-includes; Option</title>
+
+    <para>
+
+    XXX explain the - - debug=includes option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>Where is &SCons; Blowing UP?  the &debug-stacktrace; Option</title>
+
+    <para>
+
+    XXX explain the - - debug=stacktrace option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>How is &SCons; Making Its Decisions?  the &taskmastertrace; Option</title>
+
+    <para>
+
+    XXX explain the - - taskmastertrace= option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>Where Are My Build Bottlenecks?  the &profile; Option</title>
+
+    <para>
+
+    XXX explain the - - profile= option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+  <title>Troubleshooting Shared Caching:  the &cache-debug; Option</title>
+
+    <para>
+
+    XXX describe the - - cache-debug option
+    XXX maybe point to the caching.in chapter?
+
+    </para>
+
+  </section>
+
+  -->

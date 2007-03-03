@@ -70,7 +70,7 @@
 
     <para>
 
-    Now if we run &SCons; multiple on this example,
+    Now if we run &SCons; multiple times on this example,
     we see that it re-runs the &cp;
     command every time:
 
@@ -306,3 +306,131 @@
     </scons_output>
 
   </section>
+
+  <!--
+
+  <section>
+
+  <title>What Dependencies Does &SCons; Know About?  the &tree; Option</title>
+
+    <para>
+
+    XXX explain the - - tree= option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>How is &SCons; Constructing the Command Lines It Executes?  the &debug-presub; Option</title>
+
+    <para>
+
+    XXX explain the - - debug=findlibs option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>Where is &SCons; Searching for Libraries?  the &debug-findlibs; Option</title>
+
+    <para>
+
+    XXX explain the - - debug=findlibs option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>What Implicit Dependencies Did the &SCons; Scanner find?  the &debug-includes; Option</title>
+
+    <para>
+
+    XXX explain the - - debug=includes option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>Where is &SCons; Blowing UP?  the &debug-stacktrace; Option</title>
+
+    <para>
+
+    XXX explain the - - debug=stacktrace option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>How is &SCons; Making Its Decisions?  the &taskmastertrace; Option</title>
+
+    <para>
+
+    XXX explain the - - taskmastertrace= option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+
+  <title>Where Are My Build Bottlenecks?  the &profile; Option</title>
+
+    <para>
+
+    XXX explain the - - profile= option
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!--
+
+  <section>
+  <title>Troubleshooting Shared Caching:  the &cache-debug; Option</title>
+
+    <para>
+
+    XXX describe the - - cache-debug option
+    XXX maybe point to the caching.in chapter?
+
+    </para>
+
+  </section>
+
+  -->

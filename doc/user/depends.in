@@ -224,7 +224,7 @@ operating system on which the build is performed (as reported by C<uname
     <para>
 
     As you've just seen,
-    &SCons; uses signatures to decide whether a 
+    &SCons; uses signatures to decide whether a
     target file is up to date or must be rebuilt.
     When a target file depends on another target file,
     &SCons; allows you to configure separately
@@ -575,7 +575,7 @@ operating system on which the build is performed (as reported by C<uname
     <!--
 
     <para>
-    
+
     XXX
 
     </para>
@@ -584,7 +584,7 @@ operating system on which the build is performed (as reported by C<uname
 
     &SCons; does not cache implicit dependencies like this by default
     because XXX
-    
+
     </para>
 
     -->
@@ -633,7 +633,7 @@ operating system on which the build is performed (as reported by C<uname
       and re-scans the file for any updated
       implicit dependency information.
       Sometimes, however, you may want
-      to force &SCons; to use the cached implicit dependencies, 
+      to force &SCons; to use the cached implicit dependencies,
       even if the source files changed.
       This can speed up a build for example,
       when you have changed your source files
@@ -665,6 +665,17 @@ operating system on which the build is performed (as reported by C<uname
 
     </section>
 
+    <!--
+
+    <section>
+    <title>XXX max drift</title>
+
+      XXX SetOption('max_drift')
+
+    </section>
+
+    -->
+
   </section>
 
   <section>
@@ -672,7 +683,7 @@ operating system on which the build is performed (as reported by C<uname
 
     <para>
 
-    Sometimes it makes sense 
+    Sometimes it makes sense
     to not rebuild a program,
     even if a dependency file changes.
     In this case,
@@ -687,7 +698,7 @@ operating system on which the build is performed (as reported by C<uname
       Ignore(hello, 'hello.h')
       </file>
       <file name="hello.c">
-      #include "hello.h" 
+      #include "hello.h"
       int main() { printf("Hello, %s!\n", string); }
       </file>
       <file name="hello.h">
@@ -788,11 +799,26 @@ operating system on which the build is performed (as reported by C<uname
   <!-->
 
   <section>
+  <title>The &AlwaysBuild; Method</title>
+
+    <para>
+
+    XXX AlwaysBuild()
+
+    </para>
+
+  </section>
+
+  -->
+
+  <!-->
+
+  <section>
   <title>The &Salt; Method</title>
 
     <para>
 
-    XXX
+    XXX Salt() (are we going to implement this ?)
 
     </para>
 

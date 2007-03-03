@@ -90,6 +90,53 @@
 
 ]>
 
+  <!--
+
+  XXX AllowSubstExceptions()
+  XXX EnsurePythonVersion()
+  XXX EnsureSConsVersion()
+  XXX Exit()
+  XXX FindFile()
+  XXX FindPathDirs()
+  XXX Flatten()
+  XXX GetBuildPath()
+  XXX GetLaunchDir()
+
+  XXX MergeFlags()
+  XXX ParseFlags()
+
+  XXX ParseDepends()
+  XXX Platform()
+  XXX SConsignFile()
+  XXX SideEffect()
+  XXX Tools()
+
+  XXX GetOption('clean')
+  XXX SetOption('clean')
+
+  XXX GetOption('duplicate')
+  XXX SetOption('duplicate')
+  XXX - - duplicate=
+
+  XXX GetOption('num_jobs')
+  XXX SetOption('num_jobs')
+
+  XXX - - diskcheck=
+
+  XXX site_scons
+  XXX - - site-dir
+  XXX - - no-site-dir
+
+  XXX - - warn=
+
+  XXX ARGLIST
+  XXX ARGUMENTS
+  XXX BUILD_TARGETS
+  XXX COMMAND_LINE_TARGETS
+  XXX DEFAULT_TARGETS
+
+  -->
+
 <book>
   <bookinfo>
     <title>SCons User Guide &buildversion;</title>
@@ -231,6 +278,10 @@
 
   <!--
 
+  XXX Action()
+  XXX AddPostAction()
+  XXX AddPreAction()
+
   <chapter id="chap-actions">
     <title>&SCons; Actions</title>
     &actions;
@@ -290,21 +341,6 @@
     <title>Troubleshooting</title>
     &troubleshoot;
   </chapter>
-
-  <!--
-  AddPostAction()
-  AddPreAction()
-  Clean()
-  Dir()
-  File()
-  FindFile()
-  GetJobs()
-  SetJobs()
-  SideEffect()
-  ParseConfig()
-  Platform()
-  Tools()
-  -->
 
   <appendix id="app-variables">
     <title>Construction Variables</title>

@@ -3324,9 +3324,9 @@ for a table of options and construction variables.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI ParseDepends( filename ", [" must_exist ])
+.RI ParseDepends( filename ", [" must_exist ", " only_one ])
 .TP
-.RI env.ParseDepends( filename ", [" must_exist " " only_one ])
+.RI env.ParseDepends( filename ", [" must_exist ", " only_one ])
 Parses the contents of the specified
 .I filename
 as a list of dependencies in the style of
@@ -3341,7 +3341,7 @@ if the specified
 .I filename
 does not exist.
 The optional
-.I must_exit
+.I must_exist
 argument may be set to a non-zero
 value to have
 scons
