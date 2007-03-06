@@ -33,6 +33,8 @@ RELEASE 0.96.96 - XXX
 
   - Generate API documentation from the docstrings (using epydoc).
 
+  - Fix use of --debug=presub with Actions for out-of-the-box Builders.
+
   From Jean-Baptiste Lab:
 
   - Remove hard-coded dependency on Python 2.2 from Debian packaging files.
