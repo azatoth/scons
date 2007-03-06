@@ -35,16 +35,17 @@ import TestSCons
 
 test = TestSCons.TestSCons()
 
-icpc = test.where_is('icpc')
+icpc = test.detect_tool('intelc', prog='icpc')
 if not icpc:
-    test.skip_test("Could not find 'icpc'; skipping test(s).\n")
+    test.skip_test("Could not find 'icpc' from 'intelc' Tool; skipping test(s).\n")
 
-test.write('SConstruct', """
+test.write('SConstruct', """\
 env = Environment(tools=['default', 'intelc'])
 env.Program('hw', 'hw.cpp')
 """)
 
 test.write('hw.cpp', """\
+#include <iostream>
 int
 main()
 {
