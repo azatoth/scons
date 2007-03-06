@@ -23,27 +23,6 @@
 
 -->
 
-<!--
-
-=head2 The C<Salt> method
-
-The C<Salt> method adds a constant value to the signature calculation
-for every derived file.  It is invoked as follows:
-
-  Salt $string;
-
-Changing the Salt value will force a complete rebuild of every derived
-file.  This can be used to force rebuilds in certain desired
-circumstances.  For example,
-
-  Salt `uname -s`;
-
-Would force a complete rebuild of every derived file whenever the
-operating system on which the build is performed (as reported by C<uname
--s>) changes.
-
--->
-
   <para>
 
   So far we've seen how &SCons; handles one-time builds.
@@ -796,22 +775,77 @@ operating system on which the build is performed (as reported by C<uname
 
   </section>
 
-  <!-->
-
   <section>
   <title>The &AlwaysBuild; Method</title>
 
     <para>
 
-    XXX AlwaysBuild()
+    How &SCons; handles dependencies can also be affected
+    by the &AlwaysBuild; method.
+    When a file is passed to the &AlwaysBuild; method,
+    like so:
 
     </para>
 
+    <scons_example name="AlwaysBuild">
+      <file name="SConstruct" printme="1">
+      hello = Program('hello.c')
+      AlwaysBuild(hello)
+      </file>
+      <file name="hello.c">
+      int main() { printf("Hello, %s!\n", string); }
+      </file>
+    </scons_example>
+
+    <para>
+
+    Then the specified target file (&hello; in our example)
+    will always be considered out-of-date and
+    rebuilt whenever that target file is evaluated
+    while walking the dependency graph:
+
+    </para>
+
+    <scons_output example="AlwaysBuild">
+      <scons_output_command>scons -Q</scons_output_command>
+      <scons_output_command>scons -Q</scons_output_command>
+    </scons_output>
+
+    <para>
+
+    The &AlwaysBuild; function has a somewhat misleading name,
+    because it does not actually mean the target file will
+    be rebuilt every single time &SCons; is invoked.
+    Instead, it means that the target will, in fact,
+    be rebuilt whenever the target file is encountered
+    while evaluating the targets specified on
+    the command line (and their dependencies).
+    So specifying some other target on the command line,
+    a target that does <emphasis>not</emphasis>
+    itself depend on the &AlwaysBuild; target,
+    will still be rebuilt only if it's out-of-date
+    with respect to its dependencies:
+
+    </para>
+
+    <scons_output example="AlwaysBuild">
+      <scons_output_command>scons -Q</scons_output_command>
+      <scons_output_command>scons -Q hello.o</scons_output_command>
+    </scons_output>
+
+    <!--
+
+      XXX AlwaysBuild() and Alias Nodes
+
+      XXX AlwaysBuild() and Dir Nodes
+
+      XXX AlwaysBuild() with no sources
+
+    -->
+
   </section>
 
-  -->
-
-  <!-->
+  <!--
 
   <section>
   <title>The &Salt; Method</title>
@@ -819,6 +853,25 @@ operating system on which the build is performed (as reported by C<uname
     <para>
 
     XXX Salt() (are we going to implement this ?)
+
+        original Cons classic POD documentation:
+
+=head2 The C<Salt> method
+
+The C<Salt> method adds a constant value to the signature calculation
+for every derived file.  It is invoked as follows:
+
+  Salt $string;
+
+Changing the Salt value will force a complete rebuild of every derived
+file.  This can be used to force rebuilds in certain desired
+circumstances.  For example,
+
+  Salt `uname -s`;
+
+Would force a complete rebuild of every derived file whenever the
+operating system on which the build is performed (as reported by C<uname
+-s>) changes.
 
     </para>
 
