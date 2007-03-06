@@ -10,6 +10,10 @@
 
 RELEASE 0.96.96 - XXX
 
+  From Dmitry Grigorenko and Gary Oberbrunner:
+
+  - Use the Intel C++ compiler, not $CC, to link C++ source.
+
   From Steven Knight:
 
   - Back out (most of) the Windows registry installer patch, which
