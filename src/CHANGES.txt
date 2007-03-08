@@ -46,6 +46,11 @@ RELEASE 0.96.96 - XXX
 
   - Remove hard-coded dependency on Python 2.2 from Debian packaging files.
 
+  From Matthias Troffaes:
+
+  - Don't re-run TeX if the triggering strings (\makeindex, \bibliography
+    \tableofcontents) are commented out.
+
   From Richard Viney:
 
   - Fix use of custom include and lib paths with Visual Studio 8.

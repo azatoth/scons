@@ -52,6 +52,10 @@ undefined_references_re = re.compile(undefined_references_str, re.MULTILINE)
 
 openout_aux_re = re.compile(r"\\openout.*`(.*\.aux)'")
 
+makeindex_re = re.compile(r"^[^%]*\\makeindex", re.MULTILINE)
+tableofcontents_re = re.compile(r"^[^%]*\\tableofcontents", re.MULTILINE)
+bibliography_re = re.compile(r"^[^%]*\\bibliography", re.MULTILINE)
+
 # An Action sufficient to build any generic tex file.
 TeXAction = None
 
@@ -153,23 +157,23 @@ def tex_emitter(target, source, env):
     target.append(base + '.log')
     for f in source:
         content = f.get_contents()
-        if string.find(content, r'\tableofcontents') != -1:
+        if tableofcontents_re.search(content):
             target.append(base + '.toc')
-        if string.find(content, r'\makeindex') != -1:
+        if makeindex_re.search(content):
             target.append(base + '.ilg')
             target.append(base + '.ind')
             target.append(base + '.idx')
-        if string.find(content, r'\bibliography') != -1:
+        if bibliography_re.search(content):
             target.append(base + '.bbl')
             target.append(base + '.blg')
 
     # read log file to get all .aux files
     logfilename = base + '.log'
+    dir, base_nodir = os.path.split(base)
     if os.path.exists(logfilename):
         content = open(logfilename, "rb").read()
         aux_files = openout_aux_re.findall(content)
-        aux_files = filter(lambda f, b=base+'.aux': f != b, aux_files)
-        dir = os.path.split(base)[0]
+        aux_files = filter(lambda f, b=base_nodir+'.aux': f != b, aux_files)
         aux_files = map(lambda f, d=dir: d+os.sep+f, aux_files)
         target.extend(aux_files)
 
