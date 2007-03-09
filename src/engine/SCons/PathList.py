@@ -99,9 +99,7 @@ class _PathList:
         """
         if SCons.Util.is_String(pathlist):
             pathlist = string.split(pathlist, os.pathsep)
-        elif SCons.Util.is_List(pathlist) or SCons.Util.is_Tuple(pathlist):
-            pathlist = SCons.Util.flatten(pathlist)
-        else:
+        elif not SCons.Util.is_List(pathlist) and not SCons.Util.is_Tuple(pathlist):
             pathlist = [pathlist]
 
         pl = []
@@ -179,18 +177,19 @@ class PathListCache:
         """
         Returns the key for memoization of PathLists.
 
-        Note that we want this to be quick, so we don't canonicalize
-        all forms of the same list.  For example, 'x:y' and ['x', 'y']
-        logically represent the same list, but we're not going to bother
-        massaging strings into canonical lists here.
-
-        The reason
-
+        Note that we want this to be pretty quick, so we don't completely
+        canonicalize all forms of the same list.  For example,
+        'dir1:$ROOT/dir2' and ['$ROOT/dir1', 'dir'] may logically
+        represent the same list if you're executing from $ROOT, but
+        we're not going to bother splitting strings into path elements,
+        or massaging strings into Nodes, to identify that equivalence.
+        We just want to eliminate obvious redundancy from the normal
+        case of re-using exactly the same cloned value for a path.
         """
-        if SCons.Util.is_List(pathlist):
-            pathlist = tuple(pathlist)
+        if SCons.Util.is_List(pathlist) or SCons.Util.is_Tuple(pathlist):
+            pathlist = tuple(SCons.Util.flatten(pathlist))
         return pathlist
-        
+
     memoizer_counters.append(SCons.Memoize.CountDict('PathList', _PathList_key))
 
     def PathList(self, pathlist):
