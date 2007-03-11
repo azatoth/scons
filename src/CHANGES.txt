@@ -47,6 +47,9 @@ RELEASE 0.96.96 - XXX
   - User Guide updates: --random, AlwaysBuild(), --tree=,
     --debug=presub, --debug=stacktrace.
 
+  - Document (in both man page and User's Guide) that --implicit-cache
+    ignores changes in $CPPPATH, $LIBPATH, etc.
+
   From Jean-Baptiste Lab:
 
   - Remove hard-coded dependency on Python 2.2 from Debian packaging files.

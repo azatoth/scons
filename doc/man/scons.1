@@ -735,6 +735,24 @@ found in SCCS or RCS, for example,
 or if a file really does exist
 where the SCons configuration expects a directory).
 
+.TP
+.RI --duplicate= ORDER
+There are three ways to duplicate files in a build tree: hard links,
+soft (symbolic) links and copies. The default behaviour of SCons is to 
+prefer hard links to soft links to copies. You can specify different
+behaviours with this option.
+.IR ORDER 
+must be one of 
+.IR hard-soft-copy
+(the default),
+.IR soft-hard-copy ,
+.IR hard-copy ,
+.IR soft-copy
+or
+.IR copy .
+SCons will attempt to duplicate files using
+the mechanisms in the specified order.
+
 .\" .TP
 .\" -e, --environment-overrides
 .\" Variables from the execution environment override construction
@@ -774,29 +792,35 @@ imported Python modules.  If several
 options
 are used, the directories are searched in the order specified.
 
-.TP 
-.RI --no-site-dir
-Prevents the automatic addition of the standard
-.I site_scons
-dir to
-.IR sys.path .
-Also prevents loading the
-.I site_scons/site_init.py
-module if it exists, and prevents adding
-.I site_scons/site_tools
-to the toolpath.
-
 .TP
 --implicit-cache
-Cache implicit dependencies. This can cause 
+Cache implicit dependencies.
+This causes
 .B scons
-to miss changes in the implicit dependencies in cases where a new implicit
+to use the implicit (scanned) dependencies
+from the last time it was run
+instead of scanning the files for implicit dependencies.
+This can significantly speed up SCons,
+but with the following limitations:
+.IP
+.B scons
+will not detect changes to implicit dependency search paths
+(e.g.
+.BR CPPPATH ", " LIBPATH )
+that would ordinarily
+cause different versions of same-named files to be used.
+.IP
+.B scons
+will miss changes in the implicit dependencies
+in cases where a new implicit
 dependency is added earlier in the implicit dependency search path
-(e.g. CPPPATH) than a current implicit dependency with the same name.
+(e.g.
+.BR CPPPATH ", " LIBPATH )
+than a current implicit dependency with the same name.
 
 .TP
 --implicit-deps-changed
-Force SCons to ignore the cached implicit dependencies. This causes the
+Forces SCons to ignore the cached implicit dependencies. This causes the
 implicit dependencies to be rescanned and recached. This implies
 .BR --implicit-cache .
 
@@ -834,24 +858,6 @@ targets specified on the command line will still be processed.
 .\" average is at least 
 .\" .I N
 .\" (a floating-point number).
-
-.TP
-.RI --duplicate= ORDER
-There are three ways to duplicate files in a build tree: hard links,
-soft (symbolic) links and copies. The default behaviour of SCons is to 
-prefer hard links to soft links to copies. You can specify different
-behaviours with this option.
-.IR ORDER 
-must be one of 
-.IR hard-soft-copy
-(the default),
-.IR soft-hard-copy ,
-.IR hard-copy ,
-.IR soft-copy
-or
-.IR copy .
-SCons will attempt to duplicate files using
-the mechanisms in the specified order.
 
 .\"
 .\" .TP
@@ -901,6 +907,18 @@ no matter how old the file is.
 -n, --just-print, --dry-run, --recon
 No execute.  Print the commands that would be executed to build
 any out-of-date target files, but do not execute the commands.
+
+.TP 
+.RI --no-site-dir
+Prevents the automatic addition of the standard
+.I site_scons
+dir to
+.IR sys.path .
+Also prevents loading the
+.I site_scons/site_init.py
+module if it exists, and prevents adding
+.I site_scons/site_tools
+to the toolpath.
 
 .\" .TP
 .\" .RI -o " file" ", --old-file=" file ", --assume-old=" file

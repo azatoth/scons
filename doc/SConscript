@@ -484,16 +484,19 @@ if epydoc:
     api_targets = [api_pdf, api_ps, api_tex]
     env.Command(api_targets, sources, epydoc_commands,
                 EPYDOC=epydoc, EPYDOCFLAGS='--pdf', OUTDIR=api_dir)
+    Local(api_targets)
 
     pdf_install = os.path.join(build, 'PDF', 'scons-api.pdf')
     env.InstallAs(pdf_install, api_pdf)
     tar_deps.append(pdf_install)
     tar_list.append(pdf_install)
+    Local(pdf_install)
 
     ps_install = os.path.join(build, 'PS', 'scons-api.ps')
     env.InstallAs(ps_install, api_ps)
     tar_deps.append(ps_install)
     tar_list.append(ps_install)
+    Local(ps_install)
 
 #
 # Now actually create the tar file of the documentation,

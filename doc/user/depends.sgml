@@ -566,22 +566,46 @@
        SetOption('implicit_cache', 1)
     </programlisting>
 
-    <!--
-
-    <para>
-
-    XXX
-
-    </para>
-
     <para>
 
     &SCons; does not cache implicit dependencies like this by default
-    because XXX
+    because the &implicit-cache; causes &SCons; to simply use the implicit
+    dependencies stored during the last run, without any checking
+    for whether or not those dependencies are still correct.
+    Specifically, this means &implicit-cache; instructs &SCons;
+    to <emphasis>not</emphasis> rebuild "correctly" in the
+    following cases:
+
 
     </para>
 
-    -->
+    <itemizedlist>
+
+      <listitem>
+        <para>
+
+        When &implicit-cache; is used, &SCons; will ignore any changes that
+        may have been made to search paths
+        (like &cv-CPPPATH; or &cv-LIBPATH;,).
+        This can lead to &SCons; not rebuilding a file if a change to
+        &cv-CPPPATH; would normally cause a different, same-named file from
+        a different directory to be used.
+
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+
+        When &implicit-cache; is used, &SCons; will not detect if a
+        same-named file has been added to a directory that is earlier in
+        the search path than the directory in which the file was found
+        last time.
+
+        </para>
+      </listitem>
+
+    </itemizedlist>
 
     <section>
     <title>The &implicit-deps-changed; Option</title>
