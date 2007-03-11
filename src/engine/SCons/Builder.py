@@ -753,7 +753,7 @@ class _SuffixMap(UserDict.UserDict):
         self.my_suffixes = map(lambda x, s=self, e=env: e.subst(x),
                                builder.src_suffix)
 
-        used = [builder]
+        self.builders_used = {builder.get_name(env) : builder}
         sdict = {}
 
         for suffix in self.my_suffixes:
@@ -771,9 +771,7 @@ class _SuffixMap(UserDict.UserDict):
             for suf in bld_smap.keys():
                 sdict[suf] = bld
 
-            used.extend(bld_smap.builders_used)
-
-        self.builders_used = list(set(used))
+            self.builders_used.update(bld_smap.builders_used)
 
         UserDict.UserDict.__init__(self, sdict)
 
@@ -871,9 +869,19 @@ class _SuffixMapCache:
         """
         Clears all of the cache entries that use the specified Builder.
         """
-        for key, smap in self._memo.items():
-            if builder in smap.builders_used:
-                del self._memo[key]
+        try:
+            memo_dict = self._memo['SuffixMap']
+        except KeyError:
+            pass
+        else:
+            if SCons.Util.is_String(builder):
+                for key, smap in memo_dict.items():
+                    if builder in smap.builders_used.keys():
+                        del memo_dict[key]
+            else:
+                for key, smap in memo_dict.items():
+                    if builder in smap.builders_used.values():
+                        del memo_dict[key]
 
 SuffixMapCache = _SuffixMapCache()
 
