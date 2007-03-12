@@ -246,7 +246,10 @@
 
     </para>
 
-    
+    <programlisting>
+         env = Environment()
+         print env.Dump()
+    </programlisting>
 
     <para>
 
@@ -281,14 +284,14 @@
                          '.spp',
                          '.SPP'],
         'DSUFFIXES': ['.d'],
-        'Dir': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c81dec&gt;,
-        'Dirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c81e0c&gt;,
+        'Dir': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c3fdac&gt;,
+        'Dirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c3fdcc&gt;,
         'ENV': {'PATH': '/usr/local/bin:/opt/bin:/bin:/usr/bin'},
-        'ESCAPE': &lt;function escape at 0xb7be4e9c&gt;,
-        'File': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c81e2c&gt;,
+        'ESCAPE': &lt;function escape at 0xb7ba1f0c&gt;,
+        'File': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c3fdec&gt;,
         'IDLSUFFIXES': ['.idl', '.IDL'],
-        'INSTALL': &lt;function installFunc at 0xb7c8510c&gt;,
-        'INSTALLSTR': &lt;function installStr at 0xb7c85144&gt;,
+        'INSTALL': &lt;function installFunc at 0xb7c4317c&gt;,
+        'INSTALLSTR': &lt;function installStr at 0xb7c431b4&gt;,
         'LATEXSUFFIXES': ['.tex', '.ltx', '.latex'],
         'LIBPREFIX': 'lib',
         'LIBPREFIXES': '$LIBPREFIX',
@@ -300,16 +303,16 @@
         'PLATFORM': 'posix',
         'PROGPREFIX': '',
         'PROGSUFFIX': '',
-        'PSPAWN': &lt;function piped_env_spawn at 0xb7bf325c&gt;,
-        'RDirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c81e4c&gt;,
+        'PSPAWN': &lt;function piped_env_spawn at 0xb7bb12cc&gt;,
+        'RDirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c3fe0c&gt;,
         'SCANNERS': [],
         'SHELL': 'sh',
         'SHLIBPREFIX': '$LIBPREFIX',
         'SHLIBSUFFIX': '.so',
         'SHOBJPREFIX': '$OBJPREFIX',
         'SHOBJSUFFIX': '$OBJSUFFIX',
-        'SPAWN': &lt;function spawnvpe_spawn at 0xb7be4cdc&gt;,
-        'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0xb7c1089c&gt;,
+        'SPAWN': &lt;function spawnvpe_spawn at 0xb7ba1d4c&gt;,
+        'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0xb7bce89c&gt;,
         'TEMPFILEPREFIX': '@',
         'TOOLS': [],
         '_CPPDEFFLAGS': '${_defines(CPPDEFPREFIX, CPPDEFINES, CPPDEFSUFFIX, __env__)}',
@@ -317,10 +320,10 @@
         '_LIBDIRFLAGS': '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
         '_LIBFLAGS': '${_concat(LIBLINKPREFIX, LIBS, LIBLINKSUFFIX, __env__)}',
         '__RPATH': '$_RPATH',
-        '_concat': &lt;function _concat at 0xb7c851b4&gt;,
-        '_defines': &lt;function _defines at 0xb7c8525c&gt;,
-        '_installStr': &lt;function installStr at 0xb7c85144&gt;,
-        '_stripixes': &lt;function _stripixes at 0xb7c85224&gt;}
+        '_concat': &lt;function _concat at 0xb7c43224&gt;,
+        '_defines': &lt;function _defines at 0xb7c432cc&gt;,
+        '_installStr': &lt;function installStr at 0xb7c431b4&gt;,
+        '_stripixes': &lt;function _stripixes at 0xb7c43294&gt;}
       scons: done reading SConscript files.
       scons: Building targets ...
       scons: `.' is up to date.
@@ -337,9 +340,9 @@
     <screen>
       C:\><userinput>scons</userinput>
       scons: Reading SConscript files ...
-      { 'BUILDERS': {'Object': &lt;SCons.Builder.CompositeBuilder instance at 0xb7aeb48c&gt;, 'SharedObject': &lt;SCons.Builder.CompositeBuilder instance at 0xb7aeb60c&gt;, 'StaticObject': &lt;SCons.Builder.CompositeBuilder instance at 0xb7aeb48c&gt;, 'PCH': &lt;SCons.Builder.BuilderBase instance at 0xb7b5ceec&gt;, 'RES': &lt;SCons.Builder.BuilderBase instance at 0xb7ae292c&gt;},
+      { 'BUILDERS': {'Object': &lt;SCons.Builder.CompositeBuilder instance at 0xb7b6354c&gt;, 'SharedObject': &lt;SCons.Builder.CompositeBuilder instance at 0xb7b636cc&gt;, 'StaticObject': &lt;SCons.Builder.CompositeBuilder instance at 0xb7b6354c&gt;, 'PCH': &lt;SCons.Builder.BuilderBase instance at 0xb7bd6e8c&gt;, 'RES': &lt;SCons.Builder.BuilderBase instance at 0xb7b5b9ec&gt;},
         'CC': 'cl',
-        'CCCOM': &lt;SCons.Action.FunctionAction instance at 0xb7aebaac&gt;,
+        'CCCOM': &lt;SCons.Action.FunctionAction instance at 0xb7b63b6c&gt;,
         'CCCOMFLAGS': '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS /c $SOURCES /Fo$TARGET $CCPCHFLAGS $CCPDBFLAGS',
         'CCFLAGS': ['/nologo'],
         'CCPCHFLAGS': ['${(PCH and "/Yu%s /Fp%s"%(PCHSTOP or "",File(PCH))) or ""}'],
@@ -374,20 +377,20 @@
         'CXXFILESUFFIX': '.cc',
         'CXXFLAGS': ['$CCFLAGS', '$(', '/TP', '$)'],
         'DSUFFIXES': ['.d'],
-        'Dir': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7be1dec&gt;,
-        'Dirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7be1e0c&gt;,
+        'Dir': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c5adac&gt;,
+        'Dirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c5adcc&gt;,
         'ENV': { 'INCLUDE': 'C:\\Program Files\\Microsoft Visual Studio/VC98\\include',
                  'LIB': 'C:\\Program Files\\Microsoft Visual Studio/VC98\\lib',
                  'PATH': 'C:\\Program Files\\Microsoft Visual Studio\\Common\\tools\\WIN95;C:\\Program Files\\Microsoft Visual Studio\\Common\\MSDev98\\bin;C:\\Program Files\\Microsoft Visual Studio\\Common\\tools;C:\\Program Files\\Microsoft Visual Studio/VC98\\bin',
                  'PATHEXT': '.COM;.EXE;.BAT;.CMD',
                  'SystemRoot': 'C:/WINDOWS'},
-        'ESCAPE': &lt;function escape at 0xb7b563e4&gt;,
-        'File': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7be1e2c&gt;,
+        'ESCAPE': &lt;function escape at 0xb7bcf454&gt;,
+        'File': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c5adec&gt;,
         'IDLSUFFIXES': ['.idl', '.IDL'],
         'INCPREFIX': '/I',
         'INCSUFFIX': '',
-        'INSTALL': &lt;function installFunc at 0xb7be510c&gt;,
-        'INSTALLSTR': &lt;function installStr at 0xb7be5144&gt;,
+        'INSTALL': &lt;function installFunc at 0xb7c5e17c&gt;,
+        'INSTALLSTR': &lt;function installStr at 0xb7c5e1b4&gt;,
         'LATEXSUFFIXES': ['.tex', '.ltx', '.latex'],
         'LIBPREFIX': '',
         'LIBPREFIXES': ['$LIBPREFIX'],
@@ -403,14 +406,14 @@
         'PLATFORM': 'win32',
         'PROGPREFIX': '',
         'PROGSUFFIX': '.exe',
-        'PSPAWN': &lt;function piped_spawn at 0xb7b5633c&gt;,
+        'PSPAWN': &lt;function piped_spawn at 0xb7bcf3ac&gt;,
         'RC': 'rc',
         'RCCOM': '$RC $_CPPDEFFLAGS $_CPPINCFLAGS $RCFLAGS /fo$TARGET $SOURCES',
         'RCFLAGS': [],
-        'RDirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7be1e4c&gt;,
+        'RDirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0xb7c5ae0c&gt;,
         'SCANNERS': [],
         'SHCC': '$CC',
-        'SHCCCOM': &lt;SCons.Action.FunctionAction instance at 0xb7aebb0c&gt;,
+        'SHCCCOM': &lt;SCons.Action.FunctionAction instance at 0xb7b63bcc&gt;,
         'SHCCFLAGS': ['$CCFLAGS'],
         'SHCFLAGS': ['$CFLAGS'],
         'SHCXX': '$CXX',
@@ -421,19 +424,19 @@
         'SHLIBSUFFIX': '.dll',
         'SHOBJPREFIX': '$OBJPREFIX',
         'SHOBJSUFFIX': '$OBJSUFFIX',
-        'SPAWN': &lt;function spawn at 0xb7b563ac&gt;,
+        'SPAWN': &lt;function spawn at 0xb7bcf41c&gt;,
         'STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME': 1,
-        'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0xb7b7089c&gt;,
+        'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0xb7be989c&gt;,
         'TEMPFILEPREFIX': '@',
         'TOOLS': ['msvc'],
         '_CPPDEFFLAGS': '${_defines(CPPDEFPREFIX, CPPDEFINES, CPPDEFSUFFIX, __env__)}',
         '_CPPINCFLAGS': '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
         '_LIBDIRFLAGS': '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
         '_LIBFLAGS': '${_concat(LIBLINKPREFIX, LIBS, LIBLINKSUFFIX, __env__)}',
-        '_concat': &lt;function _concat at 0xb7be51b4&gt;,
-        '_defines': &lt;function _defines at 0xb7be525c&gt;,
-        '_installStr': &lt;function installStr at 0xb7be5144&gt;,
-        '_stripixes': &lt;function _stripixes at 0xb7be5224&gt;}
+        '_concat': &lt;function _concat at 0xb7c5e224&gt;,
+        '_defines': &lt;function _defines at 0xb7c5e2cc&gt;,
+        '_installStr': &lt;function installStr at 0xb7c5e1b4&gt;,
+        '_stripixes': &lt;function _stripixes at 0xb7c5e294&gt;}
       scons: done reading SConscript files.
       scons: Building targets ...
       scons: `.' is up to date.
@@ -467,7 +470,10 @@
 
     </para>
 
-    
+    <programlisting>
+         env = Environment()
+         print env.Dump('ENV')
+    </programlisting>
 
     <para>
 
@@ -531,7 +537,10 @@
 
     </para>
 
-    
+    <programlisting>
+         env = Environment(CPPPATH = ['.'])
+         env.Program('prog', ['f1.c', 'f2.c', 'f3.c'])
+    </programlisting>
 
     <para>
 
@@ -942,8 +951,8 @@
     <!--
 
     Have to capture output here, otherwise the - -debug=presub output
-    shows the Python functions from the sconsdoc.py execution wrapper,
-    not the underlying command-line strings.
+    shows the Python functions from the sconsdoc.py execution wrapper
+    used to generate this manual, not the underlying command-line strings.
 
     <scons_output example="presub">
       <scons_output_command>scons -Q - -debug=presub</scons_output_command>
@@ -963,21 +972,51 @@
 
   </section>
 
-  <!--
-
   <section>
 
   <title>Where is &SCons; Searching for Libraries?  the &debug-findlibs; Option</title>
 
     <para>
 
-    XXX explain the - - debug=findlibs option
+    To get some insight into what library names
+    &SCons; is searching for,
+    and in which directories it is searching,
+    Use the <literal>--debug=findlibs</literal> option.
+    Given the following input &SConstruct; file:
 
     </para>
 
-  </section>
+    <programlisting>
+        env = Environment(LIBPATH = ['libs1', 'libs2'])
+        env.Program('prog.c', LIBS=['foo', 'bar'])
+    </programlisting>
 
-  -->
+    <para>
+
+    And the libraries <filename>libfoo.a</filename>
+    and <filename>libbar.a</filename>
+    in <filename>libs1</filename> and <filename>libs2</filename>,
+    respectively,
+    use of the <literal>--debug=findlibs</literal> option yields:
+
+    </para>
+
+    <screen>
+      % <userinput>scons -Q --debug=findlibs</userinput>
+        findlibs: looking for 'libfoo.a' in 'libs1' ...
+        findlibs: ... FOUND 'libfoo.a' in 'libs1'
+        findlibs: looking for 'libfoo.so' in 'libs1' ...
+        findlibs: looking for 'libfoo.so' in 'libs2' ...
+        findlibs: looking for 'libbar.a' in 'libs1' ...
+        findlibs: looking for 'libbar.a' in 'libs2' ...
+        findlibs: ... FOUND 'libbar.a' in 'libs2'
+        findlibs: looking for 'libbar.so' in 'libs1' ...
+        findlibs: looking for 'libbar.so' in 'libs2' ...
+      cc -o prog.o -c prog.c
+      cc -o prog prog.o -Llibs1 -Llibs2 -lfoo -lbar
+    </screen>
+
+  </section>
 
   <!--
 
@@ -990,6 +1029,28 @@
     XXX explain the - - debug=includes option
 
     </para>
+
+    <scons_example name="includes">
+      <file name="SConstruct" printme="1">
+        env = Environment(CPPPATH = ['inc1', 'inc2'])
+        env.Program('prog.c')
+      </file>
+      <file name="prog.c">
+      #include "file1.h"
+      #include "file2.h"
+      prog.c
+      </file>
+      <file name="inc1/file1.h">
+      inc1/file1.h
+      </file>
+      <file name="inc2/file2.h">
+      inc2/file2.h
+      </file>
+    </scons_example>
+
+    <scons_output example="includes">
+      <scons_output_command>scons -Q - - debug=includes prog</scons_output_command>
+    </scons_output>
 
   </section>
 
@@ -1017,7 +1078,9 @@
 
     </para>
 
-    
+    <programlisting>
+         Program('prog.c')
+    </programlisting>
 
     <para>
 
@@ -1049,13 +1112,13 @@
       % <userinput>scons -Q --debug=stacktrace</userinput>
       scons: *** Source `prog.c' not found, needed by target `prog.o'.  Stop.
       scons: internal stack trace:
-        File "/home/knight/SCons/scons.0.96.C749/bootstrap/src/engine/SCons/Job.py", line 111, in start
+        File "/home/knight/SCons/scons.0.96.C763/bootstrap/src/engine/SCons/Job.py", line 111, in start
           task.prepare()
-        File "/home/knight/SCons/scons.0.96.C749/bootstrap/src/engine/SCons/Taskmaster.py", line 166, in prepare
+        File "/home/knight/SCons/scons.0.96.C763/bootstrap/src/engine/SCons/Taskmaster.py", line 166, in prepare
           t.prepare()
-        File "/home/knight/SCons/scons.0.96.C749/bootstrap/src/engine/SCons/Node/FS.py", line 2137, in prepare
+        File "/home/knight/SCons/scons.0.96.C763/bootstrap/src/engine/SCons/Node/FS.py", line 2137, in prepare
           SCons.Node.Node.prepare(self)
-        File "/home/knight/SCons/scons.0.96.C749/bootstrap/src/engine/SCons/Node/__init__.py", line 806, in prepare
+        File "/home/knight/SCons/scons.0.96.C763/bootstrap/src/engine/SCons/Node/__init__.py", line 806, in prepare
           raise SCons.Errors.StopError, desc
     </screen>
 
@@ -1074,21 +1137,75 @@
 
   </section>
 
-  <!--
-
   <section>
 
   <title>How is &SCons; Making Its Decisions?  the &taskmastertrace; Option</title>
 
     <para>
 
-    XXX explain the - - taskmastertrace= option
+    The internal &SCons; subsystem that handles walking
+    the dependency graph
+    and controls the decision-making about what to rebuild
+    is the <literal>Taskmaster</literal>.
+    &SCons; supports a <literal>--taskmastertrace</literal>
+    option that tells the Taskmaster to print
+    information about the children (dependencies)
+    of the various Nodes on its walk down the graph,
+    which specific dependent Nodes are being evaluated,
+    and in what order.
+
+    </para>
+
+    <para>
+
+    The <literal>--taskmastertrace</literal> option
+    takes as an argument the name of a file in
+    which to put the trace output,
+    with <filename>-</filename> (a single hyphen)
+    indicating that the trace messages
+    should be printed to the standard output:
+
+    </para>
+
+    <programlisting>
+      env = Environment(CPPPATH = ['.'])
+      env.Program('prog.c')
+    </programlisting>
+
+    <screen>
+      % <userinput>scons -Q --taskmastertrace=- prog</userinput>
+      Taskmaster: 'prog': children:
+          ['prog.o']
+          waiting on unstarted children:
+          ['prog.o']
+      Taskmaster: 'prog.o': children:
+          ['inc.h', 'prog.c']
+          evaluating prog.o
+      cc -o prog.o -c -I. prog.c
+      Taskmaster: 'prog': children:
+          ['prog.o']
+          evaluating prog
+      cc -o prog prog.o
+      Taskmaster: 'prog': already handled (executed)
+    </screen>
+
+    <para>
+
+    The <literal>--taskmastertrace</literal> option
+    doesn't provide information about the actual
+    calculations involved in deciding if a file is up-to-date,
+    but it does show all of the dependencies
+    it knows about for each Node,
+    and the order in which those dependencies are evaluated.
+    This can be useful as an alternate way to determine
+    whether or not your &SCons; configuration,
+    or the implicit dependency scan,
+    has actually identified all the correct dependencies
+    you want it to.
 
     </para>
 
   </section>
-
-  -->
 
   <!--
 

@@ -256,7 +256,7 @@
     </para>
 
     <scons_example name="Dump">
-      <file name="SConstruct" print="1">
+      <file name="SConstruct" printme="1">
          env = Environment()
          print env.Dump()
       </file>
@@ -312,7 +312,7 @@
     </para>
 
     <scons_example name="Dump_ENV">
-      <file name="SConstruct" print="1">
+      <file name="SConstruct" printme="1">
          env = Environment()
          print env.Dump('ENV')
       </file>
@@ -365,7 +365,7 @@
     </para>
 
     <scons_example name="tree1">
-      <file name="SConstruct" print="1">
+      <file name="SConstruct" printme="1">
          env = Environment(CPPPATH = ['.'])
          env.Program('prog', ['f1.c', 'f2.c', 'f3.c'])
       </file>
@@ -595,8 +595,8 @@
     <!--
 
     Have to capture output here, otherwise the - -debug=presub output
-    shows the Python functions from the sconsdoc.py execution wrapper,
-    not the underlying command-line strings.
+    shows the Python functions from the sconsdoc.py execution wrapper
+    used to generate this manual, not the underlying command-line strings.
 
     <scons_output example="presub">
       <scons_output_command>scons -Q - -debug=presub</scons_output_command>
@@ -616,21 +616,51 @@
 
   </section>
 
-  <!--
-
   <section>
 
   <title>Where is &SCons; Searching for Libraries?  the &debug-findlibs; Option</title>
 
     <para>
 
-    XXX explain the - - debug=findlibs option
+    To get some insight into what library names
+    &SCons; is searching for,
+    and in which directories it is searching,
+    Use the <literal>--debug=findlibs</literal> option.
+    Given the following input &SConstruct; file:
 
     </para>
 
-  </section>
+    <scons_example name="findlibs">
+      <file name="SConstruct" printme="1">
+        env = Environment(LIBPATH = ['libs1', 'libs2'])
+        env.Program('prog.c', LIBS=['foo', 'bar'])
+      </file>
+      <file name="prog.c">
+      prog.c
+      </file>
+      <file name="libs1/libfoo.a">
+      libs1/libfoo.a
+      </file>
+      <file name="libs2/libbar.a">
+      libs2/libbar.a
+      </file>
+    </scons_example>
 
-  -->
+    <para>
+
+    And the libraries <filename>libfoo.a</filename>
+    and <filename>libbar.a</filename>
+    in <filename>libs1</filename> and <filename>libs2</filename>,
+    respectively,
+    use of the <literal>--debug=findlibs</literal> option yields:
+
+    </para>
+
+    <scons_output example="findlibs">
+      <scons_output_command>scons -Q --debug=findlibs</scons_output_command>
+    </scons_output>
+
+  </section>
 
   <!--
 
@@ -643,6 +673,28 @@
     XXX explain the - - debug=includes option
 
     </para>
+
+    <scons_example name="includes">
+      <file name="SConstruct" printme="1">
+        env = Environment(CPPPATH = ['inc1', 'inc2'])
+        env.Program('prog.c')
+      </file>
+      <file name="prog.c">
+      #include "file1.h"
+      #include "file2.h"
+      prog.c
+      </file>
+      <file name="inc1/file1.h">
+      inc1/file1.h
+      </file>
+      <file name="inc2/file2.h">
+      inc2/file2.h
+      </file>
+    </scons_example>
+
+    <scons_output example="includes">
+      <scons_output_command>scons -Q - - debug=includes prog</scons_output_command>
+    </scons_output>
 
   </section>
 
@@ -671,7 +723,7 @@
     </para>
 
     <scons_example name="stacktrace">
-      <file name="SConstruct" print="1">
+      <file name="SConstruct" printme="1">
          Program('prog.c')
       </file>
     </scons_example>
@@ -720,21 +772,71 @@
 
   </section>
 
-  <!--
-
   <section>
 
   <title>How is &SCons; Making Its Decisions?  the &taskmastertrace; Option</title>
 
     <para>
 
-    XXX explain the - - taskmastertrace= option
+    The internal &SCons; subsystem that handles walking
+    the dependency graph
+    and controls the decision-making about what to rebuild
+    is the <literal>Taskmaster</literal>.
+    &SCons; supports a <literal>--taskmastertrace</literal>
+    option that tells the Taskmaster to print
+    information about the children (dependencies)
+    of the various Nodes on its walk down the graph,
+    which specific dependent Nodes are being evaluated,
+    and in what order.
+
+    </para>
+
+    <para>
+
+    The <literal>--taskmastertrace</literal> option
+    takes as an argument the name of a file in
+    which to put the trace output,
+    with <filename>-</filename> (a single hyphen)
+    indicating that the trace messages
+    should be printed to the standard output:
+
+    </para>
+
+    <scons_example name="taskmastertrace">
+      <file name="SConstruct" printme="1">
+      env = Environment(CPPPATH = ['.'])
+      env.Program('prog.c')
+      </file>
+      <file name="prog.c">
+      #include "inc.h"
+      prog.c
+      </file>
+      <file name="inc.h">
+      #define   STRING  "one"
+      </file>
+    </scons_example>
+
+    <scons_output example="taskmastertrace" os="posix">
+      <scons_output_command>scons -Q --taskmastertrace=- prog</scons_output_command>
+    </scons_output>
+
+    <para>
+
+    The <literal>--taskmastertrace</literal> option
+    doesn't provide information about the actual
+    calculations involved in deciding if a file is up-to-date,
+    but it does show all of the dependencies
+    it knows about for each Node,
+    and the order in which those dependencies are evaluated.
+    This can be useful as an alternate way to determine
+    whether or not your &SCons; configuration,
+    or the implicit dependency scan,
+    has actually identified all the correct dependencies
+    you want it to.
 
     </para>
 
   </section>
-
-  -->
 
   <!--
 

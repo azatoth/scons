@@ -45,7 +45,8 @@ RELEASE 0.96.96 - XXX
     triggered in the refactored suffix handling for Builders.
 
   - User Guide updates: --random, AlwaysBuild(), --tree=,
-    --debug=presub, --debug=stacktrace.
+    --debug=findlibs, --debug=presub, --debug=stacktrace,
+    --taskmastertrace.
 
   - Document (in both man page and User's Guide) that --implicit-cache
     ignores changes in $CPPPATH, $LIBPATH, etc.
