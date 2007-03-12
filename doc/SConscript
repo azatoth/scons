@@ -460,7 +460,7 @@ if epydoc:
     # XXX
     sources = filter(lambda x: string.find(x, 'Options') == -1, sources)
 
-    e = os.path.join('#build', 'scons', 'engine')
+    e = os.path.join(build, '..', 'scons', 'engine')
     sources = map(lambda x, e=e: os.path.join(e, x), sources)
 
     epydoc_commands = [

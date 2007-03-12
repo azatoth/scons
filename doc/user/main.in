@@ -51,7 +51,6 @@
     <!ENTITY builders-writing SYSTEM "builders-writing.sgml">
     <!ENTITY caching SYSTEM "caching.sgml">
     <!ENTITY command-line SYSTEM "command-line.sgml">
-    <!ENTITY cons SYSTEM "cons.sgml">
     <!ENTITY copyright SYSTEM "copyright.sgml">
     <!ENTITY depends SYSTEM "depends.sgml">
     <!ENTITY ENV_file SYSTEM "ENV.sgml">
