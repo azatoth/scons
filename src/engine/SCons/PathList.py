@@ -99,7 +99,7 @@ class _PathList:
         """
         if SCons.Util.is_String(pathlist):
             pathlist = string.split(pathlist, os.pathsep)
-        elif not SCons.Util.is_List(pathlist) and not SCons.Util.is_Tuple(pathlist):
+        elif not SCons.Util.is_Sequence(pathlist):
             pathlist = [pathlist]
 
         pl = []
@@ -131,6 +131,11 @@ class _PathList:
             if type == TYPE_STRING_SUBST:
                 value = env.subst(value, target=target, source=source,
                                   conv=node_conv)
+                if SCons.Util.is_Sequence(value):
+                    # It came back as a string or tuple, which in this
+                    # case usually means some variable expanded to an
+                    # actually Dir node.  Concatenate the values.
+                    value = string.join(map(str, value), '')
             elif type == TYPE_OBJECT:
                 value = node_conv(value)
             result.append(value)
@@ -186,7 +191,7 @@ class PathListCache:
         We just want to eliminate obvious redundancy from the normal
         case of re-using exactly the same cloned value for a path.
         """
-        if SCons.Util.is_List(pathlist) or SCons.Util.is_Tuple(pathlist):
+        if SCons.Util.is_Sequence(pathlist):
             pathlist = tuple(SCons.Util.flatten(pathlist))
         return pathlist
 
