@@ -29,6 +29,8 @@ Verify that we print a useful message (and exit non-zero) if an external
 error occurs while deciding if a Node is current or not.
 """
 
+import sys
+
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -48,8 +50,13 @@ import os
 os.mkdir(r'%(work_file)s')
 """ % locals())
 
+if sys.platform == 'win32':
+    error_message = "Permission denied"
+else:
+    error_message = "Is a directory"
+
 expect = """\
-scons: *** [%(install_file)s] %(work_file)s: Is a directory
+scons: *** [%(install_file)s] %(work_file)s: %(error_message)s
 """ % locals()
 
 test.run(chdir = 'work',

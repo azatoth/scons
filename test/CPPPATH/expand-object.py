@@ -42,8 +42,8 @@ class XXX:
 env = Environment(CPPPATH = ['#',
                              '$BUILDDIR',
                              '/tmp/xyzzy'],
-                  BUILDDIR = '#scons_build/$PLATFORM',
-                  PLATFORM = XXX('win32'))
+                  BUILDDIR = '#scons_build/$EXPANSION',
+                  EXPANSION = XXX('win32'))
 env.Object('foo.c')
 """)
 
