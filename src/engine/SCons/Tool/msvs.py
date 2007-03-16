@@ -1418,14 +1418,14 @@ def get_msvs_install_dirs(version = None, vs8suite = None):
             default_framework_version = DefaultFrameworkVersionMap[version[:3]]
         except (KeyError, TypeError):
             pass
-
-        # Look for the first installed directory in FRAMEWORKDIR that
-        # begins with the framework version string that's appropriate
-        # for the Visual Studio version we're using.
-        for v in installed_framework_versions:
-            if v[:4] == default_framework_version:
-                rv['FRAMEWORKVERSION'] = v
-                break
+        else:
+            # Look for the first installed directory in FRAMEWORKDIR that
+            # begins with the framework version string that's appropriate
+            # for the Visual Studio version we're using.
+            for v in installed_framework_versions:
+                if v[:4] == default_framework_version:
+                    rv['FRAMEWORKVERSION'] = v
+                    break
 
         # If the framework version couldn't be worked out by the previous
         # code then fall back to using the latest version of the .NET
