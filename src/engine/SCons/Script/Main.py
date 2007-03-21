@@ -617,7 +617,7 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
     site_init_filename = "site_init.py"
     site_init_modname = "site_init"
     site_tools_dirname = "site_tools"
-    sys.path = [site_dir] + sys.path
+    sys.path = [os.path.abspath(site_dir)] + sys.path
     site_init_file = os.path.join(site_dir, site_init_filename)
     site_tools_dir = os.path.join(site_dir, site_tools_dirname)
     if os.path.exists(site_init_file):
