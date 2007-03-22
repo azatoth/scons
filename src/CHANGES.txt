@@ -59,6 +59,11 @@ RELEASE 0.96.96 - XXX
 
   - Handle spaces in the build target name in Visual Studio project files.
 
+  From Gary Oberbrunner:
+
+  - Fix the ability to import modules in the site_scons directory from
+    a subdirectory.
+
   From Matthias Troffaes:
 
   - Don't re-run TeX if the triggering strings (\makeindex, \bibliography
