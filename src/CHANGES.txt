@@ -64,6 +64,11 @@ RELEASE 0.96.96 - XXX
   - Fix the ability to import modules in the site_scons directory from
     a subdirectory.
 
+  From Adam Simpkins:
+
+  - Make sure parallel (-j) builds all targets even if they show up
+    multiple times in the child list (as a source and a dependency).
+
   From Matthias Troffaes:
 
   - Don't re-run TeX if the triggering strings (\makeindex, \bibliography
