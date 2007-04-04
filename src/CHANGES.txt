@@ -44,6 +44,9 @@ RELEASE 0.96.96 - XXX
   - Fix a "builders_used" AttributeError that real-world Qt initialization
     triggered in the refactored suffix handling for Builders.
 
+  - Make the reported --debug=time timings meaningful when used with -j.
+    Better documentation of what the times mean.
+
   - User Guide updates: --random, AlwaysBuild(), --tree=,
     --debug=findlibs, --debug=presub, --debug=stacktrace,
     --taskmastertrace.

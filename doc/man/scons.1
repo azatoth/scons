@@ -681,10 +681,38 @@ and ultimately removed.
 
 .TP
 --debug=time
-Prints various time profiling information: the time spent
-executing each build command, the total build time, the total time spent
-executing build commands, the total time spent executing SConstruct and
-SConscript files, and the total time spent executing SCons itself.
+Prints various time profiling information:
+the time spent executing each individual build command;
+the total build time (time SCons ran from beginning to end);
+the total time spent reading and executing SConscript files;
+the total time spent SCons itself spend running
+(that is, not counting reading and executing SConscript files);
+and both the total time spent executing all build commands
+and the elapsed wall-clock time spent executing those build commands.
+(When
+.B scons
+is executed without the
+.B -j
+option,
+the elapsed wall-clock time will typically
+be slightly longer than the total time spent
+executing all the build commands,
+due to the SCons processing that takes place
+in between executing each command.
+When
+.B scons
+is executed
+.I with
+the
+.B -j
+option,
+and your build configuration allows good parallelization,
+the elapsed wall-clock time should
+be significantly smaller than the
+total time spent executing all the build commands,
+since multiple build commands and
+intervening SCons processing
+should take place in parallel.)
 
 .TP
 --debug=tree
