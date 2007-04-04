@@ -59,6 +59,12 @@ RELEASE 0.96.96 - XXX
 
   - Handle spaces in the build target name in Visual Studio project files.
 
+  From Joel B. Mohler:
+
+  - Make additional TeX auxiliary files (.toc, .idx and .bbl files)
+    Precious so their removal doesn't affect whether the necessary
+    sections are included in output PDF or PostScript files.
+
   From Gary Oberbrunner:
 
   - Fix the ability to import modules in the site_scons directory from

@@ -159,12 +159,15 @@ def tex_emitter(target, source, env):
         content = f.get_contents()
         if tableofcontents_re.search(content):
             target.append(base + '.toc')
+            env.Precious(base + '.toc')
         if makeindex_re.search(content):
             target.append(base + '.ilg')
             target.append(base + '.ind')
             target.append(base + '.idx')
+            env.Precious(base + '.idx')
         if bibliography_re.search(content):
             target.append(base + '.bbl')
+            env.Precious(base + '.bbl')
             target.append(base + '.blg')
 
     # read log file to get all .aux files
@@ -176,6 +179,8 @@ def tex_emitter(target, source, env):
         aux_files = filter(lambda f, b=base_nodir+'.aux': f != b, aux_files)
         aux_files = map(lambda f, d=dir: d+os.sep+f, aux_files)
         target.extend(aux_files)
+        for a in aux_files:
+            env.Precious( a )
 
     return (target, source)
 
