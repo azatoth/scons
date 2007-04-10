@@ -184,7 +184,7 @@ complete external environment:
 
 .ES
 import os
-env = Environment(ENV = os.environ['PATH'])
+env = Environment(ENV = os.environ)
 .EE
 
 This comes at the expense of making your build
@@ -3260,13 +3260,6 @@ be cached whenever the
 method has been activated.
 The specified targets may be a list
 or an individual target.
-Multiple calls to
-.BR NoCache ()
-are legal,
-and prevent each specified target
-from being removed by calls to the
-.B -c
-option.
 
 Multiple files should be specified
 either as separate arguments to the

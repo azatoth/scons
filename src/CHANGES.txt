@@ -10,9 +10,17 @@
 
 RELEASE 0.96.96 - XXX
 
+  From Joe Bloggs:
+
+  - Man page fix:  remove cut-and-paste sentence in NoCache() description.
+
   From Dmitry Grigorenko and Gary Oberbrunner:
 
   - Use the Intel C++ compiler, not $CC, to link C++ source.
+
+  From Helmut Grohne:
+
+  - Fix the man page example of propagating a user's external environment.
 
   From Steven Knight:
 
