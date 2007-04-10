@@ -70,6 +70,11 @@ RELEASE 0.96.96 - XXX
 
   - Handle spaces in the build target name in Visual Studio project files.
 
+  From Rob Managan:
+
+  - Re-run LaTeX after BibTeX has been re-run in response to a changed
+    .bib file.
+
   From Joel B. Mohler:
 
   - Make additional TeX auxiliary files (.toc, .idx and .bbl files)
