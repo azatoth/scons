@@ -31,16 +31,32 @@ in the children (once in the sources and once in the depends list).
 
 import TestSCons
 
+_python_ = TestSCons._python_
+
 test = TestSCons.TestSCons()
+
+test.write('cat.py', """\
+import sys
+fp = open(sys.argv[1], 'wb')
+for fname in sys.argv[2:]:
+    fp.write(open(fname, 'rb').read())
+fp.close()
+""")
+
+test.write('sleep.py', """\
+import sys
+import time
+time.sleep(int(sys.argv[1]))
+""")
 
 test.write('SConstruct', """
 # Test case for SCons issue #1608
 # Create a file "foo.in" in the current directory before running scons.
 env = Environment()
-env.Command('foo.out', ['foo.in'], 'cat $SOURCE > $TARGET && sleep 3')
-env.Command('foobar', ['foo.out'], 'cat $SOURCES > $TARGET')
+env.Command('foo.out', ['foo.in'], '%(_python_)s cat.py $TARGET $SOURCE && %(_python_)s sleep.py 3')
+env.Command('foobar', ['foo.out'], '%(_python_)s cat.py $TARGET $SOURCES')
 env.Depends('foobar', 'foo.out')
-""")
+""" % locals())
 
 test.write('foo.in', "foo.in\n")
 
