@@ -114,7 +114,7 @@
     found in the local build tree,
     &SCons; will search first for
     a <filename>/usr/repository1/hello.c</filename> file
-    and then for a <filename>/usr/repository1/hello.c</filename> file
+    and then for a <filename>/usr/repository2/hello.c</filename> file
     to use in its place.
 
     </para>
