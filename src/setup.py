@@ -29,7 +29,7 @@ import stat
 import string
 import sys
 
-Version = "0.96.95"
+Version = "0.96.96"
 
 man_pages = [
     'scons.1',

@@ -8,7 +8,9 @@
 
 
 
-RELEASE 0.96.96 - XXX
+RELEASE 0.96.96 - Thu, 12 Apr 2007 12:36:25 -0500
+
+  NOTE:  This is (Yet) a(nother) pre-release of 0.97 for testing purposes.
 
   From Joe Bloggs:
 
