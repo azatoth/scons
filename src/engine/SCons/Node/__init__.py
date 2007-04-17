@@ -44,7 +44,7 @@ be able to depend on any other type of "thing."
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-
+import SCons.compat
 
 import copy
 import string
@@ -52,6 +52,7 @@ import UserList
 
 from SCons.Debug import logInstanceCreation
 import SCons.Executor
+import SCons.Memoize
 import SCons.SConsign
 import SCons.Util
 
@@ -121,7 +122,6 @@ class NodeInfoBase:
             if hasattr(self, f):
                 delattr(self, f)
                 func = getattr(node, 'get_' + f)
-                x = func()
                 setattr(self, f, func())
     def merge(self, other):
         for key, val in other.__dict__.items():
@@ -181,6 +181,8 @@ class Node:
     if SCons.Memoize.use_memoizer:
         __metaclass__ = SCons.Memoize.Memoized_Metaclass
 
+    memoizer_counters = []
+
     class Attrs:
         pass
 
@@ -215,22 +217,23 @@ class Node:
         self.state = no_state
         self.precious = None
         self.noclean = 0
+        self.nocache = 0
         self.always_build = None
         self.found_includes = {}
         self.includes = None
         self.attributes = self.Attrs() # Generic place to stick information about the Node.
         self.side_effect = 0 # true iff this node is a side effect
         self.side_effects = [] # the side effects of building this target
-        self.pre_actions = []
-        self.post_actions = []
         self.linked = 0 # is this node linked to the build directory?
+
+        self.clear_memoized_values()
 
         # Let the interface in which the build engine is embedded
         # annotate this Node with its own info (like a description of
         # what line in what file created the node, for example).
         Annotate(self)
 
-    def disambiguate(self):
+    def disambiguate(self, must_exist=None):
         return self
 
     def get_suffix(self):
@@ -238,7 +241,7 @@ class Node:
 
     def get_build_env(self):
         """Fetch the appropriate Environment to build this node.
-        __cacheable__"""
+        """
         return self.get_executor().get_build_env()
 
     def get_build_scanner_path(self, scanner):
@@ -389,12 +392,12 @@ class Node:
             self.binfo = new
             self.store_info(self.binfo)
 
+    #
+    #
+    #
+
     def add_to_waiting_s_e(self, node):
         self.waiting_s_e[node] = 1
-
-    #
-    #
-    #
 
     def add_to_waiting_parents(self, node):
         self.waiting_parents[node] = 1
@@ -414,8 +417,8 @@ class Node:
         """Completely clear a Node of all its cached state (so that it
         can be re-evaluated by interfaces that do continuous integration
         builds).
-        __reset_cache__
         """
+        self.clear_memoized_values()
         self.executor_cleanup()
         self.del_binfo()
         try:
@@ -424,7 +427,9 @@ class Node:
             pass
         self.includes = None
         self.found_includes = {}
-        self.implicit = None
+
+    def clear_memoized_values(self):
+        self._memo = {}
 
     def visited(self):
         """Called just after this node has been visited
@@ -432,8 +437,11 @@ class Node:
         pass
 
     def builder_set(self, builder):
-        "__cache_reset__"
         self.builder = builder
+        try:
+            del self.executor
+        except AttributeError:
+            pass
 
     def has_builder(self):
         """Return whether this Node has a builder or not.
@@ -488,7 +496,6 @@ class Node:
         signatures when they are used as source files to other derived files. For
         example: source with source builders are not derived in this sense,
         and hence should not return true.
-        __cacheable__
         """
         return self.has_builder() or self.side_effect
 
@@ -594,7 +601,7 @@ class Node:
         # Here's where we implement --implicit-cache.
         if implicit_cache and not implicit_deps_changed:
             implicit = self.get_stored_implicit()
-            if implicit:
+            if implicit is not None:
                 factory = build_env.get_factory(self.builder.source_factory)
                 nodes = []
                 for i in implicit:
@@ -684,7 +691,6 @@ class Node:
         node's children's signatures.  We expect that they're
         already built and updated by someone else, if that's
         what's wanted.
-        __cacheable__
         """
         try:
             return self.binfo
@@ -695,7 +701,7 @@ class Node:
 
         executor = self.get_executor()
 
-        sources = executor.process_sources(None, self.ignore)
+        sources = executor.get_unignored_sources(self.ignore)
 
         depends = self.depends
         implicit = self.implicit or []
@@ -768,6 +774,12 @@ class Node:
         # output in Util.py can use it as an index.
         self.noclean = noclean and 1 or 0
 
+    def set_nocache(self, nocache = 1):
+        """Set the Node's nocache value."""
+        # Make sure nocache is an integer so the --debug=stree
+        # output in Util.py can use it as an index.
+        self.nocache = nocache and 1 or 0
+
     def set_always_build(self, always_build = 1):
         """Set the Node's always_build value."""
         self.always_build = always_build
@@ -783,7 +795,6 @@ class Node:
         return self.exists()
 
     def missing(self):
-        """__cacheable__"""
         return not self.is_derived() and \
                not self.linked and \
                not self.rexists()
@@ -851,7 +862,7 @@ class Node:
             self.wkids.append(wkid)
 
     def _children_reset(self):
-        "__cache_reset__"
+        self.clear_memoized_values()
         # We need to let the Executor clear out any calculated
         # build info that it's cached so we can re-calculate it.
         self.executor_cleanup()
@@ -882,11 +893,17 @@ class Node:
         else:
             return self.sources + self.depends + self.implicit
 
+    memoizer_counters.append(SCons.Memoize.CountValue('_children_get'))
+
     def _children_get(self):
-        "__cacheable__"
+        try:
+            return self._memo['children_get']
+        except KeyError:
+            pass
         children = self._all_children_get()
         if self.ignore:
             children = filter(self.do_not_ignore, children)
+        self._memo['children_get'] = children
         return children
 
     def all_children(self, scan=1):
@@ -1167,14 +1184,6 @@ else:
             return str(map(str, self.data))
 del l
 del ul
-
-if SCons.Memoize.use_old_memoization():
-    _Base = Node
-    class Node(SCons.Memoize.Memoizer, _Base):
-        def __init__(self, *args, **kw):
-            apply(_Base.__init__, (self,)+args, kw)
-            SCons.Memoize.Memoizer.__init__(self)
-
 
 def get_children(node, parent): return node.children()
 def ignore_cycle(node, stack): pass

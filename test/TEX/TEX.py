@@ -36,7 +36,7 @@ import string
 import sys
 import TestSCons
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
@@ -59,9 +59,9 @@ sys.exit(0)
 """)
 
 test.write('SConstruct', """
-env = Environment(TEX = r'%s mytex.py', tools=['tex'])
+env = Environment(TEX = r'%(_python_)s mytex.py', tools=['tex'])
 env.DVI(target = 'test.dvi', source = 'test.tex')
-""" % python)
+""" % locals())
 
 test.write('test.tex', r"""This is a test.
 \end
@@ -97,14 +97,14 @@ import os
 ENV = { 'PATH' : os.environ['PATH'] }
 foo = Environment(ENV = ENV)
 tex = foo.Dictionary('TEX')
-bar = Environment(ENV = ENV, TEX = r'%s wrapper.py ' + tex)
+bar = Environment(ENV = ENV, TEX = r'%(_python_)s wrapper.py ' + tex)
 foo.DVI(target = 'foo.dvi', source = 'foo.tex')
 foo.DVI(target = 'foo-latex.dvi', source = 'foo-latex.tex')
 bar.DVI(target = 'bar', source = 'bar.tex')
 bar.DVI(target = 'bar-latex', source = 'bar-latex.tex')
 foo.DVI('rerun.tex')
 foo.DVI('bibtex-test.tex')
-""" % python)
+""" % locals())
 
     tex = r"""
 This is the %s TeX file.
@@ -174,9 +174,17 @@ Run \texttt{latex}, then \texttt{bibtex}, then \texttt{latex} twice again \cite{
 
     test.run(stderr = None)
     output_lines = string.split(test.stdout(), '\n')
-    reruns = filter(lambda x: x == 'latex rerun.tex', output_lines)
-    test.fail_test(len(reruns) != 2)
-    bibtex = filter(lambda x: x == 'bibtex bibtex-test', output_lines)
-    test.fail_test(len(bibtex) != 1)
+
+    reruns = filter(lambda x: string.find(x, 'latex rerun.tex') != -1, output_lines)
+    if len(reruns) != 2:
+        print "Expected 2 latex calls, got %s:" % len(reruns)
+        print string.join(reruns, '\n')
+        test.fail_test()
+
+    bibtex = filter(lambda x: string.find(x, 'bibtex bibtex-test') != -1, output_lines)
+    if len(bibtex) != 1:
+        print "Expected 1 bibtex call, got %s:" % len(bibtex)
+        print string.join(bibtex, '\n')
+        test.fail_test()
 
 test.pass_test()

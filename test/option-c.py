@@ -32,7 +32,7 @@ import os.path
 import sys
 import TestSCons
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
@@ -45,7 +45,7 @@ file.close()
 """)
 
 test.write('SConstruct', """
-B = Builder(action = r'%s build.py $TARGETS $SOURCES')
+B = Builder(action = r'%(_python_)s build.py $TARGETS $SOURCES')
 env = Environment(BUILDERS = { 'B' : B })
 env.B(target = 'foo1.out', source = 'foo1.in')
 env.B(target = 'foo2.out', source = 'foo2.xxx')
@@ -67,7 +67,7 @@ if hasattr(os, 'symlink'):
 env.Command(['touch1.out', 'touch2.out'],
             [],
             [Touch('${TARGETS[0]}'), Touch('${TARGETS[1]}')])
-""" % python)
+""" % locals())
 
 test.write('foo1.in', "foo1.in\n")
 
@@ -177,10 +177,27 @@ test.must_match(test.workpath('foo4.out'), "foo4.in\n")
 test.must_exist(test.workpath('touch1.out'))
 test.must_exist(test.workpath('touch2.out'))
 
+
+expect1 = "scons: Could not remove 'foo1.out': Permission denied\n"
+expect2 = "scons: Could not remove 'foo1.out': The process cannot access the file because it is being used by another process\n"
+
+expect = [
+    test.wrap_stdout(expect1, cleaning=1),
+    test.wrap_stdout(expect2, cleaning=1),
+]
+
 test.writable('.', 0)
 f = open(test.workpath('foo1.out'))
-test.run(arguments = '-c foo1.out',
-         stdout = test.wrap_stdout("scons: Could not remove 'foo1.out': Permission denied\n", cleaning=1))
+test.run(arguments = '-c foo1.out')
+stdout = test.stdout()
+matched = None
+for e in expect:
+    if stdout == e:
+        matched = 1
+        break
+if not matched:
+    print stdout
+    test.fail_test()
 test.must_exist(test.workpath('foo1.out'))
 f.close()
 test.writable('.', 1)
@@ -191,7 +208,7 @@ test.write(['subd', 'foox.in'], "foox.in\n")
 test.write('aux1.x', "aux1.x\n")
 test.write('aux2.x', "aux2.x\n")
 test.write('SConstruct', """
-B = Builder(action = r'%s build.py $TARGETS $SOURCES')
+B = Builder(action = r'%(_python_)s build.py $TARGETS $SOURCES')
 env = Environment(BUILDERS = { 'B' : B }, FOO = 'foo2')
 env.B(target = 'foo1.out', source = 'foo1.in')
 env.B(target = 'foo2.out', source = 'foo2.xxx')
@@ -201,7 +218,7 @@ SConscript('subd/SConscript')
 Clean(foo2_xxx, ['aux1.x'])
 env.Clean(['${FOO}.xxx'], ['aux2.x'])
 Clean('.', ['subd'])
-""" % python)
+""" % locals())
 
 test.write(['subd', 'SConscript'], """
 Clean('.', 'foox.in')
@@ -248,12 +265,12 @@ test.must_not_exist(test.workpath('subdir'))
 
 # Ensure that Set/GetOption('clean') works correctly:
 test.write('SConstruct', """
-B = Builder(action = r'%s build.py $TARGETS $SOURCES')
+B = Builder(action = r'%(_python_)s build.py $TARGETS $SOURCES')
 env = Environment(BUILDERS = { 'B' : B })
 env.B(target = 'foo.out', source = 'foo.in')
 
 assert not GetOption('clean')
-"""%python)
+""" % locals())
 
 test.write('foo.in', '"Foo", I say!\n')
 
@@ -261,36 +278,36 @@ test.run(arguments='foo.out')
 test.must_match(test.workpath('foo.out'), '"Foo", I say!\n')
 
 test.write('SConstruct', """
-B = Builder(action = r'%s build.py $TARGETS $SOURCES')
+B = Builder(action = r'%(_python_)s build.py $TARGETS $SOURCES')
 env = Environment(BUILDERS = { 'B' : B })
 env.B(target = 'foo.out', source = 'foo.in')
 
 assert GetOption('clean')
 SetOption('clean', 0)
 assert GetOption('clean')
-"""%python)
+""" % locals())
 
 test.run(arguments='-c foo.out')
 test.must_not_exist(test.workpath('foo.out'))
 
 test.write('SConstruct', """
-B = Builder(action = r'%s build.py $TARGETS $SOURCES')
+B = Builder(action = r'%(_python_)s build.py $TARGETS $SOURCES')
 env = Environment(BUILDERS = { 'B' : B })
 env.B(target = 'foo.out', source = 'foo.in')
-"""%python)
+""" % locals())
 
 test.run(arguments='foo.out')
 test.must_match(test.workpath('foo.out'), '"Foo", I say!\n')
 
 test.write('SConstruct', """
-B = Builder(action = r'%s build.py $TARGETS $SOURCES')
+B = Builder(action = r'%(_python_)s build.py $TARGETS $SOURCES')
 env = Environment(BUILDERS = { 'B' : B })
 env.B(target = 'foo.out', source = 'foo.in')
 
 assert not GetOption('clean')
 SetOption('clean', 1)
 assert GetOption('clean')
-"""%python)
+""" % locals())
 
 test.run(arguments='foo.out')
 test.must_not_exist(test.workpath('foo.out'))

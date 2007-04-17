@@ -8,105 +8,113 @@ see the document HOWTO/release.txt.
 
 Things to do to release a new X.Y.Z version of SCons:
 
-	START THE NEW SUB-BRANCH FOR SUBRELEASE
+    BEFORE STARTING THE SUB-BRANCH:
+    
+        Update the user's guide on the parent
 
-		aenbr -p scons.0{94} {1}
+            sh bin/docdiff
 
-		aenc -p scons.0.{94}.{1}
+            sh bin/docupdate
 
-                        Call it something like,
-                        "Prepare a new sub-release for XYZ."
-                        Cause = internal_enhancement.
-                        Exempt it from all tests (*_exempt = true).
+    START THE NEW SUB-BRANCH FOR SUBRELEASE
 
-		ae_p scons.0.{94}.{1}
+        aenbr -p scons.0.{94} {1}
 
-		aedb 100
+        aenc -p scons.0.{94}.{1}
 
-		aecd
+            Call it something like,
+            "Prepare a new sub-release for XYZ."
+            Cause = internal_enhancement.
+            Exempt it from all tests (*_exempt = true).
 
-		# Change the hard-coded package version numbers
-		# in the following files.
-		aecp README
-		vi README
+        ae_p scons.0.{94}.{1}
 
-                aecp SConstruct
-                vi SConstruct
+        aedb 100
 
-                aecp rpm/scons.spec.in
-                vi rpm/scons.spec.in
+        aecd
 
-                aecp src/setup.py
-                vi src/setup.py
+        # Change the hard-coded package version numbers
+        # in the following files.
+        aecp README
+        vi README
 
-                aecp src/test_setup.py
-                vi src/test_setup.py
+        aecp SConstruct
+        vi SConstruct
 
-                # Read through and update the README files if necessary
-		[optional] aecp README
-		[optional] vi README
+        aecp rpm/scons.spec.in
+        vi rpm/scons.spec.in
 
-		[optional] aecp src/README.txt
-		[optional] vi src/README.txt
+        aecp src/setup.py
+        vi src/setup.py
 
-                # Prepare src/CHANGES.txt
-		aecp src/CHANGES.txt
-		vi src/CHANGES.txt
+        aecp QMTest/TestSCons.py
+        vi QMTest/TestSCons.py
 
-                        change the release line to reflect
-                        the new subrelease
+        # Read through and update the README files if necessary
+        [optional] aecp README
+        [optional] vi README
 
-		        date -R the new subrelease
+        [optional] aecp src/README.txt
+        [optional] vi src/README.txt
 
-                        add an explanatory not after the subrelease line:
+        # Prepare src/CHANGES.txt
+        aecp src/CHANGES.txt
+        vi src/CHANGES.txt
 
-                                NOTE:  This is a pre-release of 0.{95}
-                                for testing purposes.  When 0.{95} is
-                                released, all these changes will show
-                                up as 0.95 changes.
+            change the release line to reflect
+            the new subrelease
 
-	        # Prepare src/RELEASE.txt
-                aecp src/RELEASE.txt
-                vi src/RELEASE.txt
+            date -R the new subrelease
 
-		        date -R the release only if necessary
+            add an explanatory not after the subrelease line:
 
-		        Read through and edit appropriately.
+                    NOTE:  This is a pre-release of 0.{95}
+                    for testing purposes.  When 0.{95} is
+                    released, all these changes will show
+                    up as 0.95 changes.
 
-		        Can probably keep most of the existing text
+        # Prepare src/RELEASE.txt
+        aecp src/RELEASE.txt
+        vi src/RELEASE.txt
 
-		        Add any new known problems
+            date -R the release only if necessary
 
-	        # Prepare debian/changelog
-                aecp debian/changelog
-                vi debian/changelog
+            Read through and edit appropriately.
 
-                        add the new subrelease
+            Can probably keep most of the existing text
 
-		        date -R the new subrelease
+            Add any new known problems
 
-                # Now build and prepare the release itself.
-                aeb
+        # Prepare debian/changelog
+        aecp debian/changelog
+        vi debian/changelog
 
-		aet -reg
+            add the new subrelease
 
-		aed
+            date -R the new subrelease
 
-		aede
+        # Now build and prepare the release itself.
+        aeb
 
-		etc.
+        aet -reg
 
+        aed
 
+        aede
 
-	Make the relevant packages available for by-hand pickup directly
-	off the web site:
-
-		scp scons-0.{94}.{1}.tar.gz stevenknight@scons.sourceforge.net:/home/groups/s/sc/scons/htdocs
-		scp scons-0.{94}.{1}.zip stevenknight@scons.sourceforge.net:/home/groups/s/sc/scons/htdocs
-
-
-	Test downloading from the web site.
+        etc.
 
 
 
-	Announce to dev@scons.tigris.org.
+    Make the relevant packages available for by-hand pickup directly
+    off the web site:
+
+        scp scons-0.{94}.{1}.tar.gz stevenknight@scons.sourceforge.net:/home/groups/s/sc/scons/htdocs
+        scp scons-0.{94}.{1}.zip stevenknight@scons.sourceforge.net:/home/groups/s/sc/scons/htdocs
+
+
+    Test downloading from the web site.
+
+
+
+    Announce to dev@scons.tigris.org.

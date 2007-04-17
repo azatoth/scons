@@ -39,6 +39,7 @@ import string
 
 import SCons.Action
 import SCons.Builder
+import SCons.Defaults
 import SCons.Tool
 import SCons.Util
 
@@ -118,7 +119,7 @@ def generate(env):
         
 
     # Most of mingw is the same as gcc and friends...
-    gnu_tools = ['gcc', 'g++', 'gnulink', 'ar', 'gas']
+    gnu_tools = ['gcc', 'g++', 'gnulink', 'ar', 'gas', 'm4']
     for tool in gnu_tools:
         SCons.Tool.Tool(tool)(env)
 
@@ -130,7 +131,6 @@ def generate(env):
     env['SHLINKFLAGS'] = SCons.Util.CLVar('$LINKFLAGS -shared')
     env['SHLINKCOM']   = shlib_action
     env.Append(SHLIBEMITTER = [shlib_emitter])
-    env['LINK'] = 'g++'
     env['AS'] = 'as'
 
     env['WIN32DEFPREFIX']        = ''
@@ -146,7 +146,7 @@ def generate(env):
     env['RCINCFLAGS'] = '$( ${_concat(RCINCPREFIX, CPPPATH, RCINCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)'
     env['RCINCPREFIX'] = '--include-dir '
     env['RCINCSUFFIX'] = ''
-    env['RCCOM'] = '$RC $_CPPDEFFLAGS $RCINCFLAGS ${RCINCPREFIX}${SOURCE.dir} $RCFLAGS -i $SOURCE -o $TARGET'
+    env['RCCOM'] = '$RC $_CPPDEFFLAGS $RCINCFLAGS ${RCINCPREFIX} ${SOURCE.dir} $RCFLAGS -i $SOURCE -o $TARGET'
     env['BUILDERS']['RES'] = res_builder
     
     # Some setting from the platform also have to be overridden:

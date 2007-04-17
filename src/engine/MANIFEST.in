@@ -1,7 +1,14 @@
 SCons/__init__.py
 SCons/Action.py
 SCons/Builder.py
+SCons/compat/__init__.py
+SCons/compat/_scons_sets.py
+SCons/compat/_scons_sets15.py
+SCons/compat/_scons_subprocess.py
+SCons/compat/_scons_UserString.py
+SCons/compat/builtins.py
 SCons/Conftest.py
+SCons/cpp.py
 SCons/dblite.py
 SCons/Debug.py
 SCons/Defaults.py
@@ -25,6 +32,7 @@ SCons/Options/EnumOption.py
 SCons/Options/ListOption.py
 SCons/Options/PackageOption.py
 SCons/Options/PathOption.py
+SCons/PathList.py
 SCons/Platform/__init__.py
 SCons/Platform/aix.py
 SCons/Platform/cygwin.py

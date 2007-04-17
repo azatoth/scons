@@ -30,7 +30,7 @@ import sys
 import TestCmd
 import TestSCons
 
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
@@ -55,10 +55,11 @@ test.write(test_config3, """\
 print "-L foo -L lib_dir -isysroot /tmp -arch ppc -arch i386"
 """)
 
-test.write('SConstruct', """
-env = Environment(CPPPATH = [], LIBPATH = [], LIBS = [], CCFLAGS = '')
-env.ParseConfig([r"%(python)s", r"%(test_config1)s", "--libs --cflags"])
-env.ParseConfig([r"%(python)s", r"%(test_config2)s", "--libs --cflags"])
+test.write('SConstruct1', """
+env = Environment(CPPPATH = [], LIBPATH = [], LIBS = [],
+                  CCFLAGS = '-pipe -Wall')
+env.ParseConfig([r'%(_python_)s', r"%(test_config1)s", "--libs --cflags"])
+env.ParseConfig([r'%(_python_)s', r"%(test_config2)s", "--libs --cflags"])
 print env['CPPPATH']
 print env['LIBPATH']
 print map(lambda x: str(x), env['LIBS'])
@@ -66,8 +67,9 @@ print env['CCFLAGS']
 """ % locals())
 
 test.write('SConstruct2', """
-env = Environment(CPPPATH = [], LIBPATH = [], LIBS = [], CCFLAGS = '',
-                  PYTHON = '%(python)s')
+env = Environment(CPPPATH = [], LIBPATH = [], LIBS = [],
+                  CCFLAGS = '-pipe -Wall',
+                  PYTHON = r'%(_python_)s')
 env.ParseConfig(r"$PYTHON %(test_config1)s --libs --cflags")
 env.ParseConfig(r"$PYTHON %(test_config2)s --libs --cflags")
 print env['CPPPATH']
@@ -77,8 +79,9 @@ print env['CCFLAGS']
 """ % locals())
 
 test.write('SConstruct3', """
-env = Environment(CPPPATH = [], LIBPATH = [], LIBS = [], CCFLAGS = '',
-                  PYTHON = '%(python)s')
+env = Environment(CPPPATH = [], LIBPATH = [], LIBS = [],
+                  CCFLAGS = '-pipe -Wall',
+                  PYTHON = r'%(_python_)s')
 env.ParseConfig(r"$PYTHON %(test_config3)s --libs --cflags")
 print env['CPPPATH']
 print env['LIBPATH']
@@ -86,24 +89,24 @@ print map(lambda x: str(x), env['LIBS'])
 print env['CCFLAGS']
 """ % locals())
 
-good_stdout = test.wrap_stdout(read_str = """\
+good_stdout = """\
 ['/usr/include/fum', 'bar']
 ['/usr/fax', 'foo', 'lib_dir']
 ['xxx', 'abc']
-['-X', ('-arch', 'i386')]
-""", build_str = "scons: `.' is up to date.\n")
+['-pipe', '-Wall', '-X', ('-arch', 'i386')]
+"""
 
-stdout3 = test.wrap_stdout(read_str = """\
+stdout3 = """\
 []
 ['foo', 'lib_dir']
 []
-[('-isysroot', '/tmp'), ('-arch', 'ppc'), ('-arch', 'i386')]
-""", build_str = "scons: `.' is up to date.\n")
+['-pipe', '-Wall', ('-isysroot', '/tmp'), ('-arch', 'ppc'), ('-arch', 'i386')]
+"""
 
-test.run(arguments = ".", stdout = good_stdout)
+test.run(arguments = "-q -Q -f SConstruct1 .", stdout = good_stdout)
 
-test.run(arguments = "-f SConstruct2 .", stdout = good_stdout)
+test.run(arguments = "-q -Q -f SConstruct2 .", stdout = good_stdout)
 
-test.run(arguments = "-f SConstruct3 .", stdout = stdout3)
+test.run(arguments = "-q -Q -f SConstruct3 .", stdout = stdout3)
 
 test.pass_test()

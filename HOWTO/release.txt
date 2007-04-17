@@ -8,427 +8,514 @@ then see the document HOWTO/subrelease.txt.
 
 Things to do to release a new X.Y version of SCons:
 
-	Prepare the describe-the-release section for the announcements
+    Prepare the describe-the-release section for the announcements
 
-		summarize changes from src/CHANGES.txt
+        summarize changes from src/CHANGES.txt
 
-		template is below, search for "describe-the-release"
+        template is below, search for "describe-the-release"
 
-		send this out for review while you get the rest of the
-		release ready!
+        send this out for review while you get the rest of the
+        release ready!
 
-	Build and test candidate packages
+    Build and test candidate packages
 
-		test on Linux
+        test on Linux
 
-		test on Windows NT
+        test on Windows NT
 
-			1) tar zxf scons-src-{version}.tar.gz
-			   cd scons-src-{version}
-			   python runtest.py -a
+            1) tar zxf scons-src-{version}.tar.gz
+               cd scons-src-{version}
+               python runtest.py -a
 
-			2) tar zxf scons-{version}.tar.gz
-			   cd scons-{version}
-			   python setup.py install
-			   cd scons-src-{version}
-			   python runtest.py -a -X -x C:\Python20\scons.bat
+            2) tar zxf scons-{version}.tar.gz
+               cd scons-{version}
+               python setup.py install
+               cd scons-src-{version}
+               python runtest.py -a -X -x C:\Python20\scons.bat
 
-			3) scons-{verson}.win32.exe
-			   cd scons-src-{version}
-			   python runtest.py -a -X -x C:\Python20\scons.bat
+            3) scons-{verson}.win32.exe
+               cd scons-src-{version}
+               python runtest.py -a -X -x C:\Python20\scons.bat
 
-			4) mkdir temporary_directory
-			   cd temporary_directory
-			   tar zxf scons-local-{version}.tar.gz
-			   cd scons-src-{version}
-			   python runtest.py -a -x C:\temporary_directory\scons.py
+            4) mkdir temporary_directory
+               cd temporary_directory
+               tar zxf scons-local-{version}.tar.gz
+               cd scons-src-{version}
+               python runtest.py -a -x C:\temporary_directory\scons.py
 
-                Checkin any changes necessary to make everything work
+        Check in any changes necessary to make everything work
 
-	END THE CURRENT DEVELOPMENT BRANCH
+    Update the user's guide
 
-		ae_p scons.0
+        sh bin/docdiff
 
-		aede {96}
+        sh bin/docupdate
 
-		aerpass {96}
+    END THE CURRENT DEVELOPMENT BRANCH
 
-		aeib {96}
+        ae_p scons.0
 
-		aed
+        aede {96}
 
-		aeb
+        aerpass {96}
 
-		aet
+        aeib {96}
 
-		aet -reg
+        aed
 
-		aeipass
+        aeb
 
-	START THE NEW BRANCH FOR RELEASE
+        aet
 
-		aenbr -p scons.0 {97}
+        aet -reg
 
-		aenc -p scons.0.{97}
+        aeipass
 
-                        Call it something like,
-                        "Initialize the new branch for release."
-                        Cause = internal_enhancement.
-                        Exempt it from all tests (*_exempt = true).
+    START THE NEW BRANCH FOR RELEASE
 
-		ae_p scons.0.{97}
+        aenbr -p scons.0 {97}
 
-		aedb 100
+        aenc -p scons.0.{97}
 
-		aecd
+            Call it something like,
+            "Initialize the new branch for release."
+            Cause = internal_enhancement.
+            Exempt it from all tests (*_exempt = true).
 
-		# Change the hard-coded package version numbers
-		# in the following files.
-		aecp README
-		vi README
+        ae_p scons.0.{97}
 
-                aecp SConstruct
-                vi SConstruct
+        aedb 100
 
-                aecp rpm/scons.spec.in
-                vi rpm/scons.spec.in
+        aecd
 
-                aecp src/test_setup.py
-                vi src/test_setup.py
+        # Change the hard-coded package version numbers
+        # in the following files.
+        aecp README
+        vi README
 
-                # Read through and update the README files if necessary
-		[optional] aecp README
-		[optional] vi README
+        aecp SConstruct
+        vi SConstruct
 
-		[optional] aecp src/README.txt
-		[optional] vi src/README.txt
+        aecp rpm/scons.spec.in
+        vi rpm/scons.spec.in
 
-                # Prepare src/CHANGES.txt
-		aecp src/CHANGES.txt
-		vi src/CHANGES.txt
+        aecp QMTest/TestSCons.py
+        vi QMTest/TestSCons.py
 
-		        date -R the latest release
+        # Read through and update the README files if necessary
+        [optional] aecp README
+        [optional] vi README
 
-		        should be current if this has been updated
-                        as each change went in.
+        [optional] aecp src/README.txt
+        [optional] vi src/README.txt
 
-	        # Prepare src/RELEASE.txt
-                aecp src/RELEASE.txt
-                vi src/RELEASE.txt
+        # Prepare src/CHANGES.txt
+        aecp src/CHANGES.txt
+        vi src/CHANGES.txt
 
-		        date -R the latest release
+            date -R the latest release
 
-		        Read through and edit appropriately.
+            should be current if this has been updated
+            as each change went in.
 
-		        Can probably keep most of the existing text
+        # Prepare src/RELEASE.txt
+        aecp src/RELEASE.txt
+        vi src/RELEASE.txt
 
-		        Add any new known problems
+            date -R the latest release
 
-	        # Prepare debian/changelog
-                aecp debian/changelog
-                vi debian/changelog
+            Read through and edit appropriately.
 
-		        date -R the latest release
+            Can probably keep most of the existing text
 
-                # Now build and prepare the release itself.
-                aeb
+            Add any new known problems
 
-		aed
+        # Prepare debian/changelog
+        aecp debian/changelog
+        vi debian/changelog
 
-		aet -reg
+            date -R the latest release
 
-		aede
+        # Now build and prepare the release itself.
+        aeb
 
-		etc.
+        aed
 
+        aet -reg
 
+        aede
 
-	Read through the FAQ for any updates
+        etc.
 
 
 
-	Upload the packages to the SourceForge incoming FTP:
+    Read through the FAQ for any updates
 
-		ftp upload.sourceforge.net
-		anonymous
-		<your email>
-		cd incoming
-		bin
-		put scons-0.{97}-1.noarch.rpm
-		put scons-0.{97}-1.src.rpm
-		put scons-0.{97}.tar.gz
-		put scons-0.{97}.win32.exe
-		put scons-0.{97}.zip
-		put scons-local-0.{97}.tar.gz
-		put scons-local-0.{97}.zip
-		put scons-src-0.{97}.tar.gz
-		put scons-src-0.{97}.zip
-		put scons_0.{97}-1_all.deb
 
-	Create the new release at the SourceForge project page:
 
-		Go to the File Release page
+    Upload the packages to the SourceForge incoming FTP:
 
-		Package Name:  scons
+        ftp upload.sourceforge.net
+        anonymous
+        <your email>
+        cd incoming
+        bin
+        put scons-0.{97}-1.noarch.rpm
+        put scons-0.{97}-1.src.rpm
+        put scons-0.{97}.tar.gz
+        put scons-0.{97}.win32.exe
+        put scons-0.{97}.zip
+        put scons-local-0.{97}.tar.gz
+        put scons-local-0.{97}.zip
+        put scons-src-0.{97}.tar.gz
+        put scons-src-0.{97}.zip
+        put scons_0.{97}-1_all.deb
 
-		=> Add Release
+    Create the new release at the SourceForge project page:
 
-		New release name:  0.{97}
+        Pull down the "Admin" menu and select "File Releases"
 
-		Cut-and-paste or upload the RELEASE.txt file.
+        Package Name:  scons
 
-		Cut-and-paste or upload the CHANGES.txt file.
+        => Add Release
 
-		(If you cut-and-paste, check the "Preserve my
-		pre-formatted text." box!)
+        New release name:  0.{97}
 
-		Click "Submit/Refresh"  (IMPORTANT!)
+        Upload the RELEASE.txt file.
 
-		Check the SCons files you uploaded
+        Upload the CHANGES.txt file.
 
-		Click "Add Files and/or Refresh View"
+        Check the "Preserve my pre-formatted text." box  (IMPORTANT!)
 
-		Edit the file info:
+        Click "Submit/Refresh"  (IMPORTANT!)
 
-			scons-0.{97}-1.noarch.rpm	Any	.rpm
-			scons-0.{97}-1.src.rpm		Any	Source .rpm
-			scons-0.{97}.tar.gz		Any	.gz
-			scons-0.{97}.win32.exe		i386	.exe (32-bit Windows)
-			scons-0.{97}.zip		Any	.zip
-			scons_0.{97}-1_all.deb		Any	.deb
+        Check the SCons files you uploaded
 
-                Click "Update/Refresh" for each file; this must be done
-                one at a time.
+        Click "Add Files and/or Refresh View"
 
-		Check "I'm sure." and click "Send Notice" in the Email
-		Release Notice section.
+        Edit the file info:
 
+            scons-0.{97}-1.noarch.rpm           Any     .rpm
+            scons-0.{97}-1.src.rpm              Any     Source .rpm
+            scons-0.{97}.tar.gz                 Any     .gz
+            scons-0.{97}.win32.exe              i386    .exe (32-bit Windows)
+            scons-0.{97}.zip                    Any     .zip
+            scons_0.{97}-1_all.deb              Any     .deb
 
-		Go to the File Release page
+        Click "Update/Refresh" for each file; this must be done
+        one at a time.
 
-		Package Name:  scons-local
+        Check "I'm sure." and click "Send Notice" in the Email
+        Release Notice section.
 
-		=> Add Release
 
-		New release name:  0.{97}
+        Pull down the "Admin" menu and select "File Releases"
 
-		Cut-and-paste or upload the RELEASE.txt file.
+        Package Name:  scons-local
 
-		Cut-and-paste or upload the CHANGES.txt file.
+        => Add Release
 
-		(If you cut-and-paste, check the "Preserve my
-		pre-formatted text." box!)
+        New release name:  0.{97}
 
-		Click "Submit/Refresh"  (IMPORTANT!)
+        Upload the RELEASE.txt file.
 
-		Check the SCons files you uploaded
+        Upload the CHANGES.txt file.
 
-		Click "Add Files and/or Refresh View"
+        Check the "Preserve my pre-formatted text." box  (IMPORTANT!)
 
-		Edit the file info:
+        Click "Submit/Refresh"  (IMPORTANT!)
 
-			scons-local-0.{97}.tar.gz	Any	.gz
-			scons-local-0.{97}.zip   	Any	.zip
+        Check the SCons files you uploaded
 
-                Click "Update/Refresh" for each file; this must be done
-                one at a time.
+        Click "Add Files and/or Refresh View"
 
-		Check "I'm sure." and click "Send Notice" in the Email
-		Release Notice section.
+        Edit the file info:
 
+            scons-local-0.{97}.tar.gz        Any        .gz
+            scons-local-0.{97}.zip           Any        .zip
 
-		Go to the File Release page
+        Click "Update/Refresh" for each file; this must be done
+        one at a time.
 
-		Package Name:  scons-src
+        Check "I'm sure." and click "Send Notice" in the Email
+        Release Notice section.
 
-		=> Add Release
 
-		New release name:  0.{97}
+        Pull down the "Admin" menu and select "File Releases"
 
-		Cut-and-paste or upload the RELEASE.txt file.
+        Package Name:  scons-src
 
-		Cut-and-paste or upload the CHANGES.txt file.
+        => Add Release
 
-		(If you cut-and-paste, check the "Preserve my
-		pre-formatted text." box!)
+        New release name:  0.{97}
 
-		Click "Submit/Refresh"  (IMPORTANT!)
+        Upload the RELEASE.txt file.
 
-		Check the SCons files you uploaded
+        Upload the CHANGES.txt file.
 
-		Click "Add Files and/or Refresh View"
+        Check the "Preserve my pre-formatted text." box  (IMPORTANT!)
 
-		Edit the file info:
+        Click "Submit/Refresh"  (IMPORTANT!)
 
-			scons-src-0.{97}.tar.gz		Any	.gz
-			scons-src-0.{97}.zip   		Any	.zip
+        Check the SCons files you uploaded
 
-                Click "Update/Refresh" for each file; this must be done
-                one at a time.
+        Click "Add Files and/or Refresh View"
 
-		Check "I'm sure." and click "Send Notice" in the Email
-		Release Notice section.
+        Edit the file info:
 
+            scons-src-0.{97}.tar.gz                Any        .gz
+            scons-src-0.{97}.zip                   Any        .zip
 
-	Hide release 0.{95} at the SourceForge download page:
+        Click "Update/Refresh" for each file; this must be done
+        one at a time.
 
-		Go to the Admin page
+        Check "I'm sure." and click "Send Notice" in the Email
+        Release Notice section.
 
-		=> Edit/Add File Releases
 
-		Package Name:  scons
+    Hide release 0.{95} at the SourceForge download page:
 
-		=> Edit Releases
+        Pull down the "Admin" menu and select "File Releases"
 
-		Release Name: 0.{95}
+        Package Name:  scons
 
-		=> Edit This Release
+        => Edit Releases
 
-		Status: => Hidden
+        Release Name: 0.{95}
 
-		Click Submit/Refresh
+        => Edit This Release
 
+        Status: => Hidden
 
-		Go to the Admin page
+        Click Submit/Refresh
 
-		=> Edit/Add File Releases
 
-		Package Name:  scons-local
+        Pull down the "Admin" menu and select "File Releases"
 
-		=> Edit Releases
+        Package Name:  scons-local
 
-		Release Name: 0.{95}
+        => Edit Releases
 
-		=> Edit This Release
+        Release Name: 0.{95}
 
-		Status: => Hidden
+        => Edit This Release
 
-		Click Submit/Refresh
+        Status: => Hidden
 
+        Click Submit/Refresh
 
-		Go to the Admin page
 
-		=> Edit/Add File Releases
+        Pull down the "Admin" menu and select "File Releases"
 
-		Package Name:  scons-src
+        Package Name:  scons-src
 
-		=> Edit Releases
+        => Edit Releases
 
-		Release Name: 0.{95}
+        Release Name: 0.{95}
 
-		=> Edit This Release
+        => Edit This Release
 
-		Status: => Hidden
+        Status: => Hidden
 
-		Click Submit/Refresh
+        Click Submit/Refresh
 
 
 
-	In the Bugs Tracker, add a Group for the new release 0.{97}
+    Add a new release for 0.{97} in the Issue Tracker at tigris.org:
 
+        Click "Issue Tracker" on the left-hand nav bar
 
+        Click "Configuration options"
 
-	Test downloading from the SourceForge project page
+        Click "Add/edit components"
 
-                You may need to wait a good bit; they seem to update
-                this on half-hour cycles.
+        Under "scons"
+        To the right of "Add ..."
+        Click "Version"
 
+        At the bottom of the list click "Add"
 
+        Fill in the "Version:" box with 0.{97}
 
-	Update the web site:
+        Check "Add this version to *all* components."
 
-		template:  new version number
+        Click the "Add" button
 
-                src/doc.py:  new version number
 
-                src/download.py:  new version number
 
-		src/index.py:  announcement on the home page
+    Update the scons.org web site:
 
-		src/scons-doc.tar.gz:  update
+        svn co http://scons.tigris.org/svn/scons/scons.org
 
-		src/CHANGES.txt:  update
+        cd scons.org
 
-	Test downloading from the web site download page
+            CHANGES.txt:    copy new version from built source tree
 
+            download.php:   new version number
 
+            includes/templates.php:
+                            update $latestrelease
 
-	Add news item to the SourceForge project page
+            includes/versions.php:
+                            update $stablerelease and/or $latestrelease
+                            add new version number to $docversions[],
+                            IMPORTANT:  SHIFT $docversions[] INDEX NUMBERS :-(
 
+            index.php:      announcement on the home page
+                            remove out-of-date announcements
 
+            news-raw.xhtml: add announcement to list (dup from home page)
 
-	Announce to the following mailing lists (template below):
+            RELEASE.txt:    copy new version from built source tree
 
-		scons-announce@lists.sourceforge.net
-		scons-users@lists.sourceforge.net
-		scons-devel@lists.sourceforge.net
+        mkdir doc/0.{97}
 
-			[right away]
+        (cd doc/0.{97} && tar zxf scons-doc-0.{97}.tar.gz)
 
-		python-announce@python.org
+        svn add doc/0.{97}
 
-			[right away, it's moderated and will take
-			some time to get through]
+        svn commit
 
-		linux-announce@news.ornl.gov
+        ssh -l scons manam.pair.com
 
-			[right away, it's moderated and will take
-			some time to get through]
+            cd public_html
 
-		[optional] cons-discuss@gnu.org
+            mkdir new
 
-			[only if it's a really big announcement,
-			I said we wouldn't bug this list]
+            svn co http://scons.tigris.org/svn/scons/scons.org new
 
-		python-list@python.org
+            mv production previous && mv new production
 
-                        [wait until business hours so the announcement
-			hits mailboxes while U.S. workers are active]
+        [point your browser to http://www.scons.org/]
 
-        Notify Gentoo Linux of the update
 
-                For now, we will do this by entering a bug report, and
-                attaching the files in build/gentoo to the report.  Go
-                to:
+    Update the project pages at tigris.org:
 
-                        http://bugs.gentoo.org/
+        svn co http://scons.tigris.org/svn/scons/trunk
 
-                This requires an account (based on your email address)
-                and a certain amount of Bugzilla-based navigation,
-                but nothing that's too difficult.
+        cd trunk
 
-                This is just my best stab at a process that will work
-                for Gentoo.  This process may change if the Gentoo
-                developers come back and want something submitted in
-                some other form.
+            www/project_highlights.html
 
-	Notify www.cmtoday.com/contribute.html
+            www/roadmap.html
 
-                [This guy wants an announcement no more frequently than
-                once a month, so save it for a future release if it's
-                been too soon since the previous one.]
+        svn commit
 
-	Notify freshmeat.net
 
-                [Wait until the morning so the announcement hits the
-                main freshmeat.net page while people in the U.S. are
-                awake and working]
 
 
+    Test downloading from the SourceForge project page
 
-	Checkin another change to prepare for development on this branch.
+        You may need to wait a good bit; they seem to update
+        this on half-hour cycles.
 
-		# Prep the following files to track the changes
-		# made during the next development cycle
-		aecp src/CHANGES.txt src/RELEASE.txt
-		vi src/CHANGES.txt src/RELEASE.txt
 
-		# Optionally, update release numbers in the following:
-		[optional] aecp HOWTO/change.txt
-		[optional] vi HOWTO/change.txt
+    Test downloading from the web site download page
 
-		[optional] aecp HOWTO/release.txt
-		[optional] vi HOWTO/release.txt
+
+
+    Add news item to the SourceForge project page
+
+        Pull down "Project => News"
+
+        Click "Submit"
+
+        Fill in the "Subject:" box
+
+        Cut-and-paste the announcement text into the "Details:" box
+
+        Click "submit"
+
+
+
+    Add news item to the tigris.org project page
+
+        Click "Announcements"
+
+        Click "Add new announcement"
+
+        Double-check the date (probably already set)
+
+        Fill in the "Headline" box
+
+        Fill in the "Body" box (probably short)
+
+        Click "Add new announcement"
+
+
+
+    Announce to the following mailing lists (template below):
+
+        scons-announce@lists.sourceforge.net
+        scons-users@lists.sourceforge.net
+        scons-devel@lists.sourceforge.net
+
+            [right away]
+
+        python-announce@python.org
+
+            [right away, it's moderated and will take
+            some time to get through]
+
+        linux-announce@news.ornl.gov
+
+            [right away, it's moderated and will take
+            some time to get through]
+
+        [optional] cons-discuss@gnu.org
+
+            [only if it's a really big announcement,
+            I said we wouldn't bug this list]
+
+        python-list@python.org
+
+            [wait until business hours so the announcement
+            hits mailboxes while U.S. workers are active]
+
+    Notify Gentoo Linux of the update
+
+        For now, we will do this by entering a bug report, and
+        attaching the files in build/gentoo to the report.  Go
+        to:
+
+            http://bugs.gentoo.org/
+
+        This requires an account (based on your email address)
+        and a certain amount of Bugzilla-based navigation,
+        but nothing that's too difficult.
+
+        This is just my best stab at a process that will work
+        for Gentoo.  This process may change if the Gentoo
+        developers come back and want something submitted in
+        some other form.
+
+    Notify www.cmtoday.com/contribute.html
+
+        [This guy wants an announcement no more frequently than
+        once a month, so save it for a future release if it's
+        been too soon since the previous one.]
+
+    Notify freshmeat.net
+
+        [Wait until the morning so the announcement hits the
+        main freshmeat.net page while people in the U.S. are
+        awake and working]
+
+
+
+    Checkin another change to prepare for development on this branch.
+
+        # Prep the following files to track the changes
+        # made during the next development cycle
+        aecp src/CHANGES.txt src/RELEASE.txt
+        vi src/CHANGES.txt src/RELEASE.txt
+
+        # Optionally, update release numbers in the following:
+        [optional] aecp HOWTO/change.txt
+        [optional] vi HOWTO/change.txt
+
+        [optional] aecp HOWTO/release.txt
+        [optional] vi HOWTO/release.txt
 
 
 
@@ -477,18 +564,18 @@ XXX Template describe-the-release section goes here XXX
 Special thanks to XXX, XXX, and XXX for their contributions to this
 release.
 
-	--SK
+        --SK
 =======================
 Template scons-users + scons-announce announcement:
 
 Version 0.95 of SCons has been released and is available for download
 from the SCons web site:
 
-	http://www.scons.org/
+        http://www.scons.org/
 
 Or through the download link at the SCons project page at SourceForge:
 
-	http://sourceforge.net/projects/scons/
+        http://sourceforge.net/projects/scons/
 
 RPM and Debian packages and a Win32 installer are all available, in
 addition to the traditional .tar.gz and .zip files.
@@ -506,7 +593,7 @@ release.
 
 On behalf of the SCons team,
 
-	--SK
+        --SK
 =======================
 Template python-announce, linux-announce and python-list announcement:
 
@@ -517,11 +604,11 @@ build tool competition in August 2000.
 Version 0.95 of SCons has been released and is available for download
 from the SCons web site:
 
-	http://www.scons.org/
+        http://www.scons.org/
 
 Or through the download link at the SCons project page at SourceForge:
 
-	http://sourceforge.net/projects/scons/
+        http://sourceforge.net/projects/scons/
 
 RPM and Debian packages and a Win32 installer are all available, in
 addition to the traditional .tar.gz and .zip files.
@@ -553,13 +640,13 @@ Distinctive features of SCons include:
 An scons-users mailing list is available for those interested in getting
 started using SCons.  You can subscribe at:
 
-	http://lists.sourceforge.net/lists/listinfo/scons-users
+        http://lists.sourceforge.net/lists/listinfo/scons-users
 
 Alternatively, we invite you to subscribe to the low-volume
 scons-announce mailing list to receive notification when new versions of
 SCons become available:
 
-	http://lists.sourceforge.net/lists/listinfo/scons-announce
+        http://lists.sourceforge.net/lists/listinfo/scons-announce
 
 
 ACKNOWLEDGEMENTS
@@ -569,4 +656,4 @@ release.
 
 On behalf of the SCons team,
 
-	--SK
+        --SK

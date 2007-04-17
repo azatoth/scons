@@ -30,27 +30,23 @@ import UserDict
 import SCons.Scanner
 
 class DummyFS:
-    def __init__(self, search_result=[]):
-        self.search_result = search_result
     def File(self, name):
         return DummyNode(name)
-    def Rfindalldirs(self, pathlist, cwd):
-        return self.search_result + pathlist
 
 class DummyEnvironment(UserDict.UserDict):
     def __init__(self, dict=None, **kw):
         UserDict.UserDict.__init__(self, dict)
         self.data.update(kw)
         self.fs = DummyFS()
-    def subst(self, strSubst):
+    def subst(self, strSubst, target=None, source=None, conv=None):
         if strSubst[0] == '$':
             return self.data[strSubst[1:]]
         return strSubst
-    def subst_list(self, strSubst):
+    def subst_list(self, strSubst, target=None, source=None, conv=None):
         if strSubst[0] == '$':
             return [self.data[strSubst[1:]]]
         return [[strSubst]]
-    def subst_path(self, path, target=None, source=None):
+    def subst_path(self, path, target=None, source=None, conv=None):
         if type(path) != type([]):
             path = [path]
         return map(self.subst, path)
@@ -58,20 +54,24 @@ class DummyEnvironment(UserDict.UserDict):
         return factory or self.fs.File
 
 class DummyNode:
-    def __init__(self, name):
+    def __init__(self, name, search_result=()):
         self.name = name
+        self.search_result = tuple(search_result)
     def rexists(self):
         return 1
     def __str__(self):
         return self.name
+    def Rfindalldirs(self, pathlist):
+        return self.search_result + pathlist
 
 class FindPathDirsTestCase(unittest.TestCase):
     def test_FindPathDirs(self):
         """Test the FindPathDirs callable class"""
 
         env = DummyEnvironment(LIBPATH = [ 'foo' ])
-        env.fs = DummyFS(['xxx'])
+        env.fs = DummyFS()
 
+        dir = DummyNode('dir', ['xxx'])
         fpd = SCons.Scanner.FindPathDirs('LIBPATH')
         result = fpd(env, dir)
         assert str(result) == "('xxx', 'foo')", result
@@ -79,28 +79,36 @@ class FindPathDirsTestCase(unittest.TestCase):
 class ScannerTestCase(unittest.TestCase):
 
     def test_creation(self):
-        """Test creation of Scanner objects through the Scanner() function"""
+        """Test creation of Scanner objects"""
         def func(self):
             pass
-        s = SCons.Scanner.Scanner(func)
+        s = SCons.Scanner.Base(func)
         assert isinstance(s, SCons.Scanner.Base), s
-        s = SCons.Scanner.Scanner({})
-        assert isinstance(s, SCons.Scanner.Selector), s
+        s = SCons.Scanner.Base({})
+        assert isinstance(s, SCons.Scanner.Base), s
 
-        s = SCons.Scanner.Scanner(func, name='fooscan')
+        s = SCons.Scanner.Base(func, name='fooscan')
         assert str(s) == 'fooscan', str(s)
-        s = SCons.Scanner.Scanner({}, name='barscan')
+        s = SCons.Scanner.Base({}, name='barscan')
         assert str(s) == 'barscan', str(s)
 
-        s = SCons.Scanner.Scanner(func, name='fooscan', argument=9)
+        s = SCons.Scanner.Base(func, name='fooscan', argument=9)
         assert str(s) == 'fooscan', str(s)
         assert s.argument == 9, s.argument
-        s = SCons.Scanner.Scanner({}, name='fooscan', argument=888)
+        s = SCons.Scanner.Base({}, name='fooscan', argument=888)
         assert str(s) == 'fooscan', str(s)
         assert s.argument == 888, s.argument
 
         
 class BaseTestCase(unittest.TestCase):
+
+    class skey_node:
+        def __init__(self, key):
+            self.key = key
+        def scanner_key(self):
+            return self.key
+        def rexists(self):
+            return 1
 
     def func(self, filename, env, target, *args):
         self.filename = filename
@@ -128,6 +136,29 @@ class BaseTestCase(unittest.TestCase):
             self.failUnless(self.arg == args[0], "the argument was passed incorrectly")
         else:
             self.failIf(hasattr(self, "arg"), "an argument was given when it shouldn't have been")
+
+    def test___call__dict(self):
+        """Test calling Scanner.Base objects with a dictionary"""
+        called = []
+        def s1func(node, env, path, called=called):
+            called.append('s1func')
+            called.append(node)
+            return []
+        def s2func(node, env, path, called=called):
+            called.append('s2func')
+            called.append(node)
+            return []
+        s1 = SCons.Scanner.Base(s1func)
+        s2 = SCons.Scanner.Base(s2func)
+        selector = SCons.Scanner.Base({'.x' : s1, '.y' : s2})
+        nx = self.skey_node('.x')
+        env = DummyEnvironment()
+        selector(nx, env, [])
+        assert called == ['s1func', nx], called
+        del called[:]
+        ny = self.skey_node('.y')
+        selector(ny, env, [])
+        assert called == ['s2func', ny], called
 
     def test_path(self):
         """Test the Scanner.Base path() method"""
@@ -273,6 +304,23 @@ class BaseTestCase(unittest.TestCase):
         scanner = SCons.Scanner.Base(function = self.func)
         s = scanner.select('.x')
         assert s is scanner, s
+
+        selector = SCons.Scanner.Base({'.x' : 1, '.y' : 2})
+        s = selector.select(self.skey_node('.x'))
+        assert s == 1, s
+        s = selector.select(self.skey_node('.y'))
+        assert s == 2, s
+        s = selector.select(self.skey_node('.z'))
+        assert s is None, s
+
+    def test_add_scanner(self):
+        """Test the Scanner.Base add_scanner() method"""
+        selector = SCons.Scanner.Base({'.x' : 1, '.y' : 2})
+        s = selector.select(self.skey_node('.z'))
+        assert s is None, s
+        selector.add_scanner('.z', 3)
+        s = selector.select(self.skey_node('.z'))
+        assert s == 3, s
 
     def test___str__(self):
         """Test the Scanner.Base __str__() method"""
@@ -470,10 +518,11 @@ class ClassicTestCase(unittest.TestCase):
         ret = s.function(n, env, ('foo3',))
         assert ret == ['def'], ret
 
-        # Verify that overall scan results are cached even if individual
-        # results are de-cached
-        ret = s.function(n, env, ('foo2',))
-        assert ret == ['abc'], 'caching inactive; got: %s'%ret
+        # We no longer cache overall scan results, which would be returned
+        # if individual results are de-cached.  If we ever restore that
+        # functionality, this test goes back here.
+        #ret = s.function(n, env, ('foo2',))
+        #assert ret == ['abc'], 'caching inactive; got: %s'%ret
 
         # Verify that it sorts what it finds.
         n.includes = ['xyz', 'uvw']
@@ -498,8 +547,6 @@ class ClassicCPPTestCase(unittest.TestCase):
         s = SCons.Scanner.ClassicCPP("Test", [], None, "")
 
         def _find_file(filename, paths):
-            if callable(paths):
-                paths = paths()
             return paths[0]+'/'+filename
 
         save = SCons.Node.FS.find_file

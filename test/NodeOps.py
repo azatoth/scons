@@ -44,13 +44,6 @@ _lib = TestSCons._lib
 _obj = TestSCons._obj
 dll_ = TestSCons.dll_
 _dll = TestSCons._dll
-
-if sys.platform == 'win32':
-    fooflags = '/nologo -DFOO'
-    barflags = '/nologo -DBAR'
-else:
-    fooflags = '-DFOO'
-    barflags = '-DBAR'
     
 if os.name == 'posix':
     os.environ['LD_LIBRARY_PATH'] = '.'
@@ -58,6 +51,10 @@ if string.find(sys.platform, 'irix') > -1:
     os.environ['LD_LIBRARYN32_PATH'] = '.'
 
 test = TestSCons.TestSCons()
+
+e = test.Environment()
+fooflags = e['SHCXXFLAGS'] + ' -DFOO'
+barflags = e['SHCXXFLAGS'] + ' -DBAR'
 
 test.subdir('bld', 'src', ['src', 'subsrcdir'])
 
@@ -81,7 +78,7 @@ if %(_E)s:
 foo.SharedLibrary(target = 'foo', source = 'foo%(_obj)s')
 bar.SharedLibrary(target = 'bar', source = 'bar%(_obj)s')
 
-fooMain = foo.Copy(LIBS='foo', LIBPATH='.')
+fooMain = foo.Clone(LIBS='foo', LIBPATH='.')
 foo_obj = fooMain.Object(target='foomain', source='main.c')
 fooMain.Program(target='fooprog', source=foo_obj)
 

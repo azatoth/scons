@@ -1221,7 +1221,6 @@ class NodeTestCase(unittest.TestCase):
 
         assert n.includes is None, n.includes
         assert n.found_includes == {}, n.found_includes
-        assert n.implicit is None, n.implicit
         assert x.cleaned_up
 
     def test_get_subst_proxy(self):

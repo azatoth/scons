@@ -431,57 +431,39 @@ class BuildDirTestCase(unittest.TestCase):
         class LinkSimulator :
             """A class to intercept os.[sym]link() calls and track them."""
 
-            def __init__( self, duplicate ) :
+            def __init__( self, duplicate, link, symlink, copy ) :
                 self.duplicate = duplicate
-                self._reset()
+                self.have = {}
+                self.have['hard'] = link
+                self.have['soft'] = symlink
+                self.have['copy'] = copy
 
-            def _reset( self ) :
-                """Reset the simulator if necessary"""
-                if not self._need_reset() : return # skip if not needed now
-                self.links_to_be_called = self.duplicate
-
-            def _need_reset( self ) :
-                """
-                Determines whether or not the simulator needs to be reset.
-                A reset is necessary if the object is first being initialized,
-                or if all three methods have been tried already.
-                """
-                return (
-                        ( not hasattr( self , "links_to_be_called" ) )
-                        or
-                        (self.links_to_be_called == "")
-                       )
+                self.links_to_be_called = []
+                for link in string.split(self.duplicate, '-'):
+                    if self.have[link]:
+                        self.links_to_be_called.append(link)
 
             def link_fail( self , src , dest ) :
-                self._reset()
-                l = string.split(self.links_to_be_called, "-")
-                next_link = l[0]
-                assert  next_link == "hard", \
+                next_link = self.links_to_be_called.pop(0)
+                assert next_link == "hard", \
                        "Wrong link order: expected %s to be called "\
                        "instead of hard" % next_link
-                self.links_to_be_called = string.join(l[1:], '-')
                 raise OSError( "Simulating hard link creation error." )
 
             def symlink_fail( self , src , dest ) :
-                self._reset()
-                l = string.split(self.links_to_be_called, "-")
-                next_link = l[0]
-                assert  next_link == "soft", \
+                next_link = self.links_to_be_called.pop(0)
+                assert next_link == "soft", \
                        "Wrong link order: expected %s to be called "\
                        "instead of soft" % next_link
-                self.links_to_be_called = string.join(l[1:], '-')
                 raise OSError( "Simulating symlink creation error." )
 
             def copy( self , src , dest ) :
-                self._reset()
-                l = string.split(self.links_to_be_called, "-")
-                next_link = l[0]
-                assert  next_link == "copy", \
+                next_link = self.links_to_be_called.pop(0)
+                assert next_link == "copy", \
                        "Wrong link order: expected %s to be called "\
                        "instead of copy" % next_link
-                self.links_to_be_called = string.join(l[1:], '-')
                 # copy succeeds, but use the real copy
-                self._real_copy(src, dest)
+                self.have['copy'](src, dest)
         # end class LinkSimulator
 
         try:
@@ -491,32 +473,31 @@ class BuildDirTestCase(unittest.TestCase):
             pass
 
         for duplicate in SCons.Node.FS.Valid_Duplicates:
-            simulator = LinkSimulator(duplicate)
-
             # save the real functions for later restoration
-            real_link = None
-            real_symlink = None
             try:
                 real_link = os.link
             except AttributeError:
-                pass
+                real_link = None
             try:
                 real_symlink = os.symlink
             except AttributeError:
-                pass
+                real_symlink = None
             real_copy = shutil.copy2
-            simulator._real_copy = real_copy # the simulator needs the real one
+
+            simulator = LinkSimulator(duplicate, real_link, real_symlink, real_copy)
 
             # override the real functions with our simulation
             os.link = simulator.link_fail
             os.symlink = simulator.symlink_fail
             shutil.copy2 = simulator.copy
-            SCons.Node.FS.set_duplicate(duplicate)
-
-            src_foo = test.workpath('src', 'foo')
-            build_foo = test.workpath('build', 'foo')
 
             try:
+
+                SCons.Node.FS.set_duplicate(duplicate)
+
+                src_foo = test.workpath('src', 'foo')
+                build_foo = test.workpath('build', 'foo')
+
                 test.write(src_foo, 'src/foo\n')
                 os.chmod(src_foo, stat.S_IRUSR)
                 try:
@@ -730,10 +711,9 @@ class FileNodeInfoTestCase(_tempdirTestCase):
 
         ni = SCons.Node.FS.FileNodeInfo(fff)
 
-        import time
-        time.sleep(2)
-
         test.write('fff', "fff\n")
+
+        st = os.stat('fff')
 
         ni.update(fff)
 
@@ -745,16 +725,32 @@ class FileNodeInfoTestCase(_tempdirTestCase):
 
         ni.update(fff)
 
-        mtime = os.path.getmtime('fff')
-        assert mtime == ni.timestamp, (mtime, ni.timestamp)
-        size = os.path.getsize('fff')
-        assert size == ni.size, (size, ni.size)
+        mtime = st[stat.ST_MTIME]
+        assert ni.timestamp == mtime, (ni.timestamp, mtime)
+        size = st[stat.ST_SIZE]
+        assert ni.size == size, (ni.size, size)
 
-        fff.clear()
-        ni.update(fff)
+        import time
+        time.sleep(2)
 
-        assert ni.timestamp == os.path.getmtime('fff'), ni.timestamp
-        assert ni.size == os.path.getsize('fff'), ni.size
+        test.write('fff', "fff longer size, different time stamp\n")
+
+        st = os.stat('fff')
+
+        mtime = st[stat.ST_MTIME]
+        assert ni.timestamp != mtime, (ni.timestamp, mtime)
+        size = st[stat.ST_SIZE]
+        assert ni.size != size, (ni.size, size)
+
+        #fff.clear()
+        #ni.update(fff)
+
+        #st = os.stat('fff')
+
+        #mtime = st[stat.ST_MTIME]
+        #assert ni.timestamp == mtime, (ni.timestamp, mtime)
+        #size = st[stat.ST_SIZE]
+        #assert ni.size == size, (ni.size, size)
 
 class FileBuildInfoTestCase(_tempdirTestCase):
     def test___init__(self):
@@ -1228,12 +1224,9 @@ class FSTestCase(_tempdirTestCase):
 
         # test Entry.get_contents()
         e = fs.Entry('does_not_exist')
-        exc_caught = 0
-        try:
-            e.get_contents()
-        except AttributeError:
-            exc_caught = 1
-        assert exc_caught, "Should have caught an AttributError"
+        c = e.get_contents()
+        assert c == "", c
+        assert e.__class__ == SCons.Node.FS.Entry
 
         test.write("file", "file\n")
         try:
@@ -1254,7 +1247,7 @@ class FSTestCase(_tempdirTestCase):
             os.symlink('nonexistent', test.workpath('dangling_symlink'))
             e = fs.Entry('dangling_symlink')
             c = e.get_contents()
-            assert e.__class__ == SCons.Node.FS.Entry
+            assert e.__class__ == SCons.Node.FS.Entry, e.__class__
             assert c == "", c
 
         test.write("tstamp", "tstamp\n")
@@ -1278,18 +1271,18 @@ class FSTestCase(_tempdirTestCase):
         assert t == 0, "expected 0, got %s" % str(t)
 
         test.subdir('tdir2')
-        d = fs.Dir('tdir2')
         f1 = test.workpath('tdir2', 'file1')
         f2 = test.workpath('tdir2', 'file2')
         test.write(f1, 'file1\n')
         test.write(f2, 'file2\n')
-        fs.File(f1)
-        fs.File(f2)
         current_time = float(int(time.time() / 2) * 2)
         t1 = current_time - 4.0
         t2 = current_time - 2.0
         os.utime(f1, (t1 - 2.0, t1))
         os.utime(f2, (t2 - 2.0, t2))
+        d = fs.Dir('tdir2')
+        fs.File(f1)
+        fs.File(f2)
         t = d.get_timestamp()
         assert t == t2, "expected %f, got %f" % (t2, t)
 
@@ -1478,7 +1471,22 @@ class FSTestCase(_tempdirTestCase):
                 d1_d2_f,        d3_d4_f,        '../../d3/d4/f',
         ]
 
-        d1.rel_path(d3)
+        if sys.platform in ('win32',):
+            x_d1        = fs.Dir(r'X:\d1')
+            x_d1_d2     = x_d1.Dir('d2')
+            y_d1        = fs.Dir(r'Y:\d1')
+            y_d1_d2     = y_d1.Dir('d2')
+            y_d2        = fs.Dir(r'Y:\d2')
+
+            win32_cases = [
+                x_d1,           x_d1,           '.',
+                x_d1,           x_d1_d2,        'd2',
+                x_d1,           y_d1,           r'Y:\d1',
+                x_d1,           y_d1_d2,        r'Y:\d1\d2',
+                x_d1,           y_d2,           r'Y:\d2',
+            ]
+
+            cases.extend(win32_cases)
 
         failed = 0
         while cases:
@@ -1506,6 +1514,8 @@ class FSTestCase(_tempdirTestCase):
         p = Proxy(f1)
         f2 = self.fs.Entry(p)
         assert f1 is f2, (f1, f2)
+
+
 
 class DirTestCase(_tempdirTestCase):
 
@@ -1844,12 +1854,8 @@ class EntryTestCase(_tempdirTestCase):
         assert e3f.__class__ is SCons.Node.FS.File, e3f.__class__
 
         e3n = fs.Entry('e3n')
-        exc_caught = None
-        try:
-            e3n.get_contents()
-        except AttributeError:
-            exc_caught = 1
-        assert exc_caught, "did not catch expected AttributeError"
+        e3n.get_contents()
+        assert e3n.__class__ is SCons.Node.FS.Entry, e3n.__class__
 
         test.subdir('e4d')
         test.write('e4f', "e4f\n")
@@ -2106,25 +2112,25 @@ class RepositoryTestCase(_tempdirTestCase):
         rep2_sub_d1 = fs.Dir(test.workpath('rep2', 'sub', 'd1'))
         rep3_sub_d1 = fs.Dir(test.workpath('rep3', 'sub', 'd1'))
 
-        r = fs.Rfindalldirs(d1, fs.Top)
+        r = fs.Top.Rfindalldirs((d1,))
         assert r == [d1], map(str, r)
 
-        r = fs.Rfindalldirs([d1, d2], fs.Top)
+        r = fs.Top.Rfindalldirs((d1, d2))
         assert r == [d1, d2], map(str, r)
 
-        r = fs.Rfindalldirs('d1', fs.Top)
+        r = fs.Top.Rfindalldirs(('d1',))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1], map(str, r)
 
-        r = fs.Rfindalldirs('#d1', fs.Top)
+        r = fs.Top.Rfindalldirs(('#d1',))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1], map(str, r)
 
-        r = fs.Rfindalldirs('d1', sub)
+        r = sub.Rfindalldirs(('d1',))
         assert r == [sub_d1, rep1_sub_d1, rep2_sub_d1, rep3_sub_d1], map(str, r)
 
-        r = fs.Rfindalldirs('#d1', sub)
+        r = sub.Rfindalldirs(('#d1',))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1], map(str, r)
 
-        r = fs.Rfindalldirs(['d1', d2], fs.Top)
+        r = fs.Top.Rfindalldirs(('d1', d2))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1, d2], map(str, r)
 
     def test_rexists(self):
@@ -2194,6 +2200,7 @@ class find_fileTestCase(unittest.TestCase):
         """Testing find_file function"""
         test = TestCmd(workdir = '')
         test.write('./foo', 'Some file\n')
+        test.write('./foo2', 'Another file\n')
         test.subdir('same')
         test.subdir('bar')
         test.write(['bar', 'on_disk'], 'Another file\n')
@@ -2208,7 +2215,7 @@ class find_fileTestCase(unittest.TestCase):
         node_pseudo = fs.File(test.workpath('pseudo'))
         node_pseudo.set_src_builder(1) # Any non-zero value.
 
-        paths = map(fs.Dir, ['.', 'same', './bar'])
+        paths = tuple(map(fs.Dir, ['.', 'same', './bar']))
         nodes = [SCons.Node.FS.find_file('foo', paths)]
         nodes.append(SCons.Node.FS.find_file('baz', paths))
         nodes.append(SCons.Node.FS.find_file('pseudo', paths))
@@ -2232,19 +2239,18 @@ class find_fileTestCase(unittest.TestCase):
         try:
             sio = StringIO.StringIO()
             sys.stdout = sio
-            SCons.Node.FS.find_file('foo', paths, verbose="xyz")
-            expect = "  xyz: looking for 'foo' in '.' ...\n" + \
-                     "  xyz: ... FOUND 'foo' in '.'\n"
+            SCons.Node.FS.find_file('foo2', paths, verbose="xyz")
+            expect = "  xyz: looking for 'foo2' in '.' ...\n" + \
+                     "  xyz: ... FOUND 'foo2' in '.'\n"
             c = sio.getvalue()
             assert c == expect, c
 
             sio = StringIO.StringIO()
             sys.stdout = sio
-            SCons.Node.FS.find_file('baz', paths, verbose=1)
-            expect = "  find_file: looking for 'baz' in '.' ...\n" + \
-                     "  find_file: looking for 'baz' in 'same' ...\n" + \
-                     "  find_file: looking for 'baz' in 'bar' ...\n" + \
-                     "  find_file: ... FOUND 'baz' in 'bar'\n"
+            SCons.Node.FS.find_file('baz2', paths, verbose=1)
+            expect = "  find_file: looking for 'baz2' in '.' ...\n" + \
+                     "  find_file: looking for 'baz2' in 'same' ...\n" + \
+                     "  find_file: looking for 'baz2' in 'bar' ...\n"
             c = sio.getvalue()
             assert c == expect, c
 
@@ -2723,11 +2729,28 @@ class disambiguateTestCase(unittest.TestCase):
         f = efile.disambiguate()
         assert f.__class__ is fff.__class__, f.__class__
 
+        test.subdir('build')
+        test.subdir(['build', 'bdir'])
+        test.write(['build', 'bfile'], "build/bfile\n")
+
         test.subdir('src')
+        test.write(['src', 'bdir'], "src/bdir\n")
+        test.subdir(['src', 'bfile'])
+
         test.subdir(['src', 'edir'])
         test.write(['src', 'efile'], "src/efile\n")
 
         fs.BuildDir(test.workpath('build'), test.workpath('src'))
+
+        build_bdir = fs.Entry(test.workpath('build/bdir'))
+        d = build_bdir.disambiguate()
+        assert d is build_bdir, d
+        assert d.__class__ is ddd.__class__, d.__class__
+
+        build_bfile = fs.Entry(test.workpath('build/bfile'))
+        f = build_bfile.disambiguate()
+        assert f is build_bfile, f
+        assert f.__class__ is fff.__class__, f.__class__
 
         build_edir = fs.Entry(test.workpath('build/edir'))
         d = build_edir.disambiguate()
@@ -2737,7 +2760,9 @@ class disambiguateTestCase(unittest.TestCase):
         f = build_efile.disambiguate()
         assert f.__class__ is fff.__class__, f.__class__
 
-
+        build_nonexistant = fs.Entry(test.workpath('build/nonexistant'))
+        f = build_nonexistant.disambiguate()
+        assert f.__class__ is fff.__class__, f.__class__
 
 class postprocessTestCase(unittest.TestCase):
     def runTest(self):

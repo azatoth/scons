@@ -70,7 +70,7 @@ if os.environ.has_key("SCONS_LIB_DIR"):
 local = 'scons-local-' + __version__
 if script_dir:
     local = os.path.join(script_dir, local)
-libs.append(local)
+libs.append(os.path.abspath(local))
 
 scons_version = 'scons-%s' % __version__
 
@@ -166,6 +166,8 @@ import whichdb
 import SCons.SConsign
 
 def my_whichdb(filename):
+    if filename[-7:] == ".dblite":
+        return "SCons.dblite"
     try:
         f = open(filename + ".dblite", "rb")
         f.close()
@@ -301,13 +303,13 @@ def printfield(name, entry, prefix=""):
         else:
             print "        " + outact
 
-def printentries(entries):
+def printentries(entries, location):
     if Print_Entries:
         for name in Print_Entries:
             try:
                 entry = entries[name]
             except KeyError:
-                sys.stderr.write("sconsign: no entry `%s' in `%s'\n" % (name, args[0]))
+                sys.stderr.write("sconsign: no entry `%s' in `%s'\n" % (name, location))
             else:
                 printfield(name, entry)
     else:
@@ -377,7 +379,7 @@ class Do_SConsignDB:
 
     def printentries(self, dir, val):
         print '=== ' + dir + ':'
-        printentries(cPickle.loads(val))
+        printentries(cPickle.loads(val), dir)
 
 def Do_SConsignDir(name):
     try:
@@ -395,7 +397,7 @@ def Do_SConsignDir(name):
     except Exception, e:
         sys.stderr.write("sconsign: ignoring invalid .sconsign file `%s': %s\n" % (name, e))
         return
-    printentries(sconsign.entries)
+    printentries(sconsign.entries, args[0])
 
 ##############################################################################
 
@@ -418,7 +420,7 @@ Options:
   -v, --verbose               Verbose, describe each field.
 """
 
-opts, args = getopt.getopt(sys.argv[1:], "abcd:e:f:hirstv",
+opts, args = getopt.getopt(sys.argv[1:], "acd:e:f:hirstv",
                             ['act', 'action',
                              'csig', 'dir=', 'entry=',
                              'format=', 'help', 'implicit',

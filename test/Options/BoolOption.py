@@ -31,9 +31,17 @@ Test the BoolOption canned Option type.
 import os.path
 import string
 
+try:
+    True, False
+except NameError:
+    True = (0 == 0)
+    False = (0 != 0)
+
 import TestSCons
 
 test = TestSCons.TestSCons()
+
+SConstruct_path = test.workpath('SConstruct')
 
 def check(expect):
     result = string.split(test.stdout(), '\n')
@@ -41,7 +49,7 @@ def check(expect):
 
 
 
-test.write('SConstruct', """
+test.write(SConstruct_path, """\
 from SCons.Options import BoolOption
 
 opts = Options(args=ARGUMENTS)
@@ -59,18 +67,21 @@ print env['profile']
 Default(env.Alias('dummy', None))
 """)
 
+
+
 test.run()
-check(['1', '0'])
+check([str(True), str(False)])
 
 test.run(arguments='warnings=0 profile=no profile=true')
-check(['0', '1'])
+check([str(False), str(True)])
 
-test.run(arguments='warnings=irgendwas',
-         stderr = """
+expect_stderr = """
 scons: *** Error converting option: warnings
 Invalid value for boolean option: irgendwas
-File "SConstruct", line 10, in ?
-""", status=2)
+File "%(SConstruct_path)s", line 9, in ?
+""" % locals()
+
+test.run(arguments='warnings=irgendwas', stderr = expect_stderr, status=2)
 
 
 

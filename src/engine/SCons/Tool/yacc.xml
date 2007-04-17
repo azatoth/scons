@@ -27,7 +27,7 @@ to generate a source file.
 <summary>
 The string displayed when generating a source file
 using the parser generator.
-If this is not set, then &cv-YACCCOM; (the command line) is displayed.
+If this is not set, then &cv-link-YACCCOM; (the command line) is displayed.
 
 <example>
 env = Environment(YACCCOMSTR = "Yacc'ing $TARGET from $SOURCES")
@@ -38,7 +38,7 @@ env = Environment(YACCCOMSTR = "Yacc'ing $TARGET from $SOURCES")
 <cvar name="YACCFLAGS">
 <summary>
 General options passed to the parser generator.
-If &cv-YACCFLAGS; contains a <option>-d</option> option,
+If &cv-link-YACCFLAGS; contains a <option>-d</option> option,
 SCons assumes that the call will also create a .h file
 (if the yacc source file ends in a .y suffix)
 or a .hpp file
@@ -77,5 +77,22 @@ it exists to allow you to specify
 what suffix the parser generator will use of its own accord.
 The default value is
 <filename>.hpp</filename>.
+</summary>
+</cvar>
+
+<cvar name="YACCVCGFILESUFFIX">
+<summary>
+The suffix of the file
+containing the VCG grammar automaton definition
+when the
+<option>--graph=</option>
+option is used.
+Note that setting this variable does not cause
+the parser generator to generate a VCG
+file with the specified suffix,
+it exists to allow you to specify
+what suffix the parser generator will use of its own accord.
+The default value is
+<filename>.vcg</filename>.
 </summary>
 </cvar>

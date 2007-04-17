@@ -154,7 +154,7 @@ program using the F<build/foo.c> path name.
       % <userinput>ls src</userinput>
       SConscript  hello.c
       % <userinput>scons -Q</userinput>
-      cc -c -o build/hello.o build/hello.c
+      cc -o build/hello.o -c build/hello.c
       cc -o build/hello build/hello.o
       % <userinput>ls build</userinput>
       SConscript  hello  hello.c  hello.o
@@ -263,7 +263,7 @@ program using the F<build/foo.c> path name.
 
     </para>
 
-  </section> 
+  </section>
 
   <section>
   <title>Telling &SCons; to Not Duplicate Source Files in the Build Directory</title>
@@ -350,7 +350,7 @@ program using the F<build/foo.c> path name.
       % <userinput>ls src</userinput>
       hello.c
       % <userinput>scons -Q</userinput>
-      cc -c -o build/hello.o build/hello.c
+      cc -o build/hello.o -c build/hello.c
       cc -o build/hello build/hello.o
       % <userinput>ls build</userinput>
       hello  hello.c  hello.o
@@ -380,7 +380,7 @@ program using the F<build/foo.c> path name.
       % <userinput>ls src</userinput>
       hello.c
       % <userinput>scons -Q</userinput>
-      cc -c -o build/hello.o src/hello.c
+      cc -o build/hello.o -c src/hello.c
       cc -o build/hello build/hello.o
       % <userinput>ls build</userinput>
       hello  hello.o
@@ -429,7 +429,7 @@ program using the F<build/foo.c> path name.
       % <userinput>ls src</userinput>
       SConscript  hello.c
       % <userinput>scons -Q</userinput>
-      cc -c -o build/hello.o build/hello.c
+      cc -o build/hello.o -c build/hello.c
       cc -o build/hello build/hello.o
       % <userinput>ls build</userinput>
       SConscript  hello  hello.c  hello.o
@@ -451,8 +451,8 @@ program using the F<build/foo.c> path name.
   <title>Why You'd Want to Call &BuildDir; Instead of &SConscript;</title>
 
     <para>
-    
-    XXX
+
+    XXX why call BuildDir() instead of SConscript(build_dir=)
 
     </para>
 

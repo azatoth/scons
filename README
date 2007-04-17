@@ -83,12 +83,11 @@ In this case, your options are:
     --  (Optional.)  Install from a pre-packaged SCons package that
         does not require distutils:
 
-            Red Hat Linux       scons-0.96.92.noarch.rpm
+            Red Hat Linux       scons-0.96.96.noarch.rpm
 
-            Debian GNU/Linux    scons_0.96.92_all.deb
-                                (or use apt-get)
+            Debian GNU/Linux    use apt-get to get the official package
 
-            Windows             scons-0.96.92.win32.exe
+            Windows             scons-0.96.96.win32.exe
 
     --  (Recommended.)  Download the latest distutils package from the
         following URL:
@@ -122,13 +121,21 @@ system, populate the build/scons/ directory by running:
 
         $ scons build/scons
 
-If you don't have SCons version 0.96 or later already installed on your
-system, you can use SCons itself to populate the build/scons/ directory
-with a little more typing.  You must first set the SCONS_LIB_DIR
-environment variable to the local src/engine subdirectory, and then
-execute the local src/script/scons.py script to populate the build/scons/
-subdirectory.  You would do this as follows on a Linux or UNIX system
-(using sh or a derivative like bash or ksh):
+You can also use this version of SCons to populate its own build directory
+by using a supplied bootstrap.py script:
+
+        $ python bootstrap.py build/scons
+
+The bootstrap.py keeps the src/ subdirectory free of compiled Python
+(*.pyc or *.pyo) files by copying the necessary SCons files to a local
+bootstrap/ subdirectory and executing it from there.
+
+You can also execute the local SCons directly from the src/ subdirectory
+by first setting the SCONS_LIB_DIR environment variable to the local
+src/engine subdirectory, and then execute the local src/script/scons.py
+script to populate the build/scons/ subdirectory.  You would do this as
+follows on a Linux or UNIX system (using sh or a derivative like bash
+or ksh):
 
         $ export SCONS_LIB_DIR=`pwd`/src/engine
         $ python src/script/scons.py build/scons
@@ -136,11 +143,11 @@ subdirectory.  You would do this as follows on a Linux or UNIX system
 Or as follows on Windows:
         
         C:\scons\>set SCONS_LIB_DIR=%cd%\src\engine
-        C:\scons\>python src/script/scons.py build/scons
+        C:\scons\>python src\script\scons.py build/scons
 
-Either command will populate the build/scons/ directory with the necessary
-files and directory structure to use the Python-standard setup script
-as follows on Linux or UNIX:
+Any of the above commands will populate the build/scons/ directory with
+the necessary files and directory structure to use the Python-standard
+setup script as follows on Linux or UNIX:
 
         # cd build/scons
         # python setup.py install
@@ -152,7 +159,7 @@ And on Windows:
 
 By default, the above commands will do the following:
 
-    --  Install the version-numbered "scons-0.96.92" and "sconsign-0.96.92"
+    --  Install the version-numbered "scons-0.96.96" and "sconsign-0.96.96"
         scripts in the default system script directory (/usr/bin or
         C:\Python*\Scripts, for example).  This can be disabled by
         specifying the "--no-version-script" option on the command
@@ -165,15 +172,15 @@ By default, the above commands will do the following:
         if you want to install and experiment with a new version before
         making it the default on your system.  On UNIX or Linux systems,
         you can have the "scons" and "sconsign" scripts be hard links or
-        symbolic links to the "scons-0.96.92" and "sconsign-0.96.92" scripts
+        symbolic links to the "scons-0.96.96" and "sconsign-0.96.96" scripts
         by specifying the "--hardlink-scons" or "--symlink-scons"
         options on the command line.
 
-    --  Install "scons-0.96.92.bat" and "scons.bat" wrapper scripts in the
+    --  Install "scons-0.96.96.bat" and "scons.bat" wrapper scripts in the
         Python prefix directory on Windows (C:\Python*, for example).
         This can be disabled by specifying the "--no-install-bat" option
         on the command line.  On UNIX or Linux systems, the
-        "--install-bat" option may be specified to have "scons-0.96.92.bat"
+        "--install-bat" option may be specified to have "scons-0.96.96.bat"
         and "scons.bat" files installed in the default system script
         directory, which is useful if you want to install SCons in a
         shared file system directory that can be used to execute SCons
@@ -181,7 +188,7 @@ By default, the above commands will do the following:
 
     --  Install the SCons build engine (a Python module) in an
         appropriate version-numbered SCons library directory
-        (/usr/lib/scons-0.96.92 or C:\Python*\scons-0.96.92, for example).
+        (/usr/lib/scons-0.96.96 or C:\Python*\scons-0.96.96, for example).
         See below for more options related to installing the build
         engine library.
 
@@ -238,9 +245,14 @@ modules that make up SCons.  The src/script/scons.py wrapper script exists
 mainly to find the appropriate build engine library and then execute it.
 
 In order to make your own change locally and test them by hand, simply
-edit modules in the local src/engine/SCons and set the SCONS_LIB_DIR
-to point to that directory.  Here is one way you can set up environment
-variables to do this on a UNIX or Linux system:
+edit modules in the local src/engine/SCons subdirectory tree and
+either use the local bootstrap.py script:
+
+    $ python bootstrap.py [arguments]
+
+Or set the SCONS_LIB_DIR to point to the src/engine/SCons directory and
+then execute the src/script/scons.py script.  Here is one way you can
+set up environment variables to do this on a UNIX or Linux system:
 
     $ setenv MYSCONS=`pwd`/src
     $ setenv SCONS_LIB_DIR=$MYSCONS
@@ -258,7 +270,7 @@ if the SCons configuration for your project seems to be blocked by
 an SCons bug, and you want to see if a patch you make actually fixes
 that bug):
 
-    $ python $MYSCONS/script/scons.py -C /some/other/location [arguments]
+    $ python bootstrap.py -C /some/other/location [arguments]
 
 Lastly, if you want to be able to just execute your modified version
 of SCons from the command line, you can make it executable and add its
@@ -431,7 +443,7 @@ development platform, Windows users can translate as appropriate)):
 
             $ python runtest.py -a
 
-        Be patient, there are more than 500 test scripts in the
+        Be patient, there are more than 700 test scripts in the
         whole suite.
 
         If any test scripts fail, they will be listed in a summary at
@@ -484,14 +496,22 @@ tests instead of running all of "runtest.py -a".
 BUILDING PACKAGES
 =================
 
-We use SCons (version 0.96 or later) to build its own packages.  If you
+We use SCons (version 0.96.93 later) to build its own packages.  If you
 already have an appropriate version of SCons installed on your system,
 you can build everything by simply running it:
 
         $ scons
 
-If you don't have SCons version 0.96 or later already installed on your
-system, you can build this version of SCons with itself with a little more
+If you don't have SCons version 0.96.93 later already installed on your
+system, you can use the supplied bootstrap.py script:
+
+        $ python bootstrap.py build/scons
+
+The bootstrap.py keeps the src/ subdirectory free of compiled Python
+(*.pyc or *.pyo) files by copying the necessary SCons files to a local
+bootstrap/ subdirectory and executing it from there.
+
+You can also build this version of SCons by hand with a little more
 typing.  On UNIX or Linux (using sh or a derivative like bash or ksh):
 
         $ export SCONS_LIB_DIR=`pwd`/src/engine
@@ -505,18 +525,18 @@ On Windows:
 Depending on the utilities installed on your system, any or all of the
 following packages will be built:
 
-        build/dist/scons-0.96.92-1.noarch.rpm
-        build/dist/scons-0.96.92-1.src.rpm
-        build/dist/scons-0.96.92.linux-i686.tar.gz
-        build/dist/scons-0.96.92.tar.gz
-        build/dist/scons-0.96.92.win32.exe
-        build/dist/scons-0.96.92.zip
-        build/dist/scons-doc-0.96.92.tar.gz
-        build/dist/scons-local-0.96.92.tar.gz
-        build/dist/scons-local-0.96.92.zip
-        build/dist/scons-src-0.96.92.tar.gz
-        build/dist/scons-src-0.96.92.zip
-        build/dist/scons_0.96.92-1_all.deb
+        build/dist/scons-0.96.96-1.noarch.rpm
+        build/dist/scons-0.96.96-1.src.rpm
+        build/dist/scons-0.96.96.linux-i686.tar.gz
+        build/dist/scons-0.96.96.tar.gz
+        build/dist/scons-0.96.96.win32.exe
+        build/dist/scons-0.96.96.zip
+        build/dist/scons-doc-0.96.96.tar.gz
+        build/dist/scons-local-0.96.96.tar.gz
+        build/dist/scons-local-0.96.96.zip
+        build/dist/scons-src-0.96.96.tar.gz
+        build/dist/scons-src-0.96.96.zip
+        build/dist/scons_0.96.96-1_all.deb
 
 The SConstruct file is supposed to be smart enough to avoid trying to
 build packages for which you don't have the proper utilities installed.
@@ -788,6 +808,7 @@ With plenty of help from the SCons Development team:
         Chad Austin
         Charles Crain
         Steve Leblanc
+        Greg Noel
         Gary Oberbrunner
         Anthony Roach
         Greg Spencer

@@ -158,6 +158,13 @@ class Node:
     def postprocess(self):
         self.postprocessed = 1
 
+    def get_executor(self):
+        class Executor:
+            pass
+        e = Executor()
+        e.targets = self.targets
+        return e
+
 class OtherError(Exception):
     pass
 
@@ -370,7 +377,7 @@ class TaskmasterTestCase(unittest.TestCase):
         tm = SCons.Taskmaster.Taskmaster([n1,n2,n3,n4,n5])
         t = tm.next_task()
         assert t.get_target() == n1
-        assert n4.state == SCons.Node.pending, n4.state
+        assert n4.state == SCons.Node.executing, n4.state
         t.executed()
         t.postprocess()
         t = tm.next_task()
@@ -670,16 +677,6 @@ class TaskmasterTestCase(unittest.TestCase):
         assert built_text == "MyTM.stop()"
         assert tm.next_task() is None
 
-    def test_failed(self):
-        """Test when a task has failed
-        """
-        n1 = Node("n1")
-        tm = SCons.Taskmaster.Taskmaster([n1])
-        t = tm.next_task()
-        assert t.targets == [n1], map(str, t.targets)
-        tm.failed(n1)
-        assert t.targets == [n1], map(str, t.targets)
-
     def test_executed(self):
         """Test when a task has been executed
         """
@@ -960,20 +957,6 @@ class TaskmasterTestCase(unittest.TestCase):
             x = traceback.extract_tb(tb)[-1]
             y = traceback.extract_tb(exc_tb)[-1]
             assert x == y, "x = %s, y = %s" % (x, y)
-        else:
-            assert 0, "did not catch expected exception"
-
-        t.exception_set(("exception 4", "XYZZY"))
-        def fw_exc(exc):
-            raise 'exception_forwarded', exc
-        tm.exception_raise = fw_exc
-        try:
-            t.exception_raise()
-        except:
-            exc_type, exc_value = sys.exc_info()[:2]
-            assert exc_type == 'exception_forwarded', exc_type
-            assert exc_value[0] == "exception 4", exc_value[0]
-            assert exc_value[1] == "XYZZY", exc_value[1]
         else:
             assert 0, "did not catch expected exception"
 

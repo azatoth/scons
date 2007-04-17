@@ -69,9 +69,9 @@ expected_vcprojfile = """\
 \t\t\t>
 \t\t\t<Tool
 \t\t\t\tName="VCNMakeTool"
-\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct Test.exe"
-\t\t\t\tReBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct Test.exe"
-\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c Test.exe"
+\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
+\t\t\t\tReBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
+\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c &quot;Test.exe&quot;"
 \t\t\t\tOutput="runfile.exe"
 \t\t\t\tPreprocessorDefinitions=""
 \t\t\t\tIncludeSearchPath=""
@@ -100,7 +100,7 @@ expected_vcprojfile = """\
 
 
 SConscript_contents = """\
-env=Environment(MSVS_VERSION = '8.0')
+env=Environment(tools=['msvs'], MSVS_VERSION = '8.0')
 
 env.MSVSProject(target = 'Test.vcproj',
                 slnguid = '{SLNGUID}',

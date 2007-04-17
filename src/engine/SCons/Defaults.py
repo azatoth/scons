@@ -40,7 +40,6 @@ import os
 import os.path
 import shutil
 import stat
-import string
 import time
 import types
 import sys
@@ -48,8 +47,9 @@ import sys
 import SCons.Action
 import SCons.Builder
 import SCons.Environment
-import SCons.Tool
+import SCons.PathList
 import SCons.Subst
+import SCons.Tool
 
 # A placeholder for a default Environment (for fetching source files
 # from source code management systems and the like).  This must be
@@ -176,28 +176,60 @@ Touch = ActionFactory(touch_func,
                       lambda file: 'Touch("%s")' % file)
 
 # Internal utility functions
-def copyFunc(dest, source, env):
-    """Install a source file into a destination by copying it (and its
-    permission/mode bits)."""
-    shutil.copy2(source, dest)
-    st = os.stat(source)
-    os.chmod(dest, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
+def installFunc(dest, source, env):
+    """Install a source file or directory into a destination by copying,
+    (including copying permission/mode bits)."""
+
+    if os.path.isdir(source):
+        if os.path.exists(dest):
+            if not os.path.isdir(dest):
+                raise SCons.Errors.UserError, "cannot overwrite non-directory `%s' with a directory `%s'" % (str(dest), str(source))
+        else:
+            parent = os.path.split(dest)[0]
+            if not os.path.exists(parent):
+                os.makedirs(parent)
+        shutil.copytree(source, dest)
+    else:
+        shutil.copy2(source, dest)
+        st = os.stat(source)
+        os.chmod(dest, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
+
     return 0
 
+def installStr(dest, source, env):
+    source = str(source)
+    if os.path.isdir(source):
+        type = 'directory'
+    else:
+        type = 'file'
+    return 'Install %s: "%s" as "%s"' % (type, source, dest)
+
 def _concat(prefix, list, suffix, env, f=lambda x: x, target=None, source=None):
-    """Creates a new list from 'list' by first interpolating each
-    element in the list using the 'env' dictionary and then calling f
-    on the list, and finally concatenating 'prefix' and 'suffix' onto
-    each element of the list. A trailing space on 'prefix' or leading
-    space on 'suffix' will cause them to be put into separate list
-    elements rather than being concatenated."""
-    
+    """
+    Creates a new list from 'list' by first interpolating each element
+    in the list using the 'env' dictionary and then calling f on the
+    list, and finally calling _concat_ixes to concatenate 'prefix' and
+    'suffix' onto each element of the list.
+    """
     if not list:
         return list
 
     if SCons.Util.is_List(list):
         list = SCons.Util.flatten(list)
-    list = f(env.subst_path(list, target=target, source=source))
+
+    l = f(SCons.PathList.PathList(list).subst_path(env, target, source))
+    if not l is None:
+        list = l
+
+    return _concat_ixes(prefix, list, suffix, env)
+
+def _concat_ixes(prefix, list, suffix, env):
+    """
+    Creates a new list from 'list' by concatenating the 'prefix' and
+    'suffix' arguments onto each element of the list.  A trailing space
+    on 'prefix' or leading space on 'suffix' will cause them to be put
+    into separate list elements rather than being concatenated.
+    """
 
     result = []
 
@@ -255,8 +287,68 @@ def _stripixes(prefix, list, suffix, stripprefix, stripsuffix, env, c=None):
         return result
     return c(prefix, list, suffix, env, f)
 
-def _defines(prefix, defs, suffix, env, c=_concat):
-    """A wrapper around _concat that turns a list or string
+# This is an alternate _stripixes() function that passes all of our tests
+# (as of 21 February 2007), like the current version above.  It's more
+# straightforward because it does its manipulation directly, not using
+# the funky f call-back function to _concat().  (In this respect it's
+# like the updated _defines() function below.)
+#
+# The most convoluted thing is that it still uses a custom _concat()
+# function if one was placed in the construction environment; there's
+# a specific test for that functionality, but it might be worth getting
+# rid of.
+#
+# Since this work was done while trying to get 0.97 out the door
+# (just prior to 0.96.96), I decided to be cautious and leave the old
+# function as is, to minimize the chance of other corner-case regressions.
+# The updated version is captured here so we can uncomment it and start
+# using it at a less sensitive time in the development cycle (or when
+# it's clearly required to fix something).
+#
+#def _stripixes(prefix, list, suffix, stripprefix, stripsuffix, env, c=None):
+#    """
+#    This is a wrapper around _concat()/_concat_ixes() that checks for the
+#    existence of prefixes or suffixes on list elements and strips them
+#    where it finds them.  This is used by tools (like the GNU linker)
+#    that need to turn something like 'libfoo.a' into '-lfoo'.
+#    """
+#    
+#    if not list:
+#        return list
+#
+#    if not callable(c):
+#        env_c = env['_concat']
+#        if env_c != _concat and callable(env_c):
+#            # There's a custom _concat() method in the construction
+#            # environment, and we've allowed people to set that in
+#            # the past (see test/custom-concat.py), so preserve the
+#            # backwards compatibility.
+#            c = env_c
+#        else:
+#            c = _concat_ixes
+#    
+#    if SCons.Util.is_List(list):
+#        list = SCons.Util.flatten(list)
+#
+#    lsp = len(stripprefix)
+#    lss = len(stripsuffix)
+#    stripped = []
+#    for l in SCons.PathList.PathList(list).subst_path(env, None, None):
+#        if isinstance(l, SCons.Node.FS.File):
+#            stripped.append(l)
+#            continue
+#        if not SCons.Util.is_String(l):
+#            l = str(l)
+#        if l[:lsp] == stripprefix:
+#            l = l[lsp:]
+#        if l[-lss:] == stripsuffix:
+#            l = l[:-lss]
+#        stripped.append(l)
+#
+#    return c(prefix, stripped, suffix, env)
+
+def _defines(prefix, defs, suffix, env, c=_concat_ixes):
+    """A wrapper around _concat_ixes that turns a list or string
     into a list of C preprocessor command-line definitions.
     """
     if SCons.Util.is_List(defs):
@@ -284,7 +376,7 @@ def _defines(prefix, defs, suffix, env, c=_concat):
                 l.append(str(k) + '=' + str(v))
     else:
         l = [str(defs)]
-    return c(prefix, l, suffix, env)
+    return c(prefix, env.subst_path(l), suffix, env)
     
 class NullCmdGenerator:
     """This is a callable class that can be used in place of other
@@ -337,13 +429,14 @@ ConstructionEnvironment = {
     'SCANNERS'      : [],
     'CONFIGUREDIR'  : '#/.sconf_temp',
     'CONFIGURELOG'  : '#/config.log',
-    'INSTALLSTR'    : 'Install file: "$SOURCE" as "$TARGET"',
     'CPPSUFFIXES'   : SCons.Tool.CSuffixes,
     'DSUFFIXES'     : SCons.Tool.DSuffixes,
-    'IDLSUFFIXES'   : SCons.Tool.IDLSuffixes,
-    'LATEXSUFFIXES' : SCons.Tool.LaTeXSuffixes,
     'ENV'           : {},
-    'INSTALL'       : copyFunc,
+    'IDLSUFFIXES'   : SCons.Tool.IDLSuffixes,
+    'INSTALL'       : installFunc,
+    'INSTALLSTR'    : installStr,
+    '_installStr'   : installStr,
+    'LATEXSUFFIXES' : SCons.Tool.LaTeXSuffixes,
     '_concat'       : _concat,
     '_defines'      : _defines,
     '_stripixes'    : _stripixes,

@@ -29,9 +29,14 @@ Verify that we can import and use the contents of Platform and Tool
 modules directly.
 """
 
+import re
+import sys
+
 import TestSCons
 
 test = TestSCons.TestSCons()
+
+SConstruct_path = test.workpath('SConstruct')
 
 platforms = [
     'aix',
@@ -47,10 +52,11 @@ platforms = [
 
 for platform in platforms:
     test.write('SConstruct', """
-env = Environment(platform = '%s')
-import SCons.Platform.%s
-x = SCons.Platform.%s.generate
-""" % (platform, platform, platform))
+print "Platform %(platform)s"
+env = Environment(platform = '%(platform)s')
+import SCons.Platform.%(platform)s
+x = SCons.Platform.%(platform)s.generate
+""" % locals())
     test.run()
 
 tools = [
@@ -137,89 +143,99 @@ tools = [
     'zip',
 ]
 
-# Intel no compiler warning..
-intel_no_compiler_fmt = """
-scons: warning: Failed to find Intel compiler for version='None', abi='%s'
-File "SConstruct", line 1, in ?
-"""
+if sys.platform == 'win32':
+    tools.extend([
+        '386asm',
+        'linkloc',
+    ])
 
-intel_no_compiler_32_warning = intel_no_compiler_fmt % 'ia32'
-intel_no_compiler_64_warning = intel_no_compiler_fmt % 'x86_64'
+# Intel no compiler warning..
+intel_no_compiler_warning = """
+scons: warning: Failed to find Intel compiler for version='None', abi='[^']*'
+""" + TestSCons.file_expr
 
 # Intel no top dir warning.
-intel_no_top_dir_fmt = """
-scons: warning: Can't find Intel compiler top dir for version='None', abi='%s'
-File "SConstruct", line 1, in ?
-"""
-
-intel_no_top_dir_32_warning = intel_no_top_dir_fmt % 'ia32'
-intel_no_top_dir_64_warning = intel_no_top_dir_fmt % 'x86_64'
+intel_no_top_dir_warning = """
+scons: warning: Can't find Intel compiler top dir for version='None', abi='[^']*'
+""" + TestSCons.file_expr
 
 # Intel no license directory warning
-intel_license_warning = """
+intel_license_warning = re.escape("""
 scons: warning: Intel license dir was not found.  Tried using the INTEL_LICENSE_FILE environment variable (), the registry () and the default path (C:\Program Files\Common Files\Intel\Licenses).  Using the default path as a last resort.
-File "SConstruct", line 1, in ?
-"""
+""") + TestSCons.file_expr
 
 intel_warnings = [
-    intel_license_warning,
-    intel_no_compiler_32_warning,
-    intel_no_compiler_32_warning + intel_license_warning,
-    intel_no_compiler_64_warning,
-    intel_no_compiler_64_warning + intel_license_warning,
-    intel_no_top_dir_32_warning,
-    intel_no_top_dir_32_warning + intel_license_warning,
-    intel_no_top_dir_64_warning,
-    intel_no_top_dir_64_warning + intel_license_warning,
+    re.compile(intel_license_warning),
+    re.compile(intel_no_compiler_warning),
+    re.compile(intel_no_compiler_warning + intel_license_warning),
+    re.compile(intel_no_top_dir_warning),
+    re.compile(intel_no_top_dir_warning + intel_license_warning),
 ]
 
 moc = test.where_is('moc')
 if moc:
     import os.path
+
+    qtdir = os.path.dirname(os.path.dirname(moc))
+
     qt_err = """
-scons: warning: Could not detect qt, using moc executable as a hint (QTDIR=%s)
-File "SConstruct", line 1, in ?
-""" % os.path.dirname(os.path.dirname(moc))
+scons: warning: Could not detect qt, using moc executable as a hint (QTDIR=%(qtdir)s)
+""" % locals()
+
 else:
+
     qt_err = """
 scons: warning: Could not detect qt, using empty QTDIR
-File "SConstruct", line 1, in ?
 """
+
+qt_warnings = [ re.compile(qt_err + TestSCons.file_expr) ]
 
 error_output = {
     'icl' : intel_warnings,
     'intelc' : intel_warnings,
-    'qt' : [qt_err],
+    'qt' : qt_warnings,
 }
 
 # An SConstruct for importing Tool names that have illegal characters
 # for Python variable names.
 indirect_import = """\
-env = Environment(tools = ['%s'])
-SCons = __import__('SCons.Tool.%s', globals(), locals(), [])
-m = getattr(SCons.Tool, '%s')
-x = m.generate
+print "Tool %(tool)s (indirect)"
+env = Environment(tools = ['%(tool)s'])
+
+SCons = __import__('SCons.Tool.%(tool)s', globals(), locals(), [])
+m = getattr(SCons.Tool, '%(tool)s')
+env = Environment()
+m.generate(env)
 """
 
 # An SConstruct for importing Tool names "normally."
 direct_import = """\
-env = Environment(tools = ['%s'])
-import SCons.Tool.%s
-x = SCons.Tool.%s.generate
+print "Tool %(tool)s (direct)"
+env = Environment(tools = ['%(tool)s'])
+
+import SCons.Tool.%(tool)s
+env = Environment()
+SCons.Tool.%(tool)s.generate(env)
 """
 
 failures = []
 for tool in tools:
     if tool[0] in '0123456789' or '+' in tool:
-        test.write('SConstruct', indirect_import % (tool, tool, tool))
+        test.write('SConstruct', indirect_import % locals())
     else:
-        test.write('SConstruct', direct_import % (tool, tool, tool))
+        test.write('SConstruct', direct_import % locals())
     test.run(stderr=None)
     stderr = test.stderr()
-    if not stderr in [''] + error_output.get(tool, []):
-        print "Failed importing '%s', stderr:" % tool
-        print stderr
-        failures.append(tool)
+    if stderr:
+        matched = None
+        for expression in error_output.get(tool, []):
+            if expression.match(stderr):
+                matched = 1
+                break
+        if not matched:
+            print "Failed importing '%s', stderr:" % tool
+            print stderr
+            failures.append(tool)
 
 test.fail_test(len(failures))
 

@@ -46,7 +46,7 @@ env['BUILDERS']['Copy2'] = Builder(action=copy2)
 env.Copy2('foo.mid', 'foo.in')
 env.Copy1('foo.out', 'foo.mid')
 
-env2 = env.Copy()
+env2 = env.Clone()
 env2.TargetSignatures('%s')
 env2.Copy2('bar.mid', 'bar.in')
 env2.Copy1('bar.out', 'bar.mid')

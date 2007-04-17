@@ -87,9 +87,9 @@ expected_vcprojfile = """\
 \t\t\tATLMinimizesCRunTimeLibraryUsage="FALSE">
 \t\t\t<Tool
 \t\t\t\tName="VCNMakeTool"
-\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct Test.exe"
-\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c Test.exe"
-\t\t\t\tRebuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct Test.exe"
+\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
+\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c &quot;Test.exe&quot;"
+\t\t\t\tRebuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
 \t\t\t\tOutput="Test.exe"/>
 \t\t</Configuration>
 \t</Configurations>
@@ -146,7 +146,7 @@ expected_vcprojfile = """\
 
 
 SConscript_contents = """\
-env=Environment(MSVS_VERSION = '7.1')
+env=Environment(tools=['msvs'], MSVS_VERSION = '7.1')
 
 testsrc = ['test1.cpp', 'test2.cpp']
 testincs = ['sdk.h']
@@ -208,7 +208,7 @@ os.environ['PYTHON_ROOT'] = 'xyzzy'
 
 test.run(chdir='work1', arguments='Test.vcproj')
 
-python = os.path.join('$(PYTHON_ROOT)', os.path.split(sys.executable)[1])
+python = os.path.join('$(PYTHON_ROOT)', os.path.split(TestSCons.python)[1])
 
 test.must_exist(test.workpath('work1', 'Test.vcproj'))
 vcproj = test.read(['work1', 'Test.vcproj'], 'r')
@@ -262,7 +262,7 @@ The real workspace file is here:
 test.subdir('work3')
 
 test.write(['work3', 'SConstruct'], """\
-env=Environment(MSVS_VERSION = '7.1')
+env=Environment(tools=['msvs'], MSVS_VERSION = '7.1')
 
 testsrc = ['test1.cpp', 'test2.cpp']
 testincs = ['sdk.h']

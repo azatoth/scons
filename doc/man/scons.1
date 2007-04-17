@@ -31,7 +31,7 @@
 .fi
 .RE
 ..
-.TH SCONS 1 "December 2005"
+.TH SCONS 1 "__MONTH_YEAR__"
 .SH NAME
 scons \- a software construction tool
 .SH SYNOPSIS
@@ -91,6 +91,26 @@ specify the target files to be built, and
 rules exist for building common software components (executable
 programs, object files, libraries), so that for most software
 projects, only the target and input files need be specified.
+
+Before reading the
+.I SConstruct
+file,
+.B scons
+adds looks for a dir named
+.I site_scons
+in the dir containing the
+.I SConstruct
+file; it adds that
+.I site_scons
+to sys.path, reads the file
+.IR site_scons/site_init.py ,
+and adds the directory
+.I site_scons/site_tools
+to the default toolpath, if those exist.  See the
+.I --no-site-dir
+and
+.I --site-dir
+options for more details.
 
 .B scons
 reads and executes the SConscript files as Python scripts,
@@ -164,7 +184,7 @@ complete external environment:
 
 .ES
 import os
-env = Environment(ENV = os.environ['PATH'])
+env = Environment(ENV = os.environ)
 .EE
 
 This comes at the expense of making your build
@@ -421,6 +441,24 @@ Will not remove any targets specified by the
 function.
 
 .TP
+.RI --cache-debug= file
+Print debug information about the
+.BR CacheDir ()
+derived-file caching
+to the specified
+.IR file .
+If
+.I file
+is
+.B \-
+(a hyphen),
+the debug information are printed to the standard output.
+The printed messages describe what signature file names are
+being looked for in, retrieved from, or written to the
+.BR CacheDir ()
+directory tree.
+
+.TP
 --cache-disable, --no-cache
 Disable the derived-file caching specified by
 .BR CacheDir ().
@@ -552,8 +590,11 @@ This only works when run under Python 2.1 or later.
 
 .TP
 --debug=dtree
-Print the dependency tree
-after each top-level target is built. This prints out only derived files.
+A synonym for the newer
+.B --tree=derived
+option.
+This will be deprecated in some future release
+and ultimately removed.
 
 .TP
 --debug=explain
@@ -584,10 +625,11 @@ $ scons --debug=includes foo.o
 
 .TP
 --debug=memoizer
-Prints a summary of hits and misses in the Memoizer,
-the internal SCons subsystem for caching
-various values in memory instead of
-recomputing them each time they're needed.
+Prints a summary of hits and misses using the Memoizer,
+an internal subsystem that counts
+how often SCons uses cached values in memory
+instead of recomputing them each time they're needed.
+Only available when using Python 2.2 or later.
 
 .TP
 --debug=memory
@@ -597,19 +639,7 @@ and before and after building targets.
 
 .TP
 --debug=nomemoizer
-Disables use of the Memoizer,
-the internal SCons subsystem for caching
-various values in memory instead of
-recomputing them each time they're needed.
-This provides more accurate counts of the
-underlying function calls in the 
-Python profiler output when using the
-.RI --profile=
-option.
-(When the Memoizer is used,
-the profiler counts all
-memoized functions as being executed
-by the Memoizer's wrapper calls.)
+A deprecated option preserved for backwards compatibility.
 
 .TP
 --debug=objects
@@ -632,7 +662,7 @@ Output looks something like this:
 .ES
 $ scons --debug=presub
 Building myprog.o with action(s):
-  $SHCC $SHCCFLAGS $CPPFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES
+  $SHCC $SHCFLAGS $SHCCFLAGS $CPPFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES
 ...
 .EE
 
@@ -643,23 +673,54 @@ when encountering an otherwise unexplained error.
 
 .TP
 --debug=stree
-Print the dependency tree along with status information.  This is the
-same as the debug=tree option, but additional status information is
-provided for each node in the tree.
+A synonym for the newer
+.B --tree=all,status
+option.
+This will be deprecated in some future release
+and ultimately removed.
 
 .TP
 --debug=time
-Prints various time profiling information: the time spent
-executing each build command, the total build time, the total time spent
-executing build commands, the total time spent executing SConstruct and
-SConscript files, and the total time spent executing SCons itself.
+Prints various time profiling information:
+the time spent executing each individual build command;
+the total build time (time SCons ran from beginning to end);
+the total time spent reading and executing SConscript files;
+the total time spent SCons itself spend running
+(that is, not counting reading and executing SConscript files);
+and both the total time spent executing all build commands
+and the elapsed wall-clock time spent executing those build commands.
+(When
+.B scons
+is executed without the
+.B -j
+option,
+the elapsed wall-clock time will typically
+be slightly longer than the total time spent
+executing all the build commands,
+due to the SCons processing that takes place
+in between executing each command.
+When
+.B scons
+is executed
+.I with
+the
+.B -j
+option,
+and your build configuration allows good parallelization,
+the elapsed wall-clock time should
+be significantly smaller than the
+total time spent executing all the build commands,
+since multiple build commands and
+intervening SCons processing
+should take place in parallel.)
 
 .TP
 --debug=tree
-Print the dependency tree
-after each top-level target is built. This prints out the complete
-dependency tree including implicit dependencies and ignored
-dependencies.
+A synonym for the newer
+.B --tree=all
+option.
+This will be deprecated in some future release
+and ultimately removed.
 
 .TP
 .RI --diskcheck= types
@@ -702,6 +763,24 @@ found in SCCS or RCS, for example,
 or if a file really does exist
 where the SCons configuration expects a directory).
 
+.TP
+.RI --duplicate= ORDER
+There are three ways to duplicate files in a build tree: hard links,
+soft (symbolic) links and copies. The default behaviour of SCons is to 
+prefer hard links to soft links to copies. You can specify different
+behaviours with this option.
+.IR ORDER 
+must be one of 
+.IR hard-soft-copy
+(the default),
+.IR soft-hard-copy ,
+.IR hard-copy ,
+.IR soft-copy
+or
+.IR copy .
+SCons will attempt to duplicate files using
+the mechanisms in the specified order.
+
 .\" .TP
 .\" -e, --environment-overrides
 .\" Variables from the execution environment override construction
@@ -743,15 +822,33 @@ are used, the directories are searched in the order specified.
 
 .TP
 --implicit-cache
-Cache implicit dependencies. This can cause 
+Cache implicit dependencies.
+This causes
 .B scons
-to miss changes in the implicit dependencies in cases where a new implicit
+to use the implicit (scanned) dependencies
+from the last time it was run
+instead of scanning the files for implicit dependencies.
+This can significantly speed up SCons,
+but with the following limitations:
+.IP
+.B scons
+will not detect changes to implicit dependency search paths
+(e.g.
+.BR CPPPATH ", " LIBPATH )
+that would ordinarily
+cause different versions of same-named files to be used.
+.IP
+.B scons
+will miss changes in the implicit dependencies
+in cases where a new implicit
 dependency is added earlier in the implicit dependency search path
-(e.g. CPPPATH) than a current implicit dependency with the same name.
+(e.g.
+.BR CPPPATH ", " LIBPATH )
+than a current implicit dependency with the same name.
 
 .TP
 --implicit-deps-changed
-Force SCons to ignore the cached implicit dependencies. This causes the
+Forces SCons to ignore the cached implicit dependencies. This causes the
 implicit dependencies to be rescanned and recached. This implies
 .BR --implicit-cache .
 
@@ -789,24 +886,6 @@ targets specified on the command line will still be processed.
 .\" average is at least 
 .\" .I N
 .\" (a floating-point number).
-
-.TP
-.RI --duplicate= ORDER
-There are three ways to duplicate files in a build tree: hard links,
-soft (symbolic) links and copies. The default behaviour of SCons is to 
-prefer hard links to soft links to copies. You can specify different
-behaviours with this option.
-.IR ORDER 
-must be one of 
-.IR hard-soft-copy
-(the default),
-.IR soft-hard-copy ,
-.IR hard-copy ,
-.IR soft-copy
-or
-.IR copy .
-SCons will attempt to duplicate files using
-the mechanisms in the specified order.
 
 .\"
 .\" .TP
@@ -856,6 +935,18 @@ no matter how old the file is.
 -n, --just-print, --dry-run, --recon
 No execute.  Print the commands that would be executed to build
 any out-of-date target files, but do not execute the commands.
+
+.TP 
+.RI --no-site-dir
+Prevents the automatic addition of the standard
+.I site_scons
+dir to
+.IR sys.path .
+Also prevents loading the
+.I site_scons/site_init.py
+module if it exists, and prevents adding
+.I site_scons/site_tools
+to the toolpath.
 
 .\" .TP
 .\" .RI -o " file" ", --old-file=" file ", --assume-old=" file
@@ -932,6 +1023,18 @@ Also suppresses SCons status messages.
 Ignored for compatibility with GNU 
 .BR make .
 
+.TP 
+.RI --site-dir= dir
+Uses the named dir as the site dir rather than the default
+.I site_scons
+dir.  This dir will get prepended to
+.IR sys.path ,
+the module
+.IR dir /site_init.py
+will get loaded if it exists, and
+.IR dir /site_tools
+will get added to the default toolpath.
+
 .TP
 -t, --touch
 Ignored for compatibility with GNU
@@ -949,6 +1052,56 @@ evaluates and controls the order in which Nodes are built.
 A file name of
 .B -
 may be used to specify the standard output.
+
+.TP
+.RI -tree= options
+Prints a tree of the dependencies
+after each top-level target is built.
+This prints out some or all of the tree,
+in various formats,
+depending on the
+.I options
+specified:
+
+.TP
+--tree=all
+Print the entire dependency tree
+after each top-level target is built.
+This prints out the complete dependency tree,
+including implicit dependencies and ignored dependencies.
+
+.TP
+--tree=derived
+Restricts the tree output to only derived (target) files,
+not source files.
+
+.TP
+--tree=status
+Prints status information for each displayed node.
+
+.TP
+--tree=prune
+Prunes the tree to avoid repeating dependency information
+for nodes that have already been displayed.
+Any node that has already been displayed
+will have its name printed in
+.BR "[square brackets]" ,
+as an indication that the dependencies
+for that node can be found by searching
+for the relevant output higher up in the tree.
+
+.IP
+Multiple options may be specified,
+separated by commas:
+
+.ES
+# Prints only derived files, with status information:
+scons --tree=derived,status
+
+# Prints all dependencies of target, with status information
+# and pruning dependencies of already-visited Nodes:
+scons --tree=all,prune,status target
+.EE
 
 .TP
 -u, --up, --search-up
@@ -987,6 +1140,10 @@ Print a message containing the working directory before and
 after other processing.
 
 .TP
+--no-print-directory
+Turn off -w, even if it was turned on implicitly.
+
+.TP
 .RI --warn= type ", --warn=no-" type
 Enable or disable warnings.
 .I type
@@ -995,6 +1152,20 @@ specifies the type of warnings to be enabled or disabled:
 .TP
 --warn=all, --warn=no-all
 Enables or disables all warnings.
+
+.TP
+--warn=cache-write-error, --warn=no-cache-write-error
+Enables or disables warnings about errors trying to
+write a copy of a built file to a specified
+.BR CacheDir ().
+These warnings are disabled by default.
+
+.TP
+--warn=corrupt-sconsign, --warn=no-corrupt-sconsign
+Enables or disables warnings about unfamiliar signature data in
+.B .sconsign
+files.
+These warnings are enabled by default.
 
 .TP
 --warn=dependency, --warn=no-dependency
@@ -1007,13 +1178,63 @@ Enables or disables warnings about use of deprecated features.
 These warnings are enabled by default.
 
 .TP
---warn=missing-sconscript, --warn=no-missing-sconscript
+--warn=duplicate-environment, --warn=no-duplicate-environment
 Enables or disables warnings about missing SConscript files.
+
+.TP
+--warn=misleading-keywords, --warn=no-misleading-keywords
+Enables or disables warnings about use of the misspelled keywords
+.B targets
+and
+.B sources
+when calling Builders.
+(Note the last
+.B s
+characters, the correct spellings are
+.B target
+and
+.B source.)
 These warnings are enabled by default.
 
 .TP
---no-print-directory
-Turn off -w, even if it was turned on implicitly.
+--warn=missing-sconscript, --warn=no-missing-sconscript
+Enables or disables warnings about attempts to specify a build
+of a target with two different construction environments
+that use the same action.
+These warnings are enabled by default.
+
+.TP
+--warn=no-md5-module, --warn=no-no-md5-module
+Enables or disables warnings about the version of Python
+not having an MD5 checksum module available.
+These warnings are enabled by default.
+
+.TP
+--warn=no-metaclass-support, --warn=no-no-metaclass-support
+Enables or disables warnings about the version of Python
+not supporting metaclasses when the
+.B --debug=memoizer
+option is used.
+These warnings are enabled by default.
+
+.TP
+--warn=no-parallel-support, --warn=no-no-parallel-support
+Enables or disables warnings about the version of Python
+not being able to support parallel builds when the
+.B -j
+option is used.
+These warnings are enabled by default.
+
+.TP
+--warn=reserved-variable, --warn=no-reserved-variable
+Enables or disables warnings about attempts to set the
+reserved construction variable names
+.BR TARGET ,
+.BR TARGETS ,
+.BR SOURCE
+or
+.BR SOURCES .
+These warnings are disabled by default.
 
 .\" .TP
 .\" .RI --write-filenames= file
@@ -1038,7 +1259,7 @@ Turn off -w, even if it was turned on implicitly.
 .\" Warn when an undefined variable is referenced.
 
 .TP 
-.RI -Y " repository" ", --repository=" repository
+.RI -Y " repository" ", --repository=" repository ", --srcdir=" repository
 Search the specified repository for any input and target
 files not found in the local directory hierarchy.  Multiple
 .B -Y
@@ -1145,14 +1366,14 @@ would override the built-in gcc tool.
 Also note that the toolpath is
 stored in the environment for use
 by later calls to
-.BR Copy ()
+.BR Clone ()
 and
 .BR Tool ()
 methods:
 
 .ES
 base = Environment(toolpath=['custom_path'])
-derived = base.Copy(tools=['custom_tool'])
+derived = base.Clone(tools=['custom_tool'])
 derived.CustomBuilder()
 .EE
 
@@ -1362,6 +1583,28 @@ env.Program(target = 'bar', source = 'bar.c')
 env.Program('bar', source = 'bar.c')
 env.Program(source = 'bar.c')
 env.Program('bar.c')
+.EE
+
+As a convenience, a
+.B srcdir
+keyword argument may be specified
+when calling a Builder.
+When specified,
+all source file strings that are not absolute paths
+will be interpreted relative to the specified
+.BR srcdir .
+The following example will build the
+.B build/prog
+(or
+.B build/prog.exe
+on Windows)
+program from the files
+.B src/f1.c
+and
+.BR src/f2.c :
+
+.ES
+env.Program('build/prog', ['f1.c', 'f2.c'], srcdir='src')
 .EE
 
 It is possible to override or add construction variables when calling a
@@ -1712,6 +1955,24 @@ the specified
 See the section "Action Objects,"
 below, for a complete explanation of the arguments and behavior.
 
+Note that the 
+.BR env.Action ()
+form of the invocation will expand
+construction variables in any arguments strings,
+including the
+.I action
+argument,
+at the time it is called
+using the construction variables in the
+.B env
+construction environment through which
+.BR env.Action ()
+was called.
+The
+.BR Action ()
+form delays all variable expansion
+until the Action object is actually used.
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
 .RI AddPostAction( target ", " action )
@@ -1776,6 +2037,41 @@ env.Alias('install', ['/usr/local/bin', '/usr/local/lib'])
 env.Alias('install', ['/usr/local/man'])
 
 env.Alias('update', ['file1', 'file2'], "update_database $SOURCES")
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI AllowSubstExceptions([ exception ", ...])"
+Specifies the exceptions that will be allowed
+when expanding construction variables.
+By default,
+any construction variable expansions that generate a
+.B NameError
+or
+.BR IndexError
+exception will expand to a
+.B ''
+(a null string) and not cause scons to fail.
+All exceptions not in the specified list
+will generate an error message
+and terminate processing.
+
+If
+.B AllowSubstExceptions
+is called multiple times,
+each call completely overwrites the previous list
+of allowed exceptions.
+Example:
+
+.ES
+# Requires that all construction variable names exist.
+# (You may wish to do this if you want to enforce strictly
+# that all construction variables must be defined before use.)
+AllowSubstExceptions()
+
+# Also allow a string containing a zero-division expansion
+# like '${1 / 0}' to evalute to ''.
+AllowSubstExceptions(IndexError, NameError, ZeroDivisionError)
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1993,6 +2289,24 @@ the specified
 See the section "Builder Objects,"
 below, for a complete explanation of the arguments and behavior.
 
+Note that the 
+.BR env.Builder ()
+form of the invocation will expand
+construction variables in any arguments strings,
+including the
+.I action
+argument,
+at the time it is called
+using the construction variables in the
+.B env
+construction environment through which
+.BR env.Builder ()
+was called.
+The
+.BR Builder ()
+form delays all variable expansion
+until after the Builder object is actually called.
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
 .RI CacheDir( cache_dir )
@@ -2073,6 +2387,12 @@ This is useful to generate build logs
 that are equivalent regardless of whether
 a given derived file has been built in-place
 or retrieved from the cache.
+
+The
+.BR NoCache ()
+method can be used to disable caching of specific files.  This can be
+useful if inputs and/or outputs of some tool are impossible to
+predict or prohibitively large.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
@@ -2182,6 +2502,7 @@ env.Command('baz.out', 'baz.in',
 	     rename ])
 .EE
 
+.IP
 Note that the
 .BR Command ()
 function will usually assume, by default,
@@ -2204,6 +2525,7 @@ env['DISTDIR'] = 'destination/directory'
 env.Command(env.Dir('$DISTDIR')), None, make_distdir)
 .EE
 
+.IP
 (Also note that SCons will usually
 automatically create any directory necessary to hold a target file,
 so you normally don't need to create directories by hand.)
@@ -2220,7 +2542,7 @@ below, for a complete explanation of the arguments and behavior.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI env.Copy([ key = val ", ...])"
+.RI env.Clone([ key = val ", ...])"
 Return a separate copy of a construction environment.
 If there are any keyword arguments specified,
 they are added to the returned copy,
@@ -2228,8 +2550,8 @@ overwriting any existing values
 for the keywords.
 
 .ES
-env2 = env.Copy()
-env3 = env.Copy(CCFLAGS = '-g')
+env2 = env.Clone()
+env3 = env.Clone(CCFLAGS = '-g')
 .EE
 .IP
 Additionally, a list of tools and a toolpath may be specified, as in
@@ -2237,8 +2559,15 @@ the Environment constructor:
 
 .ES
 def MyTool(env): env['FOO'] = 'bar'
-env4 = env.Copy(tools = ['msvc', MyTool])
+env4 = env.Clone(tools = ['msvc', MyTool])
 .EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI env.Copy([ key = val ", ...])"
+A synonym for
+env.Clone().
+(This will probably be officially deprecated some day.)
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
@@ -2406,6 +2735,7 @@ This SConstruct:
 env=Environment()
 print env.Dump('CCCOM')
 .EE
+.IP
 will print:
 .ES
 '$CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES'
@@ -2415,6 +2745,7 @@ will print:
 env=Environment()
 print env.Dump()
 .EE
+.IP
 will print:
 .ES
 { 'AR': 'ar',
@@ -2597,6 +2928,60 @@ foo = env.FindFile('foo', ['dir1', 'dir2'])
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
+.RI FindPathDirs( variable )
+Returns a function
+(actually a callable Python object)
+intended to be used as the
+.B path_function
+of a Scanner object.
+The returned object will look up the specified
+.I variable
+in a construction environment
+and treat the construction variable's value as a list of
+directory paths that should be searched
+(like
+.BR CPPPATH ,
+.BR LIBPATH ,
+etc.).
+
+Note that use of
+.BR FindPathDirs ()
+is generally preferable to
+writing your own
+.B path_function
+for the following reasons:
+1) The returned list will contain all appropriate directories
+found in source trees
+(when
+.BR BuildDir ()
+is used)
+or in code repositories
+(when
+.BR Repository ()
+or the
+.B \-Y
+option are used).
+2) scons will identify expansions of
+.I variable
+that evaluate to the same list of directories as,
+in fact, the same list,
+and avoid re-scanning the directories for files,
+when possible.
+
+Example:
+
+.ES
+def my_scan(node, env, path, arg):
+    # Code to scan file contents goes here...
+    return include_files
+
+scanner = Scanner(name = 'myscanner',
+                  function = my_scan,
+                  path_function = FindPathDirs('MYPATH'))
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
 .RI Flatten( sequence )
 .TP
 .RI env.Flatten( sequence )
@@ -2759,8 +3144,11 @@ Import("*")
 .RI Install( dir ", " source )
 .TP
 .RI env.Install( dir ", " source )
-Installs one or more files in a destination directory.
-The file names remain the same.
+Installs one or more source files or directories
+in a destination directory
+.IR dir .
+The names of the specified source files or directories
+remain the same within the destination directory.
 
 .ES
 env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
@@ -2771,11 +3159,15 @@ env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
 .RI InstallAs( target ", " source )
 .TP
 .RI env.InstallAs( target ", " source )
-Installs one or more files as specific file names,
-allowing changing a file name as part of the
-installation.
-It is an error if the target and source
-list different numbers of files.
+Installs one or more source files or directories
+to specific names,
+allowing changing a file or directory name
+as part of the installation.
+It is an error if the
+.I target
+and
+.I source
+arguments list different numbers of files or directories.
 
 .ES
 env.InstallAs(target = '/usr/local/bin/foo',
@@ -2854,6 +3246,39 @@ env.MergeFlags(['!pkg-config gtk+-2.0 --cflags', '-O3'])
 env.MergeFlags(['-O3',
                '!pkg-config gtk+-2.0 --cflags --libs',
                '!pkg-config libpng12 --cflags --libs'])
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI NoCache( target ", ...)"
+.TP
+.RI env.NoCache( target ", ...)"
+Specifies a list of files which should
+.I not
+be cached whenever the 
+.BR CacheDir ()
+method has been activated.
+The specified targets may be a list
+or an individual target.
+
+Multiple files should be specified
+either as separate arguments to the
+.BR NoCache ()
+method, or as a list.
+.BR NoCache ()
+will also accept the return value of any of the construction environment
+Builder methods.
+
+Calling
+.BR NoCache ()
+on directories and other non-File Node types has no effect because
+only File Nodes are cached.
+
+Examples:
+
+.ES
+NoCache('foo.elf')
+NoCache(env.Program('hello', 'hello.c'))
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -2938,9 +3363,9 @@ for a table of options and construction variables.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI ParseDepends( filename ", [" must_exist ])
+.RI ParseDepends( filename ", [" must_exist ", " only_one ])
 .TP
-.RI env.ParseDepends( filename ", [" must_exist " " only_one ])
+.RI env.ParseDepends( filename ", [" must_exist ", " only_one ])
 Parses the contents of the specified
 .I filename
 as a list of dependencies in the style of
@@ -2955,7 +3380,7 @@ if the specified
 .I filename
 does not exist.
 The optional
-.I must_exit
+.I must_exist
 argument may be set to a non-zero
 value to have
 scons
@@ -3035,6 +3460,7 @@ and added to the following construction variables:
 -mno-cygwin         CCFLAGS, LINKFLAGS
 -mwindows           LINKFLAGS
 -pthread            CCFLAGS, LINKFLAGS
+-std=               CFLAGS
 -Wa,                ASFLAGS, CCFLAGS
 -Wl,-rpath=         RPATH
 -Wl,-R,             RPATH
@@ -3045,6 +3471,7 @@ and added to the following construction variables:
 +                   CCFLAGS, LINKFLAGS
 .EE
 
+.IP
 Any other strings not associated with options
 are assumed to be the names of libraries
 and added to the
@@ -4125,11 +4552,11 @@ env.Tool('opengl', toolpath = ['build/tools'])
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI Value( value )
+.RI Value( value ", [" built_value ])
 .TP
-.RI env.Value( value )
+.RI env.Value( value ", [" built_value ])
 Returns a Node object representing the specified Python value.  Value
-nodes can be used as dependencies of targets.  If the result of
+Nodes can be used as dependencies of targets.  If the result of
 calling
 .BR str( value )
 changes between SCons runs, any targets depending on
@@ -4137,6 +4564,22 @@ changes between SCons runs, any targets depending on
 will be rebuilt.
 (This is true even when using timestamps to decide if
 files are up-to-date.)
+When using timestamp source signatures, Value Nodes'
+timestamps are equal to the system time when the Node is created.
+
+The returned Value Node object has a
+.BR write ()
+method that can be used to "build" a Value Node
+by setting a new value.
+The optional
+.I built_value
+argument can be specified 
+when the Value Node is created
+to indicate the Node should already be considered
+"built."
+There is a corresponding
+.BR read ()
+method that will return the built value of the Node.
 
 .ES
 def create(target, source, env):
@@ -4147,6 +4590,15 @@ prefix = ARGUMENTS.get('prefix', '/usr/local')
 env = Environment()
 env['BUILDERS']['Config'] = Builder(action = create)
 env.Config(target = 'package-config', source = Value(prefix))
+
+def build_value(target, source, env):
+    target[0].write(source[0].get_contents())
+
+output = env.Value('before')
+input = env.Value('after')
+
+env['BUILDERS']['UpdateValue'] = Builder(action = build_value)
+env.UpdateValue(target = Value(output), source = Value(input))
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -4445,11 +4897,11 @@ env = Environment(CC="cc")
 .EE
 
 or when copying a construction environment using the 
-.B Copy 
+.B Clone 
 method:
 
 .ES
-env2 = env.Copy(CC="cl.exe")
+env2 = env.Clone(CC="cl.exe")
 .EE
 
 .SS Configure Contexts
@@ -4963,7 +5415,7 @@ The recommended way to handle an invalid value is
 to raise an exception (see example below).
 .I converter
 is called to convert the value before putting it in the environment, and
-should take a single argument: value.
+should take either a value, or the value and environment, as parameters.
 The
 .I converter
 must return a value,
@@ -5284,10 +5736,15 @@ which verifies that the specified path exists;
 which verifies that the specified path is an existing file;
 .BR PathOption.PathIsDir ,
 which verifies that the specified path is an existing directory;
-and
 .BR PathOption.PathIsDirCreate ,
-which verifies that the specified path is a directory,
-and will create the specified directory if the path does not exist.
+which verifies that the specified path is a directory
+and will create the specified directory if the path does not exist;
+and
+.BR PathOption.PathAccept ,
+which simply accepts the specific path name argument without validation,
+and which is suitable if you want your users
+to be able to specify a directory path that will be
+created as part of the build process, for example.
 You may supply your own
 .I validator
 function,
@@ -5573,6 +6030,7 @@ env.Append(BUILDERS = {'MakeDirectory':MakeDirectoryBuilder})
 env.MakeDirectory('new_directory', [])
 .EE
 
+.IP
 Note that the call to the MakeDirectory Builder
 needs to specify an empty source list
 to make the string represent the builder's target;
@@ -6499,6 +6957,15 @@ ${SOURCE.rsrcpath}   => /usr/repository/src/file.x
 ${SOURCE.rsrcdir}    => /usr/repository/src
 .EE
 
+Note that curly braces braces may also be used
+to enclose arbitrary Python code to be evaluated.
+(In fact, this is how the above modifiers are substituted,
+they are simply attributes of the Python objects
+that represent TARGET, SOURCES, etc.)
+See the section "Python Code Substitution," below,
+for more thorough examples of
+how this can be used.
+
 Lastly, a variable name
 may be a callable Python function
 associated with a
@@ -6594,6 +7061,48 @@ but the command signature added to any target files would be:
 echo Last build occurred  . > $TARGET
 .EE
 
+.SS Python Code Substitution
+
+Any python code within
+.BR "${" - "}"
+pairs gets evaluated by python 'eval', with the python globals set to
+the current environment's set of construction variables.
+So in the following case:
+.ES
+env['COND'] = 0
+env.Command('foo.out', 'foo.in',
+   '''echo ${COND==1 and 'FOO' or 'BAR'} > $TARGET''')
+.EE
+the command executed will be either
+.ES
+echo FOO > foo.out
+.EE
+or
+.ES
+echo BAR > foo.out
+.EE
+according to the current value of env['COND'] when the command is
+executed.  The evaluation occurs when the target is being
+built, not when the SConscript is being read.  So if env['COND'] is changed
+later in the SConscript, the final value will be used.
+
+Here's a more interesting example.  Note that all of COND, FOO, and
+BAR are environment variables, and their values are substituted into
+the final command.  FOO is a list, so its elements are interpolated
+separated by spaces.
+
+.ES
+env=Environment()
+env['COND'] = 0
+env['FOO'] = ['foo1', 'foo2']
+env['BAR'] = 'barbar'
+env.Command('foo.out', 'foo.in',
+    'echo ${COND==1 and FOO or BAR} > $TARGET')
+
+# Will execute this:
+#  echo foo1 foo2 > foo.out
+.EE
+
 SCons uses the following rules when converting construction variables into
 command lines:
 
@@ -6625,16 +7134,23 @@ new file types for implicit dependencies.
 Scanner accepts the following arguments:
 
 .IP function
-A Python function that will process
+This can be either:
+1) a Python function that will process
 the Node (file)
 and return a list of strings (file names)
 representing the implicit
-dependencies found in the contents.
-The function takes three or four arguments:
+dependencies found in the contents;
+or:
+2) a dictionary that maps keys
+(typically the file suffix, but see below for more discussion)
+to other Scanners that should be called.
+
+If the argument is actually a Python function,
+the function must take three or four arguments:
 
     def scanner_function(node, env, path):
 
-    def scanner_function(node, env, path, arg):
+    def scanner_function(node, env, path, arg=None):
 
 The
 .B node
@@ -6713,6 +7229,12 @@ The
 returns a tuple of directories
 that can be searched for files to be returned
 by this Scanner object.
+(Note that the
+.BR FindPathDirs ()
+function can be used to return a ready-made
+.B path_function
+for a given construction variable name,
+instead of having to write your own function from scratch.)
 
 .IP node_class
 The class of Node that should be returned
@@ -7038,6 +7560,17 @@ env['BUILDERS]['PDFBuilder'] = bld
 
 .SS Defining Your Own Scanner Object
 
+The following example shows an extremely simple scanner (the
+.BR kfile_scan ()
+function)
+that doesn't use a search path at all
+and simply returns the
+file names present on any
+.B include
+lines in the scanned file.
+This would implicitly assume that all included
+files live in the top-level directory:
+
 .ES
 import re
 
@@ -7062,6 +7595,72 @@ env.Command('foo', 'foo.k', 'kprocess < $SOURCES > $TARGET')
 bar_in = File('bar.in')
 env.Command('bar', bar_in, 'kprocess $SOURCES > $TARGET')
 bar_in.target_scanner = kscan
+.EE
+
+Here is a similar but more complete example that searches
+a path of directories
+(specified as the
+.B MYPATH
+construction variable)
+for files that actually exist:
+
+.ES
+include_re = re.compile(r'^include\\s+(\\S+)$', re.M)
+
+def my_scan(node, env, path, arg):
+   contents = node.get_contents()
+   includes = include_re.findall(contents)
+   if includes == []:
+        return []
+    results = []
+    for inc in includes:
+        for dir in path:
+            file = dir + os.sep + inc
+            if os.path.exists(file):  
+                results.append(file)
+                break
+    return results
+
+scanner = Scanner(name = 'myscanner',
+                 function = my_scan,
+                 argument = None,
+                 skeys = ['.x'],
+                 path_function = FindPathDirs('MYPATH'),
+                 )
+scanners = Environment().Dictionary('SCANNERS')
+env = Environment(SCANNERS = scanners + [scanner])
+.EE
+
+The
+.BR FindPathDirs ()
+function used in the previous example returns a function
+(actually a callable Python object)
+that will return a list of directories
+specified in the
+.B $MYPATH
+construction variable.
+If you need to customize how the search path is derived,
+you would provide your own
+.B path_function
+argument when creating the Scanner object,
+as follows:
+
+.ES
+# MYPATH is a list of directories to search for files in
+def pf(env, dir, target, source, arg):
+    top_dir = Dir('#').abspath
+    results = []
+    if env.has_key('MYPATH'):
+        for p in env['MYPATH']:
+            results.append(top_dir + os.sep + p)
+    return results
+
+scanner = Scanner(name = 'myscanner',
+                 function = my_scan,
+                 argument = None,
+                 skeys = ['.x'],
+                 path_function = pf,
+                 )
 .EE
 
 .SS Creating a Hierarchical Build

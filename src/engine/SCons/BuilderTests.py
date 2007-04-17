@@ -147,6 +147,8 @@ class Environment:
 class MyAction:
     def __init__(self, action):
         self.action = action
+    def __call__(self, *args, **kw):
+        pass
     def get_executor(self, env, overrides, tlist, slist, executor_kw):
         return ['executor'] + [self.action]
 
@@ -338,6 +340,11 @@ class BuilderTestCase(unittest.TestCase):
             pass
         else:
             raise "Did not catch expected UserError."
+
+        builder = SCons.Builder.Builder(action="foo")
+        target = builder(env, None, source='n22', srcdir='src_dir')[0]
+        p = target.sources[0].path
+        assert p == os.path.join('src_dir', 'n22'), p
 
     def test_mistaken_variables(self):
         """Test keyword arguments that are often mistakes
@@ -575,7 +582,9 @@ class BuilderTestCase(unittest.TestCase):
                 "Unexpected tgt.sources[0] name: %s" % tgt.sources[0].path
 
         b2 = SCons.Builder.Builder(src_suffix = '.2', src_builder = b1)
-        assert b2.src_suffixes(env) == ['.2', '.c'], b2.src_suffixes(env)
+        r = b2.src_suffixes(env)
+        r.sort()
+        assert r == ['.2', '.c'], r
 
         b3 = SCons.Builder.Builder(action = {'.3a' : '', '.3b' : ''})
         s = b3.src_suffixes(env)
@@ -711,8 +720,8 @@ class BuilderTestCase(unittest.TestCase):
             assert 0
         
         
-    def test_ListBuilder(self):
-        """Testing ListBuilder class."""
+    def test_lists(self):
+        """Testing handling lists of targets and source"""
         def function2(target, source, env, tlist = [outfile, outfile2], **kw):
             for t in target:
                 open(str(t), 'w').write("function2\n")
@@ -765,15 +774,17 @@ class BuilderTestCase(unittest.TestCase):
         assert os.path.exists(test.workpath('sub1'))
         assert os.path.exists(test.workpath('sub2'))
 
-    def test_MultiStepBuilder(self):
-        """Testing MultiStepBuilder class."""
+    def test_src_builder(self):
+        """Testing Builders with src_builder"""
+        # These used to be MultiStepBuilder objects until we
+        # eliminated it as a separate class
         env = Environment()
         builder1 = SCons.Builder.Builder(action='foo',
                                          src_suffix='.bar',
                                          suffix='.foo')
-        builder2 = SCons.Builder.MultiStepBuilder(action=MyAction('act'),
-                                                  src_builder = builder1,
-                                                  src_suffix = '.foo')
+        builder2 = SCons.Builder.Builder(action=MyAction('act'),
+                                         src_builder = builder1,
+                                         src_suffix = '.foo')
 
         tgt = builder2(env, source=[])
         assert tgt == [], tgt
@@ -795,22 +806,17 @@ class BuilderTestCase(unittest.TestCase):
         s = map(str, tgt.sources[0].sources)
         assert s == ['aaa.bar'], s
 
-        builder3 = SCons.Builder.MultiStepBuilder(action = 'foo',
-                                                  src_builder = 'xyzzy',
-                                                  src_suffix = '.xyzzy')
-        assert builder3.get_src_builders(Environment()) == []
-
         builder4 = SCons.Builder.Builder(action='bld4',
                                          src_suffix='.i',
                                          suffix='_wrap.c')
-        builder5 = SCons.Builder.MultiStepBuilder(action=MyAction('act'),
-                                                  src_builder=builder4,
-                                                  suffix='.obj',
-                                                  src_suffix='.c')
-        builder6 = SCons.Builder.MultiStepBuilder(action=MyAction('act'),
-                                                  src_builder=builder5,
-                                                  suffix='.exe',
-                                                  src_suffix='.obj')
+        builder5 = SCons.Builder.Builder(action=MyAction('act'),
+                                         src_builder=builder4,
+                                         suffix='.obj',
+                                         src_suffix='.c')
+        builder6 = SCons.Builder.Builder(action=MyAction('act'),
+                                         src_builder=builder5,
+                                         suffix='.exe',
+                                         src_suffix='.obj')
         tgt = builder6(env, 'test', 'test.i')[0]
         s = str(tgt)
         assert s == 'test.exe', s
@@ -855,7 +861,7 @@ class BuilderTestCase(unittest.TestCase):
         def func(self):
             pass
         
-        scanner = SCons.Scanner.Scanner(func, name='fooscan')
+        scanner = SCons.Scanner.Base(func, name='fooscan')
 
         b1 = SCons.Builder.Builder(action='bld', target_scanner=scanner)
         b2 = SCons.Builder.Builder(action='bld', target_scanner=scanner)
@@ -970,8 +976,6 @@ class BuilderTestCase(unittest.TestCase):
         assert r == '', r
         r = builder.src_suffixes(env)
         assert r == [], r
-        r = builder.targets('foo')
-        assert r == ['foo'], r
 
         # src_suffix can be a single string or a list of strings
         # src_suffixes() caches its return value, so we use a new
@@ -1002,6 +1006,7 @@ class BuilderTestCase(unittest.TestCase):
         r = bld.get_src_suffix(env)
         assert r == '.bar', r
         r = bld.src_suffixes(env)
+        r.sort()
         assert r == ['.bar', '.foo'], r
 
         # adjust_suffix normalizes the suffix, adding a `.' if needed
@@ -1122,6 +1127,7 @@ class BuilderTestCase(unittest.TestCase):
         r = builder.get_src_suffix(env)
         assert r == '.src_sfx1', r
         r = builder.src_suffixes(env)
+        r.sort()
         assert r == ['.src_sfx1', '.src_sfx2'], r
 
 
@@ -1182,6 +1188,13 @@ class BuilderTestCase(unittest.TestCase):
                                        target_factory=MyNode,
                                        source_factory=MyNode)
 
+        builder2a=SCons.Builder.Builder(action='foo',
+                                        emitter="$FOO",
+                                        target_factory=MyNode,
+                                        source_factory=MyNode)
+
+        assert builder2 == builder2a, repr(builder2.__dict__) + "\n" + repr(builder2a.__dict__)
+
         tgt = builder2(env2, target='foo5', source='bar')[0]
         assert str(tgt) == 'foo5', str(tgt)
         assert str(tgt.sources[0]) == 'bar', str(tgt.sources[0])
@@ -1196,12 +1209,6 @@ class BuilderTestCase(unittest.TestCase):
         assert len(tgt.sources) == 2, len(tgt.sources)
         assert 'baz' in map(str, tgt.sources), map(str, tgt.sources)
         assert 'bar' in map(str, tgt.sources), map(str, tgt.sources)
-
-        builder2a=SCons.Builder.Builder(action='foo',
-                                        emitter="$FOO",
-                                        target_factory=MyNode,
-                                        source_factory=MyNode)
-        assert builder2 == builder2a, repr(builder2.__dict__) + "\n" + repr(builder2a.__dict__)
 
         # Test that, if an emitter sets a builder on the passed-in
         # targets and passes back new targets, the new builder doesn't
@@ -1353,9 +1360,8 @@ class BuilderTestCase(unittest.TestCase):
 
         b1 = SCons.Builder.Builder(action='foo', suffix='.o')
         b2 = SCons.Builder.Builder(action='foo', suffix='.c')
-        b3 = SCons.Builder.MultiStepBuilder(action='bar',
-                                            src_suffix = '.foo',
-                                            src_builder = b1)
+        b3 = SCons.Builder.Builder(action='bar', src_suffix = '.foo',
+                                                 src_builder = b1)
         b4 = SCons.Builder.Builder(action={})
         b5 = SCons.Builder.Builder(action='foo', name='builder5')
         b6 = SCons.Builder.Builder(action='foo')
@@ -1395,22 +1401,6 @@ class BuilderTestCase(unittest.TestCase):
 
         assert b5.get_name(None) == 'builder5', b5.get_name(None)
         assert b6.get_name(None) in b6_names, b6.get_name(None)
-
-        for B in b3.get_src_builders(env):
-            assert B.get_name(env) == 'bldr1'
-        for B in b3.get_src_builders(env2):
-            assert B.get_name(env2) == 'B1'
-
-        tgts = b1(env, target = [outfile, outfile2], source='moo')
-        for t in tgts:
-            name = t.builder.get_name(env)
-            assert name == 'ListBuilder(bldr1)', name
-            # The following are not symbolically correct, because the
-            # ListBuilder was only created on behalf of env, so it
-            # would probably be OK if better correctness
-            # env-to-builder mappings caused this to fail in the
-            # future.
-            assert t.builder.get_name(env2) == 'ListBuilder(B1)'
 
         tgt = b4(env, target = 'moo', source='cow')
         assert tgt[0].builder.get_name(env) == 'bldr4'
@@ -1523,7 +1513,7 @@ class CompositeBuilderTestCase(unittest.TestCase):
         assert isinstance(tgt.builder, SCons.Builder.BuilderBase)
 
         tgt = builder(env, target='t2', source='t2a.foo t2b.ina')[0]
-        assert isinstance(tgt.builder, SCons.Builder.MultiStepBuilder), tgt.builder.__dict__
+        assert isinstance(tgt.builder, SCons.Builder.BuilderBase), tgt.builder.__dict__
 
         bar_bld = SCons.Builder.Builder(action = 'a-bar',
                                         src_suffix = '.inb',
@@ -1537,10 +1527,10 @@ class CompositeBuilderTestCase(unittest.TestCase):
         builder.add_action('.bar', 'bar')
 
         tgt = builder(env, target='t3-foo', source='t3a.foo t3b.ina')[0]
-        assert isinstance(tgt.builder, SCons.Builder.MultiStepBuilder)
+        assert isinstance(tgt.builder, SCons.Builder.BuilderBase)
 
         tgt = builder(env, target='t3-bar', source='t3a.bar t3b.inb')[0]
-        assert isinstance(tgt.builder, SCons.Builder.MultiStepBuilder)
+        assert isinstance(tgt.builder, SCons.Builder.BuilderBase)
 
         flag = 0
         tgt = builder(env, target='t5', source=['test5a.foo', 'test5b.inb'])[0]
@@ -1595,7 +1585,7 @@ class CompositeBuilderTestCase(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     tclasses = [
-#        BuilderTestCase,
+        BuilderTestCase,
         CompositeBuilderTestCase
     ]
     for tclass in tclasses:

@@ -125,7 +125,7 @@ UNIX system are:
   ENV		=> { 'PATH' => '/bin:/usr/bin' },
 
 
-And on a Win32 system (Windows NT), the default construction variables
+And on a Windows system (Windows NT), the default construction variables
 are (unless the default rule style is set using the B<DefaultRules>
 method):
 
@@ -305,11 +305,7 @@ by the MD5 signature calculation on the actual file contents.
 
 =back
 
-XXX
-
-DESCRIBE THE Literal() FUNCTION, TOO
-
-XXX
+XXX DESCRIBE THE Literal() FUNCTION, TOO XXX
 
 =head2 Expanding construction variables in file names
 
@@ -454,7 +450,7 @@ environment undisturbed.
   </programlisting>
 
  <para>
-   
+
    The construction environment in this example
    is still initialized with the same default
    construction variable values,
@@ -473,7 +469,7 @@ environment undisturbed.
 
  <screen>
     % <userinput>scons -Q</userinput>
-    gcc -O2 -c -o foo.o foo.c
+    gcc -o foo.o -c -O2 foo.c
     gcc -o foo foo.o
  </screen>
 
@@ -505,9 +501,9 @@ environment undisturbed.
 
    <screen>
       % <userinput>scons -Q</userinput>
-      cc -g -c -o bar.o bar.c
+      cc -o bar.o -c -g bar.c
       cc -o bar bar.o
-      cc -O2 -c -o foo.o foo.c
+      cc -o foo.o -c -O2 foo.c
       cc -o foo foo.o
    </screen>
 
@@ -540,7 +536,7 @@ environment undisturbed.
       % <userinput>scons -Q</userinput>
       
       scons: *** Two environments with different actions were specified for the same target: foo.o
-      File "SConstruct", line 6, in ?
+      File "/home/my/project/SConstruct", line 6, in ?
    </screen>
 
    <para>
@@ -593,9 +589,9 @@ environment undisturbed.
 
    <screen>
       % <userinput>scons -Q</userinput>
-      cc -g -c -o foo-dbg.o foo.c
+      cc -o foo-dbg.o -c -g foo.c
       cc -o foo-dbg foo-dbg.o
-      cc -O2 -c -o foo-opt.o foo.c
+      cc -o foo-opt.o -c -O2 foo.c
       cc -o foo-opt foo-opt.o
    </screen>
 
@@ -610,7 +606,7 @@ environment undisturbed.
    to share the same values for one or more variables.
    Rather than always having to repeat all of the common
    variables when you create each construction environment,
-   you can use the &Copy; method
+   you can use the &Clone; method
    to create a copy of a construction environment.
 
    </para>
@@ -618,7 +614,7 @@ environment undisturbed.
    <para>
 
    Like the &Environment; call that creates a construction environment,
-   the &Copy; method takes &consvar; assignments,
+   the &Clone; method takes &consvar; assignments,
    which will override the values in the copied construction environment.
    For example, suppose we want to use &gcc;
    to create three versions of a program,
@@ -633,8 +629,8 @@ environment undisturbed.
 
    <programlisting>
       env = Environment(CC = 'gcc')
-      opt = env.Copy(CCFLAGS = '-O2')
-      dbg = env.Copy(CCFLAGS = '-g')
+      opt = env.Clone(CCFLAGS = '-O2')
+      dbg = env.Clone(CCFLAGS = '-g')
 
       env.Program('foo', 'foo.c')
 
@@ -653,11 +649,11 @@ environment undisturbed.
 
    <screen>
       % <userinput>scons -Q</userinput>
-      gcc -c -o foo.o foo.c
+      gcc -o foo.o -c foo.c
       gcc -o foo foo.o
-      gcc -g -c -o foo-dbg.o foo.c
+      gcc -o foo-dbg.o -c -g foo.c
       gcc -o foo-dbg foo-dbg.o
-      gcc -O2 -c -o foo-opt.o foo.c
+      gcc -o foo-opt.o -c -O2 foo.c
       gcc -o foo-opt foo-opt.o
    </screen>
 
@@ -728,7 +724,7 @@ environment undisturbed.
 
    <para>
 
-   And on Win32:
+   And on Windows:
 
    </para>
 
@@ -889,7 +885,7 @@ environment undisturbed.
 
      <screen>
         % <userinput>scons -Q</userinput>
-        cc -DDEFINE2 -c -o foo.o foo.c
+        cc -o foo.o -c -DDEFINE2 foo.c
         cc -o foo foo.o
      </screen>
 
@@ -965,9 +961,9 @@ environment undisturbed.
         CCFLAGS = -DDEFINE2
         scons: done reading SConscript files.
         scons: Building targets ...
-        cc -DDEFINE2 -c -o bar.o bar.c
+        cc -o bar.o -c -DDEFINE2 bar.c
         cc -o bar bar.o
-        cc -DDEFINE2 -c -o foo.o foo.c
+        cc -o foo.o -c -DDEFINE2 foo.c
         cc -o foo foo.o
         scons: done building targets.
      </screen>
@@ -987,6 +983,21 @@ environment undisturbed.
      </para>
 
    </section>
+
+   <!--
+
+   <section>
+   <title>Setting Values Only If They're Not Already Defined</title>
+
+     <para>
+
+     XXX SetDefault()
+
+     </para>
+
+   </section>
+
+   -->
 
    <section>
    <title>Appending to the End of Values in a &ConsEnv;</title>
@@ -1014,7 +1025,7 @@ environment undisturbed.
 
      <screen>
         % <userinput>scons -Q</userinput>
-        cc -DMY_VALUE -DLAST -c -o foo.o foo.c
+        cc -o foo.o -c -DMY_VALUE -DLAST foo.c
         cc -o foo foo.o
      </screen>
 
@@ -1043,6 +1054,12 @@ environment undisturbed.
         scons: `.' is up to date.
      </screen>
 
+     <!--
+
+     XXX AppendUnique()
+
+     -->
+
    </section>
 
    <section>
@@ -1050,7 +1067,7 @@ environment undisturbed.
 
      <para>
 
-     You can append a value to the beginning
+     You can append a value to the beginning of
      an existing construction variable
      using the &Prepend; method:
 
@@ -1071,7 +1088,7 @@ environment undisturbed.
 
      <screen>
         % <userinput>scons -Q</userinput>
-        cc -DFIRST -DMY_VALUE -c -o foo.o foo.c
+        cc -o foo.o -c -DFIRST -DMY_VALUE foo.c
         cc -o foo foo.o
      </screen>
 
@@ -1100,6 +1117,29 @@ environment undisturbed.
         scons: `.' is up to date.
      </screen>
 
+     <!--
+
+     XXX PrependUnique()
+
+     -->
+
    </section>
+
+   <!--
+
+   <section>
+   <title>Adding to Values in the Execution Environment</title>
+
+     <para>
+
+     XXX AppendENVPath()
+
+     XXX PrependENVPath()
+
+     </para>
+
+   </section>
+
+   -->
 
  </section>

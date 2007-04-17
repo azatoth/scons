@@ -25,37 +25,24 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that retrieving derived files from a CacheDir works when a
-BuildDir() is involved.
-
-This also tests that the CacheDir file will be created if it
-doesn't exist, and that the CacheDir file name will get expanded
-from other construction variables.
+Test retrieving derived files from a CacheDir when a BuildDir is used.
 """
 
 import os.path
-import shutil
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-# 
-# cache2 omitted from list in order to test automatic creation of CacheDir
-# directory.
-test.subdir('src')
+test.subdir('cache', 'src')
 
-build_aaa_out = os.path.join('build', 'aaa.out')
-build_bbb_out = os.path.join('build', 'bbb.out')
-build_ccc_out = os.path.join('build', 'ccc.out')
-build_all = os.path.join('build', 'all')
+cache = test.workpath('cache')
+cat_out = test.workpath('cat.out')
 
-test.write('SConstruct', """\
-env = Environment(CACHEDIR = 'cache')
-env.CacheDir(r'%s')
-BuildDir('build', 'src', duplicate=0)
-SConscript('build/SConscript')
-""" % test.workpath('${CACHEDIR}'))
+test.write(['src', 'SConstruct'], """\
+CacheDir(r'%(cache)s')
+SConscript('SConscript')
+""" % locals())
 
 test.write(['src', 'SConscript'], """\
 def cat(env, source, target):
@@ -73,9 +60,22 @@ env.Cat('ccc.out', 'ccc.in')
 env.Cat('all', ['aaa.out', 'bbb.out', 'ccc.out'])
 """)
 
+build_aaa_out = os.path.join('build', 'aaa.out')
+build_bbb_out = os.path.join('build', 'bbb.out')
+build_ccc_out = os.path.join('build', 'ccc.out')
+build_all = os.path.join('build', 'all')
+
 test.write(['src', 'aaa.in'], "aaa.in\n")
 test.write(['src', 'bbb.in'], "bbb.in\n")
 test.write(['src', 'ccc.in'], "ccc.in\n")
+
+#
+test.write('SConstruct', """\
+env = Environment(TWO = '2')
+env.CacheDir(r'%s')
+BuildDir('build', 'src', duplicate=0)
+SConscript('build/SConscript')
+""" % test.workpath('cache${TWO}'))
 
 # Verify that a normal build works correctly, and clean up.
 # This should populate the cache with our derived files.
@@ -98,7 +98,7 @@ Retrieved `%s' from cache
 Retrieved `%s' from cache
 """ % (build_aaa_out, build_bbb_out, build_ccc_out, build_all)))
 
-test.must_not_exist(test.workpath('cat.out'))
+test.must_not_exist(cat_out)
 
 test.up_to_date(arguments = '.')
 
@@ -123,7 +123,7 @@ test.must_not_exist(test.workpath('build', 'all'))
 test.run(arguments = '-s .', stdout = "")
 
 test.must_match(['build', 'all'], "aaa.in\nbbb.in\nccc.in\n")
-test.must_not_exist(test.workpath('cat.out'))
+test.must_not_exist(cat_out)
 
 test.up_to_date(arguments = '.')
 
@@ -147,6 +147,7 @@ test.must_match(['build', 'all'], "aaa.in\nbbb.in 2\nccc.in\n")
 test.must_match('cat.out', "%s\n%s\n" % (build_bbb_out, build_all))
 
 test.up_to_date(arguments = '.')
+
 
 
 test.pass_test()

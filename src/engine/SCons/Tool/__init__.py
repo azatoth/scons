@@ -41,6 +41,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import imp
 import sys
 
+import SCons.Builder
 import SCons.Errors
 import SCons.Scanner
 import SCons.Scanner.C
@@ -48,11 +49,13 @@ import SCons.Scanner.D
 import SCons.Scanner.LaTeX
 import SCons.Scanner.Prog
 
+DefaultToolpath=[]
+
 CScanner = SCons.Scanner.C.CScanner()
 DScanner = SCons.Scanner.D.DScanner()
 LaTeXScanner = SCons.Scanner.LaTeX.LaTeXScanner()
 ProgramScanner = SCons.Scanner.Prog.ProgramScanner()
-SourceFileScanner = SCons.Scanner.Scanner({}, name='SourceFileScanner')
+SourceFileScanner = SCons.Scanner.Base({}, name='SourceFileScanner')
 
 CSuffixes = [".c", ".C", ".cxx", ".cpp", ".c++", ".cc",
              ".h", ".H", ".hxx", ".hpp", ".hh",
@@ -78,7 +81,7 @@ for suffix in LaTeXSuffixes:
 class Tool:
     def __init__(self, name, toolpath=[], **kw):
         self.name = name
-        self.toolpath = toolpath
+        self.toolpath = toolpath + DefaultToolpath
         # remember these so we can merge them into the call
         self.init_kw = kw
 
@@ -99,7 +102,17 @@ class Tool:
                     if file:
                         file.close()
             except ImportError, e:
-                pass
+                try:
+                    import zipimport
+                except ImportError:
+                    pass
+                else:
+                    for aPath in self.toolpath:
+                        try:
+                            importer = zipimport.zipimporter(aPath)
+                            return importer.load_module(self.name)
+                        except ImportError, e:
+                            pass
         finally:
             sys.path = oldpythonpath
 
@@ -109,14 +122,23 @@ class Tool:
         except KeyError:
             try:
                 smpath = sys.modules['SCons.Tool'].__path__
-                file, path, desc = imp.find_module(self.name, smpath)
                 try:
+                    file, path, desc = imp.find_module(self.name, smpath)
                     module = imp.load_module(full_name, file, path, desc)
                     setattr(SCons.Tool, self.name, module)
-                    return module
-                finally:
                     if file:
                         file.close()
+                    return module
+                except ImportError, e:
+                    try:
+                        import zipimport
+                        importer = zipimport.zipimporter( sys.modules['SCons.Tool'].__path__[0] )
+                        module = importer.load_module(full_name)
+                        setattr(SCons.Tool, self.name, module)
+                        return module
+                    except ImportError, e:
+                        m = "No tool named '%s': %s" % (self.name, e)
+                        raise SCons.Errors.UserError, m
             except ImportError, e:
                 m = "No tool named '%s': %s" % (self.name, e)
                 raise SCons.Errors.UserError, m

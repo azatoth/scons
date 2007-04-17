@@ -205,7 +205,7 @@ class _DSPGenerator:
         if len(buildtarget) == 1:
             bt = buildtarget[0]
             buildtarget = []
-            for v in variants:
+            for _ in variants:
                 buildtarget.append(bt)
 
         if not env.has_key('outdir') or env['outdir'] == None:
@@ -297,7 +297,7 @@ class _DSPGenerator:
         for n in sourcenames:
             self.sources[n].sort(lambda a, b: cmp(a.lower(), b.lower()))
 
-        def AddConfig(variant, buildtarget, outdir, runfile, cmdargs):
+        def AddConfig(self, variant, buildtarget, outdir, runfile, cmdargs, dspfile=dspfile):
             config = Config()
             config.buildtarget = buildtarget
             config.outdir = outdir
@@ -316,7 +316,7 @@ class _DSPGenerator:
             print "Adding '" + self.name + ' - ' + config.variant + '|' + config.platform + "' to '" + str(dspfile) + "'"
 
         for i in range(len(variants)):
-            AddConfig(variants[i], buildtarget[i], outdir[i], runfile[i], cmdargs)
+            AddConfig(self, variants[i], buildtarget[i], outdir[i], runfile[i], cmdargs)
 
         self.platforms = []
         for key in self.configs.keys():
@@ -690,6 +690,29 @@ class _GenerateV7DSP(_DSPGenerator):
             pdata = base64.encodestring(pdata)
             self.file.write(pdata + '-->\n')
 
+    def printSources(self, hierarchy, commonprefix):
+        sorteditems = hierarchy.items()
+        sorteditems.sort(lambda a, b: cmp(a[0].lower(), b[0].lower()))
+
+        # First folders, then files
+        for key, value in sorteditems:
+            if SCons.Util.is_Dict(value):
+                self.file.write('\t\t\t<Filter\n'
+                                '\t\t\t\tName="%s"\n'
+                                '\t\t\t\tFilter="">\n' % (key))
+                self.printSources(value, commonprefix)
+                self.file.write('\t\t\t</Filter>\n')
+
+        for key, value in sorteditems:
+            if SCons.Util.is_String(value):
+                file = value
+                if commonprefix:
+                    file = os.path.join(commonprefix, value)
+                file = os.path.normpath(file)
+                self.file.write('\t\t\t<File\n'
+                                '\t\t\t\tRelativePath="%s">\n'
+                                '\t\t\t</File>\n' % (file))
+
     def PrintSourceFiles(self):
         categories = {'Source Files': 'cpp;c;cxx;l;y;def;odl;idl;hpj;bat',
                       'Header Files': 'h;hpp;hxx;hm;inl',
@@ -708,43 +731,26 @@ class _GenerateV7DSP(_DSPGenerator):
                                 '\t\t\tName="%s"\n'
                                 '\t\t\tFilter="%s">\n' % (kind, categories[kind]))
 
-
-            def printSources(hierarchy, commonprefix):
-                sorteditems = hierarchy.items()
-                sorteditems.sort(lambda a, b: cmp(a[0].lower(), b[0].lower()))
-
-                # First folders, then files
-                for key, value in sorteditems:
-                    if SCons.Util.is_Dict(value):
-                        self.file.write('\t\t\t<Filter\n'
-                                        '\t\t\t\tName="%s"\n'
-                                        '\t\t\t\tFilter="">\n' % (key))
-                        printSources(value, commonprefix)
-                        self.file.write('\t\t\t</Filter>\n')
-
-                for key, value in sorteditems:
-                    if SCons.Util.is_String(value):
-                        file = value
-                        if commonprefix:
-                            file = os.path.join(commonprefix, value)
-                        file = os.path.normpath(file)
-                        self.file.write('\t\t\t<File\n'
-                                        '\t\t\t\tRelativePath="%s">\n'
-                                        '\t\t\t</File>\n' % (file))
-
             sources = self.sources[kind]
 
             # First remove any common prefix
             commonprefix = None
             if len(sources) > 1:
                 s = map(os.path.normpath, sources)
-                cp = os.path.commonprefix(s)
+                # take the dirname because the prefix may include parts
+                # of the filenames (e.g. if you have 'dir\abcd' and
+                # 'dir\acde' then the cp will be 'dir\a' )
+                cp = os.path.dirname( os.path.commonprefix(s) )
                 if cp and s[0][len(cp)] == os.sep:
-                    sources = map(lambda s, l=len(cp): s[l:], sources)
+                    # +1 because the filename starts after the separator
+                    sources = map(lambda s, l=len(cp)+1: s[l:], sources)
                     commonprefix = cp
+            elif len(sources) == 1:
+                commonprefix = os.path.dirname( sources[0] )
+                sources[0] = os.path.basename( sources[0] )
 
             hierarchy = makeHierarchy(sources)
-            printSources(hierarchy, commonprefix=commonprefix)
+            self.printSources(hierarchy, commonprefix=commonprefix)
 
             if len(cats)>1:
                 self.file.write('\t\t</Filter>\n')
@@ -873,7 +879,7 @@ class _GenerateV7DSW(_DSWGenerator):
         if self.nokeep == 0 and os.path.exists(self.dswfile):
             self.Parse()
 
-        def AddConfig(variant):
+        def AddConfig(self, variant, dswfile=dswfile):
             config = Config()
 
             match = re.match('(.*)\|(.*)', variant)
@@ -892,10 +898,10 @@ class _GenerateV7DSW(_DSWGenerator):
                   "You must specify a 'variant' argument (i.e. 'Debug' or " +\
                   "'Release') to create an MSVS Solution File."
         elif SCons.Util.is_String(env['variant']):
-            AddConfig(env['variant'])
+            AddConfig(self, env['variant'])
         elif SCons.Util.is_List(env['variant']):
             for variant in env['variant']:
-                AddConfig(variant)
+                AddConfig(self, variant)
 
         self.platforms = []
         for key in self.configs.keys():
@@ -1004,7 +1010,6 @@ class _GenerateV7DSW(_DSWGenerator):
             self.file.write('\tGlobalSection(ProjectConfiguration) = postSolution\n')
 
         for name in confkeys:
-            name = name
             variant = self.configs[name].variant
             platform = self.configs[name].platform
             if self.version_num >= 8.0:
@@ -1127,32 +1132,24 @@ def GenerateDSW(dswfile, source, env):
 def get_default_visualstudio_version(env):
     """Returns the version set in the env, or the latest version
     installed, if it can find it, or '6.0' if all else fails.  Also
-    updated the environment with what it found."""
+    updates the environment with what it found."""
 
-    version = '6.0'
-    versions = [version]
+    versions = ['6.0']
 
     if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
-        env['MSVS'] = {}    
-
-        if env['MSVS'].has_key('VERSIONS'):
-            versions = env['MSVS']['VERSIONS']
-        elif SCons.Util.can_read_reg:
-            v = get_visualstudio_versions()
-            if v:
-                versions = v
-        if env.has_key('MSVS_VERSION'):
-            version = env['MSVS_VERSION']
-        else:
-            version = versions[0] #use highest version by default
-
-        env['MSVS_VERSION'] = version
-        env['MSVS']['VERSIONS'] = versions
-        env['MSVS']['VERSION'] = version
+        v = get_visualstudio_versions()
+        if v:
+            versions = v
+        env['MSVS'] = {'VERSIONS' : versions}
     else:
-        version = env['MSVS']['VERSION']
+        versions = env['MSVS'].get('VERSIONS', versions)
 
-    return version
+    if not env.has_key('MSVS_VERSION'):
+        env['MSVS_VERSION'] = versions[0] #use highest version by default
+
+    env['MSVS']['VERSION'] = env['MSVS_VERSION']
+
+    return env['MSVS_VERSION']
 
 def get_visualstudio_versions():
     """
@@ -1281,7 +1278,7 @@ def get_visualstudio8_suites():
     try:
         idk = SCons.Util.RegOpenKeyEx(SCons.Util.HKEY_LOCAL_MACHINE,
             r'Software\Microsoft\VisualStudio\8.0')
-        id = SCons.Util.RegQueryValueEx(idk, 'InstallDir')
+        SCons.Util.RegQueryValueEx(idk, 'InstallDir')
         editions = { 'PRO': r'Setup\VS\Pro' }       # ToDo: add standard and team editions
         edition_name = 'STD'
         for name, key_suffix in editions.items():
@@ -1299,7 +1296,7 @@ def get_visualstudio8_suites():
     try:
         idk = SCons.Util.RegOpenKeyEx(SCons.Util.HKEY_LOCAL_MACHINE,
             r'Software\Microsoft\VCExpress\8.0')
-        id = SCons.Util.RegQueryValueEx(idk, 'InstallDir')
+        SCons.Util.RegQueryValueEx(idk, 'InstallDir')
         suites.append('EXPRESS')
     except SCons.Util.RegError:
         pass
@@ -1388,10 +1385,7 @@ def get_msvs_install_dirs(version = None, vs8suite = None):
         # try and enumerate the installed versions of the .NET framework.
         contents = os.listdir(rv['FRAMEWORKDIR'])
         l = re.compile('v[0-9]+.*')
-        versions = []
-        for entry in contents:
-            if l.match(entry):
-                versions.append(entry)
+        installed_framework_versions = filter(lambda e, l=l: l.match(e), contents)
 
         def versrt(a,b):
             # since version numbers aren't really floats...
@@ -1406,23 +1400,51 @@ def get_msvs_install_dirs(version = None, vs8suite = None):
                     c = int(bbl[2]) - int(aal[2])
             return c
 
-        versions.sort(versrt)
+        installed_framework_versions.sort(versrt)
 
-        rv['FRAMEWORKVERSIONS'] = versions
-        # assume that the highest version is the latest version installed
-        rv['FRAMEWORKVERSION'] = versions[0]
+        rv['FRAMEWORKVERSIONS'] = installed_framework_versions
+
+        # TODO: allow a specific framework version to be set
+
+        # Choose a default framework version based on the Visual
+        # Studio version.
+        DefaultFrameworkVersionMap = {
+            '7.0'   : 'v1.0',
+            '7.1'   : 'v1.1',
+            '8.0'   : 'v2.0',
+            # TODO: Does .NET 3.0 need to be worked into here somewhere?
+        }
+        try:
+            default_framework_version = DefaultFrameworkVersionMap[version[:3]]
+        except (KeyError, TypeError):
+            pass
+        else:
+            # Look for the first installed directory in FRAMEWORKDIR that
+            # begins with the framework version string that's appropriate
+            # for the Visual Studio version we're using.
+            for v in installed_framework_versions:
+                if v[:4] == default_framework_version:
+                    rv['FRAMEWORKVERSION'] = v
+                    break
+
+        # If the framework version couldn't be worked out by the previous
+        # code then fall back to using the latest version of the .NET
+        # framework
+        if not rv.has_key('FRAMEWORKVERSION'):
+            rv['FRAMEWORKVERSION'] = installed_framework_versions[0]
 
     # .NET framework SDK install dir
-    try:
-        if rv.has_key('FRAMEWORKVERSION') and rv['FRAMEWORKVERSION'][:4] == 'v1.1':
-            key = r'Software\Microsoft\.NETFramework\sdkInstallRootv1.1'
-        else:
-            key = r'Software\Microsoft\.NETFramework\sdkInstallRoot'
-
-        (rv['FRAMEWORKSDKDIR'], t) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,key)
-
-    except SCons.Util.RegError:
-        pass
+    if rv.has_key('FRAMEWORKVERSION'):
+        # The .NET SDK version used must match the .NET version used,
+        # so we deliberately don't fall back to other .NET framework SDK
+        # versions that might be present.
+        ver = rv['FRAMEWORKVERSION'][:4]
+        key = r'Software\Microsoft\.NETFramework\sdkInstallRoot' + ver
+        try:
+            (rv['FRAMEWORKSDKDIR'], t) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,
+                key)
+        except SCons.Util.RegError:
+            pass
 
     # MS Platform SDK dir
     try:
@@ -1707,9 +1729,9 @@ def generate(env):
     env['MSVSSCONS'] = '"%s" -c "%s"' % (python_executable, getExecScriptMain(env))
     env['MSVSSCONSFLAGS'] = '-C "${MSVSSCONSCRIPT.dir.abspath}" -f ${MSVSSCONSCRIPT.name}'
     env['MSVSSCONSCOM'] = '$MSVSSCONS $MSVSSCONSFLAGS'
-    env['MSVSBUILDCOM'] = '$MSVSSCONSCOM $MSVSBUILDTARGET'
-    env['MSVSREBUILDCOM'] = '$MSVSSCONSCOM $MSVSBUILDTARGET'
-    env['MSVSCLEANCOM'] = '$MSVSSCONSCOM -c $MSVSBUILDTARGET'
+    env['MSVSBUILDCOM'] = '$MSVSSCONSCOM "$MSVSBUILDTARGET"'
+    env['MSVSREBUILDCOM'] = '$MSVSSCONSCOM "$MSVSBUILDTARGET"'
+    env['MSVSCLEANCOM'] = '$MSVSSCONSCOM -c "$MSVSBUILDTARGET"'
     env['MSVSENCODING'] = 'Windows-1252'
 
     try:
@@ -1749,7 +1771,11 @@ def exists(env):
         if env.has_key('MSVS_VERSION'):
             version_num, suite = msvs_parse_version(env['MSVS_VERSION'])
         if version_num >= 7.0:
-            return env.Detect('devenv')
+            # The executable is 'devenv' in Visual Studio Pro,
+            # Team System and others.  Express Editions have different
+            # executable names.  Right now we're only going to worry
+            # about Visual C++ 2005 Express Edition.
+            return env.Detect('devenv') or env.Detect('vcexpress')
         else:
             return env.Detect('msdev')
     else:

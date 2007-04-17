@@ -24,6 +24,14 @@ import sys
 from TestCommon import *
 from TestCommon import __all__
 
+# Some tests which verify that SCons has been packaged properly need to
+# look for specific version file names.  Replicating the version number
+# here provides independent verification that what we packaged conforms
+# to what we expect.  (If we derived the version number from the same
+# data driving the build we might miss errors if the logic breaks.)
+
+SConsVersion = '0.96.96'
+
 __all__.extend([ 'TestSCons',
                  'python',
                  '_exe',
@@ -36,6 +44,7 @@ __all__.extend([ 'TestSCons',
                ])
 
 python = python_executable
+_python_ = '"' + python_executable + '"'
 _exe = exe_suffix
 _obj = obj_suffix
 _shobj = shobj_suffix
@@ -104,6 +113,8 @@ class TestSCons(TestCommon):
     eliminating the need to begin every test with the same repeated
     initializations.
     """
+
+    scons_version = SConsVersion
 
     def __init__(self, **kw):
         """Initialize an SCons testing object.
@@ -292,6 +303,28 @@ class TestSCons(TestCommon):
             i = i + 1
         return "Actual matched the expected output???"
 
+    def python_file_line(self, file, line):
+        """
+        Returns a Python error line for output comparisons.
+
+        The exec of the traceback line gives us the correct format for
+        this version of Python.  Before 2.5, this yielded:
+
+            File "<string>", line 1, ?
+
+        Python 2.5 changed this to:
+
+            File "<string>", line 1, <module>
+
+        We stick the requested file name and line number in the right
+        places, abstracting out the version difference.
+        """
+        exec 'import traceback; x = traceback.format_stack()[-1]'
+        x = string.lstrip(x)
+        x = string.replace(x, '<string>', file)
+        x = string.replace(x, 'line 1,', 'line %s,' % line)
+        return x
+
     def java_ENV(self):
         """
         Return a default external environment that uses a local Java SDK
@@ -398,20 +431,21 @@ void my_qt_symbol(const char *arg) {
 }
 """)
 
-        self.write(['qt', 'lib', 'SConstruct'], r"""
+        self.write([dir, 'lib', 'SConstruct'], r"""
 env = Environment()
-env.StaticLibrary( 'myqt', 'my_qobject.cpp' )
+env.SharedLibrary( 'myqt', 'my_qobject.cpp' )
 """)
 
-        self.run(chdir = self.workpath('qt', 'lib'),
+        self.run(chdir = self.workpath(dir, 'lib'),
                  arguments = '.',
                  stderr = noisy_ar,
                  match = self.match_re_dotall)
 
         self.QT = self.workpath(dir)
         self.QT_LIB = 'myqt'
-        self.QT_MOC = '%s %s' % (python, self.workpath(dir, 'bin', 'mymoc.py'))
-        self.QT_UIC = '%s %s' % (python, self.workpath(dir, 'bin', 'myuic.py'))
+        self.QT_MOC = '%s %s' % (_python_, self.workpath(dir, 'bin', 'mymoc.py'))
+        self.QT_UIC = '%s %s' % (_python_, self.workpath(dir, 'bin', 'myuic.py'))
+        self.QT_LIB_DIR = self.workpath(dir, 'lib')
 
     def Qt_create_SConstruct(self, place):
         if type(place) is type([]):
@@ -516,15 +550,31 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
         """Returns a full path to the executable (MSDEV or devenv)
         for the specified version of Visual Studio.
         """
-        sub_path = {
-            '6.0' : ['Common', 'MSDev98', 'Bin', 'MSDEV.COM'],
-            '7.0' : ['Common7', 'IDE', 'devenv.com'],
-            '7.1' : ['Common7', 'IDE', 'devenv.com'],
-            '8.0' : ['Common7', 'IDE', 'devenv.com'],
+        common_msdev98_bin_msdev_com = ['Common', 'MSDev98', 'Bin', 'MSDEV.COM']
+        common7_ide_devenv_com       = ['Common7', 'IDE', 'devenv.com']
+        common7_ide_vcexpress_exe    = ['Common7', 'IDE', 'VCExpress.exe']
+        sub_paths = {
+            '6.0' : [
+                common_msdev98_bin_msdev_com,
+            ],
+            '7.0' : [
+                common7_ide_devenv_com,
+            ],
+            '7.1' : [
+                common7_ide_devenv_com,
+            ],
+            '8.0' : [
+                common7_ide_devenv_com,
+                common7_ide_vcexpress_exe,
+            ],
         }
         from SCons.Tool.msvs import get_msvs_install_dirs
         vs_path = get_msvs_install_dirs(version)['VSINSTALLDIR']
-        return apply(os.path.join, [vs_path] + sub_path[version])
+        for sp in sub_paths[version]:
+            p = apply(os.path.join, [vs_path] + sp)
+            if os.path.exists(p):
+                return p
+        return apply(os.path.join, [vs_path] + sub_paths[version][0])
 
 # In some environments, $AR will generate a warning message to stderr
 # if the library doesn't previously exist and is being created.  One

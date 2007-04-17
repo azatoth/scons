@@ -100,12 +100,12 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import dis
 import os
 import os.path
-import re
 import string
 import sys
 
 from SCons.Debug import logInstanceCreation
 import SCons.Errors
+import SCons.Executor
 import SCons.Util
 
 class _Null:
@@ -233,9 +233,6 @@ class ActionBase:
     """Base class for all types of action objects that can be held by
     other objects (Builders, Executors, etc.)  This provides the
     common methods for manipulating and combining those actions."""
-    
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
 
     def __cmp__(self, other):
         return cmp(self.__dict__, other)
@@ -266,22 +263,11 @@ class ActionBase:
         return SCons.Executor.Executor(self, env, overrides,
                                        tlist, slist, executor_kw)
 
-if SCons.Memoize.use_old_memoization():
-    _Base = ActionBase
-    class ActionBase(SCons.Memoize.Memoizer, _Base):
-        "Cache-backed version of ActionBase"
-        def __init__(self, *args, **kw):
-            apply(_Base.__init__, (self,)+args, kw)
-            SCons.Memoize.Memoizer.__init__(self)
-
-
 class _ActionAction(ActionBase):
     """Base class for actions that create output objects."""
     def __init__(self, strfunction=_null, presub=_null, chdir=None, exitstatfunc=None, **kw):
         if not strfunction is _null:
             self.strfunction = strfunction
-        if presub is _null:
-            presub = print_actions_presub
         self.presub = presub
         self.chdir = chdir
         if not exitstatfunc:
@@ -302,7 +288,10 @@ class _ActionAction(ActionBase):
         if not SCons.Util.is_List(source):
             source = [source]
         if exitstatfunc is _null: exitstatfunc = self.exitstatfunc
-        if presub is _null:  presub = self.presub
+        if presub is _null:
+            presub = self.presub
+        if presub is _null:
+            presub = print_actions_presub
         if show is _null:  show = print_actions
         if execute is _null:  execute = execute_actions
         if chdir is _null: chdir = self.chdir
@@ -415,7 +404,8 @@ class CommandAction(_ActionAction):
 
     def strfunction(self, target, source, env):
         if not self.cmdstr is None:
-            c = env.subst(self.cmdstr, SCons.Subst.SUBST_RAW, target, source)
+            from SCons.Subst import SUBST_RAW
+            c = env.subst(self.cmdstr, SUBST_RAW, target, source)
             if c:
                 return c
         cmd_list, ignore, silent = self.process(target, source, env)
@@ -433,7 +423,10 @@ class CommandAction(_ActionAction):
         externally.
         """
         from SCons.Subst import escape_list
-        from SCons.Util import is_String, is_List, flatten
+        import SCons.Util
+        flatten = SCons.Util.flatten
+        is_String = SCons.Util.is_String
+        is_List = SCons.Util.is_List
 
         try:
             shell = env['SHELL']
@@ -444,6 +437,9 @@ class CommandAction(_ActionAction):
             spawn = env['SPAWN']
         except KeyError:
             raise SCons.Errors.UserError('Missing SPAWN construction variable.')
+        else:
+            if is_String(spawn):
+                spawn = env.subst(spawn, raw=1, conv=lambda x: x)
 
         escape = env.get('ESCAPE', lambda x: x)
 
@@ -563,9 +559,6 @@ class CommandGeneratorAction(ActionBase):
 
 class LazyAction(CommandGeneratorAction, CommandAction):
 
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
-
     def __init__(self, var, *args, **kw):
         if __debug__: logInstanceCreation(self, 'Action.LazyAction')
         apply(CommandAction.__init__, (self, '$'+var)+args, kw)
@@ -580,7 +573,6 @@ class LazyAction(CommandGeneratorAction, CommandAction):
         return CommandGeneratorAction
 
     def _generate_cache(self, env):
-        """__cacheable__"""
         c = env.get(self.var, '')
         gen_cmd = apply(Action, (c,)+self.gen_args, self.gen_kw)
         if not gen_cmd:
@@ -598,13 +590,6 @@ class LazyAction(CommandGeneratorAction, CommandAction):
     def get_contents(self, target, source, env):
         c = self.get_parent_class(env)
         return c.get_contents(self, target, source, env)
-
-if not SCons.Memoize.has_metaclass:
-    _Base = LazyAction
-    class LazyAction(SCons.Memoize.Memoizer, _Base):
-        def __init__(self, *args, **kw):
-            SCons.Memoize.Memoizer.__init__(self)
-            apply(_Base.__init__, (self,)+args, kw)
 
 
 
@@ -641,7 +626,8 @@ class FunctionAction(_ActionAction):
         if self.cmdstr is None:
             return None
         if not self.cmdstr is _null:
-            c = env.subst(self.cmdstr, SCons.Subst.SUBST_RAW, target, source)
+            from SCons.Subst import SUBST_RAW
+            c = env.subst(self.cmdstr, SUBST_RAW, target, source)
             if c:
                 return c
         def array(a):

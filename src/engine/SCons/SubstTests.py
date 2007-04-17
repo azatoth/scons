@@ -145,6 +145,8 @@ class SubstTestCase(unittest.TestCase):
                    MyNode("/bar/ack.cpp"),
                    MyNode("../foo/ack.c") ]
 
+        callable_object = TestCallable('callable-1')
+
         loc = {
             'xxx'       : None,
             'null'      : '',
@@ -203,7 +205,7 @@ class SubstTestCase(unittest.TestCase):
             'SSS'       : '$RRR',
 
             # Test callables that don't match the calling arguments.
-            'CALLABLE'  : TestCallable('callable-1'),
+            'CALLABLE'  : callable_object,
         }
 
         env = DummyEnv(loc)
@@ -290,7 +292,6 @@ class SubstTestCase(unittest.TestCase):
             "${FFF[0]}",            "G",
             "${FFF[7]}",            "",
             "${NOTHING[1]}",        "",
-            "${NONE[2]}",           "",
 
             # Test various combinations of strings and lists.
             #None,                   '',
@@ -336,7 +337,11 @@ class SubstTestCase(unittest.TestCase):
         while cases:
             input, expect = cases[:2]
             expect = cvt(expect)
-            result = apply(scons_subst, (input, env), kwargs)
+            try:
+                result = apply(scons_subst, (input, env), kwargs)
+            except Exception, e:
+                print "    input %s generated %s %s" % (repr(input), e.__class__.__name__, str(e))
+                failed = failed + 1
             if result != expect:
                 if failed == 0: print
                 print "    input %s => %s did not match %s" % (repr(input), repr(result), repr(expect))
@@ -459,8 +464,8 @@ class SubstTestCase(unittest.TestCase):
             scons_subst('${foo.bar}', env, gvars={'foo':Foo()})
         except SCons.Errors.UserError, e:
             expect = [
-                "Error trying to evaluate `${foo.bar}': bar",
-                "Error trying to evaluate `${foo.bar}': Foo instance has no attribute 'bar'",
+                "AttributeError `bar' trying to evaluate `${foo.bar}'",
+                "AttributeError `Foo instance has no attribute 'bar'' trying to evaluate `${foo.bar}'",
             ]
             assert str(e) in expect, e
         else:
@@ -470,11 +475,56 @@ class SubstTestCase(unittest.TestCase):
         try:
             scons_subst('$foo.bar.3.0', env)
         except SCons.Errors.UserError, e:
-            expect1 = "Syntax error `invalid syntax' trying to evaluate `$foo.bar.3.0'"
-            expect2 = "Syntax error `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'"
-            assert str(e) in [expect1, expect2], e
+            expect = [
+                # Python 1.5
+                "SyntaxError `invalid syntax' trying to evaluate `$foo.bar.3.0'",
+                # Python 2.2, 2.3, 2.4
+                "SyntaxError `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'",
+                # Python 2.5
+                "SyntaxError `invalid syntax (<string>, line 1)' trying to evaluate `$foo.bar.3.0'",
+            ]
+            assert str(e) in expect, e
         else:
             raise AssertionError, "did not catch expected UserError"
+
+        # Test that we handle type errors 
+        try:
+            scons_subst("${NONE[2]}", env, gvars={'NONE':None})
+        except SCons.Errors.UserError, e:
+            expect = [
+                # Python 1.5, 2.2, 2.3, 2.4
+                "TypeError `unsubscriptable object' trying to evaluate `${NONE[2]}'",
+                # Python 2.5 and later
+                "TypeError `'NoneType' object is unsubscriptable' trying to evaluate `${NONE[2]}'",
+            ]
+            assert str(e) in expect, e
+        else:
+            raise AssertionError, "did not catch expected UserError"
+
+        try:
+            def func(a, b, c):
+                pass
+            scons_subst("${func(1)}", env, gvars={'func':func})
+        except SCons.Errors.UserError, e:
+            expect = [
+                # Python 1.5
+                "TypeError `not enough arguments; expected 3, got 1' trying to evaluate `${func(1)}'",
+                # Python 2.2, 2.3, 2.4, 2.5
+                "TypeError `func() takes exactly 3 arguments (1 given)' trying to evaluate `${func(1)}'"
+            ]
+            assert str(e) in expect, repr(str(e))
+        else:
+            raise AssertionError, "did not catch expected UserError"
+
+        # Test that the combination of SUBST_RAW plus a pass-through
+        # conversion routine allows us to fetch a function through the
+        # dictionary.  CommandAction uses this to allow delayed evaluation
+        # of $SPAWN variables.
+        x = lambda x: x
+        r = scons_subst("$CALLABLE", env, mode=SUBST_RAW, conv=x, gvars=gvars)
+        assert r is callable_object, repr(r)
+        r = scons_subst("$CALLABLE", env, mode=SUBST_RAW, gvars=gvars)
+        assert r == 'callable-1', repr(r)
 
         # Test how we handle overriding the internal conversion routines.
         def s(obj):
@@ -556,6 +606,8 @@ class SubstTestCase(unittest.TestCase):
                    MyNode("/bar/ack.cpp"),
                    MyNode("../foo/ack.c") ]
 
+        callable_object = TestCallable('callable-2')
+
         def _defines(defs):
             l = []
             for d in defs:
@@ -615,7 +667,7 @@ class SubstTestCase(unittest.TestCase):
             'SSS'       : '$RRR',
 
             # Test callable objects that don't match our calling arguments.
-            'CALLABLE'  : TestCallable('callable-2'),
+            'CALLABLE'  : callable_object,
 
             '_defines'  : _defines,
             'DEFS'      : [ ('Q1', '"q1"'), ('Q2', '"$AAA"') ],
@@ -753,8 +805,6 @@ class SubstTestCase(unittest.TestCase):
 
             # Test callables that don't match our calling arguments.
             '$CALLABLE',            [['callable-2']],
-
-            # Test
 
             # Test handling of quotes.
             # XXX Find a way to handle this in the future.
@@ -933,8 +983,8 @@ class SubstTestCase(unittest.TestCase):
             scons_subst_list('${foo.bar}', env, gvars={'foo':Foo()})
         except SCons.Errors.UserError, e:
             expect = [
-                "Error trying to evaluate `${foo.bar}': bar",
-                "Error trying to evaluate `${foo.bar}': Foo instance has no attribute 'bar'",
+                "AttributeError `bar' trying to evaluate `${foo.bar}'",
+                "AttributeError `Foo instance has no attribute 'bar'' trying to evaluate `${foo.bar}'",
             ]
             assert str(e) in expect, e
         else:
@@ -944,11 +994,23 @@ class SubstTestCase(unittest.TestCase):
         try:
             scons_subst_list('$foo.bar.3.0', env)
         except SCons.Errors.UserError, e:
-            expect1 = "Syntax error `invalid syntax' trying to evaluate `$foo.bar.3.0'"
-            expect2 = "Syntax error `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'"
-            assert str(e) in [expect1, expect2], e
+            expect = [
+                "SyntaxError `invalid syntax' trying to evaluate `$foo.bar.3.0'",
+                "SyntaxError `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'",
+                "SyntaxError `invalid syntax (<string>, line 1)' trying to evaluate `$foo.bar.3.0'",
+            ]
+            assert str(e) in expect, e
         else:
             raise AssertionError, "did not catch expected SyntaxError"
+
+        # Test that the combination of SUBST_RAW plus a pass-through
+        # conversion routine allows us to fetch a function through the
+        # dictionary.
+        x = lambda x: x
+        r = scons_subst_list("$CALLABLE", env, mode=SUBST_RAW, conv=x, gvars=gvars)
+        assert r == [[callable_object]], repr(r)
+        r = scons_subst_list("$CALLABLE", env, mode=SUBST_RAW, gvars=gvars)
+        assert r == [['callable-2']], repr(r)
 
         # Test we handle overriding the internal conversion routines.
         def s(obj):

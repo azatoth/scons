@@ -68,6 +68,7 @@ class UtilTestCase(unittest.TestCase):
         def __init__(self, name, children=[]):
             self.children = children
             self.name = name
+            self.nocache = None
         def __str__(self):
             return self.name
         def exists(self):
@@ -85,8 +86,6 @@ class UtilTestCase(unittest.TestCase):
         def always_build(self):
             return 1
         def is_up_to_date(self):
-            return 1
-        def noclean(self):
             return 1
         def noclean(self):
             return 1
@@ -114,7 +113,7 @@ class UtilTestCase(unittest.TestCase):
 """
 
         lines = string.split(expect, '\n')[:-1]
-        lines = map(lambda l: '[E BSPACN]'+l, lines)
+        lines = map(lambda l: '[E BSPACN ]'+l, lines)
         withtags = string.join(lines, '\n') + '\n'
 
         return foo, expect, withtags
@@ -134,10 +133,11 @@ class UtilTestCase(unittest.TestCase):
     +-blat.h
     | +-stdlib.h
     +-bar.h
+      +-[stdlib.h]
 """
 
         lines = string.split(expect, '\n')[:-1]
-        lines = map(lambda l: '[E BSPACN]'+l, lines)
+        lines = map(lambda l: '[E BSPACN ]'+l, lines)
         withtags = string.join(lines, '\n') + '\n'
 
         return blat_o, expect, withtags

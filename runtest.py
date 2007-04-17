@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2001, 2002, 2003, 2004 The SCons Foundation
+# __COPYRIGHT__
 #
 # runtest.py - wrapper script for running SCons tests
 #
@@ -96,20 +96,24 @@ import string
 import sys
 import time
 
+if not hasattr(os, 'WEXITSTATUS'):
+    os.WEXITSTATUS = lambda x: x
+
+cwd = os.getcwd()
+
 all = 0
 baseline = 0
+builddir = os.path.join(cwd, 'build')
 debug = ''
 execute_tests = 1
 format = None
 list_only = None
-tests = []
 printcommand = 1
 package = None
 print_passed_summary = None
 scons = None
 scons_exec = None
 outputfile = None
-qmtest = None
 testlistfile = None
 version = ''
 print_times = None
@@ -117,26 +121,19 @@ python = None
 sp = None
 spe = None
 
-cwd = os.getcwd()
-
-if sys.platform == 'win32' or os.name == 'java':
-    lib_dir = os.path.join(sys.exec_prefix, "Lib")
-else:
-    # The hard-coded "python" here is the directory name,
-    # not an executable, so it's all right.
-    lib_dir = os.path.join(sys.exec_prefix, "lib", "python" + sys.version[0:3])
-
 helpstr = """\
 Usage: runtest.py [OPTIONS] [TEST ...]
 Options:
   -a, --all                   Run all tests.
   --aegis                     Print results in Aegis format.
   -b BASE, --baseline BASE    Run test scripts against baseline BASE.
+  --builddir DIR              Directory in which packages were built.
   -d, --debug                 Run test scripts under the Python debugger.
   -f FILE, --file FILE        Run tests in specified FILE.
   -h, --help                  Print this message and exit.
   -l, --list                  List available tests and exit.
   -n, --no-exec               No execute, just print command lines.
+  --noqmtest                  Execute tests directly, not using QMTest.
   -o FILE, --output FILE      Print test results to FILE.
   -P Python                   Use the specified Python interpreter.
   -p PACKAGE, --package PACKAGE
@@ -165,9 +162,9 @@ Options:
 """
 
 opts, args = getopt.getopt(sys.argv[1:], "ab:df:hlno:P:p:qv:Xx:t",
-                            ['all', 'aegis', 'baseline=',
+                            ['all', 'aegis', 'baseline=', 'builddir=',
                              'debug', 'file=', 'help',
-                             'list', 'no-exec', 'output=',
+                             'list', 'no-exec', 'noqmtest', 'output=',
                              'package=', 'passed', 'python=',
                              'qmtest', 'quiet', 'spe=',
                              'version=', 'exec=', 'time',
@@ -178,8 +175,16 @@ for o, a in opts:
         all = 1
     elif o in ['-b', '--baseline']:
         baseline = a
+    elif o in ['--builddir']:
+        builddir = a
+        if not os.path.isabs(builddir):
+            builddir = os.path.normpath(os.path.join(cwd, builddir))
     elif o in ['-d', '--debug']:
-        debug = os.path.join(lib_dir, "pdb.py")
+        for dir in sys.path:
+            pdb = os.path.join(dir, 'pdb.py')
+            if os.path.exists(pdb):
+                debug = pdb
+                break
     elif o in ['-f', '--file']:
         if not os.path.isabs(a):
             a = os.path.join(cwd, a)
@@ -191,6 +196,8 @@ for o, a in opts:
         list_only = 1
     elif o in ['-n', '--no-exec']:
         execute_tests = None
+    elif o in ['--noqmtest']:
+        qmtest = None
     elif o in ['-o', '--output']:
         if a != '-' and not os.path.isabs(a):
             a = os.path.join(cwd, a)
@@ -202,7 +209,7 @@ for o, a in opts:
     elif o in ['-P', '--python']:
         python = a
     elif o in ['--qmtest']:
-        qmtest = 1
+        qmtest = 'qmtest.py'
     elif o in ['-q', '--quiet']:
         printcommand = 0
     elif o in ['--sp']:
@@ -222,17 +229,52 @@ for o, a in opts:
     elif o in ['--aegis', '--xml']:
         format = o
 
-def whereis(file):
-    for dir in string.split(os.environ['PATH'], os.pathsep):
-        f = os.path.join(dir, file)
-        if os.path.isfile(f):
-            try:
-                st = os.stat(f)
-            except OSError:
-                continue
-            if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
-                return f
-    return None
+if not args and not all and not testlistfile:
+    sys.stderr.write("""\
+runtest.py:  No tests were specified.
+             List one or more tests on the command line, use the
+             -f option to specify a file containing a list of tests,
+             or use the -a option to find and run all tests.
+
+""")
+    sys.exit(1)
+
+if sys.platform in ('win32', 'cygwin'):
+
+    def whereis(file):
+        pathext = [''] + string.split(os.environ['PATHEXT'])
+        for dir in string.split(os.environ['PATH'], os.pathsep):
+            f = os.path.join(dir, file)
+            for ext in pathext:
+                fext = f + ext
+                if os.path.isfile(fext):
+                    return fext
+        return None
+
+else:
+
+    def whereis(file):
+        for dir in string.split(os.environ['PATH'], os.pathsep):
+            f = os.path.join(dir, file)
+            if os.path.isfile(f):
+                try:
+                    st = os.stat(f)
+                except OSError:
+                    continue
+                if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
+                    return f
+        return None
+
+try:
+    qmtest
+except NameError:
+    q = 'qmtest.py'
+    qmtest = whereis(q)
+    if qmtest:
+        qmtest = q
+    else:
+        sys.stderr.write('Warning:  %s not found on $PATH, assuming --noqmtest option.\n' % q)
+        sys.stderr.flush()
 
 aegis = whereis('aegis')
 
@@ -253,6 +295,7 @@ if sp is None:
 if spe is None:
     spe = []
 
+sp.append(builddir)
 sp.append(cwd)
 
 #
@@ -277,9 +320,9 @@ except AttributeError:
             return status >> 8
 else:
     def spawn_it(command_args):
+        command = command_args[0]
         command_args = map(escape, command_args)
-        command_args = map(lambda s: string.replace(s, '\\','\\\\'), command_args)
-        return os.spawnv(os.P_WAIT, command_args[0], command_args)
+        return os.spawnv(os.P_WAIT, command, command_args)
 
 class Base:
     def __init__(self, path, spe=None):
@@ -352,86 +395,8 @@ format_class = {
     '--aegis'   : Aegis,
     '--xml'     : XML,
 }
+
 Test = format_class[format]
-
-if qmtest:
-    pass
-elif args:
-    if spe:
-        for a in args:
-            if os.path.isabs(a):
-                for g in glob.glob(a):
-                    tests.append(Test(g))
-            else:
-                for dir in spe:
-                    x = os.path.join(dir, a)
-                    globs = glob.glob(x)
-                    if globs:
-                        for g in globs:
-                            tests.append(Test(g))
-                        break
-    else:
-        for a in args:
-            for g in glob.glob(a):
-                tests.append(Test(g))
-elif all:
-    # Find all of the SCons functional tests in the local directory
-    # tree.  This is anything under the 'src' subdirectory that ends
-    # with 'Tests.py', or any Python script (*.py) under the 'test'
-    # subdirectory.
-    #
-    # Note that there are some tests under 'src' that *begin* with
-    # 'test_', but they're packaging and installation tests, not
-    # functional tests, so we don't execute them by default.  (They can
-    # still be executed by hand, though, and are routinely executed
-    # by the Aegis packaging build to make sure that we're building
-    # things correctly.)
-    tdict = {}
-
-    def find_Tests_py(arg, dirname, names, tdict=tdict):
-        for n in filter(lambda n: n[-8:] == "Tests.py", names):
-            t = os.path.join(dirname, n)
-            if not tdict.has_key(t):
-                tdict[t] = Test(t)
-    os.path.walk('src', find_Tests_py, 0)
-
-    def find_py(arg, dirname, names, tdict=tdict):
-        for n in filter(lambda n: n[-3:] == ".py", names):
-            t = os.path.join(dirname, n)
-            if not tdict.has_key(t):
-                tdict[t] = Test(t)
-    os.path.walk('test', find_py, 0)
-
-    if format == '--aegis' and aegis:
-        cmd = "aegis -list -unf pf 2>/dev/null"
-        for line in os.popen(cmd, "r").readlines():
-            a = string.split(line)
-            if a[0] == "test" and not tdict.has_key(a[-1]):
-                tdict[a[-1]] = Test(a[-1], spe)
-        cmd = "aegis -list -unf cf 2>/dev/null"
-        for line in os.popen(cmd, "r").readlines():
-            a = string.split(line)
-            if a[0] == "test":
-                if a[1] == "remove":
-                    del tdict[a[-1]]
-                elif not tdict.has_key(a[-1]):
-                    tdict[a[-1]] = Test(a[-1], spe)
-
-    keys = tdict.keys()
-    keys.sort()
-    tests = map(tdict.get, keys)
-elif testlistfile:
-    tests = open(testlistfile, 'r').readlines()
-    tests = filter(lambda x: x[0] != '#', tests)
-    tests = map(lambda x: x[:-1], tests)
-    tests = map(Test, tests)
-else:
-    sys.stderr.write("""\
-runtest.py:  No tests were specified on the command line.
-             List one or more tests, or use the -a option
-             to find and run all tests.
-""")
-
 
 if package:
 
@@ -456,7 +421,7 @@ if package:
         sys.stderr.write("Unknown package '%s'\n" % package)
         sys.exit(2)
 
-    test_dir = os.path.join(cwd, 'build', 'test-%s' % package)
+    test_dir = os.path.join(builddir, 'test-%s' % package)
 
     if dir[package] is None:
         scons_script_dir = test_dir
@@ -475,6 +440,8 @@ if package:
         l = lib.get(package, 'scons')
         scons_lib_dir = os.path.join(test_dir, dir[package], 'lib', l)
         pythonpath_dir = scons_lib_dir
+
+    scons_runtest_dir = builddir
 
 else:
     sd = None
@@ -529,6 +496,8 @@ else:
     else:
         base = baseline
 
+    scons_runtest_dir = base
+
     scons_script_dir = sd or os.path.join(base, 'src', 'script')
 
     scons_lib_dir = ld or os.path.join(base, 'src', 'engine')
@@ -548,6 +517,7 @@ elif scons_lib_dir:
 if scons_exec:
     os.environ['SCONS_EXEC'] = '1'
 
+os.environ['SCONS_RUNTEST_DIR'] = scons_runtest_dir
 os.environ['SCONS_SCRIPT_DIR'] = scons_script_dir
 os.environ['SCONS_CWD'] = cwd
 
@@ -573,49 +543,131 @@ if old_pythonpath:
                                os.pathsep + \
                                old_pythonpath
 
+tests = []
+
+if args:
+    if spe:
+        for a in args:
+            if os.path.isabs(a):
+                tests.extend(glob.glob(a))
+            else:
+                for dir in spe:
+                    x = os.path.join(dir, a)
+                    globs = glob.glob(x)
+                    if globs:
+                        tests.extend(globs)
+                        break
+    else:
+        for a in args:
+            tests.extend(glob.glob(a))
+elif testlistfile:
+    tests = open(testlistfile, 'r').readlines()
+    tests = filter(lambda x: x[0] != '#', tests)
+    tests = map(lambda x: x[:-1], tests)
+elif all and not qmtest:
+    # Find all of the SCons functional tests in the local directory
+    # tree.  This is anything under the 'src' subdirectory that ends
+    # with 'Tests.py', or any Python script (*.py) under the 'test'
+    # subdirectory.
+    #
+    # Note that there are some tests under 'src' that *begin* with
+    # 'test_', but they're packaging and installation tests, not
+    # functional tests, so we don't execute them by default.  (They can
+    # still be executed by hand, though, and are routinely executed
+    # by the Aegis packaging build to make sure that we're building
+    # things correctly.)
+    tdict = {}
+
+    def find_Tests_py(tdict, dirname, names):
+        for n in filter(lambda n: n[-8:] == "Tests.py", names):
+            t = os.path.join(dirname, n)
+            if not tdict.has_key(t):
+                tdict[t] = 1
+    os.path.walk('src', find_Tests_py, tdict)
+
+    def find_py(tdict, dirname, names):
+        for n in filter(lambda n: n[-3:] == ".py", names):
+            t = os.path.join(dirname, n)
+            if not tdict.has_key(t):
+                tdict[t] = 1
+    os.path.walk('test', find_py, tdict)
+
+    if format == '--aegis' and aegis:
+        cmd = "aegis -list -unf pf 2>/dev/null"
+        for line in os.popen(cmd, "r").readlines():
+            a = string.split(line)
+            if a[0] == "test" and not tdict.has_key(a[-1]):
+                tdict[a[-1]] = Test(a[-1], spe)
+        cmd = "aegis -list -unf cf 2>/dev/null"
+        for line in os.popen(cmd, "r").readlines():
+            a = string.split(line)
+            if a[0] == "test":
+                if a[1] == "remove":
+                    del tdict[a[-1]]
+                elif not tdict.has_key(a[-1]):
+                    tdict[a[-1]] = Test(a[-1], spe)
+
+    tests = tdict.keys()
+    tests.sort()
+
 if qmtest:
     if baseline:
-        result_stream = 'AegisBaselineStream'
+        aegis_result_stream = 'scons_tdb.AegisBaselineStream'
         qmr_file = 'baseline.qmr'
     else:
-        result_stream = 'AegisChangeStream'
+        aegis_result_stream = 'scons_tdb.AegisChangeStream'
         qmr_file = 'results.qmr'
-    #qmtest = r'D:\Applications\python23\scripts\qmtest.py'
-    qmtest = 'qmtest.py'
-    qmtest_args = [
-                qmtest,
+
+    if print_times:
+        aegis_result_stream = aegis_result_stream + "(print_time='1')"
+
+    qmtest_args = [ qmtest, ]
+
+    if format == '--aegis':
+        dir = builddir
+        if not os.path.isdir(dir):
+            dir = cwd
+        qmtest_args.extend(['-D', dir])
+
+    qmtest_args.extend([
                 'run',
                 '--output %s' % qmr_file,
                 '--format none',
-                '--result-stream=scons_tdb.%s' % result_stream,
-              ]
+                '--result-stream="%s"' % aegis_result_stream,
+              ])
 
     if python:
-        qmtest_args.append('--context python=%s' % python)
-
-    if print_times:
-        qmtest_args.append('--context print_time=1')
+        qmtest_args.append('--context python="%s"' % python)
 
     if outputfile:
-        #rs = '--result-stream=scons_tdb.AegisBatchStream(results_file=\\"%s\\")' % outputfile
-        rs = '\'--result-stream=scons_tdb.AegisBatchStream(results_file="%s")\'' % outputfile
+        if format == '--xml':
+            rsclass = 'scons_tdb.SConsXMLResultStream'
+        else:
+            rsclass = 'scons_tdb.AegisBatchStream'
+        qof = "r'" + outputfile + "'"
+        rs = '--result-stream="%s(filename=%s)"' % (rsclass, qof)
         qmtest_args.append(rs)
 
-    os.environ['SCONS'] = os.path.join(cwd, 'src', 'script', 'scons.py')
+    if format == '--aegis':
+        tests = map(lambda x: string.replace(x, cwd+os.sep, ''), tests)
+    else:
+        os.environ['SCONS'] = os.path.join(cwd, 'src', 'script', 'scons.py')
 
-    cmd = string.join(qmtest_args + args, ' ')
+    cmd = string.join(qmtest_args + tests, ' ')
     if printcommand:
         sys.stdout.write(cmd + '\n')
         sys.stdout.flush()
     status = 0
     if execute_tests:
-        status = os.system(cmd)
+        status = os.WEXITSTATUS(os.system(cmd))
     sys.exit(status)
 
 #try:
 #    os.chdir(scons_script_dir)
 #except OSError:
 #    pass
+
+tests = map(Test, tests)
 
 class Unbuffered:
     def __init__(self, file):
@@ -644,20 +696,15 @@ if not python:
 # but time.time() does a better job on Linux systems, so let that be
 # the non-Windows default.
 
+if sys.platform == 'win32':
+    time_func = time.clock
+else:
+    time_func = time.time
+
 if print_times:
     print_time_func = lambda fmt, time: sys.stdout.write(fmt % time)
 else:
     print_time_func = lambda fmt, time: None
-
-if sys.platform == 'win32':
-    time_func = time.clock
-else:
-    time_func = time.time
-
-if sys.platform == 'win32':
-    time_func = time.clock
-else:
-    time_func = time.time
 
 total_start_time = time_func()
 for t in tests:

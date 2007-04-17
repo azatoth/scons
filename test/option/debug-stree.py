@@ -43,6 +43,8 @@ env.Program('foo', Split('foo.c bar.c'))
 """)
 
 test.write('foo.c', r"""
+#include <stdio.h>
+#include <stdlib.h>
 #include "foo.h"
 int main(int argc, char *argv[])
 {
@@ -71,40 +73,41 @@ test.write('bar.h', """
 """)
 
 stree = """
-[E B   C ]+-foo.xxx
-[E B   C ]  +-foo.ooo
-[E     C ]  | +-foo.c
-[E     C ]  | +-foo.h
-[E     C ]  | +-bar.h
-[E B   C ]  +-bar.ooo
-[E     C ]    +-bar.c
-[E     C ]    +-bar.h
-[E     C ]    +-foo.h
+[E B   C  ]+-foo.xxx
+[E B   C  ]  +-foo.ooo
+[E     C  ]  | +-foo.c
+[E     C  ]  | +-foo.h
+[E     C  ]  | +-bar.h
+[E B   C  ]  +-bar.ooo
+[E     C  ]    +-bar.c
+[E     C  ]    +-bar.h
+[E     C  ]    +-foo.h
 """
 
 test.run(arguments = "--debug=stree foo.xxx")
 test.fail_test(string.find(test.stdout(), stree) == -1)
 
 stree2 = """
- E        = exists
-  R       = exists in repository only
-   b      = implicit builder
-   B      = explicit builder
-    S     = side effect
-     P    = precious
-      A   = always build
-       C  = current
-        N = no clean
+ E         = exists
+  R        = exists in repository only
+   b       = implicit builder
+   B       = explicit builder
+    S      = side effect
+     P     = precious
+      A    = always build
+       C   = current
+        N  = no clean
+         H = no cache
 
-[  B     ]+-foo.xxx
-[  B     ]  +-foo.ooo
-[E     C ]  | +-foo.c
-[E     C ]  | +-foo.h
-[E     C ]  | +-bar.h
-[  B     ]  +-bar.ooo
-[E     C ]    +-bar.c
-[E     C ]    +-bar.h
-[E     C ]    +-foo.h
+[  B      ]+-foo.xxx
+[  B      ]  +-foo.ooo
+[E     C  ]  | +-foo.c
+[E     C  ]  | +-foo.h
+[E     C  ]  | +-bar.h
+[  B      ]  +-bar.ooo
+[E     C  ]    +-bar.c
+[E     C  ]    +-bar.h
+[E     C  ]    +-foo.h
 """
 
 test.run(arguments = '-c foo.xxx')

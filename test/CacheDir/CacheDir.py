@@ -28,19 +28,26 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test retrieving derived files from a CacheDir.
 """
 
-import os.path
-import shutil
+import os
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
+cache = test.workpath('cache')
+
+src_aaa_out = test.workpath('src', 'aaa.out')
+src_bbb_out = test.workpath('src', 'bbb.out')
+src_ccc_out = test.workpath('src', 'ccc.out')
+src_cat_out = test.workpath('src', 'cat.out')
+src_all = test.workpath('src', 'all')
+
 test.subdir('cache', 'src')
 
 test.write(['src', 'SConstruct'], """\
-CacheDir(r'%s')
+CacheDir(r'%(cache)s')
 SConscript('SConscript')
-""" % test.workpath('cache'))
+""" % locals())
 
 test.write(['src', 'SConscript'], """\
 def cat(env, source, target):
@@ -56,14 +63,11 @@ env.Cat('aaa.out', 'aaa.in')
 env.Cat('bbb.out', 'bbb.in')
 env.Cat('ccc.out', 'ccc.in')
 env.Cat('all', ['aaa.out', 'bbb.out', 'ccc.out'])
-foo = 1
-env.Depends('ccc.out', Value(foo))
 """)
 
 test.write(['src', 'aaa.in'], "aaa.in\n")
 test.write(['src', 'bbb.in'], "bbb.in\n")
 test.write(['src', 'ccc.in'], "ccc.in\n")
-
 
 # Verify that building with -n and an empty cache reports that proper
 # build operations would be taken, but that nothing is actually built
@@ -75,13 +79,13 @@ cat(["ccc.out"], ["ccc.in"])
 cat(["all"], ["aaa.out", "bbb.out", "ccc.out"])
 """))
 
-test.must_not_exist(test.workpath('src', 'aaa.out'))
-test.must_not_exist(test.workpath('src', 'bbb.out'))
-test.must_not_exist(test.workpath('src', 'ccc.out'))
-test.must_not_exist(test.workpath('src', 'all'))
-test.fail_test(len(os.listdir(test.workpath('cache'))))
+test.must_not_exist(src_aaa_out)
+test.must_not_exist(src_bbb_out)
+test.must_not_exist(src_ccc_out)
+test.must_not_exist(src_all)
+test.fail_test(len(os.listdir(cache)))
 
-# Verify that a normal build works correctly.
+# Verify that a normal build works correctly, and clean up.
 # This should populate the cache with our derived files.
 test.run(chdir = 'src', arguments = '.')
 
@@ -90,10 +94,8 @@ test.must_match(['src', 'cat.out'], "aaa.out\nbbb.out\nccc.out\nall\n")
 
 test.up_to_date(chdir = 'src', arguments = '.')
 
-
 test.run(chdir = 'src', arguments = '-c .')
 test.unlink(['src', 'cat.out'])
-
 
 # Verify that we now retrieve the derived files from cache,
 # not rebuild them.  Then clean up.
@@ -104,13 +106,11 @@ Retrieved `ccc.out' from cache
 Retrieved `all' from cache
 """))
 
-test.must_not_exist(test.workpath('src', 'cat.out'))
+test.must_not_exist(src_cat_out)
 
 test.up_to_date(chdir = 'src', arguments = '.')
 
-
 test.run(chdir = 'src', arguments = '-c .')
-
 
 # Verify that rebuilding with -n reports that everything was retrieved
 # from the cache, but that nothing really was.
@@ -121,24 +121,21 @@ Retrieved `ccc.out' from cache
 Retrieved `all' from cache
 """))
 
-test.must_not_exist(test.workpath('src', 'aaa.out'))
-test.must_not_exist(test.workpath('src', 'bbb.out'))
-test.must_not_exist(test.workpath('src', 'ccc.out'))
-test.must_not_exist(test.workpath('src', 'all'))
-
+test.must_not_exist(src_aaa_out)
+test.must_not_exist(src_bbb_out)
+test.must_not_exist(src_ccc_out)
+test.must_not_exist(src_all)
 
 # Verify that rebuilding with -s retrieves everything from the cache
 # even though it doesn't report anything.
 test.run(chdir = 'src', arguments = '-s .', stdout = "")
 
 test.must_match(['src', 'all'], "aaa.in\nbbb.in\nccc.in\n")
-test.must_not_exist(test.workpath('src', 'cat.out'))
+test.must_not_exist(src_cat_out)
 
 test.up_to_date(chdir = 'src', arguments = '.')
 
-
 test.run(chdir = 'src', arguments = '-c .')
-
 
 # Verify that updating one input file builds its derived file and
 # dependency but that the other files are retrieved from cache.

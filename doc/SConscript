@@ -29,18 +29,18 @@ import os.path
 import re
 import string
 
-Import('env', 'whereis')
+Import('build_dir', 'env', 'whereis')
 
-env = env.Copy()
+env = env.Clone()
 
 env.TargetSignatures('content')
 
-build = os.path.join('#build', 'doc')
+build = os.path.join(build_dir, 'doc')
 
 #
 #
 #
-doc_tar_gz = os.path.join('#build',
+doc_tar_gz = os.path.join(build_dir,
                           'dist',
                           'scons-doc-%s.tar.gz' % env.Dictionary('VERSION'))
 
@@ -49,6 +49,7 @@ doc_tar_gz = os.path.join('#build',
 # if lynx is available to do the dump.
 #
 fig2dev = whereis('fig2dev')
+epydoc = whereis('epydoc')
 groff = whereis('groff')
 lynx = whereis('lynx')
 man2html = whereis('man2html')
@@ -103,9 +104,9 @@ def scansgml(node, env, target):
 s = Scanner(name = 'sgml', function = scansgml, skeys = ['.sgml', '.mod'])
 
 orig_env = env
-env = orig_env.Copy(SCANNERS = [s],
-                    SCONS_PROC_PY = File('#bin/scons-proc.py').rfile(),
-                    SCONSOUTPUT_PY = File('#bin/sconsoutput.py').rfile())
+env = orig_env.Clone(SCANNERS = [s],
+                     SCONS_PROC_PY = File('#bin/scons-proc.py').rfile(),
+                     SCONSOUTPUT_PY = File('#bin/sconsoutput.py').rfile())
 
 # Fetch the list of files in the build engine that contain
 # SCons documentation XML for processing.
@@ -169,7 +170,7 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
                         variables_gen, variables_mod]
     b = env.Command(doc_output_files,
                     scons_doc_files,
-                    "python $SCONS_PROC_PY --sgml -b ${TARGETS[0]},${TARGETS[1]} -t ${TARGETS[2]},${TARGETS[3]} -v ${TARGETS[4]},${TARGETS[5]} $( $SOURCES $)")
+                    "$PYTHON $SCONS_PROC_PY --sgml -b ${TARGETS[0]},${TARGETS[1]} -t ${TARGETS[2]},${TARGETS[3]} -v ${TARGETS[4]},${TARGETS[5]} $( $SOURCES $)")
     env.Depends(b, "$SCONS_PROC_PY")
 
     env.Local(b)
@@ -210,12 +211,21 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
                 'pdf'       : 1,
                 'text'      : 0,
         },
+        # For whenever (if ever?) we start putting developer guide
+        # information in a printable document instead of the wiki.
+        #'developer' : {
+        #        'htmlindex' : 'book1.html',
+        #        'html'      : 1,
+        #        'ps'        : 1,
+        #        'pdf'       : 1,
+        #        'text'      : 0,
+        #},
         'user' : {
                 'htmlindex' : 'book1.html',
                 'html'      : 1,
                 'ps'        : 1,
                 'pdf'       : 1,
-                'text'      : 0,
+                'text'      : 1,
                 'graphics'  : [
                                 'SCons-win32-install-1.jpg',
                                 'SCons-win32-install-2.jpg',
@@ -259,7 +269,7 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
                 if build_doc and ext == '.sgml':
                     env.Command(doc_s,
                                 base + '.in',
-                                "python $SCONSOUTPUT_PY $SOURCE > $TARGET")
+                                "$PYTHON $SCONSOUTPUT_PY $SOURCE > $TARGET")
                 orig_env.SCons_revision(build_s, doc_s)
             Local(build_s)
 
@@ -268,7 +278,7 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 
         # Hard-coding the scons-src path is a bit of a hack.  This can
         # be reworked when a better solution presents itself.
-        scons_src_main = os.path.join('#build', 'scons-src', 'doc', main)
+        scons_src_main = os.path.join(build_dir, 'scons-src', 'doc', main)
         env.Ignore(scons_src_main, version_sgml)
 
         htmldir = os.path.join(build, 'HTML', 'scons-%s' % doc)
@@ -376,10 +386,10 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
 #
 # Man page(s), in good ol' troff format.
 #
-man_page_list = ['scons.1', 'sconsign.1']
+man_page_list = ['scons.1', 'sconsign.1', 'scons-time.1']
 
 for m in man_page_list:
-    orig_env.SCons_revision(os.path.join(build, 'man', m),
+    x = orig_env.SCons_revision(os.path.join(build, 'man', m),
                             os.path.join('man', m))
 
 man_i_files = ['builders.man', 'tools.man', 'variables.man']
@@ -387,7 +397,7 @@ man_i_files = ['builders.man', 'tools.man', 'variables.man']
 man_intermediate_files = map(lambda x: os.path.join(build, 'man', x),
                              man_i_files)
 
-cmd = "python $SCONS_PROC_PY --man -b ${TARGETS[0]} -t ${TARGETS[1]} -v ${TARGETS[2]} $( $SOURCES $)"
+cmd = "$PYTHON $SCONS_PROC_PY --man -b ${TARGETS[0]} -t ${TARGETS[1]} -v ${TARGETS[2]} $( $SOURCES $)"
 man_intermediate_files = env.Command(man_intermediate_files,
                                      scons_doc_files,
                                      cmd)
@@ -425,7 +435,7 @@ for man_1 in man_page_list:
             return 0
 
         cmds = [
-            "( cd build/doc/man && cp %s .. )" % string.join(man_i_files),
+            "( cd %s/man && cp %s .. )" % (build, string.join(man_i_files)),
             "( cd ${SOURCE.dir} && man2html ${SOURCE.file} ) > $TARGET",
             Action(strip_to_first_html_tag),
         ]
@@ -438,12 +448,63 @@ for man_1 in man_page_list:
         tar_deps.append(html)
         tar_list.append(html)
 
+if epydoc:
+    # XXX Should be in common with reading the same thing in
+    # the SConstruct file.
+    e = os.path.join('#src', 'engine')
+    manifest_in = File(os.path.join(e, 'MANIFEST.in')).rstr()
+    sources = map(lambda x: x[:-1], open(manifest_in).readlines())
+    sources = filter(lambda x: string.find(x, 'Optik') == -1, sources)
+    sources = filter(lambda x: string.find(x, 'Platform') == -1, sources)
+    sources = filter(lambda x: string.find(x, 'Tool') == -1, sources)
+    # XXX
+    sources = filter(lambda x: string.find(x, 'Options') == -1, sources)
+
+    e = os.path.join(build, '..', 'scons', 'engine')
+    sources = map(lambda x, e=e: os.path.join(e, x), sources)
+
+    epydoc_commands = [
+        Delete('$OUTDIR'),
+        '$EPYDOC $EPYDOCFLAGS --output $OUTDIR --docformat=restructuredText --name SCons --url http://www.scons.org/ $SOURCES',
+        Touch('$TARGET'),
+    ]
+
+    htmldir = os.path.join(build, 'HTML', 'scons-api')
+    env.Command('${OUTDIR}/index.html', sources, epydoc_commands,
+                EPYDOC=epydoc, EPYDOCFLAGS='--html', OUTDIR=htmldir)
+    tar_deps.append(htmldir)
+    tar_list.append(htmldir)
+
+    # PDF and PostScript and TeX are built from the
+    # same invocation.
+    api_dir = os.path.join(build, 'scons-api')
+    api_pdf = os.path.join(api_dir, 'api.pdf')
+    api_ps = os.path.join(api_dir, 'api.ps')
+    api_tex = os.path.join(api_dir, 'api.tex')
+    api_targets = [api_pdf, api_ps, api_tex]
+    env.Command(api_targets, sources, epydoc_commands,
+                EPYDOC=epydoc, EPYDOCFLAGS='--pdf', OUTDIR=api_dir)
+    Local(api_targets)
+
+    pdf_install = os.path.join(build, 'PDF', 'scons-api.pdf')
+    env.InstallAs(pdf_install, api_pdf)
+    tar_deps.append(pdf_install)
+    tar_list.append(pdf_install)
+    Local(pdf_install)
+
+    ps_install = os.path.join(build, 'PS', 'scons-api.ps')
+    env.InstallAs(ps_install, api_ps)
+    tar_deps.append(ps_install)
+    tar_list.append(ps_install)
+    Local(ps_install)
+
 #
 # Now actually create the tar file of the documentation,
 # for easy distribution to the web site.
 #
 if tar_deps:
-    tar_list = string.join(map(lambda x: x[11:], tar_list))
+    tar_list = string.join(map(lambda x, b=build+'/': string.replace(x, b, ''),
+                           tar_list))
     env.Command(doc_tar_gz, tar_deps,
-                "tar cf${TAR_HFLAG} - -C build/doc %s | gzip > $TARGET" % tar_list)
+                "tar cf${TAR_HFLAG} - -C %s %s | gzip > $TARGET" % (build, tar_list))
     Local(doc_tar_gz)
