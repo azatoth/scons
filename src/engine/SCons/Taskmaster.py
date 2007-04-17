@@ -560,63 +560,39 @@ class Taskmaster:
                         if T: T.write(' dependency cycle\n')
                         raise SCons.Errors.UserError, desc
 
-            not_started = filter(lambda I: not I[1], childstate)
-            if not_started:
-                not_started = map(lambda I: I[0], not_started)
-
-                # We're waiting on one more derived targets that have
-                # not yet started building.  Add this node to the
-                # waiting_parents lists of those derived files so that
-                # when they've finished building, our implicit dependency
-                # list will get cleared and we'll re-scan the newly-built
-                # file(s) for updated implicit dependencies.
-                map(lambda n, P=node: n.add_to_waiting_parents(P), not_started)
-                node.ref_count = len(set(not_started))
-
-                # Now we add these derived targets to the candidates
-                # list so they can be examined and built.  We have to
-                # add ourselves back to the list first, though, so we get
-                # a chance to re-scan and build after the dependencies.
-                #
-                # We reverse the order in which the children are added
-                # to the candidates stack so the order in which they're
-                # popped matches the order in which they show up in our
-                # children's list.  This is more logical / efficient for
-                # builders with multiple targets, since the "primary"
-                # target will be examined first.
-                self.candidates.append(node)
-                not_started.reverse()
-                self.candidates.extend(self.order(not_started))
-
-                if S: S.not_started = S.not_started + 1
-                if T:
-                    c = map(str, not_started)
-                    c.sort()
-                    T.write(' waiting on unstarted children:\n    %s\n' % c)
-                continue
-
             not_built = filter(lambda I: I[1] <= SCons.Node.executing, childstate)
             if not_built:
-                not_built = map(lambda I: I[0], not_built)
-
                 # We're waiting on one or more derived targets that have
-                # started building but not yet finished.  Add this node
-                # to the waiting parents lists of those derived files
-                # so that when they've finished building, our implicit
-                # dependency list will get cleared and we'll re-scan the
-                # newly-built file(s) for updated implicit dependencies.
-                map(lambda n, P=node: n.add_to_waiting_parents(P), not_built)
-                node.ref_count = len(set(not_built))
+                # not yet finished building.
+
+                not_visited = filter(lambda I: not I[1], not_built)
+                if not_visited:
+                    # Some of them haven't even been visited yet.
+                    # Add them to the list so that on some next pass
+                    # we can take a stab at evaluating them (or
+                    # their children).
+                    not_visited = map(lambda I: I[0], not_visited)
+                    not_visited.reverse()
+                    self.candidates.extend(self.order(not_visited))
+
+                n_b_nodes = map(lambda I: I[0], not_built)
+
+                # Add this node to the waiting parents lists of anything
+                # we're waiting on, with a reference count so we can be
+                # put back on the list for re-evaluation when they've
+                # all finished.
+                map(lambda n, P=node: n.add_to_waiting_parents(P), n_b_nodes)
+                node.ref_count = len(set(n_b_nodes))
 
                 if S: S.not_built = S.not_built + 1
                 if T:
-                    c = map(str, not_built)
+                    c = map(str, n_b_nodes)
                     c.sort()
                     T.write(' waiting on unfinished children:\n    %s\n' % c)
                 continue
 
-            # Skip this node if it has side-effects that are currently being
-            # built themselves or waiting for something else being built.
+            # Skip this node if it has side-effects that are
+            # currently being built:
             side_effects = filter(lambda N:
                                   N.get_state() == SCons.Node.executing,
                                   node.side_effects)

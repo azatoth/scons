@@ -999,11 +999,19 @@ class TaskmasterTestCase(unittest.TestCase):
         t = tm.next_task()
         t.prepare()
         t.execute()
+        t.postprocess()
         n1.set_state(SCons.Node.executed)
         t = tm.next_task()
         t.prepare()
         t.execute()
+        t.postprocess()
+        n2.set_state(SCons.Node.executed)
         t = tm.next_task()
+        t.prepare()
+        t.execute()
+        t.postprocess()
+        t = tm.next_task()
+        assert t is None
 
         value = trace.getvalue()
         expect = """\
@@ -1011,13 +1019,12 @@ Taskmaster: 'n1': evaluating n1
 Taskmaster: 'n1': already handled (executed)
 Taskmaster: 'n3': children:
     ['n1', 'n2']
-    waiting on unstarted children:
+    waiting on unfinished children:
     ['n2']
 Taskmaster: 'n2': evaluating n2
 Taskmaster: 'n3': children:
     ['n1', 'n2']
-    waiting on unfinished children:
-    ['n2']
+    evaluating n3
 """
         assert value == expect, value
 
