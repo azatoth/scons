@@ -756,7 +756,7 @@ class FileBuildInfoTestCase(_tempdirTestCase):
     def test___init__(self):
         """Test File.BuildInfo initialization"""
         fff = self.fs.File('fff')
-        bi = SCons.Node.FS.BuildInfo(fff)
+        bi = SCons.Node.FS.FileBuildInfo(fff)
         assert bi.node is fff, bi.node
 
     def test_convert_to_sconsign(self):
@@ -769,7 +769,7 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         """Test converting from .sconsign file format"""
         fff = self.fs.File('fff')
         bi = SCons.Node.FS.FileBuildInfo(fff)
-        bi.set_ninfo(SCons.Node.FS.NodeInfo(fff))
+        bi.set_ninfo(SCons.Node.FS.FileNodeInfo(fff))
         assert hasattr(bi, 'convert_from_sconsign')
 
     def test_prepare_dependencies(self):
@@ -781,8 +781,8 @@ class FileBuildInfoTestCase(_tempdirTestCase):
     def test_format(self):
         """Test the format() method"""
         f1 = self.fs.File('f1')
-        bi1 = SCons.Node.FS.BuildInfo(f1)
-        bi1.set_ninfo(SCons.Node.FS.NodeInfo(f1))
+        bi1 = SCons.Node.FS.FileBuildInfo(f1)
+        bi1.set_ninfo(SCons.Node.FS.FileNodeInfo(f1))
 
         s1sig = SCons.Node.FS.FileNodeInfo(self.fs.File('n1'))
         s1sig.csig = 1

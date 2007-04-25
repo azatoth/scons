@@ -1310,7 +1310,8 @@ class FS(LocalFS):
         return targets, message
 
 class DirNodeInfo(SCons.Node.NodeInfoBase):
-    pass
+    def convert(self, node, val):
+        return node.Dir(val)
 
 class DirBuildInfo(SCons.Node.BuildInfoBase):
     pass
@@ -1821,6 +1822,8 @@ class RootDir(Dir):
 
 class FileNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig', 'timestamp', 'size']
+    def convert(self, node, val):
+        return node.dir.File(val)
 
 class FileBuildInfo(SCons.Node.BuildInfoBase):
     def __init__(self, node):
@@ -1854,7 +1857,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         because they're not used in the normal case of just deciding
         whether or not to rebuild things.
         """
-        self.node = dir.Entry(name)
+        self.node = dir.File(name)
     def prepare_dependencies(self):
         """Prepare a FileBuildInfo object for explaining what changed
 
@@ -1863,14 +1866,19 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         as dependency info.  Convert the strings to actual Nodes (for
         use by the --debug=explain code and --implicit-cache).
         """
-        Entry_func = self.node.dir.Entry
-        for attr in ['bsources', 'bdepends', 'bimplicit']:
+        for attr, niattr in [('bsources', 'bsourcesigs'),
+                              ('bdepends', 'bdependsigs'),
+                              ('bimplicit', 'bimplicitsigs')]:
             try:
                 val = getattr(self, attr)
+                ninfo = getattr(self, niattr)
             except AttributeError:
                 pass
             else:
-                setattr(self, attr, map(Entry_func, val))
+                result = []
+                for s, ni in zip(val, ninfo):
+                    result.append(ni.convert(self.node, s))
+                setattr(self, attr, result)
     def format(self, names=0):
         result = [string.join(self.ninfo.format(names=names), ' ')]
         bkids = self.bsources + self.bdepends + self.bimplicit
@@ -1880,12 +1888,6 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
                           string.join(bkidsigs[i].format(names=names), ' '))
         result.append('%s [%s]' % (self.bactsig, self.bact))
         return string.join(result, '\n')
-
-class NodeInfo(FileNodeInfo):
-    pass
-
-class BuildInfo(FileBuildInfo):
-    pass
 
 class File(Base):
     """A class for files in a file system.

@@ -57,7 +57,8 @@ class AliasNameSpace(UserDict.UserDict):
             return None
 
 class AliasNodeInfo(SCons.Node.NodeInfoBase):
-    pass
+    def convert(self, node, val):
+        return default_ans.Alias(val)
 
 class AliasBuildInfo(SCons.Node.BuildInfoBase):
     pass
