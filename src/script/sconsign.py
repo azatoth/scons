@@ -277,7 +277,10 @@ def nodeinfo_raw(name, ninfo, prefix=""):
     return name + ': {' + string.join(l, ', ') + '}'
 
 def nodeinfo_cooked(name, ninfo, prefix=""):
-    field_list = ['csig', 'timestamp', 'size']
+    try:
+        field_list = ninfo.field_list
+    except AttributeError:
+        field_list = []
     f = lambda x, ni=ninfo, v=Verbose: field(x, ni, v)
     outlist = [name+':'] + filter(None, map(f, field_list))
     if Verbose:
