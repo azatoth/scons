@@ -2371,7 +2371,15 @@ class File(Base):
                     return 1
                 return func[src_sig_type](target, prev_ni)
             elif tgt_sig_type == 'source':
-                return func[src_sig_type](target, prev_ni)
+                # We're an input file (or dependency), and the target
+                # we're being used to build (or which depends on us) says
+                # that we get to decide how the calculation is performed.
+                # If the environment we were built with has a specific
+                # signature type for targets, use that.  If not, then
+                # fall back to this target's source setting.
+                my_tgt_sig_type = self.get_build_env().get_tgt_sig_type()
+                f = func.get(my_tgt_sig_type, func[src_sig_type])
+                return f(target, prev_ni)
             else:
                 return func[tgt_sig_type](target, prev_ni)
         else:
