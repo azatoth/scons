@@ -24,6 +24,12 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+"""
+Verify basic interaction of the historic TargetSignatures('build')
+and TargetSignatures('content') settings, overriding one with
+the other in specific construction environments.
+"""
+
 import TestSCons
 
 test = TestSCons.TestSCons()
