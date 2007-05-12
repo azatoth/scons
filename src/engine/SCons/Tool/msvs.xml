@@ -6,8 +6,22 @@ See its __doc__ string for a discussion of the format.
 -->
 <tool name="msvs">
 <summary>
-XXX
+Sets construction variables for Microsoft Visual Studio.
 </summary>
+<sets>
+MSVSPROJECTCOM
+MSVSSOLUTIONCOM
+MSVSSCONSCRIPT
+MSVSSCONS
+MSVSSCONSFLAGS
+MSVSSCONSCOM
+MSVSBUILDCOM
+MSVSREBUILDCOM
+MSVSCLEANCOM
+MSVSENCODING
+</sets>
+<uses>
+</uses>
 </tool>
 
 <builder name ="MSVSProject">
