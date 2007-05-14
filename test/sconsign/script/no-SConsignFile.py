@@ -84,61 +84,63 @@ test.write(['sub2', 'inc2.h'], r"""\
 
 test.run(arguments = '--implicit-cache .')
 
+sig_re = r'[0-9a-fA-F]{32}'
+
 test.run_sconsign(arguments = "sub1/.sconsign",
-         stdout = r"""hello.c: \S+ \d+ \d+
-hello.exe: \S+ \d+ \d+
-        hello.obj: \S+ \d+ \d+
-        \S+ \[.*\]
-hello.obj: \S+ \d+ \d+
-        hello.c: \S+ \d+ \d+
-        \S+ \[.*\]
-""")
+         stdout = r"""hello.c: %(sig_re)s \d+ \d+
+hello.exe: %(sig_re)s \d+ \d+
+        hello.obj: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+hello.obj: %(sig_re)s \d+ \d+
+        hello.c: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+""" % locals())
 
 test.run_sconsign(arguments = "--raw sub1/.sconsign",
-         stdout = r"""hello.c: {'csig': '\S+', 'timestamp': \d+, 'size': \d+L?}
-hello.exe: {'csig': '\S+', 'timestamp': \d+, 'size': \d+L?}
-        hello.obj: {'csig': '\S+', 'timestamp': \d+, 'size': \d+L?}
-        \S+ \[.*\]
-hello.obj: {'csig': '\S+', 'timestamp': \d+, 'size': \d+L?}
-        hello.c: {'csig': '\S+', 'timestamp': \d+, 'size': \d+L?}
-        \S+ \[.*\]
-""")
+         stdout = r"""hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+hello.exe: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+        hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+        %(sig_re)s \[.*\]
+hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+        hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+        %(sig_re)s \[.*\]
+""" % locals())
 
 test.run_sconsign(arguments = "-v sub1/.sconsign",
          stdout = r"""hello.c:
-    csig: \S+
+    csig: %(sig_re)s
     timestamp: \d+
     size: \d+
 hello.exe:
-    csig: \S+
+    csig: %(sig_re)s
     timestamp: \d+
     size: \d+
     implicit:
         hello.obj:
-            csig: \S+
+            csig: %(sig_re)s
             timestamp: \d+
             size: \d+
-    action: \S+ \[.*\]
+    action: %(sig_re)s \[.*\]
 hello.obj:
-    csig: \S+
+    csig: %(sig_re)s
     timestamp: \d+
     size: \d+
     implicit:
         hello.c:
-            csig: \S+
+            csig: %(sig_re)s
             timestamp: \d+
             size: \d+
-    action: \S+ \[.*\]
-""")
+    action: %(sig_re)s \[.*\]
+""" % locals())
 
 test.run_sconsign(arguments = "-c -v sub1/.sconsign",
          stdout = r"""hello.c:
-    csig: \S+
+    csig: %(sig_re)s
 hello.exe:
-    csig: \S+
+    csig: %(sig_re)s
 hello.obj:
-    csig: \S+
-""")
+    csig: %(sig_re)s
+""" % locals())
 
 test.run_sconsign(arguments = "-s -v sub1/.sconsign",
          stdout = r"""hello.c:
@@ -147,7 +149,7 @@ hello.exe:
     size: \d+
 hello.obj:
     size: \d+
-""")
+""" % locals())
 
 test.run_sconsign(arguments = "-t -v sub1/.sconsign",
          stdout = r"""hello.c:
@@ -156,65 +158,65 @@ hello.exe:
     timestamp: \d+
 hello.obj:
     timestamp: \d+
-""")
+""" % locals())
 
 test.run_sconsign(arguments = "-e hello.obj sub1/.sconsign",
-         stdout = r"""hello.obj: \S+ \d+ \d+
-        hello.c: \S+ \d+ \d+
-        \S+ \[.*\]
-""")
+         stdout = r"""hello.obj: %(sig_re)s \d+ \d+
+        hello.c: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+""" % locals())
 
 test.run_sconsign(arguments = "-e hello.obj -e hello.exe -e hello.obj sub1/.sconsign",
-         stdout = r"""hello.obj: \S+ \d+ \d+
-        hello.c: \S+ \d+ \d+
-        \S+ \[.*\]
-hello.exe: \S+ \d+ \d+
-        hello.obj: \S+ \d+ \d+
-        \S+ \[.*\]
-hello.obj: \S+ \d+ \d+
-        hello.c: \S+ \d+ \d+
-        \S+ \[.*\]
-""")
+         stdout = r"""hello.obj: %(sig_re)s \d+ \d+
+        hello.c: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+hello.exe: %(sig_re)s \d+ \d+
+        hello.obj: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+hello.obj: %(sig_re)s \d+ \d+
+        hello.c: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+""" % locals())
 
 # XXX NOT SURE IF THIS IS RIGHT!
 sub2_inc1_h = re_sep('sub2', 'inc1.h')
 sub2_inc2_h = re_sep('sub2', 'inc2.h')
 
 test.run_sconsign(arguments = "sub2/.sconsign",
-         stdout = r"""hello.c: \S+ \d+ \d+
-hello.exe: \S+ \d+ \d+
-        hello.obj: \S+ \d+ \d+
-        \S+ \[.*\]
-hello.obj: \S+ \d+ \d+
-        hello.c: \S+ \d+ \d+
-        inc1.h: \S+ \d+ \d+
-        inc2.h: \S+ \d+ \d+
-        \S+ \[.*\]
-inc1.h: \S+ \d+ \d+
-inc2.h: \S+ \d+ \d+
-""")
+         stdout = r"""hello.c: %(sig_re)s \d+ \d+
+hello.exe: %(sig_re)s \d+ \d+
+        hello.obj: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+hello.obj: %(sig_re)s \d+ \d+
+        hello.c: %(sig_re)s \d+ \d+
+        inc1.h: %(sig_re)s \d+ \d+
+        inc2.h: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+inc1.h: %(sig_re)s \d+ \d+
+inc2.h: %(sig_re)s \d+ \d+
+""" % locals())
 
 #test.run_sconsign(arguments = "-i -v sub2/.sconsign",
-#         stdout = r"""hello.c: \S+ \d+ \d+
-#hello.exe: \S+ \d+ \d+
+#         stdout = r"""hello.c: %(sig_re)s \d+ \d+
+#hello.exe: %(sig_re)s \d+ \d+
 #    implicit:
-#        hello.obj: \S+ \d+ \d+
-#hello.obj: \S+ \d+ \d+
+#        hello.obj: %(sig_re)s \d+ \d+
+#hello.obj: %(sig_re)s \d+ \d+
 #    implicit:
-#        hello.c: \S+ \d+ \d+
-#        inc1.h: \S+ \d+ \d+
-#        inc2.h: \S+ \d+ \d+
-#""")
+#        hello.c: %(sig_re)s \d+ \d+
+#        inc1.h: %(sig_re)s \d+ \d+
+#        inc2.h: %(sig_re)s \d+ \d+
+#""" % locals())
 
 test.run_sconsign(arguments = "-e hello.obj sub2/.sconsign sub1/.sconsign",
-         stdout = r"""hello.obj: \S+ \d+ \d+
-        hello.c: \S+ \d+ \d+
-        inc1.h: \S+ \d+ \d+
-        inc2.h: \S+ \d+ \d+
-        \S+ \[.*\]
-hello.obj: \S+ \d+ \d+
-        hello.c: \S+ \d+ \d+
-        \S+ \[.*\]
-""")
+         stdout = r"""hello.obj: %(sig_re)s \d+ \d+
+        hello.c: %(sig_re)s \d+ \d+
+        inc1.h: %(sig_re)s \d+ \d+
+        inc2.h: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+hello.obj: %(sig_re)s \d+ \d+
+        hello.c: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+""" % locals())
 
 test.pass_test()

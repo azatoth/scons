@@ -83,24 +83,25 @@ test.sleep()
 
 test.run(arguments = '. --max-drift=1')
 
+sig_re = r'[0-9a-fA-F]{32}'
 date_re = r'\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d'
 
 expect = r"""=== sub1:
-hello.exe: \S+ \d+ \d+
-        hello.obj: \S+ \d+ \d+
-        \S+ \[.*\]
-hello.obj: \S+ \d+ \d+
-        hello.c: \S+ \d+ \d+
-        \S+ \[.*\]
-"""
+hello.exe: %(sig_re)s \d+ \d+
+        hello.obj: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+hello.obj: %(sig_re)s \d+ \d+
+        hello.c: %(sig_re)s \d+ \d+
+        %(sig_re)s \[.*\]
+""" % locals()
 
 expect_r = """=== sub1:
-hello.exe: \S+ '%(date_re)s' \d+
-        hello.obj: \S+ '%(date_re)s' \d+
-        \S+ \[.*\]
-hello.obj: \S+ '%(date_re)s' \d+
-        hello.c: \S+ '%(date_re)s' \d+
-        \S+ \[.*\]
+hello.exe: %(sig_re)s '%(date_re)s' \d+
+        hello.obj: %(sig_re)s '%(date_re)s' \d+
+        %(sig_re)s \[.*\]
+hello.obj: %(sig_re)s '%(date_re)s' \d+
+        hello.c: %(sig_re)s '%(date_re)s' \d+
+        %(sig_re)s \[.*\]
 """ % locals()
 
 common_flags = '-e hello.exe -e hello.obj -d sub1'
