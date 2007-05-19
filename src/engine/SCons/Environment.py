@@ -1662,16 +1662,6 @@ class Base(SubstitutionEnvironment):
             u[s] = 1
         return u.keys()
 
-    def FindInstalledFiles(self):
-        """ returns of all files installed beneath dir.
-        """
-        try:
-            self['Builders']['Install']
-            from SCons.Tool import install
-            return install._INSTALLED_FILES
-        except KeyError:
-            return []
-
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction
     environment by returning values from an overrides dictionary in

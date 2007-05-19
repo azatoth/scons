@@ -47,8 +47,8 @@ class Packager:
         the spec given in the kw argument.
         """
         if not kw.has_key('target'):
-            projectname, version = kw['projectname'], kw['version']
-            kw['target'] = [ "%s-%s"%(projectname,version) ]
+            NAME, VERSION = kw['projectname'], kw['version']
+            kw['target'] = [ "%s-%s"%(NAME,VERSION) ]
 
         return kw
 
@@ -99,7 +99,7 @@ class BinaryPackager(Packager):
         This function is called by specfile_emitter to find out the specfiles
         target name.
         """
-        p, v = kw['projectname'], kw['version']
+        p, v = kw['NAME'], kw['VERSION']
         return '%s-%s' % ( p, v )
 
     def specfile_emitter(self, target, source, env):
@@ -136,7 +136,7 @@ class SourcePackager(Packager):
     They are seperated from other packager by the their package_root attribute.
     Since before a source package is created with the help of a Tar or Zip
     builder their content needs to be moved to a package_root. For example the
-    project foo with version 1.2.3, will get its files placed in foo-1.2.3/.
+    project foo with VERSION 1.2.3, will get its files placed in foo-1.2.3/.
     """
     def create_package_root(self,kw):
         """ creates the package_r oot for a given specification dict.
@@ -144,8 +144,8 @@ class SourcePackager(Packager):
         try:
             return kw['package_root']
         except KeyError:
-            projectname, version = kw['projectname'], kw['version']
-            return "%s-%s"%(projectname,version)
+            NAME, VERSION = kw['projectname'], kw['version']
+            return "%s-%s"%(NAME,VERSION)
 
     def package_root_emitter(self, pkg_root, honor_install_location=1):
         def package_root_emitter(target, source, env):

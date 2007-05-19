@@ -36,7 +36,6 @@ from SCons.Util import is_List, make_path_relative
 import os, imp
 import SCons.Defaults
 
-
 __all__ = [ 'tarbz', 'targz', 'zip', 'rpm', 'msi', 'ipk' ]
 
 #
@@ -66,6 +65,11 @@ def Tag(env, target, source, *more_tags, **kw_tags):
 
     if not SCons.Util.is_List(target):
         target=[target]
+    else:
+        # hmm, sometimes the target list, is a list of a list
+        # make sure it is flattened prior to processing.
+        # TODO: perhaps some bug ?!?
+        target=env.Flatten(target)
 
     for t in target:
         for (k,v) in kw_tags.items():
@@ -82,16 +86,23 @@ def Package(env, target=None, source=None, **kw):
     """
     # first check some arguments
     if not source:
+        source = env.FindInstalledFiles()
+
+    if len(source)==0:
         raise UserError, "No source for Package() given"
 
-    if not kw.has_key('type') or kw['type']==None:
+    # has the option for this Tool been set?
+    try: kw['PACKAGE_TYPE']=env['PACKAGE_TYPE']
+    except KeyError: pass
+
+    if not kw.has_key('PACKAGE_TYPE') or kw['PACKAGE_TYPE']==None:
         if env['BUILDERS'].has_key('Tar'):
             kw['type']='targz'
         elif env['BUILDERS'].has_key('Zip'):
             kw['type']='zip'
         else:
             raise UserError, "No type for Package() given"
-    package_type=kw['type']
+    package_type=kw['PACKAGE_TYPE']
     if not is_List(package_type):
         package_type=package_type.split(',')
 
@@ -111,14 +122,14 @@ def Package(env, target=None, source=None, **kw):
         # fill up the target list with a default target name until the package_type
         # list is of the same size as the target list.
         if target==None or target==[]:
-            target=["%(projectname)s-%(version)s"%kw]
+            target=["%(NAME)s-%(VERSION)s"%kw]
 
         size_diff=len(package_type)-len(target)
         if size_diff>0:
             target.extend([target]*size_diff)
 
         if not kw.has_key('packageroot'):
-            kw['packageroot']="%(projectname)s-%(version)s"%kw
+            kw['packageroot']="%(NAME)s-%(VERSION)s"%kw
 
     except KeyError, e:
         raise SCons.Errors.UserError( "Missing PackageTag '%s'"%e.args[0] )
@@ -155,7 +166,7 @@ def Package(env, target=None, source=None, **kw):
                                           % (args[0],packager.__name__) )
         else:
             raise SCons.Errors.UserError( "Missing PackageTags '%s' for %s packager"\
-                                          % (args,packager.__name__) )
+                                          % (", ".join(args),packager.__name__) )
 
     target=env.arg2nodes(target, env.fs.Entry)
     targets.extend(env.Alias( 'package', targets ))
@@ -196,15 +207,11 @@ def FindSourceFiles(env, target=None, source=None ):
     # remove duplicates
     return list(set(sources))
 
-def FindInstalledFiles(env):
+def FindInstalledFiles(env, source=[], target=[]):
     """ returns the list of all targets of the Install and InstallAs Builder.
     """
-    try:
-        env['Builders']['Install']
-        from SCons.Tool import install
-        return install._INSTALLED_FILES
-    except KeyError:
-        return []
+    from SCons.Tool import install
+    return install._INSTALLED_FILES
 
 #
 # SCons tool initialization functions
@@ -226,9 +233,10 @@ def exists(env):
 
 def options(opts):
     opts.AddOptions(
-        EnumOption( [ 'type', '--package-type' ],
-                    'the type of package to build',
-                    None, map( str, __all__ )
+        EnumOption( [ 'package_type', '--package-type' ],
+                    'the type of package to create.',
+                    None, allowed_values=map( str, __all__ ),
+                    ignorecase=2
                   )
     )
 
@@ -257,7 +265,10 @@ def packageroot_emitter(pkg_root, honor_install_location=1):
     All attributes of the source file will be copied to the new file.
     """
     def package_root_emitter(target, source, env):
-        pkgroot=env.fs.Dir(pkg_root)
+        pkgroot = pkg_root
+        # make sure the packageroot is a Dir object.
+        if SCons.Util.is_String(pkgroot): pkgroot=env.Dir(pkgroot)
+
         def copy_file_to_pkg_root(file):
             if file.is_under(pkgroot):
                 return file

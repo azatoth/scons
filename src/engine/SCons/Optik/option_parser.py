@@ -395,7 +395,15 @@ class OptionParser:
                     self._process_long_opt(rargs, values)
                 except BadOptionError, e:
                     if self.allow_interspersed_args:
+                        # XXX: quite a hack, but since _process_long_opts
+                        # appends the value of a long option to the rargs
+                        # array, we need to remove it here, so it does not
+                        # confuse the rest of the parsing process.
+                        # Example: --my-long-opt=value becomes
+                        # ['--my-long-opt=value', 'value'] as if the value
+                        # was an option.
                         largs.append(arg)
+                        del rargs[0]
                     else:
                         raise e
             elif arg[:1] == "-" and len(arg) > 1:

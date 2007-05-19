@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test the ability to create a really simple rpm package.
+Assert that files created by the RPM packager will be removed by 'scons -c'.
 """
 
 import os
@@ -35,6 +35,9 @@ machine = TestSCons.machine
 python = TestSCons.python
 
 test = TestSCons.TestSCons()
+
+# TODO: skip this test, since only the intermediate directory needs to be
+# removed.
 
 rpm = test.Environment().WhereIs('rpm')
 
@@ -58,29 +61,35 @@ env=Environment(tools=['default', 'packaging'])
 prog = env.Install( '/bin/' , Program( 'src/main.c')  )
 
 env.Package( projectname    = 'foo',
-         version        = '1.2.3',
-         packageversion = 0,
-         type           = 'rpm',
-         license        = 'gpl',
-         summary        = 'balalalalal',
-         x_rpm_Group    = 'Application/fu',
-         description    = 'this should be really really long',
-         source         = [ prog ],
-         source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
-        )
+             version        = '1.2.3',
+             packageversion = 0,
+             type           = 'rpm',
+             license        = 'gpl',
+             summary        = 'balalalalal',
+             x_rpm_Group    = 'Application/fu',
+             description    = 'this should be really really long',
+             source         = [ prog ],
+             source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
+            )
 
 env.Alias( 'install', prog )
 """)
 
-test.run(arguments='', stderr = None)
+# first run: build the package
+# second run: test if the intermediate files have been cleaned
+test.run( arguments='' )
+test.run( arguments='-c' )
 
-src_rpm = 'foo-1.2.3-0.src.rpm'
+src_rpm     = 'foo-1.2.3-0.src.rpm'
 machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine
 
-test.must_exist( machine_rpm )
-test.must_exist( src_rpm )
+test.must_not_exist( machine_rpm )
+test.must_not_exist( src_rpm )
+test.must_not_exist( 'foo-1.2.3.tar.gz' )
+test.must_not_exist( 'foo-1.2.3.spec' )
+test.must_not_exist( 'foo-1.2.3/foo-1.2.3.spec' )
+test.must_not_exist( 'foo-1.2.3/SConstruct' )
+test.must_not_exist( 'foo-1.2.3/src/main.c' )
+test.must_not_exist( 'foo-1.2.3' )
+test.must_not_exist( 'foo-1.2.3/src' )
 test.must_not_exist( 'bin/main' )
-test.fail_test( not os.popen('rpm -qpl %s' % machine_rpm).read()=='/bin/main\n')
-test.fail_test( not os.popen('rpm -qpl %s' % src_rpm).read()=='foo-1.2.3.spec\nfoo-1.2.3.tar.gz\n')
-
-test.pass_test()

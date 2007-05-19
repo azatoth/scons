@@ -54,13 +54,12 @@ env.Package( projectname    = 'foo',
              packageversion = 0,
              x_rpm_Group    = 'Application/office',
              description    = 'this should be really long',
-             type           = ARGUMENTS.get('package-type'),
              source         = [ prog ],
              source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
             )
 """)
 
-test.run(arguments='package package-type=rpm', stderr = None)
+test.run(arguments='package package_type=rpm', stderr = None)
 
 src_rpm = 'foo-1.2.3-0.src.rpm'
 machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine

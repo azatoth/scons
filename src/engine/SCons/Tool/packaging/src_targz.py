@@ -38,9 +38,3 @@ def package(env, target, source, packageroot, **kw):
         h=kw['honor_install_location']
     bld.push_emitter(packageroot_emitter(packageroot, honor_install_location=h))
     return bld(env, target, source, TARFLAGS='-zc')
-
-# class BinaryTarGz(TarGz):
-#     def create_builder(self, env, kw=None):
-#         builder = TarGz.create_builder(self, env, kw)
-#         builder.push_emitter(self.strip_install_emitter)
-#         return builder

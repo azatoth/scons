@@ -48,19 +48,21 @@ if wix:
   test.write('SConstruct', """
 import os
 
-f1 = Install( '/usr/' , 'file1.exe'  )
-f2 = Install( '/usr/' , 'file2.exe'  )
+env  = Environment(tools=['default', 'packaging'])
 
-Package( projectname    = 'foo',
-         version        = '1.2',
-         type           = 'msi',
-         summary        = 'balalalalal',
-         description    = 'this should be reallly really long',
-         vendor         = 'Nanosoft_2000',
-         source         = [ f1, f2 ],
-        )
+f1  = env.Install( '/usr/' , 'file1.exe'  )
+f2  = env.Install( '/usr/' , 'file2.exe'  )
 
-Alias( 'install', [ f1, f2 ] )
+env.Package( projectname    = 'foo',
+             version        = '1.2',
+             type           = 'msi',
+             summary        = 'balalalalal',
+             description    = 'this should be reallly really long',
+             vendor         = 'Nanosoft_2000',
+             source         = [ f1, f2 ],
+            )
+
+env.Alias( 'install', [ f1, f2 ] )
 """)
 
   test.run(arguments='', stderr = None)
@@ -86,30 +88,33 @@ Alias( 'install', [ f1, f2 ] )
   test.write( 'file2.exe', "file2" )
   test.write( 'file3.html', "file3" )
   test.write( 'file4.dll', "file4" )
+  test.write( 'file5.dll', "file5" )
 
   test.write('SConstruct', """
 import os
+env = Environment(tools=['default', 'packaging'])
+f1  = env.Install( '/usr/' , 'file1.exe'  )
+f2  = env.Install( '/usr/' , 'file2.exe'  )
+f3  = env.Install( '/usr/' , 'file3.html' )
+f4  = env.Install( '/usr/' , 'file4.dll'  )
+f5  = env.Install( '/usr/' , 'file5.dll'  )
 
-f1 = Install( '/usr/' , 'file1.exe'  )
-f2 = Install( '/usr/' , 'file2.exe'  )
-f3 = Install( '/usr/' , 'file3.html' )
-f4 = Install( '/usr/' , 'file4.dll'  )
+env.Tag( f1, x_msi_feature = 'Java Part' )
+env.Tag( f2, x_msi_feature = 'Java Part' )
+env.Tag( f3, 'doc' )
+env.Tag( f4, x_msi_feature = 'default' )
+env.Tag( f5, x_msi_feature = ('Another Feature', 'with a long description') )
 
-Tag( f1, x_msi_feature = 'Java Part' )
-Tag( f2, x_msi_feature = 'Java Part' )
-Tag( f3, 'doc' )
-Tag( f4, x_msi_feature = 'default' )
+env.Package( projectname    = 'foo',
+             version        = '1.2',
+             type           = 'msi',
+             summary        = 'balalalalal',
+             description    = 'this should be reallly really long',
+             vendor         = 'Nanosoft_tx2000',
+             source         = [ f1, f2, f3, f4, f5 ],
+            )
 
-Package( projectname    = 'foo',
-         version        = '1.2',
-         type           = 'msi',
-         summary        = 'balalalalal',
-         description    = 'this should be reallly really long',
-         vendor         = 'Nanosoft_tx2000',
-         source         = [ f1, f2, f3, f4 ],
-        )
-
-Alias( 'install', [ f1, f2, f3, f4 ] )
+env.Alias( 'install', [ f1, f2, f3, f4, f5 ] )
 """)
 
   test.run(arguments='', stderr = None)
@@ -121,7 +126,9 @@ Alias( 'install', [ f1, f2, f3, f4 ] )
   elements = dom.getElementsByTagName( 'Feature' )
   test.fail_test( not elements[1].attributes['Title'].value == 'Main Part' )
   test.fail_test( not elements[2].attributes['Title'].value == 'Documentation' )
-  test.fail_test( not elements[3].attributes['Title'].value == 'Java Part' )
+  test.fail_test( not elements[3].attributes['Title'].value == 'Another Feature' )
+  test.fail_test( not elements[3].attributes['Description'].value == 'with a long description' )
+  test.fail_test( not elements[4].attributes['Title'].value == 'Java Part' )
 
 else:
   test.no_result()

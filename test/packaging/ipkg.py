@@ -26,6 +26,8 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
 Test the ability to call the ipkg tool trough SCons.
+
+TODO: make a test to assert that the clean action removes ALL intermediate files
 """
 
 import os
@@ -53,7 +55,7 @@ prog = env.Install( 'bin/', Program( 'main.c') )
 conf = env.Install( 'etc/', File( 'foo.conf' ) )
 env.Tag( conf, 'conf', 'mehr', 'und mehr' )
 env.Package( type      = 'ipk',
-      source           = [ prog, conf ],
+      source           = env.FindInstalledFiles(),
       projectname      = 'foo',
       version          = '0.0',
       summary          = 'foo is the ever-present example program -- it does everything',
@@ -79,10 +81,10 @@ gcc -o main main.o
 Copy file(s): "main" to "foo-0.0/bin/main"
 Copy file(s): "foo.conf" to "foo-0.0/etc/foo.conf"
 build_specfiles(["foo-0.0/CONTROL/control", "foo-0.0/CONTROL/conffiles", "foo-0.0/CONTROL/postrm", "foo-0.0/CONTROL/prerm", "foo-0.0/CONTROL/postinst", "foo-0.0/CONTROL/preinst"], ["foo-0.0/bin/main", "foo-0.0/etc/foo.conf"])
-ipkg-build -o phil -g users foo-0.0
+ipkg-build -o %s -g %s foo-0.0
 Packaged contents of foo-0.0 into %s/foo_0.0_arm.ipk
 scons: done building targets.
-"""%test.workpath()
+"""%(os.popen('id -un').read().strip(), os.popen('id -gn').read().strip(), test.workpath())
 
   test.run(arguments="--debug=stacktrace foo_0.0_arm.ipk", stdout=expected)
   test.fail_test( not os.path.exists( 'foo-0.0/CONTROL/control' ) )

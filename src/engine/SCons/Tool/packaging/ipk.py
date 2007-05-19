@@ -27,48 +27,52 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import SCons.Builder
+import SCons.Node.FS
 import os
 
 from SCons.Tool.packaging import stripinstall_emitter, packageroot_emitter
 
-def package(env, target, source, packageroot, projectname, version, description,
-            architecture, summary, x_ipk_priority, x_ipk_section, source_url,
+def package(env, target, source, packageroot, NAME, VERSION, DESCRIPTION,
+            architecture, SUMMARY, x_ipk_priority, x_ipk_section, source_url,
             x_ipk_maintainer, x_ipk_depends, **kw):
     """ this function prepares the packageroot directory for packaging with the
     ipkg builder.
     """
     SCons.Tool.Tool('ipkg').generate(env)
 
+    # setup the Ipkg builder
     bld = env['BUILDERS']['Ipkg']
-    env['IPKGUSER']  = os.popen('id -un').read().strip()
-    env['IPKGGROUP'] = os.popen('id -gn').read().strip()
-    env['IPKGFLAGS'] = SCons.Util.CLVar('-o $IPKGUSER -g $IPKGGROUP')
-    env['IPKGCOM']   = '$IPKG $IPKGFLAGS ${SOURCE.get_path().replace("/CONTROL/control","")}'
-
-    bld.push_emitter(gen_ipk_specfiles)
     bld.push_emitter(packageroot_emitter(packageroot))
     bld.push_emitter(stripinstall_emitter())
 
-    # override the default target.
-    if str(target[0])=="%s-%s"%(projectname, version):
-        target=[ "%s_%s_%s.ipk"%(projectname, version, architecture) ]
-
-    # now call the ipk builder to actually build the packet.
+    # setup the kw to contain the mandatory arguments to this fucntion.
+    # do this before calling any builder or setup function
     loc=locals()
     del loc['kw']
     kw.update(loc)
-    del kw['source']
-    del kw['target']
-    del kw['env']
-    return apply(bld, [env, target, source], kw)
+    del kw['source'], kw['target'], kw['env']
 
-def gen_ipk_specfiles(target, source, env):
-    # create the specfile builder
-    s_bld=SCons.Builder.Builder(action=build_specfiles)
+    # generate the specfile
+    specfile = gen_ipk_dir(packageroot, source, env, kw)
+
+    # override the default target.
+    if str(target[0])=="%s-%s"%(NAME, VERSION):
+        target=[ "%s_%s_%s.ipk"%(NAME, VERSION, architecture) ]
+
+    # now apply the Ipkg builder
+    return apply(bld, [env, target, specfile], kw)
+
+def gen_ipk_dir(proot, source, env, kw):
+    # make sure the packageroot is a Dir object.
+    if SCons.Util.is_String(proot): proot=env.Dir(proot)
+
+    #  create the specfile builder
+    s_bld=SCons.Builder.Builder(
+        action  = build_specfiles,
+        emitter = [stripinstall_emitter(), packageroot_emitter(proot)])
 
     # create the specfile targets
     spec_target=[]
-    proot=env.fs.Dir(env['packageroot'])
     control=proot.Dir('CONTROL')
     spec_target.append(control.File('control'))
     spec_target.append(control.File('conffiles'))
@@ -78,11 +82,10 @@ def gen_ipk_specfiles(target, source, env):
     spec_target.append(control.File('preinst'))
 
     # apply the builder to the specfile targets
-    n_source=s_bld(env, target=spec_target, source=source)
-    n_source.extend(source)
-    source=n_source
+    apply(s_bld, [env, spec_target, source], kw)
 
-    return (target, source)
+    # the packageroot directory does now contain the specfiles.
+    return proot
 
 def build_specfiles(source, target, env):
     """ filter the targets for the needed files and use the variables in env
@@ -106,21 +109,21 @@ def build_specfiles(source, target, env):
 
     control_file=open_file('control', target)
 
-    if not env.has_key('x_ipk_description'):
-        env['x_ipk_description']="%s\n %s"%(env['summary'],
-                                            env['description'].replace('\n', '\n '))
+    if not env.has_key('x_ipk_DESCRIPTION'):
+        env['x_ipk_DESCRIPTION']="%s\n %s"%(env['SUMMARY'],
+                                            env['DESCRIPTION'].replace('\n', '\n '))
 
 
     content = """
-Package: $projectname
-Version: $version
+Package: $NAME
+Version: $VERSION
 Priority: $x_ipk_priority
 Section: $x_ipk_section
 Source: $source_url
 Architecture: $architecture
 Maintainer: $x_ipk_maintainer
 Depends: $x_ipk_depends
-Description: $x_ipk_description
+Description: $x_ipk_DESCRIPTION
 """
 
     control_file.write(env.subst(content))

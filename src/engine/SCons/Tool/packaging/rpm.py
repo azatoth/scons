@@ -33,13 +33,11 @@ import os
 
 from SCons.Tool.packaging import stripinstall_emitter, packageroot_emitter, src_targz
 
-def package(env, target, source, packageroot, projectname, version,
-            packageversion, description, summary, x_rpm_Group, license,
+def package(env, target, source, packageroot, NAME, VERSION,
+            PACKAGEVERSION, DESCRIPTION, SUMMARY, x_rpm_Group, license,
             **kw):
     # initialize the rpm tool
     SCons.Tool.Tool('rpm').generate(env)
-
-    print map(str, source)
 
     # create the neccesary builder
     bld = env['BUILDERS']['Rpm']
@@ -50,7 +48,7 @@ def package(env, target, source, packageroot, projectname, version,
     bld.push_emitter(stripinstall_emitter())
 
     # override the default target, with the rpm specific ones.
-    if str(target[0])=="%s-%s"%(projectname, version):
+    if str(target[0])=="%s-%s"%(NAME, VERSION):
         # This should be overridable from the construction environment,
         # which it is by using architecture=.
         # Guessing based on what os.uname() returns at least allows it
@@ -67,23 +65,22 @@ def package(env, target, source, packageroot, projectname, version,
         if kw.has_key('architecture'):
             buildarchitecture = kw['architecture']
 
-        srcrpm = '%s-%s-%s.src.rpm' % (projectname, version, packageversion)
+        srcrpm = '%s-%s-%s.src.rpm' % (NAME, VERSION, PACKAGEVERSION)
         binrpm = srcrpm.replace( 'src', buildarchitecture )
 
         target = [ srcrpm, binrpm ]
 
-    # now call the rpm builder to actually build the packet.
+    # get the correct arguments into the kw hash
     loc=locals()
     del loc['kw']
     kw.update(loc)
-    del kw['source']
-    del kw['target']
-    del kw['env']
+    del kw['source'], kw['target'], kw['env']
 
     # if no "source_url" tag is given add a default one.
     if not kw.has_key('source_url'):
         kw['source_url']=(str(target[0])+".tar.gz").replace('.rpm', '')
 
+    # now call the rpm builder to actually build the packet.
     return apply(bld, [env, target, source], kw)
 
 
@@ -96,7 +93,8 @@ def targz_emitter(target, source, env):
     # filter out the target we are building the source list for.
     sources = [s for s in sources if not (s in target)]
 
-    # find the .spec file for rpm and add it
+    # find the .spec file for rpm and add it since it is not necessarily found
+    # by the FindSourceFiles function.
     sources.extend( [s for s in source if str(s).rfind('.spec')!=-1] )
 
     # as the source contains the url of the source package this rpm package
@@ -112,7 +110,7 @@ def targz_emitter(target, source, env):
     return (target, tarball)
 
 def specfile_emitter(target, source, env):
-    specfile = "%s-%s" % (env['projectname'], env['version'])
+    specfile = "%s-%s" % (env['NAME'], env['VERSION'])
 
     bld = SCons.Builder.Builder(action         = build_specfile,
                                 suffix         = '.spec',
@@ -152,12 +150,12 @@ def build_specfile_sections(spec):
     str = ""
 
     mandatory_sections = {
-        'description'  : '\n%%description\n%s\n\n', }
+        'DESCRIPTION'  : '\n%%description\n%s\n\n', }
 
     str += SimpleTagCompiler(mandatory_sections).compile( spec )
 
     optional_sections = {
-        'description_'        : '%%description -l %s\n%s\n\n',
+        'DESCRIPTION_'        : '%%description -l %s\n%s\n\n',
         'changelog'           : '%%changelog\n%s\n\n',
         'x_rpm_PreInstall'    : '%%pre\n%s\n\n',
         'x_rpm_PostInstall'   : '%%post\n%s\n\n',
@@ -197,12 +195,12 @@ def build_specfile_header(spec):
 
     # first the mandatory sections
     mandatory_header_fields = {
-        'projectname'    : '%%define name %s\nName: %%{name}\n',
-        'version'        : '%%define version %s\nVersion: %%{version}\n',
-        'packageversion' : '%%define release %s\nRelease: %%{release}\n',
+        'NAME'    : '%%define name %s\nName: %%{name}\n',
+        'VERSION'        : '%%define version %s\nVersion: %%{version}\n',
+        'PACKAGEVERSION' : '%%define release %s\nRelease: %%{release}\n',
         'x_rpm_Group'    : 'Group: %s\n',
-        'summary'        : 'Summary: %s\n',
-        'license'        : 'License: %s\n', }
+        'SUMMARY'        : 'Summary: %s\n',
+        'LICENSE'        : 'License: %s\n', }
 
     str += SimpleTagCompiler(mandatory_header_fields).compile( spec )
 
@@ -211,7 +209,7 @@ def build_specfile_header(spec):
         'vendor'              : 'Vendor: %s\n',
         'url'                 : 'Url: %s\n',
         'source_url'          : 'Source: %s\n',
-        'summary_'            : 'Summary(%s): %s\n',
+        'SUMMARY_'            : 'Summary(%s): %s\n',
         'x_rpm_Distribution'  : 'Distribution: %s\n',
         'x_rpm_Icon'          : 'Icon: %s\n',
         'x_rpm_Packager'      : 'Packager: %s\n',
@@ -234,11 +232,14 @@ def build_specfile_header(spec):
         'x_rpm_BuildRoot'     : 'BuildRoot: %s\n', }
 
     # fill in default values:
+    # Adding a BuildRequires renders the .rpm unbuildable under System, which
+    # are not managed by rpm, since the database to resolve this dependency is
+    # missing (take Gentoo as an example)
 #    if not s.has_key('x_rpm_BuildRequires'):
 #        s['x_rpm_BuildRequires'] = 'scons'
 
     if not spec.has_key('x_rpm_BuildRoot'):
-        spec['x_rpm_BuildRoot'] = '%{_tmppath}/%{name}-%{version}-%{release}'
+        spec['x_rpm_BuildRoot'] = '%{_tmppath}/%{name}-%{VERSION}-%{release}'
 
     str += SimpleTagCompiler(optional_header_fields, mandatory=0).compile( spec )
     return str

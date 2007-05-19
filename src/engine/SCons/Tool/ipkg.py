@@ -50,10 +50,12 @@ def generate(env):
                                      target_scanner = None)
         env['BUILDERS']['Ipkg'] = bld
 
-    env['IPKG']        = 'ipkg-build'
-    env['IPKGFLAGS']   = SCons.Util.CLVar('')
-    env['IPKGCOM']     = '$IPKG $IPKGFLAGS ${SOURCE}'
-    env['IPKGSUFFIX']  = '.ipk'
+    env['IPKG']       = 'ipkg-build'
+    env['IPKGCOM']    = '$IPKG $IPKGFLAGS ${SOURCE}'
+    env['IPKGUSER']   = popen('id -un').read().strip()
+    env['IPKGGROUP']  = popen('id -gn').read().strip()
+    env['IPKGFLAGS']  = SCons.Util.CLVar('-o $IPKGUSER -g $IPKGGROUP')
+    env['IPKGSUFFIX'] = '.ipk'
 
 def exists(env):
     return env.Detect('ipkg-build')

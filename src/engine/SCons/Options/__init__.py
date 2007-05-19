@@ -170,8 +170,7 @@ class Options:
               values[option.key]=value
 
         # put the variables in the environment:
-        # (don't copy over variables that are not declared
-        #  as options)
+        # (don't copy over variables that are not declared as options)
         for option in self.options:
             try:
                 env[option.key] = values[option.key]

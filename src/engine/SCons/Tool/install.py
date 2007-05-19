@@ -194,7 +194,7 @@ def options(opts):
                     validator=PathOption.PathIsDirCreate,
                   ),
 
-        PathOption( [ 'prefix', '--install-prefix' ], default='/usr/local',
-                    help='The prefix which can be configured for every installed files.'
-                  ),
+#        PathOption( [ 'prefix', '--install-prefix' ], default='/usr/local',
+#                    help='The prefix for installed files which is available through prefix.',
+#                  ),
     )

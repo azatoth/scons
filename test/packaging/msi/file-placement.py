@@ -47,16 +47,17 @@ if wix:
   test.write('SConstruct', """
 import os
 
-f1 = Install( '/bin/' , 'file1.exe'  )
+env = Environment(tools=['default', 'packaging'])
+f1  = env.Install( '/bin/' , 'file1.exe'  )
 
-Package( projectname    = 'foo',
-         version        = '1.2',
-         type           = 'msi',
-         summary        = 'balalalalal',
-         description    = 'this should be reallly really long',
-         vendor         = 'Nanosoft_2000',
-         source         = [ f1 ],
-        )
+env.Package( projectname    = 'foo',
+             version        = '1.2',
+             type           = 'msi',
+             summary        = 'balalalalal',
+             description    = 'this should be reallly really long',
+             vendor         = 'Nanosoft_2000',
+             source         = [ f1 ],
+           )
 """)
 
   test.run(arguments='', stderr = None)
@@ -66,7 +67,7 @@ Package( projectname    = 'foo',
 
   test.fail_test( not dirs[0].attributes['Name'].value == 'SourceDir' )
   test.fail_test( not dirs[1].attributes['Name'].value == 'PFiles' )
-  test.fail_test( not dirs[2].attributes['Name'].value == 'NANOSO~1' )
+  test.fail_test( not dirs[2].attributes['Name'].value == 'NANOSOF1' )
   test.fail_test( not dirs[3].attributes['Name'].value == 'FOO-1.2' )
 
   #
@@ -83,23 +84,24 @@ Package( projectname    = 'foo',
   test.write('SConstruct', """
 import os
 
-f1 = Install( '/bin/' , 'file1.exe'  )
-f2 = Install( '/bin/' , 'file2.exe'  )
-f3 = Install( '/lib/' , 'file3.dll'  )
-f4 = Install( '/lib/' , 'file4.dll'  )
-f5 = Install( '/java/edu/teco/' , 'file5.class'  )
-f6 = Install( '/java/teco/' , 'file6.class'  )
-f7 = Install( '/java/tec/' , 'file7.class'  )
+env = Environment(tools=['default', 'packaging'])
+f1  = env.Install( '/bin/' , 'file1.exe'  )
+f2  = env.Install( '/bin/' , 'file2.exe'  )
+f3  = env.Install( '/lib/' , 'file3.dll'  )
+f4  = env.Install( '/lib/' , 'file4.dll'  )
+f5  = env.Install( '/java/edu/teco/' , 'file5.class'  )
+f6  = env.Install( '/java/teco/' , 'file6.class'  )
+f7  = env.Install( '/java/tec/' , 'file7.class'  )
 
-Package( projectname    = 'foo',
-         version        = '1.2',
-         type           = 'msi',
-         summary        = 'balalalalal',
-         description    = 'this should be reallly really long',
-         vendor         = 'Nanosoft_2000',
-         license        = 'afl',
-         source         = [ f1, f2, f3, f4, f5, f6, f7 ],
-        )
+env.Package( projectname    = 'foo',
+             version        = '1.2',
+             type           = 'msi',
+             summary        = 'balalalalal',
+             description    = 'this should be reallly really long',
+             vendor         = 'Nanosoft_2000',
+             license        = 'afl',
+             source         = [ f1, f2, f3, f4, f5, f6, f7 ],
+            )
 """)
 
   test.run(arguments='', stderr = None)
@@ -128,26 +130,29 @@ Package( projectname    = 'foo',
   test.write( 'file1.exe', "file1" )
   test.write( 'file2.exe', "file2" )
   test.write( 'file3.dll', "file3" )
+  test.write( 'file3-.dll', "file3" )
 
   test.write('SConstruct', """
 import os
 
-f1 = Install( '/bin/' , 'file1.exe'  )
-f2 = Install( '/bin/' , 'file2.exe'  )
-f3 = Install( '/lib/' , 'file3.dll'  )
+env = Environment(tools=['default', 'packaging'])
+f1  = env.Install( '/bin/' , 'file1.exe'  )
+f2  = env.Install( '/bin/' , 'file2.exe'  )
+f3  = env.Install( '/lib/' , 'file3.dll'  )
+f4  = env.Install( '/lib/' , 'file3-.dll' ) # generate a collision in the ids
 
-Tag( [f1, f2], x_msi_feature = 'Core Part' )
-Tag( f3, x_msi_feature = 'Java Part' )
+env.Tag( [f1, f2, f4], x_msi_feature = 'Core Part' )
+env.Tag( f3, x_msi_feature = 'Java Part' )
 
-Package( projectname    = 'foo',
-         version        = '1.2',
-         type           = 'msi',
-         summary        = 'balalalalal',
-         description    = 'this should be reallly really long',
-         vendor         = 'Nanosoft_2000',
-         license        = 'afl',
-         source         = [ f1, f2, f3 ],
-        )
+env.Package( projectname    = 'foo',
+             version        = '1.2',
+             type           = 'msi',
+             summary        = 'balalalalal',
+             description    = 'this should be reallly really long',
+             vendor         = 'Nanosoft_2000',
+             license        = 'afl',
+             source         = [ f1, f2, f3, f4 ],
+            )
 """)
 
   test.run(arguments='', stderr = None)
@@ -157,12 +162,13 @@ Package( projectname    = 'foo',
 
   test.fail_test( not features[1].attributes['Title'].value == 'Core Part' )
   componentrefs = features[1].getElementsByTagName( 'ComponentRef' ) 
-  test.fail_test( not componentrefs[0].attributes['Id'].value == 'fileexe_a' )
-  test.fail_test( not componentrefs[1].attributes['Id'].value == 'fileexe_b' )
+  test.fail_test( not componentrefs[0].attributes['Id'].value == 'file1.exe' )
+  test.fail_test( not componentrefs[1].attributes['Id'].value == 'file2.exe' )
+  test.fail_test( not componentrefs[2].attributes['Id'].value == 'file3.dll1' )
 
   test.fail_test( not features[2].attributes['Title'].value == 'Java Part' )
   componentrefs = features[2].getElementsByTagName( 'ComponentRef' ) 
-  test.fail_test( not componentrefs[0].attributes['Id'].value == 'filedll_a' )
+  test.fail_test( not componentrefs[0].attributes['Id'].value == 'file3.dll' )
 
 else:
   test.no_result()
