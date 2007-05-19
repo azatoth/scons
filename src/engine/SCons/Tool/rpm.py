@@ -69,7 +69,8 @@ def build_rpm(target, source, env):
     # now call rpmbuild to create the rpm package.
     handle  = popen2.Popen3( get_cmd(source, env), capturestderr=1 )
     output  = handle.fromchild.read()
-    output += handle.childerr.read()
+    #output += handle.childerr.read()
+    output  = output + handle.childerr.read()
     status  = handle.wait()
 
     if status:

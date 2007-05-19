@@ -35,6 +35,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import SCons.Builder
 import SCons.Action
 import os
+import string
 
 def generate(env):
     """Add Builders and construction variables for WiX to an Environment."""
@@ -66,7 +67,8 @@ def exists(env):
 
     # try to find the candle.exe and light.exe tools and 
     # add the install directory to light libpath.
-    for path in os.environ['PATH'].split(os.pathsep):
+    #for path in os.environ['PATH'].split(os.pathsep):
+    for path in string.split(os.environ['PATH'], os.pathsep):
         # workaround for some weird python win32 bug.
         if path[0] == '"' and path[-1:]=='"':
             path = path[1:-1]

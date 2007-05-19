@@ -96,7 +96,10 @@ def add_targets_to_INSTALLED_FILES(target, source, env):
     """
     global _INSTALLED_FILES
     files = _INSTALLED_FILES
-    files.extend( [ x for x in target if not x in files ] )
+    #files.extend( [ x for x in target if not x in files ] )
+    for x in target:
+        if not x in files:
+            files.append(x)
     return (target, source)
 
 class DESTDIR_factory:
