@@ -64,7 +64,6 @@ from SCons.Optik import OptionParser, SUPPRESS_HELP, OptionValueError
 import SCons.SConf
 import SCons.Sig
 import SCons.Taskmaster
-import SCons.Tool.Packaging
 import SCons.Util
 import SCons.Warnings
 
