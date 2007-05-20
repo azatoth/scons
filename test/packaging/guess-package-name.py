@@ -56,9 +56,9 @@ int main( int argc, char* argv[] )
   test.write('SConstruct', """
 env=Environment(tools=['default', 'packaging'])
 env.Program( 'src/main.c' )
-env.Package( projectname = 'libfoo',
-             version     = '1.2.3',
-             type        = 'zip',
+env.Package( NAME        = 'libfoo',
+             VERSION     = '1.2.3',
+             PACKAGETYPE = 'zip',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
@@ -73,9 +73,9 @@ env.Package( projectname = 'libfoo',
   test.write('SConstruct', """
 env=Environment(tools=['default', 'packaging'])
 env.Program( 'src/main.c' )
-env.Package( projectname = 'libfoo',
-             version     = '1.2.3',
-             type        = 'src_targz',
+env.Package( NAME        = 'libfoo',
+             VERSION     = '1.2.3',
+             PACKAGETYPE = 'src_targz',
              target      = 'src.tar.gz',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
@@ -91,9 +91,9 @@ env.Package( projectname = 'libfoo',
   test.write('SConstruct', """
 env=Environment(tools=['default', 'packaging'])
 env.Program( 'src/main.c' )
-env.Package( projectname = 'libfoo',
-             version     = '1.2.3',
-             type        = 'src_tarbz2',
+env.Package( NAME        = 'libfoo',
+             VERSION     = '1.2.3',
+             PACKAGETYPE = 'src_tarbz2',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 

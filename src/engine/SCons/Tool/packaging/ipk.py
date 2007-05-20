@@ -32,9 +32,9 @@ import os
 
 from SCons.Tool.packaging import stripinstall_emitter, packageroot_emitter
 
-def package(env, target, source, packageroot, NAME, VERSION, DESCRIPTION,
-            architecture, SUMMARY, x_ipk_priority, x_ipk_section, source_url,
-            x_ipk_maintainer, x_ipk_depends, **kw):
+def package(env, target, source, PACKAGEROOT, NAME, VERSION, DESCRIPTION,
+            SUMMARY, X_IPK_PRIORITY, X_IPK_SECTION, SOURCE_URL,
+            X_IPK_MAINTAINER, X_IPK_DEPENDS, **kw):
     """ this function prepares the packageroot directory for packaging with the
     ipkg builder.
     """
@@ -42,8 +42,24 @@ def package(env, target, source, packageroot, NAME, VERSION, DESCRIPTION,
 
     # setup the Ipkg builder
     bld = env['BUILDERS']['Ipkg']
-    bld.push_emitter(packageroot_emitter(packageroot))
+    bld.push_emitter(packageroot_emitter(PACKAGEROOT))
     bld.push_emitter(stripinstall_emitter())
+
+    # This should be overridable from the construction environment,
+    # which it is by using ARCHITECTURE=.
+    # Guessing based on what os.uname() returns at least allows it
+    # to work for both i386 and x86_64 Linux systems.
+    archmap = {
+        'i686'  : 'i386',
+        'i586'  : 'i386',
+        'i486'  : 'i386',
+    }
+
+    buildarchitecture = os.uname()[4]
+    buildarchitecture = archmap.get(buildarchitecture, buildarchitecture)
+
+    if kw.has_key('ARCHITECTURE'):
+        buildarchitecture = kw['ARCHITECTURE']
 
     # setup the kw to contain the mandatory arguments to this fucntion.
     # do this before calling any builder or setup function
@@ -53,11 +69,11 @@ def package(env, target, source, packageroot, NAME, VERSION, DESCRIPTION,
     del kw['source'], kw['target'], kw['env']
 
     # generate the specfile
-    specfile = gen_ipk_dir(packageroot, source, env, kw)
+    specfile = gen_ipk_dir(PACKAGEROOT, source, env, kw)
 
     # override the default target.
     if str(target[0])=="%s-%s"%(NAME, VERSION):
-        target=[ "%s_%s_%s.ipk"%(NAME, VERSION, architecture) ]
+        target=[ "%s_%s_%s.ipk"%(NAME, VERSION, buildarchitecture) ]
 
     # now apply the Ipkg builder
     return apply(bld, [env, target, specfile], kw)
@@ -109,21 +125,21 @@ def build_specfiles(source, target, env):
 
     control_file=open_file('control', target)
 
-    if not env.has_key('x_ipk_DESCRIPTION'):
-        env['x_ipk_DESCRIPTION']="%s\n %s"%(env['SUMMARY'],
+    if not env.has_key('X_IPK_DESCRIPTION'):
+        env['X_IPK_DESCRIPTION']="%s\n %s"%(env['SUMMARY'],
                                             env['DESCRIPTION'].replace('\n', '\n '))
 
 
     content = """
 Package: $NAME
 Version: $VERSION
-Priority: $x_ipk_priority
-Section: $x_ipk_section
-Source: $source_url
-Architecture: $architecture
-Maintainer: $x_ipk_maintainer
-Depends: $x_ipk_depends
-Description: $x_ipk_DESCRIPTION
+Priority: $X_IPK_PRIORITY
+Section: $X_IPK_SECTION
+Source: $SOURCE_URL
+Architecture: $ARCHITECTURE
+Maintainer: $X_IPK_MAINTAINER
+Depends: $X_IPK_DEPENDS
+Description: $X_IPK_DESCRIPTION
 """
 
     control_file.write(env.subst(content))
@@ -140,13 +156,13 @@ Description: $x_ipk_DESCRIPTION
     # CONTROL/configfiles, the latter add the content of the x_ipk_* variable
     # into the same named file.
     #
-    for f in [x for x in source if 'packaging_config' in dir(x)]:
+    for f in [x for x in source if 'PACKAGING_CONFIG' in dir(x)]:
         config=open_file('conffiles')
-        config.write(f.packaging_install_location)
+        config.write(f.PACKAGING_INSTALL_LOCATION)
         config.write('\n')
 
-    for str in 'postrm prerm postinst preinst'.split():
-        name="packaging_x_ipk_%s"%str
+    for str in 'POSTRM PRERM POSTINST PREINST'.split():
+        name="PACKAGING_X_IPK_%s"%str
         for f in [x for x in source if name in dir(x)]:
             file=open_file(name)
             file.write(env[str])
@@ -157,7 +173,7 @@ Description: $x_ipk_DESCRIPTION
         f.close()
 
     # call a user specified function
-    if env.has_key('change_specfile'):
-        content += env['change_specfile'](target)
+    if env.has_key('CHANGE_SPECFILE'):
+        content += env['CHANGE_SPECFILE'](target)
 
     return 0

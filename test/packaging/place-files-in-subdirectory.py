@@ -47,10 +47,10 @@ if tar:
 
   test.write('SConstruct', """
 env = Environment(tools=['default', 'packaging'])
-env.Package( projectname = 'libfoo',
-             packageroot = 'libfoo',
-             type        = 'src_zip',
-             version     = '1.2.3',
+env.Package( NAME        = 'libfoo',
+             PACKAGEROOT = 'libfoo',
+             PACKAGETYPE = 'src_zip',
+             VERSION     = '1.2.3',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
@@ -69,10 +69,10 @@ env.Package( projectname = 'libfoo',
 
   test.write('SConstruct', """
 env = Environment(tools=['default', 'packaging'])
-env.Package( projectname = 'libfoo',
-             version     = '1.2.3',
-             type        = 'src_zip',
-             target      = 'src.zip',
+env.Package( NAME        = 'libfoo',
+             VERSION     = '1.2.3',
+             PACKAGETYPE = 'src_zip',
+             TARGET      = 'src.zip',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
@@ -92,9 +92,9 @@ env.Package( projectname = 'libfoo',
 
   test.write('SConstruct', """
 env = Environment(tools=['default', 'packaging'])
-env.Package( projectname = 'libfoo',
-             version     = '1.2.3',
-             type        = 'src_targz',
+env.Package( NAME        = 'libfoo',
+             VERSION     = '1.2.3',
+             PACKAGETYPE = 'src_targz',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 

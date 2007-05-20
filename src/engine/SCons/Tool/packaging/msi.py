@@ -127,8 +127,8 @@ def gen_dos_short_file_name(file, filename_set):
     return shortname
 
 def create_feature_dict(files):
-    """ x_msi_feature and doc FileTag's can be used to collect files in a
-        hierachie. This function collects the files into this hierachie.
+    """ X_MSI_FEATURE and doc FileTag's can be used to collect files in a
+        hierarchy. This function collects the files into this hierarchy.
     """
     dict = {}
 
@@ -143,10 +143,10 @@ def create_feature_dict(files):
                 dict[ f ].append( file )
 
     for file in files:
-        if hasattr( file, 'packaging_x_msi_feature' ):
-            add_to_dict(file.packaging_x_msi_feature, file)
-        elif hasattr( file, 'packaging_doc' ):
-            add_to_dict( 'packaging_doc', file )
+        if hasattr( file, 'PACKAGING_X_MSI_FEATURE' ):
+            add_to_dict(file.PACKAGING_X_MSI_FEATURE, file)
+        elif hasattr( file, 'PACKAGING_DOC' ):
+            add_to_dict( 'PACKAGING_DOC', file )
         else:
             add_to_dict( 'default', file )
 
@@ -204,7 +204,7 @@ def build_wxsfile(target, source, env):
 
         # Create the content
         build_wxsfile_header_section(root, env)
-        build_wxsfile_file_section(root, source, env['NAME'], env['VERSION'], env['vendor'], filename_set, id_set)
+        build_wxsfile_file_section(root, source, env['NAME'], env['VERSION'], env['VENDOR'], filename_set, id_set)
         generate_guids(root)
         build_wxsfile_features_section(root, source, env['NAME'], env['VERSION'], env['SUMMARY'], id_set)
         build_wxsfile_default_gui(root)
@@ -214,8 +214,8 @@ def build_wxsfile(target, source, env):
         file.write( doc.toprettyxml() )
 
         # call a user specified function
-        if env.has_key('change_specfile'):
-            env['change_specfile'](target, source)
+        if env.has_key('CHANGE_SPECFILE'):
+            env['CHANGE_SPECFILE'](target, source)
 
     except KeyError, e:
         raise SCons.Errors.UserError( '"%s" package field for MSI is missing.' % e.args[0] )
@@ -274,7 +274,7 @@ def build_wxsfile_file_section(root, files, NAME, VERSION, vendor, filename_set,
     Files need to be specified in 8.3 format and in the long name format, long
     filenames will be converted automatically.
 
-    Features are specficied with the 'x_msi_feature' or 'doc' FileTag.
+    Features are specficied with the 'X_MSI_FEATURE' or 'DOC' FileTag.
     """
     root       = create_default_directory_layout( root, NAME, VERSION, vendor, filename_set )
     components = create_feature_dict( files )
@@ -320,17 +320,17 @@ def build_wxsfile_file_section(root, files, NAME, VERSION, vendor, filename_set,
         return Directory
 
     for file in files:
-        drive, path = os.path.splitdrive( file.packaging_install_location )
+        drive, path = os.path.splitdrive( file.PACKAGING_INSTALL_LOCATION )
         filename = os.path.basename( path )
         dirname  = os.path.dirname( path )
 
         h = {
             # tagname                   : default value
-            'packaging_x_msi_vital'     : 'yes',
-            'packaging_x_msi_fileid'    : convert_to_id(filename, id_set),
-            'packaging_x_msi_longname'  : filename,
-            'packaging_x_msi_shortname' : gen_dos_short_file_name(filename, filename_set),
-            'packaging_x_msi_source'    : file.get_path(),
+            'PACKAGING_X_MSI_VITAL'     : 'yes',
+            'PACKAGING_X_MSI_FILEID'    : convert_to_id(filename, id_set),
+            'PACKAGING_X_MSI_LONGNAME'  : filename,
+            'PACKAGING_X_MSI_SHORTNAME' : gen_dos_short_file_name(filename, filename_set),
+            'PACKAGING_X_MSI_SOURCE'    : file.get_path(),
             }
 
         # fill in the default tags given above.
@@ -338,11 +338,11 @@ def build_wxsfile_file_section(root, files, NAME, VERSION, vendor, filename_set,
             setattr( file, k, v )
 
         File = factory.createElement( 'File' )
-        File.attributes['LongName'] = escape( file.packaging_x_msi_longname )
-        File.attributes['Name']     = escape( file.packaging_x_msi_shortname )
-        File.attributes['Source']   = escape( file.packaging_x_msi_source )
-        File.attributes['Id']       = escape( file.packaging_x_msi_fileid )
-        File.attributes['Vital']    = escape( file.packaging_x_msi_vital )
+        File.attributes['LongName'] = escape( file.PACKAGING_X_MSI_LONGNAME )
+        File.attributes['Name']     = escape( file.PACKAGING_X_MSI_SHORTNAME )
+        File.attributes['Source']   = escape( file.PACKAGING_X_MSI_SOURCE )
+        File.attributes['Id']       = escape( file.PACKAGING_X_MSI_FILEID )
+        File.attributes['Vital']    = escape( file.PACKAGING_X_MSI_VITAL )
 
         # create the <Component> Tag under which this file should appear
         Component = factory.createElement('Component')
@@ -368,7 +368,7 @@ def build_wxsfile_features_section(root, files, NAME, VERSION, SUMMARY, id_set):
 
     Furthermore a top-level with the name and VERSION of the software will be created.
 
-    An packaging_x_msi_feature can either be a string, where the feature
+    An PACKAGING_X_MSI_FEATURE can either be a string, where the feature
     DESCRIPTION will be the same as its title or a Tuple, where the first
     part will be its title and the second its DESCRIPTION.
     """
@@ -394,7 +394,7 @@ def build_wxsfile_features_section(root, files, NAME, VERSION, SUMMARY, id_set):
             if feature=='default':
                 SubFeature.attributes['Description'] = 'Main Part'
                 SubFeature.attributes['Title'] = 'Main Part'
-            elif feature=='packaging_doc':
+            elif feature=='PACKAGING_DOC':
                 SubFeature.attributes['Description'] = 'Documentation'
                 SubFeature.attributes['Title'] = 'Documentation'
             else:
@@ -428,16 +428,16 @@ def build_wxsfile_default_gui(root):
     Product.childNodes.append(UIRef)
 
 def build_license_file(directory, spec):
-    """ creates a License.rtf file with the content of "x_msi_license_text"
+    """ creates a License.rtf file with the content of "X_MSI_LICENSE_TEXT"
     in the given directory
     """
     name, text = '', ''
 
     try:
         name = spec['LICENSE']
-        text = spec['x_msi_license_text']
+        text = spec['X_MSI_LICENSE_TEXT']
     except KeyError:
-        pass # ignore this as x_msi_license_text is optional
+        pass # ignore this as X_MSI_LICENSE_TEXT is optional
 
     if name!='' or text!='':
         file = open( os.path.join(directory.get_path(), 'License.rtf'), 'w' )
@@ -464,22 +464,22 @@ def build_wxsfile_header_section(root, spec):
     Product.childNodes.append( Package )
 
     # set "mandatory" default values
-    if not spec.has_key('x_msi_language'):
-        spec['x_msi_language'] = '1033' # select english
+    if not spec.has_key('X_MSI_LANGUAGE'):
+        spec['X_MSI_LANGUAGE'] = '1033' # select english
 
     # mandatory sections, will throw a KeyError if the tag is not available
     Product.attributes['Name']         = escape( spec['NAME'] )
     Product.attributes['Version']      = escape( spec['VERSION'] )
     Product.attributes['Manufacturer'] = escape( spec['vendor'] )
-    Product.attributes['Language']     = escape( spec['x_msi_language'] )
+    Product.attributes['Language']     = escape( spec['X_MSI_LANGUAGE'] )
     Package.attributes['Description']  = escape( spec['SUMMARY'] )
 
     # now the optional tags, for which we avoid the KeyErrror exception
     if spec.has_key( 'DESCRIPTION' ):
         Package.attributes['Comments'] = escape( spec['DESCRIPTION'] )
 
-    if spec.has_key( 'x_msi_upgrade_code' ):
-        Package.attributes['x_msi_upgrade_code'] = escape( spec['x_msi_upgrade_code'] )
+    if spec.has_key( 'X_MSI_UPGRADE_CODE' ):
+        Package.attributes['X_MSI_UPGRADE_CODE'] = escape( spec['X_MSI_UPGRADE_CODE'] )
 
     # We hardcode the media tag as our current model cannot handle it.
     Media = factory.createElement('Media')
@@ -494,7 +494,7 @@ wxs_builder = Builder(
     emitter = stripinstall_emitter(),
     suffix  = '.wxs' )
 
-def package(env, target, source, packageroot, NAME, VERSION,
+def package(env, target, source, PACKAGEROOT, NAME, VERSION,
             DESCRIPTION, SUMMARY, **kw):
     # make sure that the Wix Builder is in the environment
     SCons.Tool.Tool('wix').generate(env)

@@ -51,9 +51,9 @@ int main( int argc, char* argv[] )
   test.write('SConstruct', """
 Program( 'src/main.c' )
 env=Environment(tools=['default', 'packaging'])
-env.Package( type         = 'src_tarbz2',
+env.Package( PACKAGETYPE  = 'src_tarbz2',
              target       = 'src.tar.bz2',
-             packageroot  = 'test',
+             PACKAGEROOT  = 'test',
              source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 

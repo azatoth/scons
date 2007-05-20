@@ -55,14 +55,14 @@ SharedLibrary( 'foobar', src_files )
 
 env = Environment(tools=['default', 'packaging'])
 
-env.Package( projectname = 'libfoobar',
-             version     = '1.2.3',
-             type        = 'targz',
+env.Package( NAME        = 'libfoobar',
+             VERSION     = '1.2.3',
+             PACKAGETYPE = 'targz',
              source      = src_files + include_files )
 
-env.Package( projectname = 'libfoobar',
-             version     = '1.2.3',
-             type        = 'zip',
+env.Package( NAME        = 'libfoobar',
+             VERSION     = '1.2.3',
+             PACKAGETYPE = 'zip',
              source      = src_files + include_files )
 """)
 

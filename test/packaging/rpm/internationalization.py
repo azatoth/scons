@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: iso-8859-15 -*-
+# -*- coding: utf-8 -*-
 #
 # __COPYRIGHT__
 #
@@ -55,28 +55,28 @@ int main( int argc, char* argv[] )
 """)
 
 test.write('SConstruct', """
-# -*- coding: iso-8859-15 -*-
+# -*- coding: utf-8 -*-
 import os
 
 env  = Environment(tools=['default', 'packaging'])
 prog = env.Install( '/bin', Program( 'main.c' ) )
 
-env.Package( projectname    = 'foo',
-             version        = '1.2.3',
-             type           = 'rpm',
-             license        = 'gpl',
-             summary        = 'hello',
-             summary_de     = 'hallo',
-             summary_fr     = 'bonjour',
-             packageversion = 0,
-             x_rpm_Group    = 'Application/office',
-             x_rpm_Group_de = 'Applikation/büro',
-             x_rpm_Group_fr = 'Application/bureau',
-             description    = 'this should be really long',
-             description_de = 'das sollte wirklich lang sein',
-             description_fr = 'ceci devrait être vraiment long',
+env.Package( NAME           = 'foo',
+             VERSION        = '1.2.3',
+             PACKAGETYPE    = 'rpm',
+             LICENSE        = 'gpl',
+             SUMMARY        = 'hello',
+             SUMMARY_de     = 'hallo',
+             SUMMARY_fr     = 'bonjour',
+             PACKAGEVERSION = 0,
+             X_RPM_GROUP    = 'Application/office',
+             X_RPM_GROUP_de = 'Applikation/büro',
+             X_RPM_GROUP_fr = 'Application/bureau',
+             DESCRIPTION    = 'this should be really long',
+             DESCRIPTION_de = 'das sollte wirklich lang sein',
+             DESCRIPTION_fr = 'ceci devrait être vraiment long',
              source         = [ prog ],
-             source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
+             SOURCE_URL     = 'http://foo.org/foo-1.2.3.tar.gz'
             )
 
 env.Alias ( 'install', prog )
@@ -92,14 +92,14 @@ test.must_exist( machine_rpm )
 
 test.fail_test( os.path.exists( 'bin/main' ) )
 
-save_LANGUAGE = os.environ.get('LANGUAGE', '')
-
 cmd = 'rpm -qp --queryformat \'%%{GROUP}-%%{SUMMARY}-%%{DESCRIPTION}\' %s'
 
+os.environ['LC_ALL']   = 'de_DE.utf8'
 os.environ['LANGUAGE'] = 'de'
 out = os.popen( cmd % test.workpath(machine_rpm) ).read()
 test.fail_test( out != 'Applikation/büro-hallo-das sollte wirklich lang sein' )
 
+os.environ['LC_ALL']   = 'fr_FR.utf8'
 os.environ['LANGUAGE'] = 'fr'
 out = os.popen( cmd % test.workpath(machine_rpm) ).read()
 test.fail_test( out != 'Application/bureau-bonjour-ceci devrait être vraiment long' )
@@ -108,11 +108,9 @@ os.environ['LANGUAGE'] = 'en'
 out = os.popen( cmd % test.workpath(machine_rpm) ).read()
 test.fail_test( out != 'Application/office-hello-this should be really long' )
 
-os.environ['LANGUAGE'] = 'ae'
+os.environ['LC_ALL'] = 'ae'
 out = os.popen( cmd % test.workpath(machine_rpm) ).read()
 test.fail_test( out != 'Application/office-hello-this should be really long' )
-
-os.environ['LANGUAGE'] = save_LANGUAGE
 
 #
 # test INTERNATIONAL PACKAGE TAGS
@@ -130,7 +128,7 @@ test.write( ['man.en'], '' )
 test.write( ['man.fr'], '' )
 
 test.write('SConstruct', """
-# -*- coding: iso-8859-15 -*-
+# -*- coding: utf-8 -*-
 import os
 
 env  = Environment(tools=['default', 'packaging'])
@@ -142,24 +140,24 @@ man_pages = Flatten( [
   env.Install( '/usr/share/man/fr', 'man.fr' )
 ] )
 
-env.Tag( man_pages, 'lang_de', 'doc')
+env.Tag( man_pages, 'LANG_DE', 'DOC')
 
-env.Package( projectname    = 'foo',
-             version        = '1.2.3',
-             type           = 'rpm',
-             license        = 'gpl',
-             summary        = 'hello',
-             summary_de     = 'hallo',
-             summary_fr     = 'bonjour',
-             packageversion = 0,
-             x_rpm_Group    = 'Application/office',
-             x_rpm_Group_de = 'Applikation/büro',
-             x_rpm_Group_fr = 'Application/bureau',
-             description    = 'this should be really long',
-             description_de = 'das sollte wirklich lang sein',
-             description_fr = 'ceci devrait être vraiment long',
+env.Package( NAME           = 'foo',
+             VERSION        = '1.2.3',
+             PACKAGETYPE    = 'rpm',
+             LICENSE        = 'gpl',
+             SUMMARY        = 'hello',
+             SUMMARY_de     = 'hallo',
+             SUMMARY_fr     = 'bonjour',
+             PACKAGEVERSION = 0,
+             X_RPM_GROUP    = 'Application/office',
+             X_RPM_GROUP_de = 'Applikation/büro',
+             X_RPM_GROUP_fr = 'Application/bureau',
+             DESCRIPTION    = 'this should be really long',
+             DESCRIPTION_de = 'das sollte wirklich lang sein',
+             DESCRIPTION_fr = 'ceci devrait être vraiment long',
              source         = [ prog, man_pages ],
-             source_url     = 'http://foo.org/foo-1.2.3.tar.gz',
+             SOURCE_URL     = 'http://foo.org/foo-1.2.3.tar.gz',
             )
 
 env.Alias ( 'install', [ prog, man_pages ] )

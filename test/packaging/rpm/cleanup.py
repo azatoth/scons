@@ -60,16 +60,16 @@ env=Environment(tools=['default', 'packaging'])
 
 prog = env.Install( '/bin/' , Program( 'src/main.c')  )
 
-env.Package( projectname    = 'foo',
-             version        = '1.2.3',
-             packageversion = 0,
-             type           = 'rpm',
-             license        = 'gpl',
-             summary        = 'balalalalal',
-             x_rpm_Group    = 'Application/fu',
-             description    = 'this should be really really long',
+env.Package( NAME           = 'foo',
+             VERSION        = '1.2.3',
+             PACKAGEVERSION = 0,
+             PACKAGETYPE    = 'rpm',
+             LICENSE        = 'gpl',
+             SUMMARY        = 'balalalalal',
+             X_RPM_GROUP    = 'Application/fu',
+             DESCRIPTION    = 'this should be really really long',
              source         = [ prog ],
-             source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
+             SOURCE_URL     = 'http://foo.org/foo-1.2.3.tar.gz'
             )
 
 env.Alias( 'install', prog )

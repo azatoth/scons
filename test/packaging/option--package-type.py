@@ -47,19 +47,19 @@ import os
 
 env=Environment(tools=['default', 'packaging'])
 prog=env.Install( '/bin', 'main' )
-env.Package( projectname    = 'foo',
-             version        = '1.2.3',
-             license        = 'gpl',
-             summary        = 'hello',
-             packageversion = 0,
-             x_rpm_Group    = 'Application/office',
-             description    = 'this should be really long',
+env.Package( NAME           = 'foo',
+             VERSION        = '1.2.3',
+             LICENSE        = 'gpl',
+             SUMMARY        = 'hello',
+             PACKAGEVERSION = 0,
+             X_RPM_GROUP    = 'Application/office',
+             DESCRIPTION    = 'this should be really long',
              source         = [ prog ],
-             source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
+             SOURCE_URL     = 'http://foo.org/foo-1.2.3.tar.gz'
             )
 """)
 
-test.run(arguments='package package_type=rpm', stderr = None)
+test.run(arguments='package PACKAGETYPE=rpm', stderr = None)
 
 src_rpm = 'foo-1.2.3-0.src.rpm'
 machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine

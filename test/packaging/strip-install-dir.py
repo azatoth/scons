@@ -38,9 +38,9 @@ test.write( 'main.c', '' )
 test.write('SConstruct', """
 prog = Install( '/bin', 'main.c' )
 env=Environment(tools=['default', 'packaging'])
-env.Package( projectname    = 'foo',
-             version        = '1.2.3',
-             source         = [ prog ],
+env.Package( NAME    = 'foo',
+             VERSION = '1.2.3',
+             source  = [ prog ],
             )
 """)
 

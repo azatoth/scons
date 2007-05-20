@@ -36,7 +36,7 @@ from SCons.Util import is_List, make_path_relative
 import os, imp
 import SCons.Defaults
 
-__all__ = [ 'tarbz', 'targz', 'zip', 'rpm', 'msi', 'ipk' ]
+__all__ = [ 'src_targz', 'src_tarbz2', 'src_zip', 'tarbz2', 'targz', 'zip', 'rpm', 'msi', 'ipk' ]
 
 #
 # Utility and Builder function
@@ -73,12 +73,12 @@ def Tag(env, target, source, *more_tags, **kw_tags):
 
     for t in target:
         for (k,v) in kw_tags.items():
-            # all file tags have to start with packaging_, so we can later
+            # all file tags have to start with PACKAGING_, so we can later
             # differentiate between "normal" object attributes and the
             # packaging attributes. As the user should not be bothered with
             # that, the prefix will be added here if missing.
-            if not k.startswith('packaging_'):
-                k='packaging_'+k
+            if not k.startswith('PACKAGING_'):
+                k='PACKAGING_'+k
             setattr(t, k, v)
 
 def Package(env, target=None, source=None, **kw):
@@ -92,19 +92,19 @@ def Package(env, target=None, source=None, **kw):
         raise UserError, "No source for Package() given"
 
     # has the option for this Tool been set?
-    try: kw['PACKAGE_TYPE']=env['PACKAGE_TYPE']
+    try: kw['PACKAGETYPE']=env['PACKAGETYPE']
     except KeyError: pass
 
-    if not kw.has_key('PACKAGE_TYPE') or kw['PACKAGE_TYPE']==None:
+    if not kw.has_key('PACKAGETYPE') or kw['PACKAGETYPE']==None:
         if env['BUILDERS'].has_key('Tar'):
-            kw['type']='targz'
+            kw['PACKAGETYPE']='targz'
         elif env['BUILDERS'].has_key('Zip'):
-            kw['type']='zip'
+            kw['PACKAGETYPE']='zip'
         else:
             raise UserError, "No type for Package() given"
-    package_type=kw['PACKAGE_TYPE']
-    if not is_List(package_type):
-        package_type=package_type.split(',')
+    PACKAGETYPE=kw['PACKAGETYPE']
+    if not is_List(PACKAGETYPE):
+        PACKAGETYPE=PACKAGETYPE.split(',')
 
     # now load the needed packagers.
     def load_packager(type):
@@ -114,22 +114,22 @@ def Package(env, target=None, source=None, **kw):
         except ImportError, e:
             raise EnvironmentError("packager %s not available: %s"%(type,str(e)))
 
-    packagers=map(load_packager, package_type)
+    packagers=map(load_packager, PACKAGETYPE)
 
-    # now try to setup the default_target and the default package_root
+    # now try to setup the default_target and the default PACKAGEROOT
     # arguments.
     try:
-        # fill up the target list with a default target name until the package_type
+        # fill up the target list with a default target name until the PACKAGETYPE
         # list is of the same size as the target list.
         if target==None or target==[]:
             target=["%(NAME)s-%(VERSION)s"%kw]
 
-        size_diff=len(package_type)-len(target)
+        size_diff=len(PACKAGETYPE)-len(target)
         if size_diff>0:
             target.extend([target]*size_diff)
 
-        if not kw.has_key('packageroot'):
-            kw['packageroot']="%(NAME)s-%(VERSION)s"%kw
+        if not kw.has_key('PACKAGEROOT'):
+            kw['PACKAGEROOT']="%(NAME)s-%(VERSION)s"%kw
 
     except KeyError, e:
         raise SCons.Errors.UserError( "Missing PackageTag '%s'"%e.args[0] )
@@ -233,7 +233,7 @@ def exists(env):
 
 def options(opts):
     opts.AddOptions(
-        EnumOption( [ 'package_type', '--package-type' ],
+        EnumOption( [ 'PACKAGETYPE', '--package-type' ],
                     'the type of package to create.',
                     None, allowed_values=map( str, __all__ ),
                     ignorecase=2
@@ -244,7 +244,7 @@ def copy_attr(f1, f2):
     """ copies the special packaging file attributes from f1 to f2.
     """
     for attr in [x for x in dir(f1) if not hasattr(f2, x) and\
-                                       x.startswith('packaging')]:
+                                       x.startswith('PACKAGING_')]:
         setattr(f2, attr, getattr(f1, attr))
 #
 # Emitter functions which are reused by the various packagers
@@ -256,7 +256,7 @@ def packageroot_emitter(pkg_root, honor_install_location=1):
     to the directory given in pkg_root.
 
     If honor_install_location is set and the copied source file has an
-    packaging_install_location attribute, the packaging_install_location is 
+    PACKAGING_INSTALL_LOCATION attribute, the PACKAGING_INSTALL_LOCATION is
     used as the new name of the source file under pkg_root.
 
     The source file will not be copied if it is already under the the pkg_root
@@ -273,9 +273,9 @@ def packageroot_emitter(pkg_root, honor_install_location=1):
             if file.is_under(pkgroot):
                 return file
             else:
-                if hasattr(file, 'packaging_install_location') and\
+                if hasattr(file, 'PACKAGING_INSTALL_LOCATION') and\
                    honor_install_location:
-                    new_name=make_path_relative(file.packaging_install_location)
+                    new_name=make_path_relative(file.PACKAGING_INSTALL_LOCATION)
                 else:
                     new_name=make_path_relative(file.get_path())
 
@@ -293,7 +293,7 @@ from SCons.Warnings import warn, Warning
 def stripinstall_emitter():
     """ create the a emitter which:
      * strips of the Install Builder of the source target, and stores the
-       install location as the "packaging_install_location" of the given source
+       install location as the "PACKAGING_INSTALL_LOCATION" of the given source
        File object. This effectively avoids having to execute the Install
        Action while storing the needed install location.
      * warns about files that are mangled by this emitter which have no
@@ -318,7 +318,7 @@ def stripinstall_emitter():
                 for ss in s.sources:
                     n_source.append(ss)
                     copy_attr(s, ss)
-                    setattr(ss, 'packaging_install_location', s.get_path())
+                    setattr(ss, 'PACKAGING_INSTALL_LOCATION', s.get_path())
 
         return (target, n_source)
     return strip_install_emitter

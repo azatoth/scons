@@ -50,13 +50,13 @@ import os
 env = Environment(tools=['default', 'packaging'])
 f1  = env.Install( '/bin/' , 'file1.exe'  )
 
-env.Package( projectname    = 'foo',
-             version        = '1.2',
-             type           = 'msi',
-             summary        = 'balalalalal',
-             description    = 'this should be reallly really long',
-             vendor         = 'Nanosoft_2000',
-             source         = [ f1 ],
+env.Package( NAME         = 'foo',
+             VERSION      = '1.2',
+             PACKAGETYPE  = 'msi',
+             SUMMARY      = 'balalalalal',
+             DESCRIPTION  = 'this should be reallly really long',
+             VENDOR       = 'Nanosoft_2000',
+             source       = [ f1 ],
            )
 """)
 
@@ -93,14 +93,14 @@ f5  = env.Install( '/java/edu/teco/' , 'file5.class'  )
 f6  = env.Install( '/java/teco/' , 'file6.class'  )
 f7  = env.Install( '/java/tec/' , 'file7.class'  )
 
-env.Package( projectname    = 'foo',
-             version        = '1.2',
-             type           = 'msi',
-             summary        = 'balalalalal',
-             description    = 'this should be reallly really long',
-             vendor         = 'Nanosoft_2000',
-             license        = 'afl',
-             source         = [ f1, f2, f3, f4, f5, f6, f7 ],
+env.Package( NAME         = 'foo',
+             VERSION      = '1.2',
+             PACKAGETYPE  = 'msi',
+             SUMMARY      = 'balalalalal',
+             DESCRIPTION  = 'this should be reallly really long',
+             VENDOR       = 'Nanosoft_2000',
+             LICENSE      = 'afl',
+             source       = [ f1, f2, f3, f4, f5, f6, f7 ],
             )
 """)
 
@@ -141,17 +141,17 @@ f2  = env.Install( '/bin/' , 'file2.exe'  )
 f3  = env.Install( '/lib/' , 'file3.dll'  )
 f4  = env.Install( '/lib/' , 'file3-.dll' ) # generate a collision in the ids
 
-env.Tag( [f1, f2, f4], x_msi_feature = 'Core Part' )
-env.Tag( f3, x_msi_feature = 'Java Part' )
+env.Tag( [f1, f2, f4], X_MSI_FEATURE = 'Core Part' )
+env.Tag( f3, X_MSI_FEATURE = 'Java Part' )
 
-env.Package( projectname    = 'foo',
-             version        = '1.2',
-             type           = 'msi',
-             summary        = 'balalalalal',
-             description    = 'this should be reallly really long',
-             vendor         = 'Nanosoft_2000',
-             license        = 'afl',
-             source         = [ f1, f2, f3, f4 ],
+env.Package( NAME         = 'foo',
+             VERSION      = '1.2',
+             PACKAGETYPE  = 'msi',
+             SUMMARY      = 'balalalalal',
+             DESCRIPTION  = 'this should be reallly really long',
+             VENDOR       = 'Nanosoft_2000',
+             LICENSE      = 'afl',
+             source       = [ f1, f2, f3, f4 ],
             )
 """)
 

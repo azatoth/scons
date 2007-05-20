@@ -91,8 +91,9 @@ def stringFunc(target, source, env):
 # Emitter functions
 #
 def add_targets_to_INSTALLED_FILES(target, source, env):
-    """ an emitter that adds all files to the list in the _INSTALLED_FILES
-    variable in env.
+    """ an emitter that adds all target files to the list stored in the
+    _INSTALLED_FILES global variable. This way all installed files of one
+    scons call will be collected.
     """
     global _INSTALLED_FILES
     files = _INSTALLED_FILES

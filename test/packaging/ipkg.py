@@ -53,24 +53,24 @@ int main(int argc, char *argv[])
 env=Environment(tools=['default', 'packaging'])
 prog = env.Install( 'bin/', Program( 'main.c') )
 conf = env.Install( 'etc/', File( 'foo.conf' ) )
-env.Tag( conf, 'conf', 'mehr', 'und mehr' )
-env.Package( type      = 'ipk',
-      source           = env.FindInstalledFiles(),
-      projectname      = 'foo',
-      version          = '0.0',
-      summary          = 'foo is the ever-present example program -- it does everything',
-      description      = '''foo is not a real package. This is simply an example that you
+env.Tag( conf, 'CONF', 'MEHR', 'UND MEHR' )
+env.Package( PACKAGETYPE = 'ipk',
+             source      = env.FindInstalledFiles(),
+             NAME        = 'foo',
+             VERSION     = '0.0',
+             SUMMARY     = 'foo is the ever-present example program -- it does everything',
+             DESCRIPTION = '''foo is not a real package. This is simply an example that you
 may modify if you wish.
 .
 When you modify this example, be sure to change the Package, Version,
 Maintainer, Depends, and Description fields.''',
 
-      source_url       = 'http://gnu.org/foo-0.0.tar.gz',
-      x_ipk_section    = 'extras',
-      x_ipk_priority   = 'optional',
-      architecture     = 'arm',
-      x_ipk_maintainer = 'Familiar User <user@somehost.net>',
-      x_ipk_depends    = 'libc6, grep', )
+             SOURCE_URL       = 'http://gnu.org/foo-0.0.tar.gz',
+             X_IPK_SECTION    = 'extras',
+             X_IPK_PRIORITY   = 'optional',
+             ARCHITECTURE     = 'arm',
+             X_IPK_MAINTAINER = 'Familiar User <user@somehost.net>',
+             X_IPK_DEPENDS    = 'libc6, grep', )
 """)
 
   expected="""scons: Reading SConscript files ...

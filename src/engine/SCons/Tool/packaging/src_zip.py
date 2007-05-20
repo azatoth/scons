@@ -30,15 +30,8 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 from SCons.Tool.packaging import packageroot_emitter
 
-def package(env, target, source, packageroot, **kw):
+def package(env, target, source, PACKAGEROOT, **kw):
     bld = env['BUILDERS']['Zip']
     bld.set_suffix('.zip')
-    bld.push_emitter(packageroot_emitter(packageroot))
+    bld.push_emitter(packageroot_emitter(PACKAGEROOT, honor_install_location=0))
     return bld(env, target, source)
-
-#class BinaryZip(Zip):
-#    def create_builder(self, env, kw=None):
-#        builder = Zip.create_builder(self, env, kw)
-#        builder.push_emitter(self.strip_install_emitter)
-#        return builder
-

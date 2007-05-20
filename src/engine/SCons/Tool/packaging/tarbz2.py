@@ -30,9 +30,9 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 from SCons.Tool.packaging import stripinstall_emitter, packageroot_emitter
 
-def package(env, target, source, packageroot, **kw):
+def package(env, target, source, PACKAGEROOT, **kw):
     bld = env['BUILDERS']['Tar']
     bld.set_suffix('.tar.gz')
-    bld.push_emitter(packageroot_emitter(packageroot))
+    bld.push_emitter(packageroot_emitter(PACKAGEROOT))
     bld.push_emitter(stripinstall_emitter())
     return bld(env, target, source, TARFLAGS='-jc')

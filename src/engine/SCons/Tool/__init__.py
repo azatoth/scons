@@ -160,11 +160,14 @@ class Tool:
         env.Append(TOOLS = [ self.name ])
         if hasattr(self, 'options') and hasattr(env, 'Help'):
             from SCons.Options import Options
-            from SCons.Script import ARGUMENTS, help_text
+            from SCons.Script  import help_text
             current_help=SCons.Script.help_text or ''
+
             if not env.has_key('options'):
+                from SCons.Script import ARGUMENTS
                 env['options']=Options(args=ARGUMENTS)
             opts=env['options']
+
             self.options(opts)
             opts.Update(env)
             new_help=opts.GenerateHelpText(env)
@@ -177,6 +180,7 @@ class Tool:
                 pass
             else:
                 Help(new_help.replace(current_help, ''))
+
         apply(self.generate, ( env, ) + args, kw)
 
     def __str__(self):

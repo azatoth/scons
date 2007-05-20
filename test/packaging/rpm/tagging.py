@@ -59,19 +59,19 @@ import os
 env = Environment(tools=['default', 'packaging'])
 install_dir= os.path.join( ARGUMENTS.get('prefix', '/'), 'bin/' )
 prog_install = env.Install( install_dir , Program( 'src/main.c' ) )
-env.Tag( prog_install, unix_attr = '(0755, root, users)' )
+env.Tag( prog_install, UNIX_ATTR = '(0755, root, users)' )
 env.Alias( 'install', prog_install )
 
-env.Package( projectname  = 'foo',
-             version        = '1.2.3',
-             type           = 'rpm',
-             license        = 'gpl',
-             summary        = 'balalalalal',
-             packageversion = 0,
-             x_rpm_Group    = 'Applicatio/fu',
-             description    = 'this should be really really long',
+env.Package( NAME           = 'foo',
+             VERSION        = '1.2.3',
+             PACKAGETYPE    = 'rpm',
+             LICENSE        = 'gpl',
+             SUMMARY        = 'balalalalal',
+             PACKAGEVERSION = 0,
+             X_RPM_GROUP    = 'Applicatio/fu',
+             DESCRIPTION    = 'this should be really really long',
              source         = [ prog_install ],
-             source_url     = 'http://foo.org/foo-1.2.3.tar.gz'
+             SOURCE_URL     = 'http://foo.org/foo-1.2.3.tar.gz'
           )
 """)
 

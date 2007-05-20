@@ -33,8 +33,8 @@ import os
 
 from SCons.Tool.packaging import stripinstall_emitter, packageroot_emitter, src_targz
 
-def package(env, target, source, packageroot, NAME, VERSION,
-            PACKAGEVERSION, DESCRIPTION, SUMMARY, x_rpm_Group, license,
+def package(env, target, source, PACKAGEROOT, NAME, VERSION,
+            PACKAGEVERSION, DESCRIPTION, SUMMARY, X_RPM_GROUP, LICENSE,
             **kw):
     # initialize the rpm tool
     SCons.Tool.Tool('rpm').generate(env)
@@ -50,7 +50,7 @@ def package(env, target, source, packageroot, NAME, VERSION,
     # override the default target, with the rpm specific ones.
     if str(target[0])=="%s-%s"%(NAME, VERSION):
         # This should be overridable from the construction environment,
-        # which it is by using architecture=.
+        # which it is by using ARCHITECTURE=.
         # Guessing based on what os.uname() returns at least allows it
         # to work for both i386 and x86_64 Linux systems.
         archmap = {
@@ -62,8 +62,8 @@ def package(env, target, source, packageroot, NAME, VERSION,
         buildarchitecture = os.uname()[4]
         buildarchitecture = archmap.get(buildarchitecture, buildarchitecture)
 
-        if kw.has_key('architecture'):
-            buildarchitecture = kw['architecture']
+        if kw.has_key('ARCHITECTURE'):
+            buildarchitecture = kw['ARCHITECTURE']
 
         srcrpm = '%s-%s-%s.src.rpm' % (NAME, VERSION, PACKAGEVERSION)
         binrpm = srcrpm.replace( 'src', buildarchitecture )
@@ -76,9 +76,9 @@ def package(env, target, source, packageroot, NAME, VERSION,
     kw.update(loc)
     del kw['source'], kw['target'], kw['env']
 
-    # if no "source_url" tag is given add a default one.
-    if not kw.has_key('source_url'):
-        kw['source_url']=(str(target[0])+".tar.gz").replace('.rpm', '')
+    # if no "SOURCE_URL" tag is given add a default one.
+    if not kw.has_key('SOURCE_URL'):
+        kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
 
     # now call the rpm builder to actually build the packet.
     return apply(bld, [env, target, source], kw)
@@ -99,13 +99,14 @@ def targz_emitter(target, source, env):
 
     # as the source contains the url of the source package this rpm package
     # is built from, we extract the target name
+    tarball = (str(target[0])+".tar.gz").replace('.rpm', '')
     try:
-        tarball = env['source_url'].split('/')[-1]
+        tarball = env['SOURCE_URL'].split('/')[-1]
     except KeyError, e:
         raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
 
     tarball = src_targz.package(env, source=sources, target=tarball,
-                                packageroot=env['packageroot'], )
+                                PACKAGEROOT=env['PACKAGEROOT'], )
 
     return (target, tarball)
 
@@ -134,8 +135,8 @@ def build_specfile(target, source, env):
         file.close()
 
         # call a user specified function
-        if env.has_key('change_specfile'):
-            env['change_specfile'](target, source)
+        if env.has_key('CHANGE_SPECFILE'):
+            env['CHANGE_SPECFILE'](target, source)
 
     except KeyError, e:
         raise SCons.Errors.UserError( '"%s" package field for RPM is missing.' % e.args[0] )
@@ -156,33 +157,34 @@ def build_specfile_sections(spec):
 
     optional_sections = {
         'DESCRIPTION_'        : '%%description -l %s\n%s\n\n',
-        'changelog'           : '%%changelog\n%s\n\n',
-        'x_rpm_PreInstall'    : '%%pre\n%s\n\n',
-        'x_rpm_PostInstall'   : '%%post\n%s\n\n',
-        'x_rpm_PreUninstall'  : '%%preun\n%s\n\n',
-        'x_rpm_PostUninstall' : '%%postun\n%s\n\n',
-        'x_rpm_Verify'        : '%%verify\n%s\n\n',
+        'CHANGELOG'           : '%%changelog\n%s\n\n',
+        'X_RPM_PREINSTALL'    : '%%pre\n%s\n\n',
+        'X_RPM_POSTINSTALL'   : '%%post\n%s\n\n',
+        'X_RPM_PREUNINSTALL'  : '%%preun\n%s\n\n',
+        'X_RPM_POSTUNINSTALL' : '%%postun\n%s\n\n',
+        'X_RPM_VERIFY'        : '%%verify\n%s\n\n',
 
         # These are for internal use but could possibly be overriden
-        'x_rpm_Prep'          : '%%prep\n%s\n\n',
-        'x_rpm_Build'         : '%%build\n%s\n\n',
-        'x_rpm_Install'       : '%%install\n%s\n\n',
-        'x_rpm_Clean'         : '%%clean\n%s\n\n',
+        'X_RPM_PREP'          : '%%prep\n%s\n\n',
+        'X_RPM_BUILD'         : '%%build\n%s\n\n',
+        'X_RPM_INSTALL'       : '%%install\n%s\n\n',
+        'X_RPM_CLEAN'         : '%%clean\n%s\n\n',
         }
 
     # Default prep, build, install and clean rules
-    if not spec.has_key('x_rpm_Prep'):
-        spec['x_rpm_Prep'] = 'rm -rf $RPM_BUILD_ROOT'
-        spec['x_rpm_Prep'] += '\n%setup -q'
+    # TODO: optimize those build steps, to not compile the project a second time
+    if not spec.has_key('X_RPM_PREP'):
+        spec['X_RPM_PREP'] = 'rm -rf "$RPM_BUILD_ROOT"'
+        spec['X_RPM_PREP'] += '\n%setup -q'
 
-    if not spec.has_key('x_rpm_Build'):
-        spec['x_rpm_Build'] = 'mkdir $RPM_BUILD_ROOT'
+    if not spec.has_key('X_RPM_BUILD'):
+        spec['X_RPM_BUILD'] = 'mkdir "$RPM_BUILD_ROOT"'
 
-    if not spec.has_key('x_rpm_Install'):
-        spec['x_rpm_Install'] = 'scons --install-sandbox=$RPM_BUILD_ROOT $RPM_BUILD_ROOT'
+    if not spec.has_key('X_RPM_INSTALL'):
+        spec['X_RPM_INSTALL'] = 'scons --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"'
 
-    if not spec.has_key('x_rpm_Clean'):
-        spec['x_rpm_Clean'] = 'rm -rf $RPM_BUILD_ROOT'
+    if not spec.has_key('X_RPM_CLEAN'):
+        spec['X_RPM_CLEAN'] = 'rm -rf "$RPM_BUILD_ROOT"'
 
     str += SimpleTagCompiler(optional_sections, mandatory=0).compile( spec )
 
@@ -195,10 +197,10 @@ def build_specfile_header(spec):
 
     # first the mandatory sections
     mandatory_header_fields = {
-        'NAME'    : '%%define name %s\nName: %%{name}\n',
+        'NAME'           : '%%define name %s\nName: %%{name}\n',
         'VERSION'        : '%%define version %s\nVersion: %%{version}\n',
         'PACKAGEVERSION' : '%%define release %s\nRelease: %%{release}\n',
-        'x_rpm_Group'    : 'Group: %s\n',
+        'X_RPM_GROUP'    : 'Group: %s\n',
         'SUMMARY'        : 'Summary: %s\n',
         'LICENSE'        : 'License: %s\n', }
 
@@ -206,30 +208,30 @@ def build_specfile_header(spec):
 
     # now the optional tags
     optional_header_fields = {
-        'vendor'              : 'Vendor: %s\n',
-        'url'                 : 'Url: %s\n',
-        'source_url'          : 'Source: %s\n',
+        'VENDOR'              : 'Vendor: %s\n',
+        'X_RPM_URL'           : 'Url: %s\n',
+        'SOURCE_URL'          : 'Source: %s\n',
         'SUMMARY_'            : 'Summary(%s): %s\n',
-        'x_rpm_Distribution'  : 'Distribution: %s\n',
-        'x_rpm_Icon'          : 'Icon: %s\n',
-        'x_rpm_Packager'      : 'Packager: %s\n',
-        'x_rpm_Group_'        : 'Group(%s): %s\n',
+        'X_RPM_DISTRIBUTION'  : 'Distribution: %s\n',
+        'X_RPM_ICON'          : 'Icon: %s\n',
+        'X_RPM_PACKAGER'      : 'Packager: %s\n',
+        'X_RPM_GROUP_'        : 'Group(%s): %s\n',
 
-        'x_rpm_Requires'      : 'Requires: %s\n',
-        'x_rpm_Provides'      : 'Provides: %s\n',
-        'x_rpm_Conflicts'     : 'Conflicts: %s\n',
-        'x_rpm_BuildRequires' : 'BuildRequires: %s\n',
+        'X_RPM_REQUIRES'      : 'Requires: %s\n',
+        'X_RPM_PROVIDES'      : 'Provides: %s\n',
+        'X_RPM_CONFLICTS'     : 'Conflicts: %s\n',
+        'X_RPM_BUILDREQUIRES' : 'BuildRequires: %s\n',
 
-        'x_rpm_Serial'        : 'Serial: %s\n',
-        'x_rpm_Epoch'         : 'Epoch: %s\n',
-        'x_rpm_AutoReqProv'   : 'AutoReqProv: %s\n',
-        'x_rpm_ExcludeArch'   : 'ExcludeArch: %s\n',
-        'x_rpm_ExclusiveArch' : 'ExclusiveArch: %s\n',
-        'x_rpm_Prefix'        : 'Prefix: %s\n',
-        'x_rpm_Conflicts'     : 'Conflicts: %s\n',
+        'X_RPM_SERIAL'        : 'Serial: %s\n',
+        'X_RPM_EPOCH'         : 'Epoch: %s\n',
+        'X_RPM_AUTOREQPROV'   : 'AutoReqProv: %s\n',
+        'X_RPM_EXCLUDEARCH'   : 'ExcludeArch: %s\n',
+        'X_RPM_EXCLUSIVEARCH' : 'ExclusiveArch: %s\n',
+        'X_RPM_PREFIX'        : 'Prefix: %s\n',
+        'X_RPM_CONFLICTS'     : 'Conflicts: %s\n',
 
         # internal use
-        'x_rpm_BuildRoot'     : 'BuildRoot: %s\n', }
+        'X_RPM_BUILDROOT'     : 'BuildRoot: %s\n', }
 
     # fill in default values:
     # Adding a BuildRequires renders the .rpm unbuildable under System, which
@@ -238,8 +240,8 @@ def build_specfile_header(spec):
 #    if not s.has_key('x_rpm_BuildRequires'):
 #        s['x_rpm_BuildRequires'] = 'scons'
 
-    if not spec.has_key('x_rpm_BuildRoot'):
-        spec['x_rpm_BuildRoot'] = '%{_tmppath}/%{name}-%{VERSION}-%{release}'
+    if not spec.has_key('X_RPM_BUILDROOT'):
+        spec['X_RPM_BUILDROOT'] = '%{_tmppath}/%{name}-%{version}-%{release}'
 
     str += SimpleTagCompiler(optional_header_fields, mandatory=0).compile( spec )
     return str
@@ -252,21 +254,21 @@ def build_specfile_filesection(spec, files):
     """
     str  = '%files\n'
 
-    if not spec.has_key('x_rpm_defattr'):
-        spec['x_rpm_defattr'] = '(-,root,root)'
+    if not spec.has_key('X_RPM_DEFATTR'):
+        spec['X_RPM_DEFATTR'] = '(-,root,root)'
 
-    str += '%%defattr %s\n' % spec['x_rpm_defattr']
+    str += '%%defattr %s\n' % spec['X_RPM_DEFATTR']
 
     supported_tags = {
-        'packaging_config'           : '%%config %s',
-        'packaging_config_noreplace' : '%%config(noreplace) %s',
-        'packaging_doc'              : '%%doc %s',
-        'packaging_unix_attr'        : '%%attr %s',
-        'packaging_lang_'            : '%%lang(%s) %s',
-        'packaging_x_rpm_verify'     : '%%verify %s',
-        'packaging_x_rpm_dir'        : '%%dir %s',
-        'packaging_x_rpm_docdir'     : '%%docdir %s',
-        'packaging_x_rpm_ghost'      : '%%ghost %s', }
+        'PACKAGING_CONFIG'           : '%%config %s',
+        'PACKAGING_CONFIG_NOREPLACE' : '%%config(noreplace) %s',
+        'PACKAGING_DOC'              : '%%doc %s',
+        'PACKAGING_UNIX_ATTR'        : '%%attr %s',
+        'PACKAGING_LANG_'            : '%%lang(%s) %s',
+        'PACKAGING_X_RPM_VERIFY'     : '%%verify %s',
+        'PACKAGING_X_RPM_DIR'        : '%%dir %s',
+        'PACKAGING_X_RPM_DOCDIR'     : '%%docdir %s',
+        'PACKAGING_X_RPM_GHOST'      : '%%ghost %s', }
 
     for file in files:
         # build the tagset
@@ -281,7 +283,7 @@ def build_specfile_filesection(spec, files):
         str += SimpleTagCompiler(supported_tags, mandatory=0).compile( tags )
 
         str += ' '
-        str += file.packaging_install_location
+        str += file.PACKAGING_INSTALL_LOCATION
         str += '\n\n'
 
     return str

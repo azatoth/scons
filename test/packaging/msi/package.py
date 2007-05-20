@@ -53,13 +53,13 @@ env  = Environment(tools=['default', 'packaging'])
 f1  = env.Install( '/usr/' , 'file1.exe'  )
 f2  = env.Install( '/usr/' , 'file2.exe'  )
 
-env.Package( projectname    = 'foo',
-             version        = '1.2',
-             type           = 'msi',
-             summary        = 'balalalalal',
-             description    = 'this should be reallly really long',
-             vendor         = 'Nanosoft_2000',
-             source         = [ f1, f2 ],
+env.Package( NAME         = 'foo',
+             VERSION      = '1.2',
+             PACKAGETYPE  = 'msi',
+             SUMMARY      = 'balalalalal',
+             DESCRIPTION  = 'this should be reallly really long',
+             VENDOR       = 'Nanosoft_2000',
+             source       = [ f1, f2 ],
             )
 
 env.Alias( 'install', [ f1, f2 ] )
@@ -99,19 +99,19 @@ f3  = env.Install( '/usr/' , 'file3.html' )
 f4  = env.Install( '/usr/' , 'file4.dll'  )
 f5  = env.Install( '/usr/' , 'file5.dll'  )
 
-env.Tag( f1, x_msi_feature = 'Java Part' )
-env.Tag( f2, x_msi_feature = 'Java Part' )
-env.Tag( f3, 'doc' )
-env.Tag( f4, x_msi_feature = 'default' )
-env.Tag( f5, x_msi_feature = ('Another Feature', 'with a long description') )
+env.Tag( f1, X_MSI_FEATURE = 'Java Part' )
+env.Tag( f2, X_MSI_FEATURE = 'Java Part' )
+env.Tag( f3, 'DOC' )
+env.Tag( f4, X_MSI_FEATURE = 'default' )
+env.Tag( f5, X_MSI_FEATURE = ('Another Feature', 'with a long description') )
 
-env.Package( projectname    = 'foo',
-             version        = '1.2',
-             type           = 'msi',
-             summary        = 'balalalalal',
-             description    = 'this should be reallly really long',
-             vendor         = 'Nanosoft_tx2000',
-             source         = [ f1, f2, f3, f4, f5 ],
+env.Package( NAME        = 'foo',
+             VERSION     = '1.2',
+             PACKAGETYPE = 'msi',
+             SUMMARY     = 'balalalalal',
+             DESCRIPTION = 'this should be reallly really long',
+             VENDOR      = 'Nanosoft_tx2000',
+             source      = [ f1, f2, f3, f4, f5 ],
             )
 
 env.Alias( 'install', [ f1, f2, f3, f4, f5 ] )
