@@ -156,7 +156,10 @@ def generate(env):
             tgt = []
             for dnode in dnodes:
                 for src in sources:
-                    target = env.fs.File(src.name, dnode)
+                    # Prepend './' so the lookup doesn't interpret an initial
+                    # '#' on the file name portion as meaning the Node should
+                    # be relative to the top-level SConstruct directory.
+                    target = env.fs.Entry('.'+os.sep+src.name, dnode)
                     tgt.extend(InstallBuilder(env, target, src))
             return tgt
 
