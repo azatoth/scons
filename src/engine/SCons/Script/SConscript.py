@@ -183,6 +183,7 @@ def _SConscript(fs, *files, **kw):
                     # the builder so that it doesn't get built *again*
                     # during the actual build phase.
                     f.build()
+                    f.built()
                     f.builder_set(None)
                     if f.exists():
                         _file_ = open(f.get_abspath(), "r")
@@ -286,9 +287,12 @@ def SConscript_exception(file=sys.stderr):
         # in SCons itself.  Show the whole stack.
         tb = exc_tb
     stack = traceback.extract_tb(tb)
-    type = str(exc_type)
-    if type[:11] == "exceptions.":
-        type = type[11:]
+    try:
+        type = exc_type.__name__
+    except AttributeError:
+        type = str(exc_type)
+        if type[:11] == "exceptions.":
+            type = type[11:]
     file.write('%s: %s:\n' % (type, exc_value))
     for fname, line, func, text in stack:
         file.write('  File "%s", line %d:\n' % (fname, line))
@@ -297,12 +301,12 @@ def SConscript_exception(file=sys.stderr):
 def annotate(node):
     """Annotate a node with the stack frame describing the
     SConscript file and line number that created it."""
-    tb = exc_tb = sys.exc_info()[2]
+    tb = sys.exc_info()[2]
     while tb and not tb.tb_frame.f_locals.has_key(stack_bottom):
         tb = tb.tb_next
     if not tb:
         # We did not find any exec of an SConscript file: what?!
-        raise InternalError, "could not find SConscript stack frame"
+        raise SCons.Errors.InternalError, "could not find SConscript stack frame"
     node.creator = traceback.extract_stack(tb)[0]
 
 # The following line would cause each Node to be annotated using the

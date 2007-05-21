@@ -53,6 +53,7 @@ F95Scan = SCons.Scanner.Fortran.FortranScan("F95PATH")
 
 for suffix in F95Suffixes + F95PPSuffixes:
     SCons.Tool.SourceFileScanner.add_scanner(suffix, F95Scan)
+del suffix
 
 #
 fVLG = fortran.VariableListGenerator
@@ -119,6 +120,13 @@ def add_to_env(env):
 
 def generate(env):
     fortran.add_to_env(env)
+
+    import f77
+    f77.add_to_env(env)
+
+    import f90
+    f90.add_to_env(env)
+
     add_to_env(env)
 
     env['_FORTRAND']        = env.Detect(compilers) or 'f95'

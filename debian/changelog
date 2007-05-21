@@ -1,8 +1,8 @@
-scons (0.96-92) unstable; urgency=low
+scons (0.97) unstable; urgency=low
 
-  * Pre-release of eighth beta release.
+  * Eighth beta release.
 
- -- Steven Knight <knight@baldmt.com>  Mon, 10 Apr 2006 21:08:22 -0400
+ -- Steven Knight <knight@baldmt.com>  Thu, 17 May 2007 08:59:41 -0500
 
 
 scons (0.96-1) unstable; urgency=low

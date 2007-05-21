@@ -38,7 +38,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import copy
 import os
 import os.path
-import popen2
 import string
 from UserDict import UserDict
 
@@ -47,6 +46,7 @@ import SCons.Builder
 from SCons.Debug import logInstanceCreation
 import SCons.Defaults
 import SCons.Errors
+import SCons.Memoize
 import SCons.Node
 import SCons.Node.Alias
 import SCons.Node.FS
@@ -54,8 +54,6 @@ import SCons.Node.Python
 import SCons.Platform
 import SCons.SConsign
 import SCons.Sig
-import SCons.Sig.MD5
-import SCons.Sig.TimeStamp
 import SCons.Subst
 import SCons.Tool
 import SCons.Util
@@ -144,6 +142,10 @@ def _set_BUILDERS(env, key, value):
     except KeyError:
         env._dict[key] = BuilderDict(kwbd, env)
     env._dict[key].update(value)
+
+def _del_SCANNERS(env, key):
+    del env._dict[key]
+    env.scanner_map_delete()
 
 def _set_SCANNERS(env, key, value):
     env._dict[key] = value
@@ -258,29 +260,35 @@ class SubstitutionEnvironment:
         self.lookup_list = SCons.Node.arg2nodes_lookups
         self._dict = kw.copy()
         self._init_special()
+        #self._memo = {}
 
     def _init_special(self):
-        """Initial the dispatch table for special handling of
+        """Initial the dispatch tables for special handling of
         special construction variables."""
-        self._special = {}
+        self._special_del = {}
+        self._special_del['SCANNERS'] = _del_SCANNERS
+
+        self._special_set = {}
         for key in reserved_construction_var_names:
-            self._special[key] = _set_reserved
-        self._special['BUILDERS'] = _set_BUILDERS
-        self._special['SCANNERS'] = _set_SCANNERS
+            self._special_set[key] = _set_reserved
+        self._special_set['BUILDERS'] = _set_BUILDERS
+        self._special_set['SCANNERS'] = _set_SCANNERS
 
     def __cmp__(self, other):
         return cmp(self._dict, other._dict)
 
     def __delitem__(self, key):
-        "__cache_reset__"
-        del self._dict[key]
+        special = self._special_del.get(key)
+        if special:
+            special(self, key)
+        else:
+            del self._dict[key]
 
     def __getitem__(self, key):
         return self._dict[key]
 
     def __setitem__(self, key, value):
-        "__cache_reset__"
-        special = self._special.get(key)
+        special = self._special_set.get(key)
         if special:
             special(self, key, value)
         else:
@@ -420,31 +428,28 @@ class SubstitutionEnvironment:
     subst_target_source = subst
 
     def backtick(self, command):
-        try:
-            popen2.Popen3
-        except AttributeError:
-            (tochild, fromchild, childerr) = os.popen3(self.subst(command))
-            tochild.close()
-            err = childerr.read()
-            out = fromchild.read()
-            fromchild.close()
-            status = childerr.close()
+        import subprocess
+        if SCons.Util.is_List(command): 
+            p = subprocess.Popen(command,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 universal_newlines=True)
         else:
-            p = popen2.Popen3(command, 1)
-            p.tochild.close()
-            out = p.fromchild.read()
-            err = p.childerr.read()
-            status = p.wait()
+            p = subprocess.Popen(command,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 universal_newlines=True,
+                                 shell=True)
+        out = p.stdout.read()
+        p.stdout.close()
+        err = p.stderr.read()
+        p.stderr.close()
+        status = p.wait()
         if err:
             import sys
             sys.stderr.write(err)
         if status:
-            try:
-                if os.WIFEXITED(status):
-                    status = os.WEXITSTATUS(status)
-            except AttributeError:
-                pass
-            raise OSError("'%s' exited %s" % (command, status))
+            raise OSError("'%s' exited %d" % (command, status))
         return out
 
     def Override(self, overrides):
@@ -481,16 +486,17 @@ class SubstitutionEnvironment:
         the result of that evaluation is then added to the dict.
         """
         dict = {
-            'ASFLAGS'       : [],
-            'CCFLAGS'       : [],
+            'ASFLAGS'       : SCons.Util.CLVar(''),
+            'CFLAGS'        : SCons.Util.CLVar(''),
+            'CCFLAGS'       : SCons.Util.CLVar(''),
             'CPPDEFINES'    : [],
-            'CPPFLAGS'      : [],
+            'CPPFLAGS'      : SCons.Util.CLVar(''),
             'CPPPATH'       : [],
-            'FRAMEWORKPATH' : [],
-            'FRAMEWORKS'    : [],
+            'FRAMEWORKPATH' : SCons.Util.CLVar(''),
+            'FRAMEWORKS'    : SCons.Util.CLVar(''),
             'LIBPATH'       : [],
             'LIBS'          : [],
-            'LINKFLAGS'     : [],
+            'LINKFLAGS'     : SCons.Util.CLVar(''),
             'RPATH'         : [],
         }
 
@@ -592,7 +598,7 @@ class SubstitutionEnvironment:
                     if arg[2:]:
                         append_define(arg[2:])
                     else:
-                        appencd_next_arg_to = 'CPPDEFINES'
+                        append_next_arg_to = 'CPPDEFINES'
                 elif arg == '-framework':
                     append_next_arg_to = 'FRAMEWORKS'
                 elif arg[:14] == '-frameworkdir=':
@@ -610,6 +616,8 @@ class SubstitutionEnvironment:
                 elif arg == '-pthread':
                     dict['CCFLAGS'].append(arg)
                     dict['LINKFLAGS'].append(arg)
+                elif arg[:5] == '-std=':
+                    dict['CFLAGS'].append(arg) # C only
                 elif arg[0] == '+':
                     dict['CCFLAGS'].append(arg)
                     dict['LINKFLAGS'].append(arg)
@@ -635,16 +643,32 @@ class SubstitutionEnvironment:
             apply(self.Append, (), args)
             return self
         for key, value in args.items():
-            if value == '':
+            if not value:
                 continue
             try:
                 orig = self[key]
             except KeyError:
                 orig = value
             else:
-                if len(orig) == 0: orig = []
-                elif not SCons.Util.is_List(orig): orig = [orig]
-                orig = orig + value
+                if not orig:
+                    orig = value
+                elif value:
+                    # Add orig and value.  The logic here was lifted from
+                    # part of env.Append() (see there for a lot of comments
+                    # about the order in which things are tried) and is
+                    # used mainly to handle coercion of strings to CLVar to
+                    # "do the right thing" given (e.g.) an original CCFLAGS
+                    # string variable like '-pipe -Wall'.
+                    try:
+                        orig = orig + value
+                    except (KeyError, TypeError):
+                        try:
+                            add_to_orig = orig.append
+                        except AttributeError:
+                            value.insert(0, orig)
+                            orig = value
+                        else:
+                            add_to_orig(value)
             t = []
             if key[-4:] == 'PATH':
                 ### keep left-most occurence
@@ -672,6 +696,8 @@ class Base(SubstitutionEnvironment):
 
     if SCons.Memoize.use_memoizer:
         __metaclass__ = SCons.Memoize.Memoized_Metaclass
+
+    memoizer_counters = []
 
     #######################################################################
     # This is THE class for interacting with the SCons build engine,
@@ -704,6 +730,7 @@ class Base(SubstitutionEnvironment):
         with the much simpler base class initialization.
         """
         if __debug__: logInstanceCreation(self, 'Environment.Base')
+        self._memo = {}
         self.fs = SCons.Node.FS.default_fs or SCons.Node.FS.FS()
         self.ans = SCons.Node.Alias.default_ans
         self.lookup_list = SCons.Node.arg2nodes_lookups
@@ -765,7 +792,6 @@ class Base(SubstitutionEnvironment):
             return None
 
     def get_calculator(self):
-        "__cacheable__"
         try:
             module = self._calc_module
             c = apply(SCons.Sig.Calculator, (module,), CalculatorArgs)
@@ -779,7 +805,6 @@ class Base(SubstitutionEnvironment):
     def get_factory(self, factory, default='File'):
         """Return a factory function for creating Nodes for this
         construction environment.
-        __cacheable__
         """
         name = default
         try:
@@ -806,50 +831,54 @@ class Base(SubstitutionEnvironment):
             factory = getattr(self.fs, name)
         return factory
 
+    memoizer_counters.append(SCons.Memoize.CountValue('_gsm'))
+
     def _gsm(self):
-        "__cacheable__"
+        try:
+            return self._memo['_gsm']
+        except KeyError:
+            pass
+
+        result = {}
+
         try:
             scanners = self._dict['SCANNERS']
         except KeyError:
-            return None
-
-        sm = {}
-        # Reverse the scanner list so that, if multiple scanners
-        # claim they can scan the same suffix, earlier scanners
-        # in the list will overwrite later scanners, so that
-        # the result looks like a "first match" to the user.
-        if not SCons.Util.is_List(scanners):
-            scanners = [scanners]
+            pass
         else:
-            scanners = scanners[:] # copy so reverse() doesn't mod original
-        scanners.reverse()
-        for scanner in scanners:
-            for k in scanner.get_skeys(self):
-                sm[k] = scanner
-        return sm
+            # Reverse the scanner list so that, if multiple scanners
+            # claim they can scan the same suffix, earlier scanners
+            # in the list will overwrite later scanners, so that
+            # the result looks like a "first match" to the user.
+            if not SCons.Util.is_List(scanners):
+                scanners = [scanners]
+            else:
+                scanners = scanners[:] # copy so reverse() doesn't mod original
+            scanners.reverse()
+            for scanner in scanners:
+                for k in scanner.get_skeys(self):
+                    result[k] = scanner
+
+        self._memo['_gsm'] = result
+
+        return result
 
     def get_scanner(self, skey):
         """Find the appropriate scanner given a key (usually a file suffix).
         """
-        sm = self._gsm()
-        try: return sm[skey]
-        except (KeyError, TypeError): return None
-
-    def _smd(self):
-        "__reset_cache__"
-        pass
+        return self._gsm().get(skey)
 
     def scanner_map_delete(self, kw=None):
         """Delete the cached scanner map (if we need to).
         """
-        if not kw is None and not kw.has_key('SCANNERS'):
-            return
-        self._smd()
+        try:
+            del self._memo['_gsm']
+        except KeyError:
+            pass
 
     def _update(self, dict):
         """Update an environment's values directly, bypassing the normal
         checks that occur when users try to set items.
-        __cache_reset__
         """
         self._dict.update(dict)
 
@@ -994,6 +1023,8 @@ class Base(SubstitutionEnvironment):
         except KeyError:
             pass
 
+        clone._memo = {}
+
         apply_tools(clone, tools, toolpath)
 
         # Apply passed-in variables after the new tools.
@@ -1009,7 +1040,7 @@ class Base(SubstitutionEnvironment):
         return apply(self.Clone, args, kw)
 
     def Detect(self, progs):
-        """Return the first available program in progs.  __cacheable__
+        """Return the first available program in progs.
         """
         if not SCons.Util.is_List(progs):
             progs = [ progs ]
@@ -1275,17 +1306,20 @@ class Base(SubstitutionEnvironment):
                 del kw[k]
         apply(self.Replace, (), kw)
 
+    def _find_toolpath_dir(self, tp):
+        return self.fs.Dir(self.subst(tp)).srcnode().abspath
+
     def Tool(self, tool, toolpath=None, **kw):
         if SCons.Util.is_String(tool):
             tool = self.subst(tool)
             if toolpath is None:
                 toolpath = self.get('toolpath', [])
-            toolpath = map(self.subst, toolpath)
+            toolpath = map(self._find_toolpath_dir, toolpath)
             tool = apply(SCons.Tool.Tool, (tool, toolpath), kw)
         tool(self)
 
     def WhereIs(self, prog, path=None, pathext=None, reject=[]):
-        """Find prog in the path.  __cacheable__
+        """Find prog in the path.
         """
         if path is None:
             try:
@@ -1475,6 +1509,15 @@ class Base(SubstitutionEnvironment):
             t.set_noclean()
         return tlist
 
+    def NoCache(self, *targets):
+        """Tags a target so that it will not be cached"""
+        tlist = []
+        for t in targets:
+            tlist.extend(self.arg2nodes(t, self.fs.Entry))
+        for t in tlist:
+            t.set_nocache()
+        return tlist
+
     def Entry(self, name, *args, **kw):
         """
         """
@@ -1551,7 +1594,7 @@ class Base(SubstitutionEnvironment):
                 arg = self.subst(arg)
             nargs.append(arg)
         nkw = self.subst_kw(kw)
-        return apply(SCons.Scanner.Scanner, nargs, nkw)
+        return apply(SCons.Scanner.Base, nargs, nkw)
 
     def SConsignFile(self, name=".sconsign", dbm_module=None):
         if not name is None:
@@ -1586,8 +1629,15 @@ class Base(SubstitutionEnvironment):
     def SourceSignatures(self, type):
         type = self.subst(type)
         if type == 'MD5':
-            import SCons.Sig.MD5
-            self._calc_module = SCons.Sig.MD5
+            try:
+                import SCons.Sig.MD5
+            except ImportError:
+                msg = "No MD5 module available, using time stamps"
+                SCons.Warnings.warn(SCons.Warnings.NoMD5ModuleWarning, msg)
+                import SCons.Sig.TimeStamp
+                self._calc_module = SCons.Sig.TimeStamp
+            else:
+                self._calc_module = SCons.Sig.MD5
         elif type == 'timestamp':
             import SCons.Sig.TimeStamp
             self._calc_module = SCons.Sig.TimeStamp
@@ -1695,7 +1745,7 @@ class OverrideEnvironment(Base):
     def __getattr__(self, name):
         return getattr(self.__dict__['__subject'], name)
     def __setattr__(self, name, value):
-        return setattr(self.__dict__['__subject'], name, value)
+        setattr(self.__dict__['__subject'], name, value)
 
     # Methods that make this class act like a dictionary.
     def __getitem__(self, key):
@@ -1815,12 +1865,3 @@ def NoSubstitutionProxy(subject):
             self.raw_to_mode(nkw)
             return apply(SCons.Subst.scons_subst, nargs, nkw)
     return _NoSubstitutionProxy(subject)
-
-if SCons.Memoize.use_old_memoization():
-    _Base = Base
-    class Base(SCons.Memoize.Memoizer, _Base):
-        def __init__(self, *args, **kw):
-            SCons.Memoize.Memoizer.__init__(self)
-            apply(_Base.__init__, (self,)+args, kw)
-    Environment = Base
-

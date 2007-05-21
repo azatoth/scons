@@ -36,7 +36,7 @@ import SCons.Errors
 import SCons.Util
 import SCons.Warnings
 
-from BoolOption import BoolOption, True, False  # okay
+from BoolOption import BoolOption  # okay
 from EnumOption import EnumOption  # okay
 from ListOption import ListOption  # naja
 from PackageOption import PackageOption # naja
@@ -182,7 +182,10 @@ class Options:
             if option.converter and values.has_key(option.key):
                 value = env.subst('${%s}'%option.key)
                 try:
-                    env[option.key] = option.converter(value)
+                    try:
+                        env[option.key] = option.converter(value)
+                    except TypeError:
+                        env[option.key] = option.converter(value, env)
                 except ValueError, x:
                     raise SCons.Errors.UserError, 'Error converting option: %s\n%s'%(option.key, x)
 
@@ -242,8 +245,6 @@ class Options:
         env - an environment that is used to get the current values
               of the options.
         """
-
-        help_text = ""
 
         if sort:
             options = self.options[:]

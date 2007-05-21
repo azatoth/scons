@@ -29,7 +29,13 @@ import stat
 import string
 import sys
 
-Version = "0.96.92"
+Version = "0.97"
+
+man_pages = [
+    'scons.1',
+    'sconsign.1',
+    'scons-time.1',
+]
 
 (head, tail) = os.path.split(sys.argv[0])
 
@@ -331,17 +337,44 @@ class install_data(_install_data):
                 dir = 'Doc'
             else:
                 dir = os.path.join('man', 'man1')
-            self.data_files = [(dir, ["scons.1", "sconsign.1"])]
+            self.data_files = [(dir, man_pages)]
             man_dir = os.path.join(self.install_dir, dir)
             msg = "Installed SCons man pages into %s" % man_dir
             Installed.append(msg)
         else:
             self.data_files = []
 
+description = """Open Source next-generation build tool.
+Improved, cross-platform substitute for the classic Make
+utility.  In short, SCons is an easier, more reliable
+and faster way to build software."""
+
+scripts = [
+    'script/scons',
+    'script/sconsign',
+    'script/scons-time',
+
+    # We include scons.bat in the list of scripts, even on UNIX systems,
+    # because we provide an option to allow it be installed explicitly,
+    # for example if you're installing from UNIX on a share that's
+    # accessible to Windows and you want the scons.bat.
+    'script/scons.bat',
+]
+
+#if is_win32:
+#    scripts = scripts + [
+#        'script/scons-post-install.py'
+#    ]
+
 arguments = {
     'name'             : "scons",
     'version'          : Version,
+    'description'      : description,
+    'author'           : 'Steven Knight',
+    'author_email'     : 'knight@baldmt.com',
+    'url'              : "http://www.scons.org/",
     'packages'         : ["SCons",
+                          "SCons.compat",
                           "SCons.Node",
                           "SCons.Optik",
                           "SCons.Options",
@@ -351,10 +384,8 @@ arguments = {
                           "SCons.Sig",
                           "SCons.Tool"],
     'package_dir'      : {'' : 'engine'},
-    'data_files'       : [('man/man1', ["scons.1", "sconsign.1"])],
-    'scripts'          : ['script/scons',
-                          'script/sconsign',
-                          'script/scons.bat'],
+    'data_files'       : [('man/man1', man_pages)],
+    'scripts'          : scripts,
     'cmdclass'         : {'install'         : install,
                           'install_lib'     : install_lib,
                           'install_data'    : install_data,

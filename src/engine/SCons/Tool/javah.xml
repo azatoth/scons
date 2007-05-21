@@ -6,8 +6,17 @@ See its __doc__ string for a discussion of the format.
 -->
 <tool name="javah">
 <summary>
-XXX
+Sets construction variables for the &javah; tool.
 </summary>
+<sets>
+JAVAH
+JAVAHFLAGS
+JAVAHCOM
+JAVACLASSSUFFIX
+</sets>
+<uses>
+JAVAHCOMSTR
+</uses>
 </tool>
 
 <builder name="JavaH">
@@ -24,7 +33,7 @@ or the objects returned from the
 builder method.
 
 If the construction variable
-&cv-JAVACLASSDIR;
+&cv-link-JAVACLASSDIR;
 is set, either in the environment
 or in the call to the
 &b-JavaH;
@@ -62,7 +71,7 @@ The Java generator for C header and stub files.
 <summary>
 The command line used to generate C header and stub files
 from Java classes.
-Any options specified in the &cv-JAVAHFLAGS; construction variable
+Any options specified in the &cv-link-JAVAHFLAGS; construction variable
 are included on this command line.
 </summary>
 </cvar>
@@ -71,7 +80,7 @@ are included on this command line.
 <summary>
 The string displayed when C header and stub files
 are generated from Java classes.
-If this is not set, then &cv-JAVAHCOM; (the command line) is displayed.
+If this is not set, then &cv-link-JAVAHCOM; (the command line) is displayed.
 
 <example>
 env = Environment(JAVAHCOMSTR = "Generating header/stub file(s) $TARGETS from $SOURCES")

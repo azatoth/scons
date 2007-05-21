@@ -36,6 +36,8 @@ it goes here.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
 import os
 import os.path
 import random
@@ -62,6 +64,7 @@ import SCons.Node
 import SCons.Node.FS
 from SCons.Optik import OptionParser, SUPPRESS_HELP, OptionValueError
 import SCons.SConf
+import SCons.Script
 import SCons.Sig
 import SCons.Taskmaster
 import SCons.Util
@@ -70,6 +73,9 @@ import SCons.Warnings
 #
 display = SCons.Util.display
 progress_display = SCons.Util.DisplayEngine()
+
+first_command_start = None
+last_command_end = None
 
 # Task control.
 #
@@ -85,12 +91,17 @@ class BuildTask(SCons.Taskmaster.Task):
             if target.has_builder() and not hasattr(target.builder, 'status'):
                 if print_time:
                     start_time = time.time()
+                    global first_command_start
+                    if first_command_start is None:
+                        first_command_start = start_time
                 SCons.Taskmaster.Task.execute(self)
                 if print_time:
+                    global cumulative_command_time
+                    global last_command_end
                     finish_time = time.time()
-                    global command_time
-                    command_time = command_time+finish_time-start_time
-                    print "Command execution time: %f seconds"%(finish_time-start_time)
+                    last_command_end = finish_time
+                    cumulative_command_time = cumulative_command_time+finish_time-start_time
+                    sys.stdout.write("Command execution time: %f seconds\n"%(finish_time-start_time))
                 break
         else:
             if self.top and target.has_builder():
@@ -180,15 +191,8 @@ class BuildTask(SCons.Taskmaster.Task):
     def postprocess(self):
         if self.top:
             t = self.targets[0]
-            if print_tree:
-                print
-                SCons.Util.print_tree(t, get_all_children)
-            if print_stree:
-                print
-                SCons.Util.print_tree(t, get_all_children, showtags=2)
-            if print_dtree:
-                print
-                SCons.Util.print_tree(t, get_derived_children)
+            for tp in tree_printers:
+                tp.display(t)
             if print_includes:
                 tree = t.render_include_tree()
                 if tree:
@@ -291,24 +295,44 @@ class QuestionTask(SCons.Taskmaster.Task):
     def executed(self):
         pass
 
+
+class TreePrinter:
+    def __init__(self, derived=False, prune=False, status=False):
+        self.derived = derived
+        self.prune = prune
+        self.status = status
+    def get_all_children(self, node):
+        return node.all_children()
+    def get_derived_children(self, node):
+        children = node.all_children(None)
+        return filter(lambda x: x.has_builder(), children)
+    def display(self, t):
+        if self.derived:
+            func = self.get_derived_children
+        else:
+            func = self.get_all_children
+        s = self.status and 2 or 0
+        SCons.Util.print_tree(t, func, prune=self.prune, showtags=s)
+
+
 # Global variables
 
+tree_printers = []
+
 keep_going_on_error = 0
-print_dtree = 0
 print_explanations = 0
 print_includes = 0
 print_objects = 0
 print_memoizer = 0
 print_stacktrace = 0
-print_stree = 0
 print_time = 0
-print_tree = 0
 ignore_errors = 0
 sconscript_time = 0
-command_time = 0
+cumulative_command_time = 0
 exit_status = 0 # exit status, assume success by default
 repositories = []
-num_jobs = 1 # this is modifed by SConscript.SetJobs()
+num_jobs = None
+delayed_warnings = []
 
 diskcheck_all = SCons.Node.FS.diskcheck_types()
 diskcheck_option_set = None
@@ -388,12 +412,6 @@ class MemStats(Stats):
 memory_stats = MemStats()
 
 # utility functions
-
-def get_all_children(node): return node.all_children()
-
-def get_derived_children(node):
-    children = node.all_children(None)
-    return filter(lambda x: x.has_builder(), children)
 
 def _scons_syntax_error(e):
     """Handle syntax errors. Print out a message and show where the error
@@ -537,10 +555,10 @@ def _SConstruct_exists(dirname=''):
 
 def _set_globals(options):
     global keep_going_on_error, ignore_errors
-    global count_stats, print_dtree
+    global count_stats
     global print_explanations, print_includes, print_memoizer
-    global print_objects, print_stacktrace, print_stree
-    global print_time, print_tree
+    global print_objects, print_stacktrace, print_time
+    global tree_printers
     global memory_stats
 
     keep_going_on_error = options.keep_going
@@ -554,7 +572,7 @@ def _set_globals(options):
         if "count" in debug_values:
             count_stats.enable(sys.stdout)
         if "dtree" in debug_values:
-            print_dtree = 1
+            tree_printers.append(TreePrinter(derived=True))
         if "explain" in debug_values:
             print_explanations = 1
         if "findlibs" in debug_values:
@@ -572,11 +590,11 @@ def _set_globals(options):
         if "stacktrace" in debug_values:
             print_stacktrace = 1
         if "stree" in debug_values:
-            print_stree = 1
+            tree_printers.append(TreePrinter(status=True))
         if "time" in debug_values:
             print_time = 1
         if "tree" in debug_values:
-            print_tree = 1
+            tree_printers.append(TreePrinter())
     ignore_errors = options.ignore_errors
 
 def _create_path(plist):
@@ -587,6 +605,47 @@ def _create_path(plist):
         else:
             path = path + '/' + d
     return path
+
+def _load_site_scons_dir(topdir, site_dir_name=None):
+    """Load the site_scons dir under topdir.
+    Adds site_scons to sys.path, imports site_scons/site_init.py,
+    and adds site_scons/site_tools to default toolpath."""
+    if site_dir_name:
+        err_if_not_found = True       # user specified: err if missing
+    else:
+        site_dir_name = "site_scons"
+        err_if_not_found = False
+        
+    site_dir = os.path.join(topdir.path, site_dir_name)
+    if not os.path.exists(site_dir):
+        if err_if_not_found:
+            raise SCons.Errors.UserError, "site dir %s not found."%site_dir
+        return
+
+    site_init_filename = "site_init.py"
+    site_init_modname = "site_init"
+    site_tools_dirname = "site_tools"
+    sys.path = [os.path.abspath(site_dir)] + sys.path
+    site_init_file = os.path.join(site_dir, site_init_filename)
+    site_tools_dir = os.path.join(site_dir, site_tools_dirname)
+    if os.path.exists(site_init_file):
+        import imp
+        try:
+            fp, pathname, description = imp.find_module(site_init_modname,
+                                                        [site_dir])
+            try:
+                imp.load_module(site_init_modname, fp, pathname, description)
+            finally:
+                if fp:
+                    fp.close()
+        except ImportError, e:
+            sys.stderr.write("Can't import site init file '%s': %s\n"%(site_init_file, e))
+            raise
+        except Exception, e:
+            sys.stderr.write("Site init file '%s' raised exception: %s\n"%(site_init_file, e))
+            raise
+    if os.path.exists(site_tools_dir):
+        SCons.Tool.DefaultToolpath.append(os.path.abspath(site_tools_dir))
 
 def version_string(label, module):
     fmt = "\t%s: v%s.%s, %s, by %s on %s\n"
@@ -671,12 +730,15 @@ class OptParser(OptionParser):
                              "build all Default() targets.")
 
         debug_options = ["count", "dtree", "explain", "findlibs",
-                         "includes", "memoizer", "memory",
-                         "nomemoizer", "objects",
+                         "includes", "memoizer", "memory", "objects",
                          "pdb", "presub", "stacktrace", "stree",
                          "time", "tree"]
 
-        def opt_debug(option, opt, value, parser, debug_options=debug_options):
+        deprecated_debug_options = {
+            "nomemoizer" : ' and has no effect',
+        }
+
+        def opt_debug(option, opt, value, parser, debug_options=debug_options, deprecated_debug_options=deprecated_debug_options):
             if value in debug_options:
                 try:
                     if parser.values.debug is None:
@@ -684,6 +746,10 @@ class OptParser(OptionParser):
                 except AttributeError:
                     parser.values.debug = []
                 parser.values.debug.append(value)
+            elif value in deprecated_debug_options.keys():
+                msg = deprecated_debug_options[value]
+                w = "The --debug=%s option is deprecated%s." % (value, msg)
+                delayed_warnings.append((SCons.Warnings.DeprecatedWarning, w))
             else:
                 raise OptionValueError("Warning:  %s is not a valid debug type" % value)
         self.add_option('--debug', action="callback", type="string",
@@ -768,6 +834,10 @@ class OptParser(OptionParser):
                         '--recon', action="store_true", dest='noexec',
                         default=0, help="Don't build; just print commands.")
 
+        self.add_option('--no-site-dir', action="store_true",
+                        dest='no_site_dir', default=0,
+                        help="Don't search or use the usual site_scons dir.")
+
         self.add_option('--profile', action="store",
                         dest="profile_file", metavar="FILE",
                         help="Profile SCons and put results in FILE.")
@@ -785,9 +855,35 @@ class OptParser(OptionParser):
         self.add_option('-s', '--silent', '--quiet', action="store_true",
                         default=0, help="Don't print commands.")
 
+        self.add_option('--site-dir', action="store",
+                        dest='site_dir', metavar="DIR",
+                        help="Use DIR instead of the usual site_scons dir.")
+
         self.add_option('--taskmastertrace', action="store",
                         dest="taskmastertrace_file", metavar="FILE",
                         help="Trace Node evaluation to FILE.")
+
+        tree_options = ["all", "derived", "prune", "status"]
+
+        def opt_tree(option, opt, value, parser, tree_options=tree_options):
+            tp = TreePrinter()
+            for o in string.split(value, ','):
+                if o == 'all':
+                    tp.derived = False
+                elif o == 'derived':
+                    tp.derived = True
+                elif o == 'prune':
+                    tp.prune = True
+                elif o == 'status':
+                    tp.status = True
+                else:
+                    raise OptionValueError("Warning:  %s is not a valid --tree option" % o)
+            tree_printers.append(tp)
+
+        self.add_option('--tree', action="callback", type="string",
+                        callback=opt_tree, nargs=1, metavar="OPTIONS",
+                        help="Print a dependency tree in various formats: "
+                             "%s." % string.join(tree_options, ", "))
 
         self.add_option('-u', '--up', '--search-up', action="store_const",
                         dest="climb_up", default=0, const=1,
@@ -806,7 +902,8 @@ class OptParser(OptionParser):
                         metavar="WARNING-SPEC",
                         help="Enable or disable warnings.")
 
-        self.add_option('-Y', '--repository', '--srcdir', nargs=1, action="append",
+        self.add_option('-Y', '--repository', '--srcdir',
+                        nargs=1, action="append",
                         help="Search REPOSITORY for source and target files.")
 
         self.add_option('-e', '--environment-overrides', action="callback",
@@ -945,6 +1042,8 @@ class SConscriptSettableOptions:
     
 
 def _main(args, parser):
+    global exit_status
+
     # Here's where everything really happens.
 
     # First order of business:  set up default warnings and and then
@@ -954,6 +1053,8 @@ def _main(args, parser):
                          SCons.Warnings.DeprecatedWarning,
                          SCons.Warnings.DuplicateEnvironmentWarning,
                          SCons.Warnings.MissingSConscriptWarning,
+                         SCons.Warnings.NoMD5ModuleWarning,
+                         SCons.Warnings.NoMetaclassSupportWarning,
                          SCons.Warnings.NoParallelSupportWarning,
                          SCons.Warnings.MisleadingKeywordsWarning, ]
     for warning in default_warnings:
@@ -961,6 +1062,9 @@ def _main(args, parser):
     SCons.Warnings._warningOut = _scons_internal_warning
     if options.warn:
         _setup_warn(options.warn)
+
+    for warning_type, message in delayed_warnings:
+        SCons.Warnings.warn(warning_type, message)
 
     # Next, we want to create the FS object that represents the outside
     # world's file system, as that's central to a lot of initialization.
@@ -1019,7 +1123,8 @@ def _main(args, parser):
             # Give them the options usage now, before we fail
             # trying to read a non-existent SConstruct file.
             parser.print_help()
-            sys.exit(0)
+            exit_status = 0
+            return
         raise SCons.Errors.UserError, "No SConstruct file found."
 
     if scripts[0] == "-":
@@ -1063,6 +1168,11 @@ def _main(args, parser):
     if options.cache_show:
         fs.cache_show = 1
 
+    if options.site_dir:
+        _load_site_scons_dir(d, options.site_dir)
+    elif not options.no_site_dir:
+        _load_site_scons_dir(d)
+        
     if options.include_dir:
         sys.path = options.include_dir + sys.path
 
@@ -1079,16 +1189,7 @@ def _main(args, parser):
     SCons.Script._Add_Targets(targets)
     SCons.Script._Add_Arguments(xmit_args)
 
-    class Unbuffered:
-        def __init__(self, file):
-            self.file = file
-        def write(self, arg):
-            self.file.write(arg)
-            self.file.flush()
-        def __getattr__(self, attr):
-            return getattr(self.file, attr)
-
-    sys.stdout = Unbuffered(sys.stdout)
+    sys.stdout = SCons.Util.Unbuffered(sys.stdout)
 
     memory_stats.append('before reading SConscript files:')
     count_stats.append(('pre-', 'read'))
@@ -1105,7 +1206,6 @@ def _main(args, parser):
         # reading SConscript files and haven't started building
         # things yet, stop regardless of whether they used -i or -k
         # or anything else.
-        global exit_status
         sys.stderr.write("scons: *** %s  Stop.\n" % e)
         exit_status = 2
         sys.exit(exit_status)
@@ -1134,7 +1234,8 @@ def _main(args, parser):
         else:
             print help_text
             print "Use scons -H for help about command-line options."
-        sys.exit(0)
+        exit_status = 0
+        return
 
     # Now that we've read the SConscripts we can set the options
     # that are SConscript settable:
@@ -1261,9 +1362,10 @@ def _main(args, parser):
         tmtrace = None
     taskmaster = SCons.Taskmaster.Taskmaster(nodes, task_class, order, tmtrace)
 
-    nj = ssoptions.get('num_jobs')
-    jobs = SCons.Job.Jobs(nj, taskmaster)
-    if nj > 1 and jobs.num_jobs == 1:
+    global num_jobs
+    num_jobs = ssoptions.get('num_jobs')
+    jobs = SCons.Job.Jobs(num_jobs, taskmaster)
+    if num_jobs > 1 and jobs.num_jobs == 1:
         msg = "parallel builds are unsupported by this version of Python;\n" + \
               "\tignoring -j or num_jobs option.\n"
         SCons.Warnings.warn(SCons.Warnings.NoParallelSupportWarning, msg)
@@ -1285,12 +1387,9 @@ def _main(args, parser):
     count_stats.append(('post-', 'build'))
 
 def _exec_main():
-    all_args = sys.argv[1:]
-    try:
-        all_args = string.split(os.environ['SCONSFLAGS']) + all_args
-    except KeyError:
-            # it's OK if there's no SCONSFLAGS
-            pass
+    sconsflags = os.environ.get('SCONSFLAGS', '')
+    all_args = string.split(sconsflags) + sys.argv[1:]
+
     parser = OptParser()
     global options
     options, args = parser.parse_args(all_args)
@@ -1323,6 +1422,7 @@ def _exec_main():
 
 def main():
     global exit_status
+    global first_command_start
     
     try:
         _exec_main()
@@ -1353,8 +1453,7 @@ def main():
         #SCons.Debug.dumpLoggedInstances('*')
 
     if print_memoizer:
-        print "Memoizer (memory cache) hits and misses:"
-        SCons.Memoize.Dump()
+        SCons.Memoize.Dump("Memoizer (memory cache) hits and misses:")
 
     # Dump any development debug info that may have been enabled.
     # These are purely for internal debugging during development, so
@@ -1364,11 +1463,15 @@ def main():
     SCons.Taskmaster.dump_stats()
 
     if print_time:
-        total_time = time.time()-SCons.Script.start_time
-        scons_time = total_time-sconscript_time-command_time
+        total_time = time.time() - SCons.Script.start_time
+        if num_jobs == 1:
+            ct = cumulative_command_time
+        else:
+            ct = last_command_end - first_command_start
+        scons_time = total_time - sconscript_time - ct
         print "Total build time: %f seconds"%total_time
         print "Total SConscript file execution time: %f seconds"%sconscript_time
         print "Total SCons execution time: %f seconds"%scons_time
-        print "Total command execution time: %f seconds"%command_time
+        print "Total command execution time: %f seconds"%ct
 
     sys.exit(exit_status)

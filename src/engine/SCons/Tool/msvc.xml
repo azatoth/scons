@@ -6,8 +6,50 @@ See its __doc__ string for a discussion of the format.
 -->
 <tool name="msvc">
 <summary>
-XXX
+Sets construction variables for the Microsoft Visual C/C++ compiler.
 </summary>
+<sets>
+CCPDBFLAGS
+CCPCHFLAGS
+<!--CCCOMFLAGS-->
+CC
+CCFLAGS
+CFLAGS
+CCCOM
+SHCC
+SHCCFLAGS
+SHCFLAGS
+SHCCCOM
+CXX
+CXXFLAGS
+CXXCOM
+SHCXX
+SHCXXFLAGS
+SHCXXCOM
+CPPDEFPREFIX
+CPPDEFSUFFIX
+INCPREFIX
+INCSUFFIX
+<!--STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME-->
+RC
+RCFLAGS
+RCCOM
+BUILDERS
+OBJPREFIX
+OBJSUFFIX
+SHOBJPREFIX
+SHOBJSUFFIX
+CFILESUFFIX
+CXXFILESUFFIX
+PCHPDBFLAGS
+PCHCOM
+</sets>
+<uses>
+CCCOMSTR
+SHCCCOMSTR
+CXXCOMSTR
+SHCXXCOMSTR
+</uses>
 </tool>
 
 <builder name="PCH">
@@ -53,8 +95,9 @@ Options added to the compiler command line
 to support building with precompiled headers.
 The default value expands expands to the appropriate
 Microsoft Visual C++ command-line options
-when the &cv-PCH; construction variable is set.
+when the &cv-link-PCH; construction variable is set.
 </summary>
+</cvar>
 
 <cvar name="CCPDBFLAGS">
 <summary>
@@ -63,7 +106,7 @@ to support storing debugging information in a
 Microsoft Visual C++ PDB file.
 The default value expands expands to appropriate
 Microsoft Visual C++ command-line options
-when the &cv-PDB; construction variable is set.
+when the &cv-link-PDB; construction variable is set.
 
 The Visual C++ compiler option that SCons uses by default
 to generate PDB information is <option>/Z7</option>.
@@ -77,7 +120,7 @@ link-time performance,
 although parallel builds will no longer work.
 
 You can generate PDB files with the <option>/Zi</option>
-switch by overriding the default &cv-CCPDBFLAGS; variable as follows:
+switch by overriding the default &cv-link-CCPDBFLAGS; variable as follows:
 
 <example>
 import SCons.Util
@@ -87,12 +130,13 @@ env['CCPDBFLAGS'] = SCons.Util.CLVar(['${(PDB and "/Zi /Fd%s" % File(PDB)) or ""
 An alternative would be to use the <option>/Zi</option>
 to put the debugging information in a separate <filename>.pdb</filename>
 file for each object file by overriding
-the &cv-CCPDBFLAGS; variable as follows:
+the &cv-link-CCPDBFLAGS; variable as follows:
 
 <example>
 env['CCPDBFLAGS'] = '/Zi /Fd${TARGET}.pdb'
 </example>
 </summary>
+</cvar>
 
 <cvar name="PCH">
 <summary>
@@ -121,7 +165,15 @@ builder to generated a precompiled header.
 <cvar name="PCHCOMSTR">
 <summary>
 The string displayed when generating a precompiled header.
-If this is not set, then &cv-PCHCOM; (the command line) is displayed.
+If this is not set, then &cv-link-PCHCOM; (the command line) is displayed.
+</summary>
+</cvar>
+
+<cvar name="PCHPDBFLAGS">
+<summary>
+A construction variable that, when expanded,
+adds the <literal>/yD</literal> flag to the command line
+only if the &cv-PDB; construction variable is set.
 </summary>
 </cvar>
 
@@ -158,12 +210,45 @@ a Microsoft Visual C++ resource file.
 <summary>
 The string displayed when invoking the resource compiler
 to build a Microsoft Visual C++ resource file.
-If this is not set, then &cv-RCCOM; (the command line) is displayed.
+If this is not set, then &cv-link-RCCOM; (the command line) is displayed.
 </summary>
 </cvar>
 
 <cvar name="RCFLAGS">
 <summary>
 The flags passed to the resource compiler by the RES builder.
+</summary>
+</cvar>
+
+<cvar name="RCINCFLAGS">
+<summary>
+An automatically-generated construction variable
+containing the command-line options
+for specifying directories to be searched
+by the resource compiler.
+The value of &cv-RCINCFLAGS; is created
+by appending &cv-RCINCPREFIX; and &cv-RCINCSUFFIX;
+to the beginning and end
+of each directory in &cv-CPPPATH;.
+</summary>
+</cvar>
+
+<cvar name="RCINCPREFIX">
+<summary>
+The prefix (flag) used to specify an include directory
+on the resource compiler command line.
+This will be appended to the beginning of each directory
+in the &cv-CPPPATH; construction variable
+when the &cv-RCINCFLAGS; variable is expanded.
+</summary>
+</cvar>
+
+<cvar name="RCINCSUFFIX">
+<summary>
+The suffix used to specify an include directory
+on the resource compiler command line.
+This will be appended to the end of each directory
+in the &cv-CPPPATH; construction variable
+when the &cv-RCINCFLAGS; variable is expanded.
 </summary>
 </cvar>

@@ -29,18 +29,19 @@ Various utility functions go here.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import __builtin__
+import SCons.compat
+
 import copy
 import os
 import os.path
 import re
 import string
 import sys
-import stat
 import types
 
 from UserDict import UserDict
 from UserList import UserList
+from UserString import UserString
 
 # Don't "from types import ..." these because we need to get at the
 # types module later to look for UnicodeType.
@@ -49,68 +50,6 @@ InstanceType    = types.InstanceType
 ListType        = types.ListType
 StringType      = types.StringType
 TupleType       = types.TupleType
-
-try:
-    from UserString import UserString
-except ImportError:
-    # "Borrowed" from the Python 2.2 UserString module
-    # and modified slightly for use with SCons.
-    class UserString:
-        def __init__(self, seq):
-            if is_String(seq):
-                self.data = seq
-            elif isinstance(seq, UserString):
-                self.data = seq.data[:]
-            else:
-                self.data = str(seq)
-        def __str__(self): return str(self.data)
-        def __repr__(self): return repr(self.data)
-        def __int__(self): return int(self.data)
-        def __long__(self): return long(self.data)
-        def __float__(self): return float(self.data)
-        def __complex__(self): return complex(self.data)
-        def __hash__(self): return hash(self.data)
-
-        def __cmp__(self, string):
-            if isinstance(string, UserString):
-                return cmp(self.data, string.data)
-            else:
-                return cmp(self.data, string)
-        def __contains__(self, char):
-            return char in self.data
-
-        def __len__(self): return len(self.data)
-        def __getitem__(self, index): return self.__class__(self.data[index])
-        def __getslice__(self, start, end):
-            start = max(start, 0); end = max(end, 0)
-            return self.__class__(self.data[start:end])
-
-        def __add__(self, other):
-            if isinstance(other, UserString):
-                return self.__class__(self.data + other.data)
-            elif is_String(other):
-                return self.__class__(self.data + other)
-            else:
-                return self.__class__(self.data + str(other))
-        def __radd__(self, other):
-            if is_String(other):
-                return self.__class__(other + self.data)
-            else:
-                return self.__class__(str(other) + self.data)
-        def __mul__(self, n):
-            return self.__class__(self.data*n)
-        __rmul__ = __mul__
-
-#
-try:
-    __builtin__.zip
-except AttributeError:
-    def zip(*lists):
-        result = []
-        for i in xrange(len(lists[0])):
-            result.append(tuple(map(lambda l, i=i: l[i], lists)))
-        return result
-    __builtin__.zip = zip
 
 _altsep = os.altsep
 if _altsep is None and sys.platform == 'win32':
@@ -294,9 +233,6 @@ def render_tree(root, child_func, prune=0, margin=[0], visited={}):
 
     rname = str(root)
 
-    if visited.has_key(rname):
-        return ""
-
     children = child_func(root)
     retval = ""
     for pipe in margin[:-1]:
@@ -304,6 +240,9 @@ def render_tree(root, child_func, prune=0, margin=[0], visited={}):
             retval = retval + "| "
         else:
             retval = retval + "  "
+
+    if visited.has_key(rname):
+        return retval + "+-[" + rname + "]\n"
 
     retval = retval + "+-" + rname + "\n"
     if not prune:
@@ -338,21 +277,19 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
 
     rname = str(root)
 
-    if visited.has_key(rname):
-        return
-
     if showtags:
 
         if showtags == 2:
-            print ' E        = exists'
-            print '  R       = exists in repository only'
-            print '   b      = implicit builder'
-            print '   B      = explicit builder'
-            print '    S     = side effect'
-            print '     P    = precious'
-            print '      A   = always build'
-            print '       C  = current'
-            print '        N = no clean'
+            print ' E         = exists'
+            print '  R        = exists in repository only'
+            print '   b       = implicit builder'
+            print '   B       = explicit builder'
+            print '    S      = side effect'
+            print '     P     = precious'
+            print '      A    = always build'
+            print '       C   = current'
+            print '        N  = no clean'
+            print '         H = no cache'
             print ''
 
         tags = ['[']
@@ -365,6 +302,7 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
         tags.append(' A'[IDX(root.always_build)])
         tags.append(' C'[IDX(root.current())])
         tags.append(' N'[IDX(root.noclean)])
+        tags.append(' H'[IDX(root.nocache)])
         tags.append(']')
 
     else:
@@ -373,6 +311,10 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
     def MMM(m):
         return ["  ","| "][m]
     margins = map(MMM, margin[:-1])
+
+    if visited.has_key(rname):
+        print string.join(tags + margins + ['+-[', rname, ']'], '')
+        return
 
     print string.join(tags + margins + ['+-', rname], '')
 
@@ -423,6 +365,12 @@ def is_Dict(obj):
 def is_List(obj):
     t = type(obj)
     return t is ListType \
+        or (t is InstanceType and isinstance(obj, UserList))
+
+def is_Sequence(obj):
+    t = type(obj)
+    return t is ListType \
+        or t is TupleType \
         or (t is InstanceType and isinstance(obj, UserList))
 
 def is_Tuple(obj):
@@ -627,6 +575,7 @@ elif os.name == 'os2':
 else:
 
     def WhereIs(file, path=None, pathext=None, reject=[]):
+        import stat
         if path is None:
             try:
                 path = os.environ['PATH']
@@ -924,9 +873,10 @@ def unique(s):
         for x in s:
             u[x] = 1
     except TypeError:
-        del u  # move on to the next method
+        pass    # move on to the next method
     else:
         return u.keys()
+    del u
 
     # We can't hash all the elements.  Second fastest is to sort,
     # which brings the equal elements together; then duplicates are
@@ -939,7 +889,7 @@ def unique(s):
         t = list(s)
         t.sort()
     except TypeError:
-        del t  # move on to the next method
+        pass    # move on to the next method
     else:
         assert n > 0
         last = t[0]
@@ -950,6 +900,7 @@ def unique(s):
                 lasti = lasti + 1
             i = i + 1
         return t[:lasti]
+    del t
 
     # Brute force is all that's left.
     u = []
@@ -986,6 +937,19 @@ class LogicalLines:
                 break
             result.append(line)
         return result
+
+class Unbuffered:
+    """
+    A proxy class that wraps a file object, flushing after every write,
+    and delegating everything else to the wrapped object.
+    """
+    def __init__(self, file):
+        self.file = file
+    def write(self, arg):
+        self.file.write(arg)
+        self.file.flush()
+    def __getattr__(self, attr):
+        return getattr(self.file, attr)
 
 def make_path_relative(path):
     """ makes an absolute path name to a relative pathname.

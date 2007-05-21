@@ -6,8 +6,17 @@ See its __doc__ string for a discussion of the format.
 -->
 <tool name="rmic">
 <summary>
-XXX
+Sets construction variables for the &rmic; utility.
 </summary>
+<sets>
+RMIC
+RMICFLAGS
+RMICCOM
+JAVACLASSSUFFIX
+</sets>
+<uses>
+RMICCOMSTR
+</uses>
 </tool>
 
 <builder name="RMIC">
@@ -24,7 +33,7 @@ or the objects return from the
 builder method.
 
 If the construction variable
-&cv-JAVACLASSDIR;
+&cv-link-JAVACLASSDIR;
 is set, either in the environment
 or in the call to the
 &b-RMIC;
@@ -59,7 +68,7 @@ The Java RMI stub compiler.
 The command line used to compile stub
 and skeleton class files
 from Java classes that contain RMI implementations.
-Any options specified in the &cv-RMICFLAGS; construction variable
+Any options specified in the &cv-link-RMICFLAGS; construction variable
 are included on this command line.
 </summary>
 </cvar>
@@ -69,7 +78,7 @@ are included on this command line.
 The string displayed when compiling
 stub and skeleton class files
 from Java classes that contain RMI implementations.
-If this is not set, then &cv-RMICCOM; (the command line) is displayed.
+If this is not set, then &cv-link-RMICCOM; (the command line) is displayed.
 
 <example>
 env = Environment(RMICCOMSTR = "Generating stub/skeleton class files $TARGETS from $SOURCES")

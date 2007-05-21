@@ -151,7 +151,7 @@ def get_intel_registry_value(valuename, version=None, abi=None):
         return v  # or v.encode('iso-8859-1', 'replace') to remove unicode?
     except SCons.Util.RegError:
         raise MissingRegistryError, \
-              "%s\\%s was not found in the registry."%(K, value)
+              "%s\\%s was not found in the registry."%(K, valuename)
 
 
 def get_all_compiler_versions():
@@ -353,7 +353,9 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
     else:
         env['CC']        = 'icc'
         env['CXX']       = 'icpc'
-        env['LINK']      = '$CC'
+        # Don't reset LINK here;
+        # use smart_link which should already be here from link.py.
+        #env['LINK']      = '$CC'
         env['AR']        = 'xiar'
         env['LD']        = 'xild' # not used by default
 

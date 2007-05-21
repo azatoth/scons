@@ -6,8 +6,18 @@ See its __doc__ string for a discussion of the format.
 -->
 <tool name="RCS">
 <summary>
-XXX
+Sets construction variables for the interaction
+with the Revision Control System.
 </summary>
+<sets>
+RCS
+RCS_CO
+RCS_COFLAGS
+RCS_COCOM
+</sets>
+<uses>
+RCS_COCOMSTR
+</uses>
 </tool>
 
 <cvar name="RCS">
@@ -16,7 +26,7 @@ The RCS executable.
 Note that this variable is not actually used
 for the command to fetch source files from RCS;
 see the
-&cv-RCS_CO;
+&cv-link-RCS_CO;
 construction variable, below.
 </summary>
 </cvar>
@@ -39,13 +49,13 @@ fetch (checkout) source files from RCS.
 <summary>
 The string displayed when fetching
 a source file from RCS.
-If this is not set, then &cv-RCS_COCOM;
+If this is not set, then &cv-link-RCS_COCOM;
 (the command line) is displayed.
 </summary>
 </cvar>
 
 <cvar name="RCS_COFLAGS">
 <summary>
-Options that are passed to the &cv-RCS_CO; command.
+Options that are passed to the &cv-link-RCS_CO; command.
 </summary>
 </cvar>

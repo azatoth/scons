@@ -135,11 +135,13 @@ class Environment:
         for k, v in kw.items():
             self.d[k] = v
     # Just use the underlying scons_subst*() utility methods.
-    def subst(self, strSubst, raw=0, target=[], source=[]):
-        return SCons.Subst.scons_subst(strSubst, self, raw, target, source, self.d)
+    def subst(self, strSubst, raw=0, target=[], source=[], conv=None):
+        return SCons.Subst.scons_subst(strSubst, self, raw,
+                                       target, source, self.d, conv=conv)
     subst_target_source = subst
-    def subst_list(self, strSubst, raw=0, target=[], source=[]):
-        return SCons.Subst.scons_subst_list(strSubst, self, raw, target, source, self.d)
+    def subst_list(self, strSubst, raw=0, target=[], source=[], conv=None):
+        return SCons.Subst.scons_subst_list(strSubst, self, raw,
+                                       target, source, self.d, conv=conv)
     def __getitem__(self, item):
         return self.d[item]
     def __setitem__(self, item, value):
@@ -480,6 +482,13 @@ class _ActionActionTestCase(unittest.TestCase):
             sio = StringIO.StringIO()
             sys.stdout = sio
             result = a("out", "in", env)
+            assert result == 7, result
+            s = sio.getvalue()
+            assert s == 'Building out with action:\n  execfunc(target, source, env)\nexecfunc(["out"], ["in"])\n', s
+
+            sio = StringIO.StringIO()
+            sys.stdout = sio
+            result = a("out", "in", env, presub=0)
             assert result == 7, result
             s = sio.getvalue()
             assert s == 'execfunc(["out"], ["in"])\n', s
@@ -1147,6 +1156,11 @@ class CommandActionTestCase(unittest.TestCase):
 
         a = SCons.Action.CommandAction(["xyzzy"])
         e = Environment(SPAWN = func)
+        a([], [], e)
+        assert t.executed == [ 'xyzzy' ], t.executed
+
+        a = SCons.Action.CommandAction(["xyzzy"])
+        e = Environment(SPAWN = '$FUNC', FUNC = func)
         a([], [], e)
         assert t.executed == [ 'xyzzy' ], t.executed
 

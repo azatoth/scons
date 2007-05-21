@@ -265,6 +265,71 @@ public enum a {}
         assert classes == ['a'], classes
 
 
+    def test_anon_classes(self):
+        """Test anonymous classes"""
+        pkg_dir, classes = SCons.Tool.JavaCommon.parse_java("""\
+public abstract class TestClass
+{
+    public void completed()
+    {
+        new Thread()
+        {
+        }.start();
+
+        new Thread()
+        {
+        }.start();
+    }
+}
+""")
+        assert pkg_dir == None, pkg_dir
+        assert classes == ['TestClass$1', 'TestClass$2', 'TestClass'], classes
+
+
+    def test_closing_bracket(self):
+        """Test finding a closing bracket instead of an anonymous class"""
+        pkg_dir, classes = SCons.Tool.JavaCommon.parse_java("""\
+class TestSCons {
+    public static void main(String[] args) {
+        Foo[] fooArray = new Foo[] { new Foo() };
+    }
+}
+
+class Foo { }
+""")
+        assert pkg_dir == None, pkg_dir
+        assert classes == ['TestSCons', 'Foo'], classes
+
+
+    def test_dot_class_attributes(self):
+        """Test handling ".class" attributes"""
+        pkg_dir, classes = SCons.Tool.JavaCommon.parse_java("""\
+public class Test extends Object
+{
+    static {
+        Class c = Object[].class;
+        Object[] s = new Object[] {};
+    }
+}
+""")
+        assert classes == ['Test'], classes
+
+        pkg_dir, classes = SCons.Tool.JavaCommon.parse_java("""\
+public class A {
+    public class B {
+        public void F(Object[] o) {
+            F(new Object[] {Object[].class});
+        }
+        public void G(Object[] o) {
+            F(new Object[] {});
+        }
+    }
+}
+""")
+        assert pkg_dir == None, pkg_dir
+        assert classes == ['A$B', 'A'], classes
+
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

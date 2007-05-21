@@ -658,6 +658,7 @@ sys.exit(1)
 
         empty = {
             'ASFLAGS'       : [],
+            'CFLAGS'        : [],
             'CCFLAGS'       : [],
             'CPPDEFINES'    : [],
             'CPPFLAGS'      : [],
@@ -686,6 +687,7 @@ sys.exit(1)
             "-Wl,-R,rpath2 " + \
             "-Wl,-Rrpath3 " + \
             "-Wp,-cpp " + \
+            "-std=c99 " + \
             "-framework Carbon " + \
             "-frameworkdir=fwd1 " + \
             "-Ffwd2 " + \
@@ -693,16 +695,17 @@ sys.exit(1)
             "-pthread " + \
             "-mno-cygwin -mwindows " + \
             "-arch i386 -isysroot /tmp +DD64 " + \
-            "-DFOO -DBAR=value"
+            "-DFOO -DBAR=value -D BAZ"
 
         d = env.ParseFlags(s)
 
         assert d['ASFLAGS'] == ['-as'], d['ASFLAGS']
+        assert d['CFLAGS']  == ['-std=c99']
         assert d['CCFLAGS'] == ['-X', '-Wa,-as',
                                   '-pthread', '-mno-cygwin',
                                   ('-arch', 'i386'), ('-isysroot', '/tmp'),
                                   '+DD64'], d['CCFLAGS']
-        assert d['CPPDEFINES'] == ['FOO', ['BAR', 'value']], d['CPPDEFINES']
+        assert d['CPPDEFINES'] == ['FOO', ['BAR', 'value'], 'BAZ'], d['CPPDEFINES']
         assert d['CPPFLAGS'] == ['-Wp,-cpp'], d['CPPFLAGS']
         assert d['CPPPATH'] == ['/usr/include/fum', 'bar'], d['CPPPATH']
         assert d['FRAMEWORKPATH'] == ['fwd1', 'fwd2', 'fwd3'], d['FRAMEWORKPATH']
@@ -722,11 +725,15 @@ sys.exit(1)
         """
         env = SubstitutionEnvironment()
         env.MergeFlags('')
-        assert env['CCFLAGS'] == [], env['CCFLAGS']
+        assert not env.has_key('CCFLAGS'), env['CCFLAGS']
         env.MergeFlags('-X')
         assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
         env.MergeFlags('-X')
         assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
+
+        env = SubstitutionEnvironment(CCFLAGS=None)
+        env.MergeFlags('-Y')
+        assert env['CCFLAGS'] == ['-Y'], env['CCFLAGS']
 
         env = SubstitutionEnvironment()
         env.MergeFlags({'A':['aaa'], 'B':['bbb']})
@@ -992,7 +999,7 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
                           LIBLINKSUFFIX = 'bar')
 
         def RDirs(pathlist, fs=env.fs):
-            return fs.Rfindalldirs(pathlist, fs.Dir('xx'))
+            return fs.Dir('xx').Rfindalldirs(pathlist)
 
         env['RDirs'] = RDirs
         flags = env.subst_list('$_LIBFLAGS', 1)[0]
@@ -2758,6 +2765,78 @@ def generate(env):
         i = t.ignore[0]
         assert i.__class__.__name__ == 'Dir', i.__class__.__name__
         assert i.path == 'dir2'
+
+    def test_Install(self):
+        """Test the Install method"""
+        env = self.TestEnvironment(FOO='iii', BAR='jjj')
+
+        tgt = env.Install('export', [ 'build/foo1', 'build/foo2' ])
+        paths = map(str, tgt)
+        paths.sort()
+        expect = map(os.path.normpath, [ 'export/foo1', 'export/foo2' ])
+        assert paths == expect, paths
+        for tnode in tgt:
+            assert tnode.builder == InstallBuilder
+
+        tgt = env.Install('$FOO', [ 'build/${BAR}1', 'build/${BAR}2' ])
+        paths = map(str, tgt)
+        paths.sort()
+        expect = map(os.path.normpath, [ 'iii/jjj1', 'iii/jjj2' ])
+        assert paths == expect, paths
+        for tnode in tgt:
+            assert tnode.builder == InstallBuilder
+
+        tgt = env.Install('export', 'build')
+        paths = map(str, tgt)
+        paths.sort()
+        expect = [os.path.join('export', 'build')]
+        assert paths == expect, paths
+        for tnode in tgt:
+            assert tnode.builder == InstallBuilder
+
+        tgt = env.Install('export', ['build', 'build/foo1'])
+        paths = map(str, tgt)
+        paths.sort()
+        expect = [
+            os.path.join('export', 'build'),
+            os.path.join('export', 'foo1'),
+        ]
+        assert paths == expect, paths
+        for tnode in tgt:
+            assert tnode.builder == InstallBuilder
+
+        tgt = env.Install('export', 'subdir/#file')
+        assert str(tgt[0]) == os.path.normpath('export/#file'), str(tgt[0])
+
+        env.File('export/foo1')
+
+        exc_caught = None
+        try:
+            tgt = env.Install('export/foo1', 'build/foo1')
+        except SCons.Errors.UserError, e:
+            exc_caught = 1
+        assert exc_caught, "UserError should be thrown reversing the order of Install() targets."
+        expect = "Target `export/foo1' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?"
+        assert str(e) == expect, e
+
+    def test_InstallAs(self):
+        """Test the InstallAs method"""
+        env = self.TestEnvironment(FOO='iii', BAR='jjj')
+
+        tgt = env.InstallAs(target=string.split('foo1 foo2'),
+                            source=string.split('bar1 bar2'))
+        assert len(tgt) == 2, len(tgt)
+        paths = map(lambda x: str(x.sources[0]), tgt)
+        paths.sort()
+        expect = map(os.path.normpath, [ 'bar1', 'bar2' ])
+        assert paths == expect, paths
+        for tnode in tgt:
+            assert tnode.builder == InstallBuilder
+
+        tgt = env.InstallAs(target='${FOO}.t', source='${BAR}.s')[0]
+        assert tgt.path == 'iii.t'
+        assert tgt.sources[0].path == 'jjj.s'
+        assert tgt.builder == InstallBuilder
 
     def test_Literal(self):
         """Test the Literal() method"""

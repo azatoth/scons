@@ -4,7 +4,12 @@
 # See the README file for an overview of how SCons is built and tested.
 #
 
-copyright_years = '2001, 2002, 2003, 2004'
+# When this gets changed, you also need to change test/option-v.py
+# so it looks for the right string.
+copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007'
+
+# This gets inserted into the man pages to reflect the month of release.
+month_year = 'January 2007'
 
 #
 # __COPYRIGHT__
@@ -40,10 +45,8 @@ import sys
 import time
 
 project = 'scons'
-default_version = '0.96.92'
+default_version = '0.97'
 copyright = "Copyright (c) %s The SCons Foundation" % copyright_years
-
-Default('.')
 
 SConsignFile()
 
@@ -150,7 +153,11 @@ for key in ['AEGIS_PROJECT', 'LOGNAME', 'PYTHONPATH']:
     if os.environ.has_key(key):
         ENV[key] = os.environ[key]
 
-cwd_build = os.path.join(os.getcwd(), "build")
+build_dir = ARGUMENTS.get('BUILDDIR', 'build')
+if not os.path.isabs(build_dir):
+    build_dir = os.path.normpath(os.path.join(os.getcwd(), build_dir))
+
+Default('.', build_dir)
 
 packaging_flavors = [
     'deb',
@@ -163,17 +170,17 @@ packaging_flavors = [
     'local-zip',
 ]
 
-test_deb_dir          = os.path.join(cwd_build, "test-deb")
-test_rpm_dir          = os.path.join(cwd_build, "test-rpm")
-test_tar_gz_dir       = os.path.join(cwd_build, "test-tar-gz")
-test_src_tar_gz_dir   = os.path.join(cwd_build, "test-src-tar-gz")
-test_local_tar_gz_dir = os.path.join(cwd_build, "test-local-tar-gz")
-test_zip_dir          = os.path.join(cwd_build, "test-zip")
-test_src_zip_dir      = os.path.join(cwd_build, "test-src-zip")
-test_local_zip_dir    = os.path.join(cwd_build, "test-local-zip")
+test_deb_dir          = os.path.join(build_dir, "test-deb")
+test_rpm_dir          = os.path.join(build_dir, "test-rpm")
+test_tar_gz_dir       = os.path.join(build_dir, "test-tar-gz")
+test_src_tar_gz_dir   = os.path.join(build_dir, "test-src-tar-gz")
+test_local_tar_gz_dir = os.path.join(build_dir, "test-local-tar-gz")
+test_zip_dir          = os.path.join(build_dir, "test-zip")
+test_src_zip_dir      = os.path.join(build_dir, "test-src-zip")
+test_local_zip_dir    = os.path.join(build_dir, "test-local-zip")
 
-unpack_tar_gz_dir     = os.path.join(cwd_build, "unpack-tar-gz")
-unpack_zip_dir        = os.path.join(cwd_build, "unpack-zip")
+unpack_tar_gz_dir     = os.path.join(build_dir, "unpack-tar-gz")
+unpack_zip_dir        = os.path.join(build_dir, "unpack-zip")
 
 if platform == "win32":
     tar_hflag = ''
@@ -250,6 +257,7 @@ def SCons_revision(target, source, env):
     contents = string.replace(contents, '__DATE'      + '__', env['DATE'])
     contents = string.replace(contents, '__DEVELOPER' + '__', env['DEVELOPER'])
     contents = string.replace(contents, '__FILE'      + '__', str(source[0]))
+    contents = string.replace(contents, '__MONTH_YEAR'+ '__', env['MONTH_YEAR'])
     contents = string.replace(contents, '__REVISION'  + '__', env['REVISION'])
     contents = string.replace(contents, '__VERSION'   + '__', env['VERSION'])
     contents = string.replace(contents, '__NULL'      + '__', '')
@@ -299,10 +307,12 @@ env = Environment(
                    ENV                 = ENV,
 
                    BUILD               = build_id,
+                   BUILDDIR            = build_dir,
                    BUILDSYS            = build_system,
                    COPYRIGHT           = copyright,
                    DATE                = date,
                    DEVELOPER           = developer,
+                   MONTH_YEAR          = month_year,
                    REVISION            = revision,
                    VERSION             = version,
                    DH_COMPAT           = 2,
@@ -453,6 +463,7 @@ scons_script = {
                             'LICENSE.txt'       : '../LICENSE.txt',
                             'scons'             : 'scons.py',
                             'sconsign'          : 'sconsign.py',
+                            'scons-time'        : 'scons-time.py',
                            },
 
         'buildermap'    : {},
@@ -460,6 +471,7 @@ scons_script = {
         'extra_rpm_files' : [
                             'scons-' + version,
                             'sconsign-' + version,
+                            'scons-time-' + version,
                           ],
 
         'explicit_deps' : {
@@ -490,19 +502,23 @@ scons = {
                             'os_spawnv_fix.diff',
                             'scons.1',
                             'sconsign.1',
+                            'scons-time.1',
                             'script/scons.bat',
+                            #'script/scons-post-install.py',
                             'setup.cfg',
                             'setup.py',
                           ],
 
         'filemap'       : {
-                            'scons.1' : '../build/doc/man/scons.1',
-                            'sconsign.1' : '../build/doc/man/sconsign.1',
+                            'scons.1' : '$BUILDDIR/doc/man/scons.1',
+                            'sconsign.1' : '$BUILDDIR/doc/man/sconsign.1',
+                            'scons-time.1' : '$BUILDDIR/doc/man/scons-time.1',
                           },
 
         'buildermap'    : {
                             'scons.1' : env.SOElim,
                             'sconsign.1' : env.SOElim,
+                            'scons-time.1' : env.SOElim,
                           },
 
         'subpkgs'       : [ python_scons, scons_script ],
@@ -513,7 +529,7 @@ scons = {
                            },
 }
 
-scripts = ['scons', 'sconsign']
+scripts = ['scons', 'sconsign', 'scons-time']
 
 src_deps = []
 src_files = []
@@ -529,7 +545,7 @@ for p in [ scons ]:
     if p.has_key('src_subdir'):
         src = os.path.join(src, p['src_subdir'])
 
-    build = os.path.join('build', pkg)
+    build = os.path.join(build_dir, pkg)
 
     tar_gz = os.path.join(build, 'dist', "%s.tar.gz" % pkg_version)
     platform_tar_gz = os.path.join(build,
@@ -617,8 +633,10 @@ for p in [ scons ]:
     #
     for b in src_files:
         s = p['filemap'].get(b, b)
+        if not s[0] == '$' and not os.path.isabs(s):
+            s = os.path.join(src, s)
         builder = p['buildermap'].get(b, env.SCons_revision)
-        x = builder(os.path.join(build, b), os.path.join(src, s))
+        x = builder(os.path.join(build, b), s)
         Local(x)
 
     #
@@ -708,7 +726,7 @@ for p in [ scons ]:
         #
         # Generate portage files for submission to Gentoo Linux.
         #
-        gentoo = os.path.join('build', 'gentoo')
+        gentoo = os.path.join(build, 'gentoo')
         ebuild = os.path.join(gentoo, 'scons-%s.ebuild' % version)
         digest = os.path.join(gentoo, 'files', 'digest-scons-%s' % version)
         env.Command(ebuild, os.path.join('gentoo', 'scons.ebuild.in'), SCons_revision)
@@ -779,10 +797,10 @@ for p in [ scons ]:
         ])
 
     if rpmbuild:
-        topdir = os.path.join(os.getcwd(), build, 'build',
+        topdir = os.path.join(build, 'build',
                               'bdist.' + platform, 'rpm')
 
-        buildroot = os.path.join(os.getcwd(), 'build', 'rpm-buildroot')
+        buildroot = os.path.join(build_dir, 'rpm-buildroot')
 
         BUILDdir = os.path.join(topdir, 'BUILD', pkg + '-' + version)
         RPMSdir = os.path.join(topdir, 'RPMS', 'noarch')
@@ -834,7 +852,7 @@ for p in [ scons ]:
     if dh_builddeb and fakeroot:
         # Our Debian packaging builds directly into build/dist,
         # so we don't need to add the .debs to install_targets.
-        deb = os.path.join('build', 'dist', "%s_%s-1_all.deb" % (pkg, version))
+        deb = os.path.join(build_dir, 'dist', "%s_%s-1_all.deb" % (pkg, version))
         for d in p['debian_deps']:
             b = env.SCons_revision(os.path.join(build, d), d)
             env.Depends(deb, b)
@@ -844,7 +862,7 @@ for p in [ scons ]:
                     ])
 
         old = os.path.join('lib', 'scons', '')
-        new = os.path.join('lib', 'python2.2', 'site-packages', '')
+        new = os.path.join('lib', 'python' + python_ver, 'site-packages', '')
         def xxx(s, old=old, new=new):
             if s[:len(old)] == old:
                 s = new + s[len(old):]
@@ -886,38 +904,38 @@ for p in [ scons ]:
     #
     s_l_v = '%s-local-%s' % (pkg, version)
 
-    local = os.path.join('build', pkg + '-local')
-    cwd_local = os.path.join(os.getcwd(), local)
-    cwd_local_slv = os.path.join(os.getcwd(), local, s_l_v)
+    local = pkg + '-local'
+    build_dir_local = os.path.join(build_dir, local)
+    build_dir_local_slv = os.path.join(build_dir, local, s_l_v)
 
-    local_tar_gz = os.path.join('build', 'dist', "%s.tar.gz" % s_l_v)
-    local_zip = os.path.join('build', 'dist', "%s.zip" % s_l_v)
+    local_tar_gz = os.path.join(build_dir, 'dist', "%s.tar.gz" % s_l_v)
+    local_zip = os.path.join(build_dir, 'dist', "%s.zip" % s_l_v)
 
     commands = [
-        Delete(local),
+        Delete(build_dir_local),
         '$PYTHON $PYTHONFLAGS $SETUP_PY install "--install-script=%s" "--install-lib=%s" --no-install-man --no-compile --standalone-lib --no-version-script' % \
-                                                (cwd_local, cwd_local_slv),
+                                                (build_dir_local, build_dir_local_slv),
     ]
 
     for script in scripts:
         #commands.append("mv %s/%s %s/%s.py" % (local, script, local, script))
-        local_script = os.path.join(local, script)
+        local_script = os.path.join(build_dir_local, script)
         commands.append(Move(local_script + '.py', local_script))
 
     rf = filter(lambda x: not x in scripts, raw_files)
     rf = map(lambda x, slv=s_l_v: os.path.join(slv, x), rf)
     for script in scripts:
         rf.append("%s.py" % script)
-    local_targets = map(lambda x, s=local: os.path.join(s, x), rf)
+    local_targets = map(lambda x, s=build_dir_local: os.path.join(s, x), rf)
 
     env.Command(local_targets, build_src_files, commands)
 
-    scons_LICENSE = os.path.join(local, 'scons-LICENSE')
+    scons_LICENSE = os.path.join(build_dir_local, 'scons-LICENSE')
     l = env.SCons_revision(scons_LICENSE, 'LICENSE-local')
     local_targets.append(l)
     Local(l)
 
-    scons_README = os.path.join(local, 'scons-README')
+    scons_README = os.path.join(build_dir_local, 'scons-README')
     l = env.SCons_revision(scons_README, 'README-local')
     local_targets.append(l)
     Local(l)
@@ -925,7 +943,7 @@ for p in [ scons ]:
     if gzip:
         env.Command(local_tar_gz,
                     local_targets,
-                    "cd %s && tar czf $( ${TARGET.abspath} $) *" % local)
+                    "cd %s && tar czf $( ${TARGET.abspath} $) *" % build_dir_local)
 
         unpack_targets = map(lambda x, d=test_local_tar_gz_dir:
                                     os.path.join(d, x),
@@ -938,7 +956,7 @@ for p in [ scons ]:
 
     if zipit:
         env.Command(local_zip, local_targets, zipit,
-                    CD = local, PSV = '.')
+                    CD = build_dir_local, PSV = '.')
 
         unpack_targets = map(lambda x, d=test_local_zip_dir:
                                     os.path.join(d, x),
@@ -954,13 +972,13 @@ for p in [ scons ]:
     # And, lastly, install the appropriate packages in the
     # appropriate subdirectory.
     #
-    b_d_files = env.Install(os.path.join('build', 'dist'), install_targets)
+    b_d_files = env.Install(os.path.join(build_dir, 'dist'), install_targets)
     Local(b_d_files)
 
 #
 #
 #
-Export('env')
+Export('build_dir', 'env')
 
 SConscript('QMTest/SConscript')
 
@@ -980,17 +998,18 @@ for file in files:
     # Guarantee that real copies of these files always exist in
     # build/.  If there's a symlink there, then this is an Aegis
     # build and we blow them away now so that they'll get "built" later.
-    p = os.path.join('build', file)
+    p = os.path.join(build_dir, file)
     if os.path.islink(p):
         os.unlink(p)
-    sp = '#' + p
-    env.Command(sp, file, copy)
+    if not os.path.isabs(p):
+        p = '#' + p
+    sp = env.Command(p, file, copy)
     Local(sp)
 
 #
 # Documentation.
 #
-Export('env', 'whereis')
+Export('build_dir', 'env', 'whereis')
 
 SConscript('doc/SConscript')
 
@@ -1028,12 +1047,12 @@ if change:
     if sfiles:
         ps = "%s-src" % project
         psv = "%s-%s" % (ps, version)
-        b_ps = os.path.join('build', ps)
-        b_psv = os.path.join('build', psv)
+        b_ps = os.path.join(build_dir, ps)
+        b_psv = os.path.join(build_dir, psv)
         b_psv_stamp = b_psv + '-stamp'
 
-        src_tar_gz = os.path.join('build', 'dist', '%s.tar.gz' % psv)
-        src_zip = os.path.join('build', 'dist', '%s.zip' % psv)
+        src_tar_gz = os.path.join(build_dir, 'dist', '%s.tar.gz' % psv)
+        src_zip = os.path.join(build_dir, 'dist', '%s.zip' % psv)
 
         Local(src_tar_gz, src_zip)
 

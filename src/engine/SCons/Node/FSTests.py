@@ -740,14 +740,22 @@ class FileNodeInfoTestCase(_tempdirTestCase):
 
         test.write('fff', "fff\n")
 
-        assert ni.timestamp != os.path.getmtime('fff'), ni.timestamp
-        assert ni.size != os.path.getsize('fff'), ni.size
+        st = os.stat('fff')
+
+        mtime = st[stat.ST_MTIME]
+        assert ni.timestamp != mtime, (ni.timestamp, mtime)
+        size = st[stat.ST_SIZE]
+        assert ni.size != size, (ni.size, size)
 
         fff.clear()
         ni.update(fff)
 
-        assert ni.timestamp == os.path.getmtime('fff'), ni.timestamp
-        assert ni.size == os.path.getsize('fff'), ni.size
+        st = os.stat('fff')
+
+        mtime = st[stat.ST_MTIME]
+        assert ni.timestamp == mtime, (ni.timestamp, mtime)
+        size = st[stat.ST_SIZE]
+        assert ni.size == size, (ni.size, size)
 
 class FileBuildInfoTestCase(_tempdirTestCase):
     def test___init__(self):
@@ -1216,12 +1224,9 @@ class FSTestCase(_tempdirTestCase):
 
         # test Entry.get_contents()
         e = fs.Entry('does_not_exist')
-        exc_caught = 0
-        try:
-            e.get_contents()
-        except AttributeError:
-            exc_caught = 1
-        assert exc_caught, "Should have caught an AttributError"
+        c = e.get_contents()
+        assert c == "", c
+        assert e.__class__ == SCons.Node.FS.Entry
 
         test.write("file", "file\n")
         try:
@@ -1242,7 +1247,7 @@ class FSTestCase(_tempdirTestCase):
             os.symlink('nonexistent', test.workpath('dangling_symlink'))
             e = fs.Entry('dangling_symlink')
             c = e.get_contents()
-            assert e.__class__ == SCons.Node.FS.Entry
+            assert e.__class__ == SCons.Node.FS.Entry, e.__class__
             assert c == "", c
 
         test.write("tstamp", "tstamp\n")
@@ -1266,18 +1271,18 @@ class FSTestCase(_tempdirTestCase):
         assert t == 0, "expected 0, got %s" % str(t)
 
         test.subdir('tdir2')
-        d = fs.Dir('tdir2')
         f1 = test.workpath('tdir2', 'file1')
         f2 = test.workpath('tdir2', 'file2')
         test.write(f1, 'file1\n')
         test.write(f2, 'file2\n')
-        fs.File(f1)
-        fs.File(f2)
         current_time = float(int(time.time() / 2) * 2)
         t1 = current_time - 4.0
         t2 = current_time - 2.0
         os.utime(f1, (t1 - 2.0, t1))
         os.utime(f2, (t2 - 2.0, t2))
+        d = fs.Dir('tdir2')
+        fs.File(f1)
+        fs.File(f2)
         t = d.get_timestamp()
         assert t == t2, "expected %f, got %f" % (t2, t)
 
@@ -1468,7 +1473,22 @@ class FSTestCase(_tempdirTestCase):
                 d1_d2_f,        d3_d4_f,        '../../d3/d4/f',
         ]
 
-        d1.rel_path(d3)
+        if sys.platform in ('win32',):
+            x_d1        = fs.Dir(r'X:\d1')
+            x_d1_d2     = x_d1.Dir('d2')
+            y_d1        = fs.Dir(r'Y:\d1')
+            y_d1_d2     = y_d1.Dir('d2')
+            y_d2        = fs.Dir(r'Y:\d2')
+
+            win32_cases = [
+                x_d1,           x_d1,           '.',
+                x_d1,           x_d1_d2,        'd2',
+                x_d1,           y_d1,           r'Y:\d1',
+                x_d1,           y_d1_d2,        r'Y:\d1\d2',
+                x_d1,           y_d2,           r'Y:\d2',
+            ]
+
+            cases.extend(win32_cases)
 
         failed = 0
         while cases:
@@ -1496,6 +1516,8 @@ class FSTestCase(_tempdirTestCase):
         p = Proxy(f1)
         f2 = self.fs.Entry(p)
         assert f1 is f2, (f1, f2)
+
+
 
 class DirTestCase(_tempdirTestCase):
 
@@ -1858,12 +1880,8 @@ class EntryTestCase(_tempdirTestCase):
         assert e3f.__class__ is SCons.Node.FS.File, e3f.__class__
 
         e3n = fs.Entry('e3n')
-        exc_caught = None
-        try:
-            e3n.get_contents()
-        except AttributeError:
-            exc_caught = 1
-        assert exc_caught, "did not catch expected AttributeError"
+        e3n.get_contents()
+        assert e3n.__class__ is SCons.Node.FS.Entry, e3n.__class__
 
         test.subdir('e4d')
         test.write('e4f', "e4f\n")
@@ -2133,25 +2151,25 @@ class RepositoryTestCase(_tempdirTestCase):
         rep2_sub_d1 = fs.Dir(test.workpath('rep2', 'sub', 'd1'))
         rep3_sub_d1 = fs.Dir(test.workpath('rep3', 'sub', 'd1'))
 
-        r = fs.Rfindalldirs(d1, fs.Top)
+        r = fs.Top.Rfindalldirs((d1,))
         assert r == [d1], map(str, r)
 
-        r = fs.Rfindalldirs([d1, d2], fs.Top)
+        r = fs.Top.Rfindalldirs((d1, d2))
         assert r == [d1, d2], map(str, r)
 
-        r = fs.Rfindalldirs('d1', fs.Top)
+        r = fs.Top.Rfindalldirs(('d1',))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1], map(str, r)
 
-        r = fs.Rfindalldirs('#d1', fs.Top)
+        r = fs.Top.Rfindalldirs(('#d1',))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1], map(str, r)
 
-        r = fs.Rfindalldirs('d1', sub)
+        r = sub.Rfindalldirs(('d1',))
         assert r == [sub_d1, rep1_sub_d1, rep2_sub_d1, rep3_sub_d1], map(str, r)
 
-        r = fs.Rfindalldirs('#d1', sub)
+        r = sub.Rfindalldirs(('#d1',))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1], map(str, r)
 
-        r = fs.Rfindalldirs(['d1', d2], fs.Top)
+        r = fs.Top.Rfindalldirs(('d1', d2))
         assert r == [d1, rep1_d1, rep2_d1, rep3_d1, d2], map(str, r)
 
     def test_rexists(self):
@@ -2223,6 +2241,7 @@ class find_fileTestCase(unittest.TestCase):
         """Testing find_file function"""
         test = TestCmd(workdir = '')
         test.write('./foo', 'Some file\n')
+        test.write('./foo2', 'Another file\n')
         test.subdir('same')
         test.subdir('bar')
         test.write(['bar', 'on_disk'], 'Another file\n')
@@ -2237,7 +2256,7 @@ class find_fileTestCase(unittest.TestCase):
         node_pseudo = fs.File(test.workpath('pseudo'))
         node_pseudo.set_src_builder(1) # Any non-zero value.
 
-        paths = map(fs.Dir, ['.', 'same', './bar'])
+        paths = tuple(map(fs.Dir, ['.', 'same', './bar']))
         nodes = [SCons.Node.FS.find_file('foo', paths)]
         nodes.append(SCons.Node.FS.find_file('baz', paths))
         nodes.append(SCons.Node.FS.find_file('pseudo', paths))
@@ -2261,19 +2280,18 @@ class find_fileTestCase(unittest.TestCase):
         try:
             sio = StringIO.StringIO()
             sys.stdout = sio
-            SCons.Node.FS.find_file('foo', paths, verbose="xyz")
-            expect = "  xyz: looking for 'foo' in '.' ...\n" + \
-                     "  xyz: ... FOUND 'foo' in '.'\n"
+            SCons.Node.FS.find_file('foo2', paths, verbose="xyz")
+            expect = "  xyz: looking for 'foo2' in '.' ...\n" + \
+                     "  xyz: ... FOUND 'foo2' in '.'\n"
             c = sio.getvalue()
             assert c == expect, c
 
             sio = StringIO.StringIO()
             sys.stdout = sio
-            SCons.Node.FS.find_file('baz', paths, verbose=1)
-            expect = "  find_file: looking for 'baz' in '.' ...\n" + \
-                     "  find_file: looking for 'baz' in 'same' ...\n" + \
-                     "  find_file: looking for 'baz' in 'bar' ...\n" + \
-                     "  find_file: ... FOUND 'baz' in 'bar'\n"
+            SCons.Node.FS.find_file('baz2', paths, verbose=1)
+            expect = "  find_file: looking for 'baz2' in '.' ...\n" + \
+                     "  find_file: looking for 'baz2' in 'same' ...\n" + \
+                     "  find_file: looking for 'baz2' in 'bar' ...\n"
             c = sio.getvalue()
             assert c == expect, c
 
@@ -2717,11 +2735,28 @@ class disambiguateTestCase(unittest.TestCase):
         f = efile.disambiguate()
         assert f.__class__ is fff.__class__, f.__class__
 
+        test.subdir('build')
+        test.subdir(['build', 'bdir'])
+        test.write(['build', 'bfile'], "build/bfile\n")
+
         test.subdir('src')
+        test.write(['src', 'bdir'], "src/bdir\n")
+        test.subdir(['src', 'bfile'])
+
         test.subdir(['src', 'edir'])
         test.write(['src', 'efile'], "src/efile\n")
 
         fs.BuildDir(test.workpath('build'), test.workpath('src'))
+
+        build_bdir = fs.Entry(test.workpath('build/bdir'))
+        d = build_bdir.disambiguate()
+        assert d is build_bdir, d
+        assert d.__class__ is ddd.__class__, d.__class__
+
+        build_bfile = fs.Entry(test.workpath('build/bfile'))
+        f = build_bfile.disambiguate()
+        assert f is build_bfile, f
+        assert f.__class__ is fff.__class__, f.__class__
 
         build_edir = fs.Entry(test.workpath('build/edir'))
         d = build_edir.disambiguate()
@@ -2729,6 +2764,10 @@ class disambiguateTestCase(unittest.TestCase):
 
         build_efile = fs.Entry(test.workpath('build/efile'))
         f = build_efile.disambiguate()
+        assert f.__class__ is fff.__class__, f.__class__
+
+        build_nonexistant = fs.Entry(test.workpath('build/nonexistant'))
+        f = build_nonexistant.disambiguate()
         assert f.__class__ is fff.__class__, f.__class__
 
 class postprocessTestCase(unittest.TestCase):

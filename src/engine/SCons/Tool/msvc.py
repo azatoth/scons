@@ -138,12 +138,13 @@ def _parse_msvc8_overrides(version,platform,suite):
     if not SCons.Util.can_read_reg:
         raise SCons.Errors.InternalError, "No Windows registry module was found"
 
-    s = ''
+    # XXX This code assumes anything that isn't EXPRESS uses the default
+    # registry key string.  Is this really true for all VS suites?
     if suite == 'EXPRESS':
         s = '\\VCExpress\\'
+    else:
+        s = '\\VisualStudio\\'
 
-    # ToDo: add registry key strings for the other versions of visual
-    # studio 2005.
     settings_path = ""
     try:
         (settings_path, t) = SCons.Util.RegGetValue(SCons.Util.HKEY_CURRENT_USER,
@@ -599,7 +600,7 @@ def get_msvc_default_paths(env, version=None, use_mfc_dirs=0):
     version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
     if version_num >= 8.0:
         suite = SCons.Tool.msvs.get_default_visualstudio8_suite(env)
-        defpaths = _get_msvc8_default_paths(env, version, suite, use_mfc_dirs)
+        return _get_msvc8_default_paths(env, version, suite, use_mfc_dirs)
     elif version_num >= 7.0:
         return _get_msvc7_default_paths(env, version, use_mfc_dirs)
     else:
@@ -687,10 +688,12 @@ def generate(env):
     env['CCCOMFLAGS'] = '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS /c $SOURCES /Fo$TARGET $CCPCHFLAGS $CCPDBFLAGS'
     env['CC']         = 'cl'
     env['CCFLAGS']    = SCons.Util.CLVar('/nologo')
-    env['CCCOM']      = '$CC $CCFLAGS $CCCOMFLAGS'
+    env['CFLAGS']     = SCons.Util.CLVar('')
+    env['CCCOM']      = '$CC $CFLAGS $CCFLAGS $CCCOMFLAGS'
     env['SHCC']       = '$CC'
     env['SHCCFLAGS']  = SCons.Util.CLVar('$CCFLAGS')
-    env['SHCCCOM']    = '$SHCC $SHCCFLAGS $CCCOMFLAGS'
+    env['SHCFLAGS']   = SCons.Util.CLVar('$CFLAGS')
+    env['SHCCCOM']    = '$SHCC $SHCFLAGS $SHCCFLAGS $CCCOMFLAGS'
     env['CXX']        = '$CC'
     env['CXXFLAGS']   = SCons.Util.CLVar('$CCFLAGS $( /TP $)')
     env['CXXCOM']     = '$CXX $CXXFLAGS $CCCOMFLAGS'
