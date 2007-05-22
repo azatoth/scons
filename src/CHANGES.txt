@@ -8,6 +8,15 @@
 
 
 
+RELEASE 0.97.X - XXX
+
+  From Allan Erskine:
+
+  - Only expect the Microsoft IDL compiler to emit *_p.c and *_data.c
+    files if the /proxy and /dlldata switches are used (respectively).
+
+
+
 RELEASE 0.97 - Thu, 17 May 2007 08:59:41 -0500
 
   From Steven Knight:
