@@ -37,16 +37,16 @@ def generate(env):
         env['BUILDERS']['CopyTo']
         env['BUILDERS']['MoveTo']
     except KeyError, e:
-        def create_distinct_builders(target, source, env):
-            """ changes the target and source list to only include file and recursively
-            attaching the builder to all other targets and sources still in the list.
+        def copyto_emitter(target, source, env):
+            """ changes the path of the source to be under the target (which
+            are assumed to be directories.
             """
-            bld = env['BUILDERS']['CopyTo']
+            n_target = []
 
-            for t,s in zip(target[1:], source[1:]):
-                bld(env, target=t, source=s)
+            for t in target:
+                n_target = n_target + map( lambda s: t.File( str( s ) ), source )
 
-            return (target[:1], source[:1])
+            return (n_target, source)
 
         def copy_action_func(target, source, env):
             assert( len(target) == len(source) ), "\ntarget: %s\nsource: %s" %(map(str, target),map(str, source))
@@ -66,16 +66,15 @@ def generate(env):
 
         env['BUILDERS']['CopyTo'] = SCons.Builder.Builder(
                                      action         = copy_action,
-                                     target_factory = env.fs.Entry,
+                                     target_factory = env.fs.Dir,
                                      source_factory = env.fs.Entry,
                                      multi          = 1,
-                                     emitter        = [ create_distinct_builders, ] )
+                                     emitter        = [ copyto_emitter, ] )
 
         env['BUILDERS']['CopyAs'] = SCons.Builder.Builder(
                                      action         = copy_action,
                                      target_factory = env.fs.Entry,
-                                     source_factory = env.fs.Entry,
-                                     multi          = 1)
+                                     source_factory = env.fs.Entry )
 
 def exists(env):
     return 1
