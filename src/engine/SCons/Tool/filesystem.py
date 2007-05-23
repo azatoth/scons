@@ -35,7 +35,7 @@ from SCons.Tool.install import copyFunc
 def generate(env):
     try:
         env['BUILDERS']['CopyTo']
-        env['BUILDERS']['MoveTo']
+        env['BUILDERS']['CopyAs']
     except KeyError, e:
         def copyto_emitter(target, source, env):
             """ changes the path of the source to be under the target (which
