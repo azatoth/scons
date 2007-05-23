@@ -1,6 +1,6 @@
-"""SCons.Tool.rpm
+"""SCons.Tool.zip
 
-Tool-specific initialization for rpm.
+Tool-specific initialization for zip.
 
 There normally shouldn't be any need to import this module directly.
 It will usually be imported through the generic SCons.Tool.Tool()
@@ -40,8 +40,31 @@ import SCons.Defaults
 import SCons.Node.FS
 import SCons.Util
 
-zipcompression = 0
-zip = "$ZIP $ZIPFLAGS ${TARGET.abspath} $SOURCES"
+try:
+    import zipfile
+    internal_zip = 1
+except ImportError:
+    internal_zip = 0
+
+if internal_zip:
+    zipcompression = zipfile.ZIP_DEFLATED
+    def zip(target, source, env):
+        def visit(arg, dirname, names):
+            for name in names:
+                path = os.path.join(dirname, name)
+                if os.path.isfile(path):
+                    arg.write(path)
+        compression = env.get('ZIPCOMPRESSION', 0)
+        zf = zipfile.ZipFile(str(target[0]), 'w', compression)
+        for s in source:
+            if s.isdir():
+                os.path.walk(str(s), visit, zf)
+            else:
+                zf.write(str(s))
+        zf.close()
+else:
+    zipcompression = 0
+    zip = "$ZIP $ZIPFLAGS ${TARGET.abspath} $SOURCES"
 
 
 zipAction = SCons.Action.Action(zip, varlist=['ZIPCOMPRESSION'])
@@ -68,4 +91,4 @@ def generate(env):
     env['ZIPSUFFIX']  = '.zip'
 
 def exists(env):
-    return 1
+    return internal_zip or env.Detect('zip')
