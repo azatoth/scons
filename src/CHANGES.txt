@@ -40,6 +40,11 @@ RELEASE 0.97.X - XXX
   - Find Java anonymous classes when the next token after the name is
     an open parenthesis.
 
+  From Sohail Somani:
+
+  - Add LaTeX scanner support for finding dependencies specified with
+    the \usepackage{} directive.
+
 
 
 RELEASE 0.97 - Thu, 17 May 2007 08:59:41 -0500
