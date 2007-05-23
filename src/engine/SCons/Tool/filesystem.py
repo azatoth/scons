@@ -2,7 +2,7 @@
 
 Tool-specific initialization for the filesystem tools.
 
-Three normally shouldn't be any need to import this module directly.
+There normally shouldn't be any need to import this module directly.
 It will usually be imported through the generic SCons.Tool.Tool()
 selection method.
 """
@@ -32,49 +32,58 @@ selection method.
 import SCons
 from SCons.Tool.install import copyFunc
 
+copyToBuilder, copyAsBuilder = None, None
+
+def copyto_emitter(target, source, env):
+    """ changes the path of the source to be under the target (which
+    are assumed to be directories.
+    """
+    n_target = []
+
+    for t in target:
+        n_target = n_target + map( lambda s: t.File( str( s ) ), source )
+
+    return (n_target, source)
+
+def copy_action_func(target, source, env):
+    assert( len(target) == len(source) ), "\ntarget: %s\nsource: %s" %(map(str, target),map(str, source))
+
+    for t, s in zip(target, source):
+        if copyFunc(t.get_path(), s.get_path(), env):
+            return 1
+
+    return 0
+
+def copy_action_str(target, source, env):
+    return env.subst_target_source(env['COPYSTR'], 0, target, source)
+
+copy_action = SCons.Action.Action( copy_action_func, copy_action_str )
+
 def generate(env):
     try:
         env['BUILDERS']['CopyTo']
         env['BUILDERS']['CopyAs']
     except KeyError, e:
-        def copyto_emitter(target, source, env):
-            """ changes the path of the source to be under the target (which
-            are assumed to be directories.
-            """
-            n_target = []
+        global copyToBuilder
+        if copyToBuilder is None:
+            copyToBuilder = SCons.Builder.Builder(
+                             action         = copy_action,
+                             target_factory = env.fs.Dir,
+                             source_factory = env.fs.Entry,
+                             multi          = 1,
+                             emitter        = [ copyto_emitter, ] )
 
-            for t in target:
-                n_target = n_target + map( lambda s: t.File( str( s ) ), source )
+        global copyAsBuilder
+        if copyAsBuilder is None:
+            copyAsBuilder = SCons.Builder.Builder(
+                             action         = copy_action,
+                             target_factory = env.fs.Entry,
+                             source_factory = env.fs.Entry )
 
-            return (n_target, source)
-
-        def copy_action_func(target, source, env):
-            assert( len(target) == len(source) ), "\ntarget: %s\nsource: %s" %(map(str, target),map(str, source))
-
-            for t, s in zip(target, source):
-                if copyFunc(t.get_path(), s.get_path(), env):
-                    return 1
-
-            return 0
-
-        def copy_action_str(target, source, env):
-            return env.subst_target_source(env['COPYSTR'], 0, target, source)
-
-        copy_action = SCons.Action.Action( copy_action_func, copy_action_str )
+        env['BUILDERS']['CopyTo'] = copyToBuilder
+        env['BUILDERS']['CopyAs'] = copyAsBuilder
 
         env['COPYSTR'] = 'Copy file(s): "$SOURCES" to "$TARGETS"'
-
-        env['BUILDERS']['CopyTo'] = SCons.Builder.Builder(
-                                     action         = copy_action,
-                                     target_factory = env.fs.Dir,
-                                     source_factory = env.fs.Entry,
-                                     multi          = 1,
-                                     emitter        = [ copyto_emitter, ] )
-
-        env['BUILDERS']['CopyAs'] = SCons.Builder.Builder(
-                                     action         = copy_action,
-                                     target_factory = env.fs.Entry,
-                                     source_factory = env.fs.Entry )
 
 def exists(env):
     return 1

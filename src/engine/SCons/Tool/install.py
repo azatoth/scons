@@ -2,7 +2,7 @@
 
 Tool-specific initialization for the install tool.
 
-Three normally shouldn't be any need to import this module directly.
+There normally shouldn't be any need to import this module directly.
 It will usually be imported through the generic SCons.Tool.Tool()
 selection method.
 """
@@ -125,6 +125,9 @@ class DESTDIR_factory:
 install_action   = SCons.Action.Action(installFunc, stringFunc)
 installas_action = SCons.Action.Action(installFunc, stringFunc)
 
+InstallBuilder, InstallAsBuilder = None, None
+BaseInstallBuilder               = None
+
 def generate(env):
     try:
         env['BUILDERS']['Install']
@@ -135,42 +138,53 @@ def generate(env):
         else:
             target_factory = env.fs
 
-        InstallBuilder = SCons.Builder.Builder(
-            action         = install_action,
-            target_factory = target_factory.Entry,
-            source_factory = env.fs.Entry,
-            multi          = 1,
-            emitter        = [ add_targets_to_INSTALLED_FILES, ],
-            name           = 'InstallBuilder')
+        global BaseInstallBuilder
+        if BaseInstallBuilder is None:
+            BaseInstallBuilder = SCons.Builder.Builder(
+                                  action         = install_action,
+                                  target_factory = target_factory.Entry,
+                                  source_factory = env.fs.Entry,
+                                  multi          = 1,
+                                  emitter        = [ add_targets_to_INSTALLED_FILES, ],
+                                  name           = 'InstallBuilder')
 
-        def InstallBuilderWrapper(env, target, source, dir=None):
-            if target and dir:
-                raise SCons.Errors.UserError, "Both target and dir defined for Install(), only one may be defined."
-            if not dir:
-                dir=target
-            try:
-                dnodes = env.arg2nodes(dir, target_factory.Dir)
-            except TypeError:
-                raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
-            sources = env.arg2nodes(source, env.fs.Entry)
-            tgt = []
-            for dnode in dnodes:
-                for src in sources:
-                    # Prepend './' so the lookup doesn't interpret an initial
-                    # '#' on the file name portion as meaning the Node should
-                    # be relative to the top-level SConstruct directory.
-                    target = env.fs.Entry('.'+os.sep+src.name, dnode)
-                    tgt.extend(InstallBuilder(env, target, src))
-            return tgt
+        global InstallBuilder
+        if InstallBuilder is None:
+            def InstallBuilderWrapper(env, target, source, dir=None):
+                if target and dir:
+                    raise SCons.Errors.UserError, "Both target and dir defined for Install(), only one may be defined."
+                if not dir:
+                    dir=target
+                try:
+                    dnodes = env.arg2nodes(dir, target_factory.Dir)
+                except TypeError:
+                    raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
+                sources = env.arg2nodes(source, env.fs.Entry)
+                tgt = []
+                for dnode in dnodes:
+                    for src in sources:
+                        # Prepend './' so the lookup doesn't interpret an initial
+                        # '#' on the file name portion as meaning the Node should
+                        # be relative to the top-level SConstruct directory.
+                        target = env.fs.Entry('.'+os.sep+src.name, dnode)
+                        target = env.fs.File(src.name, dnode)
+                        tgt.extend(BaseInstallBuilder(env, target, src))
+                return tgt
 
-        def InstallAsBuilderWrapper(env, target, source):
-            result = []
-            for src, tgt in map(lambda x, y: (x, y), source, target):
-                result.extend(InstallBuilder(env, tgt, src))
-            return result
+            InstallBuilder = InstallBuilderWrapper
 
-        env['BUILDERS']['Install']   = InstallBuilderWrapper
-        env['BUILDERS']['InstallAs'] = InstallAsBuilderWrapper
+        global InstallAsBuilder
+        if InstallAsBuilder is None:
+            def InstallAsBuilderWrapper(env, target, source):
+                result = []
+                for src, tgt in map(lambda x, y: (x, y), source, target):
+                    result.extend(BaseInstallBuilder(env, tgt, src))
+                return result
+
+            InstallAsBuilder = InstallAsBuilderWrapper
+
+        env['BUILDERS']['Install']   = InstallBuilder
+        env['BUILDERS']['InstallAs'] = InstallAsBuilder
 
     # We'd like to initialize this doing something like the following,
     # but there isn't yet support for a ${SOURCE.type} expansion that
