@@ -20,6 +20,12 @@ RELEASE 0.97.X - XXX
   - Have --debug=explain report if a target is being rebuilt because
     AlwaysBuild() is specified (instead of "unknown reasons").
 
+  - Support {Get,Set}Option('help') to make it easier for SConscript
+    files to tell if a help option (-h, --help, etc.) has been specified.
+
+  - Support {Get,Set}Option('random') so random-dependency interaction
+    with CacheDir() is controllable from SConscript files.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
