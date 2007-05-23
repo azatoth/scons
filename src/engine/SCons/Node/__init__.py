@@ -1106,6 +1106,9 @@ class Node:
                                  fmt_with_title('old: ', old.bact) +
                                  fmt_with_title('new: ', new.bact))
 
+        if len(lines) == 0 and self.always_build:
+            lines.append("AlwaysBuild() is specified\n" % self)
+
         if len(lines) == 0:
             return "rebuilding `%s' for unknown reasons\n" % self
 

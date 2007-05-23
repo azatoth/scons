@@ -15,6 +15,11 @@ RELEASE 0.97.X - XXX
   - Only expect the Microsoft IDL compiler to emit *_p.c and *_data.c
     files if the /proxy and /dlldata switches are used (respectively).
 
+  From Steven Knight:
+
+  - Have --debug=explain report if a target is being rebuilt because
+    AlwaysBuild() is specified (instead of "unknown reasons").
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
