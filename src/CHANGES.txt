@@ -15,6 +15,12 @@ RELEASE 0.97.X - XXX
   - Only expect the Microsoft IDL compiler to emit *_p.c and *_data.c
     files if the /proxy and /dlldata switches are used (respectively).
 
+  From Leanid Nazdrynau:
+
+  - When applying Tool modules after a construction environment has
+    already been created, don't overwrite existing $CFILESUFFIX and
+    $CXXFILESUFFIX value.
+
 
 
 RELEASE 0.97 - Thu, 17 May 2007 08:59:41 -0500

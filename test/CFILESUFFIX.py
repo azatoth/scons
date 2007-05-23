@@ -24,6 +24,10 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+"""
+Verify that we can set CFILESUFFIX to arbitrary values.
+"""
+
 import os
 import os.path
 import string
@@ -49,6 +53,13 @@ test.write('SConstruct', """
 env = Environment(LEX = r'%(_python_)s mylex.py', tools = ['lex'])
 env.CFile(target = 'foo', source = 'foo.l')
 env.Clone(CFILESUFFIX = '.xyz').CFile(target = 'bar', source = 'bar.l')
+
+# Make sure that calling a Tool on a construction environment *after*
+# we've set CFILESUFFIX doesn't overwrite the value.
+env2 = Environment(tools = [], CFILESUFFIX = '.env2')
+env2.Tool('lex')
+env2['LEX'] = r'%(_python_)s mylex.py'
+env2.CFile(target = 'f3', source = 'f3.l')
 """ % locals())
 
 input = r"""
@@ -66,10 +77,14 @@ test.write('foo.l', input % 'foo.l')
 
 test.write('bar.l', input % 'bar.l')
 
+test.write('f3.l', input % 'f3.l')
+
 test.run(arguments = '.')
 
-test.fail_test(not os.path.exists(test.workpath('foo.c')))
+test.must_exist(test.workpath('foo.c'))
 
-test.fail_test(not os.path.exists(test.workpath('bar.xyz')))
+test.must_exist(test.workpath('bar.xyz'))
+
+test.must_exist(test.workpath('f3.env2'))
 
 test.pass_test()
