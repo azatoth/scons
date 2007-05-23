@@ -26,6 +26,9 @@ RELEASE 0.97.X - XXX
   - Support {Get,Set}Option('random') so random-dependency interaction
     with CacheDir() is controllable from SConscript files.
 
+  - Push and retrieve built symlinks to/from a CacheDir() as actual
+    symlinks, not by copying the file contents.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
