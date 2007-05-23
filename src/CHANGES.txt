@@ -26,6 +26,11 @@ RELEASE 0.97.X - XXX
     already been created, don't overwrite existing $CFILESUFFIX and
     $CXXFILESUFFIX value.
 
+  From Jan Nijtmans:
+
+  - Find Java anonymous classes when the next token after the name is
+    an open parenthesis.
+
 
 
 RELEASE 0.97 - Thu, 17 May 2007 08:59:41 -0500
