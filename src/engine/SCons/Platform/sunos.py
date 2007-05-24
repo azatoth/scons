@@ -41,4 +41,4 @@ def generate(env):
     env['MAXLINELENGTH']  = 1045320
     env['PKGINFO'] = 'pkginfo'
     env['PKGCHK'] = '/usr/sbin/pkgchk'
-    env['ENV']['PATH'] = env['ENV']['PATH'] + ':/usr/ccs/bin'
+    env['ENV']['PATH'] = env['ENV']['PATH'] + ':/opt/SUNWspro/bin:/usr/ccs/bin'

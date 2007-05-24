@@ -10,6 +10,10 @@
 
 RELEASE 0.97.X - XXX
 
+  From Jean Brouwers:
+
+  - Add /opt/SUNWspro/bin to the default execution PATH on Solaris.
+
   From Allan Erskine:
 
   - Only expect the Microsoft IDL compiler to emit *_p.c and *_data.c
