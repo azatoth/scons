@@ -50,8 +50,17 @@ machine_map = {
     'i486'  : 'i386',
 }
 
-machine = os.uname()[4]
-machine = machine_map.get(machine, machine)
+try:
+    uname = os.uname
+except AttributeError:
+    # Windows doesn't have a uname() function.  We could use something like
+    # sys.platform as a fallback, but that's not really a "machine," so
+    # just leave it as None.
+    machine = None
+else:
+    machine = uname()[4]
+    machine = machine_map.get(machine, machine)
+
 python = python_executable
 _python_ = '"' + python_executable + '"'
 _exe = exe_suffix
