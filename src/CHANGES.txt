@@ -39,6 +39,9 @@ RELEASE 0.97.X - XXX
   - Push and retrieve built symlinks to/from a CacheDir() as actual
     symlinks, not by copying the file contents.
 
+  - Fix how the Action module handles stringifying the shared library
+    generator in the Tool/mingw.py module.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
