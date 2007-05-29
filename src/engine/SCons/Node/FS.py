@@ -2275,8 +2275,6 @@ class File(Base):
         self.binfo = self.gen_binfo(calc)
         return self._cur2()
     def _cur2(self):
-        if self.always_build:
-            return None
         if not self.exists():
             # The file doesn't exist locally...
             r = self.rfile()

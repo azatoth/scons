@@ -2390,22 +2390,29 @@ def generate(env):
     def test_AlwaysBuild(self):
         """Test the AlwaysBuild() method"""
         env = self.TestEnvironment(FOO='fff', BAR='bbb')
-        t = env.AlwaysBuild('a', 'b$FOO', ['c', 'd'], '$BAR')
-        assert t[0].__class__.__name__ == 'File'
+        t = env.AlwaysBuild('a', 'b$FOO', ['c', 'd'], '$BAR',
+                            env.fs.Dir('dir'), env.fs.File('file'))
+        assert t[0].__class__.__name__ == 'Entry'
         assert t[0].path == 'a'
         assert t[0].always_build
-        assert t[1].__class__.__name__ == 'File'
+        assert t[1].__class__.__name__ == 'Entry'
         assert t[1].path == 'bfff'
         assert t[1].always_build
-        assert t[2].__class__.__name__ == 'File'
+        assert t[2].__class__.__name__ == 'Entry'
         assert t[2].path == 'c'
         assert t[2].always_build
-        assert t[3].__class__.__name__ == 'File'
+        assert t[3].__class__.__name__ == 'Entry'
         assert t[3].path == 'd'
         assert t[3].always_build
-        assert t[4].__class__.__name__ == 'File'
+        assert t[4].__class__.__name__ == 'Entry'
         assert t[4].path == 'bbb'
         assert t[4].always_build
+        assert t[5].__class__.__name__ == 'Dir'
+        assert t[5].path == 'dir'
+        assert t[5].always_build
+        assert t[6].__class__.__name__ == 'File'
+        assert t[6].path == 'file'
+        assert t[6].always_build
 
     def test_BuildDir(self):
         """Test the BuildDir() method"""

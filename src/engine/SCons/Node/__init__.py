@@ -1046,6 +1046,9 @@ class Node:
         if not self.exists():
             return "building `%s' because it doesn't exist\n" % self
 
+        if self.always_build:
+            return "rebuilding `%s' because AlwaysBuild() is specified\n" % self
+
         old = self.get_stored_info()
         if old is None:
             return None
@@ -1105,9 +1108,6 @@ class Node:
                     lines.append("the build action changed:\n" +
                                  fmt_with_title('old: ', old.bact) +
                                  fmt_with_title('new: ', new.bact))
-
-        if len(lines) == 0 and self.always_build:
-            lines.append("AlwaysBuild() is specified\n" % self)
 
         if len(lines) == 0:
             return "rebuilding `%s' for unknown reasons\n" % self
