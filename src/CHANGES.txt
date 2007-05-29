@@ -42,6 +42,10 @@ RELEASE 0.97.X - XXX
   - Fix how the Action module handles stringifying the shared library
     generator in the Tool/mingw.py module.
 
+  - When generating a config.h file, print "#define HAVE_{FEATURE} 1"
+    instad of just "#define HAVE_{FEATURE}", for more compatibility
+    with Autoconf-style projects.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
