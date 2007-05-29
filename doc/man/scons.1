@@ -4048,16 +4048,19 @@ if not env.has_key('FOO'): env['FOO'] = 'foo'
 This function provides a way to set a select subset of the scons command
 line options from a SConscript file. The options supported are:
 .B clean
-which corresponds to -c, --clean, and --remove;
+which corresponds to -c, --clean and --remove;
 .B duplicate
-which 
-corresponds to --duplicate;
+which corresponds to --duplicate;
+.B help
+which corresponds to -h and --help;
 .B implicit_cache
 which corresponds to --implicit-cache;
 .B max_drift
 which corresponds to --max-drift;
 .B num_jobs
 which corresponds to -j and --jobs.
+.B random
+which corresponds to --random.
 See the documentation for the
 corresponding command line object for information about each specific
 option. Example:

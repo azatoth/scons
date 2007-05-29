@@ -867,17 +867,17 @@ scons: Configure: creating config.h
     expected_config_h = string.replace("""#ifndef CONFIG_H_SEEN
 #define CONFIG_H_SEEN
 
-#define HAVE_PRINTF
+#define HAVE_PRINTF 1
 /* #undef HAVE_NOFUNCTIONCALL */
-#define HAVE_INT
+#define HAVE_INT 1
 /* #undef HAVE_NOTYPE */
-#define HAVE_STDIO_H
+#define HAVE_STDIO_H 1
 /* #undef HAVE_HOPEFULLYNOC_HEADER_H */
-#define HAVE_VECTOR
+#define HAVE_VECTOR 1
 /* #undef HAVE_HOPEFULLYNOCXX_HEADER_H */
-#define HAVE_%(LIB)s
+#define HAVE_%(LIB)s 1
 /* #undef HAVE_LIBHOPEFULLYNOLIB */
-#define HAVE_%(LIB)s
+#define HAVE_%(LIB)s 1
 /* #undef HAVE_%(LIB)s */
 /* #undef HAVE_LIBHOPEFULLYNOLIB2 */
 
