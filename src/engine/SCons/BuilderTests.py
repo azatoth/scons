@@ -98,7 +98,7 @@ class Environment:
                    source=None, dict=None, conv=None):
         return SCons.Util.scons_subst_list(string, self, raw, target,
                                            source, dict, conv)
-    def arg2nodes(self, args, factory):
+    def arg2nodes(self, args, factory, **kw):
         global env_arg2nodes_called
         env_arg2nodes_called = 1
         if not SCons.Util.is_List(args):
@@ -1307,6 +1307,26 @@ class BuilderTestCase(unittest.TestCase):
         tgts = builder2(env, target='target-2', source='aaa.2')
         tgts = map(str, tgts)
         assert tgts == ['target-2', 'emit2a-aaa', 'emit2b-aaa'], tgts
+
+    def test_emitter_TARGET_SOURCE(self):
+        """Test use of $TARGET and $SOURCE in emitter results"""
+
+        env = SCons.Environment.Environment()
+
+        def emit(target, source, env):
+            return (target + ['${SOURCE}.s1', '${TARGET}.t1'],
+                    source + ['${TARGET}.t2', '${SOURCE}.s2'])
+
+        builder = SCons.Builder.Builder(action='foo',
+                                        emitter = emit,
+                                        node_factory = MyNode)
+
+        targets = builder(env, target = 'TTT', source ='SSS')
+        sources = targets[0].sources
+        targets = map(str, targets)
+        sources = map(str, sources)
+        assert targets == ['TTT', 'SSS.s1', 'TTT.t1'], targets
+        assert sources == ['SSS', 'TTT.t2', 'SSS.s2'], targets
 
     def test_no_target(self):
         """Test deducing the target from the source."""

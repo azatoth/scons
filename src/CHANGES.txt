@@ -46,6 +46,11 @@ RELEASE 0.97.X - XXX
     instad of just "#define HAVE_{FEATURE}", for more compatibility
     with Autoconf-style projects.
 
+  - Fix expansion of $TARGET, $TARGETS, $SOURCE and $SOURCES keywords in
+    Visual C/C++ PDB file names.
+    
+  - Fix locating Visual C/C++ PDB files in build directories.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has

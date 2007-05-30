@@ -327,7 +327,7 @@ class SubstitutionEnvironment:
     def items(self):
         return self._dict.items()
 
-    def arg2nodes(self, args, node_factory=_null, lookup_list=_null):
+    def arg2nodes(self, args, node_factory=_null, lookup_list=_null, **kw):
         if node_factory is _null:
             node_factory = self.fs.File
         if lookup_list is _null:
@@ -351,7 +351,9 @@ class SubstitutionEnvironment:
                         break
                 if not n is None:
                     if SCons.Util.is_String(n):
-                        n = self.subst(n, raw=1)
+                        # n = self.subst(n, raw=1, **kw)
+                        kw['raw'] = 1
+                        n = apply(self.subst, (n,), kw)
                         if node_factory:
                             n = node_factory(n)
                     if SCons.Util.is_List(n):
@@ -359,7 +361,9 @@ class SubstitutionEnvironment:
                     else:
                         nodes.append(n)
                 elif node_factory:
-                    v = node_factory(self.subst(v, raw=1))
+                    # v = node_factory(self.subst(v, raw=1, **kw))
+                    kw['raw'] = 1
+                    v = node_factory(apply(self.subst, (v,), kw))
                     if SCons.Util.is_List(v):
                         nodes.extend(v)
                     else:

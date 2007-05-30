@@ -357,6 +357,22 @@ class SubstitutionTestCase(unittest.TestCase):
         assert not hasattr(nodes[1], 'bbbb'), nodes[0]
         assert nodes[1].c == 1, nodes[1]
 
+    def test_arg2nodes_target_source(self):
+        """Test the arg2nodes method with target= and source= keywords
+        """
+        targets = [DummyNode('t1'), DummyNode('t2')]
+        sources = [DummyNode('s1'), DummyNode('s2')]
+        env = SubstitutionEnvironment()
+        nodes = env.arg2nodes(['${TARGET}-a',
+                               '${SOURCE}-b',
+                               '${TARGETS[1]}-c',
+                               '${SOURCES[1]}-d'],
+                              DummyNode,
+                              target=targets,
+                              source=sources)
+        names = map(lambda n: n.name, nodes)
+        assert names == ['t1-a', 's1-b', 't2-c', 's2-d'], names
+
     def test_gvars(self):
         """Test the base class gvars() method"""
         env = SubstitutionEnvironment()
