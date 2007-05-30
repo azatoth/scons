@@ -177,6 +177,8 @@ def FindSourceFiles(env, target=None, source=None ):
     children. This selects all leaves of the DAG that gets build by SCons for
     handling dependencies.
     """
+    if target==None: target = '.'
+
     nodes = env.arg2nodes(target, env.fs.Entry)
 
     sources = []
