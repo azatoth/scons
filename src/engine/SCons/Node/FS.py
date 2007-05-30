@@ -2392,8 +2392,6 @@ class File(Base):
             return func[src_sig_type](target, prev_ni)
 
     def is_up_to_date(self):
-        if self.always_build:
-            return None
         T = 0
         if T: Trace('is_up_to_date(%s):' % self)
         if not self.exists():

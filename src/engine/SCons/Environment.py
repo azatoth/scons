@@ -1449,7 +1449,7 @@ class Base(SubstitutionEnvironment):
     def AlwaysBuild(self, *targets):
         tlist = []
         for t in targets:
-            tlist.extend(self.arg2nodes(t, self.fs.File))
+            tlist.extend(self.arg2nodes(t, self.fs.Entry))
         for t in tlist:
             t.set_always_build()
         return tlist
