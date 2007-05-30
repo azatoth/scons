@@ -186,7 +186,7 @@ def FindSourceFiles(env, target=None, source=None ):
         for s in ss:
             if s.__class__==SCons.Node.FS.Dir:
                 build_source(s.all_children())
-            elif len(s.sources)==0 and s.__class__==SCons.Node.FS.File:
+            elif not s.has_builder() and s.__class__==SCons.Node.FS.File:
                 sources.append(s)
             else:
                 build_source(s.sources)
