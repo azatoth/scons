@@ -583,6 +583,14 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
     NCF = 2 # non-cached build failure
     CF  = 3 # cached build failure
 
+    if sys.platform == 'win32':
+        Configure_lib = 'msvcrt'
+    else:
+        Configure_lib = 'm'
+
+    # to use cygwin compilers on cmd.exe -> uncomment following line
+    #Configure_lib = 'm'
+
     def checkLogAndStdout(self, checks, results, cached,
                           work_dir, logfile, sconf_dir, sconstruct,
                           doCheckLog=1, doCheckStdout=1):

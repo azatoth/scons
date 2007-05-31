@@ -33,14 +33,6 @@ import sys
 import TestCmd
 import TestSCons
 
-if sys.platform == 'win32':
-    lib = 'msvcrt'
-else:
-    lib = 'm'
-
-# to use cygwin compilers on cmd.exe -> uncomment following line
-#lib = 'm'
-
 work_cnt = 0
 work_dir = None
 python = TestSCons.python
@@ -48,6 +40,8 @@ _python_ = TestSCons._python_
 test = TestSCons.TestSCons()
 _obj = TestSCons._obj
 _exe = TestSCons._exe
+
+lib = test.Configure_lib
 
 RE = 0
 RE_DOTALL = 1
