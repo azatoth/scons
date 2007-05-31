@@ -1961,28 +1961,38 @@ class File(Base):
             raise
         return r
 
+    memoizer_counters.append(SCons.Memoize.CountValue('get_size'))
+
     def get_size(self):
         try:
-            return self.binfo.ninfo.size
-        except AttributeError:
+            return self._memo['get_size']
+        except KeyError:
             pass
+
         if self.rexists():
             size = self.rfile().getsize()
         else:
             size = 0
-        self.get_binfo().ninfo.size = size
+
+        self._memo['get_size'] = size
+
         return size
+
+    memoizer_counters.append(SCons.Memoize.CountValue('get_timestamp'))
 
     def get_timestamp(self):
         try:
-            return self.binfo.ninfo.timestamp
-        except AttributeError:
+            return self._memo['get_timestamp']
+        except KeyError:
             pass
+
         if self.rexists():
             timestamp = self.rfile().getmtime()
         else:
             timestamp = 0
-        self.get_binfo().ninfo.timestamp = timestamp
+
+        self._memo['get_timestamp'] = timestamp
+
         return timestamp
 
     def store_info(self, obj):
@@ -2190,7 +2200,7 @@ class File(Base):
         binfo = self.get_binfo()
 
         mtime = self.get_timestamp()
-        self.get_size()
+        size = self.get_size()
 
         csig = None
 
@@ -2213,9 +2223,16 @@ class File(Base):
                 pass
 
         if csig:
-            binfo.ninfo.csig = csig
+            # XXX A little bogus, we have to fake out the memoization
+            # of the content signature so it doesn't actually go and
+            # compute a new signature based one the current contents.
+            self._memo['get_csig'] = csig
         else:
-            self.get_csig()
+            csig = self.get_csig()
+
+        binfo.ninfo.csig = csig
+        binfo.ninfo.timestamp = mtime
+        binfo.ninfo.size = size
 
         if not self.has_builder():
             for attr in ['bsources', 'bsourcesigs',
@@ -2311,6 +2328,9 @@ class File(Base):
     # SIGNATURE SUBSYSTEM
     #
 
+
+    memoizer_counters.append(SCons.Memoize.CountValue('get_csig'))
+
     def get_csig(self):
         """
         Generate a node's content signature, the digested signature
@@ -2321,10 +2341,10 @@ class File(Base):
         returns - the content signature
         """
         try:
-            return self.binfo.ninfo.csig
-        except AttributeError:
+            return self._memo['get_csig']
+        except KeyError:
             pass
-           
+
         try:
             contents = self.get_contents()
         except IOError:
@@ -2335,7 +2355,9 @@ class File(Base):
             csig = None
         else:
             csig = SCons.Util.MD5signature(contents)
-            self.get_binfo().ninfo.csig = csig
+
+        self._memo['get_csig'] = csig
+
         return csig
 
     #
