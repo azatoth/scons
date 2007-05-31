@@ -39,8 +39,6 @@ test = TestSCons.TestSCons()
 
 lib = test.Configure_lib
 
-work_dir = '.'
-
 NCR = test.NCR  # non-cached rebuild
 CR  = test.CR   # cached rebuild (up to date)
 NCF = test.NCF  # non-cached build failure
@@ -67,7 +65,7 @@ test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                       ["no"]*2,
                       [[((".c", NCR), (_obj, NCF))],
                        [((".c", NCR), (_obj, NCR), (_exe, NCF))]],
-                      work_dir, "config.log", ".sconf_temp", "SConstruct")
+                      "config.log", ".sconf_temp", "SConstruct")
 
 test.run()
 test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
@@ -75,7 +73,7 @@ test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                       ["no"]*2,
                       [[((".c", CR), (_obj, CF))],
                        [((".c", CR), (_obj, CR), (_exe, CF))]],
-                      work_dir, "config.log", ".sconf_temp", "SConstruct")
+                      "config.log", ".sconf_temp", "SConstruct")
 
 # same should be true for TargetSignatures('content')
 
@@ -85,7 +83,7 @@ test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                       ["no"]*2,
                       [[((".c", NCR), (_obj, NCF))],
                        [((".c", NCR), (_obj, NCR), (_exe, NCF))]],
-                      work_dir, "config.log", ".sconf_temp", "SConstruct")
+                      "config.log", ".sconf_temp", "SConstruct")
 
 test.run(arguments='target_signatures_content=1')
 test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
@@ -93,6 +91,6 @@ test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                       ["no"]*2,
                       [[((".c", CR), (_obj, CF))],
                        [((".c", CR), (_obj, CR), (_exe, CF))]],
-                      work_dir, "config.log", ".sconf_temp", "SConstruct")
+                      "config.log", ".sconf_temp", "SConstruct")
 
 test.pass_test()
