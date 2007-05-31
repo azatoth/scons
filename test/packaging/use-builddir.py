@@ -37,16 +37,18 @@ test = TestSCons.TestSCons()
 
 tar = test.detect('TAR', 'tar')
 
-if tar:
-  #
-  # TEST: builddir usage.
-  #
-  test.subdir('src')
-  test.subdir('build')
+if not tar:
+    test.skip_test('tar not found, skipping test\n')
 
-  test.write('src/main.c', '')
+#
+# TEST: builddir usage.
+#
+test.subdir('src')
+test.subdir('build')
 
-  test.write('SConstruct', """
+test.write('src/main.c', '')
+
+test.write('SConstruct', """
 BuildDir('build', 'src')
 env=Environment(tools=['default', 'packaging'])
 env.Package( NAME        = 'libfoo',
@@ -57,20 +59,20 @@ env.Package( NAME        = 'libfoo',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
-  test.run(stderr = None)
+test.run(stderr = None)
 
-  test.fail_test( not os.path.exists( 'build/libfoo-1.2.3.zip' ) )
+test.must_exist( 'build/libfoo-1.2.3.zip' )
 
-  # TEST: builddir not placed in archive
-  # XXX: BuildDir should be stripped.
-  #
-  test.subdir('src')
-  test.subdir('build')
-  test.subdir('temp')
+# TEST: builddir not placed in archive
+# XXX: BuildDir should be stripped.
+#
+test.subdir('src')
+test.subdir('build')
+test.subdir('temp')
 
-  test.write('src/main.c', '')
+test.write('src/main.c', '')
 
-  test.write('SConstruct', """
+test.write('SConstruct', """
 BuildDir('build', 'src')
 env=Environment(tools=['default', 'packaging'])
 env.Package( NAME        = 'libfoo',
@@ -79,13 +81,13 @@ env.Package( NAME        = 'libfoo',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
-  test.run(stderr = None)
+test.run(stderr = None)
 
-  test.fail_test( not os.path.exists( 'libfoo-1.2.3.tar.gz' ) )
+test.must_exist( 'libfoo-1.2.3.tar.gz' )
 
-  os.popen( 'tar -C temp -xzf %s'%test.workpath('libfoo-1.2.3.tar.gz') )
+os.popen( 'tar -C temp -xzf %s'%test.workpath('libfoo-1.2.3.tar.gz') )
 
-  test.fail_test( not os.path.exists( 'temp/libfoo-1.2.3/src/main.c' ) )
-  test.fail_test( not os.path.exists( 'temp/libfoo-1.2.3/SConstruct' ) )
+test.must_exist( 'temp/libfoo-1.2.3/src/main.c' )
+test.must_exist( 'temp/libfoo-1.2.3/SConstruct' )
 
 test.pass_test()

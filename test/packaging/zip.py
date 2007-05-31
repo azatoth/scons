@@ -36,19 +36,21 @@ python = TestSCons.python
 
 test = TestSCons.TestSCons()
 
-tar = test.detect('ZIP', 'zip')
+zip = test.detect('ZIP', 'zip')
 
-if tar:
-  test.subdir('src')
+if not zip:
+    test.skip_test('zip not found, skipping test\n')
 
-  test.write( [ 'src', 'main.c' ], r"""
+test.subdir('src')
+
+test.write( [ 'src', 'main.c' ], r"""
 int main( int argc, char* argv[] )
 {
   return 0;
 }
-  """)
+""")
 
-  test.write('SConstruct', """
+test.write('SConstruct', """
 Program( 'src/main.c' )
 env=Environment(tools=['default', 'packaging'])
 env.Package( PACKAGETYPE  = 'src_zip',
@@ -57,8 +59,8 @@ env.Package( PACKAGETYPE  = 'src_zip',
              source       = [ 'src/main.c', 'SConstruct' ] )
 """)
 
-  test.run(arguments='', stderr = None)
+test.run(arguments='', stderr = None)
 
-  test.fail_test( not os.path.exists( 'src.zip' ) )
+test.must_exist( 'src.zip' )
 
 test.pass_test()

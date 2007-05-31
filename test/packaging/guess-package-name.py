@@ -40,20 +40,22 @@ python = TestSCons.python
 test = TestSCons.TestSCons()
 tar = test.detect('TAR', 'tar')
 
-if tar:
-  #
-  # TEST: default package name creation.
-  #
-  test.subdir('src')
+if not tar:
+    test.skip_test('tar not found; skipping test\n')
 
-  test.write( [ 'src', 'main.c' ], r"""
+#
+# TEST: default package name creation.
+#
+test.subdir('src')
+
+test.write( [ 'src', 'main.c' ], r"""
 int main( int argc, char* argv[] )
 {
   return 0;
 }
-  """)
+""")
 
-  test.write('SConstruct', """
+test.write('SConstruct', """
 env=Environment(tools=['default', 'packaging'])
 env.Program( 'src/main.c' )
 env.Package( NAME        = 'libfoo',
@@ -62,15 +64,15 @@ env.Package( NAME        = 'libfoo',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
-  test.run(options="--debug=stacktrace", stderr = None)
+test.run(options="--debug=stacktrace", stderr = None)
 
-  test.fail_test( not os.path.exists( 'libfoo-1.2.3.zip' ) )
+test.must_exist( 'libfoo-1.2.3.zip' )
 
-  #
-  # TEST: overriding default package name.
-  #
+#
+# TEST: overriding default package name.
+#
 
-  test.write('SConstruct', """
+test.write('SConstruct', """
 env=Environment(tools=['default', 'packaging'])
 env.Program( 'src/main.c' )
 env.Package( NAME        = 'libfoo',
@@ -80,15 +82,15 @@ env.Package( NAME        = 'libfoo',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
-  test.run(stderr = None)
+test.run(stderr = None)
 
-  test.fail_test( not os.path.exists( 'src.tar.gz' ) )
+test.must_exist( 'src.tar.gz' )
 
-  #
-  # TEST: default package name creation with overriden packager.
-  #
+#
+# TEST: default package name creation with overriden packager.
+#
 
-  test.write('SConstruct', """
+test.write('SConstruct', """
 env=Environment(tools=['default', 'packaging'])
 env.Program( 'src/main.c' )
 env.Package( NAME        = 'libfoo',
@@ -97,8 +99,8 @@ env.Package( NAME        = 'libfoo',
              source      = [ 'src/main.c', 'SConstruct' ] )
 """)
 
-  test.run(stderr = None)
+test.run(stderr = None)
 
-  test.fail_test( not os.path.exists( 'libfoo-1.2.3.tar.bz2' ) )
+test.must_exist( 'libfoo-1.2.3.tar.bz2' )
 
 test.pass_test()

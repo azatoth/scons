@@ -38,18 +38,18 @@ test = TestSCons.TestSCons()
 ipkg = test.Environment().WhereIs('ipkg-build')
 
 if not ipkg:
-  test.no_result("ipkg-build not found, skipping test\n")
-else:
-  test.write( 'main.c', r"""
+  test.skip_test("ipkg-build not found, skipping test\n")
+
+test.write( 'main.c', r"""
 int main(int argc, char *argv[])
 {
     return 0;
 }
 """)
 
-  test.write( 'foo.conf', '' )
+test.write( 'foo.conf', '' )
 
-  test.write( 'SConstruct', r"""
+test.write( 'SConstruct', r"""
 env=Environment(tools=['default', 'packaging'])
 prog = env.Install( 'bin/', Program( 'main.c') )
 conf = env.Install( 'etc/', File( 'foo.conf' ) )
@@ -73,7 +73,7 @@ Maintainer, Depends, and Description fields.''',
              X_IPK_DEPENDS    = 'libc6, grep', )
 """)
 
-  expected="""scons: Reading SConscript files ...
+expected="""scons: Reading SConscript files ...
 scons: done reading SConscript files.
 scons: Building targets ...
 gcc -o main.o -c main.c
@@ -86,14 +86,14 @@ Packaged contents of foo-0.0 into %s/foo_0.0_arm.ipk
 scons: done building targets.
 """%(os.popen('id -un').read().strip(), os.popen('id -gn').read().strip(), test.workpath())
 
-  test.run(arguments="--debug=stacktrace foo_0.0_arm.ipk", stdout=expected)
-  test.fail_test( not os.path.exists( 'foo-0.0/CONTROL/control' ) )
-  test.fail_test( not os.path.exists( 'foo_0.0_arm.ipk' ) )
+test.run(arguments="--debug=stacktrace foo_0.0_arm.ipk", stdout=expected)
+test.must_exist( 'foo-0.0/CONTROL/control' )
+test.must_exist( 'foo_0.0_arm.ipk' )
 
-  test.subdir( 'foo-0.0' )
-  test.subdir( [ 'foo-0.0', 'CONTROL' ] )
+test.subdir( 'foo-0.0' )
+test.subdir( [ 'foo-0.0', 'CONTROL' ] )
 
-  test.write( [ 'foo-0.0', 'CONTROL', 'control' ], r"""
+test.write( [ 'foo-0.0', 'CONTROL', 'control' ], r"""
 Package: foo
 Priority: optional
 Section: extras
@@ -108,20 +108,22 @@ Description: foo is the ever-present example program -- it does everything
  .
  When you modify this example, be sure to change the Package, Version,
  Maintainer, Depends, and Description fields.
-  """)
+""")
 
-  test.write( 'main.c', r"""
+test.write( 'main.c', r"""
 int main(int argc, char *argv[])
 {
     return 0;
 }
 """)
 
-  test.write('SConstruct', """
+test.write('SConstruct', """
 env = Environment( tools = [ 'default', 'ipkg' ] )
 prog = env.Install( 'foo-0.0/bin/' , env.Program( 'main.c')  )
 env.Ipkg( [ env.Dir( 'foo-0.0' ), prog ] )
 """)
 
-  test.run(arguments='', stderr = None)
-  test.fail_test( not os.path.exists( 'foo_0.0_arm.ipk' ) )
+test.run(arguments='', stderr = None)
+test.must_exist( 'foo_0.0_arm.ipk' )
+
+test.pass_test()
