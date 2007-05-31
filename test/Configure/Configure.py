@@ -30,17 +30,6 @@ import shutil
 import string
 import sys
 
-import __builtin__
-try:
-    __builtin__.zip
-except AttributeError:
-    def zip(*lists):
-        result = []
-        for i in xrange(len(lists[0])):
-            result.append(tuple(map(lambda l, i=i: l[i], lists)))
-        return result
-    __builtin__.zip = zip
-
 import TestCmd
 import TestSCons
 
@@ -75,132 +64,11 @@ def reset(match):
     elif match == EXACT:
         test.match_func = TestCmd.match_exact
 
-def checkFiles(test, files):
-    global work_dir
-    for f in files:
-        test.fail_test( not os.path.isfile( test.workpath(work_dir,f) ) )
+NCR = test.NCR  # non-cached rebuild
+CR  = test.CR   # cached rebuild (up to date)
+NCF = test.NCF  # non-cached build failure
+CF  = test.CF   # cached build failure
 
-def checklib(lang, name, up_to_date):
-    if lang == 'C':
-        return (".c", _obj, _exe)
-    elif lang == 'C++':
-        return (".cc", _obj, _exe)
-
-class NoMatch:
-    def __init__(self, p):
-        self.pos = p
-
-NCR = 0 # non-cached rebuild
-CR  = 1 # cached rebuild (up to date)
-NCF = 2 # non-cached build failure
-CF  = 3 # cached build failure
-
-def checkLogAndStdout(checks, results, cached,
-                      test, logfile, sconf_dir, sconstruct,
-                      doCheckLog=1, doCheckStdout=1):
-    def matchPart(log, logfile, lastEnd):
-        m = re.match(log, logfile[lastEnd:])
-        if not m:
-            raise NoMatch, lastEnd
-        return m.end() + lastEnd
-    try:
-        #print len(os.linesep)
-        ls = os.linesep
-        nols = "("
-        for i in range(len(ls)):
-            nols = nols + "("
-            for j in range(i):
-                nols = nols + ls[j]
-            nols = nols + "[^" + ls[i] + "])"
-            if i < len(ls)-1:
-                nols = nols + "|"
-        nols = nols + ")"
-        lastEnd = 0
-        logfile = test.read(test.workpath(work_dir, logfile))
-        if (doCheckLog and
-            string.find( logfile, "scons: warning: The stored build "
-                         "information has an unexpected class." ) >= 0):
-            test.fail_test()
-        sconf_dir = sconf_dir
-        sconstruct = sconstruct
-
-        log = r'file\ \S*%s\,line \d+:' % re.escape(sconstruct) + ls
-        if doCheckLog: lastEnd = matchPart(log, logfile, lastEnd)
-        log = "\t" + re.escape("Configure(confdir = %s)" % sconf_dir) + ls
-        if doCheckLog: lastEnd = matchPart(log, logfile, lastEnd)
-        rdstr = ""
-        cnt = 0
-        for check,result,cache_desc in zip(checks, results, cached):
-            log   = re.escape("scons: Configure: " + check) + ls
-            if doCheckLog: lastEnd = matchPart(log, logfile, lastEnd)
-            log = ""
-            result_cached = 1
-            for bld_desc in cache_desc: # each TryXXX
-                for ext, flag in bld_desc: # each file in TryBuild
-                    file = os.path.join(sconf_dir,"conftest_%d%s" % (cnt, ext))
-                    if flag == NCR:
-                        # rebuild will pass
-                        if ext in ['.c', '.cpp']:
-                            log=log + re.escape(file + " <-") + ls
-                            log=log + r"(  \|" + nols + "*" + ls + ")+?"
-                        else:
-                            log=log + "(" + nols + "*" + ls +")*?"
-                        result_cached = 0
-                    if flag == CR:
-                        # up to date
-                        log=log + \
-                             re.escape("scons: Configure: \"%s\" is up to date." 
-                                       % file) + ls
-                        log=log+re.escape("scons: Configure: The original builder "
-                                          "output was:") + ls
-                        log=log+r"(  \|.*"+ls+")+"
-                    if flag == NCF:
-                        # non-cached rebuild failure
-                        log=log + "(" + nols + "*" + ls + ")*?"
-                        result_cached = 0
-                    if flag == CF:
-                        # cached rebuild failure
-                        log=log + \
-                             re.escape("scons: Configure: Building \"%s\" failed "
-                                       "in a previous run and all its sources are"
-                                       " up to date." % file) + ls
-                        log=log+re.escape("scons: Configure: The original builder "
-                                          "output was:") + ls
-                        log=log+r"(  \|.*"+ls+")+"
-                cnt = cnt + 1
-            if result_cached:
-                result = "(cached) " + result
-            rdstr = rdstr + re.escape(check) + re.escape(result) + "\n"
-            log=log + re.escape("scons: Configure: " + result) + ls + ls
-            if doCheckLog: lastEnd = matchPart(log, logfile, lastEnd)
-            log = ""
-        if doCheckLog: lastEnd = matchPart(ls, logfile, lastEnd)
-        if doCheckLog and lastEnd != len(logfile):
-            raise NoMatch, lastEnd
-        
-    except NoMatch, m:
-        print "Cannot match log file against log regexp."
-        print "log file: "
-        print "------------------------------------------------------"
-        print logfile[m.pos:]
-        print "------------------------------------------------------"
-        print "log regexp: "
-        print "------------------------------------------------------"
-        print log
-        print "------------------------------------------------------"
-        test.fail_test()
-
-    if doCheckStdout:
-        exp_stdout = test.wrap_stdout(".*", rdstr)
-        if not test.match_re_dotall(test.stdout(), exp_stdout):
-            print "Unexpected stdout: "
-            print "-----------------------------------------------------"
-            print repr(test.stdout())
-            print "-----------------------------------------------------"
-            print repr(exp_stdout)
-            print "-----------------------------------------------------"
-            test.fail_test()
-        
 try:
     # 1.1 if checks are ok, the cache mechanism should work
 
@@ -225,7 +93,7 @@ if not (r1 and r2 and r3 and r4 and r5 and r6):
 """ % (lib,lib))
 
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Checking for C library %s... " % lib,
+    test.checkLogAndStdout(["Checking for C library %s... " % lib,
                        "Checking for C library None... ",
                        "Checking for C library %s... " % lib,
                        "Checking for C library None... ",
@@ -235,11 +103,11 @@ if not (r1 and r2 and r3 and r4 and r5 and r6):
                       [[((".c", NCR), (_obj, NCR), (_exe, NCR))]]*4 +
                         [[((".c", NCR), (_obj, NCR))]] +
                         [[((".cpp", NCR), (_obj, NCR))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")    
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")    
     
 
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Checking for C library %s... " % lib,
+    test.checkLogAndStdout(["Checking for C library %s... " % lib,
                        "Checking for C library None... ",
                        "Checking for C library %s... " % lib,
                        "Checking for C library None... ",
@@ -249,12 +117,12 @@ if not (r1 and r2 and r3 and r4 and r5 and r6):
                       [[((".c", CR), (_obj, CR), (_exe, CR))]]*4 +
                        [[((".c", CR), (_obj, CR))]] +
                        [[((".cpp", CR), (_obj, CR))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     # same should be true for TargetSignatures('content')
 
     test.run(chdir=work_dir, arguments='target_signatures_content=1 --config=force')
-    checkLogAndStdout(["Checking for C library %s... " % lib,
+    test.checkLogAndStdout(["Checking for C library %s... " % lib,
                        "Checking for C library None... ",
                        "Checking for C library %s... " % lib,
                        "Checking for C library None... ",
@@ -264,10 +132,10 @@ if not (r1 and r2 and r3 and r4 and r5 and r6):
                       [[((".c", NCR), (_obj, NCR), (_exe, NCR))]]*4 +
                         [[((".c", NCR), (_obj, NCR))]] +
                         [[((".cpp", NCR), (_obj, NCR))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")    
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")    
 
     test.run(chdir=work_dir, arguments='target_signatures_content=1')
-    checkLogAndStdout(["Checking for C library %s... " % lib,
+    test.checkLogAndStdout(["Checking for C library %s... " % lib,
                        "Checking for C library None... ",
                        "Checking for C library %s... " % lib,
                        "Checking for C library None... ",
@@ -277,7 +145,7 @@ if not (r1 and r2 and r3 and r4 and r5 and r6):
                       [[((".c", CR), (_obj, CR), (_exe, CR))]]*4 +
                        [[((".c", CR), (_obj, CR))]] +
                        [[((".cpp", CR), (_obj, CR))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")    
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")    
 
     # 1.2 if checks are not ok, the cache mechanism should work as well
     #     (via explicit cache)
@@ -299,37 +167,37 @@ if not (not r1 and not r2):
 """)
 
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
+    test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                        "Checking for C library no_c_library_SAFFDG... "],
                       ["no"]*2,
                       [[((".c", NCR), (_obj, NCF))],
                        [((".c", NCR), (_obj, NCR), (_exe, NCF))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
+    test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                        "Checking for C library no_c_library_SAFFDG... "],
                       ["no"]*2,
                       [[((".c", CR), (_obj, CF))],
                        [((".c", CR), (_obj, CR), (_exe, CF))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     # 1.3 same should be true for TargetSignatures('content')
     test.run(chdir=work_dir, arguments='--config=force target_signatures_content=1')
-    checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
+    test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                        "Checking for C library no_c_library_SAFFDG... "],
                       ["no"]*2,
                       [[((".c", NCR), (_obj, NCF))],
                        [((".c", NCR), (_obj, NCR), (_exe, NCF))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     test.run(chdir=work_dir, arguments='target_signatures_content=1')
-    checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
+    test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                        "Checking for C library no_c_library_SAFFDG... "],
                       ["no"]*2,
                       [[((".c", CR), (_obj, CF))],
                        [((".c", CR), (_obj, CR), (_exe, CF))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     
 
@@ -360,20 +228,20 @@ int main() {
 }
 """)
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Checking for C header file math.h... ",
+    test.checkLogAndStdout(["Checking for C header file math.h... ",
                        "Checking for C header file no_std_c_header.h... "],
                       ["yes", "no"],
                       [[((".c", NCR), (_obj, NCR))],
                        [((".c", NCR), (_obj, NCF))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Checking for C header file math.h... ",
+    test.checkLogAndStdout(["Checking for C header file math.h... ",
                        "Checking for C header file no_std_c_header.h... "],
                       ["yes", "no"],
                       [[((".c", CR), (_obj, CR))],
                        [((".c", CR), (_obj, CF))]],
-                      test, "config.log", ".sconf_temp", "SConstruct")
+                      work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     # 2.2 test that BuildDir builds work together with Sconf
     reset(RE_DOTALL)
@@ -405,23 +273,23 @@ int main() {
 """)
 
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Checking for C header file math.h... ",
+    test.checkLogAndStdout(["Checking for C header file math.h... ",
                        "Checking for C header file no_std_c_header.h... "],
                       ["yes", "no"],
                       [[((".c", NCR), (_obj, NCR))],
                        [((".c", NCR), (_obj, NCF))]],
-                      test,
+                      work_dir,
                       os.path.join("build", "config.log"),
                       os.path.join("build", "config.tests"),
                       "SConstruct")
     
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Checking for C header file math.h... ",
+    test.checkLogAndStdout(["Checking for C header file math.h... ",
                        "Checking for C header file no_std_c_header.h... "],
                       ["yes", "no"],
                       [[((".c", CR), (_obj, CR))],
                        [((".c", CR), (_obj, CF))]],
-                      test,
+                      work_dir,
                       os.path.join("build", "config.log"),
                       os.path.join("build", "config.tests"),
                       "SConstruct")
@@ -486,26 +354,28 @@ int main() {
 
     # first with SConscriptChdir(0)
     test.run(chdir=work_dir, arguments='chdir=no')
-    checkLogAndStdout( ["Checking for C header file math.h... ",
+    test.checkLogAndStdout( ["Checking for C header file math.h... ",
                         "Checking for C header file no_std_c_header.h... ",
                         "Executing Custom Test ... "],
                         ["yes", "no", "yes"],
                         [[((".c", NCR), (_obj, NCR))],
                          [((".c", NCR), (_obj, NCF))],
                          [((".c", NCR), (_obj, NCR))]],
-                        test, "config.log",
+                        work_dir,
+                        "config.log",
                         ".sconf_temp",
                         os.path.join("build", "sub", "SConscript"))
 
     test.run(chdir=work_dir, arguments='chdir=no')
-    checkLogAndStdout( ["Checking for C header file math.h... ",
+    test.checkLogAndStdout( ["Checking for C header file math.h... ",
                         "Checking for C header file no_std_c_header.h... ",
                         "Executing Custom Test ... "],
                         ["yes", "no", "yes"],
                         [[((".c", CR), (_obj, CR))],
                          [((".c", CR), (_obj, CF))],
                          [((".c", CR), (_obj, CR))]],
-                        test, "config.log",
+                        work_dir,
+                        "config.log",
                         ".sconf_temp",
                         os.path.join("build", "sub", "SConscript"))
 
@@ -514,26 +384,28 @@ int main() {
 
     # now with SConscriptChdir(1)
     test.run(chdir=work_dir, arguments='chdir=yes')
-    checkLogAndStdout( ["Checking for C header file math.h... ",
+    test.checkLogAndStdout( ["Checking for C header file math.h... ",
                         "Checking for C header file no_std_c_header.h... ",
                         "Executing Custom Test ... "],
                         ["yes", "no", "yes"],
                         [[((".c", NCR), (_obj, NCR))],
                          [((".c", NCR), (_obj, NCF))],
                          [((".c", NCR), (_obj, NCR))]],
-                        test, "config.log",
+                        work_dir,
+                        "config.log",
                         ".sconf_temp",
                         os.path.join("build", "sub", "SConscript"))
 
     test.run(chdir=work_dir, arguments='chdir=yes')
-    checkLogAndStdout( ["Checking for C header file math.h... ",
+    test.checkLogAndStdout( ["Checking for C header file math.h... ",
                         "Checking for C header file no_std_c_header.h... ",
                         "Executing Custom Test ... "],
                         ["yes", "no", "yes"],
                         [[((".c", CR), (_obj, CR))],
                          [((".c", CR), (_obj, CF))],
                          [((".c", CR), (_obj, CR))]],
-                        test, "config.log",
+                        work_dir,
+                        "config.log",
                         ".sconf_temp",
                         os.path.join("build", "sub", "SConscript"))
 
@@ -574,7 +446,7 @@ env = conf.Finish()
 """ % (compileOK, compileFAIL, linkOK, linkFAIL, runOK, runFAIL,
        python, python ) )
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Executing MyTest ... "],
+    test.checkLogAndStdout(["Executing MyTest ... "],
                       ["yes"],
                       [[(('.c', NCR), (_obj, NCR)),
                         (('.c', NCR), (_obj, NCF)),
@@ -584,10 +456,10 @@ env = conf.Finish()
                         (('.c', NCR), (_obj, NCR), (_exe, NCR), (_exe + '.out', NCF)),
                         (('', NCR),),
                         (('', NCF),)]],
-                       test, "config.log", ".sconf_temp", "SConstruct")
+                       work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     test.run(chdir=work_dir)
-    checkLogAndStdout(["Executing MyTest ... "],
+    test.checkLogAndStdout(["Executing MyTest ... "],
                       ["yes"],
                       [[(('.c', CR), (_obj, CR)),
                         (('.c', CR), (_obj, CF)),
@@ -597,7 +469,7 @@ env = conf.Finish()
                         (('.c', CR), (_obj, CR), (_exe, CR), (_exe + '.out', CF)),
                         (('', CR),),
                         (('', CF),)]],
-                       test, "config.log", ".sconf_temp", "SConstruct")
+                       work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     # 4.1 test that calling normal builders from an actual configuring
     # environment works
@@ -704,21 +576,21 @@ File "%(SConstruct_path)s", line 6, in ?
 """ % locals())
 
     test.run(chdir=work_dir)
-    checkLogAndStdout( ["Checking for C library %s... " % lib,
+    test.checkLogAndStdout( ["Checking for C library %s... " % lib,
                         "Checking for C library hopefullynolib... "],
                         ["yes", "no"],
                         [[((".c", NCR), (_obj, NCR))],
                          [((".c", NCR), (_obj, NCF))]],
-                        test, "config.log", ".sconf_temp", "SConstruct")
+                        work_dir, "config.log", ".sconf_temp", "SConstruct")
     oldLog = test.read(test.workpath(work_dir, 'config.log'))
 
     test.run(chdir=work_dir, arguments='-n')
-    checkLogAndStdout( ["Checking for C library %s... " % lib,
+    test.checkLogAndStdout( ["Checking for C library %s... " % lib,
                         "Checking for C library hopefullynolib... "],
                         ["yes", "no"],
                         [[((".c", CR), (_obj, CR))],
                          [((".c", CR), (_obj, CF))]],
-                        test, "config.log", ".sconf_temp", "SConstruct",
+                        work_dir, "config.log", ".sconf_temp", "SConstruct",
                         doCheckLog=0)
     newLog = test.read(test.workpath(work_dir, 'config.log'))
     if newLog != oldLog:
@@ -752,55 +624,55 @@ File "%(SConstruct_path)s", line 6, in ?
 """ % locals())
 
     test.run(chdir=work_dir, arguments='--config=auto')
-    checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
+    test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                         "Checking for C header file non_system_header2.h... "],
                         ["yes", "no"],
                         [[((".c", NCR), (_obj, NCR))],
                          [((".c", NCR), (_obj, NCF))]],
-                        test, "config.log", ".sconf_temp", "SConstruct")
+                        work_dir, "config.log", ".sconf_temp", "SConstruct")
     test.run(chdir=work_dir, arguments='--config=auto')
-    checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
+    test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                         "Checking for C header file non_system_header2.h... "],
                         ["yes", "no"],
                         [[((".c", CR), (_obj, CR))],
                          [((".c", CR), (_obj, CF))]],
-                        test, "config.log", ".sconf_temp", "SConstruct")
+                        work_dir, "config.log", ".sconf_temp", "SConstruct")
     
     test.run(chdir=work_dir, arguments='--config=force')
-    checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
+    test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                         "Checking for C header file non_system_header2.h... "],
                         ["yes", "no"],
                         [[((".c", NCR), (_obj, NCR))],
                          [((".c", NCR), (_obj, NCF))]],
-                        test, "config.log", ".sconf_temp", "SConstruct")
+                        work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     test.run(chdir=work_dir, arguments='--config=cache')
-    checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
+    test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                         "Checking for C header file non_system_header2.h... "],
                         ["yes", "no"],
                         [[((".c", CR), (_obj, CR))],
                          [((".c", CR), (_obj, CF))]],
-                        test, "config.log", ".sconf_temp", "SConstruct")
+                        work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     test.write([work_dir, 'include', 'non_system_header2.h'], """
 /* Another header */
 """)
     test.unlink([work_dir, 'include', 'non_system_header1.h'])
     test.run(chdir=work_dir, arguments='--config=cache')
-    checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
+    test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                         "Checking for C header file non_system_header2.h... "],
                         ["yes", "no"],
                         [[((".c", CR), (_obj, CR))],
                          [((".c", CR), (_obj, CF))]],
-                        test, "config.log", ".sconf_temp", "SConstruct")
+                        work_dir, "config.log", ".sconf_temp", "SConstruct")
     
     test.run(chdir=work_dir, arguments='--config=auto')
-    checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
+    test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                         "Checking for C header file non_system_header2.h... "],
                         ["no", "yes"],
                         [[((".c", CR), (_obj, NCF))],
                          [((".c", CR), (_obj, NCR))]],
-                        test, "config.log", ".sconf_temp", "SConstruct")
+                        work_dir, "config.log", ".sconf_temp", "SConstruct")
 
     # 5.3 test -Q option
     reset(EXACT)
