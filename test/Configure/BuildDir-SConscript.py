@@ -39,8 +39,6 @@ test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 test.subdir( 'sub', ['sub', 'local'] )
 
-work_dir = '.'
-
 NCR = test.NCR  # non-cached rebuild
 CR  = test.CR   # cached rebuild (up to date)
 NCF = test.NCF  # non-cached build failure
@@ -112,7 +110,6 @@ test.checkLogAndStdout( ["Checking for C header file math.h... ",
                         [[((".c", NCR), (_obj, NCR))],
                          [((".c", NCR), (_obj, NCF))],
                          [((".c", NCR), (_obj, NCR))]],
-                        work_dir,
                         "config.log",
                         ".sconf_temp",
                         os.path.join("build", "sub", "SConscript"))
@@ -125,7 +122,6 @@ test.checkLogAndStdout( ["Checking for C header file math.h... ",
                         [[((".c", CR), (_obj, CR))],
                          [((".c", CR), (_obj, CF))],
                          [((".c", CR), (_obj, CR))]],
-                        work_dir,
                         "config.log",
                         ".sconf_temp",
                         os.path.join("build", "sub", "SConscript"))
@@ -143,7 +139,6 @@ test.checkLogAndStdout( ["Checking for C header file math.h... ",
                         [[((".c", NCR), (_obj, NCR))],
                          [((".c", NCR), (_obj, NCF))],
                          [((".c", NCR), (_obj, NCR))]],
-                        work_dir,
                         "config.log",
                         ".sconf_temp",
                         os.path.join("build", "sub", "SConscript"))
@@ -156,7 +151,6 @@ test.checkLogAndStdout( ["Checking for C header file math.h... ",
                         [[((".c", CR), (_obj, CR))],
                          [((".c", CR), (_obj, CF))],
                          [((".c", CR), (_obj, CR))]],
-                        work_dir,
                         "config.log",
                         ".sconf_temp",
                         os.path.join("build", "sub", "SConscript"))

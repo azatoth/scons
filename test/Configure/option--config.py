@@ -36,8 +36,6 @@ _obj = TestSCons._obj
 
 test = TestSCons.TestSCons()
 
-work_dir = '.'
-
 test.subdir('include')
 
 NCR = test.NCR  # non-cached rebuild
@@ -74,7 +72,7 @@ test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                     ["yes", "no"],
                     [[((".c", NCR), (_obj, NCR))],
                      [((".c", NCR), (_obj, NCF))]],
-                    work_dir, "config.log", ".sconf_temp", "SConstruct")
+                    "config.log", ".sconf_temp", "SConstruct")
 
 test.run(arguments='--config=auto')
 test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
@@ -82,7 +80,7 @@ test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                     ["yes", "no"],
                     [[((".c", CR), (_obj, CR))],
                      [((".c", CR), (_obj, CF))]],
-                    work_dir, "config.log", ".sconf_temp", "SConstruct")
+                    "config.log", ".sconf_temp", "SConstruct")
 
 test.run(arguments='--config=force')
 test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
@@ -90,7 +88,7 @@ test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                     ["yes", "no"],
                     [[((".c", NCR), (_obj, NCR))],
                      [((".c", NCR), (_obj, NCF))]],
-                    work_dir, "config.log", ".sconf_temp", "SConstruct")
+                    "config.log", ".sconf_temp", "SConstruct")
 
 test.run(arguments='--config=cache')
 test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
@@ -98,7 +96,7 @@ test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                     ["yes", "no"],
                     [[((".c", CR), (_obj, CR))],
                      [((".c", CR), (_obj, CF))]],
-                    work_dir, "config.log", ".sconf_temp", "SConstruct")
+                    "config.log", ".sconf_temp", "SConstruct")
 
 test.write(['include', 'non_system_header2.h'], """
 /* Another header */
@@ -111,7 +109,7 @@ test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                     ["yes", "no"],
                     [[((".c", CR), (_obj, CR))],
                      [((".c", CR), (_obj, CF))]],
-                    work_dir, "config.log", ".sconf_temp", "SConstruct")
+                    "config.log", ".sconf_temp", "SConstruct")
 
 test.run(arguments='--config=auto')
 test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
@@ -119,6 +117,6 @@ test.checkLogAndStdout( ["Checking for C header file non_system_header1.h... ",
                     ["no", "yes"],
                     [[((".c", CR), (_obj, NCF))],
                      [((".c", CR), (_obj, NCR))]],
-                    work_dir, "config.log", ".sconf_temp", "SConstruct")
+                    "config.log", ".sconf_temp", "SConstruct")
 
 test.pass_test()

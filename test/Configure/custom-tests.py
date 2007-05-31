@@ -36,8 +36,6 @@ _python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
-work_dir = '.'
-
 NCR = test.NCR  # non-cached rebuild
 CR  = test.CR   # cached rebuild (up to date)
 NCF = test.NCF  # non-cached build failure
@@ -94,7 +92,7 @@ test.checkLogAndStdout(["Executing MyTest ... "],
                         (('.c', NCR), (_obj, NCR), (_exe, NCR), (_exe + '.out', NCF)),
                         (('', NCR),),
                         (('', NCF),)]],
-                       work_dir, "config.log", ".sconf_temp", "SConstruct")
+                       "config.log", ".sconf_temp", "SConstruct")
 
 test.run()
 
@@ -108,6 +106,6 @@ test.checkLogAndStdout(["Executing MyTest ... "],
                         (('.c', CR), (_obj, CR), (_exe, CR), (_exe + '.out', CF)),
                         (('', CR),),
                         (('', CF),)]],
-                       work_dir, "config.log", ".sconf_temp", "SConstruct")
+                       "config.log", ".sconf_temp", "SConstruct")
 
 test.pass_test()

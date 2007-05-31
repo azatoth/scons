@@ -36,8 +36,6 @@ _obj = TestSCons._obj
 
 test = TestSCons.TestSCons()
 
-work_dir = '.'
-
 lib = test.Configure_lib
 
 NCR = test.NCR  # non-cached rebuild
@@ -80,7 +78,7 @@ test.checkLogAndStdout( ["Checking for C library %s... " % lib,
                     ["yes", "no"],
                     [[((".c", NCR), (_obj, NCR))],
                      [((".c", NCR), (_obj, NCF))]],
-                    work_dir, "config.log", ".sconf_temp", "SConstruct")
+                    "config.log", ".sconf_temp", "SConstruct")
 
 oldLog = test.read(test.workpath('config.log'))
 
@@ -90,7 +88,7 @@ test.checkLogAndStdout( ["Checking for C library %s... " % lib,
                     ["yes", "no"],
                     [[((".c", CR), (_obj, CR))],
                      [((".c", CR), (_obj, CF))]],
-                    work_dir, "config.log", ".sconf_temp", "SConstruct",
+                    "config.log", ".sconf_temp", "SConstruct",
                     doCheckLog=0)
 
 newLog = test.read(test.workpath('config.log'))

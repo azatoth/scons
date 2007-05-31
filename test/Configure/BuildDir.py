@@ -36,8 +36,6 @@ _obj = TestSCons._obj
 
 test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
-work_dir = '.'
-
 NCR = test.NCR  # non-cached rebuild
 CR  = test.CR   # cached rebuild (up to date)
 NCF = test.NCF  # non-cached build failure
@@ -76,7 +74,6 @@ test.checkLogAndStdout(["Checking for C header file math.h... ",
                       ["yes", "no"],
                       [[((".c", NCR), (_obj, NCR))],
                        [((".c", NCR), (_obj, NCF))]],
-                      work_dir,
                       os.path.join("build", "config.log"),
                       os.path.join("build", "config.tests"),
                       "SConstruct")
@@ -87,7 +84,6 @@ test.checkLogAndStdout(["Checking for C header file math.h... ",
                       ["yes", "no"],
                       [[((".c", CR), (_obj, CR))],
                        [((".c", CR), (_obj, CF))]],
-                      work_dir,
                       os.path.join("build", "config.log"),
                       os.path.join("build", "config.tests"),
                       "SConstruct")

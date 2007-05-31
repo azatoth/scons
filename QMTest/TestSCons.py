@@ -592,7 +592,7 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
     #Configure_lib = 'm'
 
     def checkLogAndStdout(self, checks, results, cached,
-                          work_dir, logfile, sconf_dir, sconstruct,
+                          logfile, sconf_dir, sconstruct,
                           doCheckLog=1, doCheckStdout=1):
 
         class NoMatch:
@@ -617,7 +617,7 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
                     nols = nols + "|"
             nols = nols + ")"
             lastEnd = 0
-            logfile = self.read(self.workpath(work_dir, logfile))
+            logfile = self.read(self.workpath(logfile))
             if (doCheckLog and
                 string.find( logfile, "scons: warning: The stored build "
                              "information has an unexpected class." ) >= 0):
