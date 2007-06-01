@@ -1019,10 +1019,18 @@ def RenameFunction(function, name):
     the specified name.
     """
     import new
+
+    # Compatibility for Python 1.5 and 2.1.  Can be removed in favor of
+    # passing function.func_defaults directly to new.function() once
+    # we base on Python 2.2 or later.
+    func_defaults = function.func_defaults
+    if func_defaults is None:
+        func_defaults = ()
+
     return new.function(function.func_code,
                         function.func_globals,
                         name,
-                        function.func_defaults)
+                        func_defaults)
 
 
 
