@@ -167,7 +167,6 @@ def generate(env):
                         # '#' on the file name portion as meaning the Node should
                         # be relative to the top-level SConstruct directory.
                         target = env.fs.Entry('.'+os.sep+src.name, dnode)
-                        target = env.fs.File(src.name, dnode)
                         tgt.extend(BaseInstallBuilder(env, target, src))
                 return tgt
 
