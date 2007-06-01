@@ -346,7 +346,8 @@ def createCFileBuilders(env):
                                        emitter = {},
                                        suffix = {None:'$CFILESUFFIX'})
         env['BUILDERS']['CFile'] = c_file
-        env['CFILESUFFIX'] = '.c'
+
+        env.SetDefault(CFILESUFFIX = '.c')
 
     try:
         cxx_file = env['BUILDERS']['CXXFile']
@@ -355,7 +356,7 @@ def createCFileBuilders(env):
                                          emitter = {},
                                          suffix = {None:'$CXXFILESUFFIX'})
         env['BUILDERS']['CXXFile'] = cxx_file
-        env['CXXFILESUFFIX'] = '.cc'
+        env.SetDefault(CXXFILESUFFIX = '.cc')
 
     return (c_file, cxx_file)
 
