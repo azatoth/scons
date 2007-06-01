@@ -295,8 +295,8 @@ class Task:
         """
         self.out_of_date = []
         for t in self.targets:
-            t.disambiguate().make_ready()
             try:
+                t.disambiguate().make_ready()
                 is_up_to_date = not t.has_builder() or \
                                 (not t.always_build and t.is_up_to_date())
             except EnvironmentError, e:
