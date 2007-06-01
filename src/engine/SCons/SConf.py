@@ -249,7 +249,6 @@ class SConfBuildTask(SCons.Taskmaster.Task):
         is_up_to_date = 1
         cached_error = 0
         cachable = 1
-        from SCons.Debug import Trace
         for t in self.targets:
             if T: Trace('%s' % (t))
             bi = t.get_stored_info()
@@ -257,7 +256,7 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                 if T: Trace(': SConfBuildInfo')
                 if cache_mode == CACHE:
                     t.set_state(SCons.Node.up_to_date)
-                    if T: Trace(': set_state(up_to-date)\n')
+                    if T: Trace(': set_state(up_to-date)')
                 else:
                     if is_up_to_date:
                         if T: Trace(': get_state() %s' % t.get_state())
@@ -265,15 +264,16 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                     is_up_to_date = (is_up_to_date and
                                      (t.get_state() == SCons.Node.up_to_date or
                                       not t.changed()))
-                    if T: Trace(': is_up_to_date %s\n' % is_up_to_date)
+                    if T: Trace(': is_up_to_date %s' % is_up_to_date)
                 cached_error = cached_error or bi.result
             else:
                 if T: Trace(': else')
                 # the node hasn't been built in a SConf context or doesn't
                 # exist
                 cachable = 0
-                is_up_to_date = t.get_state() == SCons.Node.up_to_date
-                if T: Trace(': is_up_to_date %s\n' % is_up_to_date)
+                is_up_to_date = (t.get_state() == SCons.Node.up_to_date)
+                if T: Trace(': is_up_to_date %s' % is_up_to_date)
+        if T: Trace('\n')
         return (is_up_to_date, cached_error, cachable)
 
     def execute(self):
@@ -420,6 +420,13 @@ class SConf:
         old_fs_dir = SConfFS.getcwd()
         old_os_dir = os.getcwd()
         SConfFS.chdir(SConfFS.Top, change_os_dir=1)
+
+        # Because we take responsibility here for writing out our
+        # own .sconsign info (see SConfBuildTask.execute(), above),
+        # we override the store_info() method with a null place-holder
+        # so we really control how it gets written.
+        for n in nodes:
+            n.store_info = lambda binfo: None
 
         ret = 1
 

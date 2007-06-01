@@ -369,28 +369,20 @@ class Node:
             parent.implicit = None
             parent.del_binfo()
 
-        try:
-            new = self.binfo
-        except AttributeError:
-            # Node arrived here without build info; apparently it
-            # doesn't need it, so don't bother calculating or storing
-            # it.
-            new = None
-
-        # Reset this Node's cached state since it was just built and
-        # various state has changed.
         self.clear()
 
-        if new:
-            # It had build info, so it should be stored in the signature
-            # cache.  However, if the build info included a content
-            # signature then it must be recalculated before being stored.
-            #if not hasattr(new.ninfo, 'csig'):
-            #    new.ninfo.update(self)
-            #    self.binfo = new
-            new.ninfo.update(self)
-            self.binfo = new
-            self.store_info(self.binfo)
+    def visited(self):
+        """Called just after this node has been visited (with or
+        without a build)."""
+        try:
+            binfo = self.binfo
+        except AttributeError:
+            # Apparently this node doesn't need build info, so
+            # don't bother calculating or storing it.
+            pass
+        else:
+            binfo.ninfo.update(self)
+            self.store_info(binfo)
 
     #
     #
@@ -431,9 +423,16 @@ class Node:
         can be re-evaluated by interfaces that do continuous integration
         builds).
         """
+        # Note in case it's important in the future:  We also used to clear
+        # the build information (the lists of dependencies) here like this:
+        #
+        #    self.del_binfo()
+        #
+        # But we now rely on the fact that we're going to look at that
+        # once before the build, and then store the results in the
+        # .sconsign file after the build.
         self.clear_memoized_values()
         self.executor_cleanup()
-        self.del_binfo()
         try:
             delattr(self, '_calculated_sig')
         except AttributeError:
@@ -443,11 +442,6 @@ class Node:
 
     def clear_memoized_values(self):
         self._memo = {}
-
-    def visited(self):
-        """Called just after this node has been visited
-        without requiring a build.."""
-        pass
 
     def builder_set(self, builder):
         self.builder = builder

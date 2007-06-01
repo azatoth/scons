@@ -709,7 +709,7 @@ class TaskmasterTestCase(unittest.TestCase):
         s = n1.get_state()
         assert s == SCons.Node.executed, s
         assert built_text == "xxx really", built_text
-        assert visited_nodes == [], visited_nodes
+        assert visited_nodes == ['n1'], visited_nodes
 
         n2 = Node("n2")
         tm = SCons.Taskmaster.Taskmaster([n2])
@@ -740,7 +740,7 @@ class TaskmasterTestCase(unittest.TestCase):
         assert s == SCons.Node.up_to_date, s
         s = n4.get_state()
         assert s == SCons.Node.executed, s
-        assert visited_nodes == ['n3'], visited_nodes
+        assert visited_nodes == ['n3', 'n4'], visited_nodes
 
     def test_prepare(self):
         """Test preparation of multiple Nodes for a task

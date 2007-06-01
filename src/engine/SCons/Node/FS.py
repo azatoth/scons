@@ -2141,6 +2141,62 @@ class File(Base):
         if self.fs.CachePath and self.fs.cache_force and self.exists():
             CachePush(self, None, None)
 
+        try:
+            binfo = self.binfo
+        except AttributeError:
+            binfo = self.get_binfo()
+            binfo.set_ninfo(self.NodeInfo(self))
+
+        ninfo = binfo.ninfo
+
+        csig = None
+
+        old = self.get_stored_info()
+        mtime = self.get_timestamp()
+
+        max_drift = self.fs.max_drift
+        if max_drift > 0:
+            if (time.time() - mtime) > max_drift:
+                n = old.ninfo
+                try:
+                    if n.timestamp and n.csig and n.timestamp == mtime:
+                        csig = n.csig
+                except AttributeError:
+                    pass
+        elif max_drift == 0:
+            old = self.get_stored_info()
+            try:
+                csig = old.ninfo.csig
+            except AttributeError:
+                pass
+
+        if csig:
+            # XXX A little bogus, we have to fake out the memoization
+            # of the content signature so it doesn't actually go and
+            # compute a new signature based on the current contents.
+            self._memo['get_csig'] = csig
+        else:
+            csig = self.get_csig()
+
+        ninfo.csig = csig
+        ninfo.timestamp = mtime
+        ninfo.size = self.get_size()
+
+        if not self.has_builder():
+            for attr in ['bsources', 'bsourcesigs',
+                         'bdepends', 'bdependsigs',
+                         'bimplicit', 'bimplicitsigs',
+                         'bact', 'bactsig']:
+                try:
+                    x = getattr(old, attr)
+                except AttributeError:
+                    pass
+                else:
+                    if x:
+                        setattr(binfo, attr, x)
+
+        self.store_info(binfo)
+
     def find_src_builder(self):
         if self.rexists():
             return None
@@ -2194,60 +2250,8 @@ class File(Base):
     #
 
     def make_ready(self):
-        self.disambiguate()
         self.has_src_builder()
-
-        binfo = self.get_binfo()
-
-        mtime = self.get_timestamp()
-        size = self.get_size()
-
-        csig = None
-
-        old = self.get_stored_info()
-
-        max_drift = self.fs.max_drift
-        if max_drift > 0:
-            if (time.time() - mtime) > max_drift:
-                n = old.ninfo
-                try:
-                    if n.timestamp and n.csig and n.timestamp == mtime:
-                        csig = n.csig
-                except AttributeError:
-                    pass
-        elif max_drift == 0:
-            old = self.get_stored_info()
-            try:
-                csig = old.ninfo.csig
-            except AttributeError:
-                pass
-
-        if csig:
-            # XXX A little bogus, we have to fake out the memoization
-            # of the content signature so it doesn't actually go and
-            # compute a new signature based one the current contents.
-            self._memo['get_csig'] = csig
-        else:
-            csig = self.get_csig()
-
-        binfo.ninfo.csig = csig
-        binfo.ninfo.timestamp = mtime
-        binfo.ninfo.size = size
-
-        if not self.has_builder():
-            for attr in ['bsources', 'bsourcesigs',
-                         'bdepends', 'bdependsigs',
-                         'bimplicit', 'bimplicitsigs',
-                         'bact', 'bactsig']:
-                try:
-                    x = getattr(old, attr)
-                except AttributeError:
-                    pass
-                else:
-                    if x:
-                        setattr(binfo, attr, x)
-
-            self.store_info(binfo)
+        self.get_binfo()
 
     def prepare(self):
         """Prepare for this file to be created."""
@@ -2327,7 +2331,6 @@ class File(Base):
     #
     # SIGNATURE SUBSYSTEM
     #
-
 
     memoizer_counters.append(SCons.Memoize.CountValue('get_csig'))
 

@@ -205,13 +205,30 @@ class Task:
             raise SCons.Errors.TaskmasterException(self.targets[0],
                                                    sys.exc_info())
 
-    def executed(self):
+    def executed_without_callbacks(self):
         """
-        Called when the task has been successfully executed.
+        Called when the task has been successfully executed
+        and the Taskmaster instance doesn't want to call
+        the Node's callback methods.
+        """
+        for t in self.targets:
+            if t.get_state() == SCons.Node.executing:
+                for side_effect in t.side_effects:
+                    side_effect.set_state(SCons.Node.no_state)
+                t.set_state(SCons.Node.executed)
+
+    def executed_with_callbacks(self):
+        """
+        Called when the task has been successfully executed and
+        the Taskmaster instance wants to call the Node's callback
+        methods.
 
         This may have been a do-nothing operation (to preserve build
-        order), so we have to check the node's state before deciding
-        whether it was "built" or just "visited."
+        order), so we must check the node's state before deciding whether
+        it was "built", in which case we call the appropriate Node method.
+        In any event, we always call "visited()", which will handle any
+        post-visit actions that must take place regardless of whether
+        or not the target was an actual built target or a source Node.
         """
         for t in self.targets:
             if t.get_state() == SCons.Node.executing:
@@ -219,8 +236,9 @@ class Task:
                     side_effect.set_state(SCons.Node.no_state)
                 t.set_state(SCons.Node.executed)
                 t.built()
-            else:
-                t.visited()
+            t.visited()
+
+    executed = executed_with_callbacks
 
     def failed(self):
         """

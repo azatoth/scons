@@ -271,6 +271,12 @@ class CleanTask(SCons.Taskmaster.Task):
 
     execute = remove
 
+    # We want the Taskmaster to update the Node states (and therefore
+    # handle reference counts, etc.), but we don't want to call
+    # back to the Node's post-build methods, which would do things
+    # we don't want, like store .sconsign information.
+    executed = SCons.Taskmaster.Task.executed_without_callbacks
+
     # Have the taskmaster arrange to "execute" all of the targets, because
     # we'll figure out ourselves (in remove() or show() above) whether
     # anything really needs to be done.

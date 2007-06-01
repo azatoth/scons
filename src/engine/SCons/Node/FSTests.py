@@ -2555,9 +2555,12 @@ class CacheDirTestCase(unittest.TestCase):
         f4 = fs.File(cd_f4)
         f4.visited()
         assert self.pushed == [], self.pushed
+
+        f4.clear()
         test.write(cd_f4, "cd.f4\n")
         f4.visited()
         assert self.pushed == [], self.pushed
+
         fs.cache_force = 1
         f4.visited()
         assert self.pushed == [f4], self.pushed
