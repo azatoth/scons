@@ -51,6 +51,10 @@ RELEASE 0.97.X - XXX
     
   - Fix locating Visual C/C++ PDB files in build directories.
 
+  - Support an env.AddMethod() method and an AddMethod() global function
+    for adding a new method, respectively, to a construction environment
+    or an arbitrary object (such as a class).
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has

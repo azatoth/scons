@@ -28,11 +28,17 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Verify that .pdb files get put in a build_dir correctly.
 """
 
+import sys
+
 import TestSCons
 
 _exe = TestSCons._exe
 
 test = TestSCons.TestSCons()
+
+if sys.platform != 'win32':
+    msg = "Skipping Visual C/C++ test on non-Windows platform '%s'\n" % sys.platform
+    test.skip_test(msg)
 
 test.subdir('src')
 
