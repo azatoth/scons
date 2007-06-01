@@ -642,6 +642,38 @@ sys.exit(1)
         finally:
             sys.stderr = save_stderr
 
+    def test_AddMethod(self):
+        """Test the AddMethod() method"""
+        env = SubstitutionEnvironment(FOO = 'foo')
+
+        def func(self):
+            return 'func-' + self['FOO']
+
+        assert not hasattr(env, 'func')
+        env.AddMethod(func)
+        r = env.func()
+        assert r == 'func-foo', r
+
+        assert not hasattr(env, 'bar')
+        env.AddMethod(func, 'bar')
+        r = env.bar()
+        assert r == 'func-foo', r
+
+        def func2(self, arg=''):
+            return 'func2-' + self['FOO'] + arg
+
+        env.AddMethod(func2)
+        r = env.func2()
+        assert r == 'func2-foo', r
+        r = env.func2('-xxx')
+        assert r == 'func2-foo-xxx', r
+
+        env.AddMethod(func2, 'func')
+        r = env.func()
+        assert r == 'func2-foo', r
+        r = env.func('-yyy')
+        assert r == 'func2-foo-yyy', r
+
     def test_Override(self):
         "Test overriding construction variables"
         env = SubstitutionEnvironment(ONE=1, TWO=2, THREE=3, FOUR=4)

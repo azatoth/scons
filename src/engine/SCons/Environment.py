@@ -477,6 +477,14 @@ class SubstitutionEnvironment:
             raise OSError("'%s' exited %d" % (command, status))
         return out
 
+    def AddMethod(self, function, name=None):
+        """
+        Adds the specified function as a method of this construction
+        environment with the specified name.  If the name is omitted,
+        the default name is the name of the function itself.
+        """
+        SCons.Util.AddMethod(self, function, name)
+
     def Override(self, overrides):
         """
         Produce a modified environment whose variables are overriden by
