@@ -9,6 +9,12 @@ __revision__ = "$Id: textwrap.py,v 1.32.8.2 2004/05/13 01:48:15 gward Exp $"
 
 import string, re
 
+try:
+   unicode
+except NameError:
+   class unicode:
+       pass
+
 # Do the right thing with boolean values for all known Python versions
 # (so this module can be copied to projects that don't depend on Python
 # 2.3, e.g. Optik and Docutils).
@@ -68,7 +74,13 @@ class TextWrapper:
     whitespace_trans = string.maketrans(_whitespace, ' ' * len(_whitespace))
 
     unicode_whitespace_trans = {}
-    uspace = ord(u' ')
+    try:
+        uspace = eval("ord(u' ')")
+    except SyntaxError:
+        # Python1.5 doesn't understand u'' syntax, in which case we
+        # won't actually use the unicode translation below, so it
+        # doesn't matter what value we put in the table.
+        uspace = ord(' ')
     for x in map(ord, _whitespace):
         unicode_whitespace_trans[x] = uspace
 
@@ -79,8 +91,12 @@ class TextWrapper:
     #   Hello/ /there/ /--/ /you/ /goof-/ball,/ /use/ /the/ /-b/ /option!
     # (after stripping out empty strings).
     wordsep_re = re.compile(r'(\s+|'                  # any whitespace
-                            r'-*\w{2,}-(?=\w{2,})|'   # hyphenated words
-                            r'(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w))')   # em-dash
+                            r'-*\w{2,}-(?=\w{2,}))')   # hyphenated words
+                            # Earlier Python's don't have the (?<=
+                            # negative look-behind assertion.  It doesn't
+                            # matter for the simple input SCons is going to
+                            # give it, so just comment it out.
+                            #r'(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w))')   # em-dash
 
     # XXX will there be a locale-or-charset-aware version of
     # string.lowercase in 2.3?
@@ -118,12 +134,12 @@ class TextWrapper:
         becomes " foo    bar  baz".
         """
         if self.expand_tabs:
-            text = text.expandtabs()
+            text = string.expandtabs(text)
         if self.replace_whitespace:
-            if isinstance(text, str):
-                text = text.translate(self.whitespace_trans)
+            if type(text) == type(''):
+                text = string.translate(text, self.whitespace_trans)
             elif isinstance(text, unicode):
-                text = text.translate(self.unicode_whitespace_trans)
+                text = string.translate(text, self.unicode_whitespace_trans)
         return text
 
 
@@ -156,9 +172,9 @@ class TextWrapper:
         while i < len(chunks)-1:
             if chunks[i+1] == " " and pat.search(chunks[i]):
                 chunks[i+1] = "  "
-                i += 2
+                i = i + 2
             else:
-                i += 1
+                i = i + 1
 
     def _handle_long_word(self, chunks, cur_line, cur_len, width):
         """_handle_long_word(chunks : [string],
@@ -223,7 +239,7 @@ class TextWrapper:
 
             # First chunk on line is whitespace -- drop it, unless this
             # is the very beginning of the text (ie. no lines started yet).
-            if chunks[0].strip() == '' and lines:
+            if string.strip(chunks[0]) == '' and lines:
                 del chunks[0]
 
             while chunks:
@@ -232,7 +248,7 @@ class TextWrapper:
                 # Can at least squeeze this chunk onto the current line.
                 if cur_len + l <= width:
                     cur_line.append(chunks.pop(0))
-                    cur_len += l
+                    cur_len = cur_len + l
 
                 # Nope, this line is full.
                 else:
@@ -244,13 +260,13 @@ class TextWrapper:
                 self._handle_long_word(chunks, cur_line, cur_len, width)
 
             # If the last chunk on this line is all whitespace, drop it.
-            if cur_line and cur_line[-1].strip() == '':
+            if cur_line and string.strip(cur_line[-1]) == '':
                 del cur_line[-1]
 
             # Convert current line back to a string and store it in list
             # of all lines (return value).
             if cur_line:
-                lines.append(indent + ''.join(cur_line))
+                lines.append(indent + string.join(cur_line, ''))
 
         return lines
 
@@ -280,7 +296,7 @@ class TextWrapper:
         more than 'self.width' columns, and return a new string
         containing the entire wrapped paragraph.
         """
-        return "\n".join(self.wrap(text))
+        return string.join(self.wrap(text), "\n")
 
 
 # -- Convenience interface ---------------------------------------------
@@ -295,7 +311,9 @@ def wrap(text, width=70, **kwargs):
     space.  See TextWrapper class for available keyword args to customize
     wrapping behaviour.
     """
-    w = TextWrapper(width=width, **kwargs)
+    kw = kwargs.copy()
+    kw['width'] = width
+    w = apply(TextWrapper, (), kw)
     return w.wrap(text)
 
 def fill(text, width=70, **kwargs):
@@ -307,7 +325,9 @@ def fill(text, width=70, **kwargs):
     whitespace characters converted to space.  See TextWrapper class for
     available keyword args to customize wrapping behaviour.
     """
-    w = TextWrapper(width=width, **kwargs)
+    kw = kwargs.copy()
+    kw['width'] = width
+    w = apply(TextWrapper, (), kw)
     return w.fill(text)
 
 
@@ -350,4 +370,4 @@ def dedent(text):
         for i in range(len(lines)):
             lines[i] = lines[i][margin:]
 
-    return '\n'.join(lines)
+    return string.join(lines, '\n')

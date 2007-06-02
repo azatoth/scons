@@ -5,6 +5,7 @@ SCons/compat/__init__.py
 SCons/compat/_scons_sets.py
 SCons/compat/_scons_sets15.py
 SCons/compat/_scons_subprocess.py
+SCons/compat/_scons_textwrap.py
 SCons/compat/_scons_UserString.py
 SCons/compat/builtins.py
 SCons/Conftest.py

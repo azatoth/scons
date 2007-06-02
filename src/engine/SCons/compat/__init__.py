@@ -105,6 +105,12 @@ except ImportError:
     import_as('_scons_subprocess', 'subprocess')
 
 try:
+    import textwrap
+except ImportError:
+    # Pre-2.3 Python has no textwrap module.
+    import_as('_scons_textwrap', 'textwrap')
+
+try:
     import UserString
 except ImportError:
     # Pre-1.6 Python has no UserString module.
