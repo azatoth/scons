@@ -584,22 +584,16 @@ class OptionParser:
         #   -fFILENAME, --file=FILENAME
         #           read data from FILENAME
 
-        file.write("Options:\n")
-        width = 78                      # assume 80 cols for now
-
         option_help = []                # list of (string, string) tuples
-        lengths = []
 
         for option in self.option_list:
-            takes_value = option.takes_value()
-            if takes_value:
-                metavar = option.metavar or string.upper(option.dest)
-
-            opts = []               # list of "-a" or "--foo=FILE" strings
             if option.help is SUPPRESS_HELP:
                 continue
 
-            if takes_value:
+            opts = []               # list of "-a" or "--foo=FILE" strings
+
+            if option.takes_value():
+                metavar = option.metavar or string.upper(option.dest)
                 for sopt in option._short_opts:
                     opts.append(sopt + ' ' + metavar)
                 for lopt in option._long_opts:
@@ -610,31 +604,24 @@ class OptionParser:
 
             opts = string.join(opts,", ")
             option_help.append((opts, option.help))
-            lengths.append(len(opts))
 
+        lengths = map(lambda o_h: len(o_h[0]), option_help)
         max_opts = min(max(lengths), 26)
+        max_opts_fmt = '  %-*s  '
 
+        left_indent = max_opts_fmt % (max_opts, '')
+        tw = textwrap.TextWrapper(width = 78,
+                                  subsequent_indent = left_indent + '  ')
+
+        file.write("Options:\n")
         for (opts, help) in option_help:
-            # how much to indent lines 2 .. N of help text
-            indent_rest = 2 + max_opts + 2 
-            help_width = width - indent_rest
-
             if len(opts) > max_opts:
-                opts = "  " + opts + "\n"
-                indent_first = indent_rest
-            else:                       # start help on same line as opts
-                opts = "  %-*s  " % (max_opts, opts)
-                indent_first = 0
+                 file.write('  ' + opts + '\n')
+                 tw.initial_indent = left_indent
+            else:
+                 tw.initial_indent = max_opts_fmt % (max_opts, opts)
 
-            file.write(opts)
-
-            if help:
-                help_lines = wrap_text(help, help_width)
-                file.write( "%*s%s\n" % (indent_first, "", help_lines[0]))
-                for line in help_lines[1:]:
-                    file.write("  %*s%s\n" % (indent_rest, "", line))
-            elif opts[-1] != "\n":
-                file.write("\n")
+            file.write(tw.fill(help) + '\n')
 
 # class OptionParser
 
