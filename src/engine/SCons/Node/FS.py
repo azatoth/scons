@@ -2001,25 +2001,34 @@ class File(Base):
         entry.merge(obj)
         self.dir.sconsign().set_entry(self.name, entry)
 
+    memoizer_counters.append(SCons.Memoize.CountValue('get_stored_info'))
+
     def get_stored_info(self):
         try:
-            stored = self.dir.sconsign().get_entry(self.name)
+            return self._memo['get_stored_info']
+        except KeyError:
+            pass
+
+        try:
+            binfo = self.dir.sconsign().get_entry(self.name)
         except (KeyError, OSError):
             binfo = self.new_binfo()
             binfo.set_ninfo(self.new_ninfo())
-            return binfo
         else:
-            if not hasattr(stored, 'ninfo'):
+            if not hasattr(binfo, 'ninfo'):
                 # Transition:  The .sconsign file entry has no NodeInfo
                 # object, which means it's a slightly older BuildInfo.
                 # Copy over the relevant attributes.
-                ninfo = stored.ninfo = self.BuildInfo(self)
+                ninfo = binfo.ninfo = self.BuildInfo(self)
                 for attr in ninfo.__dict__.keys():
                     try:
-                        setattr(ninfo, attr, getattr(stored, attr))
+                        setattr(ninfo, attr, getattr(binfo, attr))
                     except AttributeError:
                         pass
-            return stored
+
+        self._memo['get_stored_info'] = binfo
+
+        return binfo
 
     def get_stored_implicit(self):
         binfo = self.get_stored_info()
