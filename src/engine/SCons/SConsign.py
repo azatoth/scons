@@ -264,48 +264,50 @@ class DirFile(Dir):
         to the .sconsign file.  Either way, always try to remove
         the temporary file at the end.
         """
-        if self.dirty:
-            temp = os.path.join(self.dir.path, '.scons%d' % os.getpid())
+        if not self.dirty:
+            return
+
+        temp = os.path.join(self.dir.path, '.scons%d' % os.getpid())
+        try:
+            file = open(temp, 'wb')
+            fname = temp
+        except IOError:
             try:
-                file = open(temp, 'wb')
-                fname = temp
+                file = open(self.sconsign, 'wb')
+                fname = self.sconsign
             except IOError:
-                try:
-                    file = open(self.sconsign, 'wb')
-                    fname = self.sconsign
-                except IOError:
-                    return
-            for key, entry in self.entries.items():
-                entry.convert_to_sconsign()
-            cPickle.dump(self.entries, file, 1)
-            file.close()
-            if fname != self.sconsign:
-                try:
-                    mode = os.stat(self.sconsign)[0]
-                    os.chmod(self.sconsign, 0666)
-                    os.unlink(self.sconsign)
-                except (IOError, OSError):
-                    # Try to carry on in the face of either OSError
-                    # (things like permission issues) or IOError (disk
-                    # or network issues).  If there's a really dangerous
-                    # issue, it should get re-raised by the calls below.
-                    pass
-                try:
-                    os.rename(fname, self.sconsign)
-                except OSError:
-                    # An OSError failure to rename may indicate something
-                    # like the directory has no write permission, but
-                    # the .sconsign file itself might still be writable,
-                    # so try writing on top of it directly.  An IOError
-                    # here, or in any of the following calls, would get
-                    # raised, indicating something like a potentially
-                    # serious disk or network issue.
-                    open(self.sconsign, 'wb').write(open(fname, 'rb').read())
-                    os.chmod(self.sconsign, mode)
+                return
+        for key, entry in self.entries.items():
+            entry.convert_to_sconsign()
+        cPickle.dump(self.entries, file, 1)
+        file.close()
+        if fname != self.sconsign:
             try:
-                os.unlink(temp)
+                mode = os.stat(self.sconsign)[0]
+                os.chmod(self.sconsign, 0666)
+                os.unlink(self.sconsign)
             except (IOError, OSError):
+                # Try to carry on in the face of either OSError
+                # (things like permission issues) or IOError (disk
+                # or network issues).  If there's a really dangerous
+                # issue, it should get re-raised by the calls below.
                 pass
+            try:
+                os.rename(fname, self.sconsign)
+            except OSError:
+                # An OSError failure to rename may indicate something
+                # like the directory has no write permission, but
+                # the .sconsign file itself might still be writable,
+                # so try writing on top of it directly.  An IOError
+                # here, or in any of the following calls, would get
+                # raised, indicating something like a potentially
+                # serious disk or network issue.
+                open(self.sconsign, 'wb').write(open(fname, 'rb').read())
+                os.chmod(self.sconsign, mode)
+        try:
+            os.unlink(temp)
+        except (IOError, OSError):
+            pass
 
 ForDirectory = DB
 
