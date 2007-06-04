@@ -1694,15 +1694,15 @@ class Base(SubstitutionEnvironment):
         node = self.arg2nodes(node, self.fs.Entry)[0]
 
         sources = []
-        def build_source(ss):
+        def build_source(ss, result):
             for s in ss:
-                if s.__class__==SCons.Node.FS.Dir:
-                    build_source(s.all_children())
-                elif len(s.sources)==0 and s.__class__==SCons.Node.FS.File:
+                if isinstance(s, SCons.Node.FS.Dir):
+                    build_source(s.all_children(), result)
+                elif s.has_builder():
+                    build_source(s.sources, result)
+                elif isinstance(s.disambiguate(), SCons.Node.FS.File):
                     sources.append(s)
-                else:
-                    build_source(s.sources)
-        build_source(node.all_children())
+        build_source(node.all_children(), sources)
 
         # now strip the build_node from the sources by calling the srcnode
         # function
@@ -1717,12 +1717,7 @@ class Base(SubstitutionEnvironment):
         map( get_final_srcnode, sources )
 
         # remove duplicates
-        # Can't use set() until Python 2.4.
-        #return list(set(sources))
-        u = {}
-        for s in sources:
-            u[s] = 1
-        return u.keys()
+        return list(set(sources))
 
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction
