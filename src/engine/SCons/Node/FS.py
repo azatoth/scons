@@ -886,9 +886,6 @@ class Entry(Base):
     def changed_since_last_build(self, target, prev_ni, tgt_sig_type, src_sig_type):
         return self.disambiguate().changed_since_last_build(target, prev_ni, tgt_sig_type, src_sig_type)
 
-#    def new_binfo(self):
-#        return self.disambiguate().new_binfo()
-
 # This is for later so we can differentiate between Entry the class and Entry
 # the method of the FS class.
 _classEntry = Entry
@@ -2008,7 +2005,7 @@ class File(Base):
         try:
             stored = self.dir.sconsign().get_entry(self.name)
         except (KeyError, OSError):
-            binfo = self.BuildInfo(self)
+            binfo = self.new_binfo()
             binfo.set_ninfo(self.new_ninfo())
             return binfo
         else:

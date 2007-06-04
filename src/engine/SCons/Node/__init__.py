@@ -683,7 +683,6 @@ class Node:
 
     def new_binfo(self):
         binfo = self.BuildInfo(self)
-        binfo.set_ninfo(self.get_ninfo())
         return binfo
 
     def get_binfo(self):
@@ -704,7 +703,9 @@ class Node:
         except AttributeError:
             pass
 
-        binfo = self.binfo = self.new_binfo()
+        binfo = self.new_binfo()
+        binfo.set_ninfo(self.get_ninfo())
+        self.binfo = binfo
 
         executor = self.get_executor()
 
