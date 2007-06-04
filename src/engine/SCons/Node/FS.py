@@ -2009,7 +2009,7 @@ class File(Base):
             stored = self.dir.sconsign().get_entry(self.name)
         except (KeyError, OSError):
             binfo = self.BuildInfo(self)
-            binfo.set_ninfo(self.NodeInfo(self))
+            binfo.set_ninfo(self.new_ninfo())
             return binfo
         else:
             if not hasattr(stored, 'ninfo'):
@@ -2145,7 +2145,7 @@ class File(Base):
             binfo = self.binfo
         except AttributeError:
             binfo = self.get_binfo()
-            binfo.set_ninfo(self.NodeInfo(self))
+            binfo.set_ninfo(self.get_ninfo())
 
         ninfo = binfo.ninfo
 
