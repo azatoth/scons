@@ -117,7 +117,8 @@ class Base:
     """
     def __init__(self):
         self.entries = {}
-        self.dirty = 0
+        self.dirty = False
+        self.to_be_merged = {}
 
     def get_entry(self, filename):
         """
@@ -129,11 +130,15 @@ class Base:
         """
         Set the entry.
         """
-        self.entries[filename] = obj
-        self.dirty = 1
+        self.to_be_merged[filename] = obj
+        self.dirty = True
 
     def do_not_set_entry(self, filename, obj):
         pass
+
+    def merge(self):
+        for key, value in self.to_be_merged.items():
+            self.entries[key] = value
 
 class DB(Base):
     """
@@ -183,6 +188,8 @@ class DB(Base):
     def write(self, sync=1):
         if not self.dirty:
             return
+
+        self.merge()
 
         db, mode = Get_DataBase(self.dir)
 
@@ -266,6 +273,8 @@ class DirFile(Dir):
         """
         if not self.dirty:
             return
+
+        self.merge()
 
         temp = os.path.join(self.dir.path, '.scons%d' % os.getpid())
         try:

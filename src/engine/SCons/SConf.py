@@ -327,7 +327,9 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                     # object, and store_info() will turn it into a
                     # regular FileNodeInfo if the target is itself a
                     # regular File.
-                    t.dir.sconsign().set_entry(t.name, binfo)
+                    sconsign = t.dir.sconsign()
+                    sconsign.set_entry(t.name, binfo)
+                    sconsign.merge()
                 raise e
             else:
                 for t in self.targets:
@@ -340,7 +342,9 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                     # object, and store_info() will turn it into a
                     # regular FileNodeInfo if the target is itself a
                     # regular File.
-                    t.dir.sconsign().set_entry(t.name, binfo)
+                    sconsign = t.dir.sconsign()
+                    sconsign.set_entry(t.name, binfo)
+                    sconsign.merge()
 
 class SConf:
     """This is simply a class to represent a configure context. After

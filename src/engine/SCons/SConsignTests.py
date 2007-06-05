@@ -74,6 +74,8 @@ class BaseTestCase(SConsignTestCase):
         f.set_entry('aaa', aaa)
         f.set_entry('bbb', bbb)
 
+        f.merge()
+
         e = f.get_entry('aaa')
         assert e == aaa, e
         assert e.name == 'aaa', e.name
@@ -85,6 +87,15 @@ class BaseTestCase(SConsignTestCase):
         assert not hasattr(e, 'arg2'), e
 
         f.set_entry('bbb', ccc)
+
+        e = f.get_entry('bbb')
+        assert e == bbb, e
+        assert e.name == 'bbb', e.name
+        assert e.arg1 == 'bbb arg1', e.arg1
+        assert not hasattr(e, 'arg2'), e
+
+        f.merge()
+
         e = f.get_entry('bbb')
         assert e.name == 'ccc', e.name
         assert not hasattr(e, 'arg1'), e
@@ -99,6 +110,8 @@ class BaseTestCase(SConsignTestCase):
         f.set_entry('ddd', ddd)
         f.set_entry('eee', eee)
 
+        f.merge()
+
         e = f.get_entry('ddd')
         assert e == ddd, e
         assert e.name == 'ddd', e.name
@@ -109,6 +122,14 @@ class BaseTestCase(SConsignTestCase):
         assert not hasattr(e, 'arg'), e
 
         f.set_entry('eee', fff)
+
+        e = f.get_entry('eee')
+        assert e == eee, e
+        assert e.name == 'eee', e.name
+        assert not hasattr(e, 'arg'), e
+
+        f.merge()
+
         e = f.get_entry('eee')
         assert e.name == 'fff', e.name
         assert e.arg == 'fff arg', e.arg
@@ -122,6 +143,23 @@ class SConsignDBTestCase(SConsignTestCase):
             d1 = SCons.SConsign.DB(DummyNode('dir1'))
             d1.set_entry('aaa', BuildInfo('aaa name'))
             d1.set_entry('bbb', BuildInfo('bbb name'))
+
+            try:
+                aaa = d1.get_entry('aaa')
+            except KeyError:
+                pass
+            else:
+                raise "unexpected d1.get_entry() return %s" % aaa
+
+            try:
+                bbb = d1.get_entry('bbb')
+            except KeyError:
+                pass
+            else:
+                raise "unexpected d1.get_entry() return %s" % bbb
+                
+            d1.write()
+
             aaa = d1.get_entry('aaa')
             assert aaa.name == 'aaa name'
             bbb = d1.get_entry('bbb')
@@ -130,6 +168,23 @@ class SConsignDBTestCase(SConsignTestCase):
             d2 = SCons.SConsign.DB(DummyNode('dir2'))
             d2.set_entry('ccc', BuildInfo('ccc name'))
             d2.set_entry('ddd', BuildInfo('ddd name'))
+
+            try:
+                ccc = d2.get_entry('ccc')
+            except KeyError:
+                pass
+            else:
+                raise "unexpected d2.get_entry() return %s" % ccc
+
+            try:
+                ddd = d2.get_entry('ddd')
+            except KeyError:
+                pass
+            else:
+                raise "unexpected d2.get_entry() return %s" % ddd
+
+            d2.write()
+
             ccc = d2.get_entry('ccc')
             assert ccc.name == 'ccc name'
             ddd = d2.get_entry('ddd')
@@ -138,6 +193,23 @@ class SConsignDBTestCase(SConsignTestCase):
             d31 = SCons.SConsign.DB(DummyNode('dir3/sub1'))
             d31.set_entry('eee', BuildInfo('eee name'))
             d31.set_entry('fff', BuildInfo('fff name'))
+
+            try:
+                eee = d31.get_entry('eee')
+            except KeyError:
+                pass
+            else:
+                raise "unexpected d31.get_entry() return %s" % eee
+
+            try:
+                fff = d31.get_entry('fff')
+            except KeyError:
+                pass
+            else:
+                raise "unexpected d31.get_entry() return %s" % fff
+
+            d31.write()
+
             eee = d31.get_entry('eee')
             assert eee.name == 'eee name'
             fff = d31.get_entry('fff')
@@ -146,11 +218,30 @@ class SConsignDBTestCase(SConsignTestCase):
             d32 = SCons.SConsign.DB(DummyNode('dir3%ssub2' % os.sep))
             d32.set_entry('ggg', BuildInfo('ggg name'))
             d32.set_entry('hhh', BuildInfo('hhh name'))
+
+            try:
+                ggg = d32.get_entry('ggg')
+            except KeyError:
+                pass
+            else:
+                raise "unexpected d32.get_entry() return %s" % ggg
+
+            try:
+                hhh = d32.get_entry('hhh')
+            except KeyError:
+                pass
+            else:
+                raise "unexpected d32.get_entry() return %s" % hhh
+
+            d32.write()
+
             ggg = d32.get_entry('ggg')
             assert ggg.name == 'ggg name'
             hhh = d32.get_entry('hhh')
             assert hhh.name == 'hhh name'
+
         finally:
+
             SCons.SConsign.DataBase = save_DataBase
 
 class SConsignDirFileTestCase(SConsignTestCase):
@@ -163,6 +254,22 @@ class SConsignDirFileTestCase(SConsignTestCase):
         f.set_entry('foo', bi_foo)
         f.set_entry('bar', bi_bar)
 
+        try:
+           e = f.get_entry('foo')
+        except KeyError:
+           pass
+        else:
+           raise "unexpected get_entry('foo'): %s" % e
+
+        try:
+           e = f.get_entry('bar')
+        except KeyError:
+           pass
+        else:
+           raise "unexpected get_entry('foo'): %s" % e
+
+        f.write()
+
         e = f.get_entry('foo')
         assert e == bi_foo, e
         assert e.name == 'foo', e.name
@@ -174,7 +281,16 @@ class SConsignDirFileTestCase(SConsignTestCase):
 
         bbb = BuildInfo('bbb')
         bbb.arg = 'bbb arg'
+
         f.set_entry('bar', bbb)
+
+        e = f.get_entry('bar')
+        assert e == bi_bar, e
+        assert e.name == 'bar', e.name
+        assert not hasattr(e, 'arg'), e
+
+        f.write()
+
         e = f.get_entry('bar')
         assert e.name == 'bbb', e.name
         assert e.arg == 'bbb arg', e.arg
