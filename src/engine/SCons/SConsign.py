@@ -130,15 +130,35 @@ class Base:
         """
         Set the entry.
         """
-        self.to_be_merged[filename] = obj
+        self.entries[filename] = obj
         self.dirty = True
 
     def do_not_set_entry(self, filename, obj):
         pass
 
+    def store_info(self, filename, node):
+        entry = node.get_stored_info()
+        entry.merge(node.get_binfo())
+        self.to_be_merged[filename] = entry
+        self.dirty = True
+
+    def do_not_store_info(self, filename, node):
+        pass
+
     def merge(self):
         for key, value in self.to_be_merged.items():
             self.entries[key] = value
+            #binfo = node.get_binfo()
+            #try:
+            #    entry = self.entries[key]
+            #except KeyError:
+            #    self.entries[key] = binfo
+            #else:
+            #    entry.merge(binfo)
+            ##entry.merge(obj)
+            #self.dir.sconsign().set_entry(self.name, entry)
+            #self.set_entry(key, node.get_binfo())
+        self.to_be_merged = {}
 
 class DB(Base):
     """
@@ -181,6 +201,7 @@ class DB(Base):
             # a file there.  Don't actually set any entry info, so we
             # won't try to write to that .sconsign.dblite file.
             self.set_entry = self.do_not_set_entry
+            self.store_info = self.do_not_store_info
 
         global sig_files
         sig_files.append(self)

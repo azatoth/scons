@@ -1997,9 +1997,7 @@ class File(Base):
         # This accomodates "chained builds" where a file that's a target
         # in one build (SConstruct file) is a source in a different build.
         # See test/chained-build.py for the use case.
-        entry = self.get_stored_info()
-        entry.merge(self.get_binfo())
-        self.dir.sconsign().set_entry(self.name, entry)
+        self.dir.sconsign().store_info(self.name, self)
 
     memoizer_counters.append(SCons.Memoize.CountValue('get_stored_info'))
 
