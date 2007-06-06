@@ -63,7 +63,7 @@ class SConsignTestCase(unittest.TestCase):
 
 class BaseTestCase(SConsignTestCase):
 
-    def runTest(self):
+    def test_Base(self):
         aaa = BuildInfo('aaa')
         bbb = BuildInfo('bbb')
         bbb.arg1 = 'bbb arg1'
@@ -136,7 +136,7 @@ class BaseTestCase(SConsignTestCase):
 
 class SConsignDBTestCase(SConsignTestCase):
 
-    def runTest(self):
+    def test_SConsignDB(self):
         save_DataBase = SCons.SConsign.DataBase
         SCons.SConsign.DataBase = {}
         try:
@@ -157,7 +157,7 @@ class SConsignDBTestCase(SConsignTestCase):
                 pass
             else:
                 raise "unexpected d1.get_entry() return %s" % bbb
-                
+
             d1.write()
 
             aaa = d1.get_entry('aaa')
@@ -246,7 +246,7 @@ class SConsignDBTestCase(SConsignTestCase):
 
 class SConsignDirFileTestCase(SConsignTestCase):
 
-    def runTest(self):
+    def test_SConsignDirFile(self):
         bi_foo = BuildInfo('foo')
         bi_bar = BuildInfo('bar')
 
@@ -298,7 +298,7 @@ class SConsignDirFileTestCase(SConsignTestCase):
 
 class SConsignFileTestCase(SConsignTestCase):
 
-    def runTest(self):
+    def test_SConsignFile(self):
         test = self.test
         file = test.workpath('sconsign_file')
 
@@ -347,7 +347,7 @@ class SConsignFileTestCase(SConsignTestCase):
 
 class writeTestCase(SConsignTestCase):
 
-    def runTest(self):
+    def test_write(self):
 
         test = self.test
         file = test.workpath('sconsign_file')
@@ -383,18 +383,18 @@ class writeTestCase(SConsignTestCase):
         assert fake_dbm.sync_count == 1, fake_dbm.sync_count
 
 
-def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(BaseTestCase())
-    suite.addTest(SConsignDBTestCase())
-    suite.addTest(SConsignDirFileTestCase())
-    suite.addTest(SConsignFileTestCase())
-    suite.addTest(writeTestCase())
-    return suite
 
 if __name__ == "__main__":
-    runner = unittest.TextTestRunner()
-    result = runner.run(suite())
-    if not result.wasSuccessful():
+    suite = unittest.TestSuite()
+    tclasses = [
+        BaseTestCase,
+        SConsignDBTestCase,
+        SConsignDirFileTestCase,
+        SConsignFileTestCase,
+        writeTestCase,
+    ]
+    for tclass in tclasses:
+        names = unittest.getTestCaseNames(tclass, 'test_')
+        suite.addTests(map(tclass, names))
+    if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
-
