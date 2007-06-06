@@ -430,7 +430,7 @@ class SConf:
         # we override the store_info() method with a null place-holder
         # so we really control how it gets written.
         for n in nodes:
-            n.store_info = lambda binfo: None
+            n.store_info = n.do_not_store_info
 
         ret = 1
 

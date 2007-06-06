@@ -382,7 +382,7 @@ class Node:
             pass
         else:
             binfo.ninfo.update(self)
-            self.store_info(binfo)
+            self.store_info()
 
     #
     #
@@ -756,9 +756,12 @@ class Node:
     def get_cachedir_csig(self):
         return self.get_csig()
 
-    def store_info(self, obj):
+    def store_info(self):
         """Make the build signature permanent (that is, store it in the
         .sconsign file or equivalent)."""
+        pass
+
+    def do_not_store_info(self):
         pass
 
     def get_stored_info(self):

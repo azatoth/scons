@@ -1992,13 +1992,13 @@ class File(Base):
 
         return timestamp
 
-    def store_info(self, obj):
+    def store_info(self):
         # Merge our build information into the already-stored entry.
         # This accomodates "chained builds" where a file that's a target
         # in one build (SConstruct file) is a source in a different build.
         # See test/chained-build.py for the use case.
         entry = self.get_stored_info()
-        entry.merge(obj)
+        entry.merge(self.get_binfo())
         self.dir.sconsign().set_entry(self.name, entry)
 
     memoizer_counters.append(SCons.Memoize.CountValue('get_stored_info'))
@@ -2201,7 +2201,7 @@ class File(Base):
                     if x:
                         setattr(binfo, attr, x)
 
-        self.store_info(binfo)
+        self.store_info()
 
     def find_src_builder(self):
         if self.rexists():
@@ -2437,7 +2437,7 @@ class File(Base):
                     if self._local:
                         # ...and they'd like a local copy.
                         LocalCopy(self, r, None)
-                        self.store_info(self.get_binfo())
+                        self.store_info()
                     if T: Trace(' 1\n')
                     return 1
             if T: Trace(' None\n')

@@ -642,10 +642,8 @@ class NodeTestCase(unittest.TestCase):
     def test_store_info(self):
         """Test calling the method to store build information
         """
-        class Entry:
-            pass
         node = SCons.Node.Node()
-        node.store_info(Entry())
+        node.store_info()
 
     def test_get_stored_info(self):
         """Test calling the method to fetch stored build information
