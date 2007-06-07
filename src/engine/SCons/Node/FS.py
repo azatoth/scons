@@ -2176,12 +2176,7 @@ class File(Base):
             except AttributeError:
                 pass
 
-        if csig:
-            # XXX A little bogus, we have to fake out the memoization
-            # of the content signature so it doesn't actually go and
-            # compute a new signature based on the current contents.
-            self._memo['get_csig'] = csig
-        else:
+        if not csig:
             csig = self.get_csig()
 
         ninfo.csig = csig
@@ -2189,19 +2184,11 @@ class File(Base):
         ninfo.size = size
 
         if not self.has_builder():
+            # This is a source file, but it might have been a target file
+            # in another build that included more of the DAG.  Copy
+            # any build information that's stored in the .sconsign file
+            # into our binfo object so it doesn't get lost.
             self.get_binfo().__dict__.update(old.binfo.__dict__)
-            #binfo = self.get_binfo()
-            #for attr in ['bsources', 'bsourcesigs',
-            #             'bdepends', 'bdependsigs',
-            #             'bimplicit', 'bimplicitsigs',
-            #             'bact', 'bactsig']:
-            #    try:
-            #        x = getattr(old.binfo, attr)
-            #    except AttributeError:
-            #        pass
-            #    else:
-            #        if x:
-            #            setattr(binfo, attr, x)
 
         self.store_info()
 
@@ -2340,8 +2327,6 @@ class File(Base):
     # SIGNATURE SUBSYSTEM
     #
 
-    memoizer_counters.append(SCons.Memoize.CountValue('get_csig'))
-
     def get_csig(self):
         """
         Generate a node's content signature, the digested signature
@@ -2351,9 +2336,10 @@ class File(Base):
         cache - alternate node to use for the signature cache
         returns - the content signature
         """
+        ninfo = self.get_ninfo()
         try:
-            return self._memo['get_csig']
-        except KeyError:
+            return ninfo.csig
+        except AttributeError:
             pass
 
         try:
@@ -2367,7 +2353,7 @@ class File(Base):
         else:
             csig = SCons.Util.MD5signature(contents)
 
-        self._memo['get_csig'] = csig
+        ninfo.csig = csig
 
         return csig
 

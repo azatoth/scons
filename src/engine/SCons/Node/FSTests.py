@@ -717,8 +717,8 @@ class FileNodeInfoTestCase(_tempdirTestCase):
 
         ni.update(fff)
 
-        assert not hasattr(ni, 'timestamp')
-        assert not hasattr(ni, 'size')
+        assert hasattr(ni, 'timestamp')
+        assert hasattr(ni, 'size')
 
         ni.timestamp = 0
         ni.size = 0
@@ -2863,7 +2863,7 @@ class SpecialAttrTestCase(unittest.TestCase):
         assert s == os.path.normpath('baz/bar/baz.blat'), s
         assert f.srcpath.is_literal(), f.srcpath
         g = f.srcpath.get()
-        assert isinstance(g, SCons.Node.FS.Entry), g.__class__
+        assert isinstance(g, SCons.Node.FS.File), g.__class__
 
         s = str(f.srcdir)
         assert s == os.path.normpath('baz/bar'), s

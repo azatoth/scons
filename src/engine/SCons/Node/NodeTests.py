@@ -414,13 +414,18 @@ class NodeTestCase(unittest.TestCase):
 
     def test_built(self):
         """Test the built() method"""
+        class SubNodeInfo(SCons.Node.NodeInfoBase):
+            def update(self, node):
+                self.updated = 1
         class SubNode(SCons.Node.Node):
             def clear(self):
                 self.cleared = 1
 
         n = SubNode()
+        n.ninfo = SubNodeInfo(n)
         n.built()
         assert n.cleared, n.cleared
+        assert n.ninfo.updated, n.ninfo.cleared
 
     def test_retrieve_from_cache(self):
         """Test the base retrieve_from_cache() method"""

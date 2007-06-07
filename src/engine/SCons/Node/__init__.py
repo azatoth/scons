@@ -119,10 +119,14 @@ class NodeInfoBase:
         except AttributeError:
             return
         for f in field_list:
-            if hasattr(self, f):
+            try:
                 delattr(self, f)
-                func = getattr(node, 'get_' + f)
-                setattr(self, f, func())
+            except AttributeError:
+                pass
+            func = getattr(node, 'get_' + f)
+            setattr(self, f, func())
+    def convert(self, node, val):
+        pass
     def merge(self, other):
         self.__dict__.update(other.__dict__)
     def format(self, field_list=None, names=0):
@@ -360,6 +364,8 @@ class Node:
 
         self.clear()
 
+        self.ninfo.update(self)
+
     def visited(self):
         """Called just after this node has been visited (with or
         without a build)."""
@@ -421,6 +427,7 @@ class Node:
         # once before the build, and then store the results in the
         # .sconsign file after the build.
         self.clear_memoized_values()
+        self.ninfo = self.new_ninfo()
         self.executor_cleanup()
         try:
             delattr(self, '_calculated_sig')
