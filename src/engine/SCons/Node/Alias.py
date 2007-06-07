@@ -129,13 +129,13 @@ class Alias(SCons.Node.Node):
         returns - the content signature
         """
         try:
-            return self.binfo.ninfo.csig
+            return self.ninfo.csig
         except AttributeError:
             pass
            
         contents = self.get_contents()
         csig = SCons.Util.MD5signature(contents)
-        self.get_binfo().ninfo.csig = csig
+        self.get_ninfo().csig = csig
         return csig
 
 default_ans = AliasNameSpace()

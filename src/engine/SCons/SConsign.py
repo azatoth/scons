@@ -106,6 +106,19 @@ def write():
         else:
             syncmethod()
 
+class SConsignEntry:
+    """
+    Wrapper class for the generic entry in a .sconsign file.
+    The Node subclass populates it with attributes as it pleases.
+
+    XXX As coded below, we do expect a '.binfo' attribute to be added,
+    but we'll probably generalize this in the next refactorings.
+    """
+    def convert_to_sconsign(self):
+        self.binfo.convert_to_sconsign()
+    def convert_from_sconsign(self, dir, name):
+        self.binfo.convert_from_sconsign(dir, name)
+
 class Base:
     """
     This is the controlling class for the signatures for the collection of
@@ -138,7 +151,16 @@ class Base:
 
     def store_info(self, filename, node):
         entry = node.get_stored_info()
-        entry.merge(node.get_binfo())
+        entry.binfo.merge(node.get_binfo())
+        try:
+            ninfo = entry.ninfo
+        except AttributeError:
+            # This happens with SConf Nodes, because the configuration
+            # subsystem takes direct control over how the build decision
+            # is made and its information stored.
+            pass
+        else:
+            ninfo.merge(node.get_ninfo())
         self.to_be_merged[filename] = entry
         self.dirty = True
 

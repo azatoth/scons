@@ -1883,7 +1883,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
                     result.append(ni.convert(self.node, s))
                 setattr(self, attr, result)
     def format(self, names=0):
-        result = [string.join(self.ninfo.format(names=names), ' ')]
+        result = []
         bkids = self.bsources + self.bdepends + self.bimplicit
         bkidsigs = self.bsourcesigs + self.bdependsigs + self.bimplicitsigs
         for i in xrange(len(bkids)):
@@ -2008,28 +2008,37 @@ class File(Base):
             pass
 
         try:
-            binfo = self.dir.sconsign().get_entry(self.name)
+            sconsign_entry = self.dir.sconsign().get_entry(self.name)
         except (KeyError, OSError):
-            binfo = self.new_binfo()
-            binfo.set_ninfo(self.new_ninfo())
+            import SCons.SConsign
+            sconsign_entry = SCons.SConsign.SConsignEntry()
+            sconsign_entry.binfo = self.new_binfo()
+            sconsign_entry.ninfo = self.new_ninfo()
         else:
-            if not hasattr(binfo, 'ninfo'):
-                # Transition:  The .sconsign file entry has no NodeInfo
-                # object, which means it's a slightly older BuildInfo.
-                # Copy over the relevant attributes.
-                ninfo = binfo.ninfo = self.BuildInfo(self)
-                for attr in ninfo.__dict__.keys():
-                    try:
-                        setattr(ninfo, attr, getattr(binfo, attr))
-                    except AttributeError:
-                        pass
+            pass
+            # XXX This is where we need to handle the transition from
+            # old .sconsign file formats.  There's no test for this,
+            # and the code below is from earlier BSR versions which
+            # stuck the NodeInfo object as an attribute of the
+            # BuildInfo object.  Must revisit before this goes live.
+            #
+            #if not hasattr(binfo, 'ninfo'):
+            #    # Transition:  The .sconsign file entry has no NodeInfo
+            #    # object, which means it's a slightly older BuildInfo.
+            #    # Copy over the relevant attributes.
+            #    ninfo = binfo.ninfo = self.BuildInfo(self)
+            #    for attr in ninfo.__dict__.keys():
+            #        try:
+            #            setattr(ninfo, attr, getattr(binfo, attr))
+            #        except AttributeError:
+            #            pass
 
-        self._memo['get_stored_info'] = binfo
+        self._memo['get_stored_info'] = sconsign_entry
 
-        return binfo
+        return sconsign_entry
 
     def get_stored_implicit(self):
-        binfo = self.get_stored_info()
+        binfo = self.get_stored_info().binfo
         binfo.prepare_dependencies()
         try: return binfo.bimplicit
         except AttributeError: return None
@@ -2145,18 +2154,12 @@ class File(Base):
         if self.fs.CachePath and self.fs.cache_force and self.exists():
             CachePush(self, None, None)
 
-        try:
-            binfo = self.binfo
-        except AttributeError:
-            binfo = self.get_binfo()
-            binfo.set_ninfo(self.get_ninfo())
-
-        ninfo = binfo.ninfo
+        ninfo = self.get_ninfo()
+        old = self.get_stored_info()
 
         csig = None
-
-        old = self.get_stored_info()
         mtime = self.get_timestamp()
+        size = self.get_size()
 
         max_drift = self.fs.max_drift
         if max_drift > 0:
@@ -2168,7 +2171,6 @@ class File(Base):
                 except AttributeError:
                     pass
         elif max_drift == 0:
-            old = self.get_stored_info()
             try:
                 csig = old.ninfo.csig
             except AttributeError:
@@ -2184,20 +2186,22 @@ class File(Base):
 
         ninfo.csig = csig
         ninfo.timestamp = mtime
-        ninfo.size = self.get_size()
+        ninfo.size = size
 
         if not self.has_builder():
-            for attr in ['bsources', 'bsourcesigs',
-                         'bdepends', 'bdependsigs',
-                         'bimplicit', 'bimplicitsigs',
-                         'bact', 'bactsig']:
-                try:
-                    x = getattr(old, attr)
-                except AttributeError:
-                    pass
-                else:
-                    if x:
-                        setattr(binfo, attr, x)
+            self.get_binfo().__dict__.update(old.binfo.__dict__)
+            #binfo = self.get_binfo()
+            #for attr in ['bsources', 'bsourcesigs',
+            #             'bdepends', 'bdependsigs',
+            #             'bimplicit', 'bimplicitsigs',
+            #             'bact', 'bactsig']:
+            #    try:
+            #        x = getattr(old.binfo, attr)
+            #    except AttributeError:
+            #        pass
+            #    else:
+            #        if x:
+            #            setattr(binfo, attr, x)
 
         self.store_info()
 

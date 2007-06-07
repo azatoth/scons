@@ -292,8 +292,6 @@ def nodeinfo_cooked(name, ninfo, prefix=""):
 nodeinfo_string = nodeinfo_cooked
 
 def printfield(name, entry, prefix=""):
-    print nodeinfo_string(name, entry.ninfo, prefix)
-
     outlist = field("implicit", entry, 0)
     if outlist:
         if Verbose:
@@ -314,12 +312,15 @@ def printentries(entries, location):
             except KeyError:
                 sys.stderr.write("sconsign: no entry `%s' in `%s'\n" % (name, location))
             else:
-                printfield(name, entry)
+                print nodeinfo_string(name, entry.ninfo)
+                printfield(name, entry.binfo)
     else:
         names = entries.keys()
         names.sort()
         for name in names:
-            printfield(name, entries[name])
+            entry = entries[name]
+            print nodeinfo_string(name, entry.ninfo)
+            printfield(name, entry.binfo)
 
 class Do_SConsignDB:
     def __init__(self, dbm_name, dbm):

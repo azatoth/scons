@@ -124,10 +124,7 @@ class NodeInfoBase:
                 func = getattr(node, 'get_' + f)
                 setattr(self, f, func())
     def merge(self, other):
-        for key, val in other.__dict__.items():
-            self.__dict__[key] = val
-    def prepare_dependencies(self):
-        pass
+        self.__dict__.update(other.__dict__)
     def format(self, field_list=None, names=0):
         if field_list is None:
             try:
@@ -162,16 +159,8 @@ class BuildInfoBase:
         self.bdependsigs = []
         self.bimplicitsigs = []
         self.bactsig = None
-    def set_ninfo(self, ninfo):
-        self.ninfo = ninfo
     def merge(self, other):
-        for key, val in other.__dict__.items():
-            try:
-                merge = self.__dict__[key].merge
-            except (AttributeError, KeyError):
-                self.__dict__[key] = val
-            else:
-                merge(val)
+        self.__dict__.update(other.__dict__)
 
 class Node:
     """The base Node class, for entities that we know how to
@@ -381,7 +370,7 @@ class Node:
             # don't bother calculating or storing it.
             pass
         else:
-            binfo.ninfo.update(self)
+            self.ninfo.update(self)
             self.store_info()
 
     #
@@ -704,7 +693,6 @@ class Node:
             pass
 
         binfo = self.new_binfo()
-        binfo.set_ninfo(self.get_ninfo())
         self.binfo = binfo
 
         executor = self.get_executor()
@@ -956,7 +944,7 @@ class Node:
         if t: Trace('changed(%s [%s], %s)' % (self, classname(self), node))
         if node is None:
             node = self
-        bi = node.get_stored_info()
+        bi = node.get_stored_info().binfo
         then = bi.bsourcesigs + bi.bdependsigs + bi.bimplicitsigs
         children = self.children()
         if len(then) != len(children):
@@ -1104,6 +1092,8 @@ class Node:
         old = self.get_stored_info()
         if old is None:
             return None
+
+        old = old.binfo
         old.prepare_dependencies()
 
         try:

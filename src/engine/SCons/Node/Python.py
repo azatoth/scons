@@ -103,9 +103,9 @@ class Value(SCons.Node.Node):
         timestamp, we get to ignore the calculator and just use the
         value contents."""
         try:
-            return self.binfo.ninfo.csig
+            return self.ninfo.csig
         except AttributeError:
             pass
         contents = self.get_contents()
-        self.get_binfo().ninfo.csig = contents
+        self.get_ninfo().csig = contents
         return contents

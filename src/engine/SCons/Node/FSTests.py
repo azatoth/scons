@@ -769,7 +769,6 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         """Test converting from .sconsign file format"""
         fff = self.fs.File('fff')
         bi = SCons.Node.FS.FileBuildInfo(fff)
-        bi.set_ninfo(SCons.Node.FS.FileNodeInfo(fff))
         assert hasattr(bi, 'convert_from_sconsign')
 
     def test_prepare_dependencies(self):
@@ -782,7 +781,6 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         """Test the format() method"""
         f1 = self.fs.File('f1')
         bi1 = SCons.Node.FS.FileBuildInfo(f1)
-        bi1.set_ninfo(SCons.Node.FS.FileNodeInfo(f1))
 
         s1sig = SCons.Node.FS.FileNodeInfo(self.fs.File('n1'))
         s1sig.csig = 1
@@ -801,7 +799,6 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         bi1.bactsig = 'actionsig'
 
         expect_lines = [
-            'None None None',
             's1: 1 None None',
             'd1: None 2 None',
             'i1: None None 3',
@@ -2576,7 +2573,6 @@ class CacheDirTestCase(unittest.TestCase):
 
         f5 = fs.File("cd.f5")
         f5.binfo = f5.BuildInfo(f5)
-        f5.binfo.set_ninfo(f5.NodeInfo(f5))
         cp = f5.cachepath()
         dirname = os.path.join('cache', 'D')
         filename = os.path.join(dirname, 'd41d8cd98f00b204e9800998ecf8427e')
@@ -2603,7 +2599,6 @@ class CacheDirTestCase(unittest.TestCase):
             test.write(cd_f7, "cd.f7\n")
             f7 = fs.File(cd_f7)
             f7.binfo = f7.BuildInfo(f7)
-            f7.binfo.set_ninfo(f7.NodeInfo(f7))
 
             warn_caught = 0
             try:

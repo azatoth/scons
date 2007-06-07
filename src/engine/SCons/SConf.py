@@ -251,7 +251,7 @@ class SConfBuildTask(SCons.Taskmaster.Task):
         cachable = 1
         for t in self.targets:
             if T: Trace('%s' % (t))
-            bi = t.get_stored_info()
+            bi = t.get_stored_info().binfo
             if isinstance(bi, SConfBuildInfo):
                 if T: Trace(': SConfBuildInfo')
                 if cache_mode == CACHE:
@@ -292,11 +292,13 @@ class SConfBuildTask(SCons.Taskmaster.Task):
         if cached_error and is_up_to_date:
             self.display("Building \"%s\" failed in a previous run and all "
                          "its sources are up to date." % str(self.targets[0]))
-            self.display_cached_string(self.targets[0].get_stored_info())
+            binfo = self.targets[0].get_stored_info().binfo
+            self.display_cached_string(binfo)
             raise SCons.Errors.BuildError # will be 'caught' in self.failed
         elif is_up_to_date:            
             self.display("\"%s\" is up to date." % str(self.targets[0]))
-            self.display_cached_string(self.targets[0].get_stored_info())
+            binfo = self.targets[0].get_stored_info().binfo
+            self.display_cached_string(binfo)
         elif dryrun:
             raise ConfigureDryRunError(self.targets[0])
         else:
@@ -321,6 +323,9 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                     binfo = t.get_binfo()
                     binfo.__class__ = SConfBuildInfo
                     binfo.set_build_result(1, s.getvalue())
+                    sconsign_entry = SCons.SConsign.SConsignEntry()
+                    sconsign_entry.binfo = binfo
+                    #sconsign_entry.ninfo = self.get_ninfo()
                     # We'd like to do this as follows:
                     #    t.store_info(binfo)
                     # However, we need to store it as an SConfBuildInfo
@@ -328,7 +333,7 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                     # regular FileNodeInfo if the target is itself a
                     # regular File.
                     sconsign = t.dir.sconsign()
-                    sconsign.set_entry(t.name, binfo)
+                    sconsign.set_entry(t.name, sconsign_entry)
                     sconsign.merge()
                 raise e
             else:
@@ -336,6 +341,9 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                     binfo = t.get_binfo()
                     binfo.__class__ = SConfBuildInfo
                     binfo.set_build_result(0, s.getvalue())
+                    sconsign_entry = SCons.SConsign.SConsignEntry()
+                    sconsign_entry.binfo = binfo
+                    #sconsign_entry.ninfo = self.get_ninfo()
                     # We'd like to do this as follows:
                     #    t.store_info(binfo)
                     # However, we need to store it as an SConfBuildInfo
@@ -343,7 +351,7 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                     # regular FileNodeInfo if the target is itself a
                     # regular File.
                     sconsign = t.dir.sconsign()
-                    sconsign.set_entry(t.name, binfo)
+                    sconsign.set_entry(t.name, sconsign_entry)
                     sconsign.merge()
 
 class SConf:

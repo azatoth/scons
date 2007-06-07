@@ -214,11 +214,6 @@ class Calculator:
 
 class NodeInfoBaseTestCase(unittest.TestCase):
 
-    def test_prepare_dependencies(self):
-        """Test that we have a prepare_dependencies() method"""
-        ni = SCons.Node.NodeInfoBase(SCons.Node.Node())
-        ni.prepare_dependencies()
-
     def test_merge(self):
         """Test merging NodeInfoBase attributes"""
         ni1 = SCons.Node.NodeInfoBase(SCons.Node.Node())
@@ -261,17 +256,14 @@ class BuildInfoBaseTestCase(unittest.TestCase):
         """Test BuildInfoBase initialization"""
         n = SCons.Node.Node()
         bi = SCons.Node.BuildInfoBase(n)
-        bi.set_ninfo(SCons.Node.NodeInfoBase(n))
-        assert hasattr(bi, 'ninfo')
+        assert bi
 
     def test_merge(self):
         """Test merging BuildInfoBase attributes"""
         n1 = SCons.Node.Node()
         bi1 = SCons.Node.BuildInfoBase(n1)
-        bi1.set_ninfo(SCons.Node.NodeInfoBase(n1))
         n2 = SCons.Node.Node()
         bi2 = SCons.Node.BuildInfoBase(n2)
-        bi2.set_ninfo(SCons.Node.NodeInfoBase(n2))
 
         bi1.a1 = 1
         bi1.a2 = 2
@@ -279,19 +271,10 @@ class BuildInfoBaseTestCase(unittest.TestCase):
         bi2.a2 = 222
         bi2.a3 = 333
 
-        bi1.ninfo.a4 = 4
-        bi1.ninfo.a5 = 5
-        bi2.ninfo.a5 = 555
-        bi2.ninfo.a6 = 666
-
         bi1.merge(bi2)
         assert bi1.a1 == 1, bi1.a1
         assert bi1.a2 == 222, bi1.a2
         assert bi1.a3 == 333, bi1.a3
-        assert bi1.ninfo.a4 == 4, bi1.ninfo.a4
-        assert bi1.ninfo.a5 == 555, bi1.ninfo.a5
-        assert bi1.ninfo.a6 == 666, bi1.ninfo.a6
-
 
 
 class NodeTestCase(unittest.TestCase):
@@ -619,10 +602,12 @@ class NodeTestCase(unittest.TestCase):
         assert result == None, result
 
         def get_null_info():
-            class Null_BInfo:
-                def prepare_dependencies(self):
-                    pass
-            return Null_BInfo()
+            class Null_SConsignEntry:
+                class Null_BuildInfo:
+                    def prepare_dependencies(self):
+                        pass
+                binfo = Null_BuildInfo()
+            return Null_SConsignEntry()
 
         node.get_stored_info = get_null_info
         #see above: node.__str__ = lambda: 'null_binfo'

@@ -359,16 +359,21 @@ import SCons.Taskmaster
 import SCons.Node
 import time
 
+class DummyNodeInfo:
+    def update(self, obj):
+        pass
 
 class testnode (SCons.Node.Node):
     def __init__(self):
         SCons.Node.Node.__init__(self)
         self.expect_to_be = SCons.Node.executed
+        self.ninfo = DummyNodeInfo()
 
 class goodnode (testnode):
     def __init__(self):
         SCons.Node.Node.__init__(self)
         self.expect_to_be = SCons.Node.up_to_date
+        self.ninfo = DummyNodeInfo()
 
 class slowgoodnode (goodnode):
     def prepare(self):

@@ -33,14 +33,17 @@ import SCons.dblite
 import SCons.SConsign
 
 class BuildInfo:
+    def merge(self, object):
+        pass
+
+class DummySConsignEntry:
     def __init__(self, name):
         self.name = name
+        self.binfo = BuildInfo()
     def convert_to_sconsign(self):
         self.c_to_s = 1
     def convert_from_sconsign(self, dir, name):
         self.c_from_s = 1
-    def merge(self, object):
-        pass
 
 class FS:
     def __init__(self, top):
@@ -71,10 +74,10 @@ class SConsignTestCase(unittest.TestCase):
 class BaseTestCase(SConsignTestCase):
 
     def test_Base(self):
-        aaa = BuildInfo('aaa')
-        bbb = BuildInfo('bbb')
+        aaa = DummySConsignEntry('aaa')
+        bbb = DummySConsignEntry('bbb')
         bbb.arg1 = 'bbb arg1'
-        ccc = BuildInfo('ccc')
+        ccc = DummySConsignEntry('ccc')
         ccc.arg2 = 'ccc arg2'
 
         f = SCons.SConsign.Base()
@@ -100,9 +103,9 @@ class BaseTestCase(SConsignTestCase):
         assert not hasattr(e, 'arg1'), e
         assert e.arg2 == 'ccc arg2', e.arg1
 
-        ddd = BuildInfo('ddd')
-        eee = BuildInfo('eee')
-        fff = BuildInfo('fff')
+        ddd = DummySConsignEntry('ddd')
+        eee = DummySConsignEntry('eee')
+        fff = DummySConsignEntry('fff')
         fff.arg = 'fff arg'
 
         f = SCons.SConsign.Base()
@@ -125,10 +128,10 @@ class BaseTestCase(SConsignTestCase):
         assert e.arg == 'fff arg', e.arg
 
     def test_store_info(self):
-        aaa = BuildInfo('aaa')
-        bbb = BuildInfo('bbb')
+        aaa = DummySConsignEntry('aaa')
+        bbb = DummySConsignEntry('bbb')
         bbb.arg1 = 'bbb arg1'
-        ccc = BuildInfo('ccc')
+        ccc = DummySConsignEntry('ccc')
         ccc.arg2 = 'ccc arg2'
 
         f = SCons.SConsign.Base()
@@ -176,9 +179,9 @@ class BaseTestCase(SConsignTestCase):
         assert not hasattr(e, 'arg1'), e
         assert e.arg2 == 'ccc arg2', e.arg1
 
-        ddd = BuildInfo('ddd')
-        eee = BuildInfo('eee')
-        fff = BuildInfo('fff')
+        ddd = DummySConsignEntry('ddd')
+        eee = DummySConsignEntry('eee')
+        fff = DummySConsignEntry('fff')
         fff.arg = 'fff arg'
 
         f = SCons.SConsign.Base()
@@ -216,8 +219,8 @@ class SConsignDBTestCase(SConsignTestCase):
         SCons.SConsign.DataBase = {}
         try:
             d1 = SCons.SConsign.DB(DummyNode('dir1'))
-            d1.set_entry('aaa', BuildInfo('aaa name'))
-            d1.set_entry('bbb', BuildInfo('bbb name'))
+            d1.set_entry('aaa', DummySConsignEntry('aaa name'))
+            d1.set_entry('bbb', DummySConsignEntry('bbb name'))
 
             aaa = d1.get_entry('aaa')
             assert aaa.name == 'aaa name'
@@ -225,8 +228,8 @@ class SConsignDBTestCase(SConsignTestCase):
             assert bbb.name == 'bbb name'
 
             d2 = SCons.SConsign.DB(DummyNode('dir2'))
-            d2.set_entry('ccc', BuildInfo('ccc name'))
-            d2.set_entry('ddd', BuildInfo('ddd name'))
+            d2.set_entry('ccc', DummySConsignEntry('ccc name'))
+            d2.set_entry('ddd', DummySConsignEntry('ddd name'))
 
             ccc = d2.get_entry('ccc')
             assert ccc.name == 'ccc name'
@@ -234,8 +237,8 @@ class SConsignDBTestCase(SConsignTestCase):
             assert ddd.name == 'ddd name'
 
             d31 = SCons.SConsign.DB(DummyNode('dir3/sub1'))
-            d31.set_entry('eee', BuildInfo('eee name'))
-            d31.set_entry('fff', BuildInfo('fff name'))
+            d31.set_entry('eee', DummySConsignEntry('eee name'))
+            d31.set_entry('fff', DummySConsignEntry('fff name'))
 
             eee = d31.get_entry('eee')
             assert eee.name == 'eee name'
@@ -243,8 +246,8 @@ class SConsignDBTestCase(SConsignTestCase):
             assert fff.name == 'fff name'
 
             d32 = SCons.SConsign.DB(DummyNode('dir3%ssub2' % os.sep))
-            d32.set_entry('ggg', BuildInfo('ggg name'))
-            d32.set_entry('hhh', BuildInfo('hhh name'))
+            d32.set_entry('ggg', DummySConsignEntry('ggg name'))
+            d32.set_entry('hhh', DummySConsignEntry('hhh name'))
 
             ggg = d32.get_entry('ggg')
             assert ggg.name == 'ggg name'
@@ -258,8 +261,8 @@ class SConsignDBTestCase(SConsignTestCase):
 class SConsignDirFileTestCase(SConsignTestCase):
 
     def test_SConsignDirFile(self):
-        bi_foo = BuildInfo('foo')
-        bi_bar = BuildInfo('bar')
+        bi_foo = DummySConsignEntry('foo')
+        bi_bar = DummySConsignEntry('bar')
 
         f = SCons.SConsign.DirFile(DummyNode())
         f.set_entry('foo', bi_foo)
@@ -274,7 +277,7 @@ class SConsignDirFileTestCase(SConsignTestCase):
         assert e.name == 'bar', e.name
         assert not hasattr(e, 'arg'), e
 
-        bbb = BuildInfo('bbb')
+        bbb = DummySConsignEntry('bbb')
         bbb.arg = 'bbb arg'
 
         f.set_entry('bar', bbb)
@@ -358,8 +361,8 @@ class writeTestCase(SConsignTestCase):
 
         f = SCons.SConsign.DB(DummyNode())
 
-        bi_foo = BuildInfo('foo')
-        bi_bar = BuildInfo('bar')
+        bi_foo = DummySConsignEntry('foo')
+        bi_bar = DummySConsignEntry('bar')
         f.set_entry('foo', bi_foo)
         f.set_entry('bar', bi_bar)
 
