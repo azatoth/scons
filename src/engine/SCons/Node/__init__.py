@@ -739,7 +739,8 @@ class Node:
             return self.ninfo.csig
         except AttributeError:
             ninfo = self.get_ninfo()
-            return SCons.Util.MD5signature(self.get_contents())
+            ninfo.csig = SCons.Util.MD5signature(self.get_contents())
+            return self.ninfo.csig
 
     def get_cachedir_csig(self):
         return self.get_csig()
