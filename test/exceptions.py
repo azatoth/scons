@@ -75,12 +75,12 @@ sys.exit(1)
 test.write(SConstruct_path, """
 Fail = Builder(action = r'%(_python_)s myfail.py $TARGETS $SOURCE')
 env = Environment(BUILDERS = { 'Fail' : Fail })
-env.Fail(target = 'f1', source = 'f1.in')
+env.Fail(target = 'out.f1', source = 'in.f1')
 """ % locals())
 
-test.write('f1.in', "f1.in\n")
+test.write('in.f1', "in.f1\n")
 
-expected_stderr = "scons: \*\*\* \[f1\] Error 1\n"
+expected_stderr = "scons: \\*\\*\\* \\[out.f1\\] Error 1\n"
 
 test.run(arguments = '.', status = 2, stderr = expected_stderr)
 test.run(arguments = '-j2 .', status = 2, stderr = expected_stderr)
@@ -93,13 +93,14 @@ test.run(arguments = '-j2 .', status = 2, stderr = expected_stderr)
 test.write(SConstruct_path, """
 Fail = Builder(action = r'%(_python_)s myfail.py $TARGETS $SOURCE')
 env = Environment(BUILDERS = { 'Fail' : Fail })
-env.Fail(target = 'f1', source = 'f1.in')
-env.Fail(target = 'f2', source = 'f2.in')
-env.Fail(target = 'f3', source = 'f3.in')
+env.Fail(target = 'out.f1', source = 'in.f1')
+env.Fail(target = 'out.f2', source = 'in.f2')
+env.Fail(target = 'out.f3', source = 'in.f3')
 """ % locals())
 
-# f2.in is not created to cause a Task.prepare exception
-test.write('f3.in', 'f3.in\n')
+# in.f2 is not created to cause a Task.prepare exception
+test.write('in.f1', 'in.f1\n')
+test.write('in.f3', 'in.f3\n')
 
 # In Serial task mode, get the first exception and stop
 test.run(arguments = '.', status = 2, stderr = expected_stderr)
@@ -107,13 +108,17 @@ test.run(arguments = '.', status = 2, stderr = expected_stderr)
 # In Parallel task mode, we will get all three exceptions.
 
 expected_stderr_list = [
-    "scons: *** [f1] Error 1\n",
-    "scons: *** Source `f2.in' not found, needed by target `f2'.  Stop.\n",
-    "scons: *** [f3] Error 1\n",
+    "scons: *** [out.f1] Error 1\n",
+    "scons: *** Source `in.f2' not found, needed by target `out.f2'.  Stop.\n",
+    "scons: *** [out.f3] Error 1\n",
 ]
 
-# To get all three exceptions simultaneously, we must execute -j7 to
-# create one thread each for the SConstruct file and f[123] and f[123].in.
+# To get all three exceptions simultaneously, we execute -j7 to create
+# one thread each for the SConstruct file and {in,out}.f[123].  Note that
+# it's important that the input (source) files sort earlier alphabetically
+# than the output files, so they're visited first in the dependency graph
+# walk of '.' and are already considered up-to-date when we kick off the
+# "simultaneous" builds of the output (target) files.
 
 test.run(arguments = '-j7 .', status = 2, stderr = None)
 
