@@ -246,9 +246,9 @@ class SConfBuildTask(SCons.Taskmaster.Task):
         #                           build will fail
         #       cachable      is 0, if some nodes are not in our cache
         T = 0
-        is_up_to_date = 1
-        cached_error = 0
-        cachable = 1
+        changed = False
+        cached_error = False
+        cachable = True
         for t in self.targets:
             if T: Trace('%s' % (t))
             bi = t.get_stored_info().binfo
@@ -258,23 +258,21 @@ class SConfBuildTask(SCons.Taskmaster.Task):
                     t.set_state(SCons.Node.up_to_date)
                     if T: Trace(': set_state(up_to-date)')
                 else:
-                    if is_up_to_date:
-                        if T: Trace(': get_state() %s' % t.get_state())
-                        if T: Trace(': changed() %s' % t.changed())
-                    is_up_to_date = (is_up_to_date and
-                                     (t.get_state() == SCons.Node.up_to_date or
-                                      not t.changed()))
-                    if T: Trace(': is_up_to_date %s' % is_up_to_date)
+                    if T: Trace(': get_state() %s' % t.get_state())
+                    if T: Trace(': changed() %s' % t.changed())
+                    if (t.get_state() != SCons.Node.up_to_date and t.changed()):
+                        changed = True
+                    if T: Trace(': changed %s' % changed)
                 cached_error = cached_error or bi.result
             else:
                 if T: Trace(': else')
                 # the node hasn't been built in a SConf context or doesn't
                 # exist
-                cachable = 0
-                is_up_to_date = (t.get_state() == SCons.Node.up_to_date)
-                if T: Trace(': is_up_to_date %s' % is_up_to_date)
+                cachable = False
+                changed = ( t.get_state() != SCons.Node.up_to_date )
+                if T: Trace(': changed %s' % changed)
         if T: Trace('\n')
-        return (is_up_to_date, cached_error, cachable)
+        return (not changed, cached_error, cachable)
 
     def execute(self):
         if not self.targets[0].has_builder():
