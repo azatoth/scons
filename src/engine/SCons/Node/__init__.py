@@ -943,21 +943,39 @@ class Node:
         return env
 
     def changed(self, node=None):
-        """Returns if the node is up-to-date with respect to the BuildInfo
+        """
+        Returns if the node is up-to-date with respect to the BuildInfo
         stored last time it was built.  The default behavior is to compare
         it against our own previously stored BuildInfo, but the stored
         BuildInfo from another Node (typically one in a Repository)
-        can be used instead."""
+        can be used instead.
+
+        Note that we now *always* check every dependency.  We used to
+        short-circuit the check by returning as soon as we detected
+        any difference, but we now rely on checking every dependency
+        to make sure that any necessary Node information (for example,
+        the content signature of an #included .h file) is updated.
+        """
         t = 0
         if t: Trace('changed(%s [%s], %s)' % (self, classname(self), node))
         if node is None:
             node = self
+
+        result = False
+
         bi = node.get_stored_info().binfo
         then = bi.bsourcesigs + bi.bdependsigs + bi.bimplicitsigs
         children = self.children()
-        if len(then) != len(children):
-            if t: Trace(': len(%s) != len(%s)\n' % (len(then), len(children)))
-            return 1
+
+        diff = len(children) - len(then)
+        if diff:
+            # The old and new dependency lists are different lengths.
+            # This always indicates that the Node must be rebuilt.
+            # We also extend the old dependency list with enough None
+            # entries to equal the new dependency list, for the benefit
+            # of the loop below that updates node information.
+            then.extend([None] * diff)
+            result = True
 
         if self.has_builder():
             tgt_sig_type = self.get_build_env().get_tgt_sig_type()
@@ -981,16 +999,23 @@ class Node:
             i = i + 1
 
             if child.changed_since_last_build(self, prev_ni, tgt_sig_type, src_sig_type):
-                return 1
+                if t: Trace(': %s changed' % child)
+                result = True
+
         contents = self.get_executor().get_contents()
-        import SCons.Util
         if self.has_builder():
+            import SCons.Util
             newsig = SCons.Util.MD5signature(contents)
             if bi.bactsig != newsig:
-                if t: Trace(': bactsig %s != newsig %s\n' % (bi.bactsig, newsig))
-                return 1
-        if t: Trace(': up to date\n')
-        return None
+                if t: Trace(': bactsig %s != newsig %s' % (bi.bactsig, newsig))
+                result = True
+
+        if not result:
+            if t: Trace(': up to date')
+
+        if t: Trace('\n')
+
+        return result
 
     def is_up_to_date(self):
         """Default check for whether the Node is current: unknown Node
