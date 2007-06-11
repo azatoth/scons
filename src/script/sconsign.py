@@ -312,14 +312,24 @@ def printentries(entries, location):
             except KeyError:
                 sys.stderr.write("sconsign: no entry `%s' in `%s'\n" % (name, location))
             else:
-                print nodeinfo_string(name, entry.ninfo)
+                try:
+                    ninfo = entry.ninfo
+                except AttributeError:
+                    print name + ":"
+                else:
+                    print nodeinfo_string(name, entry.ninfo)
                 printfield(name, entry.binfo)
     else:
         names = entries.keys()
         names.sort()
         for name in names:
             entry = entries[name]
-            print nodeinfo_string(name, entry.ninfo)
+            try:
+                ninfo = entry.ninfo
+            except AttributeError:
+                print name + ":"
+            else:
+                print nodeinfo_string(name, entry.ninfo)
             printfield(name, entry.binfo)
 
 class Do_SConsignDB:
