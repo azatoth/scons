@@ -70,7 +70,7 @@ if "--debug=memoizer" in _args:
         # for it to be displayed or not after warnings are configured.
         import Main
         exc_type, exc_value, tb = sys.exc_info()
-        Main.delayed_warnings.append(exc_type, exc_value)
+        Main.delayed_warnings.append((exc_type, exc_value))
 del _args
 
 import SCons.Action

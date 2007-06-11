@@ -49,12 +49,12 @@ test.run(arguments = "--profile=%s -h" % scons_prof)
 test.fail_test(string.find(test.stdout(), 'usage: scons [OPTION]') == -1)
 test.fail_test(string.find(test.stdout(), 'usage: scons [OPTION]') == -1)
 
-stats = pstats.Stats(scons_prof)
-stats.sort_stats('time')
-
 try:
     save_stdout = sys.stdout
     sys.stdout = StringIO.StringIO()
+
+    stats = pstats.Stats(scons_prof)
+    stats.sort_stats('time')
 
     stats.strip_dirs().print_stats()
 
@@ -73,12 +73,12 @@ scons_prof = test.workpath('scons2.prof')
 
 test.run(arguments = "--profile %s" % scons_prof)
 
-stats = pstats.Stats(scons_prof)
-stats.sort_stats('time')
-
 try:
     save_stdout = sys.stdout
     sys.stdout = StringIO.StringIO()
+
+    stats = pstats.Stats(scons_prof)
+    stats.sort_stats('time')
 
     stats.strip_dirs().print_stats()
 

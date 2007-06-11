@@ -556,10 +556,13 @@ class OptionParser:
         Print an extended help message, listing all options and any
         help text provided with them, to 'file' (default stdout).
         """
-        # SCons:  don't import wrap_text from distutils, use the
-        # copy we've included below, so we can avoid being dependent
-        # on having the right version of distutils installed.
+        # SCons:  don't import wrap_text from distutils, use textwrap
+        # (possibly the compatibility copy we've included for support
+        # of earlier Python versions) so we don't have to depend on
+        # having the right version of distutils installed.
         #from distutils.fancy_getopt import wrap_text
+        import textwrap
+        wrap_text = textwrap.wrap
         
         if file is None:
             file = sys.stdout
@@ -581,22 +584,16 @@ class OptionParser:
         #   -fFILENAME, --file=FILENAME
         #           read data from FILENAME
 
-        file.write("Options:\n")
-        width = 78                      # assume 80 cols for now
-
         option_help = []                # list of (string, string) tuples
-        lengths = []
 
         for option in self.option_list:
-            takes_value = option.takes_value()
-            if takes_value:
-                metavar = option.metavar or string.upper(option.dest)
-
-            opts = []               # list of "-a" or "--foo=FILE" strings
             if option.help is SUPPRESS_HELP:
                 continue
 
-            if takes_value:
+            opts = []               # list of "-a" or "--foo=FILE" strings
+
+            if option.takes_value():
+                metavar = option.metavar or string.upper(option.dest)
                 for sopt in option._short_opts:
                     opts.append(sopt + ' ' + metavar)
                 for lopt in option._long_opts:
@@ -607,31 +604,24 @@ class OptionParser:
 
             opts = string.join(opts,", ")
             option_help.append((opts, option.help))
-            lengths.append(len(opts))
 
+        lengths = map(lambda o_h: len(o_h[0]), option_help)
         max_opts = min(max(lengths), 26)
+        max_opts_fmt = '  %-*s  '
 
+        left_indent = max_opts_fmt % (max_opts, '')
+        tw = textwrap.TextWrapper(width = 78,
+                                  subsequent_indent = left_indent + '  ')
+
+        file.write("Options:\n")
         for (opts, help) in option_help:
-            # how much to indent lines 2 .. N of help text
-            indent_rest = 2 + max_opts + 2 
-            help_width = width - indent_rest
-
             if len(opts) > max_opts:
-                opts = "  " + opts + "\n"
-                indent_first = indent_rest
-            else:                       # start help on same line as opts
-                opts = "  %-*s  " % (max_opts, opts)
-                indent_first = 0
+                 file.write('  ' + opts + '\n')
+                 tw.initial_indent = left_indent
+            else:
+                 tw.initial_indent = max_opts_fmt % (max_opts, opts)
 
-            file.write(opts)
-
-            if help:
-                help_lines = wrap_text(help, help_width)
-                file.write( "%*s%s\n" % (indent_first, "", help_lines[0]))
-                for line in help_lines[1:]:
-                    file.write("  %*s%s\n" % (indent_rest, "", line))
-            elif opts[-1] != "\n":
-                file.write("\n")
+            file.write(tw.fill(help) + '\n')
 
 # class OptionParser
 
@@ -662,69 +652,3 @@ def _match_abbrev (s, wordmap):
             # More than one possible completion: ambiguous prefix.
             raise BadOptionError("ambiguous option: %s (%s?)"
                                  % (s, string.join(possibilities,", ")))
-
-# SCons:  Include a snarfed copy of wrap_text(), so we're not dependent
-# on the right version of distutils being installed.
-import re
-
-WS_TRANS = string.maketrans(string.whitespace, ' ' * len(string.whitespace))
-
-def wrap_text (text, width):
-    """wrap_text(text : string, width : int) -> [string]
-
-    Split 'text' into multiple lines of no more than 'width' characters
-    each, and return the list of strings that results.
-    """
-
-    if text is None:
-        return []
-    if len(text) <= width:
-        return [text]
-
-    text = string.expandtabs(text)
-    text = string.translate(text, WS_TRANS)
-    chunks = re.split(r'( +|-+)', text)
-    chunks = filter(None, chunks)      # ' - ' results in empty strings
-    lines = []
-
-    while chunks:
-
-        cur_line = []                   # list of chunks (to-be-joined)
-        cur_len = 0                     # length of current line
-
-        while chunks:
-            l = len(chunks[0])
-            if cur_len + l <= width:    # can squeeze (at least) this chunk in
-                cur_line.append(chunks[0])
-                del chunks[0]
-                cur_len = cur_len + l
-            else:                       # this line is full
-                # drop last chunk if all space
-                if cur_line and cur_line[-1][0] == ' ':
-                    del cur_line[-1]
-                break
-
-        if chunks:                      # any chunks left to process?
-
-            # if the current line is still empty, then we had a single
-            # chunk that's too big too fit on a line -- so we break
-            # down and break it up at the line width
-            if cur_len == 0:
-                cur_line.append(chunks[0][0:width])
-                chunks[0] = chunks[0][width:]
-
-            # all-whitespace chunks at the end of a line can be discarded
-            # (and we know from the re.split above that if a chunk has
-            # *any* whitespace, it is *all* whitespace)
-            if chunks[0][0] == ' ':
-                del chunks[0]
-
-        # and store this line in the list-of-all-lines -- as a single
-        # string, of course!
-        lines.append(string.join(cur_line, ''))
-
-    # while chunks
-
-    return lines
-
-# wrap_text ()
