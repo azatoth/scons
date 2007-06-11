@@ -43,8 +43,7 @@ env['foo-bar'] = 1
 
 expect_stderr = """
 scons: *** Illegal construction variable `foo-bar'
-File "%(SConstruct_path)s", line 2, in ?
-""" % locals()
+""" + test.python_file_line(SConstruct_path, 2)
 
 test.run(arguments='.', status=2, stderr=expect_stderr)
 
@@ -59,10 +58,10 @@ env = Environment()
 env['foo(bar)'] = 1
 """)
 
+
 expect_stderr = """
 scons: *** Illegal construction variable `foo(bar)'
-File "%(SConscript_path)s", line 2, in ?
-""" % locals()
+""" + test.python_file_line(SConscript_path, 2)
 
 test.run(arguments='.', status=2, stderr=expect_stderr)
 
