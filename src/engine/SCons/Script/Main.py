@@ -1472,7 +1472,10 @@ def main():
         if num_jobs == 1:
             ct = cumulative_command_time
         else:
-            ct = last_command_end - first_command_start
+            if last_command_end is None or first_command_start is None:
+                ct = 0.0
+            else:
+                ct = last_command_end - first_command_start
         scons_time = total_time - sconscript_time - ct
         print "Total build time: %f seconds"%total_time
         print "Total SConscript file execution time: %f seconds"%sconscript_time

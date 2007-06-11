@@ -55,6 +55,9 @@ RELEASE 0.97.X - XXX
     for adding a new method, respectively, to a construction environment
     or an arbitrary object (such as a class).
 
+  - Fix the --debug=time option when the -j option is specified and all
+    files are up to date.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
