@@ -68,7 +68,7 @@ test.up_to_date(arguments = 'switch.out')
 
 write_SConstruct(test, 'MD5')
 
-test.up_to_date(arguments = 'switch.out')
+test.not_up_to_date(arguments = 'switch.out')
 
 
 

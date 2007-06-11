@@ -2176,10 +2176,9 @@ class File(Base):
             except AttributeError:
                 pass
 
-        if not csig:
-            csig = self.get_csig()
+        if csig:
+            ninfo.csig = csig
 
-        ninfo.csig = csig
         ninfo.timestamp = mtime
         ninfo.size = size
 
@@ -2428,6 +2427,7 @@ class File(Base):
                         self.store_info()
                     if T: Trace(' 1\n')
                     return 1
+            self.changed()
             if T: Trace(' None\n')
             return None
         else:

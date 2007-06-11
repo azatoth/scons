@@ -88,9 +88,12 @@ scons: `f4.out' is up to date.
 
 
 
+# Switching to content signatures from timestamps should rebuild,
+# because we didn't record the content signatures last time.
+
 write_SConstruct(test, 'MD5')
 
-test.up_to_date(arguments = 'f1.out f3.out')
+test.not_up_to_date(arguments = 'f1.out f2.out f3.out f4.out')
 
 
 

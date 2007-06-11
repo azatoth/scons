@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 #
 # __COPYRIGHT__
@@ -24,47 +25,46 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-"""
-Verify that we can print .sconsign files with Configure context
-info in them (which have different BuildInfo entries).
-"""
+import os
+import os.path
 
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
-test.write('SConstruct', """
-env = Environment()
-import os
-env.AppendENVPath('PATH', os.environ['PATH'])
-conf = Configure(env)
-r1 = conf.CheckCHeader( 'math.h' )
-env = conf.Finish()
+
+test.write('SConstruct', """\
+def build(env, target, source):
+    open(str(target[0]), 'wt').write(open(str(source[0]), 'rt').read())
+B = Builder(action = build)
+env = Environment(BUILDERS = { 'B' : B })
+env.B(target = 'f1.out', source = 'f1.in')
+env.B(target = 'f2.out', source = 'f2.in')
+SourceSignatures('timestamp')
 """)
+
+test.write('f1.in', "f1.in\n")
+test.write('f2.in', "f2.in\n")
 
 test.run(arguments = '.')
 
-sig_re = r'[0-9a-fA-F]{32}'
-date_re = r'\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d'
 
-# Note:  There's a space at the end of the '.*': line, because the
-# Value node being printed actually begins with a newline.  It would
-# probably be good to change that to a repr() of the contents.
+
 expect = r"""=== .:
 SConstruct: None \d+ \d+
-=== .sconf_temp:
-conftest_0.c:
-        '.*': 
-#include "math.h"
+f1.in: None \d+ \d+
+f1.out: \S+ \d+ \d+
+        f1.in: None \d+ \d+
+        \S+ \[build\(target, source, env\)\]
+f2.in: None \d+ \d+
+f2.out: \S+ \d+ \d+
+        f2.in: None \d+ \d+
+        \S+ \[build\(target, source, env\)\]
+"""
 
-
-        %(sig_re)s \[.*\]
-conftest_0.o:
-        conftest_0.c: %(sig_re)s \d+ \d+
-        %(sig_re)s \[.*\]
-""" % locals()
-
-test.run_sconsign(arguments = ".sconsign",
+test.run_sconsign(arguments = test.workpath('.sconsign'),
                   stdout = expect)
+
+
 
 test.pass_test()

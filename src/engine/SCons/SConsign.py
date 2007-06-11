@@ -154,34 +154,25 @@ class Base:
     def store_info(self, filename, node):
         entry = node.get_stored_info()
         entry.binfo.merge(node.get_binfo())
-        try:
-            ninfo = entry.ninfo
-        except AttributeError:
-            # This happens with SConf Nodes, because the configuration
-            # subsystem takes direct control over how the build decision
-            # is made and its information stored.
-            pass
-        else:
-            ninfo.merge(node.get_ninfo())
-        self.to_be_merged[filename] = entry
+        self.to_be_merged[filename] = node
         self.dirty = True
 
     def do_not_store_info(self, filename, node):
         pass
 
     def merge(self):
-        for key, value in self.to_be_merged.items():
-            self.entries[key] = value
-            #binfo = node.get_binfo()
-            #try:
-            #    entry = self.entries[key]
-            #except KeyError:
-            #    self.entries[key] = binfo
-            #else:
-            #    entry.merge(binfo)
-            ##entry.merge(obj)
-            #self.dir.sconsign().set_entry(self.name, entry)
-            #self.set_entry(key, node.get_binfo())
+        for key, node in self.to_be_merged.items():
+            entry = node.get_stored_info()
+            try:
+                ninfo = entry.ninfo
+            except AttributeError:
+                # This happens with SConf Nodes, because the configuration
+                # subsystem takes direct control over how the build decision
+                # is made and its information stored.
+                pass
+            else:
+                ninfo.merge(node.get_ninfo())
+            self.entries[key] = entry
         self.to_be_merged = {}
 
 class DB(Base):

@@ -83,7 +83,7 @@ sig_re = r'[0-9a-fA-F]{32}'
 
 test.run_sconsign(arguments = ".sconsign",
          stdout = r"""=== .:
-SConstruct: %(sig_re)s \d+ \d+
+SConstruct: None \d+ \d+
 === sub1:
 hello.c: %(sig_re)s \d+ \d+
 hello.exe: %(sig_re)s \d+ \d+
@@ -108,7 +108,7 @@ inc2.h: %(sig_re)s \d+ \d+
 
 test.run_sconsign(arguments = "--raw .sconsign",
          stdout = r"""=== .:
-SConstruct: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+SConstruct: {'csig': None, 'timestamp': \d+, 'size': \d+L?}
 === sub1:
 hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
 hello.exe: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
@@ -134,7 +134,7 @@ inc2.h: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
 test.run_sconsign(arguments = "-v .sconsign",
          stdout = r"""=== .:
 SConstruct:
-    csig: %(sig_re)s
+    csig: None
     timestamp: \d+
     size: \d+
 === sub1:
@@ -208,7 +208,7 @@ inc2.h:
 test.run_sconsign(arguments = "-c -v .sconsign",
          stdout = r"""=== .:
 SConstruct:
-    csig: %(sig_re)s
+    csig: None
 === sub1:
 hello.c:
     csig: %(sig_re)s

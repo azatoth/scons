@@ -98,7 +98,7 @@ test.run_sconsign(arguments = "-e hello.exe -e hello.obj sub1/.sconsign",
         hello.obj: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s \d+ \d+
-        hello.c: %(sig_re)s \d+ \d+
+        hello.c: None \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals())
 
@@ -107,7 +107,7 @@ test.run_sconsign(arguments = "-e hello.exe -e hello.obj -r sub1/.sconsign",
         hello.obj: %(sig_re)s '%(date_re)s' \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s '%(date_re)s' \d+
-        hello.c: %(sig_re)s '%(date_re)s' \d+
+        hello.c: None '%(date_re)s' \d+
         %(sig_re)s \[.*\]
 """ % locals())
 
