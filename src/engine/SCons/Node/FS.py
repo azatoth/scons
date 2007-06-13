@@ -883,8 +883,8 @@ class Entry(Base):
     def new_ninfo(self):
         return self.disambiguate().new_ninfo()
 
-    def changed_since_last_build(self, target, prev_ni, tgt_sig_type, src_sig_type):
-        return self.disambiguate().changed_since_last_build(target, prev_ni, tgt_sig_type, src_sig_type)
+    def changed_since_last_build(self, target, prev_ni):
+        return self.disambiguate().changed_since_last_build(target, prev_ni)
 
 # This is for later so we can differentiate between Entry the class and Entry
 # the method of the FS class.
@@ -2375,7 +2375,7 @@ class File(Base):
     def changed_state(self, target, prev_ni):
         return (self.state != SCons.Node.up_to_date)
 
-    def changed_since_last_build(self, target, prev_ni, tgt_sig_type, src_sig_type):
+    def changed_since_last_build(self, target, prev_ni):
         """Returns True if this file has changed since the last time
         the specified target was built.
         """
@@ -2385,6 +2385,13 @@ class File(Base):
             'timestamp' : self.changed_timestamp,
             'build' : self.changed_state,
         }
+
+        if target.has_builder():
+            tgt_sig_type = target.get_build_env().get_tgt_sig_type()
+        else:
+            tgt_sig_type = None
+        src_sig_type = target.get_env().get_src_sig_type()
+
         if self.has_builder():
             import SCons.Action
             if not SCons.Action.execute_actions:

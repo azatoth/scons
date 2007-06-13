@@ -91,7 +91,7 @@ class Value(SCons.Node.Node):
             contents = contents + kid.get_contents()
         return contents
 
-    def changed_since_last_build(self, target, prev_ni, tgt_sig_type, src_sig_type):
+    def changed_since_last_build(self, target, prev_ni):
         cur_csig = self.get_csig()
         try:
             return cur_csig != prev_ni.csig

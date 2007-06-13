@@ -932,7 +932,7 @@ class Node:
     def get_state(self):
         return self.state
 
-    def state_has_changed(self, target, prev_ni, tgt_sig_type, src_sig_type):
+    def state_has_changed(self, target, prev_ni):
         return (self.state != SCons.Node.up_to_date)
 
     def get_env(self):
@@ -977,12 +977,6 @@ class Node:
             then.extend([None] * diff)
             result = True
 
-        if self.has_builder():
-            tgt_sig_type = self.get_build_env().get_tgt_sig_type()
-        else:
-            tgt_sig_type = None
-        src_sig_type = self.get_env().get_src_sig_type()
-
         # Here's the more efficient way we want to do this next loop:
         #    for child, prev_ni in zip(children, then):
         # Unfortunately, this seems to cause some sort of odd problem
@@ -998,7 +992,7 @@ class Node:
             prev_ni = then[i]
             i = i + 1
 
-            if child.changed_since_last_build(self, prev_ni, tgt_sig_type, src_sig_type):
+            if child.changed_since_last_build(self, prev_ni):
                 if t: Trace(': %s changed' % child)
                 result = True
 
@@ -1151,12 +1145,6 @@ class Node:
         # its string.
         stringify = lambda s, E=self.dir.Entry: str(E(s))
 
-        if self.has_builder():
-            tgt_sig_type = self.get_build_env().get_tgt_sig_type()
-        else:
-            tgt_sig_type = None
-        src_sig_type = self.get_env().get_src_sig_type()
-
         lines = []
 
         removed = filter(lambda x, nk=new_bkids: not x in nk, old_bkids)
@@ -1168,7 +1156,7 @@ class Node:
         for k in new_bkids:
             if not k in old_bkids:
                 lines.append("`%s' is a new dependency\n" % stringify(k))
-            elif k.changed_since_last_build(self, osig[k], tgt_sig_type, src_sig_type):
+            elif k.changed_since_last_build(self, osig[k]):
                 lines.append("`%s' changed\n" % stringify(k))
 
         if len(lines) == 0 and old_bkids != new_bkids:
