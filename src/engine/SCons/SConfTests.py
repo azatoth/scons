@@ -60,7 +60,7 @@ class SConfTestCase(unittest.TestCase):
         import SCons.SConsign
         SCons.SConsign.write() # simulate normal scons-finish
         for n in sys.modules.keys():
-            if string.split(n, '.')[0] == 'SCons':
+            if string.split(n, '.')[0] == 'SCons' and n[:12] != 'SCons.compat':
                 m = sys.modules[n]
                 if type(m) is ModuleType:
                     # if this is really a scons module, clear its namespace

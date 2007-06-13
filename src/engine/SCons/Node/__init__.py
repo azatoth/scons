@@ -977,21 +977,7 @@ class Node:
             then.extend([None] * diff)
             result = True
 
-        # Here's the more efficient way we want to do this next loop:
-        #    for child, prev_ni in zip(children, then):
-        # Unfortunately, this seems to cause some sort of odd problem
-        # in 1.5.2 such that it no longer recognizes any builtin names
-        # (xrange, len) inside the SCons.Util.zip() function when called
-        # from SConf.  Since we want to jettson 1.5.2 as soon as 1.0
-        # is out the door anyway, just work around that quirk for now
-        # and be ready to redo this when we update our code to more
-        # modern Python.
-        i = 0
-        while i < len(children):
-            child = children[i]
-            prev_ni = then[i]
-            i = i + 1
-
+        for child, prev_ni in zip(children, then):
             if child.changed_since_last_build(self, prev_ni):
                 if t: Trace(': %s changed' % child)
                 result = True
