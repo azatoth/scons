@@ -2376,8 +2376,16 @@ class File(Base):
         return (self.state != SCons.Node.up_to_date)
 
     def changed_since_last_build(self, target, prev_ni):
-        """Returns True if this file has changed since the last time
-        the specified target was built.
+        """
+        Returns True if this file has changed since the last time it
+        was used to build the specified target.  prev_ni is our state
+        (timestamp, length, maybe content signature) the last time the
+        target was built.
+
+        See the doc string of the superclass method
+        (SCons.Node.Node.changed_since_last_build()) for a description
+        of why this method is called through the dependency Node, not
+        the target.
         """
         func = {
             'MD5' : self.changed_content,

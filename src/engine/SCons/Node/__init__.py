@@ -942,6 +942,26 @@ class Node:
             env = SCons.Defaults.DefaultEnvironment()
         return env
 
+    def changed_since_last_build(self, target, prev_ni):
+        """
+
+        Must be overridden in a specific subclass to return True if this
+        Node (a dependency) has changed since the last time it was used
+        to build the specified target.  prev_ni is this Node's state (for
+        example, its file timestamp, length, maybe content signature)
+        as of the last time the target was built.
+
+        Note that this method is called through the dependency, not the
+        target, because a dependency Node must be able to use its own
+        logic to decide if it changed.  For example, File Nodes need to
+        obey if we're configured to use timestamps, but Python Value Nodes
+        never use timestamps and always use the content.  If this method
+        were called through the target, then each Node's implementation
+        of this method would have to have more complicated logic to
+        handle all the different Node types on which it might depend.
+        """
+        raise NotImplementedError
+
     def changed(self, node=None):
         """
         Returns if the node is up-to-date with respect to the BuildInfo
