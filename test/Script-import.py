@@ -60,24 +60,48 @@ import SCons.Script
 SCons.Script.BuildTask
 SCons.Script.CleanTask
 SCons.Script.QuestionTask
-#SCons.Script.PrintHelp
-SCons.Script.OptParser
 SCons.Script.SConscriptSettableOptions
 
+try: SCons.Script.PrintHelp
+except AttributeError: pass
+else: raise Exception, "unexpected variable SCons.Script.PrintHelp"
+
+try: SCons.Script.OptParser
+except AttributeError: pass
+else: raise Exception, "unexpected variable SCons.Script.OptParser"
+
 SCons.Script.keep_going_on_error
-#SCons.Script.print_dtree
 SCons.Script.print_explanations
 SCons.Script.print_includes
 SCons.Script.print_objects
 SCons.Script.print_time
-#SCons.Script.print_tree
 SCons.Script.memory_stats
 SCons.Script.ignore_errors
-#SCons.Script.sconscript_time
-#SCons.Script.command_time
-#SCons.Script.exit_status
-#SCons.Script.profiling
 SCons.Script.repositories
+
+try: SCons.Script.print_dtree
+except AttributeError: pass
+else: raise Exception, "unexpected variable SCons.Script.print_dtree"
+
+try: SCons.Script.print_tree
+except AttributeError: pass
+else: raise Exception, "unexpected variable SCons.Script.print_tree"
+
+try: SCons.Script.sconscript_time
+except AttributeError: pass
+else: raise Exception, "unexpected variable SCons.Script.sconscript_time"
+
+try: SCons.Script.command_time
+except AttributeError: pass
+else: raise Exception, "unexpected variable SCons.Script.command_time"
+
+try: SCons.Script.exit_status
+except AttributeError: pass
+else: raise Exception, "unexpected variable SCons.Script.exit_status"
+
+try: SCons.Script.profiling
+except AttributeError: pass
+else: raise Exception, "unexpected variable SCons.Script.profiling"
 """)
 
 test.write("m4.py", """\

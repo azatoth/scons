@@ -105,7 +105,6 @@ BuildTask               = Main.BuildTask
 CleanTask               = Main.CleanTask
 QuestionTask            = Main.QuestionTask
 #PrintHelp               = Main.PrintHelp
-OptParser               = Main.OptParser
 SConscriptSettableOptions = Main.SConscriptSettableOptions
 
 keep_going_on_error     = Main.keep_going_on_error
@@ -138,6 +137,7 @@ Builder                 = SCons.Builder.Builder
 Configure               = _SConscript.Configure
 EnumOption              = SCons.Options.EnumOption
 Environment             = SCons.Environment.Environment
+#OptParser               = SCons.SConsOptions.OptParser
 FindPathDirs            = SCons.Scanner.FindPathDirs
 ListOption              = SCons.Options.ListOption
 PackageOption           = SCons.Options.PackageOption
