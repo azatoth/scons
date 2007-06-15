@@ -1859,14 +1859,25 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         as dependency info.  Convert the strings to actual Nodes (for
         use by the --debug=explain code and --implicit-cache).
         """
-        Entry_func = self.node.dir.Entry
+        def str_to_node(s, entry=self.node.dir.Entry):
+            # This is a little bogus; we're going to mimic the lookup
+            # order of env.arg2nodes() by hard-coding an Alias lookup
+            # before we assume it's an Entry.  This should be able to
+            # go away once the Big Signature Refactoring pickles the
+            # actual NodeInfo object, which will let us know precisely
+            # what type of Node to turn it into.
+            import SCons.Node.Alias
+            n = SCons.Node.Alias.default_ans.lookup(s)
+            if not n:
+                n = entry(s)
+            return n
         for attr in ['bsources', 'bdepends', 'bimplicit']:
             try:
                 val = getattr(self, attr)
             except AttributeError:
                 pass
             else:
-                setattr(self, attr, map(Entry_func, val))
+                setattr(self, attr, map(str_to_node, val))
     def format(self):
         result = [ self.ninfo.format() ]
         bkids = self.bsources + self.bdepends + self.bimplicit
