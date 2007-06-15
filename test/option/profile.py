@@ -63,9 +63,7 @@ finally:
     sys.stdout = save_stdout
 
 test.fail_test(string.find(s, 'Main.py') == -1)
-test.fail_test(string.find(s, 'print_help') == -1)
 test.fail_test(string.find(s, '_main') == -1)
-test.fail_test(string.find(s, 'option_parser.py') == -1)
 
 
 

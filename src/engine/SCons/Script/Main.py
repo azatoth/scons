@@ -69,6 +69,10 @@ import SCons.Util
 import SCons.Warnings
 
 #
+
+class SConsPrintHelpException(Exception):
+    pass
+
 display = SCons.Util.display
 progress_display = SCons.Util.DisplayEngine()
 
@@ -725,7 +729,7 @@ class SConscriptSettableOptions:
         self.settable[name] = value
     
 
-def _main(args, parser):
+def _main(args):
     global exit_status
 
     # Here's where everything really happens.
@@ -812,9 +816,7 @@ def _main(args, parser):
             # There's no SConstruct, but they specified -h.
             # Give them the options usage now, before we fail
             # trying to read a non-existent SConstruct file.
-            parser.print_help()
-            exit_status = 0
-            return
+            raise SConsPrintHelpException
         raise SCons.Errors.UserError, "No SConstruct file found."
 
     if scripts[0] == "-":
@@ -920,7 +922,7 @@ def _main(args, parser):
         if help_text is None:
             # They specified -h, but there was no Help() inside the
             # SConscript files.  Give them the options usage.
-            parser.print_help(sys.stdout)
+            raise SConsPrintHelpException
         else:
             print help_text
             print "Use scons -H for help about command-line options."
@@ -1077,30 +1079,16 @@ def _main(args, parser):
     memory_stats.append('after building targets:')
     count_stats.append(('post-', 'build'))
 
-def _exec_main():
+def _exec_main(parser):
     sconsflags = os.environ.get('SCONSFLAGS', '')
     all_args = string.split(sconsflags) + sys.argv[1:]
 
-    parts = ["SCons by Steven Knight et al.:\n"]
-    try:
-        parts.append(version_string("script", __main__))
-    except KeyboardInterrupt:
-        raise
-    except:
-        # On Windows there is no scons.py, so there is no
-        # __main__.__version__, hence there is no script version.
-        pass 
-    parts.append(version_string("engine", SCons))
-    parts.append("__COPYRIGHT__")
-
-    import SConsOptions
-    parser = SConsOptions.OptParser(string.join(parts, ''))
-
     global options
     options, args = parser.parse_args(all_args)
+
     if type(options.debug) == type([]) and "pdb" in options.debug:
         import pdb
-        pdb.Pdb().runcall(_main, args, parser)
+        pdb.Pdb().runcall(_main, args)
     elif options.profile_file:
         from profile import Profile
 
@@ -1118,19 +1106,37 @@ def _exec_main():
 
         prof = Profile()
         try:
-            prof.runcall(_main, args, parser)
+            prof.runcall(_main, args)
+        except SConsPrintHelpException, e:
+            prof.dump_stats(options.profile_file)
+            raise e
         except SystemExit:
             pass
         prof.dump_stats(options.profile_file)
     else:
-        _main(args, parser)
+        _main(args)
 
 def main():
     global exit_status
     global first_command_start
+
+    parts = ["SCons by Steven Knight et al.:\n"]
+    try:
+        parts.append(version_string("script", __main__))
+    except KeyboardInterrupt:
+        raise
+    except:
+        # On Windows there is no scons.py, so there is no
+        # __main__.__version__, hence there is no script version.
+        pass 
+    parts.append(version_string("engine", SCons))
+    parts.append("__COPYRIGHT__")
+
+    import SConsOptions
+    parser = SConsOptions.OptParser(string.join(parts, ''))
     
     try:
-        _exec_main()
+        _exec_main(parser)
     except SystemExit, s:
         if s:
             exit_status = s
@@ -1143,6 +1149,9 @@ def main():
         _scons_internal_error()
     except SCons.Errors.UserError, e:
         _scons_user_error(e)
+    except SConsPrintHelpException:
+        parser.print_help()
+        exit_status = 0
     except:
         # An exception here is likely a builtin Python exception Python
         # code in an SConscript file.  Show them precisely what the
