@@ -680,6 +680,7 @@ class SConscriptSettableOptions:
             'help'              : 0,
             'implicit_cache'    : 0,
             'max_drift'         : SCons.Node.FS.default_max_drift,
+            'no_exec'           : 0,
             'num_jobs'          : 1,
             'random'            : 0,
         }
@@ -834,7 +835,7 @@ def _main(options, args):
     SCons.Node.implicit_cache = options.implicit_cache
     SCons.Node.implicit_deps_changed = options.implicit_deps_changed
     SCons.Node.implicit_deps_unchanged = options.implicit_deps_unchanged
-    if options.noexec:
+    if options.no_exec:
         SCons.SConf.dryrun = 1
         SCons.Action.execute_actions = None
         CleanTask.execute = CleanTask.show
@@ -1073,7 +1074,7 @@ def _main(options, args):
             progress_display("scons: " + failure_message)
         else:
             progress_display("scons: " + closing_message)
-        if not options.noexec:
+        if not options.no_exec:
             SCons.SConsign.write()
 
     memory_stats.append('after building targets:')

@@ -2046,7 +2046,7 @@ class File(Base):
 
         Note that there's a special trick here with the execute flag
         (one that's not normally done for other actions).  Basically
-        if the user requested a noexec (-n) build, then
+        if the user requested a no_exec (-n) build, then
         SCons.Action.execute_actions is set to 0 and when any action
         is called, it does its showing but then just returns zero
         instead of actually calling the action execution operation.

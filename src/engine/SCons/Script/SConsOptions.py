@@ -195,7 +195,7 @@ class OptParser(OptionParser):
                         help="Set maximum system clock drift to N seconds.")
 
         self.add_option('-n', '--no-exec', '--just-print', '--dry-run',
-                        '--recon', action="store_true", dest='noexec',
+                        '--recon', action="store_true", dest='no_exec',
                         default=0, help="Don't build; just print commands.")
 
         self.add_option('--no-site-dir', action="store_true",
