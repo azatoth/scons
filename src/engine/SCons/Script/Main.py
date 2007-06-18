@@ -334,6 +334,7 @@ cumulative_command_time = 0
 exit_status = 0 # exit status, assume success by default
 repositories = []
 num_jobs = None
+delayed_warnings = []
 
 diskcheck_all = SCons.Node.FS.diskcheck_types()
 diskcheck_option_set = None
@@ -753,13 +754,13 @@ def _main(options, args):
         _setup_warn(options.warn)
 
     try:
-        delayed_warnings = options.delayed_warnings
+        dw = options.delayed_warnings
     except AttributeError:
         pass
     else:
-        if delayed_warnings:
-            for warning_type, message in options.delayed_warnings:
-                SCons.Warnings.warn(warning_type, message)
+        delayed_warnings.extend(dw)
+    for warning_type, message in delayed_warnings:
+        SCons.Warnings.warn(warning_type, message)
 
     # Next, we want to create the FS object that represents the outside
     # world's file system, as that's central to a lot of initialization.
