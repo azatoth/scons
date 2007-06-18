@@ -107,20 +107,20 @@ QuestionTask            = Main.QuestionTask
 #PrintHelp               = Main.PrintHelp
 SConscriptSettableOptions = Main.SConscriptSettableOptions
 
-keep_going_on_error     = Main.keep_going_on_error
+#keep_going_on_error     = Main.keep_going_on_error
 #print_dtree             = Main.print_dtree
-print_explanations      = Main.print_explanations
-print_includes          = Main.print_includes
-print_objects           = Main.print_objects
-print_time              = Main.print_time
+#print_explanations      = Main.print_explanations
+#print_includes          = Main.print_includes
+#print_objects           = Main.print_objects
+#print_time              = Main.print_time
 #print_tree              = Main.print_tree
-memory_stats            = Main.memory_stats
-ignore_errors           = Main.ignore_errors
+#memory_stats            = Main.memory_stats
+#ignore_errors           = Main.ignore_errors
 #sconscript_time         = Main.sconscript_time
 #command_time            = Main.command_time
 #exit_status             = Main.exit_status
 #profiling               = Main.profiling
-repositories            = Main.repositories
+#repositories            = Main.repositories
 
 #
 import SConscript

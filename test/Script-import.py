@@ -62,46 +62,32 @@ SCons.Script.CleanTask
 SCons.Script.QuestionTask
 SCons.Script.SConscriptSettableOptions
 
-try: SCons.Script.PrintHelp
-except AttributeError: pass
-else: raise Exception, "unexpected variable SCons.Script.PrintHelp"
+old_SCons_Script_variables = [
+    'PrintHelp',
+    'OptParser',
+    'keep_going_on_error',
+    'print_explanations',
+    'print_includes',
+    'print_objects',
+    'print_time',
+    'memory_stats',
+    'ignore_errors',
+    'repositories',
+    'print_dtree',
+    'print_tree',
+    'sconscript_time',
+    'command_time',
+    'exit_status',
+    'profiling',
+]
 
-try: SCons.Script.OptParser
-except AttributeError: pass
-else: raise Exception, "unexpected variable SCons.Script.OptParser"
-
-SCons.Script.keep_going_on_error
-SCons.Script.print_explanations
-SCons.Script.print_includes
-SCons.Script.print_objects
-SCons.Script.print_time
-SCons.Script.memory_stats
-SCons.Script.ignore_errors
-SCons.Script.repositories
-
-try: SCons.Script.print_dtree
-except AttributeError: pass
-else: raise Exception, "unexpected variable SCons.Script.print_dtree"
-
-try: SCons.Script.print_tree
-except AttributeError: pass
-else: raise Exception, "unexpected variable SCons.Script.print_tree"
-
-try: SCons.Script.sconscript_time
-except AttributeError: pass
-else: raise Exception, "unexpected variable SCons.Script.sconscript_time"
-
-try: SCons.Script.command_time
-except AttributeError: pass
-else: raise Exception, "unexpected variable SCons.Script.command_time"
-
-try: SCons.Script.exit_status
-except AttributeError: pass
-else: raise Exception, "unexpected variable SCons.Script.exit_status"
-
-try: SCons.Script.profiling
-except AttributeError: pass
-else: raise Exception, "unexpected variable SCons.Script.profiling"
+for var in old_SCons_Script_variables:
+    try:
+        getattr(SCons.Script, var)
+    except AttributeError:
+        pass
+    else:
+        raise Exception, "unexpected variable SCons.Script.%s" % var
 """)
 
 test.write("m4.py", """\

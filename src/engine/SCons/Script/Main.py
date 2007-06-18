@@ -111,9 +111,9 @@ class BuildTask(SCons.Taskmaster.Task):
 
     def do_failed(self, status=2):
         global exit_status
-        if ignore_errors:
+        if self.options.ignore_errors:
             SCons.Taskmaster.Task.executed(self)
-        elif keep_going_on_error:
+        elif self.options.keep_going:
             SCons.Taskmaster.Task.fail_continue(self)
             exit_status = status
         else:
@@ -125,7 +125,7 @@ class BuildTask(SCons.Taskmaster.Task):
         if self.top and not t.has_builder() and not t.side_effect:
             if not t.exists():
                 sys.stderr.write("scons: *** Do not know how to make target `%s'." % t)
-                if not keep_going_on_error:
+                if not self.options.keep_going:
                     sys.stderr.write("  Stop.")
                 sys.stderr.write("\n")
                 self.do_failed()
@@ -178,7 +178,7 @@ class BuildTask(SCons.Taskmaster.Task):
             if e is None:
                 e = t
             s = str(e)
-            if t == SCons.Errors.StopError and not keep_going_on_error:
+            if t == SCons.Errors.StopError and not self.options.keep_going:
                 s = s + '  Stop.'
             sys.stderr.write("scons: *** %s\n" % s)
 
@@ -193,9 +193,9 @@ class BuildTask(SCons.Taskmaster.Task):
     def postprocess(self):
         if self.top:
             t = self.targets[0]
-            for tp in tree_printers:
+            for tp in self.options.tree_printers:
                 tp.display(t)
-            if print_includes:
+            if self.options.debug_includes:
                 tree = t.render_include_tree()
                 if tree:
                     print
@@ -205,7 +205,7 @@ class BuildTask(SCons.Taskmaster.Task):
     def make_ready(self):
         """Make a task ready for execution"""
         SCons.Taskmaster.Task.make_ready(self)
-        if self.out_of_date and print_explanations:
+        if self.out_of_date and self.options.debug_explain:
             explanation = self.out_of_date[0].explain()
             if explanation:
                 sys.stdout.write("scons: " + explanation)
@@ -319,16 +319,10 @@ class TreePrinter:
 
 # Global variables
 
-tree_printers = []
-
-keep_going_on_error = 0
-print_explanations = 0
-print_includes = 0
 print_objects = 0
 print_memoizer = 0
 print_stacktrace = 0
 print_time = 0
-ignore_errors = 0
 sconscript_time = 0
 cumulative_command_time = 0
 exit_status = 0 # exit status, assume success by default
@@ -556,48 +550,32 @@ def _SConstruct_exists(dirname=''):
     return None
 
 def _set_globals(options):
-    global keep_going_on_error, ignore_errors
-    global count_stats
-    global print_explanations, print_includes, print_memoizer
-    global print_objects, print_stacktrace, print_time
-    global tree_printers
-    global memory_stats
+    global print_memoizer, print_objects, print_stacktrace, print_time
 
-    keep_going_on_error = options.keep_going
-    try:
-        debug_values = options.debug
-        if debug_values is None:
-            debug_values = []
-    except AttributeError:
-        pass
-    else:
-        if "count" in debug_values:
-            count_stats.enable(sys.stdout)
-        if "dtree" in debug_values:
-            tree_printers.append(TreePrinter(derived=True))
-        if "explain" in debug_values:
-            print_explanations = 1
-        if "findlibs" in debug_values:
-            SCons.Scanner.Prog.print_find_libs = "findlibs"
-        if "includes" in debug_values:
-            print_includes = 1
-        if "memoizer" in debug_values:
-            print_memoizer = 1
-        if "memory" in debug_values:
-            memory_stats.enable(sys.stdout)
-        if "objects" in debug_values:
-            print_objects = 1
-        if "presub" in debug_values:
-            SCons.Action.print_actions_presub = 1
-        if "stacktrace" in debug_values:
-            print_stacktrace = 1
-        if "stree" in debug_values:
-            tree_printers.append(TreePrinter(status=True))
-        if "time" in debug_values:
-            print_time = 1
-        if "tree" in debug_values:
-            tree_printers.append(TreePrinter())
-    ignore_errors = options.ignore_errors
+    debug_values = options.debug
+
+    if "count" in debug_values:
+        count_stats.enable(sys.stdout)
+    if "dtree" in debug_values:
+        options.tree_printers.append(TreePrinter(derived=True))
+    options.debug_explain = ("explain" in debug_values)
+    if "findlibs" in debug_values:
+        SCons.Scanner.Prog.print_find_libs = "findlibs"
+    options.debug_includes = ("includes" in debug_values)
+    print_memoizer = ("memoizer" in debug_values)
+    if "memory" in debug_values:
+        memory_stats.enable(sys.stdout)
+    print_objects = ("objects" in debug_values)
+    if "presub" in debug_values:
+        SCons.Action.print_actions_presub = 1
+    if "stacktrace" in debug_values:
+        print_stacktrace = 1
+    if "stree" in debug_values:
+        options.tree_printers.append(TreePrinter(status=True))
+    if "time" in debug_values:
+        print_time = 1
+    if "tree" in debug_values:
+        options.tree_printers.append(TreePrinter())
 
 def _create_path(plist):
     path = '.'
@@ -717,7 +695,7 @@ class SConscriptSettableOptions:
                 raise SCons.Errors.UserError, "A string is required: %s"%repr(value)
             if not value in SCons.Node.FS.Valid_Duplicates:
                 raise SCons.Errors.UserError, "Not a valid duplication style: %s" % value
-            # Set the duplicate stye right away so it can affect linking
+            # Set the duplicate style right away so it can affect linking
             # of SConscript files.
             SCons.Node.FS.set_duplicate(value)
         elif name == 'diskcheck':
@@ -725,7 +703,10 @@ class SConscriptSettableOptions:
                 value = diskcheck_convert(value)
             except ValueError, v:
                 raise SCons.Errors.UserError, "Not a valid diskcheck value: %s"%v
-            if not diskcheck_option_set:
+            if not self.options.diskcheck:
+                # No --diskcheck= option was specified on the command line.
+                # Set this right away so it can affect the rest of the
+                # file/Node lookups while processing the SConscript files.
                 SCons.Node.FS.set_diskcheck(value)
 
         self.settable[name] = value
@@ -761,6 +742,9 @@ def _main(options, args):
         delayed_warnings.extend(dw)
     for warning_type, message in delayed_warnings:
         SCons.Warnings.warn(warning_type, message)
+
+    if options.diskcheck:
+        SCons.Node.FS.set_diskcheck(options.diskcheck)
 
     # Next, we want to create the FS object that represents the outside
     # world's file system, as that's central to a lot of initialization.
@@ -1014,7 +998,7 @@ def _main(options, args):
     task_class = BuildTask      # default action is to build targets
     opening_message = "Building targets ..."
     closing_message = "done building targets."
-    if keep_going_on_error:
+    if options.keep_going:
         failure_message = "done building targets (errors occurred during build)."
     else:
         failure_message = "building terminated because of errors."
@@ -1025,7 +1009,7 @@ def _main(options, args):
             task_class = CleanTask
             opening_message = "Cleaning targets ..."
             closing_message = "done cleaning targets."
-            if keep_going_on_error:
+            if options.keep_going:
                 closing_message = "done cleaning targets (errors occurred during clean)."
             else:
                 failure_message = "cleaning terminated because of errors."
@@ -1056,6 +1040,10 @@ def _main(options, args):
     else:
         tmtrace = None
     taskmaster = SCons.Taskmaster.Taskmaster(nodes, task_class, order, tmtrace)
+
+    # Let the BuildTask objects get at the options to respond to the
+    # various print_* settings, tree_printer list, etc.
+    BuildTask.options = options
 
     global num_jobs
     num_jobs = ssoptions.get('num_jobs')

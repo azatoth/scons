@@ -100,11 +100,6 @@ class OptParser(OptionParser):
 
         def opt_debug(option, opt, value, parser, debug_options=debug_options, deprecated_debug_options=deprecated_debug_options):
             if value in debug_options:
-                try:
-                    if parser.values.debug is None:
-                        parser.values.debug = []
-                except AttributeError:
-                    parser.values.debug = []
                 parser.values.debug.append(value)
             elif value in deprecated_debug_options.keys():
                 try:
@@ -119,21 +114,20 @@ class OptParser(OptionParser):
                 raise OptionValueError("Warning:  %s is not a valid debug type" % value)
         self.add_option('--debug', action="callback", type="string",
                         callback=opt_debug, nargs=1, dest="debug",
-                        metavar="TYPE",
+                        metavar="TYPE", default=[],
                         help="Print various types of debugging information: "
                              "%s." % string.join(debug_options, ", "))
 
         def opt_diskcheck(option, opt, value, parser):
             import Main
             try:
-                Main.diskcheck_option_set = Main.diskcheck_convert(value)
-                SCons.Node.FS.set_diskcheck(Main.diskcheck_option_set)
+                parser.values.diskcheck = Main.diskcheck_convert(value)
             except ValueError, e:
                 raise OptionValueError("Warning: `%s' is not a valid diskcheck type" % e)
 
         self.add_option('--diskcheck', action="callback", type="string",
                         callback=opt_diskcheck, dest='diskcheck',
-                        metavar="TYPE",
+                        metavar="TYPE", default=None,
                         help="Enable specific on-disk checks.")
 
         def opt_duplicate(option, opt, value, parser):
@@ -243,10 +237,11 @@ class OptParser(OptionParser):
                     tp.status = True
                 else:
                     raise OptionValueError("Warning:  %s is not a valid --tree option" % o)
-            Main.tree_printers.append(tp)
+            parser.values.tree_printers.append(tp)
 
         self.add_option('--tree', action="callback", type="string",
-                        callback=opt_tree, nargs=1, metavar="OPTIONS",
+                        callback=opt_tree, nargs=1, dest="tree_printers",
+                        metavar="OPTIONS", default=[],
                         help="Print a dependency tree in various formats: "
                              "%s." % string.join(tree_options, ", "))
 
