@@ -2401,7 +2401,6 @@ class File(Base):
         src_sig_type = target.get_env().get_src_sig_type()
 
         if self.has_builder():
-            import SCons.Action
             if not SCons.Action.execute_actions:
                 if self.changed_state(target, prev_ni):
                     return 1
