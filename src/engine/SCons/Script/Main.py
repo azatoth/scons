@@ -729,7 +729,7 @@ class SConscriptSettableOptions:
         self.settable[name] = value
     
 
-def _main(args):
+def _main(options, args):
     global exit_status
 
     # Here's where everything really happens.
@@ -1083,12 +1083,11 @@ def _exec_main(parser):
     sconsflags = os.environ.get('SCONSFLAGS', '')
     all_args = string.split(sconsflags) + sys.argv[1:]
 
-    global options
     options, args = parser.parse_args(all_args)
 
     if type(options.debug) == type([]) and "pdb" in options.debug:
         import pdb
-        pdb.Pdb().runcall(_main, args)
+        pdb.Pdb().runcall(_main, options, args)
     elif options.profile_file:
         from profile import Profile
 
@@ -1106,7 +1105,7 @@ def _exec_main(parser):
 
         prof = Profile()
         try:
-            prof.runcall(_main, args)
+            prof.runcall(_main, options, args)
         except SConsPrintHelpException, e:
             prof.dump_stats(options.profile_file)
             raise e
@@ -1114,7 +1113,7 @@ def _exec_main(parser):
             pass
         prof.dump_stats(options.profile_file)
     else:
-        _main(args)
+        _main(options, args)
 
 def main():
     global exit_status
