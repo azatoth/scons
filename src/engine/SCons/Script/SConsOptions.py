@@ -31,8 +31,6 @@ from SCons.Optik import OptionParser, SUPPRESS_HELP, OptionValueError
 
 class OptParser(OptionParser):
     def __init__(self, version):
-        import __main__
-
         OptionParser.__init__(self, version=version,
                               usage="usage: scons [OPTION] [TARGET] ...")
 
