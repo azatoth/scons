@@ -424,8 +424,9 @@ class Taskmaster:
     """
 
     def __init__(self, targets=[], tasker=Task, order=None, trace=None):
-        self.top_targets = targets[:]
-        self.top_targets.reverse()
+        self.original_top = targets
+        self.top_targets_left = targets[:]
+        self.top_targets_left.reverse()
         self.candidates = []
         self.tasker = tasker
         if not order:
@@ -459,7 +460,7 @@ class Taskmaster:
         except IndexError:
             pass
         try:
-            node = self.top_targets.pop()
+            node = self.top_targets_left.pop()
         except IndexError:
             return None
         self.current_top = node
@@ -651,7 +652,7 @@ class Taskmaster:
 
         tlist = node.get_executor().targets
 
-        task = self.tasker(self, tlist, node is self.current_top, node)
+        task = self.tasker(self, tlist, node in self.original_top, node)
         try:
             task.make_ready()
         except KeyboardInterrupt:
