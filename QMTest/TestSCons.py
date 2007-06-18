@@ -446,7 +446,11 @@ void my_qt_symbol(const char *arg) {
 
         self.write([dir, 'lib', 'SConstruct'], r"""
 env = Environment()
-env.StaticLibrary( 'myqt', 'my_qobject.cpp' )
+import sys
+if sys.platform == 'win32':
+    env.StaticLibrary( 'myqt', 'my_qobject.cpp' )
+else:
+    env.SharedLibrary( 'myqt', 'my_qobject.cpp' )
 """)
 
         self.run(chdir = self.workpath(dir, 'lib'),
