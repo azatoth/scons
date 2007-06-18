@@ -384,6 +384,7 @@ for opt, arg in cmd_opts:
     else: opt_string = opt_string + ' ' + opt
 for a in args:
     contents = open(a, 'rb').read()
+    a = string.replace(a, '\\\\', '\\\\\\\\')
     subst = r'{ my_qt_symbol( "' + a + '\\\\n" ); }'
     if impl:
         contents = re.sub( r'#include.*', '', contents )
@@ -445,7 +446,11 @@ void my_qt_symbol(const char *arg) {
 
         self.write([dir, 'lib', 'SConstruct'], r"""
 env = Environment()
-env.SharedLibrary( 'myqt', 'my_qobject.cpp' )
+import sys
+if sys.platform == 'win32':
+    env.StaticLibrary( 'myqt', 'my_qobject.cpp' )
+else:
+    env.SharedLibrary( 'myqt', 'my_qobject.cpp' )
 """)
 
         self.run(chdir = self.workpath(dir, 'lib'),

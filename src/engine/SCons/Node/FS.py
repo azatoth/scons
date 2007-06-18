@@ -1159,15 +1159,18 @@ class FS(LocalFS):
         If directory is None, and name is a relative path,
         then the same applies.
         """
-        if not SCons.Util.is_String(name):
-            # This handles cases where the object is a Proxy wrapping
-            # a Node.FS.File object (e.g.).  It would be good to handle
-            # this more directly some day by having the callers of this
-            # function recognize that a Proxy can be treated like the
-            # underlying object (that is, get rid of the isinstance()
-            # calls that explicitly look for a Node.FS.Base object).
+        try:
+            # Decide if this is a top-relative look up.  The normal case
+            # (by far) is handed a non-zero-length string to look up,
+            # so just (try to) check for the initial '#'.
+            top_relative = (name[0] == '#')
+        except (AttributeError, IndexError):
+            # The exceptions we may encounter in unusual cases:
+            #   AttributeError: a proxy without a __getitem__() method.
+            #   IndexError: a null string.
+            top_relative = False
             name = str(name)
-        if name and name[0] == '#':
+        if top_relative:
             directory = self.Top
             name = name[1:]
             if name and (name[0] == os.sep or name[0] == '/'):
@@ -2092,7 +2095,7 @@ class File(Base):
 
         Note that there's a special trick here with the execute flag
         (one that's not normally done for other actions).  Basically
-        if the user requested a noexec (-n) build, then
+        if the user requested a no_exec (-n) build, then
         SCons.Action.execute_actions is set to 0 and when any action
         is called, it does its showing but then just returns zero
         instead of actually calling the action execution operation.

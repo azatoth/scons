@@ -143,10 +143,10 @@ def exists_test(node):
     after = os.path.exists(str(node))
     node.is_derived()
     import SCons.Script
-    if SCons.Script.Main.options.noexec:
+    if GetOption('no_exec'):
         if (before,via_node,after) != (False,False,False):
             import sys
-            sys.stderr.write('BuildDir exits() populated during dryrun!\n')
+            sys.stderr.write('BuildDir exists() populated during dryrun!\n')
             sys.exit(-2)
     else:
         if (before,via_node,after) != (False,True,True):
