@@ -572,6 +572,16 @@ class Base(SCons.Node.Node):
         self.cwd = None # will hold the SConscript directory for target nodes
         self.duplicate = directory.duplicate
 
+    def must_be_same(self, klass):
+        """
+        This node, which already existed, is being looked up as the
+        specified klass.  Raise an exception if it isn't.
+        """
+        if self.__class__ is klass or klass is Entry:
+            return
+        raise TypeError, "Tried to lookup %s '%s' as a %s." %\
+              (self.__class__.__name__, self.path, klass.__name__)
+
     def get_dir(self):
         return self.dir
 
@@ -848,12 +858,13 @@ class Entry(Base):
         else:
             return self.get_contents()
 
-    def must_be_a_Dir(self):
+    def must_be_same(self, klass):
         """Called to make sure a Node is a Dir.  Since we're an
         Entry, we can morph into one."""
-        self.__class__ = Dir
-        self._morph()
-        return self
+        if not self.__class__ is klass:
+            self.__class__ = klass
+            self._morph()
+            self.clear
 
     # The following methods can get called before the Taskmaster has
     # had a chance to call disambiguate() directly to see if this Entry
@@ -1011,16 +1022,6 @@ class FS(LocalFS):
     def getcwd(self):
         return self._cwd
 
-    def __checkClass(self, node, klass):
-        if isinstance(node, klass) or klass == Entry:
-            return node
-        if node.__class__ == Entry:
-            node.__class__ = klass
-            node._morph()
-            return node
-        raise TypeError, "Tried to lookup %s '%s' as a %s." % \
-              (node.__class__.__name__, node.path, klass.__name__)
-        
     def _doLookup_key(self, fsclass, name, directory = None, create = 1):
         return (fsclass, name, directory)
 
@@ -1099,7 +1100,7 @@ class FS(LocalFS):
                 # We tried to look up the entry in either an Entry or
                 # a File.  Give whatever it is a chance to do what's
                 # appropriate: morph into a Dir or raise an exception.
-                directory.must_be_a_Dir()
+                directory.must_be_same(Dir)
                 entries = directory.entries
             try:
                 directory = entries[norm]
@@ -1117,7 +1118,7 @@ class FS(LocalFS):
                 directory.add_wkid(d)
                 directory = d
 
-        directory.must_be_a_Dir()
+        directory.must_be_same(Dir)
 
         try:
             e = directory.entries[last_norm]
@@ -1135,7 +1136,8 @@ class FS(LocalFS):
             directory.entries[last_norm] = result 
             directory.add_wkid(result)
         else:
-            result = self.__checkClass(e, fsclass)
+            e.must_be_same(fsclass)
+            result = e
 
         memo_dict[memo_key] = result
 
@@ -1202,7 +1204,8 @@ class FS(LocalFS):
             klass = Entry
 
         if isinstance(name, Base):
-            return self.__checkClass(name, klass)
+            name.must_be_same(klass)
+            return name
         else:
             if directory and not isinstance(directory, Dir):
                 directory = self.Dir(directory)
@@ -1631,11 +1634,6 @@ class Dir(Base):
     def entry_tpath(self, name):
         return self.tpath + os.sep + name
 
-    def must_be_a_Dir(self):
-        """Called to make sure a Node is a Dir.  Since we're already
-        one, this is a no-op for us."""
-        return self
-
     def entry_exists_on_disk(self, name):
         try:
             d = self.on_disk_entries
@@ -1779,6 +1777,11 @@ class RootDir(Dir):
         self.path = name + os.sep
         self.tpath = name + os.sep
         self._morph()
+
+    def must_be_same(self, klass):
+        if klass is Dir:
+            return
+        Base.must_be_same(self, klass)
 
     def __str__(self):
         return self.abspath
@@ -2347,11 +2350,6 @@ class File(Base):
         subdir = string.upper(cache_sig[0])
         dir = os.path.join(self.fs.CachePath, subdir)
         return dir, os.path.join(dir, cache_sig)
-
-    def must_be_a_Dir(self):
-        """Called to make sure a Node is a Dir.  Since we're already a
-        File, this is a TypeError..."""
-        raise TypeError, "Tried to lookup File '%s' as a Dir." % self.path
 
 default_fs = None
 
