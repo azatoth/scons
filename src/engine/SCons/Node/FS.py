@@ -680,8 +680,8 @@ class Base(SCons.Node.Node):
         name=self.name
         while dir:
             if dir.srcdir:
-                srcnode = self.fs.Entry(name, dir.srcdir,
-                                        klass=self.__class__)
+                srcnode = dir.srcdir.Entry(name)
+                srcnode.must_be_same(self.__class__)
                 return srcnode
             name = dir.name + os.sep + name
             dir = dir.up()
@@ -1919,12 +1919,12 @@ class File(Base):
     def Entry(self, name):
         """Create an entry node named 'name' relative to
         the SConscript directory of this file."""
-        return self.fs.Entry(name, self.cwd)
+        return self.cwd.Entry(name)
 
     def Dir(self, name):
         """Create a directory node named 'name' relative to
         the SConscript directory of this file."""
-        return self.fs.Dir(name, self.cwd)
+        return self.cwd.Dir(name)
 
     def Dirs(self, pathlist):
         """Create a list of directories relative to the SConscript
@@ -1934,7 +1934,7 @@ class File(Base):
     def File(self, name):
         """Create a file node named 'name' relative to
         the SConscript directory of this file."""
-        return self.fs.File(name, self.cwd)
+        return self.cwd.File(name)
 
     #def generate_build_dict(self):
     #    """Return an appropriate dictionary of values for building
