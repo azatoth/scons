@@ -1013,7 +1013,7 @@ class FS(LocalFS):
             self.pathTop = path
         self.defaultDrive = _my_normcase(os.path.splitdrive(self.pathTop)[0])
 
-        self.Top = self._doLookup(Dir, os.path.normpath(self.pathTop))
+        self.Top = self.Dir(self.pathTop)
         self.Top.path = '.'
         self.Top.tpath = '.'
         self._cwd = self.Top
@@ -1030,161 +1030,6 @@ class FS(LocalFS):
     def getcwd(self):
         return self._cwd
 
-    def _doLookup_key(self, fsclass, name, directory = None, create = 1):
-        return (fsclass, name, directory)
-
-    memoizer_counters.append(SCons.Memoize.CountDict('_doLookup', _doLookup_key))
-
-    def _doLookup(self, fsclass, name, directory = None, create = 1):
-        """This method differs from the File and Dir factory methods in
-        one important way: the meaning of the directory parameter.
-        In this method, if directory is None or not supplied, the supplied
-        name is expected to be an absolute path.  If you try to look up a
-        relative path with directory=None, then an AssertionError will be
-        raised.
-        """
-        memo_key = (fsclass, name, directory)
-        try:
-            memo_dict = self._memo['_doLookup']
-        except KeyError:
-            memo_dict = {}
-            self._memo['_doLookup'] = memo_dict
-        else:
-            try:
-                return memo_dict[memo_key]
-            except KeyError:
-                pass
-
-        if not name:
-            # This is a stupid hack to compensate for the fact that the
-            # POSIX and Windows versions of os.path.normpath() behave
-            # differently in older versions of Python.  In particular,
-            # in POSIX:
-            #   os.path.normpath('./') == '.'
-            # in Windows:
-            #   os.path.normpath('./') == ''
-            #   os.path.normpath('.\\') == ''
-            #
-            # This is a definite bug in the Python library, but we have
-            # to live with it.
-            name = '.'
-        path_orig = string.split(name, os.sep)
-        path_norm = string.split(_my_normcase(name), os.sep)
-
-        first_orig = path_orig.pop(0)   # strip first element
-        unused = path_norm.pop(0)   # strip first element
-
-        drive, path_first = os.path.splitdrive(first_orig)
-        if path_first:
-            path_orig = [ path_first, ] + path_orig
-            path_norm = [ _my_normcase(path_first), ] + path_norm
-        else:
-            # Absolute path
-            drive = _my_normcase(drive)
-            try:
-                directory = self.Root[drive]
-            except KeyError:
-                if not create:
-                    raise SCons.Errors.UserError
-                directory = RootDir(drive, self)
-                self.Root[drive] = directory
-                if not drive:
-                    self.Root[self.defaultDrive] = directory
-                elif drive == self.defaultDrive:
-                    self.Root[''] = directory
-
-        if not path_orig:
-            memo_dict[memo_key] = directory
-            return directory
-
-        last_orig = path_orig.pop()     # strip last element
-        last_norm = path_norm.pop()     # strip last element
-            
-        # Lookup the directory
-        for orig, norm in map(None, path_orig, path_norm):
-            try:
-                entries = directory.entries
-            except AttributeError:
-                # We tried to look up the entry in either an Entry or
-                # a File.  Give whatever it is a chance to do what's
-                # appropriate: morph into a Dir or raise an exception.
-                directory.must_be_same(Dir)
-                entries = directory.entries
-            try:
-                directory = entries[norm]
-            except KeyError:
-                if not create:
-                    raise SCons.Errors.UserError
-
-                d = Dir(orig, directory, self)
-
-                # Check the file system (or not, as configured) to make
-                # sure there isn't already a file there.
-                d.diskcheck_match()
-
-                directory.entries[norm] = d
-                directory.add_wkid(d)
-                directory = d
-
-        directory.must_be_same(Dir)
-
-        try:
-            e = directory.entries[last_norm]
-        except KeyError:
-            if not create:
-                raise SCons.Errors.UserError
-
-            result = fsclass(last_orig, directory, self)
-
-            # Check the file system (or not, as configured) to make
-            # sure there isn't already a directory at the path on
-            # disk where we just created a File node, and vice versa.
-            result.diskcheck_match()
-
-            directory.entries[last_norm] = result 
-            directory.add_wkid(result)
-        else:
-            e.must_be_same(fsclass)
-            result = e
-
-        memo_dict[memo_key] = result
-
-        return result 
-
-    def _transformPath(self, name, directory):
-        """Take care of setting up the correct top-level directory,
-        usually in preparation for a call to doLookup().
-
-        If the path name is prepended with a '#', then it is unconditionally
-        interpreted as relative to the top-level directory of this FS.
-
-        If directory is None, and name is a relative path,
-        then the same applies.
-        """
-        try:
-            # Decide if this is a top-relative look up.  The normal case
-            # (by far) is handed a non-zero-length string to look up,
-            # so just (try to) check for the initial '#'.
-            top_relative = (name[0] == '#')
-        except (AttributeError, IndexError):
-            # The exceptions we may encounter in unusual cases:
-            #   AttributeError: a proxy without a __getitem__() method.
-            #   IndexError: a null string.
-            top_relative = False
-            name = str(name)
-        if top_relative:
-            directory = self.Top
-            name = name[1:]
-            if name and (name[0] == os.sep or name[0] == '/'):
-                # Correct such that '#/foo' is equivalent
-                # to '#foo'.
-                name = name[1:]
-            name = os.path.normpath(os.path.join('.', name))
-            return (name, directory)
-        elif not directory:
-            directory = self._cwd
-        return (os.path.normpath(name), directory)
-
     def chdir(self, dir, change_os_dir=0):
         """Change the current working directory for lookups.
         If change_os_dir is true, we will also change the "real" cwd
@@ -1200,26 +1045,80 @@ class FS(LocalFS):
             self._cwd = curr
             raise
 
-    def Entry(self, name, directory = None, create = 1, klass=None):
+    def get_root(self, drive):
+        """
+        Returns the root directory for the specified drive, creating
+        it if necessary.
+        """
+        try:
+            return self.Root[drive]
+        except KeyError:
+            root = RootDir(drive, self)
+            self.Root[drive] = root
+            if not drive:
+                self.Root[self.defaultDrive] = root
+            elif drive == self.defaultDrive:
+                self.Root[''] = root
+            return root
+
+    def _lookup(self, p, directory, fsclass, create=1):
+        """
+        The generic entry point for Node lookup with user-supplied data.
+
+        This translates arbitrary input into a canonical Node.FS object
+        of the specified fsclass.  The general approach for strings is
+        to turn it into a normalized absolute path and then call the
+        root directory's lookup_abs() method for the heavy lifting.
+
+        If the path name begins with '#', it is unconditionally
+        interpreted relative to the top-level directory of this FS.
+
+        If the path name is relative, then the path is looked up relative
+        to the specified directory, or the current directory (self._cwd,
+        typically the SConscript directory) if the specified directory
+        is None.
+        """
+        if isinstance(p, Base):
+            # It's already a Node.FS object.  Make sure it's the right
+            # class and return.
+            p.must_be_same(fsclass)
+            return p
+        # str(p) in case it's something like a proxy object
+        p = str(p)
+        if os.path.isabs(p):
+            # An absolute path...
+            p = os.path.normpath(p)
+            drive, p = os.path.splitdrive(p)
+            root = self.get_root(drive)
+        else:
+            if p[0:1] == '#':
+                # A top-relative path...
+                directory = self.Top
+                offset = 1
+                if p[1:2] in(os.sep, '/'):
+                    offset = 2
+                p = p[offset:]
+            else:
+                # A relative path...
+                if not directory:
+                    # ...to the current (SConscript) directory.
+                    directory = self._cwd
+                elif not isinstance(directory, Dir):
+                    # ...to the specified directory.
+                    directory = self.Dir(directory)
+            p = os.path.normpath(directory.abspath + os.sep + p)
+            root = directory.root
+        return root._lookup_abs(p, fsclass, create)
+
+    def Entry(self, name, directory = None, create = 1):
         """Lookup or create a generic Entry node with the specified name.
         If the name is a relative path (begins with ./, ../, or a file
         name), then it is looked up relative to the supplied directory
         node, or to the top level directory of the FS (supplied at
         construction time) if no directory is supplied.
         """
+        return self._lookup(name, directory, Entry, create)
 
-        if not klass:
-            klass = Entry
-
-        if isinstance(name, Base):
-            name.must_be_same(klass)
-            return name
-        else:
-            if directory and not isinstance(directory, Dir):
-                directory = self.Dir(directory)
-            name, directory = self._transformPath(name, directory)
-            return self._doLookup(klass, name, directory, create)
-    
     def File(self, name, directory = None, create = 1):
         """Lookup or create a File node with the specified name.  If
         the name is a relative path (begins with ./, ../, or a file name),
@@ -1230,7 +1129,7 @@ class FS(LocalFS):
         This method will raise TypeError if a directory is found at the
         specified path.
         """
-        return self.Entry(name, directory, create, File)
+        return self._lookup(name, directory, File, create)
     
     def Dir(self, name, directory = None, create = 1):
         """Lookup or create a Dir node with the specified name.  If
@@ -1242,7 +1141,7 @@ class FS(LocalFS):
         This method will raise TypeError if a normal file is found at the
         specified path.
         """
-        return self.Entry(name, directory, create, Dir)
+        return self._lookup(name, directory, Dir, create)
     
     def BuildDir(self, build_dir, src_dir, duplicate=1):
         """Link the supplied build directory to the source directory
@@ -1358,6 +1257,7 @@ class Dir(Base):
         self.searched = 0
         self._sconsign = None
         self.build_dirs = []
+        self.root = self.dir.root
 
         # Don't just reset the executor, replace its action list,
         # because it might have some pre-or post-actions that need to
@@ -1392,15 +1292,24 @@ class Dir(Base):
             node.duplicate = node.get_dir().duplicate
 
     def Entry(self, name):
-        """Create an entry node named 'name' relative to this directory."""
+        """
+        Looks up or creates an entry node named 'name' relative to
+        this directory.
+        """
         return self.fs.Entry(name, self)
 
     def Dir(self, name):
-        """Create a directory node named 'name' relative to this directory."""
+        """
+        Looks up or creates a directory node named 'name' relative to
+        this directory.
+        """
         return self.fs.Dir(name, self)
 
     def File(self, name):
-        """Create a file node named 'name' relative to this directory."""
+        """
+        Looks up or creates a file node named 'name' relative to
+        this directory.
+        """
         return self.fs.File(name, self)
 
     def link(self, srcdir, duplicate):
@@ -1788,6 +1697,7 @@ class RootDir(Dir):
         self.tpath = ''
         self.path_elements = []
         self.duplicate = 0
+        self.root = self
         Base.__init__(self, name, self, fs)
 
         # Now set our paths to what we really want them to be: the
@@ -1797,10 +1707,59 @@ class RootDir(Dir):
         self.tpath = name + os.sep
         self._morph()
 
+        self._lookupDict = {}
+
+        # The // and os.sep + os.sep entries are necessary because
+        # os.path.normpath() seems to preserve double slashes at the
+        # beginning of a path (presumably for UNC path names), but
+        # collapses triple slashes to a single slash.
+        self._lookupDict['/'] = self
+        self._lookupDict['//'] = self
+        self._lookupDict[os.sep] = self
+        self._lookupDict[os.sep + os.sep] = self
+
     def must_be_same(self, klass):
         if klass is Dir:
             return
         Base.must_be_same(self, klass)
+
+    def _lookup_abs(self, p, klass, create=1):
+        """
+        Fast (?) lookup of a *normalized* absolute path.
+
+        This method is intended for use by internal lookups with
+        already-normalized path data.  For general-purpose lookups,
+        use the FS.Entry(), FS.Dir() or FS.File() methods.
+
+        The caller is responsible for making sure we're passed a
+        normalized absolute path; we merely let Python's dictionary look
+        up and return the One True Node.FS object for the path.
+
+        If no Node for the specified "p" doesn't already exist, and
+        "create" is specified, the Node may be created after recursive
+        invocation to find or create the parent directory or directories.
+        """
+        try:
+            result = self._lookupDict[p]
+        except KeyError:
+            if not create:
+                raise SCons.Errors.UserError
+            # There is no Node for this path name, and we're allowed
+            # to create it.
+            dir_name, file_name = os.path.split(p)
+            dir_node = self._lookup_abs(dir_name, Dir)
+            result = klass(file_name, dir_node, self.fs)
+            self._lookupDict[p] = result
+            dir_node.entries[file_name] = result
+
+            # Double-check on disk (as configured) that the Node we
+            # created matches whatever is out there in the real world.
+            result.diskcheck_match()
+        else:
+            # There is already a Node for this path name.  Allow it to
+            # complain if we were looking for an inappropriate type.
+            result.must_be_same(klass)
+        return result
 
     def __str__(self):
         return self.abspath

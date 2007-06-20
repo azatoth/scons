@@ -886,7 +886,7 @@ class FSTestCase(_tempdirTestCase):
         except TypeError:
             pass
         else:
-            assert 0
+            raise Exception, "did not catch expected TypeError"
 
         assert x1.Entry(x4) == x4
         try:
@@ -894,7 +894,7 @@ class FSTestCase(_tempdirTestCase):
         except TypeError:
             pass
         else:
-            assert 0
+            raise Exception, "did not catch expected TypeError"
 
         x6 = x1.File(x6)
         assert isinstance(x6, SCons.Node.FS.File)
@@ -1175,7 +1175,7 @@ class FSTestCase(_tempdirTestCase):
             except SCons.Errors.UserError:
                 pass
             else:
-                raise TestFailed, "did not catch expected UserError"
+                raise Exception, "did not catch expected UserError"
 
         nonexistent(fs.Entry, 'nonexistent')
         nonexistent(fs.Entry, 'nonexistent/foo')
@@ -1401,8 +1401,7 @@ class FSTestCase(_tempdirTestCase):
 
         subdir = fs.Dir('subdir')
         fs.chdir(subdir, change_os_dir=1)
-        path, dir = fs._transformPath('#build/file', subdir)
-        self.fs._doLookup(SCons.Node.FS.File, path, dir)
+        self.fs._lookup('#build/file', subdir, SCons.Node.FS.File)
 
     def test_above_root(self):
         """Testing looking up a path above the root directory"""
