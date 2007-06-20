@@ -31,6 +31,8 @@ info in them (which have different BuildInfo entries).
 
 import TestSConsign
 
+_obj = TestSConsign._obj
+
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
 test.write('SConstruct', """
@@ -59,7 +61,7 @@ conftest_0.c:
 
 
         %(sig_re)s \[.*\]
-conftest_0.o:
+conftest_0%(_obj)s:
         conftest_0.c: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals()
