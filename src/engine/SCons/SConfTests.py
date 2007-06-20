@@ -286,7 +286,7 @@ int main() {
                                   log_file=self.test.workpath('config.log'))
         try:
             (ret, output) = sconf.TryAction(action=actionOK)
-            assert ret and output == "RUN OK\n", (ret, output)
+            assert ret and output == "RUN OK" + os.linesep, (ret, output)
             (ret, output) = sconf.TryAction(action=actionFAIL)
             assert not ret and output == "", (ret, output)
         finally:
