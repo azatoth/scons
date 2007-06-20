@@ -29,9 +29,10 @@ Verify that we can print .sconsign files with Configure context
 info in them (which have different BuildInfo entries).
 """
 
+import TestSCons
 import TestSConsign
 
-_obj = TestSConsign._obj
+_obj = TestSCons._obj
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
