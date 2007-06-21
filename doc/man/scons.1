@@ -586,7 +586,15 @@ Print how many objects are created
 of the various classes used internally by SCons
 before and after reading the SConscript files
 and before and after building targets.
-This only works when run under Python 2.1 or later.
+This is not supported when run under Python versions earlier than 2.1,
+when SCons is executed with the Python
+.B -O
+(optimized) option,
+or when the SCons modules
+have been compiled with optimization
+(that is, when executing from
+.B *.pyo
+files).
 
 .TP
 --debug=dtree

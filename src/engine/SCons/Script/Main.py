@@ -560,7 +560,18 @@ def _set_globals(options):
     debug_values = options.debug
 
     if "count" in debug_values:
-        count_stats.enable(sys.stdout)
+        # All of the object counts are within "if __debug__:" blocks,
+        # which get stripped when running optimized (with python -O or
+        # from compiled *.pyo files).  Provide a warning if __debug__ is
+        # stripped, so it doesn't just look like --debug=count is broken.
+        enable_count = False
+        if __debug__: enable_count = True
+        if enable_count:
+            count_stats.enable(sys.stdout)
+        else:
+            msg = "--debug=count is not supported when running SCons\n" + \
+                  "\twith the python -O option or optimized (.pyo) modules."
+            SCons.Warnings.warn(SCons.Warnings.NoObjectCountWarning, msg)
     if "dtree" in debug_values:
         options.tree_printers.append(TreePrinter(derived=True))
     options.debug_explain = ("explain" in debug_values)
@@ -731,6 +742,7 @@ def _main(options, args):
                          SCons.Warnings.MissingSConscriptWarning,
                          SCons.Warnings.NoMD5ModuleWarning,
                          SCons.Warnings.NoMetaclassSupportWarning,
+                         SCons.Warnings.NoObjectCountWarning,
                          SCons.Warnings.NoParallelSupportWarning,
                          SCons.Warnings.MisleadingKeywordsWarning, ]
     for warning in default_warnings:
