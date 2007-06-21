@@ -31,9 +31,14 @@ SourceSignatures() and TargetSignatures() values (timestamp and content,
 respectively).
 """
 
+import os.path
+
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
+
+sub1_hello_c    = os.path.join('sub1', 'hello.c')
+sub1_hello_obj  = os.path.join('sub1', 'hello.obj')
 
 def re_sep(*args):
     import os.path
@@ -95,19 +100,19 @@ date_re = r'\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d'
 
 test.run_sconsign(arguments = "-e hello.exe -e hello.obj sub1/.sconsign",
          stdout = r"""hello.exe: %(sig_re)s \d+ \d+
-        hello.obj: %(sig_re)s \d+ \d+
+        %(sub1_hello_obj)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s \d+ \d+
-        hello.c: None \d+ \d+
+        %(sub1_hello_c)s: None \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals())
 
 test.run_sconsign(arguments = "-e hello.exe -e hello.obj -r sub1/.sconsign",
          stdout = r"""hello.exe: %(sig_re)s '%(date_re)s' \d+
-        hello.obj: %(sig_re)s '%(date_re)s' \d+
+        %(sub1_hello_obj)s: %(sig_re)s '%(date_re)s' \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s '%(date_re)s' \d+
-        hello.c: None '%(date_re)s' \d+
+        %(sub1_hello_c)s: None '%(date_re)s' \d+
         %(sig_re)s \[.*\]
 """ % locals())
 

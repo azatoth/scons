@@ -1126,6 +1126,15 @@ def main():
     global exit_status
     global first_command_start
 
+    if 0:
+        import os.path
+        _real_normpath = os.path.normpath
+        def my_normpath(path):
+            from SCons.Debug import caller
+            caller(0, 1, 2, 3, 4, 5)
+            return _real_normpath(path)
+        os.path.normpath = my_normpath
+
     parts = ["SCons by Steven Knight et al.:\n"]
     try:
         parts.append(version_string("script", __main__))

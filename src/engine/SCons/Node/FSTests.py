@@ -1414,7 +1414,13 @@ class FSTestCase(_tempdirTestCase):
         above_path = apply(os.path.join, ['..']*len(dirs) + ['above'])
         above = d2.Dir(above_path)
 
-    def test_rel_path(self):
+    # Note that the rel_path() method is not used right now, but we're
+    # leaving it commented out and disabling the unit here because
+    # it would be a shame to have to recreate the logic (or remember
+    # that it's buried in a long-past code checkin) if we ever need to
+    # resurrect it.
+
+    def DO_NOT_test_rel_path(self):
         """Test the rel_path() method"""
         test = self.test
         fs = self.fs

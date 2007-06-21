@@ -29,6 +29,8 @@ Verify that the sconsign script works when using an individual
 .sconsign file in each directory (SConsignFile(None)).
 """
 
+import os.path
+
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
@@ -39,6 +41,13 @@ def re_sep(*args):
     return re.escape(apply(os.path.join, args))
 
 test.subdir('sub1', 'sub2')
+
+sub1_hello_c    = os.path.join('sub1', 'hello.c')
+sub1_hello_obj  = os.path.join('sub1', 'hello.obj')
+sub2_hello_c    = os.path.join('sub2', 'hello.c')
+sub2_hello_obj  = os.path.join('sub2', 'hello.obj')
+sub2_inc1_h     = os.path.join('sub2', 'inc1.h')
+sub2_inc2_h     = os.path.join('sub2', 'inc2.h')
 
 test.write(['SConstruct'], """
 SConsignFile(None)
@@ -89,20 +98,20 @@ sig_re = r'[0-9a-fA-F]{32}'
 test.run_sconsign(arguments = "sub1/.sconsign",
          stdout = r"""hello.c: %(sig_re)s \d+ \d+
 hello.exe: %(sig_re)s \d+ \d+
-        hello.obj: %(sig_re)s \d+ \d+
+        %(sub1_hello_obj)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s \d+ \d+
-        hello.c: %(sig_re)s \d+ \d+
+        %(sub1_hello_c)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals())
 
 test.run_sconsign(arguments = "--raw sub1/.sconsign",
          stdout = r"""hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
 hello.exe: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+        %(sub1_hello_obj)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
         %(sig_re)s \[.*\]
 hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+        %(sub1_hello_c)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
         %(sig_re)s \[.*\]
 """ % locals())
 
@@ -116,7 +125,7 @@ hello.exe:
     timestamp: \d+
     size: \d+
     implicit:
-        hello.obj:
+        %(sub1_hello_obj)s:
             csig: %(sig_re)s
             timestamp: \d+
             size: \d+
@@ -126,7 +135,7 @@ hello.obj:
     timestamp: \d+
     size: \d+
     implicit:
-        hello.c:
+        %(sub1_hello_c)s:
             csig: %(sig_re)s
             timestamp: \d+
             size: \d+
@@ -162,19 +171,19 @@ hello.obj:
 
 test.run_sconsign(arguments = "-e hello.obj sub1/.sconsign",
          stdout = r"""hello.obj: %(sig_re)s \d+ \d+
-        hello.c: %(sig_re)s \d+ \d+
+        %(sub1_hello_c)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals())
 
 test.run_sconsign(arguments = "-e hello.obj -e hello.exe -e hello.obj sub1/.sconsign",
          stdout = r"""hello.obj: %(sig_re)s \d+ \d+
-        hello.c: %(sig_re)s \d+ \d+
+        %(sub1_hello_c)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 hello.exe: %(sig_re)s \d+ \d+
-        hello.obj: %(sig_re)s \d+ \d+
+        %(sub1_hello_obj)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s \d+ \d+
-        hello.c: %(sig_re)s \d+ \d+
+        %(sub1_hello_c)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals())
 
@@ -185,12 +194,12 @@ sub2_inc2_h = re_sep('sub2', 'inc2.h')
 test.run_sconsign(arguments = "sub2/.sconsign",
          stdout = r"""hello.c: %(sig_re)s \d+ \d+
 hello.exe: %(sig_re)s \d+ \d+
-        hello.obj: %(sig_re)s \d+ \d+
+        %(sub2_hello_obj)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s \d+ \d+
-        hello.c: %(sig_re)s \d+ \d+
-        inc1.h: %(sig_re)s \d+ \d+
-        inc2.h: %(sig_re)s \d+ \d+
+        %(sub2_hello_c)s: %(sig_re)s \d+ \d+
+        %(sub2_inc1_h)s: %(sig_re)s \d+ \d+
+        %(sub2_inc2_h)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 inc1.h: %(sig_re)s \d+ \d+
 inc2.h: %(sig_re)s \d+ \d+
@@ -210,12 +219,12 @@ inc2.h: %(sig_re)s \d+ \d+
 
 test.run_sconsign(arguments = "-e hello.obj sub2/.sconsign sub1/.sconsign",
          stdout = r"""hello.obj: %(sig_re)s \d+ \d+
-        hello.c: %(sig_re)s \d+ \d+
-        inc1.h: %(sig_re)s \d+ \d+
-        inc2.h: %(sig_re)s \d+ \d+
+        %(sub2_hello_c)s: %(sig_re)s \d+ \d+
+        %(sub2_inc1_h)s: %(sig_re)s \d+ \d+
+        %(sub2_inc2_h)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s \d+ \d+
-        hello.c: %(sig_re)s \d+ \d+
+        %(sub1_hello_c)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals())
 

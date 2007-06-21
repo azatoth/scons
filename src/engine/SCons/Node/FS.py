@@ -885,11 +885,11 @@ class Entry(Base):
         directory."""
         return self.disambiguate().exists()
 
-    def rel_path(self, other):
-        d = self.disambiguate()
-        if d.__class__ == Entry:
-            raise "rel_path() could not disambiguate File/Dir"
-        return d.rel_path(other)
+#    def rel_path(self, other):
+#        d = self.disambiguate()
+#        if d.__class__ == Entry:
+#            raise "rel_path() could not disambiguate File/Dir"
+#        return d.rel_path(other)
 
     def new_ninfo(self):
         return self.disambiguate().new_ninfo()
@@ -1312,6 +1312,23 @@ class Dir(Base):
         """
         return self.fs.File(name, self)
 
+    def _lookup_rel(self, name, klass, create=1):
+        """
+        Looks up a *normalized* relative path name, relative to this
+        directory.
+
+        This method is intended for use by internal lookups with
+        already-normalized path data.  For general-purpose lookups,
+        use the Entry(), Dir() and File() methods above.
+
+        This method does *no* input checking and will die or give
+        incorrect results if it's passed a non-normalized path name (e.g.,
+        a path containing '..'), an absolute path name, a top-relative
+        ('#foo') path name, or any kind of object.
+        """
+        name = self.abspath + os.sep + name
+        return self.root._lookup_abs(name, klass, create)
+
     def link(self, srcdir, duplicate):
         """Set this directory as the build directory for the
         supplied source directory."""
@@ -1357,57 +1374,66 @@ class Dir(Base):
     def up(self):
         return self.entries['..']
 
-    def _rel_path_key(self, other):
-        return str(other)
-
-    memoizer_counters.append(SCons.Memoize.CountDict('rel_path', _rel_path_key))
-
-    def rel_path(self, other):
-        """Return a path to "other" relative to this directory.
-        """
-        try:
-            memo_dict = self._memo['rel_path']
-        except KeyError:
-            memo_dict = {}
-            self._memo['rel_path'] = memo_dict
-        else:
-            try:
-                return memo_dict[other]
-            except KeyError:
-                pass
-
-        if self is other:
-
-            result = '.'
-
-        elif not other in self.path_elements:
-
-            try:
-                other_dir = other.get_dir()
-            except AttributeError:
-                result = str(other)
-            else:
-                if other_dir is None:
-                    result = other.name
-                else:
-                    dir_rel_path = self.rel_path(other_dir)
-                    if dir_rel_path == '.':
-                        result = other.name
-                    else:
-                        result = dir_rel_path + os.sep + other.name
-
-        else:
-
-            i = self.path_elements.index(other) + 1
-
-            path_elems = ['..'] * (len(self.path_elements) - i) \
-                         + map(lambda n: n.name, other.path_elements[i:])
-             
-            result = string.join(path_elems, os.sep)
-
-        memo_dict[other] = result
-
-        return result
+# This complicated method, which constructs relative paths between
+# arbitrary Node.FS objects, is no longer used.  It was introduced to
+# store dependency paths in .sconsign files relative to the target, but
+# that ended up being significantly inefficient.  We're leaving the code
+# here, commented out, because it would be too easy for someone to decide
+# to re-invent this wheel in the future (if it becomes necessary) because
+# they didn't know this code was buried in some source-code change from
+# the distant past...
+#
+#    def _rel_path_key(self, other):
+#        return str(other)
+#
+#    memoizer_counters.append(SCons.Memoize.CountDict('rel_path', _rel_path_key))
+#
+#    def rel_path(self, other):
+#        """Return a path to "other" relative to this directory.
+#        """
+#        try:
+#            memo_dict = self._memo['rel_path']
+#        except KeyError:
+#            memo_dict = {}
+#            self._memo['rel_path'] = memo_dict
+#        else:
+#            try:
+#                return memo_dict[other]
+#            except KeyError:
+#                pass
+#
+#        if self is other:
+#
+#            result = '.'
+#
+#        elif not other in self.path_elements:
+#
+#            try:
+#                other_dir = other.get_dir()
+#            except AttributeError:
+#                result = str(other)
+#            else:
+#                if other_dir is None:
+#                    result = other.name
+#                else:
+#                    dir_rel_path = self.rel_path(other_dir)
+#                    if dir_rel_path == '.':
+#                        result = other.name
+#                    else:
+#                        result = dir_rel_path + os.sep + other.name
+#
+#        else:
+#
+#            i = self.path_elements.index(other) + 1
+#
+#            path_elems = ['..'] * (len(self.path_elements) - i) \
+#                         + map(lambda n: n.name, other.path_elements[i:])
+#             
+#            result = string.join(path_elems, os.sep)
+#
+#        memo_dict[other] = result
+#
+#        return result
 
     def get_env_scanner(self, env, kw={}):
         import SCons.Defaults
@@ -1806,7 +1832,6 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         itself to the .sconsign file, so we delete the attribute in
         preparation.
         """
-        rel_path = self.node.rel_path
         delattr(self, 'node')
         for attr in ['bsources', 'bdepends', 'bimplicit']:
             try:
@@ -1814,7 +1839,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
             except AttributeError:
                 pass
             else:
-                setattr(self, attr, map(rel_path, val))
+                setattr(self, attr, map(str, val))
     def convert_from_sconsign(self, dir, name):
         """Convert a newly-read FileBuildInfo object for in-SCons use
 
@@ -1825,7 +1850,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         because they're not used in the normal case of just deciding
         whether or not to rebuild things.
         """
-        self.node = dir.File(name)
+        self.node = dir.fs.Top._lookup_rel(name, File)
     def prepare_dependencies(self):
         """Prepare a FileBuildInfo object for explaining what changed
 
@@ -2004,12 +2029,12 @@ class File(Base):
 
     def get_stored_implicit(self):
         binfo = self.get_stored_info().binfo
-        binfo.prepare_dependencies()
+        #binfo.prepare_dependencies()
         try: return binfo.bimplicit
         except AttributeError: return None
 
-    def rel_path(self, other):
-        return self.dir.rel_path(other)
+#    def rel_path(self, other):
+#        return self.dir.rel_path(other)
 
     def _get_found_includes_key(self, env, scanner, path):
         return (id(env), id(scanner), path)

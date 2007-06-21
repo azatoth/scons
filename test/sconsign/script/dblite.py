@@ -29,11 +29,16 @@ Verify that various ways of getting at a an sconsign file written with
 the default dblite module and default .dblite suffix work correctly.
 """
 
+import os.path
+
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
 test.subdir('sub1', 'sub2')
+
+sub1_hello_c    = os.path.join('sub1', 'hello.c')
+sub1_hello_obj  = os.path.join('sub1', 'hello.obj')
 
 test.write('SConstruct', """
 SConsignFile('my_sconsign')
@@ -88,19 +93,19 @@ date_re = r'\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d'
 
 expect = r"""=== sub1:
 hello.exe: %(sig_re)s \d+ \d+
-        hello.obj: %(sig_re)s \d+ \d+
+        %(sub1_hello_obj)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s \d+ \d+
-        hello.c: None \d+ \d+
+        %(sub1_hello_c)s: None \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals()
 
 expect_r = """=== sub1:
 hello.exe: %(sig_re)s '%(date_re)s' \d+
-        hello.obj: %(sig_re)s '%(date_re)s' \d+
+        %(sub1_hello_obj)s: %(sig_re)s '%(date_re)s' \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s '%(date_re)s' \d+
-        hello.c: None '%(date_re)s' \d+
+        %(sub1_hello_c)s: None '%(date_re)s' \d+
         %(sig_re)s \[.*\]
 """ % locals()
 
