@@ -602,14 +602,18 @@ class NodeTestCase(unittest.TestCase):
 
         class testNode2(SCons.Node.Node):
             def __str__(self): return 'null_binfo'
+        class FS:
+            pass
         node = testNode2()
+        node.fs = FS()
+        node.fs.Top = SCons.Node.Node()
         result = node.explain()
         assert result == None, result
 
         def get_null_info():
             class Null_SConsignEntry:
                 class Null_BuildInfo:
-                    def prepare_dependencies(self):
+                    def prepare_dependencies(self, top):
                         pass
                 binfo = Null_BuildInfo()
             return Null_SConsignEntry()

@@ -49,6 +49,7 @@ from SCons.Debug import logInstanceCreation
 import SCons.Errors
 import SCons.Memoize
 import SCons.Node
+import SCons.Node.Alias
 import SCons.Subst
 import SCons.Util
 import SCons.Warnings
@@ -1816,23 +1817,16 @@ class RootDir(Dir):
 
 class FileNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig', 'timestamp', 'size']
-    def convert(self, node, val):
-        return node.dir.File(val)
 
 class FileBuildInfo(SCons.Node.BuildInfoBase):
-    def __init__(self, node):
-        SCons.Node.BuildInfoBase.__init__(self, node)
-        self.node = node
     def convert_to_sconsign(self):
-        """Convert this FileBuildInfo object for writing to a .sconsign file
-
-        We hung onto the node that we refer to so that we can translate
-        the lists of bsources, bdepends and bimplicit Nodes into strings
-        relative to the node, but we don't want to write out that Node
-        itself to the .sconsign file, so we delete the attribute in
-        preparation.
         """
-        delattr(self, 'node')
+        Converts this FileBuildInfo object for writing to a .sconsign file
+
+        This replaces each Node in our various dependency lists with its
+        usual string representation: relative to the top-level SConstruct
+        directory, or an absolute path if it's outside.
+        """
         for attr in ['bsources', 'bdepends', 'bimplicit']:
             try:
                 val = getattr(self, attr)
@@ -1841,37 +1835,44 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
             else:
                 setattr(self, attr, map(str, val))
     def convert_from_sconsign(self, dir, name):
-        """Convert a newly-read FileBuildInfo object for in-SCons use
-
-        An on-disk BuildInfo comes without a reference to the node for
-        which it's intended, so we have to convert the arguments and add
-        back a self.node attribute.  We don't worry here about converting
-        the bsources, bdepends and bimplicit lists from strings to Nodes
-        because they're not used in the normal case of just deciding
-        whether or not to rebuild things.
         """
-        self.node = dir.fs.Top._lookup_rel(name, File)
-    def prepare_dependencies(self):
-        """Prepare a FileBuildInfo object for explaining what changed
+        Converts a newly-read FileBuildInfo object for in-SCons use
 
-        The bsources, bdepends and bimplicit lists have all been stored
-        on disk as paths relative to the Node for which they're stored
-        as dependency info.  Convert the strings to actual Nodes (for
-        use by the --debug=explain code and --implicit-cache).
+        For normal up-to-date checking, we don't have any conversion to
+        perform--but we're leaving this method here to make that clear.
         """
-        for attr, niattr in [('bsources', 'bsourcesigs'),
-                              ('bdepends', 'bdependsigs'),
-                              ('bimplicit', 'bimplicitsigs')]:
+        pass
+    def prepare_dependencies(self, top):
+        """
+        Prepares a FileBuildInfo object for explaining what changed
+
+        The bsources, bdepends and bimplicit lists have all been
+        stored on disk as paths relative to the top-level SConstruct
+        directory.  Convert the strings to actual Nodes (for use by the
+        --debug=explain code and --implicit-cache).
+        """
+        def str_to_node(s, top=top):
+            # This is a little bogus; we're going to mimic the lookup
+            # order of env.arg2nodes() by hard-coding an Alias lookup
+            # before we assume it's an Entry.  This should be able to
+            # go away once the Big Signature Refactoring pickles the
+            # actual NodeInfo object, which will let us know precisely
+            # what type of Node to turn it into.
+            if isinstance(s, SCons.Node.Node):
+                return s
+            n = SCons.Node.Alias.default_ans.lookup(s)
+            if not n:
+                if not os.path.isabs(s):
+                    s = top.abspath + os.sep + s
+                n = top.root._lookup_abs(s, Entry)
+            return n
+        for attr in ['bsources', 'bdepends', 'bimplicit']:
             try:
                 val = getattr(self, attr)
-                ninfo = getattr(self, niattr)
             except AttributeError:
                 pass
             else:
-                result = []
-                for s, ni in zip(val, ninfo):
-                    result.append(ni.convert(self.node, s))
-                setattr(self, attr, result)
+                setattr(self, attr, map(str_to_node, val))
     def format(self, names=0):
         result = []
         bkids = self.bsources + self.bdepends + self.bimplicit
@@ -2029,7 +2030,7 @@ class File(Base):
 
     def get_stored_implicit(self):
         binfo = self.get_stored_info().binfo
-        #binfo.prepare_dependencies()
+        binfo.prepare_dependencies(self.fs.Top)
         try: return binfo.bimplicit
         except AttributeError: return None
 

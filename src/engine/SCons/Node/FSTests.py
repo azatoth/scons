@@ -757,7 +757,7 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         """Test File.BuildInfo initialization"""
         fff = self.fs.File('fff')
         bi = SCons.Node.FS.FileBuildInfo(fff)
-        assert bi.node is fff, bi.node
+        assert bi, bi
 
     def test_convert_to_sconsign(self):
         """Test converting to .sconsign file format"""
@@ -775,7 +775,7 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         """Test that we have a prepare_dependencies() method"""
         fff = self.fs.File('fff')
         bi = SCons.Node.FS.FileBuildInfo(fff)
-        bi.prepare_dependencies()
+        bi.prepare_dependencies(self.fs.Dir('.'))
 
     def test_format(self):
         """Test the format() method"""
