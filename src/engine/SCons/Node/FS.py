@@ -2385,19 +2385,20 @@ class File(Base):
             'build' : self.changed_state,
         }
 
-        if target.has_builder():
-            tgt_sig_type = target.get_build_env().get_tgt_sig_type()
-        else:
-            tgt_sig_type = None
-        src_sig_type = target.get_env().get_src_sig_type()
-
         if self.has_builder():
             if not SCons.Action.execute_actions:
                 if self.changed_state(target, prev_ni):
                     return 1
+
+            if target.has_builder():
+                tgt_sig_type = target.get_build_env().get_tgt_sig_type()
+            else:
+                tgt_sig_type = None
+
             if tgt_sig_type == 'build':
                 if self.changed_state(target, prev_ni):
                     return 1
+                src_sig_type = target.get_env().get_src_sig_type()
                 return func[src_sig_type](target, prev_ni)
             elif tgt_sig_type == 'source':
                 # We're an input file (or dependency), and the target
@@ -2407,11 +2408,15 @@ class File(Base):
                 # signature type for targets, use that.  If not, then
                 # fall back to this target's source setting.
                 my_tgt_sig_type = self.get_build_env().get_tgt_sig_type()
-                f = func.get(my_tgt_sig_type, func[src_sig_type])
+                f = func.get(my_tgt_sig_type)
+                if not f:
+                    src_sig_type = target.get_env().get_src_sig_type()
+                    f = func[src_sig_type]
                 return f(target, prev_ni)
             else:
                 return func[tgt_sig_type](target, prev_ni)
         else:
+            src_sig_type = target.get_env().get_src_sig_type()
             return func[src_sig_type](target, prev_ni)
 
     def is_up_to_date(self):
