@@ -409,6 +409,66 @@ def flatten(sequence, scalarp=is_Scalar, result=None):
             flatten(item, scalarp, result)
     return result
 
+
+
+# The SCons "semi-deep" copy.
+#
+# This makes separate copies of lists (including UserList objects)
+# dictionaries (including UserDict objects) and tuples, but just copies
+# references to anything else it finds.
+#
+# A special case is any object that has a __semi_deepcopy__() method,
+# which we invoke to create the copy, which is used by the BuilderDict
+# class because of its extra initialization argument.
+#
+# The dispatch table approach used here is a direct rip-off from the
+# normal Python copy module.
+
+_semi_deepcopy_dispatch = d = {}
+
+def _semi_deepcopy_dict(x):
+    copy = {}
+    for key, val in x.items():
+        # The regular Python copy.deepcopy() also deepcopies the key,
+        # as follows:
+        #
+        #    copy[semi_deepcopy(key)] = semi_deepcopy(val)
+        #
+        # Doesn't seem like we need to, but we'll comment it just in case.
+        copy[key] = semi_deepcopy(val)
+    return copy
+d[types.DictionaryType] = _semi_deepcopy_dict
+
+def _semi_deepcopy_list(x):
+    return map(semi_deepcopy, x)
+d[types.ListType] = _semi_deepcopy_list
+
+def _semi_deepcopy_tuple(x):
+    return tuple(map(semi_deepcopy, x))
+d[types.TupleType] = _semi_deepcopy_list
+
+def _semi_deepcopy_inst(x):
+    if hasattr(x, '__semi_deepcopy__'):
+        return x.__semi_deepcopy__()
+    elif isinstance(x, UserDict):
+        return x.__class__(_semi_deepcopy_dict(x))
+    elif isinstance(x, UserList):
+        return x.__class__(_semi_deepcopy_list(x))
+    else:
+        return x
+d[types.InstanceType] = _semi_deepcopy_inst
+
+def semi_deepcopy(x):
+    copier = _semi_deepcopy_dispatch.get(type(x))
+    if copier:
+        return copier(x)
+    else:
+        return x
+
+del d
+
+
+
 class Proxy:
     """A simple generic Proxy class, forwarding all calls to
     subject.  So, for the benefit of the python newbie, what does
