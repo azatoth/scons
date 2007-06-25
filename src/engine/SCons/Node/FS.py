@@ -561,6 +561,7 @@ class Base(SCons.Node.Node):
         assert directory, "A directory must be provided"
 
         self.abspath = directory.entry_abspath(name)
+        self.labspath = directory.entry_labspath(name)
         if directory.path == '.':
             self.path = name
         else:
@@ -1051,6 +1052,7 @@ class FS(LocalFS):
         Returns the root directory for the specified drive, creating
         it if necessary.
         """
+        drive = _my_normcase(drive)
         try:
             return self.Root[drive]
         except KeyError:
@@ -1086,10 +1088,14 @@ class FS(LocalFS):
             return p
         # str(p) in case it's something like a proxy object
         p = str(p)
-        if os.path.isabs(p):
+        drive, p = os.path.splitdrive(p)
+        if drive and not p:
+            # A drive letter without a path...
+            p = os.sep
+            root = self.get_root(drive)
+        elif os.path.isabs(p):
             # An absolute path...
             p = os.path.normpath(p)
-            drive, p = os.path.splitdrive(p)
             root = self.get_root(drive)
         else:
             if p[0:1] == '#':
@@ -1107,8 +1113,10 @@ class FS(LocalFS):
                 elif not isinstance(directory, Dir):
                     # ...to the specified directory.
                     directory = self.Dir(directory)
-            p = os.path.normpath(directory.abspath + os.sep + p)
+            p = os.path.normpath(directory.labspath + '/' + p)
             root = directory.root
+        if os.sep != '/':
+            p = string.replace(p, os.sep, '/')
         return root._lookup_abs(p, fsclass, create)
 
     def Entry(self, name, directory = None, create = 1):
@@ -1327,7 +1335,7 @@ class Dir(Base):
         a path containing '..'), an absolute path name, a top-relative
         ('#foo') path name, or any kind of object.
         """
-        name = self.abspath + os.sep + name
+        name = self.labspath + '/' + name
         return self.root._lookup_abs(name, klass, create)
 
     def link(self, srcdir, duplicate):
@@ -1583,6 +1591,9 @@ class Dir(Base):
     def entry_abspath(self, name):
         return self.abspath + os.sep + name
 
+    def entry_labspath(self, name):
+        return self.labspath + '/' + name
+
     def entry_path(self, name):
         return self.path + os.sep + name
 
@@ -1720,6 +1731,7 @@ class RootDir(Dir):
         # attribute) so we have to set up some values so Base.__init__()
         # won't gag won't it calls some of our methods.
         self.abspath = ''
+        self.labspath = ''
         self.path = ''
         self.tpath = ''
         self.path_elements = []
@@ -1728,8 +1740,11 @@ class RootDir(Dir):
         Base.__init__(self, name, self, fs)
 
         # Now set our paths to what we really want them to be: the
-        # initial drive letter (the name) plus the directory separator.
+        # initial drive letter (the name) plus the directory separator,
+        # except for the "lookup abspath," which does not have the
+        # drive letter.
         self.abspath = name + os.sep
+        self.labspath = '/'
         self.path = name + os.sep
         self.tpath = name + os.sep
         self._morph()
@@ -1766,8 +1781,9 @@ class RootDir(Dir):
         "create" is specified, the Node may be created after recursive
         invocation to find or create the parent directory or directories.
         """
+        k = _my_normcase(p)
         try:
-            result = self._lookupDict[p]
+            result = self._lookupDict[k]
         except KeyError:
             if not create:
                 raise SCons.Errors.UserError
@@ -1776,8 +1792,8 @@ class RootDir(Dir):
             dir_name, file_name = os.path.split(p)
             dir_node = self._lookup_abs(dir_name, Dir)
             result = klass(file_name, dir_node, self.fs)
-            self._lookupDict[p] = result
-            dir_node.entries[file_name] = result
+            self._lookupDict[k] = result
+            dir_node.entries[_my_normcase(file_name)] = result
 
             # Double-check on disk (as configured) that the Node we
             # created matches whatever is out there in the real world.
@@ -1793,6 +1809,9 @@ class RootDir(Dir):
 
     def entry_abspath(self, name):
         return self.abspath + name
+
+    def entry_labspath(self, name):
+        return self.labspath + name
 
     def entry_path(self, name):
         return self.path + name
@@ -1827,13 +1846,24 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         usual string representation: relative to the top-level SConstruct
         directory, or an absolute path if it's outside.
         """
+        if os.sep == '/':
+            node_to_str = str
+        else:
+            def node_to_str(n):
+                try:
+                    s = n.path
+                except AttributeError:
+                    s = str(n)
+                else:
+                    s = string.replace(s, os.sep, '/')
+                return s
         for attr in ['bsources', 'bdepends', 'bimplicit']:
             try:
                 val = getattr(self, attr)
             except AttributeError:
                 pass
             else:
-                setattr(self, attr, map(str, val))
+                setattr(self, attr, map(node_to_str, val))
     def convert_from_sconsign(self, dir, name):
         """
         Converts a newly-read FileBuildInfo object for in-SCons use
@@ -1862,9 +1892,11 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
                 return s
             n = SCons.Node.Alias.default_ans.lookup(s)
             if not n:
-                if not os.path.isabs(s):
-                    s = top.abspath + os.sep + s
-                n = top.root._lookup_abs(s, Entry)
+                if os.path.isabs(s):
+                    n = top.fs._lookup(s, top, Entry)
+                else:
+                    s = top.labspath + '/' + s
+                    n = top.root._lookup_abs(s, Entry)
             return n
         for attr in ['bsources', 'bdepends', 'bimplicit']:
             try:

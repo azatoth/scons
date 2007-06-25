@@ -31,14 +31,16 @@ SourceSignatures() and TargetSignatures() values (timestamp and content,
 respectively).
 """
 
-import os.path
-
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
-sub1_hello_c    = os.path.join('sub1', 'hello.c')
-sub1_hello_obj  = os.path.join('sub1', 'hello.obj')
+# Note:  We don't use os.path.join() representations of the file names
+# in the expected output because paths in the .sconsign files are
+# canonicalized to use / as the separator.
+
+sub1_hello_c    = 'sub1/hello.c'
+sub1_hello_obj  = 'sub1/hello.obj'
 
 def re_sep(*args):
     import os.path

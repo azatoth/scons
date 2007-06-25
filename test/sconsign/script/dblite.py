@@ -29,16 +29,18 @@ Verify that various ways of getting at a an sconsign file written with
 the default dblite module and default .dblite suffix work correctly.
 """
 
-import os.path
-
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
 test.subdir('sub1', 'sub2')
 
-sub1_hello_c    = os.path.join('sub1', 'hello.c')
-sub1_hello_obj  = os.path.join('sub1', 'hello.obj')
+# Note:  We don't use os.path.join() representations of the file names
+# in the expected output because paths in the .sconsign files are
+# canonicalized to use / as the separator.
+
+sub1_hello_c    = 'sub1/hello.c'
+sub1_hello_obj  = 'sub1/hello.obj'
 
 test.write('SConstruct', """
 SConsignFile('my_sconsign')

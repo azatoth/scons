@@ -29,8 +29,6 @@ Verify that we can print .sconsign files with Configure context
 info in them (which have different BuildInfo entries).
 """
 
-import os.path
-
 import TestSCons
 import TestSConsign
 
@@ -38,7 +36,11 @@ _obj = TestSCons._obj
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
-_sconf_temp_conftest_0_c = os.path.join('.sconf_temp', 'conftest_0.c')
+# Note:  We don't use os.path.join() representations of the file names
+# in the expected output because paths in the .sconsign files are
+# canonicalized to use / as the separator.
+
+_sconf_temp_conftest_0_c = '.sconf_temp/conftest_0.c'
 
 test.write('SConstruct', """
 env = Environment()

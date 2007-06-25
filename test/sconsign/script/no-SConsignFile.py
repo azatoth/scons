@@ -29,25 +29,22 @@ Verify that the sconsign script works when using an individual
 .sconsign file in each directory (SConsignFile(None)).
 """
 
-import os.path
-
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
-def re_sep(*args):
-    import os.path
-    import re
-    return re.escape(apply(os.path.join, args))
-
 test.subdir('sub1', 'sub2')
 
-sub1_hello_c    = os.path.join('sub1', 'hello.c')
-sub1_hello_obj  = os.path.join('sub1', 'hello.obj')
-sub2_hello_c    = os.path.join('sub2', 'hello.c')
-sub2_hello_obj  = os.path.join('sub2', 'hello.obj')
-sub2_inc1_h     = os.path.join('sub2', 'inc1.h')
-sub2_inc2_h     = os.path.join('sub2', 'inc2.h')
+# Note:  We don't use os.path.join() representations of the file names
+# in the expected output because paths in the .sconsign files are
+# canonicalized to use / as the separator.
+
+sub1_hello_c    = 'sub1/hello.c'
+sub1_hello_obj  = 'sub1/hello.obj'
+sub2_hello_c    = 'sub2/hello.c'
+sub2_hello_obj  = 'sub2/hello.obj'
+sub2_inc1_h     = 'sub2/inc1.h'
+sub2_inc2_h     = 'sub2/inc2.h'
 
 test.write(['SConstruct'], """
 SConsignFile(None)
@@ -186,10 +183,6 @@ hello.obj: %(sig_re)s \d+ \d+
         %(sub1_hello_c)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals())
-
-# XXX NOT SURE IF THIS IS RIGHT!
-sub2_inc1_h = re_sep('sub2', 'inc1.h')
-sub2_inc2_h = re_sep('sub2', 'inc2.h')
 
 test.run_sconsign(arguments = "sub2/.sconsign",
          stdout = r"""hello.c: %(sig_re)s \d+ \d+

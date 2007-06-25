@@ -29,20 +29,22 @@ Verify that the sconsign script works with files generated when
 using the signatures in an SConsignFile().
 """
 
-import os.path
-
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
 test.subdir('sub1', 'sub2')
 
-sub1_hello_c    = os.path.join('sub1', 'hello.c')
-sub1_hello_obj  = os.path.join('sub1', 'hello.obj')
-sub2_hello_c    = os.path.join('sub2', 'hello.c')
-sub2_hello_obj  = os.path.join('sub2', 'hello.obj')
-sub2_inc1_h     = os.path.join('sub2', 'inc1.h')
-sub2_inc2_h     = os.path.join('sub2', 'inc2.h')
+# Note:  We don't use os.path.join() representations of the file names
+# in the expected output because paths in the .sconsign files are
+# canonicalized to use / as the separator.
+
+sub1_hello_c    = 'sub1/hello.c'
+sub1_hello_obj  = 'sub1/hello.obj'
+sub2_hello_c    = 'sub2/hello.c'
+sub2_hello_obj  = 'sub2/hello.obj'
+sub2_inc1_h     = 'sub2/inc1.h'
+sub2_inc2_h     = 'sub2/inc2.h'
 
 test.write(['SConstruct'], """\
 SConsignFile()

@@ -985,16 +985,26 @@ class FSTestCase(_tempdirTestCase):
             except:
                 raise
 
-            # Test that just specifying the drive works to identify
-            # its root directory.
-            p = os.path.abspath(test.workpath('root_file'))
+        # Test that just specifying the drive works to identify
+        # its root directory.
+        p = os.path.abspath(test.workpath('root_file'))
+        drive, path = os.path.splitdrive(p)
+        if drive:
+            # The assert below probably isn't correct for the general
+            # case, but it works for Windows, which covers a lot
+            # of ground...
+            dir = fs.Dir(drive)
+            assert str(dir) == drive + os.sep, str(dir)
+
+            # Make sure that lookups with and without the drive are
+            # equivalent.
+            p = os.path.abspath(test.workpath('some/file'))
             drive, path = os.path.splitdrive(p)
-            if drive:
-                # The assert below probably isn't correct for the general
-                # case, but it works for Windows, which covers a lot
-                # of ground...
-                dir = fs.Dir(drive)
-                assert str(dir) == drive + os.sep, str(dir)
+
+            e1 = fs.Entry(p)
+            e2 = fs.Entry(path)
+            assert e1 is e2, (e1, e2)
+            assert str(e1) is str(e2), (str(e1), str(e2))
 
         # Test for a bug in 0.04 that did not like looking up
         # dirs with a trailing slash on Windows.
