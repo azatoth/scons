@@ -304,14 +304,15 @@ class TestSCons(TestCommon):
             # we call test.no_result().
             self.no_result(skip=1)
 
-    def diff_substr(self, expect, actual):
+    def diff_substr(self, expect, actual, prelen=20, postlen=40):
         i = 0
         for x, y in zip(expect, actual):
             if x != y:
                 return "Actual did not match expect at char %d:\n" \
                        "    Expect:  %s\n" \
                        "    Actual:  %s\n" \
-                       % (i, repr(expect[i-20:i+40]), repr(actual[i-20:i+40]))
+                       % (i, repr(expect[i-prelen:i+postlen]),
+                             repr(actual[i-prelen:i+postlen]))
             i = i + 1
         return "Actual matched the expected output???"
 
