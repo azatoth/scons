@@ -148,6 +148,11 @@ else:
             while 1:
                 task = self.requestQueue.get()
 
+                if not task:
+                    # Got a None value from the queue, which indicates
+                    # no more work to be done.
+                    break
+
                 try:
                     task.execute()
                 except KeyboardInterrupt:
@@ -170,8 +175,10 @@ else:
             self.resultsQueue = Queue.Queue(0)
 
             # Create worker threads
+            self.workers = []
             for _ in range(num):
-                Worker(self.requestQueue, self.resultsQueue)
+                w = Worker(self.requestQueue, self.resultsQueue)
+                self.workers.append(w)
 
         def put(self, obj):
             """Put task into request queue."""
@@ -183,6 +190,22 @@ else:
 
         def preparation_failed(self, obj):
             self.resultsQueue.put((obj, 0))
+
+        def shutdown(self):
+            """
+            Shuts down the thread pool, giving each worked thread a
+            chance to shut down gracefully.
+            """
+            # For each worker thread, add one None value (indicating
+            # that there's no work to be done) so that, in theory,
+            # each worker thread will get one and terminate gracefully.
+            for w in self.workers:
+                self.requestQueue.put(None)
+            # And then wait for each thread to terminate.  Normally these
+            # should happen fairly quickly, but we'll stick a one-second
+            # timeout on here just in case someone gets hung.
+            for w in self.workers:
+                w.join(1.0)
 
     class Parallel:
         """This class is used to execute tasks in parallel, and is somewhat 
@@ -261,3 +284,5 @@ else:
 
                     if self.tp.resultsQueue.empty():
                         break
+
+            self.tp.shutdown()
