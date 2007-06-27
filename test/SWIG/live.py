@@ -117,6 +117,12 @@ test.write("foo.i", """\
 %module foo
 %{
 /* Put header files here (optional) */
+/*
+ * This duplication shouldn't be necessary, I guess, but it seems
+ * to suppress "cast to pointer from integer of different size"
+ * warning messages on some systems.
+ */
+extern char *foo_string();
 %}
 
 extern char *foo_string();
@@ -134,6 +140,12 @@ test.write("bar.i", """\
 %module \t bar
 %{
 /* Put header files here (optional) */
+/*
+ * This duplication shouldn't be necessary, I guess, but it seems
+ * to suppress "cast to pointer from integer of different size"
+ * warning messages on some systems.
+ */
+extern char *bar_string();
 %}
 
 extern char *bar_string();
