@@ -134,16 +134,8 @@ ps_output_2 = test.read(['build', 'docs', 'test.ps'])
 
 
 
-def normalize_pdf(s):
-    import re
-    s = re.sub(r'/CreationDate \(D:[^)]*\)',
-               r'/CreationDate (D:XXXX)', s)
-    s = re.sub(r'/ID \[<[0-9a-fA-F]*> <[0-9a-fA-F]*>\]',
-               r'/ID [<XXXX> <XXXX>]', s)
-    return s
-
-pdf_output_1 = normalize_pdf(pdf_output_1)
-pdf_output_2 = normalize_pdf(pdf_output_2)
+pdf_output_1 = test.normalize_pdf(pdf_output_1)
+pdf_output_2 = test.normalize_pdf(pdf_output_2)
 
 assert pdf_output_1 == pdf_output_2,    test.diff_substr(pdf_output_1, pdf_output_2, 80, 80)
 assert ps_output_1 == ps_output_2,      test.diff_substr(ps_output_1, ps_output_2, 80, 80)

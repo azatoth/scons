@@ -338,6 +338,13 @@ class TestSCons(TestCommon):
         x = string.replace(x, 'line 1,', 'line %s,' % line)
         return x
 
+    def normalize_pdf(self, s):
+        s = re.sub(r'/CreationDate \(D:[^)]*\)',
+                   r'/CreationDate (D:XXXX)', s)
+        s = re.sub(r'/ID \[<[0-9a-fA-F]*> <[0-9a-fA-F]*>\]',
+                   r'/ID [<XXXX> <XXXX>]', s)
+        return s
+
     def java_ENV(self):
         """
         Return a default external environment that uses a local Java SDK
