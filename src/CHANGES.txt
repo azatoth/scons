@@ -69,6 +69,11 @@ RELEASE 0.97.X - XXX
   - Find Java anonymous classes when the next token after the name is
     an open parenthesis.
 
+  From Adam Simpkins:
+
+  - Allow worker threads to terminate gracefully when all jobs are
+    finished.
+
   From Sohail Somani:
 
   - Add LaTeX scanner support for finding dependencies specified with

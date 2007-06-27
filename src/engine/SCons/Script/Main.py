@@ -1076,6 +1076,7 @@ def _main(options, args):
     try:
         jobs.run()
     finally:
+        jobs.cleanup()
         if exit_status:
             progress_display("scons: " + failure_message)
         else:
