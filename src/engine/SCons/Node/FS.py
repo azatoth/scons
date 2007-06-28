@@ -2422,10 +2422,7 @@ class File(Base):
                 if self.changed_state(target, prev_ni):
                     return 1
 
-            if target.has_builder():
-                tgt_sig_type = target.get_build_env().get_tgt_sig_type()
-            else:
-                tgt_sig_type = None
+            tgt_sig_type = target.get_build_env().get_tgt_sig_type()
 
             if tgt_sig_type == 'build':
                 if self.changed_state(target, prev_ni):
