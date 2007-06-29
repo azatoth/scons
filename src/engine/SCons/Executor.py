@@ -74,10 +74,17 @@ class Executor:
     def get_action_list(self):
         return self.pre_actions + self.action_list + self.post_actions
 
+    memoizer_counters.append(SCons.Memoize.CountValue('get_build_env'))
+
     def get_build_env(self):
         """Fetch or create the appropriate build Environment
         for this Executor.
         """
+        try:
+            return self._memo['get_build_env']
+        except KeyError:
+            pass
+
         # Create the build environment instance with appropriate
         # overrides.  These get evaluated against the current
         # environment's construction variables so that users can
@@ -90,6 +97,8 @@ class Executor:
         import SCons.Defaults
         env = self.env or SCons.Defaults.DefaultEnvironment()
         build_env = env.Override(overrides)
+
+        self._memo['get_build_env'] = build_env
 
         return build_env
 
