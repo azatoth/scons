@@ -962,6 +962,9 @@ class Node:
         """
         raise NotImplementedError
 
+    def Decider(self, function):
+        SCons.Util.AddMethod(self, function, 'changed_since_last_build')
+
     def changed(self, node=None):
         """
         Returns if the node is up-to-date with respect to the BuildInfo

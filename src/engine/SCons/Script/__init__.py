@@ -286,6 +286,7 @@ GlobalDefaultEnvironmentFunctions = [
     'CacheDir',
     'Clean',
     #The Command() method is handled separately, below.
+    'Decider',
     'Depends',
     'Dir',
     'NoClean',

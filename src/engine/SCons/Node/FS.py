@@ -2410,39 +2410,7 @@ class File(Base):
         of why this method is called through the dependency Node, not
         the target.
         """
-        func = {
-            'MD5' : self.changed_content,
-            'content' : self.changed_content,
-            'timestamp' : self.changed_timestamp,
-            'build' : self.changed_state,
-        }
-
-        if self.has_builder():
-            if not SCons.Action.execute_actions:
-                if self.changed_state(target, prev_ni):
-                    return 1
-
-            tgt_sig_type = target.get_build_env().get_tgt_sig_type()
-
-            if tgt_sig_type == 'build':
-                if self.changed_state(target, prev_ni):
-                    return 1
-            elif tgt_sig_type == 'source':
-                # We're an input file (or dependency), and the target
-                # we're being used to build (or which depends on us) says
-                # that we get to decide how the calculation is performed.
-                # If the environment we were built with has a specific
-                # signature type for targets, use that.  If not, then
-                # fall back to this target's source setting.
-                my_tgt_sig_type = self.get_build_env().get_tgt_sig_type()
-                f = func.get(my_tgt_sig_type)
-                if f:
-                    return f(target, prev_ni)
-            else:
-                return func[tgt_sig_type](target, prev_ni)
-
-        src_sig_type = target.get_env().get_src_sig_type()
-        return func[src_sig_type](target, prev_ni)
+        return target.get_build_env().changed_since_last_build(self, target, prev_ni)
 
     def is_up_to_date(self):
         T = 0

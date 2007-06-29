@@ -69,6 +69,7 @@ def DefaultEnvironment(*args, **kw):
         else:
             _default_env.src_sig_type = 'timestamp'
         _default_env.tgt_sig_type = 'source'
+        _default_env.changed_since_last_build = _default_env.default_decider_function
     return _default_env
 
 # Emitters for setting the shared attribute on object files,

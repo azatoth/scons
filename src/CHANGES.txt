@@ -8,6 +8,16 @@
 
 
 
+RELEASE 0.97.Y - XXX
+
+  From Steven Knight:
+
+  - Add an env.Decider() method and a Node.Decider() method that allow
+    flexible specification of an arbitrary function to decide if a given
+    dependency has changed since the last time a target was built.
+
+
+
 RELEASE 0.97.X - XXX
 
   From Mark Bertoglio:

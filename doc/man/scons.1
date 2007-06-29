@@ -2672,6 +2672,79 @@ env.SourceCode('.', env.CVS('/usr/local/CVSROOT', 'foo/bar'))
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
+.RI Decider( function )
+.TP
+.RI env.Decider( function )
+Specifies that all up-to-date decisions for
+targets built through this construction environment
+will be handled by the specified
+.IR function .
+The
+.I function
+must take the following three arguments:
+
+.IP dependency
+The Node (file) which
+should cause the
+.I target
+to be rebuilt
+if it has "changed" since the last tme
+.I target was built.
+
+.IP target
+The Node (file) being built.
+In the normal case,
+this is what should get rebuilt
+if the
+.I dependency
+has "changed."
+
+.IP prev_ni
+Stored information about the state of the
+.I dependency
+the last time the
+.I target
+was built.
+This can be consulted to match various
+file characteristics
+such as the timestamp,
+size, or content signature.
+
+The
+.I function
+should return a
+.B True
+(non-zero)
+value if the
+.I dependency
+has "changed" since the last time
+the
+.I target
+was built
+(indicating that the target
+.I should
+be rebuilt),
+and
+.B False
+(zero)
+otherwise
+(indicating that the target should
+.I not
+be rebuilt).
+Note that the decision can be made
+using whatever criteria are appopriate.
+Ignoring some or all of the function arguments
+is perfectly normal.
+
+.ES
+def my_decider(dependency, target, prev_ni):
+    return not os.path.exists(str(target))
+
+env.Decider(my_decider)
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP 
 .RI Default( targets )
 .TP
 .RI env.Default( targets )

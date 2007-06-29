@@ -299,6 +299,8 @@ class Null(_Executor):
         class NullEnvironment:
             def get_scanner(self, key):
                 return None
+            def changed_since_last_build(self, dependency, target, prev_ni):
+                return dependency.changed_since_last_buld(target, prev_ni)
         return NullEnvironment()
     def get_build_scanner_path(self):
         return None

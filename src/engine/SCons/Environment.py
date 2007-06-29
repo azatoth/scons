@@ -1060,6 +1060,72 @@ class Base(SubstitutionEnvironment):
     def Copy(self, *args, **kw):
         return apply(self.Clone, args, kw)
 
+    def default_decider_function(self, dependency, target, prev_ni):
+        """
+        Returns True if this file has changed since the last time it
+        was used to build the specified target.  prev_ni is our state
+        (timestamp, length, maybe content signature) the last time the
+        target was built.
+
+        See the doc string of the superclass method
+        (SCons.Node.Node.changed_since_last_build()) for a description
+        of why this method is called through the dependency Node, not
+        the target.
+
+        Formerly known as "changed_since_last_build".
+        """
+        func = {
+            'MD5' : dependency.changed_content,
+            'content' : dependency.changed_content,
+            'timestamp' : dependency.changed_timestamp,
+            'build' : dependency.changed_state,
+        }
+
+        if dependency.has_builder():
+            if not SCons.Action.execute_actions:
+                if dependency.changed_state(target, prev_ni):
+                    return 1
+
+            tgt_sig_type = self.get_tgt_sig_type()
+
+            if tgt_sig_type == 'build':
+                if dependency.changed_state(target, prev_ni):
+                    return 1
+            elif tgt_sig_type == 'source':
+                # We're an input file (or dependency), and the target
+                # we're being used to build (or which depends on us) says
+                # that we get to decide how the calculation is performed.
+                # If the environment we were built with has a specific
+                # signature type for targets, use that.  If not, then
+                # fall back to this target's source setting.
+                my_tgt_sig_type = dependency.get_build_env().get_tgt_sig_type()
+                f = func.get(my_tgt_sig_type)
+                if f:
+                    return f(target, prev_ni)
+            else:
+                return func[tgt_sig_type](target, prev_ni)
+
+        src_sig_type = self.get_src_sig_type()
+        return func[src_sig_type](target, prev_ni)
+
+    def get_configured_decider(self):
+        f = self.changed_since_last_build
+        if f is self.default_decider_function:
+            return None
+        return f
+
+    def changed_since_last_build(self, dependency, target, prev_ni):
+        f = SCons.Defaults.DefaultEnvironment().get_configured_decider()
+        if not f:
+            f = self.default_decider_function
+        return f(dependency, target, prev_ni)
+
+    def Decider(self, function):
+        # We don't use AddMethod because we don't want to turn the
+        # function, which only expects three arguments, to become a
+        # bound method, which would add ourself as a fourth argument.
+        self.changed_since_last_build = function
+
     def Detect(self, progs):
         """Return the first available program in progs.
         """
@@ -1702,6 +1768,7 @@ class Base(SubstitutionEnvironment):
         if type == 'MD5' and not SCons.Util.md5:
             raise UserError, "MD5 signatures are not available in this version of Python."
         self.src_sig_type = type
+        self.changed_since_last_build = self.default_decider_function
 
     def Split(self, arg):
         """This function converts a string or list into a list of strings
@@ -1728,6 +1795,7 @@ class Base(SubstitutionEnvironment):
         if type in ['MD5', 'content'] and not SCons.Util.md5:
             raise UserError, "MD5 signatures are not available in this version of Python."
         self.tgt_sig_type = type
+        self.changed_since_last_build = self.default_decider_function
 
     def Value(self, value, built_value=None):
         """
