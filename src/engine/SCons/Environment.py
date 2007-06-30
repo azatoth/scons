@@ -1074,13 +1074,6 @@ class Base(SubstitutionEnvironment):
 
         Formerly known as "changed_since_last_build".
         """
-        func = {
-            'MD5' : dependency.changed_content,
-            'content' : dependency.changed_content,
-            'timestamp' : dependency.changed_timestamp,
-            'build' : dependency.changed_state,
-        }
-
         if dependency.has_builder():
             if not SCons.Action.execute_actions:
                 if dependency.changed_state(target, prev_ni):
@@ -1091,6 +1084,7 @@ class Base(SubstitutionEnvironment):
             if tgt_sig_type == 'build':
                 if dependency.changed_state(target, prev_ni):
                     return 1
+                use_sig_type = self.get_src_sig_type()
             elif tgt_sig_type == 'source':
                 # We're an input file (or dependency), and the target
                 # we're being used to build (or which depends on us) says
@@ -1098,15 +1092,26 @@ class Base(SubstitutionEnvironment):
                 # If the environment we were built with has a specific
                 # signature type for targets, use that.  If not, then
                 # fall back to this target's source setting.
-                my_tgt_sig_type = dependency.get_build_env().get_tgt_sig_type()
-                f = func.get(my_tgt_sig_type)
-                if f:
-                    return f(target, prev_ni)
+                use_sig_type = dependency.get_build_env().get_tgt_sig_type()
+                if not use_sig_type in ('MD5', 'content', 'timestamp', 'build'):
+                    use_sig_type = self.get_src_sig_type()
             else:
-                return func[tgt_sig_type](target, prev_ni)
+                use_sig_type = tgt_sig_type
+        else:
+            use_sig_type = self.get_src_sig_type()
 
-        src_sig_type = self.get_src_sig_type()
-        return func[src_sig_type](target, prev_ni)
+        # Using a series of if-elif statements here ended up being more
+        # efficient than creating a dictionary to point to the different
+        # dependency methods.  See bench/dependency-func.py
+        if use_sig_type in ('MD5', 'content'):
+            return dependency.changed_content(target, prev_ni)
+        elif use_sig_type == 'timestamp':
+            return dependency.changed_timestamp(target, prev_ni)
+        elif use_sig_type == 'build':
+            return dependency.changed_state(target, prev_ni)
+        else:
+            # This should "never happen," but just in case...
+            raise Exception, "unknown use_sig_type %s" % repr(use_sig_type)
 
     def get_configured_decider(self):
         f = self.changed_since_last_build
