@@ -605,22 +605,11 @@ class Node:
         if implicit_cache and not implicit_deps_changed:
             implicit = self.get_stored_implicit()
             if implicit is not None:
-                factory = build_env.get_factory(self.builder.source_factory)
-                nodes = []
-                for i in implicit:
-                    try:
-                        n = factory(i)
-                    except TypeError:
-                        # The implicit dependency was cached as one type
-                        # of Node last time, but the configuration has
-                        # changed (probably) and it's a different type
-                        # this time.  Just ignore the mismatch and go
-                        # with what our current configuration says the
-                        # Node is.
-                        pass
-                    else:
-                        nodes.append(n)
-                self._add_child(self.implicit, self.implicit_dict, nodes)
+                # We now add the implicit dependencies returned from the
+                # stored .sconsign entry to have already been converted
+                # to Nodes for us.  (We used to run them through a
+                # source_factory function here.)
+                self._add_child(self.implicit, self.implicit_dict, implicit)
                 if implicit_deps_unchanged or self.is_up_to_date():
                     return
                 # one of this node's sources has changed,

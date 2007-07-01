@@ -981,7 +981,7 @@ class NodeTestCase(unittest.TestCase):
         # if the stored dependencies need recalculation.
         class StoredNode(MyNode):
             def get_stored_implicit(self):
-                return ['implicit1', 'implicit2']
+                return [MyNode('implicit1'), MyNode('implicit2')]
 
         save_implicit_cache = SCons.Node.implicit_cache
         save_implicit_deps_changed = SCons.Node.implicit_deps_changed
