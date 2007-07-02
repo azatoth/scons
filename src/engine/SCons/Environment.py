@@ -1060,17 +1060,11 @@ class Base(SubstitutionEnvironment):
     def Copy(self, *args, **kw):
         return apply(self.Clone, args, kw)
 
-    def _set_cslb_source(self, dependency, target, prev_ni):
-        src_sig_type = self.get_src_sig_type()
-        if src_sig_type in ('MD5', 'content'):
-            return dependency.changed_content(target, prev_ni)
-        elif src_sig_type == 'timestamp':
-            return dependency.changed_timestamp(target, prev_ni)
-        elif src_sig_type == 'build':
-            return dependency.changed_state(target, prev_ni)
-        else:
-            # This should "never happen," but just in case...
-            raise Exception, "unknown src_sig_type %s" % repr(src_sig_type)
+    def _source_changed_content(self, dependency, target, prev_ni):
+        return dependency.changed_content(target, prev_ni)
+
+    def _source_changed_timestamp(self, dependency, target, prev_ni):
+        return dependency.changed_timestamp(target, prev_ni)
 
     def _set_cslb_target(self, dependency, target, prev_ni):
         """
@@ -1774,12 +1768,15 @@ class Base(SubstitutionEnvironment):
 
     def SourceSignatures(self, type):
         type = self.subst(type)
-        if not type in ['MD5', 'timestamp']:
-            raise UserError, "Unknown source signature type '%s'" % type
-        if type == 'MD5' and not SCons.Util.md5:
-            raise UserError, "MD5 signatures are not available in this version of Python."
         self.src_sig_type = type
-        self.cslb_source = self._set_cslb_source
+        if type == 'MD5':
+            if not SCons.Util.md5:
+                raise UserError, "MD5 signatures are not available in this version of Python."
+            self.cslb_source = self._source_changed_content
+        elif type == 'timestamp':
+            self.cslb_source = self._source_changed_timestamp
+        else:
+            raise UserError, "Unknown source signature type '%s'" % type
 
     def Split(self, arg):
         """This function converts a string or list into a list of strings
