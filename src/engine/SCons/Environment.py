@@ -1113,16 +1113,8 @@ class Base(SubstitutionEnvironment):
             # This should "never happen," but just in case...
             raise Exception, "unknown use_sig_type %s" % repr(use_sig_type)
 
-    def get_configured_decider(self):
-        f = self.changed_since_last_build
-        if f is self.default_decider_function:
-            return None
-        return f
-
     def changed_since_last_build(self, dependency, target, prev_ni):
-        f = SCons.Defaults.DefaultEnvironment().get_configured_decider()
-        if not f:
-            f = self.default_decider_function
+        f = SCons.Defaults.DefaultEnvironment().changed_since_last_build
         return f(dependency, target, prev_ni)
 
     def Decider(self, function):
