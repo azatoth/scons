@@ -86,12 +86,11 @@ def DefaultEnvironment(*args, **kw):
     if not _default_env:
         import SCons.Util
         _default_env = apply(SCons.Environment.Environment, args, kw)
+        _default_env.TargetSignatures('source')
         if SCons.Util.md5:
             _default_env.SourceSignatures('MD5')
         else:
             _default_env.SourceSignatures('timestamp')
-        _default_env.tgt_sig_type = 'source'
-        _default_env.cslb_target = _default_env._set_cslb_target
         global DefaultEnvironment
         DefaultEnvironment = _fetch_DefaultEnvironment
     return _default_env

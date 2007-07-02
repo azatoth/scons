@@ -1060,76 +1060,39 @@ class Base(SubstitutionEnvironment):
     def Copy(self, *args, **kw):
         return apply(self.Clone, args, kw)
 
-    def _source_changed_content(self, dependency, target, prev_ni):
+    def _changed_content(self, dependency, target, prev_ni):
         return dependency.changed_content(target, prev_ni)
 
-    def _source_changed_timestamp(self, dependency, target, prev_ni):
+    def _changed_timestamp(self, dependency, target, prev_ni):
         return dependency.changed_timestamp(target, prev_ni)
 
-    def _set_cslb_target(self, dependency, target, prev_ni):
-        """
-        Returns True if this file has changed since the last time it
-        was used to build the specified target.  prev_ni is our state
-        (timestamp, length, maybe content signature) the last time the
-        target was built.
-
-        See the doc string of the superclass method
-        (SCons.Node.Node.changed_since_last_build()) for a description
-        of why this method is called through the dependency Node, not
-        the target.
-
-        Formerly known as "changed_since_last_build".
-        """
-        if not SCons.Action.execute_actions:
-            if dependency.changed_state(target, prev_ni):
-                return 1
-
-        tgt_sig_type = self.get_tgt_sig_type()
-
-        if tgt_sig_type == 'build':
-            if dependency.changed_state(target, prev_ni):
-                return 1
-            use_sig_type = self.get_src_sig_type()
-        elif tgt_sig_type == 'source':
-            # We're an input file (or dependency), and the target
-            # we're being used to build (or which depends on us) says
-            # that we get to decide how the calculation is performed.
-            # If the environment we were built with has a specific
-            # signature type for targets, use that.  If not, then
-            # fall back to this target's source setting.
-            use_sig_type = dependency.get_build_env().get_tgt_sig_type()
-            if not use_sig_type in ('MD5', 'content', 'timestamp', 'build'):
-                use_sig_type = self.get_src_sig_type()
+    def _changed_source(self, dependency, target, prev_ni):
+        target_env = dependency.get_build_env()
+        type = target_env.get_tgt_sig_type()
+        if type == 'source':
+            return target_env.decide_source(dependency, target, prev_ni)
         else:
-            use_sig_type = tgt_sig_type
+            return target_env.decide_target(dependency, target, prev_ni)
 
-        # Using a series of if-elif statements here ended up being more
-        # efficient than creating a dictionary to point to the different
-        # dependency methods.  See bench/dependency-func.py
-        if use_sig_type in ('MD5', 'content'):
-            return dependency.changed_content(target, prev_ni)
-        elif use_sig_type == 'timestamp':
-            return dependency.changed_timestamp(target, prev_ni)
-        elif use_sig_type == 'build':
-            return dependency.changed_state(target, prev_ni)
-        else:
-            # This should "never happen," but just in case...
-            raise Exception, "unknown use_sig_type %s" % repr(use_sig_type)
+    def _changed_build(self, dependency, target, prev_ni):
+        if dependency.changed_state(target, prev_ni):
+            return 1
+        return self.decide_source(dependency, target, prev_ni)
 
-    def cslb_source(self, dependency, target, prev_ni):
-        f = SCons.Defaults.DefaultEnvironment().cslb_source
+    def decide_source(self, dependency, target, prev_ni):
+        f = SCons.Defaults.DefaultEnvironment().decide_source
         return f(dependency, target, prev_ni)
 
-    def cslb_target(self, dependency, target, prev_ni):
-        f = SCons.Defaults.DefaultEnvironment().cslb_target
+    def decide_target(self, dependency, target, prev_ni):
+        f = SCons.Defaults.DefaultEnvironment().decide_target
         return f(dependency, target, prev_ni)
 
     def Decider(self, function):
         # We don't use AddMethod because we don't want to turn the
         # function, which only expects three arguments, to become a bound
         # method, which would add self as an initial, fourth argument.
-        self.cslb_target = function
-        self.cslb_source = function
+        self.decide_target = function
+        self.decide_source = function
 
     def Detect(self, progs):
         """Return the first available program in progs.
@@ -1772,9 +1735,9 @@ class Base(SubstitutionEnvironment):
         if type == 'MD5':
             if not SCons.Util.md5:
                 raise UserError, "MD5 signatures are not available in this version of Python."
-            self.cslb_source = self._source_changed_content
+            self.decide_source = self._changed_content
         elif type == 'timestamp':
-            self.cslb_source = self._source_changed_timestamp
+            self.decide_source = self._changed_timestamp
         else:
             raise UserError, "Unknown source signature type '%s'" % type
 
@@ -1798,12 +1761,19 @@ class Base(SubstitutionEnvironment):
 
     def TargetSignatures(self, type):
         type = self.subst(type)
-        if not type in ['build', 'content', 'MD5', 'timestamp', 'source']:
-            raise SCons.Errors.UserError, "Unknown target signature type '%s'"%type
-        if type in ['MD5', 'content'] and not SCons.Util.md5:
-            raise UserError, "MD5 signatures are not available in this version of Python."
         self.tgt_sig_type = type
-        self.cslb_target = self._set_cslb_target
+        if type in ('MD5', 'content'):
+            if not SCons.Util.md5:
+                raise UserError, "MD5 signatures are not available in this version of Python."
+            self.decide_target = self._changed_content
+        elif type == 'timestamp':
+            self.decide_target = self._changed_timestamp
+        elif type == 'build':
+            self.decide_target = self._changed_build
+        elif type == 'source':
+            self.decide_target = self._changed_source
+        else:
+            raise UserError, "Unknown target signature type '%s'"%type
 
     def Value(self, value, built_value=None):
         """

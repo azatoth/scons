@@ -1977,7 +1977,7 @@ class File(Base):
         # not clear right now how to fix that, stick with what works
         # until it becomes clear...
         if self.has_builder():
-            self.changed_since_last_build = self.cslb_target
+            self.changed_since_last_build = self.decide_target
 
     def scanner_key(self):
         return self.get_suffix()
@@ -2393,12 +2393,12 @@ class File(Base):
         return csig
 
     #
-    #
+    # DECISION SUBSYSTEM
     #
 
     def builder_set(self, builder):
         SCons.Node.Node.builder_set(self, builder)
-        self.changed_since_last_build = self.cslb_target
+        self.changed_since_last_build = self.decide_target
 
     def changed_timestamp(self, target, prev_ni):
         try:
@@ -2416,13 +2416,15 @@ class File(Base):
     def changed_state(self, target, prev_ni):
         return (self.state != SCons.Node.up_to_date)
 
-    def cslb_source(self, target, prev_ni):
-        return target.get_build_env().cslb_source(self, target, prev_ni)
+    def decide_source(self, target, prev_ni):
+        return target.get_build_env().decide_source(self, target, prev_ni)
 
-    def cslb_target(self, target, prev_ni):
-        return target.get_build_env().cslb_target(self, target, prev_ni)
+    def decide_target(self, target, prev_ni):
+        return target.get_build_env().decide_target(self, target, prev_ni)
 
-    changed_since_last_build = cslb_source
+    # Initialize this Node's decider function to decide_source() because
+    # every file is a source file until it has a Builder attached...
+    changed_since_last_build = decide_source
 
     def is_up_to_date(self):
         T = 0
