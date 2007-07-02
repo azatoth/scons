@@ -59,7 +59,29 @@ _default_env = None
 
 # Lazily instantiate the default environment so the overhead of creating
 # it doesn't apply when it's not needed.
+def _fetch_DefaultEnvironment(*args, **kw):
+    """
+    Returns the already-created default construction environment.
+    """
+    global _default_env
+    return _default_env
+
 def DefaultEnvironment(*args, **kw):
+    """
+    Initial public entry point for creating the default construction
+    Environment.
+
+    After creating the environment, we overwrite our name
+    (DefaultEnvironment) with the _fetch_DefaultEnvironment() function,
+    which more efficiently returns the initialized default construction
+    environment without checking for its existence.
+
+    (This function still exists with its _default_check because someone
+    else (*cough* Script/__init__.py *cough*) may keep a reference
+    to this function.  So we can't use the fully functional idiom of
+    having the name originally be a something that *only* creates the
+    construction environment and then overwrites the name.)
+    """
     global _default_env
     if not _default_env:
         import SCons.Util
@@ -70,6 +92,8 @@ def DefaultEnvironment(*args, **kw):
             _default_env.src_sig_type = 'timestamp'
         _default_env.tgt_sig_type = 'source'
         _default_env.changed_since_last_build = _default_env.default_decider_function
+        global DefaultEnvironment
+        DefaultEnvironment = _fetch_DefaultEnvironment
     return _default_env
 
 # Emitters for setting the shared attribute on object files,
