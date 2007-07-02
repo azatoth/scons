@@ -1060,7 +1060,19 @@ class Base(SubstitutionEnvironment):
     def Copy(self, *args, **kw):
         return apply(self.Clone, args, kw)
 
-    def default_decider_function(self, dependency, target, prev_ni):
+    def _set_cslb_source(self, dependency, target, prev_ni):
+        src_sig_type = self.get_src_sig_type()
+        if src_sig_type in ('MD5', 'content'):
+            return dependency.changed_content(target, prev_ni)
+        elif src_sig_type == 'timestamp':
+            return dependency.changed_timestamp(target, prev_ni)
+        elif src_sig_type == 'build':
+            return dependency.changed_state(target, prev_ni)
+        else:
+            # This should "never happen," but just in case...
+            raise Exception, "unknown src_sig_type %s" % repr(src_sig_type)
+
+    def _set_cslb_target(self, dependency, target, prev_ni):
         """
         Returns True if this file has changed since the last time it
         was used to build the specified target.  prev_ni is our state
@@ -1074,31 +1086,28 @@ class Base(SubstitutionEnvironment):
 
         Formerly known as "changed_since_last_build".
         """
-        if dependency.has_builder():
-            if not SCons.Action.execute_actions:
-                if dependency.changed_state(target, prev_ni):
-                    return 1
+        if not SCons.Action.execute_actions:
+            if dependency.changed_state(target, prev_ni):
+                return 1
 
-            tgt_sig_type = self.get_tgt_sig_type()
+        tgt_sig_type = self.get_tgt_sig_type()
 
-            if tgt_sig_type == 'build':
-                if dependency.changed_state(target, prev_ni):
-                    return 1
-                use_sig_type = self.get_src_sig_type()
-            elif tgt_sig_type == 'source':
-                # We're an input file (or dependency), and the target
-                # we're being used to build (or which depends on us) says
-                # that we get to decide how the calculation is performed.
-                # If the environment we were built with has a specific
-                # signature type for targets, use that.  If not, then
-                # fall back to this target's source setting.
-                use_sig_type = dependency.get_build_env().get_tgt_sig_type()
-                if not use_sig_type in ('MD5', 'content', 'timestamp', 'build'):
-                    use_sig_type = self.get_src_sig_type()
-            else:
-                use_sig_type = tgt_sig_type
-        else:
+        if tgt_sig_type == 'build':
+            if dependency.changed_state(target, prev_ni):
+                return 1
             use_sig_type = self.get_src_sig_type()
+        elif tgt_sig_type == 'source':
+            # We're an input file (or dependency), and the target
+            # we're being used to build (or which depends on us) says
+            # that we get to decide how the calculation is performed.
+            # If the environment we were built with has a specific
+            # signature type for targets, use that.  If not, then
+            # fall back to this target's source setting.
+            use_sig_type = dependency.get_build_env().get_tgt_sig_type()
+            if not use_sig_type in ('MD5', 'content', 'timestamp', 'build'):
+                use_sig_type = self.get_src_sig_type()
+        else:
+            use_sig_type = tgt_sig_type
 
         # Using a series of if-elif statements here ended up being more
         # efficient than creating a dictionary to point to the different
@@ -1113,15 +1122,20 @@ class Base(SubstitutionEnvironment):
             # This should "never happen," but just in case...
             raise Exception, "unknown use_sig_type %s" % repr(use_sig_type)
 
-    def changed_since_last_build(self, dependency, target, prev_ni):
-        f = SCons.Defaults.DefaultEnvironment().changed_since_last_build
+    def cslb_source(self, dependency, target, prev_ni):
+        f = SCons.Defaults.DefaultEnvironment().cslb_source
+        return f(dependency, target, prev_ni)
+
+    def cslb_target(self, dependency, target, prev_ni):
+        f = SCons.Defaults.DefaultEnvironment().cslb_target
         return f(dependency, target, prev_ni)
 
     def Decider(self, function):
         # We don't use AddMethod because we don't want to turn the
-        # function, which only expects three arguments, to become a
-        # bound method, which would add ourself as a fourth argument.
-        self.changed_since_last_build = function
+        # function, which only expects three arguments, to become a bound
+        # method, which would add self as an initial, fourth argument.
+        self.cslb_target = function
+        self.cslb_source = function
 
     def Detect(self, progs):
         """Return the first available program in progs.
@@ -1765,7 +1779,7 @@ class Base(SubstitutionEnvironment):
         if type == 'MD5' and not SCons.Util.md5:
             raise UserError, "MD5 signatures are not available in this version of Python."
         self.src_sig_type = type
-        self.changed_since_last_build = self.default_decider_function
+        self.cslb_source = self._set_cslb_source
 
     def Split(self, arg):
         """This function converts a string or list into a list of strings
@@ -1792,7 +1806,7 @@ class Base(SubstitutionEnvironment):
         if type in ['MD5', 'content'] and not SCons.Util.md5:
             raise UserError, "MD5 signatures are not available in this version of Python."
         self.tgt_sig_type = type
-        self.changed_since_last_build = self.default_decider_function
+        self.cslb_target = self._set_cslb_target
 
     def Value(self, value, built_value=None):
         """

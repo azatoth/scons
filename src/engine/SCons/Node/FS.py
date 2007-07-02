@@ -1966,6 +1966,19 @@ class File(Base):
         if not hasattr(self, '_local'):
             self._local = 0
 
+        # If there was already a Builder set on this entry, then
+        # we need to make sure we call the target-decider function,
+        # not the source-decider.  Reaching in and doing this by hand
+        # is a little bogus.  We'd prefer to handle this by adding
+        # an Entry.builder_set() method that disambiguates like the
+        # other methods, but that starts running into problems with the
+        # fragile way we initialize Dir Nodes with their Mkdir builders,
+        # yet still allow them to be overridden by the user.  Since it's
+        # not clear right now how to fix that, stick with what works
+        # until it becomes clear...
+        if self.has_builder():
+            self.changed_since_last_build = self.cslb_target
+
     def scanner_key(self):
         return self.get_suffix()
 
@@ -2382,6 +2395,11 @@ class File(Base):
     #
     #
     #
+
+    def builder_set(self, builder):
+        SCons.Node.Node.builder_set(self, builder)
+        self.changed_since_last_build = self.cslb_target
+
     def changed_timestamp(self, target, prev_ni):
         try:
             return self.get_timestamp() > target.get_timestamp()
@@ -2398,19 +2416,13 @@ class File(Base):
     def changed_state(self, target, prev_ni):
         return (self.state != SCons.Node.up_to_date)
 
-    def changed_since_last_build(self, target, prev_ni):
-        """
-        Returns True if this file has changed since the last time it
-        was used to build the specified target.  prev_ni is our state
-        (timestamp, length, maybe content signature) the last time the
-        target was built.
+    def cslb_source(self, target, prev_ni):
+        return target.get_build_env().cslb_source(self, target, prev_ni)
 
-        See the doc string of the superclass method
-        (SCons.Node.Node.changed_since_last_build()) for a description
-        of why this method is called through the dependency Node, not
-        the target.
-        """
-        return target.get_build_env().changed_since_last_build(self, target, prev_ni)
+    def cslb_target(self, target, prev_ni):
+        return target.get_build_env().cslb_target(self, target, prev_ni)
+
+    changed_since_last_build = cslb_source
 
     def is_up_to_date(self):
         T = 0
