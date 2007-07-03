@@ -1127,7 +1127,7 @@ class Node:
             return None
 
         old = old.binfo
-        old.prepare_dependencies(self.fs.Top)
+        old.prepare_dependencies()
 
         try:
             old_bkids    = old.bsources    + old.bdepends    + old.bimplicit

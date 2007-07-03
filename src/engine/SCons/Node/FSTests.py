@@ -775,7 +775,7 @@ class FileBuildInfoTestCase(_tempdirTestCase):
         """Test that we have a prepare_dependencies() method"""
         fff = self.fs.File('fff')
         bi = SCons.Node.FS.FileBuildInfo(fff)
-        bi.prepare_dependencies(self.fs.Dir('.'))
+        bi.prepare_dependencies()
 
     def test_format(self):
         """Test the format() method"""

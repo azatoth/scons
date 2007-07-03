@@ -1019,6 +1019,9 @@ class FS(LocalFS):
         self.Top.path = '.'
         self.Top.tpath = '.'
         self._cwd = self.Top
+
+        DirNodeInfo.top = self.Top
+        FileNodeInfo.top = self.Top
     
     def set_SConstruct_dir(self, dir):
         self.SConstruct_dir = dir
@@ -1227,8 +1230,17 @@ class FS(LocalFS):
         return targets, message
 
 class DirNodeInfo(SCons.Node.NodeInfoBase):
-    def convert(self, node, val):
-        return node.Dir(val)
+    # This should get reset by the FS initialization.
+    top = None
+
+    def str_to_node(self, s):
+        top = self.top
+        if os.path.isabs(s):
+            n = top.fs._lookup(s, top, Entry)
+        else:
+            s = top.labspath + '/' + s
+            n = top.root._lookup_abs(s, Entry)
+        return n
 
 class DirBuildInfo(SCons.Node.BuildInfoBase):
     pass
@@ -1837,6 +1849,18 @@ class RootDir(Dir):
 class FileNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig', 'timestamp', 'size']
 
+    # This should get reset by the FS initialization.
+    top = None
+
+    def str_to_node(self, s):
+        top = self.top
+        if os.path.isabs(s):
+            n = top.fs._lookup(s, top, Entry)
+        else:
+            s = top.labspath + '/' + s
+            n = top.root._lookup_abs(s, Entry)
+        return n
+
 class FileBuildInfo(SCons.Node.BuildInfoBase):
     def convert_to_sconsign(self):
         """
@@ -1872,7 +1896,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         perform--but we're leaving this method here to make that clear.
         """
         pass
-    def prepare_dependencies(self, top):
+    def prepare_dependencies(self):
         """
         Prepares a FileBuildInfo object for explaining what changed
 
@@ -1881,30 +1905,24 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         directory.  Convert the strings to actual Nodes (for use by the
         --debug=explain code and --implicit-cache).
         """
-        def str_to_node(s, top=top):
-            # This is a little bogus; we're going to mimic the lookup
-            # order of env.arg2nodes() by hard-coding an Alias lookup
-            # before we assume it's an Entry.  This should be able to
-            # go away once the Big Signature Refactoring pickles the
-            # actual NodeInfo object, which will let us know precisely
-            # what type of Node to turn it into.
-            if isinstance(s, SCons.Node.Node):
-                return s
-            n = SCons.Node.Alias.default_ans.lookup(s)
-            if not n:
-                if os.path.isabs(s):
-                    n = top.fs._lookup(s, top, Entry)
-                else:
-                    s = top.labspath + '/' + s
-                    n = top.root._lookup_abs(s, Entry)
-            return n
-        for attr in ['bsources', 'bdepends', 'bimplicit']:
+        attrs = [
+            ('bsources', 'bsourcesigs'),
+            ('bdepends', 'bdependsigs'),
+            ('bimplicit', 'bimplicitsigs'),
+        ]
+        for (nattr, sattr) in attrs:
             try:
-                val = getattr(self, attr)
+                strings = getattr(self, nattr)
+                nodeinfos = getattr(self, sattr)
             except AttributeError:
                 pass
             else:
-                setattr(self, attr, map(str_to_node, val))
+                nodes = []
+                for s, ni in zip(strings, nodeinfos):
+                    if not isinstance(s, SCons.Node.Node):
+                        s = ni.str_to_node(s)
+                    nodes.append(s)
+                setattr(self, nattr, nodes)
     def format(self, names=0):
         result = []
         bkids = self.bsources + self.bdepends + self.bimplicit
@@ -2075,7 +2093,7 @@ class File(Base):
 
     def get_stored_implicit(self):
         binfo = self.get_stored_info().binfo
-        binfo.prepare_dependencies(self.fs.Top)
+        binfo.prepare_dependencies()
         try: return binfo.bimplicit
         except AttributeError: return None
 

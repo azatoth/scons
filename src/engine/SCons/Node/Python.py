@@ -34,6 +34,9 @@ import SCons.Node
 class ValueNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig']
 
+    def str_to_node(self, s):
+        return Value(s)
+
 class ValueBuildInfo(SCons.Node.BuildInfoBase):
     pass
 

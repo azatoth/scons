@@ -58,8 +58,8 @@ class AliasNameSpace(UserDict.UserDict):
 
 class AliasNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig']
-    def convert(self, node, val):
-        return default_ans.Alias(val)
+    def str_to_node(self, s):
+        return default_ans.Alias(s)
 
 class AliasBuildInfo(SCons.Node.BuildInfoBase):
     pass

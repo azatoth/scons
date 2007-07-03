@@ -613,7 +613,7 @@ class NodeTestCase(unittest.TestCase):
         def get_null_info():
             class Null_SConsignEntry:
                 class Null_BuildInfo:
-                    def prepare_dependencies(self, top):
+                    def prepare_dependencies(self):
                         pass
                 binfo = Null_BuildInfo()
             return Null_SConsignEntry()
