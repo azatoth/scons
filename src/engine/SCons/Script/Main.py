@@ -1133,9 +1133,10 @@ def main():
         pass 
     parts.append(version_string("engine", SCons))
     parts.append("__COPYRIGHT__")
+    version = string.join(parts, '')
 
     import SConsOptions
-    parser = SConsOptions.OptParser(string.join(parts, ''))
+    parser = SConsOptions.Parser(version)
     
     try:
         _exec_main(parser)
