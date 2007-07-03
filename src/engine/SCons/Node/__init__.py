@@ -232,10 +232,18 @@ class Node:
     def get_suffix(self):
         return ''
 
+    memoizer_counters.append(SCons.Memoize.CountValue('get_build_env'))
+
     def get_build_env(self):
         """Fetch the appropriate Environment to build this node.
         """
-        return self.get_executor().get_build_env()
+        try:
+            return self._memo['get_build_env']
+        except KeyError:
+            pass
+        result = self.get_executor().get_build_env()
+        self._memo['get_build_env'] = result
+        return result
 
     def get_build_scanner_path(self, scanner):
         """Fetch the appropriate scanner path for this node."""
