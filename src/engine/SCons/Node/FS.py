@@ -1927,9 +1927,9 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         result = []
         bkids = self.bsources + self.bdepends + self.bimplicit
         bkidsigs = self.bsourcesigs + self.bdependsigs + self.bimplicitsigs
-        for i in xrange(len(bkids)):
-            result.append(str(bkids[i]) + ': ' +
-                          string.join(bkidsigs[i].format(names=names), ' '))
+        for bkid, bkidsig in zip(bkids, bkidsigs):
+            result.append(str(bkid) + ': ' +
+                          string.join(bkidsig.format(names=names), ' '))
         result.append('%s [%s]' % (self.bactsig, self.bact))
         return string.join(result, '\n')
 
