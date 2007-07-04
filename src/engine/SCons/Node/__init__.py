@@ -846,11 +846,11 @@ class Node:
     def _add_child(self, collection, dict, child):
         """Adds 'child' to 'collection', first checking 'dict' to see
         if it's already present."""
-        if type(child) is not type([]):
-            child = [child]
-        for c in child:
-            if not isinstance(c, Node):
-                raise TypeError, c
+        #if type(child) is not type([]):
+        #    child = [child]
+        #for c in child:
+        #    if not isinstance(c, Node):
+        #        raise TypeError, c
         added = None
         for c in child:
             if not dict.has_key(c):

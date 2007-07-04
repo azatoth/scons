@@ -522,7 +522,7 @@ class NodeTestCase(unittest.TestCase):
         n1 = SCons.Node.Node()
         n2 = SCons.Node.Node()
 
-        n1.add_source(n2)
+        n1.add_source([n2])
         assert n1.children_are_up_to_date(), "expected up to date"
         n2.set_state(SCons.Node.executed)
         assert not n1.children_are_up_to_date(), "expected not up to date"
@@ -758,7 +758,7 @@ class NodeTestCase(unittest.TestCase):
         five = SCons.Node.Node()
         six = SCons.Node.Node()
 
-        node.add_dependency(zero)
+        node.add_dependency([zero])
         assert node.depends == [zero]
         node.add_dependency([one])
         assert node.depends == [zero, one]
@@ -790,7 +790,7 @@ class NodeTestCase(unittest.TestCase):
         five = SCons.Node.Node()
         six = SCons.Node.Node()
 
-        node.add_source(zero)
+        node.add_source([zero])
         assert node.sources == [zero]
         node.add_source([one])
         assert node.sources == [zero, one]
@@ -821,7 +821,7 @@ class NodeTestCase(unittest.TestCase):
         five = SCons.Node.Node()
         six = SCons.Node.Node()
 
-        node.add_ignore(zero)
+        node.add_ignore([zero])
         assert node.ignore == [zero]
         node.add_ignore([one])
         assert node.ignore == [zero, one]
