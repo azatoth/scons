@@ -2,6 +2,7 @@ SCons/__init__.py
 SCons/Action.py
 SCons/Builder.py
 SCons/compat/__init__.py
+SCons/compat/_scons_optparse.py
 SCons/compat/_scons_sets.py
 SCons/compat/_scons_sets15.py
 SCons/compat/_scons_subprocess.py
@@ -23,10 +24,6 @@ SCons/Node/__init__.py
 SCons/Node/Alias.py
 SCons/Node/FS.py
 SCons/Node/Python.py
-SCons/Optik/__init__.py
-SCons/Optik/errors.py
-SCons/Optik/option.py
-SCons/Optik/option_parser.py
 SCons/Options/__init__.py
 SCons/Options/BoolOption.py
 SCons/Options/EnumOption.py

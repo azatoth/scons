@@ -27,9 +27,115 @@ import SCons.compat
 
 import string
 import sys
+import textwrap
 
 import SCons.Node.FS
-from SCons.Optik import OptionParser, SUPPRESS_HELP, OptionValueError
+
+from optparse import OptionParser, OptionValueError, \
+                     IndentedHelpFormatter, SUPPRESS_HELP
+
+class SConsOptionParser(OptionParser):
+    def error(self, msg):
+        self.print_usage(sys.stderr)
+        sys.stderr.write("SCons error: %s\n" % msg)
+        sys.exit(2)
+
+class SConsIndentedHelpFormatter(IndentedHelpFormatter):
+    def format_usage(self, usage):
+        return "usage: %s\n" % usage
+
+    def format_heading(self, heading):
+        if heading == 'options':
+            # The versions of optparse.py shipped with Pythons 2.3 and
+            # 2.4 pass this in uncapitalized; override that so we get
+            # consistent output on all versions.
+            heading = "Options"
+        return IndentedHelpFormatter.format_heading(self, heading)
+
+    def format_option(self, option):
+        """
+        A copy of the normal optparse.IndentedHelpFormatter.format_option()
+        method, snarfed so we can set the subsequent_indent on the
+        textwrap.wrap() call below...
+        """
+        # The help for each option consists of two parts:
+        #   * the opt strings and metavars
+        #     eg. ("-x", or "-fFILENAME, --file=FILENAME")
+        #   * the user-supplied help string
+        #     eg. ("turn on expert mode", "read data from FILENAME")
+        #
+        # If possible, we write both of these on the same line:
+        #   -x      turn on expert mode
+        #
+        # But if the opt string list is too long, we put the help
+        # string on a second line, indented to the same column it would
+        # start in if it fit on the first line.
+        #   -fFILENAME, --file=FILENAME
+        #           read data from FILENAME
+        result = []
+
+        try:
+            opts = self.option_strings[option]
+        except AttributeError:
+            # The Python 2.3 version of optparse attaches this to
+            # to the option argument, not to this object.
+            opts = option.option_strings
+
+        opt_width = self.help_position - self.current_indent - 2
+        if len(opts) > opt_width:
+            opts = "%*s%s\n" % (self.current_indent, "", opts)
+            indent_first = self.help_position
+        else:                       # start help on same line as opts
+            opts = "%*s%-*s  " % (self.current_indent, "", opt_width, opts)
+            indent_first = 0
+        result.append(opts)
+        if option.help:
+
+            try:
+                expand_default = self.expand_default
+            except AttributeError:
+                # The HelpFormatter base class in the Python 2.3 version
+                # of optparse has no expand_default() method.
+                help_text = option.help
+            else:
+                help_text = expand_default(option)
+
+            help_lines = textwrap.wrap(help_text, self.help_width,
+                                       subsequent_indent = '  ')
+            result.append("%*s%s\n" % (indent_first, "", help_lines[0]))
+            for line in help_lines[1:]:
+                result.append("%*s%s\n" % (self.help_position, "", line))
+        elif opts[-1] != "\n":
+            result.append("\n")
+        return string.join(result, "")
+
+    # For consistent help output across Python versions, we provide a
+    # subclass copy of format_option_strings() and these two variables.
+    # This is necessary (?) for Python2.3, which otherwise concatenates
+    # a short option with its metavar.
+    _short_opt_fmt = "%s %s"
+    _long_opt_fmt = "%s=%s"
+
+    def format_option_strings(self, option):
+        """Return a comma-separated list of option strings & metavariables."""
+        if option.takes_value():
+            metavar = option.metavar or string.upper(option.dest)
+            short_opts = []
+            for sopt in option._short_opts:
+                short_opts.append(self._short_opt_fmt % (sopt, metavar))
+            long_opts = []
+            for lopt in option._long_opts:
+                long_opts.append(self._long_opt_fmt % (lopt, metavar))
+        else:
+            short_opts = option._short_opts
+            long_opts = option._long_opts
+
+        if self.short_first:
+            opts = short_opts + long_opts
+        else:
+            opts = long_opts + short_opts
+
+        return string.join(opts, ", ")
 
 def Parser(version):
     """
@@ -37,8 +143,11 @@ def Parser(version):
     SCons options.
     """
 
-    op = OptionParser(version=version,
-                      usage="usage: scons [OPTION] [TARGET] ...")
+    formatter = SConsIndentedHelpFormatter(max_help_position=30)
+
+    op = SConsOptionParser(add_help_option=False,
+                           formatter=formatter,
+                           usage="usage: scons [OPTION] [TARGET] ...",)
 
     # options ignored for compatibility
     def opt_ignore(option, opt, value, parser):
@@ -269,8 +378,10 @@ def Parser(version):
                     help="Search up directory tree for SConstruct,       "
                          "build Default() targets from local SConscript.")
 
-    op.add_option("-v", "--version",
-                    action="version",
+    def opt_version(option, opt, value, parser, version=version):
+        sys.stdout.write(version + '\n')
+        sys.exit(0)
+    op.add_option("-v", "--version", action="callback", callback=opt_version,
                     help="Print the SCons version number and exit.")
 
     op.add_option('--warn', '--warning', nargs=1, action="store",
