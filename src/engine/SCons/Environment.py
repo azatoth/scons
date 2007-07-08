@@ -1060,11 +1060,13 @@ class Base(SubstitutionEnvironment):
     def Copy(self, *args, **kw):
         return apply(self.Clone, args, kw)
 
+    def _changed_build(self, dependency, target, prev_ni):
+        if dependency.changed_state(target, prev_ni):
+            return 1
+        return self.decide_source(dependency, target, prev_ni)
+
     def _changed_content(self, dependency, target, prev_ni):
         return dependency.changed_content(target, prev_ni)
-
-    def _changed_timestamp(self, dependency, target, prev_ni):
-        return dependency.changed_timestamp(target, prev_ni)
 
     def _changed_source(self, dependency, target, prev_ni):
         target_env = dependency.get_build_env()
@@ -1074,10 +1076,11 @@ class Base(SubstitutionEnvironment):
         else:
             return target_env.decide_target(dependency, target, prev_ni)
 
-    def _changed_build(self, dependency, target, prev_ni):
-        if dependency.changed_state(target, prev_ni):
-            return 1
-        return self.decide_source(dependency, target, prev_ni)
+    def _changed_timestamp_newer(self, dependency, target, prev_ni):
+        return dependency.changed_timestamp_newer(target, prev_ni)
+
+    def _changed_timestamp_match(self, dependency, target, prev_ni):
+        return dependency.changed_timestamp_match(target, prev_ni)
 
     def decide_source(self, dependency, target, prev_ni):
         f = SCons.Defaults.DefaultEnvironment().decide_source
@@ -1088,6 +1091,17 @@ class Base(SubstitutionEnvironment):
         return f(dependency, target, prev_ni)
 
     def Decider(self, function):
+        if function in ('MD5', 'content'):
+            if not SCons.Util.md5:
+                raise UserError, "MD5 signatures are not available in this version of Python."
+            function = self._changed_content
+        elif function in ('timestamp-newer', 'make'):
+            function = self._changed_timestamp_newer
+        elif function == 'timestamp-match':
+            function = self._changed_timestamp_match
+        elif not callable(function):
+            raise UserError, "Unknown Decider value %s" % repr(function)
+
         # We don't use AddMethod because we don't want to turn the
         # function, which only expects three arguments, to become a bound
         # method, which would add self as an initial, fourth argument.
@@ -1737,7 +1751,7 @@ class Base(SubstitutionEnvironment):
                 raise UserError, "MD5 signatures are not available in this version of Python."
             self.decide_source = self._changed_content
         elif type == 'timestamp':
-            self.decide_source = self._changed_timestamp
+            self.decide_source = self._changed_timestamp_newer
         else:
             raise UserError, "Unknown source signature type '%s'" % type
 
@@ -1767,7 +1781,7 @@ class Base(SubstitutionEnvironment):
                 raise UserError, "MD5 signatures are not available in this version of Python."
             self.decide_target = self._changed_content
         elif type == 'timestamp':
-            self.decide_target = self._changed_timestamp
+            self.decide_target = self._changed_timestamp_newer
         elif type == 'build':
             self.decide_target = self._changed_build
         elif type == 'source':

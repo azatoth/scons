@@ -1861,6 +1861,15 @@ class FileNodeInfo(SCons.Node.NodeInfoBase):
             n = top.root._lookup_abs(s, Entry)
         return n
 
+    def get_csig(self):
+        return self.csig
+
+    def get_size(self):
+        return self.size
+
+    def get_timestamp(self):
+        return self.timestamp
+
 class FileBuildInfo(SCons.Node.BuildInfoBase):
     def convert_to_sconsign(self):
         """
@@ -2418,12 +2427,6 @@ class File(Base):
         SCons.Node.Node.builder_set(self, builder)
         self.changed_since_last_build = self.decide_target
 
-    def changed_timestamp(self, target, prev_ni):
-        try:
-            return self.get_timestamp() > target.get_timestamp()
-        except AttributeError:
-            return 1
-
     def changed_content(self, target, prev_ni):
         cur_csig = self.get_csig()
         try:
@@ -2433,6 +2436,18 @@ class File(Base):
 
     def changed_state(self, target, prev_ni):
         return (self.state != SCons.Node.up_to_date)
+
+    def changed_timestamp_newer(self, target, prev_ni):
+        try:
+            return self.get_timestamp() > target.get_timestamp()
+        except AttributeError:
+            return 1
+
+    def changed_timestamp_match(self, target, prev_ni):
+        try:
+            return self.get_timestamp() != prev_ni.timestamp
+        except AttributeError:
+            return 1
 
     def decide_source(self, target, prev_ni):
         return target.get_build_env().decide_source(self, target, prev_ni)

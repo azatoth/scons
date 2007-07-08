@@ -2681,7 +2681,62 @@ will be handled by the specified
 .IR function .
 The
 .I function
-must take the following three arguments:
+can be one of the following strings
+that specify the type of decision function
+to be performed:
+
+.RS 10
+.B timestamp-newer
+Specifies that a target shall be considered out of date and rebuilt
+if the dependency's timestamp is newer than the target file's timestamp.
+This is the behavior of the classic Make utility,
+and
+.B make
+can be used a synonym for
+.BR timestamp-newer .
+
+.HP 6
+.B timestamp-match
+Specifies that a target shall be considered out of date and rebuilt
+if the dependency's timestamp is different than the
+timestamp recorded the last time the target was built.
+This provides behavior very similar to the classic Make utility
+(in particular, files are not opened up so that their
+contents can be checksummed)
+except that the target will also be rebuilt if a
+dependency file has been restored to a version with an
+.I earlier
+timestamp, such as can happen when restoring files from backup archives.
+
+
+.HP 6
+.B MD5
+Specifies that a target shall be considered out of date and rebuilt
+if the dependency's content has changed sine the last time
+the target was built,
+as determined be performing an MD5 checksum
+on the dependency's contents
+and comparing it to the checksum recorded the
+last time the target was built.
+.B content
+can be used as a synonym for
+.BR MD5 .
+.RE
+
+.ES
+# Use exact timestamp matches by default.
+Decider('timestamp-match')
+
+# Use MD5 content signatures for any targets built
+# with the attached construction environment.
+env.Decider('content')
+.EE
+
+In addition to the above already-available functions,
+the
+.I function
+argument may be an actual Python function
+that takes the following three arguments:
 
 .IP dependency
 The Node (file) which
