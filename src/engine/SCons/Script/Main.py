@@ -459,15 +459,6 @@ def _scons_internal_error():
     traceback.print_exc()
     sys.exit(2)
 
-def _varargs(option, parser):
-    value = None
-    if parser.rargs:
-        arg = parser.rargs[0]
-        if arg[0] != "-":
-            value = arg
-            del parser.rargs[0]
-    return value
-
 def _setup_warn(arg):
     """The --warn option.  An argument to this option
     should be of the form <warning-class> or no-<warning-class>.
