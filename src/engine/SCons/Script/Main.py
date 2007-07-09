@@ -326,7 +326,6 @@ print_time = 0
 sconscript_time = 0
 cumulative_command_time = 0
 exit_status = 0 # exit status, assume success by default
-repositories = []
 num_jobs = None
 delayed_warnings = []
 SettableOptions = None
@@ -514,12 +513,11 @@ def _setup_warn(arg):
         else:
             SCons.Warnings.suppressWarningClass(clazz)
 
-def _SConstruct_exists(dirname=''):
+def _SConstruct_exists(dirname='', repositories=[]):
     """This function checks that an SConstruct file exists in a directory.
     If so, it returns the path of the file. By default, it checks the
     current directory.
     """
-    global repositories
     for file in ['SConstruct', 'Sconstruct', 'sconstruct']:
         sfile = os.path.join(dirname, file)
         if os.path.isfile(sfile):
@@ -675,17 +673,11 @@ def _main(options, args):
         except OSError:
             sys.stderr.write("Could not change directory to %s\n" % cdir)
 
-    # The SConstruct file may be in a repository, so initialize those
-    # before we start the search up our path for one.
-    global repositories
-    if options.repository:
-        repositories.extend(options.repository)
-
     target_top = None
     if options.climb_up:
         target_top = '.'  # directory to prepend to targets
         script_dir = os.getcwd()  # location of script
-        while script_dir and not _SConstruct_exists(script_dir):
+        while script_dir and not _SConstruct_exists(script_dir, options.repository):
             script_dir, last_part = os.path.split(script_dir)
             if last_part:
                 target_top = os.path.join(last_part, target_top)
@@ -700,7 +692,7 @@ def _main(options, args):
     # and make it the build engine default.
     fs = SCons.Node.FS.default_fs = SCons.Node.FS.FS()
 
-    for rep in repositories:
+    for rep in options.repository:
         fs.Repository(rep)
 
     # Now that we have the FS object, the next order of business is to
@@ -710,7 +702,7 @@ def _main(options, args):
     if options.file:
         scripts.extend(options.file)
     if not scripts:
-        sfile = _SConstruct_exists()
+        sfile = _SConstruct_exists(repositories=options.repository)
         if sfile:
             scripts.append(sfile)
 
