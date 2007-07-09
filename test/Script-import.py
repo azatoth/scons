@@ -60,7 +60,6 @@ import SCons.Script
 SCons.Script.BuildTask
 SCons.Script.CleanTask
 SCons.Script.QuestionTask
-SCons.Script.SConscriptSettableOptions
 
 old_SCons_Script_variables = [
     'PrintHelp',

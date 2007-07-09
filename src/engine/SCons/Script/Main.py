@@ -329,26 +329,7 @@ exit_status = 0 # exit status, assume success by default
 repositories = []
 num_jobs = None
 delayed_warnings = []
-
-diskcheck_all = SCons.Node.FS.diskcheck_types()
-diskcheck_option_set = None
-
-def diskcheck_convert(value):
-    if value is None:
-        return []
-    if not SCons.Util.is_List(value):
-        value = string.split(value, ',')
-    result = []
-    for v in map(string.lower, value):
-        if v == 'all':
-            result = diskcheck_all
-        elif v == 'none':
-            result = []
-        elif v in diskcheck_all:
-            result.append(v)
-        else:
-            raise ValueError, v
-    return result
+SettableOptions = None
 
 #
 class Stats:
@@ -549,7 +530,7 @@ def _SConstruct_exists(dirname=''):
                     return sfile
     return None
 
-def _set_globals(options):
+def _set_debug_values(options):
     global print_memoizer, print_objects, print_stacktrace, print_time
 
     debug_values = options.debug
@@ -646,82 +627,6 @@ def version_string(label, module):
                   module.__date__,
                   module.__developer__,
                   module.__buildsys__)
-
-class SConscriptSettableOptions:
-    """This class wraps an OptParser instance and provides
-    uniform access to options that can be either set on the command
-    line or from a SConscript file. A value specified on the command
-    line always overrides a value set in a SConscript file.
-    Not all command line options are SConscript settable, and the ones
-    that are must be explicitly added to settable dictionary and optionally
-    validated and coerced in the set() method."""
-    
-    def __init__(self, options):
-        self.options = options
-
-        # This dictionary stores the defaults for all the SConscript
-        # settable options, as well as indicating which options
-        # are SConscript settable (and gettable, which for options
-        # like 'help' is far more important than being settable). 
-        self.settable = {
-            'clean'             : 0,
-            'diskcheck'         : diskcheck_all,
-            'duplicate'         : 'hard-soft-copy',
-            'help'              : 0,
-            'implicit_cache'    : 0,
-            'max_drift'         : SCons.Node.FS.default_max_drift,
-            'no_exec'           : 0,
-            'num_jobs'          : 1,
-            'random'            : 0,
-        }
-
-    def get(self, name):
-        if not self.settable.has_key(name):
-            raise SCons.Errors.UserError, "This option is not settable from a SConscript file: %s"%name
-        if hasattr(self.options, name) and getattr(self.options, name) is not None:
-            return getattr(self.options, name)
-        else:
-            return self.settable[name]
-
-    def set(self, name, value):
-        if not self.settable.has_key(name):
-            raise SCons.Errors.UserError, "This option is not settable from a SConscript file: %s"%name
-
-        if name == 'num_jobs':
-            try:
-                value = int(value)
-                if value < 1:
-                    raise ValueError
-            except ValueError:
-                raise SCons.Errors.UserError, "A positive integer is required: %s"%repr(value)
-        elif name == 'max_drift':
-            try:
-                value = int(value)
-            except ValueError:
-                raise SCons.Errors.UserError, "An integer is required: %s"%repr(value)
-        elif name == 'duplicate':
-            try:
-                value = str(value)
-            except ValueError:
-                raise SCons.Errors.UserError, "A string is required: %s"%repr(value)
-            if not value in SCons.Node.FS.Valid_Duplicates:
-                raise SCons.Errors.UserError, "Not a valid duplication style: %s" % value
-            # Set the duplicate style right away so it can affect linking
-            # of SConscript files.
-            SCons.Node.FS.set_duplicate(value)
-        elif name == 'diskcheck':
-            try:
-                value = diskcheck_convert(value)
-            except ValueError, v:
-                raise SCons.Errors.UserError, "Not a valid diskcheck value: %s"%v
-            if not self.options.diskcheck:
-                # No --diskcheck= option was specified on the command line.
-                # Set this right away so it can affect the rest of the
-                # file/Node lookups while processing the SConscript files.
-                SCons.Node.FS.set_diskcheck(value)
-
-        self.settable[name] = value
-    
 
 def _main(options, args):
     global exit_status
@@ -823,12 +728,7 @@ def _main(options, args):
         d = fs.File(scripts[0]).dir
     fs.set_SConstruct_dir(d)
 
-    # Now that we have the FS object and it's intialized, set up (most
-    # of) the rest of the options.
-    global ssoptions
-    ssoptions = SConscriptSettableOptions(options)
-
-    _set_globals(options)
+    _set_debug_values(options)
     SCons.Node.implicit_cache = options.implicit_cache
     SCons.Node.implicit_deps_changed = options.implicit_deps_changed
     SCons.Node.implicit_deps_unchanged = options.implicit_deps_unchanged
@@ -915,7 +815,7 @@ def _main(options, args):
 
     fs.chdir(fs.Top)
 
-    if ssoptions.get('help'):
+    if options.help:
         help_text = SCons.Script.help_text
         if help_text is None:
             # They specified -h, but there was no Help() inside the
@@ -929,9 +829,9 @@ def _main(options, args):
 
     # Now that we've read the SConscripts we can set the options
     # that are SConscript settable:
-    SCons.Node.implicit_cache = ssoptions.get('implicit_cache')
-    SCons.Node.FS.set_duplicate(ssoptions.get('duplicate'))
-    fs.set_max_drift(ssoptions.get('max_drift'))
+    SCons.Node.implicit_cache = options.implicit_cache
+    SCons.Node.FS.set_duplicate(options.duplicate)
+    fs.set_max_drift(options.max_drift)
 
     lookup_top = None
     if targets or SCons.Script.BUILD_TARGETS != SCons.Script._build_plus_default:
@@ -1017,7 +917,7 @@ def _main(options, args):
     if options.question:
         task_class = QuestionTask
     try:
-        if ssoptions.get('clean'):
+        if options.clean:
             task_class = CleanTask
             opening_message = "Cleaning targets ..."
             closing_message = "done cleaning targets."
@@ -1058,7 +958,7 @@ def _main(options, args):
     BuildTask.options = options
 
     global num_jobs
-    num_jobs = ssoptions.get('num_jobs')
+    num_jobs = options.num_jobs
     jobs = SCons.Job.Jobs(num_jobs, taskmaster)
     if num_jobs > 1 and jobs.num_jobs == 1:
         msg = "parallel builds are unsupported by this version of Python;\n" + \
@@ -1086,7 +986,11 @@ def _exec_main(parser):
     sconsflags = os.environ.get('SCONSFLAGS', '')
     all_args = string.split(sconsflags) + sys.argv[1:]
 
-    options, args = parser.parse_args(all_args)
+    import SConsOptions
+    global SettableOptions
+    SettableOptions = SConsOptions.SConsValues(parser.get_default_values())
+
+    options, args = parser.parse_args(all_args, SettableOptions)
 
     if type(options.debug) == type([]) and "pdb" in options.debug:
         import pdb

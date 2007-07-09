@@ -32,7 +32,132 @@ import textwrap
 import SCons.Node.FS
 
 from optparse import OptionParser, OptionValueError, \
-                     IndentedHelpFormatter, SUPPRESS_HELP
+                     IndentedHelpFormatter, SUPPRESS_HELP, Values
+
+diskcheck_all = SCons.Node.FS.diskcheck_types()
+
+def diskcheck_convert(value):
+    if value is None:
+        return []
+    if not SCons.Util.is_List(value):
+        value = string.split(value, ',')
+    result = []
+    for v in map(string.lower, value):
+        if v == 'all':
+            result = diskcheck_all
+        elif v == 'none':
+            result = []
+        elif v in diskcheck_all:
+            result.append(v)
+        else:
+            raise ValueError, v
+    return result
+
+class SConsValues(Values):
+    """
+
+    Holder class for uniform access to SCons options, regardless
+    of whether or not they can be set on the command line or in the
+    SConscript files (using the SetOption() function).
+
+    A SCons option value can originate three different ways:
+
+        1)  set on the command line;
+        2)  set in an SConscript file;
+        3)  the default setting (from the the op.add_option()
+            calls in the Parser() function, below).
+
+    The command line always overrides a value set in a SConscript file,
+    which in turn always overrides default settings.  Because we want
+    to support user-specified options in the SConscript file itself,
+    though, we may not know about all of the options when the command
+    line is first parsed, so we can't make all the necessary precedence
+    decisions at the time the option is configured.
+
+    The solution implemented in this class is to keep these different sets
+    of settings separate (command line, SConscript file, and default)
+    and to override the __getattr__() method to check them in turn.
+    This should allow the rest of the code to just fetch values as
+    attributes of an instance of this class, without having to worry
+    about where they came from.
+
+    Note that not all command line options are settable from SConscript
+    files, and the ones that are must be explicitly added to the
+    "settable" list in this class, and optionally validated and coerced
+    in the set_option() method.
+    """
+
+    def __init__(self, defaults):
+        self.__dict__['__defaults__'] = defaults
+        self.__dict__['__SConscript_settings__'] = {}
+
+    def __getattr__(self, attr):
+        """
+        Fetches an options value, checking first for explicit settings
+        from the command line (which are direct attributes), then the
+        SConscript file settings, then the default values.
+        """
+        try:
+            return self.__dict__[attr]
+        except KeyError:
+            try:
+                return self.__dict__['__SConscript_settings__'][attr]
+            except KeyError:
+                return getattr(self.__dict__['__defaults__'], attr)
+
+    settable = [
+        'clean',
+        'diskcheck',
+        'duplicate',
+        'help',
+        'implicit_cache',
+        'max_drift',
+        'no_exec',
+        'num_jobs',
+        'random',
+    ]
+
+    def set_option(self, name, value):
+        """
+        Sets an option from an SConscript file.
+        """
+        if not name in self.settable:
+            raise SCons.Errors.UserError, "This option is not settable from a SConscript file: %s"%name
+
+        if name == 'num_jobs':
+            try:
+                value = int(value)
+                if value < 1:
+                    raise ValueError
+            except ValueError:
+                raise SCons.Errors.UserError, "A positive integer is required: %s"%repr(value)
+        elif name == 'max_drift':
+            try:
+                value = int(value)
+            except ValueError:
+                raise SCons.Errors.UserError, "An integer is required: %s"%repr(value)
+        elif name == 'duplicate':
+            try:
+                value = str(value)
+            except ValueError:
+                raise SCons.Errors.UserError, "A string is required: %s"%repr(value)
+            if not value in SCons.Node.FS.Valid_Duplicates:
+                raise SCons.Errors.UserError, "Not a valid duplication style: %s" % value
+            # Set the duplicate style right away so it can affect linking
+            # of SConscript files.
+            SCons.Node.FS.set_duplicate(value)
+        elif name == 'diskcheck':
+            try:
+                value = diskcheck_convert(value)
+            except ValueError, v:
+                raise SCons.Errors.UserError, "Not a valid diskcheck value: %s"%v
+            if not self.__dict__.has_key('diskcheck'):
+                # No --diskcheck= option was specified on the command line.
+                # Set this right away so it can affect the rest of the
+                # file/Node lookups while processing the SConscript files.
+                SCons.Node.FS.set_diskcheck(value)
+
+        self.__SConscript_settings__[name] = value
 
 class SConsOptionParser(OptionParser):
     def error(self, msg):
@@ -176,7 +301,7 @@ def Parser(version):
                   help="Ignored for compatibility.")
 
     op.add_option('-c', '--clean', '--remove',
-                  dest="clean", ### default=False,
+                  dest="clean", default=False,
                   action="store_true",
                   help="Remove specified targets and dependencies.")
 
@@ -272,16 +397,15 @@ def Parser(version):
                   metavar="TYPE")
 
     def opt_diskcheck(option, opt, value, parser):
-        import Main
         try:
-            diskcheck_value = Main.diskcheck_convert(value)
+            diskcheck_value = diskcheck_convert(value)
         except ValueError, e:
             raise OptionValueError("Warning: `%s' is not a valid diskcheck type" % e)
         setattr(parser.values, option.dest, diskcheck_value)
 
     op.add_option('--diskcheck',
                   nargs=1, type="string",
-                  dest='diskcheck', ### default=None,
+                  dest='diskcheck', default=None,
                   action="callback", callback=opt_diskcheck,
                   help="Enable specific on-disk checks.",
                   metavar="TYPE")
@@ -299,7 +423,7 @@ def Parser(version):
 
     op.add_option('--duplicate',
                   nargs=1, type="string",
-                  dest="duplicate", ### default=None,
+                  dest="duplicate", default='hard-soft-copy',
                   action="callback", callback=opt_duplicate,
                   help=opt_duplicate_help)
 
@@ -310,7 +434,7 @@ def Parser(version):
                   help="Read FILE as the top-level SConstruct file.")
 
     op.add_option('-h', '--help',
-                  dest="help", ### default=False,
+                  dest="help", default=False,
                   action="store_true",
                   help="Print defined help message, or this one.")
 
@@ -331,7 +455,7 @@ def Parser(version):
                   metavar="DIR")
 
     op.add_option('--implicit-cache',
-                  dest='implicit_cache', ### default=False,
+                  dest='implicit_cache', default=False,
                   action="store_true",
                   help="Cache implicit dependencies")
 
@@ -351,7 +475,7 @@ def Parser(version):
 
     op.add_option('-j', '--jobs',
                   nargs=1, type="int",
-                  dest="num_jobs", ### default=1,
+                  dest="num_jobs", default=1,
                   action="store",
                   help="Allow N jobs at once.",
                   metavar="N")
@@ -363,13 +487,13 @@ def Parser(version):
 
     op.add_option('--max-drift',
                   nargs=1, type="int",
-                  dest='max_drift', ### default=SCons.Node.FS.default_max_drift,
+                  dest='max_drift', default=SCons.Node.FS.default_max_drift,
                   action="store",
                   help="Set maximum system clock drift to N seconds.",
                   metavar="N")
 
     op.add_option('-n', '--no-exec', '--just-print', '--dry-run', '--recon',
-                  dest='no_exec', ### default=False,
+                  dest='no_exec', default=False,
                   action="store_true",
                   help="Don't build; just print commands.")
 
@@ -396,7 +520,7 @@ def Parser(version):
                   help="Suppress \"Reading/Building\" progress messages.")
 
     op.add_option('--random',
-                  dest="random", ### default=False,
+                  dest="random", default=False,
                   action="store_true",
                   help="Build dependencies in random order.")
 
@@ -515,29 +639,29 @@ def Parser(version):
                   # action="append",
                   # help = "Consider FILE to be old; don't rebuild it."
                   help=SUPPRESS_HELP)
-    op.add_option('--override', action="callback", dest="override",
+    op.add_option('--override',
                   nargs=1, type="string",
                   action="callback", callback=opt_not_yet,
+                  # dest="override",
                   # help="Override variables as specified in FILE."
                   help=SUPPRESS_HELP)
-    op.add_option('-p', action="callback",
+    op.add_option('-p',
                   action="callback", callback=opt_not_yet,
                   # help="Print internal environments/objects."
                   help=SUPPRESS_HELP)
-    op.add_option('-r', '-R', '--no-builtin-rules',
-                  '--no-builtin-variables', action="callback",
+    op.add_option('-r', '-R', '--no-builtin-rules', '--no-builtin-variables',
                   action="callback", callback=opt_not_yet,
                   # help="Clear default environments and variables."
                   help=SUPPRESS_HELP)
-    op.add_option('-w', '--print-directory', action="callback",
+    op.add_option('-w', '--print-directory',
                   action="callback", callback=opt_not_yet,
                   # help="Print the current directory."
                   help=SUPPRESS_HELP)
-    op.add_option('--no-print-directory', action="callback",
+    op.add_option('--no-print-directory',
                   action="callback", callback=opt_not_yet,
                   # help="Turn off -w, even if it was turned on implicitly."
                   help=SUPPRESS_HELP)
-    op.add_option('--write-filenames', action="callback",
+    op.add_option('--write-filenames',
                   nargs=1, type="string",
                   action="callback", callback=opt_not_yet,
                   # dest="write_filenames",
@@ -549,7 +673,7 @@ def Parser(version):
                   # dest="new_file",
                   # help="Consider FILE to be changed."
                   help=SUPPRESS_HELP)
-    op.add_option('--warn-undefined-variables', action="callback",
+    op.add_option('--warn-undefined-variables',
                   action="callback", callback=opt_not_yet,
                   # help="Warn when an undefined variable is referenced."
                   help=SUPPRESS_HELP)

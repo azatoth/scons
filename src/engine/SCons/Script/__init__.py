@@ -105,7 +105,7 @@ BuildTask               = Main.BuildTask
 CleanTask               = Main.CleanTask
 QuestionTask            = Main.QuestionTask
 #PrintHelp               = Main.PrintHelp
-SConscriptSettableOptions = Main.SConscriptSettableOptions
+#SConscriptSettableOptions = Main.SConscriptSettableOptions
 
 #keep_going_on_error     = Main.keep_going_on_error
 #print_dtree             = Main.print_dtree

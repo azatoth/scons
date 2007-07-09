@@ -105,8 +105,6 @@ scons: *** Source `aaa.in' not found, needed by target `aaa.out'.  Stop.
 
 test.run(status=2, stderr=expect)
 
-test.run(arguments = '--diskcheck=none', status=2, stderr=expect)
-
 test.run(arguments = '--diskcheck=sccs', stderr = None)
 
 lines = string.split("""
