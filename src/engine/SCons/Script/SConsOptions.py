@@ -25,14 +25,15 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import SCons.compat
 
+import optparse
 import string
 import sys
 import textwrap
 
 import SCons.Node.FS
 
-from optparse import OptionParser, OptionValueError, \
-                     IndentedHelpFormatter, SUPPRESS_HELP, Values
+OptionValueError        = optparse.OptionValueError
+SUPPRESS_HELP           = optparse.SUPPRESS_HELP
 
 diskcheck_all = SCons.Node.FS.diskcheck_types()
 
@@ -53,7 +54,7 @@ def diskcheck_convert(value):
             raise ValueError, v
     return result
 
-class SConsValues(Values):
+class SConsValues(optparse.Values):
     """
 
     Holder class for uniform access to SCons options, regardless
@@ -159,13 +160,13 @@ class SConsValues(Values):
 
         self.__SConscript_settings__[name] = value
 
-class SConsOptionParser(OptionParser):
+class SConsOptionParser(optparse.OptionParser):
     def error(self, msg):
         self.print_usage(sys.stderr)
         sys.stderr.write("SCons error: %s\n" % msg)
         sys.exit(2)
 
-class SConsIndentedHelpFormatter(IndentedHelpFormatter):
+class SConsIndentedHelpFormatter(optparse.IndentedHelpFormatter):
     def format_usage(self, usage):
         return "usage: %s\n" % usage
 
@@ -175,7 +176,7 @@ class SConsIndentedHelpFormatter(IndentedHelpFormatter):
             # 2.4 pass this in uncapitalized; override that so we get
             # consistent output on all versions.
             heading = "Options"
-        return IndentedHelpFormatter.format_heading(self, heading)
+        return optparse.IndentedHelpFormatter.format_heading(self, heading)
 
     def format_option(self, option):
         """
@@ -281,6 +282,7 @@ def Parser(version):
     # should have a consistent format:
     #
     #   op.add_option("-L", "--long-option-name",
+    #                 nargs=1, type="string",
     #                 dest="long_option_name", default='foo',
     #                 action="callback", callback=opt_long_option,
     #                 help="help text goes here",
