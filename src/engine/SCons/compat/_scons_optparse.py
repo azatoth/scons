@@ -331,7 +331,7 @@ class HelpFormatter:
                 result.append("%*s%s\n" % (self.help_position, "", line))
         elif opts[-1] != "\n":
             result.append("\n")
-        return "".join(result)
+        return string.join(result, "")
 
     def store_option_strings(self, parser):
         self.indent()
@@ -458,7 +458,7 @@ def check_choice(option, opt, value):
     if value in option.choices:
         return value
     else:
-        choices = ", ".join(map(repr, option.choices))
+        choices = string.join(map(repr, option.choices), ", ")
         raise OptionValueError(
             _("option %s: invalid choice: %r (choose from %s)")
             % (opt, value, choices))
@@ -646,7 +646,7 @@ class Option:
             attrs = attrs.keys()
             attrs.sort()
             raise OptionError(
-                "invalid keyword arguments: %s" % ", ".join(attrs),
+                "invalid keyword arguments: %s" % string.join(attrs, ", "),
                 self)
 
 
@@ -771,7 +771,7 @@ class Option:
     # -- Miscellaneous methods -----------------------------------------
 
     def __str__(self):
-        return "/".join(self._short_opts + self._long_opts)
+        return string.join(self._short_opts + self._long_opts, "/")
 
     __repr__ = _repr
 
@@ -1023,7 +1023,7 @@ class OptionContainer:
             if handler == "error":
                 raise OptionConflictError(
                     "conflicting option string(s): %s"
-                    % ", ".join(map(lambda co: co[0], conflict_opts)),
+                    % string.join(map(lambda co: co[0], conflict_opts), ", "),
                     option)
             elif handler == "resolve":
                 for (opt, c_option) in conflict_opts:
@@ -1114,7 +1114,7 @@ class OptionContainer:
             result.append(self.format_description(formatter))
         if self.option_list:
             result.append(self.format_option_help(formatter))
-        return "\n".join(result)
+        return string.join(result, "\n")
 
 
 class OptionGroup (OptionContainer):
