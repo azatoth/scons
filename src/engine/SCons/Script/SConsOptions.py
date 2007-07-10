@@ -30,6 +30,13 @@ import string
 import sys
 import textwrap
 
+try:
+    from gettext import gettext
+except ImportError:
+    def gettext(message):
+        return message
+_ = gettext
+
 import SCons.Node.FS
 
 OptionValueError        = optparse.OptionValueError
@@ -56,7 +63,6 @@ def diskcheck_convert(value):
 
 class SConsValues(optparse.Values):
     """
-
     Holder class for uniform access to SCons options, regardless
     of whether or not they can be set on the command line or in the
     SConscript files (using the SetOption() function).
@@ -160,22 +166,140 @@ class SConsValues(optparse.Values):
 
         self.__SConscript_settings__[name] = value
 
+class SConsOptionGroup(optparse.OptionGroup):
+    """
+    A subclass for SCons-specific option groups.
+    
+    The only difference between this and the base class is that we print
+    the group's help text flush left, underneath their own title but
+    lined up with the normal "SCons Options".
+    """
+    def format_help(self, formatter):
+        """
+        Format an option group's help text, outdenting the title so it's
+        flush with the "SCons Options" title we print at the top.
+        """
+        formatter.dedent()
+        result = formatter.format_heading(self.title)
+        formatter.indent()
+        result = result + optparse.OptionContainer.format_help(self, formatter)
+        return result
+
 class SConsOptionParser(optparse.OptionParser):
+    preserve_unknown_options = False
+
     def error(self, msg):
         self.print_usage(sys.stderr)
         sys.stderr.write("SCons error: %s\n" % msg)
         sys.exit(2)
+
+    def _process_long_opt(self, rargs, values):
+        """
+        SCons-specific processing of long options.
+
+        This is copied directly from the normal
+        optparse._process_long_opt() method, except that, if configured
+        to do so, we catch the exception thrown when an unknown option
+        is encountered and just stick it back on the "leftover" arguments
+        for later (re-)processing.
+        """
+        arg = rargs.pop(0)
+
+        # Value explicitly attached to arg?  Pretend it's the next
+        # argument.
+        if "=" in arg:
+            (opt, next_arg) = string.split(arg, "=", 1)
+            rargs.insert(0, next_arg)
+            had_explicit_value = True
+        else:
+            opt = arg
+            had_explicit_value = False
+
+        try:
+            opt = self._match_long_opt(opt)
+        except optparse.BadOptionError:
+            if self.preserve_unknown_options:
+                # SCons-specific:  if requested, add unknown options to
+                # the "leftover arguments" list for later processing.
+                self.largs.append(arg)
+                if had_explicit_value:
+                    # The unknown option will be re-processed later,
+                    # so undo the insertion of the explicit value.
+                    rargs.pop(0)
+                return
+            raise
+
+        option = self._long_opt[opt]
+        if option.takes_value():
+            nargs = option.nargs
+            if len(rargs) < nargs:
+                if nargs == 1:
+                    self.error(_("%s option requires an argument") % opt)
+                else:
+                    self.error(_("%s option requires %d arguments")
+                               % (opt, nargs))
+            elif nargs == 1:
+                value = rargs.pop(0)
+            else:
+                value = tuple(rargs[0:nargs])
+                del rargs[0:nargs]
+
+        elif had_explicit_value:
+            self.error(_("%s option does not take a value") % opt)
+
+        else:
+            value = None
+
+        option.process(opt, value, values, self)
+
+    def add_local_option(self, *args, **kw):
+        """
+        Adds a local option to the parser.
+        
+        This is initiated by a SetOption() call to add a user-defined
+        command-line option.  We add the option to a separate option
+        group for the local options, creating the group if necessary.
+        """
+        try:
+            group = self.local_option_group
+        except AttributeError:
+            group = SConsOptionGroup(self, 'Local Options')
+            group = self.add_option_group(group)
+            self.local_option_group = group
+
+        result = apply(group.add_option, args, kw)
+
+        if result:
+            # The option was added succesfully.  We now have to add the
+            # default value to our object that holds the default values
+            # (so that an attempt to fetch the option's attribute will
+            # yield the default value when not overridden) and then
+            # we re-parse the leftover command-line options, so that
+            # any value overridden on the command line is immediately
+            # available if the user turns around and does a GetOption()
+            # right away.
+            setattr(self.values.__defaults__, result.dest, result.default)
+            self.parse_args(self.largs, self.values)
+
+        return result
 
 class SConsIndentedHelpFormatter(optparse.IndentedHelpFormatter):
     def format_usage(self, usage):
         return "usage: %s\n" % usage
 
     def format_heading(self, heading):
+        """
+        This translates any heading of "options" or "Options" into
+        "SCons Options."  Unfortunately, we have to do this here,
+        because those titles are hard-coded in the optparse calls.
+        """
         if heading == 'options':
             # The versions of optparse.py shipped with Pythons 2.3 and
             # 2.4 pass this in uncapitalized; override that so we get
             # consistent output on all versions.
             heading = "Options"
+        if heading == 'Options':
+            heading = "SCons Options"
         return optparse.IndentedHelpFormatter.format_heading(self, heading)
 
     def format_option(self, option):
@@ -226,6 +350,7 @@ class SConsIndentedHelpFormatter(optparse.IndentedHelpFormatter):
             else:
                 help_text = expand_default(option)
 
+            # SCons:  indent every line of the help text but the first.
             help_lines = textwrap.wrap(help_text, self.help_width,
                                        subsequent_indent = '  ')
             result.append("%*s%s\n" % (indent_first, "", help_lines[0]))
@@ -274,6 +399,8 @@ def Parser(version):
     op = SConsOptionParser(add_help_option=False,
                            formatter=formatter,
                            usage="usage: scons [OPTION] [TARGET] ...",)
+
+    op.preserve_unknown_options = True
 
     # Add the options to the parser we just created.
     #
@@ -611,71 +738,80 @@ def Parser(version):
     # yet implemented" message and don't show up in the help output.
 
     op.add_option('-e', '--environment-overrides',
+                  dest="environment_overrides",
                   action="callback", callback=opt_not_yet,
                   # help="Environment variables override makefiles."
                   help=SUPPRESS_HELP)
     op.add_option('-l', '--load-average', '--max-load',
                   nargs=1, type="int",
+                  dest="load_average", default=0,
                   action="callback", callback=opt_not_yet,
-                  # dest="load_average", default=0,
                   # action="store",
                   # help="Don't start multiple jobs unless load is below "
                   #      "LOAD-AVERAGE."
                   help=SUPPRESS_HELP)
-    op.add_option('--list-derived',
-                  action="callback", callback=opt_not_yet,
-                  # help="Don't build; list files that would be built."
-                  help=SUPPRESS_HELP)
     op.add_option('--list-actions',
+                  dest="list_actions",
                   action="callback", callback=opt_not_yet,
                   # help="Don't build; list files and build actions."
                   help=SUPPRESS_HELP)
+    op.add_option('--list-derived',
+                  dest="list_derived",
+                  action="callback", callback=opt_not_yet,
+                  # help="Don't build; list files that would be built."
+                  help=SUPPRESS_HELP)
     op.add_option('--list-where',
+                  dest="list_where",
                   action="callback", callback=opt_not_yet,
                   # help="Don't build; list files and where defined."
                   help=SUPPRESS_HELP)
     op.add_option('-o', '--old-file', '--assume-old',
                   nargs=1, type="string",
+                  dest="old_file", default=[],
                   action="callback", callback=opt_not_yet,
-                  # dest="old_file", default=[]
                   # action="append",
                   # help = "Consider FILE to be old; don't rebuild it."
                   help=SUPPRESS_HELP)
     op.add_option('--override',
                   nargs=1, type="string",
                   action="callback", callback=opt_not_yet,
-                  # dest="override",
+                  dest="override",
                   # help="Override variables as specified in FILE."
                   help=SUPPRESS_HELP)
     op.add_option('-p',
                   action="callback", callback=opt_not_yet,
+                  dest="p",
                   # help="Print internal environments/objects."
                   help=SUPPRESS_HELP)
     op.add_option('-r', '-R', '--no-builtin-rules', '--no-builtin-variables',
                   action="callback", callback=opt_not_yet,
+                  dest="no_builtin_rules",
                   # help="Clear default environments and variables."
                   help=SUPPRESS_HELP)
     op.add_option('-w', '--print-directory',
                   action="callback", callback=opt_not_yet,
+                  dest="print_directory",
                   # help="Print the current directory."
                   help=SUPPRESS_HELP)
     op.add_option('--no-print-directory',
                   action="callback", callback=opt_not_yet,
+                  dest="no_print_directory",
                   # help="Turn off -w, even if it was turned on implicitly."
                   help=SUPPRESS_HELP)
     op.add_option('--write-filenames',
                   nargs=1, type="string",
+                  dest="write_filenames",
                   action="callback", callback=opt_not_yet,
-                  # dest="write_filenames",
                   # help="Write all filenames examined into FILE."
                   help=SUPPRESS_HELP)
-    op.add_option('-W', '--what-if', '--new-file', '--assume-new',
+    op.add_option('-W', '--new-file', '--assume-new', '--what-if',
                   nargs=1, type="string",
+                  dest="new_file",
                   action="callback", callback=opt_not_yet,
-                  # dest="new_file",
                   # help="Consider FILE to be changed."
                   help=SUPPRESS_HELP)
     op.add_option('--warn-undefined-variables',
+                  dest="warn_undefined_variables",
                   action="callback", callback=opt_not_yet,
                   # help="Warn when an undefined variable is referenced."
                   help=SUPPRESS_HELP)
