@@ -161,28 +161,28 @@ class Tool:
             else:
                 kw = self.init_kw
         env.Append(TOOLS = [ self.name ])
-        if hasattr(self, 'options') and hasattr(env, 'Help'):
-            from SCons.Options import Options
-            from SCons.Script  import help_text
-            current_help=SCons.Script.help_text or ''
-
-            if not env.has_key('options'):
-                from SCons.Script import ARGUMENTS
-                env['options']=Options(args=ARGUMENTS)
-            opts=env['options']
-
-            self.options(opts)
-            opts.Update(env)
-            new_help=opts.GenerateHelpText(env)
-            try:
-                Help = env.Help
-            except AttributeError:
-                # If there's no env.Help() method, we're likely
-                # introspecting directly on an Environment.Base object
-                # for our own purposes.  Don't die.
-                pass
-            else:
-                Help(new_help.replace(current_help, ''))
+#        if hasattr(self, 'options') and hasattr(env, 'Help'):
+#            from SCons.Options import Options
+#            from SCons.Script  import help_text
+#            current_help=SCons.Script.help_text or ''
+#
+#            if not env.has_key('options'):
+#                from SCons.Script import ARGUMENTS
+#                env['options']=Options(args=ARGUMENTS)
+#            opts=env['options']
+#
+#            self.options(opts)
+#            opts.Update(env)
+#            new_help=opts.GenerateHelpText(env)
+#            try:
+#                Help = env.Help
+#            except AttributeError:
+#                # If there's no env.Help() method, we're likely
+#                # introspecting directly on an Environment.Base object
+#                # for our own purposes.  Don't die.
+#                pass
+#            else:
+#                Help(new_help.replace(current_help, ''))
 
         apply(self.generate, ( env, ) + args, kw)
 

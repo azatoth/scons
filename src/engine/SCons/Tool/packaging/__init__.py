@@ -104,7 +104,8 @@ def Package(env, target=None, source=None, **kw):
             raise UserError, "No type for Package() given"
     PACKAGETYPE=kw['PACKAGETYPE']
     if not is_List(PACKAGETYPE):
-        PACKAGETYPE=PACKAGETYPE.split(',')
+        #PACKAGETYPE=PACKAGETYPE.split(',')
+        PACKAGETYPE=string.split(PACKAGETYPE, ',')
 
     # now load the needed packagers.
     def load_packager(type):
@@ -157,7 +158,8 @@ def Package(env, target=None, source=None, **kw):
             args=args[:-len(defaults)] # throw away arguments with default values
         map(args.remove, 'env target source'.split())
         # now remove any args for which we have a value in kw.
-        args=[x for x in args if not kw.has_key(x)]
+        #args=[x for x in args if not kw.has_key(x)]
+        args=filter(lambda x, kw=kw: not kw.has_key(x), args)
 
         if len(args)==0:
             raise # must be a different error, so reraise
@@ -245,8 +247,11 @@ def options(opts):
 def copy_attr(f1, f2):
     """ copies the special packaging file attributes from f1 to f2.
     """
-    for attr in [x for x in dir(f1) if not hasattr(f2, x) and\
-                                       x.startswith('PACKAGING_')]:
+    #pattrs = [x for x in dir(f1) if not hasattr(f2, x) and\
+    #                                x.startswith('PACKAGING_')]
+    copyit = lambda x, f2=f2: not hasattr(f2, x) and x[:10] == 'PACKAGING_'
+    pattrs = filter(copyit, dir(f1))
+    for attr in pattrs:
         setattr(f2, attr, getattr(f1, attr))
 #
 # Emitter functions which are reused by the various packagers
@@ -266,12 +271,12 @@ def packageroot_emitter(pkg_root, honor_install_location=1):
 
     All attributes of the source file will be copied to the new file.
     """
-    def package_root_emitter(target, source, env):
+    def package_root_emitter(target, source, env, pkg_root=pkg_root, honor_install_location=honor_install_location):
         pkgroot = pkg_root
         # make sure the packageroot is a Dir object.
         if SCons.Util.is_String(pkgroot): pkgroot=env.Dir(pkgroot)
 
-        def copy_file_to_pkg_root(file):
+        def copy_file_to_pkg_root(file, env=env, pkgroot=pkgroot, honor_install_location=honor_install_location):
             if file.is_under(pkgroot):
                 return file
             else:

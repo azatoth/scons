@@ -150,7 +150,7 @@ def generate(env):
 
         global InstallBuilder
         if InstallBuilder is None:
-            def InstallBuilderWrapper(env, target, source, dir=None):
+            def InstallBuilderWrapper(env, target, source, dir=None, target_factory=target_factory):
                 if target and dir:
                     raise SCons.Errors.UserError, "Both target and dir defined for Install(), only one may be defined."
                 if not dir:
