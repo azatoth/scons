@@ -30,11 +30,15 @@ Test the ability to create a simple msi package.
 
 import os
 import TestSCons
-from xml.dom.minidom import *
 
 python = TestSCons.python
 
 test = TestSCons.TestSCons()
+
+try:
+    from xml.dom.minidom import *
+except ImportError:
+    test.skip_test('Canoot import xml.dom.minidom skipping test\n')
 
 wix = test.Environment().WhereIs('candle')
 
