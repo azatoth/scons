@@ -469,7 +469,7 @@ class SConsEnvironment(SCons.Environment.Base):
 
     def GetOption(self, name):
         name = self.subst(name)
-        return SCons.Script.Main.ssoptions.get(name)
+        return SCons.Script.Main.GetOption(name)
 
     def Help(self, text):
         text = self.subst(text, raw=1)
@@ -525,7 +525,7 @@ class SConsEnvironment(SCons.Environment.Base):
 
     def SetOption(self, name, value):
         name = self.subst(name)
-        SCons.Script.Main.ssoptions.set(name, value)
+        SCons.Script.Main.SetOption(name, value)
 
 #
 #
