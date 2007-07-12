@@ -35,9 +35,11 @@ import os
 import TestSCons
 
 machine = TestSCons.machine
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
+
+scons = test.program
 
 rpm = test.Environment().WhereIs('rpm')
 
@@ -59,6 +61,9 @@ test.write('SConstruct', """
 import os
 
 env  = Environment(tools=['default', 'packaging'])
+
+env.Prepend(RPM = 'TAR_OPTIONS=--wildcards ')
+
 prog = env.Install( '/bin', Program( 'main.c' ) )
 
 env.Package( NAME           = 'foo',
@@ -72,6 +77,7 @@ env.Package( NAME           = 'foo',
              X_RPM_GROUP    = 'Application/office',
              X_RPM_GROUP_de = 'Applikation/büro',
              X_RPM_GROUP_fr = 'Application/bureau',
+             X_RPM_INSTALL  = r'%(_python_)s %(scons)s --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"',
              DESCRIPTION    = 'this should be really long',
              DESCRIPTION_de = 'das sollte wirklich lang sein',
              DESCRIPTION_fr = 'ceci devrait être vraiment long',
@@ -80,7 +86,7 @@ env.Package( NAME           = 'foo',
             )
 
 env.Alias ( 'install', prog )
-""")
+""" % locals())
 
 test.run(arguments='', stderr = None)
 
@@ -153,6 +159,7 @@ env.Package( NAME           = 'foo',
              X_RPM_GROUP    = 'Application/office',
              X_RPM_GROUP_de = 'Applikation/büro',
              X_RPM_GROUP_fr = 'Application/bureau',
+             X_RPM_INSTALL  = r'%(_python_)s %(scons)s --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"',
              DESCRIPTION    = 'this should be really long',
              DESCRIPTION_de = 'das sollte wirklich lang sein',
              DESCRIPTION_fr = 'ceci devrait être vraiment long',
@@ -161,7 +168,7 @@ env.Package( NAME           = 'foo',
             )
 
 env.Alias ( 'install', [ prog, man_pages ] )
-""")
+""" % locals())
 
 
 test.run(arguments='--install-sandbox=blubb install', stderr = None)

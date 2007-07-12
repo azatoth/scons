@@ -46,6 +46,7 @@ test.write('SConstruct', """
 import os
 
 env=Environment(tools=['default', 'packaging'])
+env.Prepend(RPM = 'TAR_OPTIONS=--wildcards ')
 prog=env.Install( '/bin', 'main' )
 env.Package( NAME           = 'foo',
              VERSION        = '1.2.3',

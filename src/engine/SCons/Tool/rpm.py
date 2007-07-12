@@ -117,10 +117,10 @@ def generate(env):
         bld = RpmBuilder
         env['BUILDERS']['Rpm'] = bld
 
-    env['RPM']        = 'LC_ALL=c rpmbuild'
-    env['RPMFLAGS']   = SCons.Util.CLVar('-ta')
-    env['RPMCOM']     = rpmAction
-    env['RPMSUFFIX']  = '.rpm'
+    env.SetDefault(RPM          = 'LC_ALL=c rpmbuild')
+    env.SetDefault(RPMFLAGS     = SCons.Util.CLVar('-ta'))
+    env.SetDefault(RPMCOM       = rpmAction)
+    env.SetDefault(RPMSUFFIX    = '.rpm')
 
 def exists(env):
     return env.Detect('rpmbuild')

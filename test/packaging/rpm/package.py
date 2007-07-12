@@ -32,9 +32,11 @@ import os
 import TestSCons
 
 machine = TestSCons.machine
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
+
+scons = test.program
 
 rpm = test.Environment().WhereIs('rpm')
 
@@ -55,6 +57,8 @@ import os
 
 env=Environment(tools=['default', 'packaging'])
 
+env.Prepend(RPM = 'TAR_OPTIONS=--wildcards ')
+
 prog = env.Install( '/bin/' , Program( 'src/main.c')  )
 
 env.Package( NAME           = 'foo',
@@ -64,13 +68,14 @@ env.Package( NAME           = 'foo',
              LICENSE        = 'gpl',
              SUMMARY        = 'balalalalal',
              X_RPM_GROUP    = 'Application/fu',
+             X_RPM_INSTALL  = r'%(_python_)s %(scons)s --debug=tree --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"',
              DESCRIPTION    = 'this should be really really long',
              source         = [ prog ],
              SOURCE_URL     = 'http://foo.org/foo-1.2.3.tar.gz'
         )
 
 env.Alias( 'install', prog )
-""")
+""" % locals())
 
 test.run(arguments='', stderr = None)
 

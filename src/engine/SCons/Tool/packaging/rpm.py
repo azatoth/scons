@@ -28,8 +28,10 @@ The rpm packager.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Builder
 import os
+import string
+
+import SCons.Builder
 
 from SCons.Tool.packaging import stripinstall_emitter, packageroot_emitter, src_targz
 
@@ -66,7 +68,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
             buildarchitecture = kw['ARCHITECTURE']
 
         srcrpm = '%s-%s-%s.src.rpm' % (NAME, VERSION, PACKAGEVERSION)
-        binrpm = srcrpm.replace( 'src', buildarchitecture )
+        binrpm = string.replace(srcrpm, 'src', buildarchitecture)
 
         target = [ srcrpm, binrpm ]
 
@@ -91,11 +93,14 @@ def targz_emitter(target, source, env):
     sources = env.FindSourceFiles()
 
     # filter out the target we are building the source list for.
-    sources = [s for s in sources if not (s in target)]
+    #sources = [s for s in sources if not (s in target)]
+    sources = filter(lambda s, t=target: not (s in target), sources)
 
     # find the .spec file for rpm and add it since it is not necessarily found
     # by the FindSourceFiles function.
-    sources.extend( [s for s in source if str(s).rfind('.spec')!=-1] )
+    #sources.extend( [s for s in source if str(s).rfind('.spec')!=-1] )
+    spec_file = lambda s: string.rfind(str(s), '.spec') != -1
+    sources.extend( filter(spec_file, source) )
 
     # as the source contains the url of the source package this rpm package
     # is built from, we extract the target name
@@ -153,7 +158,7 @@ def build_specfile_sections(spec):
     mandatory_sections = {
         'DESCRIPTION'  : '\n%%description\n%s\n\n', }
 
-    str += SimpleTagCompiler(mandatory_sections).compile( spec )
+    str = str + SimpleTagCompiler(mandatory_sections).compile( spec )
 
     optional_sections = {
         'DESCRIPTION_'        : '%%description -l %s\n%s\n\n',
@@ -174,8 +179,7 @@ def build_specfile_sections(spec):
     # Default prep, build, install and clean rules
     # TODO: optimize those build steps, to not compile the project a second time
     if not spec.has_key('X_RPM_PREP'):
-        spec['X_RPM_PREP'] = 'rm -rf "$RPM_BUILD_ROOT"'
-        spec['X_RPM_PREP'] += '\n%setup -q'
+        spec['X_RPM_PREP'] = 'rm -rf "$RPM_BUILD_ROOT"' + '\n%setup -q'
 
     if not spec.has_key('X_RPM_BUILD'):
         spec['X_RPM_BUILD'] = 'mkdir "$RPM_BUILD_ROOT"'
@@ -186,7 +190,7 @@ def build_specfile_sections(spec):
     if not spec.has_key('X_RPM_CLEAN'):
         spec['X_RPM_CLEAN'] = 'rm -rf "$RPM_BUILD_ROOT"'
 
-    str += SimpleTagCompiler(optional_sections, mandatory=0).compile( spec )
+    str = str + SimpleTagCompiler(optional_sections, mandatory=0).compile( spec )
 
     return str
 
@@ -204,7 +208,7 @@ def build_specfile_header(spec):
         'SUMMARY'        : 'Summary: %s\n',
         'LICENSE'        : 'License: %s\n', }
 
-    str += SimpleTagCompiler(mandatory_header_fields).compile( spec )
+    str = str + SimpleTagCompiler(mandatory_header_fields).compile( spec )
 
     # now the optional tags
     optional_header_fields = {
@@ -243,7 +247,7 @@ def build_specfile_header(spec):
     if not spec.has_key('X_RPM_BUILDROOT'):
         spec['X_RPM_BUILDROOT'] = '%{_tmppath}/%{name}-%{version}-%{release}'
 
-    str += SimpleTagCompiler(optional_header_fields, mandatory=0).compile( spec )
+    str = str + SimpleTagCompiler(optional_header_fields, mandatory=0).compile( spec )
     return str
 
 #
@@ -257,7 +261,7 @@ def build_specfile_filesection(spec, files):
     if not spec.has_key('X_RPM_DEFATTR'):
         spec['X_RPM_DEFATTR'] = '(-,root,root)'
 
-    str += '%%defattr %s\n' % spec['X_RPM_DEFATTR']
+    str = str + '%%defattr %s\n' % spec['X_RPM_DEFATTR']
 
     supported_tags = {
         'PACKAGING_CONFIG'           : '%%config %s',
@@ -280,11 +284,11 @@ def build_specfile_filesection(spec, files):
                 pass
 
         # compile the tagset
-        str += SimpleTagCompiler(supported_tags, mandatory=0).compile( tags )
+        str = str + SimpleTagCompiler(supported_tags, mandatory=0).compile( tags )
 
-        str += ' '
-        str += file.PACKAGING_INSTALL_LOCATION
-        str += '\n\n'
+        str = str + ' '
+        str = str + file.PACKAGING_INSTALL_LOCATION
+        str = str + '\n\n'
 
     return str
 
@@ -310,7 +314,8 @@ class SimpleTagCompiler:
         """ compiles the tagset and returns a str containing the result
         """
         def is_international(tag):
-            return tag.endswith('_')
+            #return tag.endswith('_')
+            return tag[-1:] == '_'
 
         def get_country_code(tag):
             return tag[-2:]
@@ -321,18 +326,24 @@ class SimpleTagCompiler:
         replacements = self.tagset.items()
 
         str = ""
-        for key, replacement in [ (k,v) for k,v in replacements if not is_international(k) ]:
+        #domestic = [ (k,v) for k,v in replacements if not is_international(k) ]
+        domestic = filter(lambda t, i=is_international: not i(t[0]), replacements)
+        for key, replacement in domestic:
             try:
-                str += replacement % values[key]
+                str = str + replacement % values[key]
             except KeyError, e:
                 if self.mandatory:
                     raise e
 
-        for key, replacement in [ (k,v) for k,v in replacements if is_international(k) ]:
+        #international = [ (k,v) for k,v in replacements if is_international(k) ]
+        international = filter(lambda t, i=is_international: i(t[0]), replacements)
+        for key, replacement in international:
             try:
-                int_values_for_key = [ (get_country_code(k),v) for k,v in values.items() if strip_country_code(k) == key ]
+                #int_values_for_key = [ (get_country_code(k),v) for k,v in values.items() if strip_country_code(k) == key ]
+                x = filter(lambda t,key=key,s=strip_country_code: s(t[0]) == key, values.items())
+                int_values_for_key = map(lambda t,g=get_country_code: (g(t[0]),t[1]), x)
                 for v in int_values_for_key:
-                    str += replacement % v
+                    str = str + replacement % v
             except KeyError, e:
                 if self.mandatory:
                     raise e

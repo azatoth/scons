@@ -77,7 +77,8 @@ def Tag(env, target, source, *more_tags, **kw_tags):
             # differentiate between "normal" object attributes and the
             # packaging attributes. As the user should not be bothered with
             # that, the prefix will be added here if missing.
-            if not k.startswith('PACKAGING_'):
+            #if not k.startswith('PACKAGING_'):
+            if k[:10] != 'PACKAGING_':
                 k='PACKAGING_'+k
             setattr(t, k, v)
 

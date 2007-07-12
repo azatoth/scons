@@ -1694,7 +1694,7 @@ class Base(SubstitutionEnvironment):
         node = self.arg2nodes(node, self.fs.Entry)[0]
 
         sources = []
-        def build_source(ss, result):
+        def build_source(ss, result, sources=sources):
             for s in ss:
                 if isinstance(s, SCons.Node.FS.Dir):
                     build_source(s.all_children(), result)
