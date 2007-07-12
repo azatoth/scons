@@ -37,38 +37,37 @@ test = TestSCons.TestSCons()
 test.subdir('install', 'subdir')
 target  = 'destination'
 destdir = test.workpath( target )
+_SUBDIR_file3_out = os.path.join('$SUBDIR', 'file3.out')
+_SUBDIR_file3_in = os.path.join('$SUBDIR', 'file3.in')
+
+target_file2_out = os.path.join(target, 'file2.out')
+subdir_file3_in = os.path.join('subdir', 'file3.in')
+target_subdir_file3_out = os.path.join(target, 'subdir', 'file3.out')
+file1_out       = target+os.path.join( target, destdir, 'file1.out' )
 
 #
 test.write('SConstruct', r"""
 env = Environment(SUBDIR='subdir')
-env.Install(r'%s', 'file1.out')
-env.InstallAs([r'%s', r'%s'], ['file2.in', r'%s'])
-""" % (destdir,
-       'file2.out',
-       os.path.join('$SUBDIR', 'file3.out'),
-       os.path.join('$SUBDIR', 'file3.in') ))
+env.Install(r'%(destdir)s', 'file1.out')
+env.InstallAs(['file2.out', r'%(_SUBDIR_file3_out)s'],
+              ['file2.in', r'%(_SUBDIR_file3_in)s'])
+""" % locals())
 
 test.write('file1.out', "file1.out\n")
 test.write('file2.in', "file2.in\n")
 test.write(['subdir', 'file3.in'], "subdir/file3.in\n")
 
-subdir_file3_in = os.path.join('subdir', 'file3.in')
-file1_out       = target+os.path.join( target, os.path.join( destdir, 'file1.out' ) )
 expect = test.wrap_stdout("""\
-Install file: "file2.in" as "%s"
-Install file: "%s" as "%s"
-Install file: "file1.out" as "%s"
-""" % ( os.path.join( target, 'file2.out' ),
-        subdir_file3_in,
-        os.path.join( target, subdir_file3_in.replace( 'in', 'out' ) ),
-        file1_out,
-       ) )
+Install file: "file2.in" as "%(target_file2_out)s"
+Install file: "%(subdir_file3_in)s" as "%(target_subdir_file3_out)s"
+Install file: "file1.out" as "%(file1_out)s"
+""" % locals())
 
 test.run(arguments = '--install-sandbox=%s' % destdir, stdout=expect)
 
-test.fail_test(test.read(file1_out) != "file1.out\n")
-test.fail_test(test.read('destination/file2.out') != "file2.in\n")
-test.fail_test(test.read('destination/subdir/file3.out') != "subdir/file3.in\n")
+test.must_match(file1_out, "file1.out\n")
+test.must_match('destination/file2.out', "file2.in\n")
+test.must_match('destination/subdir/file3.out', "subdir/file3.in\n")
 
 #
 test.pass_test()

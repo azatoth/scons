@@ -27,7 +27,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 """
 Test stripping the InstallBuilder of the Package source file.
 """
-import os
+
 import TestSCons
 
 python = TestSCons.python
@@ -54,7 +54,7 @@ scons: done building targets.
 
 test.run(arguments='', stderr = None, stdout=expected)
 
-test.fail_test( os.path.exists( 'bin/main.c' ) )
-test.fail_test( os.path.exists( '/bin/main.c' ) )
+test.must_not_exist( 'bin/main.c' )
+test.must_not_exist( '/bin/main.c' )
 
 test.pass_test()

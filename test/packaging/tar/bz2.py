@@ -59,6 +59,6 @@ env.Package( PACKAGETYPE  = 'src_tarbz2',
 
   test.run(arguments='', stderr = None)
 
-  test.fail_test( not os.path.exists( 'src.tar.bz2' ) )
+  test.must_exist( 'src.tar.bz2' )
 
 test.pass_test()

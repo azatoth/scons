@@ -29,7 +29,6 @@ This tests the SRC zip packager, which does the following:
  - create a zip package from the specified files
 """
 
-import os
 import TestSCons
 
 python = TestSCons.python

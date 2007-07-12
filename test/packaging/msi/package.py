@@ -71,8 +71,8 @@ env.Alias( 'install', [ f1, f2 ] )
 
   test.run(arguments='', stderr = None)
 
-  test.fail_test( not os.path.exists( 'foo-1.2.wxs' ) )
-  test.fail_test( not os.path.exists( 'foo-1.2.msi' ) )
+  test.must_exist( 'foo-1.2.wxs' )
+  test.must_exist( 'foo-1.2.msi' )
 
   dom     = parse( test.workpath( 'foo-1.2.wxs' ) )
   Product = dom.getElementsByTagName( 'Product' )[0]
@@ -123,8 +123,8 @@ env.Alias( 'install', [ f1, f2, f3, f4, f5 ] )
 
   test.run(arguments='', stderr = None)
 
-  test.fail_test( not os.path.exists( 'foo-1.2.wxs' ) )
-  test.fail_test( not os.path.exists( 'foo-1.2.msi' ) )
+  test.must_exist( 'foo-1.2.wxs' )
+  test.must_exist( 'foo-1.2.msi' )
 
   dom      = parse( test.workpath( 'foo-1.2.wxs' ) )
   elements = dom.getElementsByTagName( 'Feature' )

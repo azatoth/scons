@@ -32,6 +32,7 @@ These are x-rpm-Group, description, summary and the lang_xx file tag.
 """
 
 import os
+
 import TestSCons
 
 machine = TestSCons.machine
@@ -96,7 +97,7 @@ machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine
 test.must_exist( src_rpm )
 test.must_exist( machine_rpm )
 
-test.fail_test( os.path.exists( 'bin/main' ) )
+test.must_not_exist( 'bin/main' )
 
 cmd = 'rpm -qp --queryformat \'%%{GROUP}-%%{SUMMARY}-%%{DESCRIPTION}\' %s'
 

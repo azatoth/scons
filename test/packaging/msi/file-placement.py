@@ -28,7 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test the msi packagers ability to put files into distinct directories.
 """
 
-import os
 import TestSCons
 
 python = TestSCons.python
@@ -49,8 +48,6 @@ if wix:
   test.write( 'file1.exe', "file1" )
 
   test.write('SConstruct', """
-import os
-
 env = Environment(tools=['default', 'packaging'])
 f1  = env.Install( '/bin/' , 'file1.exe'  )
 
@@ -86,8 +83,6 @@ env.Package( NAME         = 'foo',
   test.write( 'file7.class', "file7" )
 
   test.write('SConstruct', """
-import os
-
 env = Environment(tools=['default', 'packaging'])
 f1  = env.Install( '/bin/' , 'file1.exe'  )
 f2  = env.Install( '/bin/' , 'file2.exe'  )
@@ -137,8 +132,6 @@ env.Package( NAME         = 'foo',
   test.write( 'file3-.dll', "file3" )
 
   test.write('SConstruct', """
-import os
-
 env = Environment(tools=['default', 'packaging'])
 f1  = env.Install( '/bin/' , 'file1.exe'  )
 f2  = env.Install( '/bin/' , 'file2.exe'  )

@@ -27,24 +27,27 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 """
 Test the --package-type option.
 """
-import os
+
 import TestSCons
 
 machine = TestSCons.machine
-python = TestSCons.python
+_python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
+
+scons = test.program
 
 rpm = test.Environment().WhereIs('rpm')
 
 if not rpm:
     test.skip_test('rpm not found, skipping test\n')
 
+test.subdir('src')
+
 test.write( 'main', '' )
+
 test.write('SConstruct', """
 # -*- coding: iso-8859-15 -*-
-import os
-
 env=Environment(tools=['default', 'packaging'])
 env.Prepend(RPM = 'TAR_OPTIONS=--wildcards ')
 prog=env.Install( '/bin', 'main' )
@@ -54,11 +57,12 @@ env.Package( NAME           = 'foo',
              SUMMARY        = 'hello',
              PACKAGEVERSION = 0,
              X_RPM_GROUP    = 'Application/office',
+             X_RPM_INSTALL  = r'%(_python_)s %(scons)s --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"',
              DESCRIPTION    = 'this should be really long',
              source         = [ prog ],
              SOURCE_URL     = 'http://foo.org/foo-1.2.3.tar.gz'
             )
-""")
+""" % locals())
 
 test.run(arguments='package PACKAGETYPE=rpm', stderr = None)
 

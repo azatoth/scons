@@ -128,13 +128,28 @@ installas_action = SCons.Action.Action(installFunc, stringFunc)
 InstallBuilder, InstallAsBuilder = None, None
 BaseInstallBuilder               = None
 
+added = None
+
 def generate(env):
+
+    from SCons.Script import AddOption, GetOption
+    global added
+    if not added:
+        added = 1
+        AddOption('--install-sandbox',
+                  dest='install_sandbox',
+                  type="string",
+                  action="store",
+                  help='A directory under which all installed files will be placed.')
+
     try:
         env['BUILDERS']['Install']
         env['BUILDERS']['InstallAs']
+
     except KeyError, e:
-        if env.has_key('DESTDIR'):
-            target_factory = DESTDIR_factory(env, env.subst('$DESTDIR'))
+        install_sandbox = GetOption('install_sandbox')
+        if install_sandbox:
+            target_factory = DESTDIR_factory(env, install_sandbox)
         else:
             target_factory = env.fs
 
@@ -204,17 +219,3 @@ def generate(env):
 
 def exists(env):
     return 1
-
-def options(opts):
-    from SCons.Options import PathOption
-
-    opts.AddOptions(
-        PathOption( [ 'DESTDIR', '--install-sandbox' ], default=None,
-                    help='A directory under which all installed files will be placed.',
-                    validator=PathOption.PathIsDirCreate,
-                  ),
-
-#        PathOption( [ 'prefix', '--install-prefix' ], default='/usr/local',
-#                    help='The prefix for installed files which is available through prefix.',
-#                  ),
-    )
