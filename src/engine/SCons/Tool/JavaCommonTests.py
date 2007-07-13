@@ -217,31 +217,6 @@ public class Test {
         assert classes == ['Test'], classes
 
 
-# This test comes from bug report #1197470:
-#
-#    http://sourceforge.net/tracker/index.php?func=detail&aid=1194740&group_id=30337&atid=398971
-#
-# I've captured it here so that someone with a better grasp of Java syntax
-# and the parse_java() state machine can uncomment it and fix it some day.
-#
-#    def test_arrays_in_decls(self):
-#        """Test how arrays in method declarations affect class detection"""
-#
-#        pkg_dir, classes = SCons.Tool.JavaCommon.parse_java("""\
-#public class A {
-#    public class B{
-#        public void F(Object[] o) {
-#            F(new Object[] {Object[].class});
-#        }
-#        public void G(Object[] o) {
-#            F(new Object[] {});
-#        }
-#    }
-#}
-#""")
-#        assert pkg_dir == None, pkg_dir
-#        assert classes == ['A$B', 'A'], classes
-
 
     def test_backslash(self):
         """Test backslash handling"""
@@ -374,6 +349,47 @@ public class Foo {
 
         pkg_dir, classes = SCons.Tool.JavaCommon.parse_java(input)
         assert classes == ['Foo$1', 'Foo$2', 'Foo'], classes
+
+    def test_nested_anonymous_inner_classes(self):
+        """Test finding nested anonymous inner classes"""
+
+        input = """\
+// import java.util.*;
+
+public class NestedExample
+{
+        public NestedExample()
+        {
+                Thread t = new Thread() {
+                        public void start()
+                        {
+                                Thread t = new Thread() {
+                                        public void start()
+                                        {
+                                                try {Thread.sleep(200);}
+                                                catch (Exception e) {}
+                                        }
+                                };
+                                while (true)
+                                {
+                                        try {Thread.sleep(200);}
+                                        catch (Exception e) {}
+                                }
+                        }
+                };
+        }
+
+
+        public static void main(String argv[])
+        {
+                NestedExample e = new NestedExample();
+        }
+}
+"""
+
+        pkg_dir, classes = SCons.Tool.JavaCommon.parse_java(input)
+        expect = ['NestedExample$1', 'NestedExample$2', 'NestedExample']
+        assert classes == expect, classes
 
 
 
