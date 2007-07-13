@@ -94,7 +94,7 @@ def targz_emitter(target, source, env):
 
     # filter out the target we are building the source list for.
     #sources = [s for s in sources if not (s in target)]
-    sources = filter(lambda s, t=target: not (s in target), sources)
+    sources = filter(lambda s, t=target: not (s in t), sources)
 
     # find the .spec file for rpm and add it since it is not necessarily found
     # by the FindSourceFiles function.
@@ -104,9 +104,11 @@ def targz_emitter(target, source, env):
 
     # as the source contains the url of the source package this rpm package
     # is built from, we extract the target name
-    tarball = (str(target[0])+".tar.gz").replace('.rpm', '')
+    #tarball = (str(target[0])+".tar.gz").replace('.rpm', '')
+    tarball = string.replace(str(target[0])+".tar.gz", '.rpm', '')
     try:
-        tarball = env['SOURCE_URL'].split('/')[-1]
+        #tarball = env['SOURCE_URL'].split('/')[-1]
+        tarball = string.split(env['SOURCE_URL'], '/')[-1]
     except KeyError, e:
         raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
 
@@ -277,7 +279,7 @@ def build_specfile_filesection(spec, files):
     for file in files:
         # build the tagset
         tags = {}
-        for k in supported_tags:
+        for k in supported_tags.keys():
             try:
                 tags[k]=getattr(file, k)
             except AttributeError:

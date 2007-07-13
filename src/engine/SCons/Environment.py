@@ -696,6 +696,17 @@ class SubstitutionEnvironment:
             self[key] = t
         return self
 
+# Used by the FindSourceFiles() method, below.
+# Stuck here for support of pre-2.2 Python versions.
+def build_source(ss, result):
+    for s in ss:
+        if isinstance(s, SCons.Node.FS.Dir):
+            build_source(s.all_children(), result)
+        elif s.has_builder():
+            build_source(s.sources, result)
+        elif isinstance(s.disambiguate(), SCons.Node.FS.File):
+            result.append(s)
+
 class Base(SubstitutionEnvironment):
     """Base class for "real" construction Environments.  These are the
     primary objects used to communicate dependency and construction
@@ -1694,14 +1705,16 @@ class Base(SubstitutionEnvironment):
         node = self.arg2nodes(node, self.fs.Entry)[0]
 
         sources = []
-        def build_source(ss, result, sources=sources):
-            for s in ss:
-                if isinstance(s, SCons.Node.FS.Dir):
-                    build_source(s.all_children(), result)
-                elif s.has_builder():
-                    build_source(s.sources, result)
-                elif isinstance(s.disambiguate(), SCons.Node.FS.File):
-                    sources.append(s)
+        # Uncomment this and get rid of the global definition when we
+        # drop support for pre-2.2 Python versions.
+        #def build_source(ss, result):
+        #    for s in ss:
+        #        if isinstance(s, SCons.Node.FS.Dir):
+        #            build_source(s.all_children(), result)
+        #        elif s.has_builder():
+        #            build_source(s.sources, result)
+        #        elif isinstance(s.disambiguate(), SCons.Node.FS.File):
+        #            result.append(s)
         build_source(node.all_children(), sources)
 
         # now strip the build_node from the sources by calling the srcnode

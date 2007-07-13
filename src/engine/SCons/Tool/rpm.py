@@ -60,7 +60,7 @@ def build_rpm(target, source, env):
         shutil.rmtree(tmpdir)
 
     # now create the mandatory rpm directory structure.
-    for d in 'RPMS SRPMS SPECS BUILD'.split(' '):
+    for d in ['RPMS', 'SRPMS', 'SPECS', 'BUILD']:
         os.makedirs( os.path.join( tmpdir, d ) )
 
     # set the topdir as an rpmflag.
