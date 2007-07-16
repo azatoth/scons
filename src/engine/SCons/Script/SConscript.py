@@ -125,6 +125,8 @@ class Frame:
         # make sure the sconscript attr is a Node.
         if isinstance(sconscript, SCons.Node.Node):
             self.sconscript = sconscript
+        elif sconscript == '-':
+            self.sconscript = None
         else:
             self.sconscript = fs.File(str(sconscript))
 
@@ -157,6 +159,8 @@ def _SConscript(fs, *files, **kw):
 
     # evaluate each SConscript file
     results = []
+    #from SCons.Debug import Trace
+    #Trace('Dir(.).children():  %s\n' % map(str, fs.Dir('.').children()))
     for fn in files:
         call_stack.append(Frame(fs, exports, fn))
         old_sys_path = sys.path

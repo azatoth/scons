@@ -294,7 +294,8 @@ class QuestionTask(SCons.Taskmaster.Task):
         pass
     
     def execute(self):
-        if self.targets[0].get_state() != SCons.Node.up_to_date:
+        if self.targets[0].get_state() != SCons.Node.up_to_date or \
+           (self.top and not self.targets[0].exists()):
             global exit_status
             exit_status = 1
             self.tm.stop()
