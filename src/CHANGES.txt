@@ -64,6 +64,12 @@ RELEASE 0.97.X - XXX
   - Add a $SWIGOUTDIR variable to allow setting the swig -outdir option,
     and use it to identify files created by the swig -java option.
 
+  - Add a $SWIGPATH variable that specifies the path to be searched
+    for included SWIG files, Also add related $SWIGINCPREFIX and
+    $SWIGINCSUFFIX variables that specify the prefix and suffix to
+    be be added to each $SWIGPATH directory when expanded on the SWIG
+    command line.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
