@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -8,7 +9,7 @@
 # distribute, sublicense, and/or sell copies of the Software, and to
 # permit persons to whom the Software is furnished to do so, subject to
 # the following conditions:
- 
+#
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
 #
@@ -23,25 +24,47 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import unittest
-import SCons.Errors
-import SCons.Script.Main
+"""
+Verify the help text when the AddOption() function is used (and when
+it's not).
+"""
 
-# Unit tests of various classes within SCons.Script.Main.py.
-#
-# Most of the tests of this functionality are actually end-to-end scripts
-# in the test/ hierarchy.
-#
-# This module is for specific bits of functionality that we can test
-# more effectively here, instead of in an end-to-end test that would
-# have to reach into SCons.Script.Main for various classes or other bits
-# of private functionality.
+import string
 
-if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    tclasses = []
-    for tclass in tclasses:
-        names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
-    if not unittest.TextTestRunner().run(suite).wasSuccessful():
-        sys.exit(1)
+import TestSCons
+
+test = TestSCons.TestSCons()
+
+test.write('SConstruct', """\
+env = Environment()
+AddOption('--force',
+          action="store_true",
+          help='force installation (overwrite any existing files)')
+AddOption('--prefix',
+          nargs=1,
+          dest='prefix',
+          action='store',
+          type='string',
+          metavar='DIR',
+          help='installation prefix')
+f = GetOption('force')
+if f:
+    f = "True"
+print f
+print GetOption('prefix')
+""")
+
+test.run('-Q -q .',
+         stdout="None\nNone\n")
+
+test.run('-Q -q . --force',
+         stdout="True\nNone\n")
+
+test.run('-Q -q . --prefix=/home/foo',
+         stdout="None\n/home/foo\n")
+
+test.run('-Q -q . -- --prefix=/home/foo --force',
+         status=1,
+         stdout="None\nNone\n")
+
+test.pass_test()

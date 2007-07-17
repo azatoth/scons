@@ -332,30 +332,16 @@ print_time = 0
 sconscript_time = 0
 cumulative_command_time = 0
 exit_status = 0 # exit status, assume success by default
-repositories = []
 num_jobs = None
 delayed_warnings = []
 
-diskcheck_all = SCons.Node.FS.diskcheck_types()
-diskcheck_option_set = None
+OptionsParser = None
 
-def diskcheck_convert(value):
-    if value is None:
-        return []
-    if not SCons.Util.is_List(value):
-        value = string.split(value, ',')
-    result = []
-    for v in map(string.lower, value):
-        if v == 'all':
-            result = diskcheck_all
-        elif v == 'none':
-            result = []
-        elif v in diskcheck_all:
-            result.append(v)
-        else:
-            raise ValueError, v
+def AddOption(*args, **kw):
+    if not kw.has_key('default'):
+        kw['default'] = None
+    result = apply(OptionsParser.add_local_option, args, kw)
     return result
-
 #
 class Stats:
     def __init__(self):
@@ -485,15 +471,6 @@ def _scons_internal_error():
     traceback.print_exc()
     sys.exit(2)
 
-def _varargs(option, parser):
-    value = None
-    if parser.rargs:
-        arg = parser.rargs[0]
-        if arg[0] != "-":
-            value = arg
-            del parser.rargs[0]
-    return value
-
 def _setup_warn(arg):
     """The --warn option.  An argument to this option
     should be of the form <warning-class> or no-<warning-class>.
@@ -539,12 +516,11 @@ def _setup_warn(arg):
         else:
             SCons.Warnings.suppressWarningClass(clazz)
 
-def _SConstruct_exists(dirname=''):
+def _SConstruct_exists(dirname='', repositories=[]):
     """This function checks that an SConstruct file exists in a directory.
     If so, it returns the path of the file. By default, it checks the
     current directory.
     """
-    global repositories
     for file in ['SConstruct', 'Sconstruct', 'sconstruct']:
         sfile = os.path.join(dirname, file)
         if os.path.isfile(sfile):
@@ -555,7 +531,7 @@ def _SConstruct_exists(dirname=''):
                     return sfile
     return None
 
-def _set_globals(options):
+def _set_debug_values(options):
     global print_memoizer, print_objects, print_stacktrace, print_time
 
     debug_values = options.debug
@@ -653,90 +629,18 @@ def version_string(label, module):
                   module.__developer__,
                   module.__buildsys__)
 
-class SConscriptSettableOptions:
-    """This class wraps an OptParser instance and provides
-    uniform access to options that can be either set on the command
-    line or from a SConscript file. A value specified on the command
-    line always overrides a value set in a SConscript file.
-    Not all command line options are SConscript settable, and the ones
-    that are must be explicitly added to settable dictionary and optionally
-    validated and coerced in the set() method."""
-    
-    def __init__(self, options):
-        self.options = options
-
-        # This dictionary stores the defaults for all the SConscript
-        # settable options, as well as indicating which options
-        # are SConscript settable (and gettable, which for options
-        # like 'help' is far more important than being settable). 
-        self.settable = {
-            'clean'             : 0,
-            'diskcheck'         : diskcheck_all,
-            'duplicate'         : 'hard-soft-copy',
-            'help'              : 0,
-            'implicit_cache'    : 0,
-            'max_drift'         : SCons.Node.FS.default_max_drift,
-            'no_exec'           : 0,
-            'num_jobs'          : 1,
-            'random'            : 0,
-        }
-
-    def get(self, name):
-        if not self.settable.has_key(name):
-            raise SCons.Errors.UserError, "This option is not settable from a SConscript file: %s"%name
-        if hasattr(self.options, name) and getattr(self.options, name) is not None:
-            return getattr(self.options, name)
-        else:
-            return self.settable[name]
-
-    def set(self, name, value):
-        if not self.settable.has_key(name):
-            raise SCons.Errors.UserError, "This option is not settable from a SConscript file: %s"%name
-
-        if name == 'num_jobs':
-            try:
-                value = int(value)
-                if value < 1:
-                    raise ValueError
-            except ValueError:
-                raise SCons.Errors.UserError, "A positive integer is required: %s"%repr(value)
-        elif name == 'max_drift':
-            try:
-                value = int(value)
-            except ValueError:
-                raise SCons.Errors.UserError, "An integer is required: %s"%repr(value)
-        elif name == 'duplicate':
-            try:
-                value = str(value)
-            except ValueError:
-                raise SCons.Errors.UserError, "A string is required: %s"%repr(value)
-            if not value in SCons.Node.FS.Valid_Duplicates:
-                raise SCons.Errors.UserError, "Not a valid duplication style: %s" % value
-            # Set the duplicate style right away so it can affect linking
-            # of SConscript files.
-            SCons.Node.FS.set_duplicate(value)
-        elif name == 'diskcheck':
-            try:
-                value = diskcheck_convert(value)
-            except ValueError, v:
-                raise SCons.Errors.UserError, "Not a valid diskcheck value: %s"%v
-            if not self.options.diskcheck:
-                # No --diskcheck= option was specified on the command line.
-                # Set this right away so it can affect the rest of the
-                # file/Node lookups while processing the SConscript files.
-                SCons.Node.FS.set_diskcheck(value)
-
-        self.settable[name] = value
-    
-
-def _main(options, args):
+def _main(parser):
     global exit_status
+
+    options = parser.values
 
     # Here's where everything really happens.
 
-    # First order of business:  set up default warnings and and then
-    # handle the user's warning options, so we can warn about anything
-    # that happens appropriately.
+    # First order of business:  set up default warnings and then
+    # handle the user's warning options, so that we can issue (or
+    # suppress) appropriate warnings about anything that might happen,
+    # as configured by the user.
+
     default_warnings = [ SCons.Warnings.CorruptSConsignWarning,
                          SCons.Warnings.DeprecatedWarning,
                          SCons.Warnings.DuplicateEnvironmentWarning,
@@ -752,6 +656,9 @@ def _main(options, args):
     if options.warn:
         _setup_warn(options.warn)
 
+    # Now that we have the warnings configuration set up, we can actually
+    # issue (or suppress) any warnings about warning-worthy things that
+    # occurred while the command-line options were getting parsed.
     try:
         dw = options.delayed_warnings
     except AttributeError:
@@ -776,17 +683,11 @@ def _main(options, args):
         except OSError:
             sys.stderr.write("Could not change directory to %s\n" % cdir)
 
-    # The SConstruct file may be in a repository, so initialize those
-    # before we start the search up our path for one.
-    global repositories
-    if options.repository:
-        repositories.extend(options.repository)
-
     target_top = None
     if options.climb_up:
         target_top = '.'  # directory to prepend to targets
         script_dir = os.getcwd()  # location of script
-        while script_dir and not _SConstruct_exists(script_dir):
+        while script_dir and not _SConstruct_exists(script_dir, options.repository):
             script_dir, last_part = os.path.split(script_dir)
             if last_part:
                 target_top = os.path.join(last_part, target_top)
@@ -801,7 +702,7 @@ def _main(options, args):
     # and make it the build engine default.
     fs = SCons.Node.FS.default_fs = SCons.Node.FS.FS()
 
-    for rep in repositories:
+    for rep in options.repository:
         fs.Repository(rep)
 
     # Now that we have the FS object, the next order of business is to
@@ -811,7 +712,7 @@ def _main(options, args):
     if options.file:
         scripts.extend(options.file)
     if not scripts:
-        sfile = _SConstruct_exists()
+        sfile = _SConstruct_exists(repositories=options.repository)
         if sfile:
             scripts.append(sfile)
 
@@ -829,12 +730,7 @@ def _main(options, args):
         d = fs.File(scripts[0]).dir
     fs.set_SConstruct_dir(d)
 
-    # Now that we have the FS object and it's intialized, set up (most
-    # of) the rest of the options.
-    global ssoptions
-    ssoptions = SConscriptSettableOptions(options)
-
-    _set_globals(options)
+    _set_debug_values(options)
     SCons.Node.implicit_cache = options.implicit_cache
     SCons.Node.implicit_deps_changed = options.implicit_deps_changed
     SCons.Node.implicit_deps_unchanged = options.implicit_deps_unchanged
@@ -877,18 +773,22 @@ def _main(options, args):
     # read and execute have access to them.
     targets = []
     xmit_args = []
-    for a in args:
+    for a in parser.largs:
+        if a[0] == '-':
+            continue
         if '=' in a:
             xmit_args.append(a)
         else:
             targets.append(a)
-    SCons.Script._Add_Targets(targets)
+    SCons.Script._Add_Targets(targets + parser.rargs)
     SCons.Script._Add_Arguments(xmit_args)
 
     sys.stdout = SCons.Util.Unbuffered(sys.stdout)
 
     memory_stats.append('before reading SConscript files:')
     count_stats.append(('pre-', 'read'))
+
+    # And here's where we (finally) read the SConscript files.
 
     progress_display("scons: Reading SConscript files ...")
 
@@ -907,21 +807,24 @@ def _main(options, args):
         sys.exit(exit_status)
     global sconscript_time
     sconscript_time = time.time() - start_time
-    SCons.SConf.CreateConfigHBuilder(SCons.Defaults.DefaultEnvironment())
-    progress_display("scons: done reading SConscript files.")
 
-    # Tell the Node.FS subsystem that we're all done reading the
-    # SConscript files and calling Repository() and BuildDir() and the
-    # like, so it can go ahead and start memoizing the string values of
-    # file system nodes.
-    SCons.Node.FS.save_strings(1)
+    progress_display("scons: done reading SConscript files.")
 
     memory_stats.append('after reading SConscript files:')
     count_stats.append(('post-', 'read'))
 
-    fs.chdir(fs.Top)
+    SCons.SConf.CreateConfigHBuilder(SCons.Defaults.DefaultEnvironment())
 
-    if ssoptions.get('help'):
+    # Now re-parse the command-line options (any to the left of a '--'
+    # argument, that is) with any user-defined command-line options that
+    # the SConscript files may have added to the parser object.  This will
+    # emit the appropriate error message and exit if any unknown option
+    # was specified on the command line.
+
+    parser.preserve_unknown_options = False
+    parser.parse_args(parser.largs, options)
+
+    if options.help:
         help_text = SCons.Script.help_text
         if help_text is None:
             # They specified -h, but there was no Help() inside the
@@ -933,11 +836,21 @@ def _main(options, args):
         exit_status = 0
         return
 
+    # Change directory to the top-level SConstruct directory, then tell
+    # the Node.FS subsystem that we're all done reading the SConscript
+    # files and calling Repository() and BuildDir() and changing
+    # directories and the like, so it can go ahead and start memoizing
+    # the string values of file system nodes.
+
+    fs.chdir(fs.Top)
+
+    SCons.Node.FS.save_strings(1)
+
     # Now that we've read the SConscripts we can set the options
     # that are SConscript settable:
-    SCons.Node.implicit_cache = ssoptions.get('implicit_cache')
-    SCons.Node.FS.set_duplicate(ssoptions.get('duplicate'))
-    fs.set_max_drift(ssoptions.get('max_drift'))
+    SCons.Node.implicit_cache = options.implicit_cache
+    SCons.Node.FS.set_duplicate(options.duplicate)
+    fs.set_max_drift(options.max_drift)
 
     lookup_top = None
     if targets or SCons.Script.BUILD_TARGETS != SCons.Script._build_plus_default:
@@ -1023,7 +936,7 @@ def _main(options, args):
     if options.question:
         task_class = QuestionTask
     try:
-        if ssoptions.get('clean'):
+        if options.clean:
             task_class = CleanTask
             opening_message = "Cleaning targets ..."
             closing_message = "done cleaning targets."
@@ -1064,7 +977,7 @@ def _main(options, args):
     BuildTask.options = options
 
     global num_jobs
-    num_jobs = ssoptions.get('num_jobs')
+    num_jobs = options.num_jobs
     jobs = SCons.Job.Jobs(num_jobs, taskmaster)
     if num_jobs > 1 and jobs.num_jobs == 1:
         msg = "parallel builds are unsupported by this version of Python;\n" + \
@@ -1088,15 +1001,15 @@ def _main(options, args):
     memory_stats.append('after building targets:')
     count_stats.append(('post-', 'build'))
 
-def _exec_main(parser):
+def _exec_main(parser, values):
     sconsflags = os.environ.get('SCONSFLAGS', '')
     all_args = string.split(sconsflags) + sys.argv[1:]
 
-    options, args = parser.parse_args(all_args)
+    options, args = parser.parse_args(all_args, values)
 
     if type(options.debug) == type([]) and "pdb" in options.debug:
         import pdb
-        pdb.Pdb().runcall(_main, options, args)
+        pdb.Pdb().runcall(_main, parser)
     elif options.profile_file:
         from profile import Profile
 
@@ -1114,7 +1027,7 @@ def _exec_main(parser):
 
         prof = Profile()
         try:
-            prof.runcall(_main, options, args)
+            prof.runcall(_main, parser)
         except SConsPrintHelpException, e:
             prof.dump_stats(options.profile_file)
             raise e
@@ -1122,9 +1035,10 @@ def _exec_main(parser):
             pass
         prof.dump_stats(options.profile_file)
     else:
-        _main(options, args)
+        _main(parser)
 
 def main():
+    global OptionsParser
     global exit_status
     global first_command_start
 
@@ -1139,12 +1053,16 @@ def main():
         pass 
     parts.append(version_string("engine", SCons))
     parts.append("__COPYRIGHT__")
+    version = string.join(parts, '')
 
     import SConsOptions
-    parser = SConsOptions.OptParser(string.join(parts, ''))
+    parser = SConsOptions.Parser(version)
+    values = SConsOptions.SConsValues(parser.get_default_values())
+
+    OptionsParser = parser
     
     try:
-        _exec_main(parser)
+        _exec_main(parser, values)
     except SystemExit, s:
         if s:
             exit_status = s
