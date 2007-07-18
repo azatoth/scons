@@ -71,6 +71,15 @@ RELEASE 0.97.X - XXX
   - Fix the --debug=time option when the -j option is specified and all
     files are up to date.
 
+  - Add a $SWIGOUTDIR variable to allow setting the swig -outdir option,
+    and use it to identify files created by the swig -java option.
+
+  - Add a $SWIGPATH variable that specifies the path to be searched
+    for included SWIG files, Also add related $SWIGINCPREFIX and
+    $SWIGINCSUFFIX variables that specify the prefix and suffix to
+    be be added to each $SWIGPATH directory when expanded on the SWIG
+    command line.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
@@ -81,6 +90,11 @@ RELEASE 0.97.X - XXX
 
   - Find Java anonymous classes when the next token after the name is
     an open parenthesis.
+
+  From Tilo Prutz:
+
+  - Add support for the file names that Java 1.5 (and 1.6) generates for
+    nested anonymous inner classes, which are different from Java 1.4.
 
   From Adam Simpkins:
 

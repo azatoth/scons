@@ -129,7 +129,6 @@ check_list = [
             'engine/SCons/compat/_scons_subprocess.py',
             'engine/SCons/Conftest.py',
             'engine/SCons/dblite.py',
-            'engine/SCons/Optik',
         ],
     ),
 
@@ -152,7 +151,6 @@ check_list = [
             'engine/SCons/compat/_scons_subprocess.py',
             'engine/SCons/Conftest.py',
             'engine/SCons/dblite.py',
-            'engine/SCons/Optik',
             'MANIFEST',
             'os_spawnv_fix.diff',
             'setup.cfg',
@@ -171,7 +169,6 @@ check_list = [
             'SCons/compat/_scons_subprocess.py',
             'SCons/Conftest.py',
             'SCons/dblite.py',
-            'SCons/Optik',
         ],
     ),
 
@@ -211,7 +208,6 @@ check_list = [
             'src/engine/SCons/compat/_scons_subprocess.py',
             'src/engine/SCons/Conftest.py',
             'src/engine/SCons/dblite.py',
-            'src/engine/SCons/Optik',
             'src/script/MANIFEST.in',
             'src/script/setup.cfg',
         ],

@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that SWIG implicit dependencies are caught.
+Verify that use of SWIGPATH finds dependency files in subdirectories.
 """
 
 import sys
@@ -52,10 +52,9 @@ if not swig:
 
 
 
-version = sys.version[:3] # see also sys.prefix documentation
+test.subdir('inc1', 'inc2')
 
-
-test.write("dependency.i", """\
+test.write(['inc2', 'dependency.i'], """\
 %module dependency
 """)
 
@@ -66,7 +65,8 @@ test.write("dependent.i", """\
 """)
 
 test.write('SConstruct', """
-foo = Environment(SWIGFLAGS='-python')
+foo = Environment(SWIGFLAGS='-python',
+                  SWIGPATH=['inc1', 'inc2'])
 swig = foo.Dictionary('SWIG')
 bar = foo.Clone(SWIG = r'%(_python_)s wrapper.py ' + swig)
 foo.CFile(target = 'dependent', source = ['dependent.i'])
@@ -74,12 +74,28 @@ foo.CFile(target = 'dependent', source = ['dependent.i'])
 
 test.run()
 
-test.write("dependency.i", """%module dependency
+test.up_to_date(arguments = "dependent_wrap.c")
 
-extern char *dependency_string();
+test.write(['inc1', 'dependency.i'], """\
+%module dependency
+
+extern char *dependency_1();
 """)
 
 test.not_up_to_date(arguments = "dependent_wrap.c")
+
+test.write(['inc2', 'dependency.i'], """\
+%module dependency
+extern char *dependency_2();
+""")
+
+test.up_to_date(arguments = "dependent_wrap.c")
+
+test.unlink(['inc1', 'dependency.i'])
+
+test.not_up_to_date(arguments = "dependent_wrap.c")
+
+test.up_to_date(arguments = "dependent_wrap.c")
 
 
 
