@@ -788,6 +788,10 @@ data = f.read()
 if f is not sys.stdin:
     f.close()
 
+if data.startswith('<?xml '):
+    first_line, data = data.split('\n', 1)
+    sys.stdout.write(first_line + '\n')
+
 x = MySGML()
 for c in data:
     x.feed(c)

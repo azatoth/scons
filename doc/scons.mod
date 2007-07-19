@@ -212,6 +212,7 @@
 <!ENTITY Salt "<function>Salt</function>">
 <!ENTITY SetBuildSignatureType "<function>SetBuildSignatureType</function>">
 <!ENTITY SetContentSignatureType "<function>SetContentSignatureType</function>">
+<!ENTITY SetOption "<function>SetOption</function>">
 <!ENTITY SideEffect "<function>SideEffect</function>">
 <!ENTITY SourceSignature "<function>SourceSignature</function>">
 <!ENTITY SourceSignatures "<function>SourceSignatures</function>">

@@ -393,6 +393,10 @@ python_scons = {
 
         'buildermap'    : {},
 
+        'extra_rpm_files' : [
+                            'scons-' + version + '.egg-info',
+                          ],
+
         'explicit_deps' : {
                             'SCons/__init__.py' : Version_values,
                           },
