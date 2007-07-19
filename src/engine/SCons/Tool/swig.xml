@@ -181,10 +181,10 @@ appending the values of the
 &cv-SWIGINCPREFIX; and &cv-SWIGINCSUFFIX;
 construction variables
 to the beginning and end
-of each directory in &cv-SWIGCPPPATH;.
+of each directory in &cv-SWIGPATH;.
 Any command lines you define that need
-the SWIGCPPPATH directory list should
-include &cv-_SWIGCPPINCFLAGS;:
+the SWIGPATH directory list should
+include &cv-_SWIGINCFLAGS;:
 
 <example>
 env = Environment(SWIGCOM="my_swig -o $TARGET $_SWIGINCFLAGS $SORUCES")
