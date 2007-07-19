@@ -393,14 +393,25 @@ python_scons = {
 
         'buildermap'    : {},
 
-        'extra_rpm_files' : [
-                            'scons-' + version + '.egg-info',
-                          ],
+        'extra_rpm_files' : [],
 
         'explicit_deps' : {
                             'SCons/__init__.py' : Version_values,
                           },
 }
+
+# The RPM spec file we generate will just execute "python", not
+# necessarily the one in sys.executable.  If that version of python has
+# a distutils that knows about Python eggs, then setup.py will generate
+# a .egg-info file.  Check for whether or not to add it to the expected
+# RPM files by executing "python" in a subshell.
+
+cmd = "python -c 'import distutils.command.install_egg_info' > /dev/null 2>&1"
+import_egg_error = os.system(cmd)
+
+if not import_egg_error:
+    egg_info_file = 'scons-' + version + '.egg-info'
+    python_scons['extra_rpm_files'].append(egg_info_file)
 
 #
 # The original packaging scheme would have have required us to push
