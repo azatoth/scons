@@ -509,7 +509,7 @@
     from the common source files,
     which can then be linked into resulting programs.
     (Creating libraries is discussed in
-    <xref linkend="chap-libraries">, below.)
+    <xref linkend="chap-libraries"></xref>, below.)
 
     </para>
 
