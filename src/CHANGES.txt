@@ -76,6 +76,9 @@ RELEASE 0.97.X - XXX
     already been created, don't overwrite existing $CFILESUFFIX and
     $CXXFILESUFFIX value.
 
+  - Support passing the Java() builder a list of explicit .java files
+    (not only a list of directories to be scanned for .java files).
+
   From Jan Nijtmans:
 
   - Find Java anonymous classes when the next token after the name is

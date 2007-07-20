@@ -2041,6 +2041,74 @@ class RepositoryTestCase(_tempdirTestCase):
         r = map(lambda x, np=os.path.normpath: np(str(x)), rep)
         assert r == expect, r
 
+    def test_rentry(self):
+        """Test the Base.entry() method"""
+        return_true = lambda: 1
+        return_false = lambda: 0
+
+        d1 = self.fs.Dir('d1')
+        d2 = self.fs.Dir('d2')
+        d3 = self.fs.Dir('d3')
+
+        e1 = self.fs.Entry('e1')
+        e2 = self.fs.Entry('e2')
+        e3 = self.fs.Entry('e3')
+
+        f1 = self.fs.File('f1')
+        f2 = self.fs.File('f2')
+        f3 = self.fs.File('f3')
+
+        self.test.write([self.rep1, 'd2'], "")
+        self.test.subdir([self.rep2, 'd3'])
+        self.test.write([self.rep3, 'd3'], "")
+
+        self.test.write([self.rep1, 'e2'], "")
+        self.test.subdir([self.rep2, 'e3'])
+        self.test.write([self.rep3, 'e3'], "")
+
+        self.test.write([self.rep1, 'f2'], "")
+        self.test.subdir([self.rep2, 'f3'])
+        self.test.write([self.rep3, 'f3'], "")
+
+        r = d1.rentry()
+        assert r is d1, r
+
+        r = d2.rentry()
+        assert not r is d2, r
+        r = str(r)
+        assert r == os.path.join(self.rep1, 'd2'), r
+
+        r = d3.rentry()
+        assert not r is d3, r
+        r = str(r)
+        assert r == os.path.join(self.rep2, 'd3'), r
+
+        r = e1.rentry()
+        assert r is e1, r
+
+        r = e2.rentry()
+        assert not r is e2, r
+        r = str(r)
+        assert r == os.path.join(self.rep1, 'e2'), r
+
+        r = e3.rentry()
+        assert not r is e3, r
+        r = str(r)
+        assert r == os.path.join(self.rep2, 'e3'), r
+
+        r = f1.rentry()
+        assert r is f1, r
+
+        r = f2.rentry()
+        assert not r is f2, r
+        r = str(r)
+        assert r == os.path.join(self.rep1, 'f2'), r
+
+        r = f3.rentry()
+        assert not r is f3, r
+        r = str(r)
+        assert r == os.path.join(self.rep2, 'f3'), r
+
     def test_rdir(self):
         """Test the Dir.rdir() method"""
         return_true = lambda: 1

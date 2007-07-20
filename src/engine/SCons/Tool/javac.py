@@ -54,20 +54,28 @@ def emit_java_classes(target, source, env):
     java_suffix = env.get('JAVASUFFIX', '.java')
     class_suffix = env.get('JAVACLASSSUFFIX', '.class')
 
+    target[0].must_be_same(SCons.Node.FS.Dir)
+
     slist = []
     js = _my_normcase(java_suffix)
-    for sdir in source:
-        def visit(arg, dirname, names, js=js, dirnode=sdir.rdir()):
-            java_files = filter(lambda n, js=js:
-                                _my_normcase(n[-len(js):]) == js,
-                                names)
-            # The on-disk entries come back in arbitrary order.  Sort them
-            # so our target and source lists are determinate.
-            java_files.sort()
-            mydir = dirnode.Dir(dirname)
-            java_paths = map(lambda f, d=mydir: d.File(f), java_files)
-            arg.extend(java_paths)
-        os.path.walk(sdir.rdir().get_abspath(), visit, slist)
+    for entry in source:
+        entry = entry.rentry().disambiguate()
+        if isinstance(entry, SCons.Node.FS.File):
+            slist.append(entry)
+        elif isinstance(entry, SCons.Node.FS.Dir):
+            def visit(arg, dirname, names, js=js, dirnode=entry.rdir()):
+                java_files = filter(lambda n, js=js:
+                                    _my_normcase(n[-len(js):]) == js,
+                                    names)
+                # The on-disk entries come back in arbitrary order.  Sort
+                # them so our target and source lists are determinate.
+                java_files.sort()
+                mydir = dirnode.Dir(dirname)
+                java_paths = map(lambda f, d=mydir: d.File(f), java_files)
+                arg.extend(java_paths)
+            os.path.walk(entry.rdir().get_abspath(), visit, slist)
+        else:
+           raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % entry.__class__)
 
     tlist = []
     for f in slist:
@@ -100,8 +108,8 @@ JavaAction = SCons.Action.Action('$JAVACCOM', '$JAVACCOMSTR')
 
 JavaBuilder = SCons.Builder.Builder(action = JavaAction,
                     emitter = emit_java_classes,
-                    target_factory = SCons.Node.FS.Dir,
-                    source_factory = SCons.Node.FS.Dir)
+                    target_factory = SCons.Node.FS.Entry,
+                    source_factory = SCons.Node.FS.Entry)
 
 def generate(env):
     """Add Builders and construction variables for javac to an Environment."""
