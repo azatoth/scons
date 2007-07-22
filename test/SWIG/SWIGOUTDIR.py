@@ -29,9 +29,31 @@ Verify that use of the $SWIGOUTDIR variable causes SCons to recognize
 that Java files are created in the specified output directory.
 """
 
+import sys
+
 import TestSCons
 
 test = TestSCons.TestSCons()
+
+if sys.platform =='darwin':
+    # change to make it work with stock OS X python framework
+    # we can't link to static libpython because there isn't one on OS X
+    # so we link to a framework version. However, testing must also
+    # use the same version, or else you get interpreter errors.
+    python = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/python"
+    _python_ = '"' + python + '"'
+else:
+    python = TestSCons.python
+    _python_ = TestSCons._python_
+
+test = TestSCons.TestSCons()
+
+swig = test.where_is('swig')
+
+if not swig:
+    test.skip_test('Can not find installed "swig", skipping test.\n')
+
+
 
 test.write(['SConstruct'], """\
 env = Environment(tools = ['default', 'swig'])
