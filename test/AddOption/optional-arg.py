@@ -92,7 +92,7 @@ AddOption('-X', nargs='?')
 
 expect = r"""
 scons: \*\*\* option -X: nargs='\?' is incompatible with short options
-File "\S+", line \d+, in \S+
+File "[^"]+", line \d+, in \S+
 """
 
 test.run(status=2, stderr=expect, match=TestSCons.match_re)
