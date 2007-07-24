@@ -342,7 +342,7 @@ env = Environment(
                    BUILDERS            = { 'SCons_revision' : revbuilder,
                                            'SOElim' : soelimbuilder },
 
-                   PYTHON              = sys.executable,
+                   PYTHON              = '"%s"' % sys.executable,
                    PYTHONFLAGS         = '-tt',
                  )
 
@@ -583,7 +583,7 @@ for p in [ scons ]:
     setup_py = os.path.join(build, 'setup.py')
     env.Replace(PKG = pkg,
                 PKG_VERSION = pkg_version,
-                SETUP_PY = setup_py)
+                SETUP_PY = '"%s"' % setup_py)
     Local(setup_py)
 
     #
