@@ -70,6 +70,9 @@ RELEASE 0.97.X - XXX
     be be added to each $SWIGPATH directory when expanded on the SWIG
     command line.
 
+  - More efficient copying of construction environments (mostly borrowed
+    from copy.deepcopy() in the standard Python library).
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
