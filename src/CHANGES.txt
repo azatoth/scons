@@ -73,6 +73,9 @@ RELEASE 0.97.X - XXX
   - More efficient copying of construction environments (mostly borrowed
     from copy.deepcopy() in the standard Python library).
 
+  - When printing --tree=prune output, don't print [brackets] around
+    source files, only do so for built targets with children.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
