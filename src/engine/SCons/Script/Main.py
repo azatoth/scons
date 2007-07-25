@@ -641,10 +641,15 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
         SCons.Tool.DefaultToolpath.append(os.path.abspath(site_tools_dir))
 
 def version_string(label, module):
-    fmt = "\t%s: v%s.%s, %s, by %s on %s\n"
+    version = module.__version__
+    build = module.__build__
+    if build:
+        if build[0] != '.':
+            build = '.' + build
+        version = version + build
+    fmt = "\t%s: v%s, %s, by %s on %s\n"
     return fmt % (label,
-                  module.__version__,
-                  module.__build__,
+                  version,
                   module.__date__,
                   module.__developer__,
                   module.__buildsys__)
