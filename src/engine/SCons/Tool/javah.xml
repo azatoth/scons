@@ -16,6 +16,7 @@ JAVACLASSSUFFIX
 </sets>
 <uses>
 JAVAHCOMSTR
+JAVACLASSPATH
 </uses>
 </tool>
 

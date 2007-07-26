@@ -60,6 +60,7 @@ def emit_java_headers(target, source, env):
             except AttributeError:
                 classdir = '.'
     classdir = env.Dir(classdir).rdir()
+
     if str(classdir) == '.':
         c_ = None
     else:
@@ -77,9 +78,12 @@ def emit_java_headers(target, source, env):
                 classname = classname[:-len(class_suffix)]
             classname = SCons.Tool.javac.classname(classname)
         s = src.rfile()
-        s.attributes.java_classdir = classdir
         s.attributes.java_classname = classname
         slist.append(s)
+
+    s = source[0].rfile()
+    if not hasattr(s.attributes, 'java_classdir'):
+        s.attributes.java_classdir = classdir
 
     if target[0].__class__ is SCons.Node.FS.File:
         tlist = target
@@ -114,6 +118,12 @@ JavaHBuilder = SCons.Builder.Builder(action = JavaHAction,
                      target_factory = SCons.Node.FS.Entry,
                      source_factory = SCons.Node.FS.File)
 
+def getJavaHClassPath(env,target, source, for_signature):
+    path = "${SOURCE.attributes.java_classdir}"
+    if env.has_key('JAVACLASSPATH') and env['JAVACLASSPATH']:
+        path = SCons.Util.AppendPath(path, env['JAVACLASSPATH'])
+    return "-classpath %s" % (path)
+
 def generate(env):
     """Add Builders and construction variables for javah to an Environment."""
     env['BUILDERS']['JavaH'] = JavaHBuilder
@@ -121,7 +131,8 @@ def generate(env):
     env['_JAVAHOUTFLAG']    = JavaHOutFlagGenerator
     env['JAVAH']            = 'javah'
     env['JAVAHFLAGS']       = SCons.Util.CLVar('')
-    env['JAVAHCOM']         = '$JAVAH $JAVAHFLAGS $_JAVAHOUTFLAG -classpath ${SOURCE.attributes.java_classdir} ${SOURCES.attributes.java_classname}'
+    env['_JAVAHCLASSPATH']  = getJavaHClassPath
+    env['JAVAHCOM']         = '$JAVAH $JAVAHFLAGS $_JAVAHOUTFLAG $_JAVAHCLASSPATH ${SOURCES.attributes.java_classname}'
     env['JAVACLASSSUFFIX']  = '.class'
 
 def exists(env):
