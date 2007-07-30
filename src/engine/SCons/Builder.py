@@ -713,13 +713,10 @@ class BuilderBase:
 
         src_suffixes = self.src_suffixes(env)
 
-        lengths_dict = {}
-        for l in map(len, src_suffixes):
-            lengths_dict[l] = None
-        lengths = lengths_dict.keys()
+        lengths = list(set(map(len, src_suffixes)))
 
         def match_src_suffix(node, src_suffixes=src_suffixes, lengths=lengths):
-            node_suffixes = map(lambda l, n=node: n.name[-l:], lengths)
+            node_suffixes = map(lambda l, n=node.name: n[-l:], lengths)
             for suf in src_suffixes:
                 if suf in node_suffixes:
                     return suf
