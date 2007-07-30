@@ -2373,6 +2373,12 @@ class File(Base):
 
 default_fs = None
 
+def get_default_fs():
+    global default_fs
+    if not default_fs:
+        default_fs = FS()
+    return default_fs
+
 class FileFinder:
     """
     """

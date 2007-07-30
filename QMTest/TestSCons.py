@@ -168,6 +168,10 @@ class TestSCons(TestCommon):
             kw['workdir'] = ''
         apply(TestCommon.__init__, [self], kw)
 
+        import SCons.Node.FS
+        if SCons.Node.FS.default_fs is None:
+            SCons.Node.FS.default_fs = SCons.Node.FS.FS()
+
     def Environment(self, ENV=None, *args, **kw):
         """
         Return a construction Environment that optionally overrides

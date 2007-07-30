@@ -725,7 +725,7 @@ def _main(parser):
     # Now that we're in the top-level SConstruct directory, go ahead
     # and initialize the FS object that represents the file system,
     # and make it the build engine default.
-    fs = SCons.Node.FS.default_fs = SCons.Node.FS.FS()
+    fs = SCons.Node.FS.get_default_fs()
 
     for rep in options.repository:
         fs.Repository(rep)
