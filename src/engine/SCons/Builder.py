@@ -467,28 +467,28 @@ class BuilderBase:
             executor.add_sources(slist)
             return executor
 
+    def _adjustixes(self, files, pre, suf):
+        if not files:
+            return []
+        result = []
+        if not SCons.Util.is_List(files):
+            files = [files]
+
+        for f in files:
+            if SCons.Util.is_String(f):
+                f = SCons.Util.adjustixes(f, pre, suf)
+            result.append(f)
+        return result
+
     def _create_nodes(self, env, target = None, source = None):
         """Create and return lists of target and source nodes.
         """
-        def _adjustixes(files, pre, suf):
-            if not files:
-                return []
-            result = []
-            if not SCons.Util.is_List(files):
-                files = [files]
-
-            for f in files:
-                if SCons.Util.is_String(f):
-                    f = SCons.Util.adjustixes(f, pre, suf)
-                result.append(f)
-            return result
-
         src_suf = self.get_src_suffix(env)
 
         target_factory = env.get_factory(self.target_factory)
         source_factory = env.get_factory(self.source_factory)
 
-        source = _adjustixes(source, None, src_suf)
+        source = self._adjustixes(source, None, src_suf)
         slist = env.arg2nodes(source, source_factory)
 
         pre = self.get_prefix(env, slist)
@@ -505,7 +505,7 @@ class BuilderBase:
                 splitext = lambda S,self=self,env=env: self.splitext(S,env)
                 tlist = [ t_from_s(pre, suf, splitext) ]
         else:
-            target = _adjustixes(target, pre, suf)
+            target = self._adjustixes(target, pre, suf)
             tlist = env.arg2nodes(target, target_factory)
 
         if self.emitter:
@@ -558,7 +558,7 @@ class BuilderBase:
             return result
 
         overwarn.warn()
-        
+
         tlist, slist = self._create_nodes(env, target, source)
 
         # Check for errors with the specified target/source lists.
@@ -704,7 +704,7 @@ class BuilderBase:
             for suf in bld.src_suffixes(env):
                 sdict[suf] = bld
         return sdict
-        
+
     def src_builder_sources(self, env, source, overwarn={}):
         source_factory = env.get_factory(self.source_factory)
         slist = env.arg2nodes(source, source_factory)
