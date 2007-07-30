@@ -76,6 +76,9 @@ RELEASE 0.97.X - XXX
   - When printing --tree=prune output, don't print [brackets] around
     source files, only do so for built targets with children.
 
+  - Fix interpretation of Builder source arguments when the Builder has
+    a src_suffix *and* a source_builder and the argument has no suffix.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has

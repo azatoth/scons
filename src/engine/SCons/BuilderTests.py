@@ -43,6 +43,8 @@ import SCons.Action
 import SCons.Builder
 import SCons.Environment
 import SCons.Errors
+import SCons.Subst
+import SCons.Util
 
 sys.stdout = StringIO.StringIO()
 
@@ -92,12 +94,11 @@ class Environment:
         return self.d.get(s, s)
     def subst_target_source(self, string, raw=0, target=None,
                             source=None, dict=None, conv=None):
-        return SCons.Util.scons_subst(string, self, raw, target,
-                                      source, dict, conv)
-    def subst_list(self, string, raw=0, target=None,
-                   source=None, dict=None, conv=None):
-        return SCons.Util.scons_subst_list(string, self, raw, target,
-                                           source, dict, conv)
+        return SCons.Subst.scons_subst(string, self, raw, target,
+                                       source, dict, conv)
+    def subst_list(self, string, raw=0, target=None, source=None, conv=None):
+        return SCons.Subst.scons_subst_list(string, self, raw, target,
+                                            source, {}, {}, conv)
     def arg2nodes(self, args, factory, **kw):
         global env_arg2nodes_called
         env_arg2nodes_called = 1
@@ -792,12 +793,12 @@ class BuilderTestCase(unittest.TestCase):
         tgt = builder2(env, source=[])
         assert tgt == [], tgt
 
-        tgt = builder2(env, target='baz',
-                       source=['test.bar', 'test2.foo', 'test3.txt'])[0]
+        sources = ['test.bar', 'test2.foo', 'test3.txt', 'test4']
+        tgt = builder2(env, target='baz', source=sources)[0]
         s = str(tgt)
         assert s == 'baz', s
         s = map(str, tgt.sources)
-        assert s == ['test.foo', 'test2.foo', 'test3.txt'], s
+        assert s == ['test.foo', 'test2.foo', 'test3.txt', 'test4.foo'], s
         s = map(str, tgt.sources[0].sources)
         assert s == ['test.bar'], s
 
@@ -1595,7 +1596,7 @@ class CompositeBuilderTestCase(unittest.TestCase):
         assert str(e) == expect, e
 
         flag = 0
-        tgt = builder(env, target='t7', source=['test7'])[0]
+        tgt = builder(env, target='t7', source=[env.fs.File('test7')])[0]
         try:
             tgt.build()
         except SCons.Errors.UserError, e:
