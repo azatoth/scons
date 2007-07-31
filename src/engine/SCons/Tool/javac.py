@@ -54,35 +54,54 @@ def emit_java_classes(target, source, env):
     java_suffix = env.get('JAVASUFFIX', '.java')
     class_suffix = env.get('JAVACLASSSUFFIX', '.class')
 
+    target[0].must_be_same(SCons.Node.FS.Dir)
+    classdir = target[0]
+
+    s = source[0].rentry().disambiguate()
+    if isinstance(s, SCons.Node.FS.File):
+        sourcedir = s.dir.rdir()
+    elif isinstance(s, SCons.Node.FS.Dir):
+        sourcedir = s.rdir()
+    else:
+        raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % s.__class__)
+
     slist = []
     js = _my_normcase(java_suffix)
-    for sdir in source:
-        def visit(arg, dirname, names, js=js, dirnode=sdir.rdir()):
-            java_files = filter(lambda n, js=js:
-                                _my_normcase(n[-len(js):]) == js,
-                                names)
-            # The on-disk entries come back in arbitrary order.  Sort them
-            # so our target and source lists are determinate.
-            java_files.sort()
-            mydir = dirnode.Dir(dirname)
-            java_paths = map(lambda f, d=mydir: d.File(f), java_files)
-            arg.extend(java_paths)
-        os.path.walk(sdir.rdir().get_abspath(), visit, slist)
+    for entry in source:
+        entry = entry.rentry().disambiguate()
+        if isinstance(entry, SCons.Node.FS.File):
+            slist.append(entry)
+        elif isinstance(entry, SCons.Node.FS.Dir):
+            def visit(arg, dirname, names, js=js, dirnode=entry.rdir()):
+                java_files = filter(lambda n, js=js:
+                                    _my_normcase(n[-len(js):]) == js,
+                                    names)
+                # The on-disk entries come back in arbitrary order.  Sort
+                # them so our target and source lists are determinate.
+                java_files.sort()
+                mydir = dirnode.Dir(dirname)
+                java_paths = map(lambda f, d=mydir: d.File(f), java_files)
+                arg.extend(java_paths)
+            os.path.walk(entry.rdir().get_abspath(), visit, slist)
+        else:
+            raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % entry.__class__)
 
+    version = env.get('JAVAVERSION', '1.4')
     tlist = []
     for f in slist:
-        version = env.get('JAVAVERSION', '1.4')
         pkg_dir, classes = parse_java_file(f.get_abspath(), version)
         if pkg_dir:
             for c in classes:
                 t = target[0].Dir(pkg_dir).File(c+class_suffix)
-                t.attributes.java_classdir = target[0]
+                t.attributes.java_classdir = classdir
+                t.attributes.java_sourcedir = sourcedir
                 t.attributes.java_classname = classname(pkg_dir + os.sep + c)
                 tlist.append(t)
         elif classes:
             for c in classes:
                 t = target[0].File(c+class_suffix)
-                t.attributes.java_classdir = target[0]
+                t.attributes.java_classdir = classdir
+                t.attributes.java_sourcedir = sourcedir
                 t.attributes.java_classname = classname(c)
                 tlist.append(t)
         else:
@@ -90,7 +109,8 @@ def emit_java_classes(target, source, env):
             # Just do our best based on the source file name.
             base = str(f)[:-len(java_suffix)]
             t = target[0].File(base + class_suffix)
-            t.attributes.java_classdir = target[0]
+            t.attributes.java_classdir = classdir
+            t.attributes.java_sourcedir = sourcedir
             t.attributes.java_classname = classname(base)
             tlist.append(t)
 
@@ -100,18 +120,43 @@ JavaAction = SCons.Action.Action('$JAVACCOM', '$JAVACCOMSTR')
 
 JavaBuilder = SCons.Builder.Builder(action = JavaAction,
                     emitter = emit_java_classes,
-                    target_factory = SCons.Node.FS.Dir,
-                    source_factory = SCons.Node.FS.Dir)
+                    target_factory = SCons.Node.FS.Entry,
+                    source_factory = SCons.Node.FS.Entry)
+
+def getClassPath(env,target, source, for_signature):
+    path = ""
+    if env.has_key('JAVACLASSPATH') and env['JAVACLASSPATH']:
+        path = SCons.Util.AppendPath(path, env['JAVACLASSPATH'])
+        return "-classpath %s" % (path)
+    else:
+        return ""
+
+def getSourcePath(env,target, source, for_signature):
+    path = ""
+    if env.has_key('JAVASOURCEPATH') and env['JAVASOURCEPATH']:
+        path = SCons.Util.AppendPath(path, env['JAVASOURCEPATH'])
+    path = SCons.Util.AppendPath(path,['${TARGET.attributes.java_sourcedir}'])
+    return "-sourcepath %s" % (path)
 
 def generate(env):
     """Add Builders and construction variables for javac to an Environment."""
-    env['BUILDERS']['Java'] = JavaBuilder
+    java_file = SCons.Tool.CreateJavaFileBuilder(env)
+    java_class = SCons.Tool.CreateJavaClassBuilder(env)
+    java_class_dir = SCons.Tool.CreateJavaClassDirBuilder(env)
+    java_class.add_emitter(None, emit_java_classes)
+    java_class.add_emitter(env.subst('$JAVASUFFIX'), emit_java_classes)
+    java_class_dir.emitter = emit_java_classes
 
     env['JAVAC']            = 'javac'
     env['JAVACFLAGS']       = SCons.Util.CLVar('')
-    env['JAVACCOM']         = '$JAVAC $JAVACFLAGS -d ${TARGET.attributes.java_classdir} -sourcepath ${SOURCE.dir.rdir()} $SOURCES'
+    env['JAVACLASSPATH']    = []
+    env['JAVASOURCEPATH']   = []
+    env['_JAVACLASSPATH']   = getClassPath
+    env['_JAVASOURCEPATH']  = getSourcePath
+    env['_JAVACCOM']        = '$JAVAC $JAVACFLAGS $_JAVACLASSPATH -d ${TARGET.attributes.java_classdir} $_JAVASOURCEPATH $SOURCES'
+    env['JAVACCOM']         = "${TEMPFILE('$_JAVACCOM')}"
     env['JAVACLASSSUFFIX']  = '.class'
     env['JAVASUFFIX']       = '.java'
 
 def exists(env):
-    return env.Detect('javac')
+    return 1

@@ -787,6 +787,26 @@ class Base(SCons.Node.Node):
         cwd = self.cwd or self.fs._cwd
         return cwd.Rfindalldirs(pathlist)
 
+    memoizer_counters.append(SCons.Memoize.CountValue('rentry'))
+
+    def rentry(self):
+        try:
+            return self._memo['rentry']
+        except KeyError:
+            pass
+        result = self
+        if not self.exists():
+            norm_name = _my_normcase(self.name)
+            for dir in self.dir.get_all_rdirs():
+                try:
+                    node = dir.entries[norm_name]
+                except KeyError:
+                    if dir.entry_exists_on_disk(self.name):
+                        result = dir.Entry(self.name)
+                        break
+        self._memo['rentry'] = result
+        return result
+
 class Entry(Base):
     """This is the class for generic Node.FS entries--that is, things
     that could be a File or a Dir, but we're just not sure yet.
@@ -2562,6 +2582,12 @@ class File(Base):
         return dir, os.path.join(dir, cachesig)
 
 default_fs = None
+
+def get_default_fs():
+    global default_fs
+    if not default_fs:
+        default_fs = FS()
+    return default_fs
 
 class FileFinder:
     """

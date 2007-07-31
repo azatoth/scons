@@ -25,15 +25,12 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that use of the $SWIGOUTDIR variable causes SCons to recognize
-that Java files are created in the specified output directory.
+Verify that we can use ${SOURCE} expansions in $SWIGFLAGS.
 """
 
 import sys
 
 import TestSCons
-
-test = TestSCons.TestSCons()
 
 if sys.platform =='darwin':
     # change to make it work with stock OS X python framework
@@ -55,33 +52,28 @@ if not swig:
 
 
 
-test.write(['SConstruct'], """\
-env = Environment(tools = ['default', 'swig'])
+test.subdir('src')
 
-Java_foo_interface = env.SharedLibrary(
-    'Java_foo_interface', 
-    'Java_foo_interface.i', 
-    SWIGOUTDIR = 'java/build',
-    SWIGFLAGS = '-c++ -java -Wall',
-    SWIGCXXFILESUFFIX = "_wrap.cpp")
-""" % locals())
+test.write(['src', 'foo.i'], """\
+%module foo
 
-test.write('Java_foo_interface.i', """\
-%module foopack
+%include bar.i
 """)
 
-# SCons should realize that it needs to create the java/build
-# subdirectory to hold the generate .java files.
-test.run(arguments = '.')
+test.write(['src', 'bar.i'], """\
+%module bar
+""")
 
-# SCons should remove the built .java files.
-test.run(arguments = '-c java/build/foopack.java java/build/foopackJNI.java')
+test.write('SConstruct', """
+# Note that setting the -I option in $SWIGFLAGS is not good and the
+# documentation says to use $SWIGPATH.  This is just for testing.
+env = Environment(SWIGFLAGS='-python -I${SOURCE.dir}')
+env.CFile(target = 'foo', source = ['src/foo.i'])
+""")
 
-test.must_not_exist('java/build/foopackJNI.java')
-test.must_not_exist('java/build/foopack.java') 
+test.run()
 
-# SCons should realize it needs to rebuild the removed .java files.
-test.not_up_to_date(arguments = '.')
+test.up_to_date(arguments = "foo_wrap.c")
 
 
 

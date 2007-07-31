@@ -24,62 +24,58 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import os.path
-import string
-import sys
+"""
+Verify that use of $JAVASOURCEPATH allows finding source .java
+files in alternate locations by adding the -sourcepath option
+to the javac command line.
+"""
+
 import TestSCons
 
 _python_ = TestSCons._python_
-_exe   = TestSCons._exe
-
-if sys.platform == 'win32':
-    compiler = 'msvc'
-    linker = 'mslink'
-else:
-    compiler = 'gcc'
-    linker = 'gnulink'
 
 test = TestSCons.TestSCons()
 
-test.subdir('in')
+ENV = test.java_ENV()
 
-
-
-test.write('myyacc.py', """
-import getopt
-import string
-import sys
-cmd_opts, args = getopt.getopt(sys.argv[1:], 'o:I:x', [])
-output = None
-opt_string = ''
-i_arguments = ''
-for opt, arg in cmd_opts:
-    if opt == '-o': output = open(arg, 'wb')
-    elif opt == '-I': i_arguments = i_arguments + ' ' + arg
-    else: opt_string = opt_string + ' ' + opt
-for a in args:
-    contents = open(a, 'rb').read()
-    contents = string.replace(contents, 'YACCFLAGS', opt_string)
-    contents = string.replace(contents, 'I_ARGS', i_arguments)
-    output.write(contents)
-output.close()
-sys.exit(0)
-""")
+if test.detect_tool('javac', ENV=ENV):
+    where_javac = test.detect('JAVAC', 'javac', ENV=ENV)
+else:
+    where_javac = test.where_is('javac')
+if not where_javac:
+    test.skip_test("Could not find Java javac, skipping test(s).\n")
 
 test.write('SConstruct', """
-env = Environment(YACC = r'%(_python_)s myyacc.py',
-                  YACCFLAGS = '-x -I${TARGET.dir} -I${SOURCE.dir}',
-                  tools=['yacc', '%(linker)s', '%(compiler)s'])
-env.CFile(target = 'out/aaa', source = 'in/aaa.y')
+env = Environment(tools = ['javac', 'javah'],
+                  JAVAC = r'%(where_javac)s')
+bar = env.Java(target = 'bar/classes',
+         source = 'bar/src/TestBar.java',
+         JAVASOURCEPATH = ['foo/src'])
 """ % locals())
 
-test.write(['in', 'aaa.y'],		"aaa.y\nYACCFLAGS\nI_ARGS\n")
+test.subdir('foo',
+            ['foo', 'src'],
+	    ['foo', 'src', 'com'],
+            ['foo', 'src', 'com', 'foo'],
+            ['foo', 'src', 'com', 'foo', 'test'],
+            'bar', ['bar', 'src'])
 
-test.run('.', stderr = None)
+test.write(['foo', 'src', 'com', 'foo', 'test', 'TestFoo.java'], """\
+package com.foo.test;
+public class TestFoo {;}
+""")
 
-test.must_match(['out', 'aaa.c'],	"aaa.y\n -x\n out in\n")
+test.write(['bar', 'src', 'TestBar.java'], """\
+package com.bar.test;
+import com.foo.test.TestFoo;
+class TestBar extends TestFoo {;}
+""")
 
+test.run(arguments = '.')
 
+test.must_exist(['bar', 'classes', 'com', 'bar', 'test', 'TestBar.class'])
+test.must_exist(['bar', 'classes', 'com', 'foo', 'test', 'TestFoo.class'])
+
+test.up_to_date(arguments = '.')
 
 test.pass_test()

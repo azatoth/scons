@@ -168,6 +168,10 @@ class TestSCons(TestCommon):
             kw['workdir'] = ''
         apply(TestCommon.__init__, [self], kw)
 
+        import SCons.Node.FS
+        if SCons.Node.FS.default_fs is None:
+            SCons.Node.FS.default_fs = SCons.Node.FS.FS()
+
     def Environment(self, ENV=None, *args, **kw):
         """
         Return a construction Environment that optionally overrides
@@ -273,36 +277,6 @@ class TestSCons(TestCommon):
         kw['stdout'] = string.replace(kw['stdout'],'.','\\.')
         kw['match'] = self.match_re_dotall
         apply(self.run, [], kw)
-
-    def skip_test(self, message="Skipping test.\n"):
-        """Skips a test.
-
-        Proper test-skipping behavior is dependent on whether we're being
-        executed as part of development of a change under Aegis.
-
-        Technically, skipping a test is a NO RESULT, but Aegis will
-        treat that as a test failure and prevent the change from going
-        to the next step.  We don't want to force anyone using Aegis
-        to have to install absolutely every tool used by the tests,
-        so we actually report to Aegis that a skipped test has PASSED
-        so that the workflow isn't held up.
-        """
-        if message:
-            sys.stdout.write(message)
-            sys.stdout.flush()
-        devdir = os.popen("aesub '$dd' 2>/dev/null", "r").read()[:-1]
-        intdir = os.popen("aesub '$intd' 2>/dev/null", "r").read()[:-1]
-        if devdir and self._cwd[:len(devdir)] == devdir or \
-           intdir and self._cwd[:len(intdir)] == intdir:
-            # We're under the development directory for this change,
-            # so this is an Aegis invocation; pass the test (exit 0).
-            self.pass_test()
-        else:
-            # skip=1 means skip this function when showing where this
-            # result came from.  They only care about the line where the
-            # script called test.skip_test(), not the line number where
-            # we call test.no_result().
-            self.no_result(skip=1)
 
     def diff_substr(self, expect, actual, prelen=20, postlen=40):
         i = 0

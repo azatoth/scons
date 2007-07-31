@@ -80,11 +80,33 @@ RELEASE 0.97.X - XXX
     be be added to each $SWIGPATH directory when expanded on the SWIG
     command line.
 
+  - More efficient copying of construction environments (mostly borrowed
+    from copy.deepcopy() in the standard Python library).
+
+  - When printing --tree=prune output, don't print [brackets] around
+    source files, only do so for built targets with children.
+
+  - Fix interpretation of Builder source arguments when the Builder has
+    a src_suffix *and* a source_builder and the argument has no suffix.
+
+  - Fix use of expansions like ${TARGET.dir} or ${SOURCE.dir} in the
+    following construction variables:  $FORTRANMODDIR, $JARCHDIR,
+    $JARFLAGS, $LEXFLAGS, $SWIGFLAGS, $SWIGOUTDIR and $YACCFLAGS.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has
     already been created, don't overwrite existing $CFILESUFFIX and
     $CXXFILESUFFIX value.
+
+  - Support passing the Java() builder a list of explicit .java files
+    (not only a list of directories to be scanned for .java files).
+
+  - Add $JAVACLASSPATH and $JAVASOURCEPATH variables, that get added to
+    the javac "-classpath" and "-sourcepath" options.  (Note that SCons
+    does *not* currently search these paths for implicit dependencies.)
+
+  - Commonize initialization of Java-related builders.
 
   From Jan Nijtmans:
 

@@ -317,16 +317,16 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
         return ["  ","| "][m]
     margins = map(MMM, margin[:-1])
 
-    if visited.has_key(rname):
+    children = child_func(root)
+
+    if prune and visited.has_key(rname) and children:
         print string.join(tags + margins + ['+-[', rname, ']'], '')
         return
 
     print string.join(tags + margins + ['+-', rname], '')
 
-    if prune:
-        visited[rname] = 1
+    visited[rname] = 1
 
-    children = child_func(root)
     if children:
         margin.append(1)
         map(lambda C, cf=child_func, p=prune, i=IDX(showtags), m=margin, v=visited:
@@ -445,7 +445,7 @@ d[types.ListType] = _semi_deepcopy_list
 
 def _semi_deepcopy_tuple(x):
     return tuple(map(semi_deepcopy, x))
-d[types.TupleType] = _semi_deepcopy_list
+d[types.TupleType] = _semi_deepcopy_tuple
 
 def _semi_deepcopy_inst(x):
     if hasattr(x, '__semi_deepcopy__'):
@@ -464,8 +464,6 @@ def semi_deepcopy(x):
         return copier(x)
     else:
         return x
-
-del d
 
 
 

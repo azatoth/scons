@@ -45,7 +45,7 @@ import SCons.Util
 SwigAction = SCons.Action.Action('$SWIGCOM', '$SWIGCOMSTR')
 
 def swigSuffixEmitter(env, source):
-    if '-c++' in SCons.Util.CLVar(env.subst("$SWIGFLAGS")):
+    if '-c++' in SCons.Util.CLVar(env.subst("$SWIGFLAGS", source=source)):
         return '$SWIGCXXFILESUFFIX'
     else:
         return '$SWIGCFILESUFFIX'
@@ -55,7 +55,8 @@ _reModule = re.compile(r'%module\s+(.+)')
 def _swigEmitter(target, source, env):
     for src in source:
         src = str(src)
-        flags = SCons.Util.CLVar(env.subst("$SWIGFLAGS"))
+        swigflags = env.subst("$SWIGFLAGS", target=target, source=source)
+        flags = SCons.Util.CLVar(swigflags)
         mnames = None
         if "-python" in flags and "-noproxy" not in flags:
             if mnames is None:
@@ -66,7 +67,7 @@ def _swigEmitter(target, source, env):
                 mnames = _reModule.findall(open(src).read())
             java_files = map(lambda m: [m + ".java", m + "JNI.java"], mnames)
             java_files = SCons.Util.flatten(java_files)
-            outdir = env.subst('$SWIGOUTDIR')
+            outdir = env.subst('$SWIGOUTDIR', target=target, source=source)
             if outdir:
                  java_files = map(lambda j, o=outdir: os.path.join(o, j), java_files)
             target.extend(java_files)

@@ -647,10 +647,15 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
         SCons.Tool.DefaultToolpath.append(os.path.abspath(site_tools_dir))
 
 def version_string(label, module):
-    fmt = "\t%s: v%s.%s, %s, by %s on %s\n"
+    version = module.__version__
+    build = module.__build__
+    if build:
+        if build[0] != '.':
+            build = '.' + build
+        version = version + build
+    fmt = "\t%s: v%s, %s, by %s on %s\n"
     return fmt % (label,
-                  module.__version__,
-                  module.__build__,
+                  version,
                   module.__date__,
                   module.__developer__,
                   module.__buildsys__)
@@ -726,7 +731,7 @@ def _main(parser):
     # Now that we're in the top-level SConstruct directory, go ahead
     # and initialize the FS object that represents the file system,
     # and make it the build engine default.
-    fs = SCons.Node.FS.default_fs = SCons.Node.FS.FS()
+    fs = SCons.Node.FS.get_default_fs()
 
     for rep in options.repository:
         fs.Repository(rep)

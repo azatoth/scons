@@ -266,9 +266,8 @@
     <programlisting>
       Command("file.out", "file.in",
               [
-                Copy("tempfile", "$SOURCE"),
-                "modify tempfile",
-                Move("$TARGET", "tempfile"),
+                Copy("$TARGET", "$SOURCE"),
+                Touch("$TARGET"),
               ])
     </programlisting>
 
@@ -281,8 +280,7 @@
     <screen>
       % <userinput>scons -Q</userinput>
       Copy("tempfile", "file.in")
-      modify tempfile
-      Move("file.out", "tempfile")
+      Touch("file.out")
     </screen>
 
   </section>

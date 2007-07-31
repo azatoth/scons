@@ -263,7 +263,7 @@ class SubstitutionEnvironment:
         """Initialization of an underlying SubstitutionEnvironment class.
         """
         if __debug__: logInstanceCreation(self, 'Environment.SubstitutionEnvironment')
-        self.fs = SCons.Node.FS.default_fs or SCons.Node.FS.FS()
+        self.fs = SCons.Node.FS.get_default_fs()
         self.ans = SCons.Node.Alias.default_ans
         self.lookup_list = SCons.Node.arg2nodes_lookups
         self._dict = kw.copy()
@@ -751,7 +751,7 @@ class Base(SubstitutionEnvironment):
         """
         if __debug__: logInstanceCreation(self, 'Environment.Base')
         self._memo = {}
-        self.fs = SCons.Node.FS.default_fs or SCons.Node.FS.FS()
+        self.fs = SCons.Node.FS.get_default_fs()
         self.ans = SCons.Node.Alias.default_ans
         self.lookup_list = SCons.Node.arg2nodes_lookups
         self._dict = semi_deepcopy(SCons.Defaults.ConstructionEnvironment)
