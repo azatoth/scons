@@ -79,6 +79,10 @@ RELEASE 0.97.X - XXX
   - Fix interpretation of Builder source arguments when the Builder has
     a src_suffix *and* a source_builder and the argument has no suffix.
 
+  - Fix use of expansions like ${TARGET.dir} or ${SOURCE.dir} in the
+    following construction variables:  $FORTRANMODDIR, $JARCHDIR,
+    $JARFLAGS, $LEXFLAGS, $SWIGFLAGS, $SWIGOUTDIR and $YACCFLAGS.
+
   From Leanid Nazdrynau:
 
   - When applying Tool modules after a construction environment has

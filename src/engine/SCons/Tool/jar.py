@@ -38,7 +38,7 @@ import SCons.Util
 
 def jarSources(target, source, env, for_signature):
     """Only include sources that are not a manifest file."""
-    jarchdir = env.subst('$JARCHDIR')
+    jarchdir = env.subst('$JARCHDIR', target=target, source=source)
     if jarchdir:
         jarchdir = env.fs.Dir(jarchdir)
     result = []
@@ -65,7 +65,7 @@ def jarManifest(target, source, env, for_signature):
 def jarFlags(target, source, env, for_signature):
     """If we have a manifest, make sure that the 'm'
     flag is specified."""
-    jarflags = env.subst('$JARFLAGS')
+    jarflags = env.subst('$JARFLAGS', target=target, source=source)
     for src in source:
         contents = src.get_contents()
         if contents[:16] == "Manifest-Version":

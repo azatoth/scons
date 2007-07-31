@@ -24,53 +24,56 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import os.path
-import string
+"""
+Verify that we can use ${SOURCE} expansions in $SWIGFLAGS.
+"""
+
 import sys
+
 import TestSCons
 
-_python_ = TestSCons._python_
-_exe   = TestSCons._exe
+if sys.platform =='darwin':
+    # change to make it work with stock OS X python framework
+    # we can't link to static libpython because there isn't one on OS X
+    # so we link to a framework version. However, testing must also
+    # use the same version, or else you get interpreter errors.
+    python = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/python"
+    _python_ = '"' + python + '"'
+else:
+    python = TestSCons.python
+    _python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
-test.subdir('in')
+swig = test.where_is('swig')
+
+if not swig:
+    test.skip_test('Can not find installed "swig", skipping test.\n')
 
 
 
-test.write('mylex.py', """
-import getopt
-import string
-import sys
-cmd_opts, args = getopt.getopt(sys.argv[1:], 'I:tx', [])
-opt_string = ''
-i_arguments = ''
-for opt, arg in cmd_opts:
-    if opt == '-I': i_arguments = i_arguments + ' ' + arg
-    else: opt_string = opt_string + ' ' + opt
-for a in args:
-    contents = open(a, 'rb').read()
-    contents = string.replace(contents, 'LEXFLAGS', opt_string)
-    contents = string.replace(contents, 'I_ARGS', i_arguments)
-    sys.stdout.write(contents)
-sys.exit(0)
+test.subdir('src')
+
+test.write(['src', 'foo.i'], """\
+%module foo
+
+%include bar.i
+""")
+
+test.write(['src', 'bar.i'], """\
+%module bar
 """)
 
 test.write('SConstruct', """
-env = Environment(LEX = r'%(_python_)s mylex.py',
-                  LEXFLAGS = '-x -I${TARGET.dir} -I${SOURCE.dir}',
-                  tools=['default', 'lex'])
-env.CFile(target = 'out/aaa', source = 'in/aaa.l')
-""" % locals())
+# Note that setting the -I option in $SWIGFLAGS is not good and the
+# documentation says to use $SWIGPATH.  This is just for testing.
+env = Environment(SWIGFLAGS='-python -I${SOURCE.dir}')
+env.CFile(target = 'foo', source = ['src/foo.i'])
+""")
 
-test.write(['in', 'aaa.l'],		"aaa.l\nLEXFLAGS\nI_ARGS\n")
+test.run()
 
-test.run('.', stderr = None)
-
-# Read in with mode='r' because mylex.py implicitley wrote to stdout
-# with mode='w'.
-test.must_match(['out', 'aaa.c'],	"aaa.l\n -x -t\n out in\n", mode='r')
+test.up_to_date(arguments = "foo_wrap.c")
 
 
 
