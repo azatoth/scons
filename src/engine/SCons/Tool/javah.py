@@ -85,8 +85,6 @@ def emit_java_headers(target, source, env):
     if not hasattr(s.attributes, 'java_classdir'):
         s.attributes.java_classdir = classdir
 
-    from SCons.Debug import Trace
-
     if target[0].__class__ is SCons.Node.FS.File:
         tlist = target
     else:
@@ -95,7 +93,6 @@ def emit_java_headers(target, source, env):
             target[0]._morph()
         tlist = []
         for s in source:
-            Trace('s = %s %s\n' % (str(s), repr(s)))
             fname = string.replace(s.attributes.java_classname, '.', '_') + '.h'
             t = target[0].File(fname)
             t.attributes.java_lookupdir = target[0]
