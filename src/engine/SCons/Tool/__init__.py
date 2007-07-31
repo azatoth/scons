@@ -15,7 +15,7 @@ tool definition.
 
 #
 # __COPYRIGHT__
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -43,6 +43,7 @@ import sys
 
 import SCons.Builder
 import SCons.Errors
+import SCons.Node.FS
 import SCons.Scanner
 import SCons.Scanner.C
 import SCons.Scanner.D
@@ -158,6 +159,9 @@ class Tool:
 
     def __str__(self):
         return self.name
+
+##########################################################################
+#  Create common executable program / library / object builders
 
 def createProgBuilder(env):
     """This is a utility function that creates the Program
@@ -330,6 +334,79 @@ def createCFileBuilders(env):
 
     return (c_file, cxx_file)
 
+##########################################################################
+#  Create common Java builders
+
+def CreateJarBuilder(env):
+    try:
+        java_jar = env['BUILDERS']['Jar']
+    except KeyError:
+        fs = SCons.Node.FS.get_default_fs()
+        jar_com = SCons.Action.Action('$JARCOM', '$JARCOMSTR')
+        java_jar = SCons.Builder.Builder(action = jar_com,
+                                   suffix = '$JARSUFFIX',
+                                   #src_suffix = '$JAVACLASSSUFIX',
+                                   src_builder = 'Java',
+                                   source_factory = fs.Entry)
+        env['BUILDERS']['Jar'] = java_jar
+    return java_jar
+
+def CreateJavaHBuilder(env):
+    try:
+        java_javah = env['BUILDERS']['JavaH']
+    except KeyError:
+        fs = SCons.Node.FS.get_default_fs()
+        java_javah_com = SCons.Action.Action('$JAVAHCOM', '$JAVAHCOMSTR')
+        java_javah = SCons.Builder.Builder(action = java_javah_com,
+                     src_suffix = '$JAVACLASSSUFFIX',
+                     target_factory = fs.Entry,
+                     source_factory = fs.File,
+                     src_builder = 'Java')
+        env['BUILDERS']['JavaH'] = java_javah
+    return java_javah
+
+def CreateJavaClassBuilder(env):
+    try:
+        java_class = env['BUILDERS']['Java']
+    except KeyError:
+        fs = SCons.Node.FS.get_default_fs()
+        javac_com = SCons.Action.Action('$JAVACCOM', '$JAVACCOMSTR')
+        java_class = SCons.Builder.Builder(action = javac_com,
+                                           emitter = {},
+                                           #suffix = '$JAVACLASSSUFFIX',
+                                           #src_suffix = '$JAVASUFFIX',
+                                           src_builder = ['JavaFile'],
+                                           target_factory = fs.Entry,
+                                           source_factory = fs.Entry)
+        env['BUILDERS']['Java'] = java_class
+    return java_class
+
+def CreateJavaClassDirBuilder(env):
+    try:
+        java_class_dir = env['BUILDERS']['JavaDir']
+    except KeyError:
+        fs = SCons.Node.FS.get_default_fs()
+        javac_com = SCons.Action.Action('$JAVACCOM', '$JAVACCOMSTR')
+        java_class_dir = SCons.Builder.Builder(action = javac_com,
+                                           emitter = {},
+                                           target_factory = fs.Dir,
+                                           source_factory = fs.Dir)
+        env['BUILDERS']['JavaDir'] = java_class_dir
+    return java_class_dir
+
+def CreateJavaFileBuilder(env):
+    try:
+        java_file = env['BUILDERS']['JavaFile']
+    except KeyError:
+        java_file = SCons.Builder.Builder(action = {},
+                                          emitter = {},
+                                          suffix = {None:'$JAVASUFFIX'})
+        env['BUILDERS']['JavaFile'] = java_file
+        env['JAVASUFFIX'] = '.java'
+    return java_file
+
+
+
 def FindTool(tools, env):
     for tool in tools:
         t = Tool(tool)
@@ -341,7 +418,7 @@ def FindAllTools(tools, env):
     def ToolExists(tool, env=env):
         return Tool(tool).exists(env)
     return filter (ToolExists, tools)
-             
+
 def tool_list(platform, env):
 
     # XXX this logic about what tool to prefer on which platform
@@ -415,11 +492,11 @@ def tool_list(platform, env):
         ars = ['ar', 'mslib']
 
     c_compiler = FindTool(c_compilers, env) or c_compilers[0]
- 
+
     # XXX this logic about what tool provides what should somehow be
     #     moved into the tool files themselves.
     if c_compiler and c_compiler == 'mingw':
-        # MinGW contains a linker, C compiler, C++ compiler, 
+        # MinGW contains a linker, C compiler, C++ compiler,
         # Fortran compiler, archiver and assembler:
         cxx_compiler = None
         linker = None
@@ -455,5 +532,5 @@ def tool_list(platform, env):
     tools = ([linker, c_compiler, cxx_compiler,
               fortran_compiler, assembler, ar]
              + other_tools)
-    
+
     return filter(lambda x: x, tools)

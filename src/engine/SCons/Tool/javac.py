@@ -86,9 +86,9 @@ def emit_java_classes(target, source, env):
         else:
             raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % entry.__class__)
 
+    version = env.get('JAVAVERSION', '1.4')
     tlist = []
     for f in slist:
-        version = env.get('JAVAVERSION', '1.4')
         pkg_dir, classes = parse_java_file(f.get_abspath(), version)
         if pkg_dir:
             for c in classes:
@@ -140,7 +140,12 @@ def getSourcePath(env,target, source, for_signature):
 
 def generate(env):
     """Add Builders and construction variables for javac to an Environment."""
-    env['BUILDERS']['Java'] = JavaBuilder
+    java_file = SCons.Tool.CreateJavaFileBuilder(env)
+    java_class = SCons.Tool.CreateJavaClassBuilder(env)
+    java_class_dir = SCons.Tool.CreateJavaClassDirBuilder(env)
+    java_class.add_emitter(None, emit_java_classes)
+    java_class.add_emitter(env.subst('$JAVASUFFIX'), emit_java_classes)
+    java_class_dir.emitter = emit_java_classes
 
     env['JAVAC']            = 'javac'
     env['JAVACFLAGS']       = SCons.Util.CLVar('')
@@ -154,4 +159,4 @@ def generate(env):
     env['JAVASUFFIX']       = '.java'
 
 def exists(env):
-    return env.Detect('javac')
+    return 1

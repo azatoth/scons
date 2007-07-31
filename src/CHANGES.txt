@@ -92,6 +92,8 @@ RELEASE 0.97.X - XXX
     the javac "-classpath" and "-sourcepath" options.  (Note that SCons
     does *not* currently search these paths for implicit dependencies.)
 
+  - Commonize initialization of Java-related builders.
+
   From Jan Nijtmans:
 
   - Find Java anonymous classes when the next token after the name is

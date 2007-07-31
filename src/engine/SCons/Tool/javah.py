@@ -85,6 +85,8 @@ def emit_java_headers(target, source, env):
     if not hasattr(s.attributes, 'java_classdir'):
         s.attributes.java_classdir = classdir
 
+    from SCons.Debug import Trace
+
     if target[0].__class__ is SCons.Node.FS.File:
         tlist = target
     else:
@@ -93,6 +95,7 @@ def emit_java_headers(target, source, env):
             target[0]._morph()
         tlist = []
         for s in source:
+            Trace('s = %s %s\n' % (str(s), repr(s)))
             fname = string.replace(s.attributes.java_classname, '.', '_') + '.h'
             t = target[0].File(fname)
             t.attributes.java_lookupdir = target[0]
@@ -110,14 +113,6 @@ def JavaHOutFlagGenerator(target, source, env, for_signature):
     except AttributeError:
         return '-o ' + str(t)
 
-JavaHAction = SCons.Action.Action('$JAVAHCOM', '$JAVAHCOMSTR')
-
-JavaHBuilder = SCons.Builder.Builder(action = JavaHAction,
-                     emitter = emit_java_headers,
-                     src_suffix = '$JAVACLASSSUFFIX',
-                     target_factory = SCons.Node.FS.Entry,
-                     source_factory = SCons.Node.FS.File)
-
 def getJavaHClassPath(env,target, source, for_signature):
     path = "${SOURCE.attributes.java_classdir}"
     if env.has_key('JAVACLASSPATH') and env['JAVACLASSPATH']:
@@ -126,7 +121,8 @@ def getJavaHClassPath(env,target, source, for_signature):
 
 def generate(env):
     """Add Builders and construction variables for javah to an Environment."""
-    env['BUILDERS']['JavaH'] = JavaHBuilder
+    java_javah = SCons.Tool.CreateJavaHBuilder(env)
+    java_javah.emitter = emit_java_headers
 
     env['_JAVAHOUTFLAG']    = JavaHOutFlagGenerator
     env['JAVAH']            = 'javah'
