@@ -41,9 +41,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     # initialize the rpm tool
     SCons.Tool.Tool('rpm').generate(env)
 
-    # create the neccesary builder
     bld = env['BUILDERS']['Rpm']
-    env['RPMFLAGS'] = SCons.Util.CLVar('-ta')
 
     bld.push_emitter(targz_emitter)
     bld.push_emitter(specfile_emitter)
