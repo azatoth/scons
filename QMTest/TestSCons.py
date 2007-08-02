@@ -45,6 +45,7 @@ from TestCommon import __all__
 SConsVersion = '0.97'
 
 __all__.extend([ 'TestSCons',
+                 'machine',
                  'python',
                  '_exe',
                  '_obj',
@@ -54,6 +55,23 @@ __all__.extend([ 'TestSCons',
                  'dll_',
                  '_dll'
                ])
+
+machine_map = {
+    'i686'  : 'i386',
+    'i586'  : 'i386',
+    'i486'  : 'i386',
+}
+
+try:
+    uname = os.uname
+except AttributeError:
+    # Windows doesn't have a uname() function.  We could use something like
+    # sys.platform as a fallback, but that's not really a "machine," so
+    # just leave it as None.
+    machine = None
+else:
+    machine = uname()[4]
+    machine = machine_map.get(machine, machine)
 
 python = python_executable
 _python_ = '"' + python_executable + '"'
@@ -317,6 +335,44 @@ class TestSCons(TestCommon):
                    r'/CreationDate (D:XXXX)', s)
         s = re.sub(r'/ID \[<[0-9a-fA-F]*> <[0-9a-fA-F]*>\]',
                    r'/ID [<XXXX> <XXXX>]', s)
+        s = re.sub(r'/(BaseFont|FontName) /[A-Z]{6}',
+                   r'/\1 /XXXXXX', s)
+        s = re.sub(r'/Length \d+ *\n/Filter /FlateDecode\n',
+                   r'/Length XXXX\n/Filter /FlateDecode\n', s)
+
+
+        try:
+            import zlib
+        except ImportError:
+            pass
+        else:
+            begin_marker = '/FlateDecode\n>>\nstream\n'
+            end_marker = 'endstream\nendobj'
+
+            encoded = []
+            b = string.find(s, begin_marker, 0)
+            while b != -1:
+                b = b + len(begin_marker)
+                e = string.find(s, end_marker, b)
+                encoded.append((b, e))
+                b = string.find(s, begin_marker, e + len(end_marker))
+
+            x = 0
+            r = []
+            for b, e in encoded:
+                r.append(s[x:b])
+                d = zlib.decompress(s[b:e])
+                d = re.sub(r'%%CreationDate: [^\n]*\n',
+                           r'%%CreationDate: 1970 Jan 01 00:00:00\n', d)
+                d = re.sub(r'%DVIPSSource:  TeX output \d\d\d\d\.\d\d\.\d\d:\d\d\d\d',
+                           r'%DVIPSSource:  TeX output 1970.01.01:0000', d)
+                d = re.sub(r'/(BaseFont|FontName) /[A-Z]{6}',
+                           r'/\1 /XXXXXX', d)
+                r.append(d)
+                x = e
+            r.append(s[x:])
+            s = string.join(r, '')
+
         return s
 
     def java_ENV(self):

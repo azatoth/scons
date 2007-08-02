@@ -659,6 +659,16 @@ class BuilderBase:
         """
         self.emitter[suffix] = emitter
 
+    def push_emitter(self, emitter):
+        """Add a emitter to the beginning of the emitter list of this Builder.
+
+        This creates an empty list if the emitter is None.
+        """
+        if not self.emitter:
+            self.emitter = ListEmitter( [emitter] )
+        else:
+            self.emitter.insert(0, emitter)
+
     def add_src_builder(self, builder):
         """
         Add a new Builder to the list of src_builders.
