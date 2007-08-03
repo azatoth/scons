@@ -59,8 +59,10 @@ def emit_java_classes(target, source, env):
 
     s = source[0].rentry().disambiguate()
     if isinstance(s, SCons.Node.FS.File):
+        build_dir = os.path.split(target[0].get_abspath())[0]
         sourcedir = s.dir.rdir()
     elif isinstance(s, SCons.Node.FS.Dir):
+        build_dir = target[0].rdir()
         sourcedir = s.rdir()
     else:
         raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % s.__class__)
@@ -89,30 +91,44 @@ def emit_java_classes(target, source, env):
     version = env.get('JAVAVERSION', '1.4')
     tlist = []
     for f in slist:
-        pkg_dir, classes = parse_java_file(f.get_abspath(), version)
-        if pkg_dir:
-            for c in classes:
-                t = target[0].Dir(pkg_dir).File(c+class_suffix)
+        source_file_based = True
+        pkg_dir = None
+        if not f.is_derived():
+            pkg_dir, classes = parse_java_file(f.rfile().get_abspath(), version)
+            if pkg_dir:
+                for c in classes:
+                    source_file_based = False
+                    t = target[0].Dir(pkg_dir).File(c+class_suffix)
+                    t.attributes.java_classdir = classdir
+                    t.attributes.java_sourcedir = sourcedir
+                    t.attributes.java_classname = classname(pkg_dir + os.sep + c)
+                    tlist.append(t)
+            elif classes:
+                for c in classes:
+                    source_file_based = False
+                    t = target[0].File(c+class_suffix)
+                    t.attributes.java_classdir = classdir
+                    t.attributes.java_sourcedir = sourcedir
+                    t.attributes.java_classname = classname(c)
+                    tlist.append(t)
+            else:
+                # This is an odd end case:  no package and no classes.
+                # Just do our best based on the source file name.
+                base = str(f)[:-len(java_suffix)]
+                t = target[0].File(base + class_suffix)
                 t.attributes.java_classdir = classdir
                 t.attributes.java_sourcedir = sourcedir
-                t.attributes.java_classname = classname(pkg_dir + os.sep + c)
+                t.attributes.java_classname = classname(base)
                 tlist.append(t)
-        elif classes:
-            for c in classes:
-                t = target[0].File(c+class_suffix)
-                t.attributes.java_classdir = classdir
-                t.attributes.java_sourcedir = sourcedir
-                t.attributes.java_classname = classname(c)
-                tlist.append(t)
-        else:
-            # This is an odd end case:  no package and no classes.
-            # Just do our best based on the source file name.
-            base = str(f)[:-len(java_suffix)]
-            t = target[0].File(base + class_suffix)
-            t.attributes.java_classdir = classdir
+
+        if source_file_based:
+            base = f.name[:-len(java_suffix)]
+            if pkg_dir:
+                t = target[0].Dir(pkg_dir).File(base + class_suffix)
+            else:
+                t = target[0].File(base + class_suffix)
+            t.attributes.java_classdir = build_dir
             t.attributes.java_sourcedir = sourcedir
-            t.attributes.java_classname = classname(base)
-            tlist.append(t)
 
     return tlist, slist
 
@@ -138,14 +154,52 @@ def getSourcePath(env,target, source, for_signature):
     path = SCons.Util.AppendPath(path,['${TARGET.attributes.java_sourcedir}'])
     return "-sourcepath %s" % (path)
 
+def Java(env, target, source, *args, **kw):
+    """
+    A pseudo-Builder wrapper around the separate JavaClass{File,Dir}
+    Builders.
+    """
+    if not SCons.Util.is_List(target):
+        target = [target]
+    if not SCons.Util.is_List(source):
+        source = [source]
+
+    # Pad the target list with repetitions of the last element in the
+    # list so we have a target for every source element.
+    target = target + ([target[-1]] * (len(source) - len(target)))
+
+    java_suffix = env.subst('$JAVASUFFIX')
+    result = []
+
+    for t, s in zip(target, source):
+        if isinstance(s, SCons.Node.FS.Base):
+            if isinstance(s, SCons.Node.FS.File):
+                b = env.JavaClassFile
+            else:
+                b = env.JavaClassDir
+        else:
+            if os.path.isfile(s):
+                b = env.JavaClassFile
+            elif os.path.isdir(s):
+                b = env.JavaClassDir
+            elif s.endswith(java_suffix):
+                b = env.JavaClassFile
+            else:
+                b = env.JavaClassDir
+        result.extend(b(t, s, *args, **kw))
+
+    return result
+
 def generate(env):
     """Add Builders and construction variables for javac to an Environment."""
     java_file = SCons.Tool.CreateJavaFileBuilder(env)
-    java_class = SCons.Tool.CreateJavaClassBuilder(env)
+    java_class = SCons.Tool.CreateJavaClassFileBuilder(env)
     java_class_dir = SCons.Tool.CreateJavaClassDirBuilder(env)
     java_class.add_emitter(None, emit_java_classes)
     java_class.add_emitter(env.subst('$JAVASUFFIX'), emit_java_classes)
     java_class_dir.emitter = emit_java_classes
+
+    env.AddMethod(Java)
 
     env['JAVAC']            = 'javac'
     env['JAVACFLAGS']       = SCons.Util.CLVar('')

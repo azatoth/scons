@@ -92,6 +92,11 @@ RELEASE 0.97.X - XXX
   - Support passing the Java() builder a list of explicit .java files
     (not only a list of directories to be scanned for .java files).
 
+  - Support passing .java files to the Jar() and JavaH() builders, which
+    then use the builder underlying the Java() builder to turn them into
+    .class files.  (That is, the Jar()-Java() chain of builders become
+    multi-step, like the Program()-Object()-CFile() builders.)
+
   - Add $JAVACLASSPATH and $JAVASOURCEPATH variables, that get added to
     the javac "-classpath" and "-sourcepath" options.  (Note that SCons
     does *not* currently search these paths for implicit dependencies.)

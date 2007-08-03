@@ -361,10 +361,10 @@ def CreateJarBuilder(env):
         fs = SCons.Node.FS.get_default_fs()
         jar_com = SCons.Action.Action('$JARCOM', '$JARCOMSTR')
         java_jar = SCons.Builder.Builder(action = jar_com,
-                                   suffix = '$JARSUFFIX',
-                                   #src_suffix = '$JAVACLASSSUFIX',
-                                   src_builder = 'Java',
-                                   source_factory = fs.Entry)
+                                         suffix = '$JARSUFFIX',
+                                         src_suffix = '$JAVACLASSSUFIX',
+                                         src_builder = 'JavaClassFile',
+                                         source_factory = fs.Entry)
         env['BUILDERS']['Jar'] = java_jar
     return java_jar
 
@@ -375,40 +375,40 @@ def CreateJavaHBuilder(env):
         fs = SCons.Node.FS.get_default_fs()
         java_javah_com = SCons.Action.Action('$JAVAHCOM', '$JAVAHCOMSTR')
         java_javah = SCons.Builder.Builder(action = java_javah_com,
-                     src_suffix = '$JAVACLASSSUFFIX',
-                     target_factory = fs.Entry,
-                     source_factory = fs.File,
-                     src_builder = 'Java')
+                                           src_suffix = '$JAVACLASSSUFFIX',
+                                           target_factory = fs.Entry,
+                                           source_factory = fs.File,
+                                           src_builder = 'JavaClassFile')
         env['BUILDERS']['JavaH'] = java_javah
     return java_javah
 
-def CreateJavaClassBuilder(env):
+def CreateJavaClassFileBuilder(env):
     try:
-        java_class = env['BUILDERS']['Java']
+        java_class_file = env['BUILDERS']['JavaClassFile']
     except KeyError:
         fs = SCons.Node.FS.get_default_fs()
         javac_com = SCons.Action.Action('$JAVACCOM', '$JAVACCOMSTR')
-        java_class = SCons.Builder.Builder(action = javac_com,
-                                           emitter = {},
-                                           #suffix = '$JAVACLASSSUFFIX',
-                                           #src_suffix = '$JAVASUFFIX',
-                                           src_builder = ['JavaFile'],
-                                           target_factory = fs.Entry,
-                                           source_factory = fs.Entry)
-        env['BUILDERS']['Java'] = java_class
-    return java_class
+        java_class_file = SCons.Builder.Builder(action = javac_com,
+                                                emitter = {},
+                                                #suffix = '$JAVACLASSSUFFIX',
+                                                src_suffix = '$JAVASUFFIX',
+                                                src_builder = ['JavaFile'],
+                                                target_factory = fs.Entry,
+                                                source_factory = fs.File)
+        env['BUILDERS']['JavaClassFile'] = java_class_file
+    return java_class_file
 
 def CreateJavaClassDirBuilder(env):
     try:
-        java_class_dir = env['BUILDERS']['JavaDir']
+        java_class_dir = env['BUILDERS']['JavaClassDir']
     except KeyError:
         fs = SCons.Node.FS.get_default_fs()
         javac_com = SCons.Action.Action('$JAVACCOM', '$JAVACCOMSTR')
         java_class_dir = SCons.Builder.Builder(action = javac_com,
-                                           emitter = {},
-                                           target_factory = fs.Dir,
-                                           source_factory = fs.Dir)
-        env['BUILDERS']['JavaDir'] = java_class_dir
+                                               emitter = {},
+                                               target_factory = fs.Dir,
+                                               source_factory = fs.Dir)
+        env['BUILDERS']['JavaClassDir'] = java_class_dir
     return java_class_dir
 
 def CreateJavaFileBuilder(env):
