@@ -353,7 +353,7 @@ denv=env.Copy()
 denv.Append(SWIGFLAGS=['-java'])
 denv.SharedLibrary('scons',['JniWrapper.cc','Sample.i'])
 denv['JARCHDIR']=denv.Dir('.').get_abspath()
-#denv.Jar(['Sample.i','A.java'])
+denv.Jar(['Sample.i','A.java'])
 """)
 
 test.write(['src', 'jni', 'Sample.h'], """\
@@ -532,5 +532,7 @@ body
 """)
 
 test.run(arguments = '.')
+
+test.up_to_date(arguments = '.')
 
 test.pass_test()

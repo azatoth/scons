@@ -97,6 +97,10 @@ RELEASE 0.97.X - XXX
     .class files.  (That is, the Jar()-Java() chain of builders become
     multi-step, like the Program()-Object()-CFile() builders.)
 
+  - Support passing SWIG .i files to the Java builders (Java(),
+    Jar(), JavaH()), to cause intermediate .java files to be created
+    automatically.
+
   - Add $JAVACLASSPATH and $JAVASOURCEPATH variables, that get added to
     the javac "-classpath" and "-sourcepath" options.  (Note that SCons
     does *not* currently search these paths for implicit dependencies.)

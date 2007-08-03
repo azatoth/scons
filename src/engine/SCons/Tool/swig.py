@@ -53,10 +53,9 @@ def swigSuffixEmitter(env, source):
 _reModule = re.compile(r'%module\s+(.+)')
 
 def _swigEmitter(target, source, env):
-    for src in source:
-        src = str(src)
-        swigflags = env.subst("$SWIGFLAGS", target=target, source=source)
-        flags = SCons.Util.CLVar(swigflags)
+    swigflags = env.subst("$SWIGFLAGS", target=target, source=source)
+    flags = SCons.Util.CLVar(swigflags)
+    for src in map(str, source):
         mnames = None
         if "-python" in flags and "-noproxy" not in flags:
             if mnames is None:
@@ -84,6 +83,13 @@ def generate(env):
     c_file.add_emitter('.i', _swigEmitter)
     cxx_file.add_action('.i', SwigAction)
     cxx_file.add_emitter('.i', _swigEmitter)
+
+    java_file = SCons.Tool.CreateJavaFileBuilder(env)
+
+    java_file.suffix['.i'] = swigSuffixEmitter
+
+    java_file.add_action('.i', SwigAction)
+    java_file.add_emitter('.i', _swigEmitter)
 
     env['SWIG']              = 'swig'
     env['SWIGFLAGS']         = SCons.Util.CLVar('')
