@@ -56,10 +56,10 @@ test.write(['SConstruct'], """\
 import os
 env=Environment()
 Export('env')
-env.PrependENVPath('PATH',os.environ.get('PATH',[]))   
+env.PrependENVPath('PATH',os.environ.get('PATH',[]))
 env['INCPREFIX']='-I'
 env.Append(SWIGFLAGS=['-c++','$_CPPINCFLAGS'])
-  
+
 #this is for JNI
 #env.Append(CCFLAGS=['/IN:/jdk/v1.3.1/include','/IN:/jdk/v1.3.1/include/win32'])
 
@@ -73,7 +73,7 @@ env.BuildDir('buildout', 'src', duplicate=0)
 #If you do not have swig on your system please remove 'buildout/jni/SConscript' line from next call
 env.SConscript(['buildout/server/JavaSource/SConscript',
                 'buildout/HelloApplet/SConscript',
-		'buildout/jni/SConscript',
+        'buildout/jni/SConscript',
                 'buildout/javah/SConscript'])
 """)
 
@@ -84,7 +84,7 @@ test.write(['src', 'HelloApplet', 'Hello.html'], """\
 </HEAD>
 <BODY>
 <CENTER>
-<applet name="Hello" archive="HelloApplet.jar" code="com.Hello.Hello.class" 
+<applet name="Hello" archive="HelloApplet.jar" code="com.Hello.Hello.class"
     width="800" height="286" MAYSCRIPT>
 </applet>
 </CENTER>
@@ -119,8 +119,8 @@ import java.applet.*;
 
 public class Hello extends Applet {
     public void paint(Graphics g) {
-	g.drawString("Hello from SCons signed applet",250,150);
-	}
+    g.drawString("Hello from SCons signed applet",250,150);
+    }
     }
 
 """)
@@ -138,14 +138,14 @@ import java.util.*;
 import java.io.IOException;
 import java.lang.reflect.*;
 
-public class MyID 
+public class MyID
 {
-	static private long current = System.currentTimeMillis();
-	static public String get()
-	{
-		current++;
-		return new Long( current ).toString();
-	}
+    static private long current = System.currentTimeMillis();
+    static public String get()
+    {
+        current++;
+        return new Long( current ).toString();
+    }
 }
 """)
 
@@ -166,30 +166,30 @@ import web.jni.*;
 
 public class A
 {
-class C 
+class C
 {
-	void echo2( String text )
-	{
-		System.out.println( text+"aa" );
-		
-	}
+    void echo2( String text )
+    {
+        System.out.println( text+"aa" );
+
+    }
 }
-class B 
+class B
 {
-	void echo( String text )
-	{
-		System.out.println( text );
-		C c = new C();
-		c.echo2("from B callin C");
-	}
+    void echo( String text )
+    {
+        System.out.println( text );
+        C c = new C();
+        c.echo2("from B callin C");
+    }
 }
-	public void main( String[] x)
-	{
-		B b = new B();
-		b.echo("123");
-		C c = new C();
-		c.echo2("456");
-	}
+    public void main( String[] x)
+    {
+        B b = new B();
+        b.echo("123");
+        C c = new C();
+        c.echo2("456");
+    }
 }
 """)
 
@@ -252,7 +252,7 @@ jobject JniWrapper::getVectorElement( jobject values, int i )
     jmethodID methodID = mpEnv->GetMethodID( vectorClass,
                                              "elementAt",
                                              "(I)Ljava/lang/Object;" );
-    jobject result = mpEnv->CallObjectMethod( values, methodID, i );  
+    jobject result = mpEnv->CallObjectMethod( values, methodID, i );
 
     return result;
 }
@@ -279,9 +279,9 @@ void JniWrapper::addElement( jobject vector, jobject element )
 jobject JniWrapper::marshalDoubleVector( const std::vector<double>& rVector )
 {
     jobject result = newVector();
-  
+
     for ( int i = 0; i < rVector.size(); i++ )
-    {         
+    {
           addElement( result, marshalDouble( rVector[i] ) );
     }
 
@@ -293,7 +293,7 @@ std::pair<std::string, std::string> JniWrapper::unmarshalPairString( jobject vec
     std::pair<std::string, std::string> result;
     result.first  = unmarshalString( (jstring)getVectorElement( vector, 0 ) );
     result.second = unmarshalString( (jstring)getVectorElement( vector, 1 ) );
-    
+
     return result;
 }
 """)
@@ -303,7 +303,7 @@ test.write(['src', 'jni', 'JniWrapper.h'], """\
 #define JniWrapper_h
 
 #include <jni.h>
-/**      
+/**
  * Provides routines for dealing with JNI translation etc.
  */
 
@@ -406,8 +406,8 @@ test.write(['src', 'jni', 'Sample.i'], """\
 
 // pass in by reference a Vector of std::string
 %typemap(in) const std::pair<std::string, std::string>&   {
-	$1 = new std::pair<std::string, std::string>();
-	JniWrapper JniWrapper(jenv);
+    $1 = new std::pair<std::string, std::string>();
+    JniWrapper JniWrapper(jenv);
     *($1) = JniWrapper.unmarshalPairString( $input );
 }
 
@@ -437,22 +437,22 @@ env['WARXDIRS']=['CVS']
 test.write(['src', 'server', 'JavaSource', 'com', 'gnu', 'scons', 'web', 'tools', 'Bool.java'], """\
 package com.gnu.scons.web.tools;
 public class Bool {
-	boolean flag;
-	
-	public Bool()
-	{
-		flag = false;
-	}
-	
-	public Bool( boolean aFlag )
-	{
-		flag = aFlag;
-	}
-	
-	public boolean booleanValue()
-	{
-		return flag;
-	}
+    boolean flag;
+
+    public Bool()
+    {
+        flag = false;
+    }
+
+    public Bool( boolean aFlag )
+    {
+        flag = aFlag;
+    }
+
+    public boolean booleanValue()
+    {
+        return flag;
+    }
 }
 """)
 
@@ -462,20 +462,20 @@ package com.gnu.scons.web.tools;
 import java.util.Iterator;
 import java.util.Map;
 
-public class StringUtils 
+public class StringUtils
 {
-	public static String toPercent( String value )
-	{
-		if ( value.equals("") )
-		{
-			return "";
-		}
-		else
-		{
-			return value + "%";
-		}
-	}
-	
+    public static String toPercent( String value )
+    {
+        if ( value.equals("") )
+        {
+            return "";
+        }
+        else
+        {
+            return value + "%";
+        }
+    }
+
 }
 """)
 
@@ -494,7 +494,7 @@ test.write(['src', 'server', 'WebContent', 'index.html'], """\
 
 test.write(['src', 'server', 'WebContent', 'META-INF', 'MANIFEST.MF'], """\
 Manifest-Version: 1.0
-Class-Path: 
+Class-Path:
 
 """)
 
@@ -502,20 +502,20 @@ test.write(['src', 'server', 'WebContent', 'WEB-INF', 'web.xml'], """\
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
 <web-app id="WebExample">
-	<display-name>scons</display-name>
-	<servlet>
-		<servlet-name>WebExample</servlet-name>
-		<display-name>WebExample</display-name>
-		<servlet-class>com.gnu.scons.web.tool.WebExample</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>WebExample</servlet-name>
-		<url-pattern>/go</url-pattern>
-	</servlet-mapping>
-	<welcome-file-list>
-		<welcome-file>index.html</welcome-file>
-		<welcome-file>index.htm</welcome-file>
-	</welcome-file-list>
+    <display-name>scons</display-name>
+    <servlet>
+        <servlet-name>WebExample</servlet-name>
+        <display-name>WebExample</display-name>
+        <servlet-class>com.gnu.scons.web.tool.WebExample</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>WebExample</servlet-name>
+        <url-pattern>/go</url-pattern>
+    </servlet-mapping>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.htm</welcome-file>
+    </welcome-file-list>
 </web-app>
 """)
 
@@ -526,7 +526,7 @@ logging = webExample.Example
 test.write(['src', 'server', 'WebContent', 'theme', 'Master.css'], """\
 body
 {
-	font-family: Helvetica,Sans-Serif;
+    font-family: Helvetica,Sans-Serif;
     font-size: 11pt;
 }
 """)
