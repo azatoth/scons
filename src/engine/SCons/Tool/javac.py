@@ -182,7 +182,7 @@ def Java(env, target, source, *args, **kw):
                 b = env.JavaClassFile
             elif os.path.isdir(s):
                 b = env.JavaClassDir
-            elif s.endswith(java_suffix):
+            elif s[-len(java_suffix):] == java_suffix:
                 b = env.JavaClassFile
             else:
                 b = env.JavaClassDir
