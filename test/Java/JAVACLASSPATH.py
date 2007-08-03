@@ -45,9 +45,17 @@ else:
 if not where_javac:
     test.skip_test("Could not find Java javac, skipping test(s).\n")
 
+if test.detect_tool('javah', ENV=ENV):
+    where_javah = test.detect('JAVAH', 'javah', ENV=ENV)
+else:
+    where_javah = test.where_is('javah')
+if not where_javah:
+    test.skip_test("Could not find Java javah, skipping test(s).\n")
+
 test.write('SConstruct', """
 env = Environment(tools = ['javac', 'javah'],
-                  JAVAC = r'%(where_javac)s')
+                  JAVAC = r'%(where_javac)s',
+                  JAVAH = r'%(where_javah)s')
 j1 = env.Java(target = 'class1', source = 'com1/Example1.java')
 j2 = env.Java(target = 'class2', source = 'com2/Example2.java')
 env.JavaH(target = 'outdir', source = [j1, j2], JAVACLASSPATH = 'class2')
