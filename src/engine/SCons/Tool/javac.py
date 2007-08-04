@@ -69,15 +69,14 @@ def emit_java_classes(target, source, env):
 
     slist = []
     js = _my_normcase(java_suffix)
+    find_java = lambda n, js=js, ljs=len(js): _my_normcase(n[-ljs:]) == js
     for entry in source:
         entry = entry.rentry().disambiguate()
         if isinstance(entry, SCons.Node.FS.File):
             slist.append(entry)
         elif isinstance(entry, SCons.Node.FS.Dir):
-            def visit(arg, dirname, names, js=js, dirnode=entry.rdir()):
-                java_files = filter(lambda n, js=js:
-                                    _my_normcase(n[-len(js):]) == js,
-                                    names)
+            def visit(arg, dirname, names, fj=find_java, dirnode=entry.rdir()):
+                java_files = filter(fj, names)
                 # The on-disk entries come back in arbitrary order.  Sort
                 # them so our target and source lists are determinate.
                 java_files.sort()
