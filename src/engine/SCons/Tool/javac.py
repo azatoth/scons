@@ -94,21 +94,19 @@ def emit_java_classes(target, source, env):
         pkg_dir = None
         if not f.is_derived():
             pkg_dir, classes = parse_java_file(f.rfile().get_abspath(), version)
-            if pkg_dir:
+            if classes:
+                source_file_based = False
+                if pkg_dir:
+                    d = target[0].Dir(pkg_dir)
+                    p = pkg_dir + os.sep
+                else:
+                    d = target[0]
+                    p = ''
                 for c in classes:
-                    source_file_based = False
-                    t = target[0].Dir(pkg_dir).File(c+class_suffix)
+                    t = d.File(c + class_suffix)
                     t.attributes.java_classdir = classdir
                     t.attributes.java_sourcedir = sourcedir
-                    t.attributes.java_classname = classname(pkg_dir + os.sep + c)
-                    tlist.append(t)
-            elif classes:
-                for c in classes:
-                    source_file_based = False
-                    t = target[0].File(c+class_suffix)
-                    t.attributes.java_classdir = classdir
-                    t.attributes.java_sourcedir = sourcedir
-                    t.attributes.java_classname = classname(c)
+                    t.attributes.java_classname = classname(p + c)
                     tlist.append(t)
             else:
                 # This is an odd end case:  no package and no classes.
