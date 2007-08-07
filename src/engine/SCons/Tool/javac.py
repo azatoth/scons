@@ -73,6 +73,7 @@ def emit_java_classes(target, source, env):
         if isinstance(entry, SCons.Node.FS.File):
             slist.append(entry)
         elif isinstance(entry, SCons.Node.FS.Dir):
+            result = SCons.Util.OrderedDict()
             def visit(arg, dirname, names, fj=find_java, dirnode=entry.rdir()):
                 java_files = filter(fj, names)
                 # The on-disk entries come back in arbitrary order.  Sort
@@ -80,8 +81,13 @@ def emit_java_classes(target, source, env):
                 java_files.sort()
                 mydir = dirnode.Dir(dirname)
                 java_paths = map(lambda f, d=mydir: d.File(f), java_files)
-                arg.extend(java_paths)
-            os.path.walk(entry.rdir().get_abspath(), visit, slist)
+                for jp in java_paths:
+                     arg[jp] = True
+
+            os.path.walk(entry.rdir().get_abspath(), visit, result)
+            entry.walk(visit, result)
+
+            slist.extend(result.keys())
         else:
             raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % entry.__class__)
 

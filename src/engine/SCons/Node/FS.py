@@ -1781,6 +1781,33 @@ class Dir(Base):
             except TypeError: pass
         return self.srcdir_duplicate(name)
 
+    def walk(self, func, arg):
+        """
+        Walk this directory tree by calling the specified function
+        for each directory in the tree.
+
+        This behaves like the os.path.walk() function, but for in-memory
+        Node.FS.Dir objects.  The function takes the same arguments as
+        the functions passed to os.path.walk():
+
+                func(arg, dirname, fnames)
+
+        Except that "dirname" will actually be the directory *Node*,
+        not the string.  The '.' and '..' entries are excluded from
+        fnames.  The fnames list may be modified in-place to filter the
+        subdirectories visited or otherwise impose a specific order.
+        The "arg" argument is always passed to func() and may be used
+        in any way (or ignored, passing None is common).
+        """
+        entries = self.entries
+        names = entries.keys()
+        names.remove('.')
+        names.remove('..')
+        func(arg, self, names)
+        select_dirs = lambda n, e=entries: isinstance(e[n], Dir)
+        for dirname in filter(select_dirs, names):
+            entries[dirname].walk(func, arg)
+
 class RootDir(Dir):
     """A class for the root directory of a file system.
 
