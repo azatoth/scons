@@ -533,6 +533,16 @@ body
 
 test.run(arguments = '.')
 
+test.must_exist(['buildout', 'javah', 'myid.jar'])
+test.must_exist(['buildout', 'javah', 'MyID', 'MyID.class'])
+
+test.must_exist(['buildout', 'jni', 'Sample.class'])
+test.must_exist(['buildout', 'jni', 'Sample.java'])
+test.must_exist(['buildout', 'jni', 'SampleJNI.class'])
+test.must_exist(['buildout', 'jni', 'SampleJNI.java'])
+test.must_exist(['buildout', 'jni', 'SampleTest.class'])
+test.must_exist(['buildout', 'jni', 'SampleTest.java'])
+
 test.up_to_date(arguments = '.')
 
 test.pass_test()

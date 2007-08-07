@@ -69,6 +69,9 @@ def _swigEmitter(target, source, env):
             outdir = env.subst('$SWIGOUTDIR', target=target, source=source)
             if outdir:
                  java_files = map(lambda j, o=outdir: os.path.join(o, j), java_files)
+            for jf in map(env.fs.File, java_files):
+                t_from_s = lambda t, p, s, x: t.dir
+                SCons.Util.AddMethod(jf, t_from_s, 'target_from_source')
             target.extend(java_files)
     return (target, source)
 

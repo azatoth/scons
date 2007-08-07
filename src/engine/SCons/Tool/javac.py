@@ -59,10 +59,8 @@ def emit_java_classes(target, source, env):
 
     s = source[0].rentry().disambiguate()
     if isinstance(s, SCons.Node.FS.File):
-        build_dir = os.path.split(target[0].get_abspath())[0]
         sourcedir = s.dir.rdir()
     elif isinstance(s, SCons.Node.FS.Dir):
-        build_dir = target[0].rdir()
         sourcedir = s.rdir()
     else:
         raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % s.__class__)
@@ -108,15 +106,6 @@ def emit_java_classes(target, source, env):
                     t.attributes.java_sourcedir = sourcedir
                     t.attributes.java_classname = classname(p + c)
                     tlist.append(t)
-            else:
-                # This is an odd end case:  no package and no classes.
-                # Just do our best based on the source file name.
-                base = str(f)[:-len(java_suffix)]
-                t = target[0].File(base + class_suffix)
-                t.attributes.java_classdir = classdir
-                t.attributes.java_sourcedir = sourcedir
-                t.attributes.java_classname = classname(base)
-                tlist.append(t)
 
         if source_file_based:
             base = f.name[:-len(java_suffix)]
@@ -124,8 +113,10 @@ def emit_java_classes(target, source, env):
                 t = target[0].Dir(pkg_dir).File(base + class_suffix)
             else:
                 t = target[0].File(base + class_suffix)
-            t.attributes.java_classdir = build_dir
-            t.attributes.java_sourcedir = sourcedir
+            t.attributes.java_classdir = classdir
+            t.attributes.java_sourcedir = f.dir
+            t.attributes.java_classname = classname(base)
+            tlist.append(t)
 
     return tlist, slist
 

@@ -738,6 +738,15 @@ class Base(SCons.Node.Node):
             return ret
 
     def target_from_source(self, prefix, suffix, splitext=SCons.Util.splitext):
+        """
+
+	Generates a target entry that corresponds to this entry (usually
+        a source file) with the specified prefix and suffix.
+
+        Note that this method can be overridden dynamically for generated
+        files that need different behavior.  See Tool/swig.py for
+        an example.
+        """
         return self.dir.Entry(prefix + splitext(self.name)[0] + suffix)
 
     def _Rfindalldirs_key(self, pathlist):
