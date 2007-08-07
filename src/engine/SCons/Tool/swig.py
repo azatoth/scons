@@ -55,7 +55,8 @@ _reModule = re.compile(r'%module\s+(.+)')
 def _swigEmitter(target, source, env):
     swigflags = env.subst("$SWIGFLAGS", target=target, source=source)
     flags = SCons.Util.CLVar(swigflags)
-    for src in map(str, source):
+    for src in source:
+        src = str(src.rfile())
         mnames = None
         if "-python" in flags and "-noproxy" not in flags:
             if mnames is None:
