@@ -83,7 +83,7 @@
 
   When executed,
   &SCons; runs the specified command,
-  substituting &cv-link-$SOURCE; and &cv-link-TARGET;
+  substituting &cv-link-SOURCE; and &cv-link-TARGET;
   as expected:
 
   </para>
