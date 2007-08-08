@@ -38,11 +38,14 @@ from TestCommon import __all__
 
 # Some tests which verify that SCons has been packaged properly need to
 # look for specific version file names.  Replicating the version number
-# here provides independent verification that what we packaged conforms
-# to what we expect.  (If we derived the version number from the same
-# data driving the build we might miss errors if the logic breaks.)
+# here provides some independent verification that what we packaged
+# conforms to what we expect.
 
-SConsVersion = '0.97'
+default_version = '0.97.0'
+
+SConsVersion = '__VERSION__'
+if SConsVersion == '__' + 'VERSION' + '__':
+    SConsVersion = default_version
 
 __all__.extend([ 'TestSCons',
                  'machine',

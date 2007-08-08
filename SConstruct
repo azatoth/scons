@@ -43,7 +43,7 @@ import string
 import sys
 
 project = 'scons'
-default_version = '0.97'
+default_version = '0.97.0'
 copyright = "Copyright (c) %s The SCons Foundation" % copyright_years
 
 SConsignFile()
@@ -98,7 +98,9 @@ if not build_system:
     import socket
     build_system = string.split(socket.gethostname(), '.')[0]
 
-version = default_version
+version = ARGUMENTS.get('VERSION', '')
+if not version:
+    version = default_version
 
 revision = ARGUMENTS.get('REVISION', '')
 if not revision and svn:
@@ -106,6 +108,15 @@ if not revision and svn:
     m = re.search('Revision: (\d+)', svn_info)
     if m:
         revision = m.group(1)
+
+checkpoint = ARGUMENTS.get('CHECKPOINT', '')
+if checkpoint:
+    if checkpoint == 'd':
+        import time
+        checkpoint = time.strftime('d%Y%m%d', time.localtime(time.time()))
+    elif checkpoint == 'r':
+        checkpoint = 'r' + revision
+    version = version + checkpoint
 
 if svn:
     svn_status = os.popen("%s status --verbose 2> /dev/null" % svn, "r").read()
@@ -145,6 +156,15 @@ command_line_variables = [
     ("BUILD_SYSTEM=",   "The system on which the packages were built.  " +
                         "The default is whatever hostname is returned " +
                         "by socket.gethostname()."),
+
+    ("CHECKPOINT=",     "The specific checkpoint release being packaged.  " +
+                        "This will be appended to the VERSION string.  " +
+                        "A value of CHECKPOINT=d will generate a string " +
+                        "of 'd' plus today's date in the format YYYMMDD." +
+                        "A value of CHECKPOINT=r will generate a " +
+                        "string of 'r' plus the Subversion revision number.  " +
+                        "Any other CHECKPOINT= string will be used as is." +
+                        "There is no default value."),
 
     ("DATE=",           "The date string representing when the packaging " +
                         "build occurred.  The default is the day and time " +
@@ -905,7 +925,8 @@ for p in [ scons ]:
             maintain multiple lists.
             """
             c = open(str(source[0]), 'rb').read()
-            c = string.replace(c, '__RPM_FILES__', env['RPM_FILES'])
+            c = string.replace(c, '__VERSION' + '__', env['VERSION'])
+            c = string.replace(c, '__RPM_FILES' + '__', env['RPM_FILES'])
             open(str(target[0]), 'wb').write(c)
 
         rpm_files.sort()
@@ -1180,7 +1201,7 @@ if svn_status:
                                     'scons',
                                     'build')),
                 Delete("$TEST_SRC_TAR_GZ_DIR"),
-                'cd "%s" && $PYTHON $PYTHONFLAGS "%s" "%s"' % \
+                'cd "%s" && $PYTHON $PYTHONFLAGS "%s" "%s" VERSION="$VERSION"' % \
                     (os.path.join(unpack_tar_gz_dir, psv),
                      os.path.join('src', 'script', 'scons.py'),
                      os.path.join('build', 'scons')),
@@ -1236,7 +1257,7 @@ if svn_status:
                                     'scons',
                                     'build')),
                 Delete("$TEST_SRC_ZIP_DIR"),
-                'cd "%s" && $PYTHON $PYTHONFLAGS "%s" "%s"' % \
+                'cd "%s" && $PYTHON $PYTHONFLAGS "%s" "%s" VERSION="$VERSION"' % \
                     (os.path.join(unpack_zip_dir, psv),
                      os.path.join('src', 'script', 'scons.py'),
                      os.path.join('build', 'scons')),
