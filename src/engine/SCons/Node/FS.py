@@ -1710,9 +1710,9 @@ class Dir(Base):
     def srcdir_duplicate(self, name):
         for dir in self.srcdir_list():
             if dir.entry_exists_on_disk(name):
-                srcnode = dir.File(name)
+                srcnode = dir.Entry(name).disambiguate()
                 if self.duplicate:
-                    node = self.File(name)
+                    node = self.Entry(name).disambiguate()
                     node.do_duplicate(srcnode)
                     return node
                 else:
@@ -1779,7 +1779,10 @@ class Dir(Base):
            diskcheck_sccs(self, name):
             try: return self.File(name)
             except TypeError: pass
-        return self.srcdir_duplicate(name)
+        node = self.srcdir_duplicate(name)
+        if isinstance(node, Dir):
+            node = None
+        return node
 
     def walk(self, func, arg):
         """

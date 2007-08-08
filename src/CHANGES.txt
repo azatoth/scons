@@ -10,6 +10,11 @@
 
 RELEASE 0.97.X - XXX
 
+  From Lars Albertsson:
+
+  - Don't error if a #include line happens to match a directory
+    somewhere on a path (like $CPPPATH, $FORTRANPATH, etc.).
+
   From Mark Bertoglio:
 
   - Fix listing multiple projects in Visual Studio 7.[01] solution files,
