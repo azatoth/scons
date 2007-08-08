@@ -122,6 +122,10 @@ RELEASE 0.97.X - XXX
   - Find Java anonymous classes when the next token after the name is
     an open parenthesis.
 
+  From Gary Oberbrunner:
+
+  - Fix a code example in the man page.
+
   From Tilo Prutz:
 
   - Add support for the file names that Java 1.5 (and 1.6) generates for
