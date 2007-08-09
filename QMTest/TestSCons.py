@@ -759,6 +759,84 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
                 print "-----------------------------------------------------"
                 self.fail_test()
 
+    def get_python_version(self):
+        """
+        Returns the Python version (just so everyone doesn't have to
+        hand-code slicing the right number of characters).
+        """
+        # see also sys.prefix documentation
+        return sys.version[:3]
+
+    def get_platform_python(self):
+        """
+        Returns a path to a Python executable suitable for testing on
+        this platform.
+
+        Mac OS X has no static libpython for SWIG to link against,
+        so we have to link against Apple's framwork version.  However,
+        testing must use the executable version that corresponds to the
+        framework we link against, or else we get interpreter errors.
+        """
+        if sys.platform == 'darwin':
+            return '/System/Library/Frameworks/Python.framework/Versions/Current/bin/python'
+        else:
+            global python
+            return python
+
+    def get_quoted_platform_python(self):
+        """
+        Returns a quoted path to a Python executable suitable for testing on
+        this platform.
+
+        Mac OS X has no static libpython for SWIG to link against,
+        so we have to link against Apple's framwork version.  However,
+        testing must use the executable version that corresponds to the
+        framework we link against, or else we get interpreter errors.
+        """
+        if sys.platform == 'darwin':
+            return '"' + self.get_platform_python() + '"'
+        else:
+            global _python_
+            return _python_
+
+    def get_platform_sys_prefix(self):
+        """
+        Returns a "sys.prefix" value suitable for linking on this platform.
+
+        Mac OS X has a built-in Python but no static libpython,
+        so we must link to it using Apple's 'framework' scheme.
+        """
+        if sys.platform == 'darwin':
+            fmt = '/System/Library/Frameworks/Python.framework/Versions/%s/'
+            return fmt % self.get_python_version()
+        else:
+            return sys.prefix
+
+    def get_python_frameworks_flags(self):
+        """
+        Returns a FRAMEWORKSFLAGS value for linking with Python.
+
+        Mac OS X has a built-in Python but no static libpython,
+        so we must link to it using Apple's 'framework' scheme.
+        """
+        if sys.platform == 'darwin':
+            return '-framework Python'
+        else:
+            return ''
+
+    def get_python_inc(self):
+        """
+        Returns a path to the Python include directory.
+        """
+        try:
+            import distutils.sysconfig
+        except ImportError:
+            return os.path.join(self.get_platform_sys_prefix(),
+                                'include',
+                                'python' + self.get_python_version())
+        else:
+            return distutils.sysconfig.get_python_inc()
+
 # In some environments, $AR will generate a warning message to stderr
 # if the library doesn't previously exist and is being created.  One
 # way to fix this is to tell AR to be quiet (sometimes the 'c' flag),

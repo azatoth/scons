@@ -30,30 +30,55 @@ Make sure SWIG works when a BuildDir (or build_dir) is used.
 Test case courtesy Joe Maruszewski.
 """
 
+import os.path
+import sys
+
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.subdir(['build'],
-            ['source'])
+# swig-python expects specific filenames.
+# the platform specific suffix won't necessarily work.
+if sys.platform == 'win32':
+    _dll = '.dll'
+else:
+    _dll   = '.so' 
+
+test.subdir(['source'])
+
+python_include_dir = test.get_python_inc()
+
+Python_h = os.path.join(python_include_dir, 'Python.h')
+
+if not os.path.exists(Python_h):
+    test.skip_test('Can not find %s, skipping test.\n' % Python_h)
+
+python_frameworks_flags = test.get_python_frameworks_flags()
 
 test.write(['SConstruct'], """\
-import distutils.sysconfig
-
 #
 # Create the build environment.
 #
-env = Environment(CPPPATH = [".", distutils.sysconfig.get_python_inc()],
+env = Environment(CPPPATH = [".", r'%(python_include_dir)s'],
                   CPPDEFINES = "NDEBUG",
                   SWIGFLAGS = ["-python", "-c++"],
-                  SWIGCXXFILESUFFIX = "_wrap.cpp")
+                  SWIGCXXFILESUFFIX = "_wrap.cpp",
+                  LDMODULEPREFIX='_',
+                  LDMODULESUFFIX='%(_dll)s',
+                  FRAMEWORKSFLAGS='%(python_frameworks_flags)s')
+
+import sys
+if sys.version[0] == '1':
+    # SWIG requires the -classic flag on pre-2.0 Python versions.
+    env.Append(SWIGFLAGS = '-classic')
+
 Export("env")
 
 #
 # Build the libraries.
 #
 SConscript("source/SConscript", build_dir = "build")
-""")
+""" % locals())
 
 test.write(['source', 'SConscript'], """\
 Import("env")

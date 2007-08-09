@@ -32,17 +32,6 @@ import sys
 
 import TestSCons
 
-if sys.platform =='darwin':
-    # change to make it work with stock OS X python framework
-    # we can't link to static libpython because there isn't one on OS X
-    # so we link to a framework version. However, testing must also
-    # use the same version, or else you get interpreter errors.
-    python = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/python"
-    _python_ = '"' + python + '"'
-else:
-    python = TestSCons.python
-    _python_ = TestSCons._python_
-
 test = TestSCons.TestSCons()
 
 swig = test.where_is('swig')
