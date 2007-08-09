@@ -25,45 +25,37 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that we can use ${SOURCE} expansions in $SWIGFLAGS.
+Verify that we don't blow up if there's a directory name within
+$CPPPATH that matches a #include file name.
 """
-
-import sys
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-swig = test.where_is('swig')
+test.subdir(['src'],
+            ['src', 'inc'],
+            ['src', 'inc', 'inc2'])
 
-if not swig:
-    test.skip_test('Can not find installed "swig", skipping test.\n')
-
-
-
-test.subdir('src')
-
-test.write(['src', 'foo.i'], """\
-%module foo
-
-%include bar.i
+test.write('SConstruct', """\
+SConscript('src/SConscript', build_dir = 'build', duplicate = 0)
 """)
 
-test.write(['src', 'bar.i'], """\
-%module bar
+test.write(['src', 'SConscript'], """\
+env = Environment(CPPPATH = ['#build/inc', '#build/inc/inc2'])
+env.Object('foo.c')
 """)
 
-test.write('SConstruct', """
-# Note that setting the -I option in $SWIGFLAGS is not good and the
-# documentation says to use $SWIGPATH.  This is just for testing.
-env = Environment(SWIGFLAGS='-python -I${SOURCE.dir}')
-env.CFile(target = 'foo', source = ['src/foo.i'])
+test.write(['src', 'foo.c'], """\
+#include "inc1"
 """)
 
-test.run()
+test.subdir(['src', 'inc', 'inc1'])
 
-test.up_to_date(arguments = "foo_wrap.c")
+test.write(['src', 'inc', 'inc2', 'inc1'], "\n")
 
+test.run(arguments = '.')
 
+test.up_to_date(arguments = '.')
 
 test.pass_test()

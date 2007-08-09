@@ -7310,7 +7310,7 @@ class foo:
         self.arg = arg
 
     def __call__(self, target, source, env, for_signature):
-        return arg + " bar"
+        return self.arg + " bar"
 
 # Will expand $BAR to "my argument bar baz"
 env=Environment(FOO=foo, BAR="${FOO('my argument')} baz")

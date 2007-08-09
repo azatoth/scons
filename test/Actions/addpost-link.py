@@ -25,45 +25,52 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that we can use ${SOURCE} expansions in $SWIGFLAGS.
-"""
+Verify that AddPostAction() on a program target doesn't interfere with
+linking.
 
-import sys
+This is a test for fix of Issue 1004, reported by Matt Doar and
+packaged by Gary Oberbrunner.
+"""
 
 import TestSCons
 
+
 test = TestSCons.TestSCons()
 
-swig = test.where_is('swig')
+test.write('SConstruct', """\
+env = Environment()
 
-if not swig:
-    test.skip_test('Can not find installed "swig", skipping test.\n')
+mylib = env.StaticLibrary('mytest', 'test_lib.c')
 
-
-
-test.subdir('src')
-
-test.write(['src', 'foo.i'], """\
-%module foo
-
-%include bar.i
+myprog = env.Program('test1.c',
+                     LIBPATH = ['.'],
+                     LIBS = ['mytest'])
+if ARGUMENTS['case']=='2':
+  AddPostAction(myprog, Action('strip ' + myprog[0].abspath))
 """)
 
-test.write(['src', 'bar.i'], """\
-%module bar
+test.write('test1.c', """\
+extern void test_lib_fn();
+int main(int argc, char **argv) {
+  test_lib_fn();
+  return 0;
+}
 """)
 
-test.write('SConstruct', """
-# Note that setting the -I option in $SWIGFLAGS is not good and the
-# documentation says to use $SWIGPATH.  This is just for testing.
-env = Environment(SWIGFLAGS='-python -I${SOURCE.dir}')
-env.CFile(target = 'foo', source = ['src/foo.i'])
+test.write('test_lib.c', r"""\
+#include <stdio.h>
+
+void test_lib_fn() {
+  printf("Hello world\n");
+}
 """)
 
-test.run()
+test.run(arguments="-Q case=1", stderr=None)
 
-test.up_to_date(arguments = "foo_wrap.c")
+test.run(arguments="-Q -c case=1")
 
+test.must_not_exist('test1.o')
 
+test.run(arguments="-Q case=2", stderr=None)
 
 test.pass_test()

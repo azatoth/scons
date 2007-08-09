@@ -53,10 +53,10 @@ def swigSuffixEmitter(env, source):
 _reModule = re.compile(r'%module\s+(.+)')
 
 def _swigEmitter(target, source, env):
+    swigflags = env.subst("$SWIGFLAGS", target=target, source=source)
+    flags = SCons.Util.CLVar(swigflags)
     for src in source:
-        src = str(src)
-        swigflags = env.subst("$SWIGFLAGS", target=target, source=source)
-        flags = SCons.Util.CLVar(swigflags)
+        src = str(src.rfile())
         mnames = None
         if "-python" in flags and "-noproxy" not in flags:
             if mnames is None:
@@ -70,6 +70,10 @@ def _swigEmitter(target, source, env):
             outdir = env.subst('$SWIGOUTDIR', target=target, source=source)
             if outdir:
                  java_files = map(lambda j, o=outdir: os.path.join(o, j), java_files)
+            java_files = map(env.fs.File, java_files)
+            for jf in java_files:
+                t_from_s = lambda t, p, s, x: t.dir
+                SCons.Util.AddMethod(jf, t_from_s, 'target_from_source')
             target.extend(java_files)
     return (target, source)
 
@@ -85,11 +89,18 @@ def generate(env):
     cxx_file.add_action('.i', SwigAction)
     cxx_file.add_emitter('.i', _swigEmitter)
 
+    java_file = SCons.Tool.CreateJavaFileBuilder(env)
+
+    java_file.suffix['.i'] = swigSuffixEmitter
+
+    java_file.add_action('.i', SwigAction)
+    java_file.add_emitter('.i', _swigEmitter)
+
     env['SWIG']              = 'swig'
     env['SWIGFLAGS']         = SCons.Util.CLVar('')
     env['SWIGCFILESUFFIX']   = '_wrap$CFILESUFFIX'
     env['SWIGCXXFILESUFFIX'] = '_wrap$CXXFILESUFFIX'
-    env['_SWIGOUTDIR']       = '${"-outdir " + SWIGOUTDIR}'
+    env['_SWIGOUTDIR']       = '${"-outdir " + str(SWIGOUTDIR)}'
     env['SWIGPATH']          = []
     env['SWIGINCPREFIX']     = '-I'
     env['SWIGINCSUFFIX']     = ''
