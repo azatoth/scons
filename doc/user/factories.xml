@@ -279,7 +279,7 @@
 
     <screen>
       % <userinput>scons -Q</userinput>
-      Copy("tempfile", "file.in")
+      Copy("file.out", "file.in")
       Touch("file.out")
     </screen>
 

@@ -376,6 +376,8 @@ if filter_tools:
 
 toollist = map(lambda t: apply(ToolSurrogate, t), toollist)
 
+toollist.append('install')
+
 def surrogate_spawn(sh, escape, cmd, args, env):
     pass
 
