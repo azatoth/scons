@@ -8,7 +8,7 @@
 
 
 
-RELEASE 0.97.X - XXX
+RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500
 
   From Lars Albertsson:
 

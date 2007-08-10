@@ -20,7 +20,7 @@ more effectively, please sign up for the scons-users mailing list at:
 
 
 
-RELEASE 0.97 - Thu, 12 Apr 2007 12:36:25 -0500
+RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500
 
   This is the eighth beta release of SCons.  Please consult the
   CHANGES.txt file for a list of specific changes since last release.
