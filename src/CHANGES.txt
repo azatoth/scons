@@ -8,6 +8,14 @@
 
 
 
+RELEASE 0.XX - XXX
+
+  From Steven Knight:
+
+  - Fix the wix Tool module to handle null entries in $PATH variables.
+
+
+
 RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500
 
   From Lars Albertsson:
