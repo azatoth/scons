@@ -63,11 +63,11 @@ else:
     MANIFEST = os.path.join(scons_lib_dir, 'MANIFEST')
 
 try:
-    fp = open(MANIFEST).read()
+    fp = open(MANIFEST)
 except IOError:
     test.skip_test('%s does not exist; skipping test.\n' % MANIFEST)
 else:
-    files = string.split(open(MANIFEST).read())
+    files = string.split(fp.read())
     files = filter(lambda f: f[-3:] == '.py', files)
 
 # some regexps to parse the python files
