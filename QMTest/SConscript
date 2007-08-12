@@ -47,6 +47,9 @@ def copy(target, source, env):
     t = str(target[0])
     s = str(source[0])
     c = open(s, 'rb').read()
+    # Note:  We construct the __ VERSION __ substitution string at
+    # run-time so it doesn't get replaced when this file gets copied
+    # into the tree for packaging.
     c = string.replace(c, '__' + 'VERSION' + '__', env['VERSION'])
     open(t, 'wb').write(c)
 
