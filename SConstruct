@@ -35,6 +35,7 @@ month_year = 'January 2007'
 #
 
 import distutils.util
+import fnmatch
 import os
 import os.path
 import re
@@ -1121,6 +1122,16 @@ if svn_status:
     slines = filter(lambda l: l[0] in ' MA', svn_status_lines)
     sentries = map(lambda l: l.split()[-1], slines)
     sfiles = filter(os.path.isfile, sentries)
+
+    remove_patterns = [
+        '.svnt/*',
+        '*.aeignore',
+        '*.cvsignore',
+        'www/*',
+    ]
+
+    for p in remove_patterns:
+        sfiles = filter(lambda s, p=p: not fnmatch.fnmatch(s, p), sfiles)
 
     if sfiles:
         ps = "%s-src" % project
