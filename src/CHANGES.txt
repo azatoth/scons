@@ -14,6 +14,10 @@ RELEASE 0.XX - XXX
 
   - Fix the wix Tool module to handle null entries in $PATH variables.
 
+  - Move the documentation of Install() and InstallAs() from the list
+    of functions to the list of Builders (now that they're implemented
+    as such).
+
 
 
 RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500

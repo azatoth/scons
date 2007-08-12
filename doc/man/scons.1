@@ -3305,43 +3305,6 @@ Import("*")
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI Install( dir ", " source )
-.TP
-.RI env.Install( dir ", " source )
-Installs one or more source files or directories
-in a destination directory
-.IR dir .
-The names of the specified source files or directories
-remain the same within the destination directory.
-
-.ES
-env.Install(dir = '/usr/local/bin', source = ['foo', 'bar'])
-.EE
-
-'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-.TP
-.RI InstallAs( target ", " source )
-.TP
-.RI env.InstallAs( target ", " source )
-Installs one or more source files or directories
-to specific names,
-allowing changing a file or directory name
-as part of the installation.
-It is an error if the
-.I target
-and
-.I source
-arguments list different numbers of files or directories.
-
-.ES
-env.InstallAs(target = '/usr/local/bin/foo',
-              source = 'foo_debug')
-env.InstallAs(target = ['../lib/libfoo.a', '../lib/libbar.a'],
-              source = ['libFOO.a', 'libBAR.a'])
-.EE
-
-'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-.TP
 .RI Literal( string )
 .TP
 .RI env.Literal( string )

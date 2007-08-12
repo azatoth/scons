@@ -45,6 +45,7 @@ SCons/Tool/ilink32.xml
 SCons/Tool/ilink.xml
 SCons/Tool/__init__.xml
 SCons/Tool/intelc.xml
+SCons/Tool/install.xml
 SCons/Tool/jar.xml
 SCons/Tool/javac.xml
 SCons/Tool/javah.xml
