@@ -33,6 +33,16 @@ import TestSCons
 
 test = TestSCons.TestSCons()
 
+# This test requires javac
+ENV = test.java_ENV()
+if test.detect_tool('javac', ENV=ENV):
+    where_javac = test.detect('JAVAC', 'javac', ENV=ENV)
+else:
+    where_javac = test.where_is('javac')
+if not where_javac:
+    test.skip_test("Could not find Java javac, skipping test(s).\n")
+
+
 test.subdir(['src'],
             ['src', 'HelloApplet'],
             ['src', 'HelloApplet', 'com'],
