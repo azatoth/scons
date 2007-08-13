@@ -63,7 +63,7 @@ test.subdir(['src'],
             ['src', 'server', 'WebContent', 'theme'])
 
 test.write(['SConstruct'], """\
-import os
+import os,sys
 env=Environment()
 Export('env')
 env.PrependENVPath('PATH',os.environ.get('PATH',[]))
@@ -79,6 +79,9 @@ env.Append(SWIGFLAGS=['-c++','$_CPPINCFLAGS'])
 env.Append(CPPPATH='.')
 
 env.BuildDir('buildout', 'src', duplicate=0)
+
+if sys.platform=='darwin':
+   env.Append(CPPPATH=['/System/Library/Frameworks/JavaVM.framework/Headers'])
 
 #If you do not have swig on your system please remove 'buildout/jni/SConscript' line from next call
 env.SConscript(['buildout/server/JavaSource/SConscript',
