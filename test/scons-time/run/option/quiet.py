@@ -50,8 +50,8 @@ def tempdir_re(*args):
     x = re.escape(x)
     x = string.replace(x, 'time\\-', 'time\\-[^%s]*' % sep)
     if sys.platform=='darwin':
-	# OSX has /tmp in /private/tmp.
-	x = '(/private)?' + x
+        # OSX has /tmp in /private/tmp.
+        x = '(/private)?' + x
     return x
 
 scons_py = re.escape(test.workpath('src', 'script', 'scons.py'))
