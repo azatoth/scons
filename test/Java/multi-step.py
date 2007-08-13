@@ -33,14 +33,20 @@ import TestSCons
 
 test = TestSCons.TestSCons()
 
-# This test requires javac
+# This test requires javac and swig
 ENV = test.java_ENV()
+
 if test.detect_tool('javac', ENV=ENV):
     where_javac = test.detect('JAVAC', 'javac', ENV=ENV)
 else:
     where_javac = test.where_is('javac')
 if not where_javac:
     test.skip_test("Could not find Java javac, skipping test(s).\n")
+
+swig = test.where_is('swig')
+if not swig:
+    test.skip_test('Can not find installed "swig", skipping test.\n')
+
 
 
 test.subdir(['src'],
@@ -64,7 +70,7 @@ test.subdir(['src'],
 
 test.write(['SConstruct'], """\
 import os,sys
-env=Environment()
+env=Environment(tools = ['default', 'javac', 'javah'])
 Export('env')
 env.PrependENVPath('PATH',os.environ.get('PATH',[]))
 env['INCPREFIX']='-I'
@@ -86,7 +92,7 @@ if sys.platform=='darwin':
 #If you do not have swig on your system please remove 'buildout/jni/SConscript' line from next call
 env.SConscript(['buildout/server/JavaSource/SConscript',
                 'buildout/HelloApplet/SConscript',
-        'buildout/jni/SConscript',
+                'buildout/jni/SConscript',
                 'buildout/javah/SConscript'])
 """)
 
