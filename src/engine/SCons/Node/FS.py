@@ -2131,11 +2131,11 @@ class File(Base):
         if self.nocache:
             return None
         b = self.is_derived()
-        if not b and not self.has_src_builder():
+        if not b:
             return None
 
         retrieved = None
-        if b and self.fs.CachePath:
+        if self.fs.CachePath:
             if self.fs.cache_show:
                 if CacheRetrieveSilent(self, [], None, execute=1) == 0:
                     self.build(presub=0, execute=0)
