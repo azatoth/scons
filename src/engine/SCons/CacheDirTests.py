@@ -48,12 +48,12 @@ class Builder:
         self.overrides = {}
 
 class Environment:
-    def __init__(self, fs):
-        self.fs = fs
+    def __init__(self, cachedir):
+        self.cachedir = cachedir
     def Override(self, overrides):
         return self
     def get_CacheDir(self):
-        return self.fs.CachePath
+        return self.cachedir
 
 class BaseTestCase(unittest.TestCase):
     """
@@ -65,13 +65,11 @@ class BaseTestCase(unittest.TestCase):
         import SCons.Node.FS
         self.fs = SCons.Node.FS.FS()
 
-        self.fs.CacheDir('cache')
-        self.cp = self.fs.CachePath
-        self.fs.CachePath = self.cp
+        self._CacheDir = SCons.CacheDir.CacheDir('cache')
 
     def File(self, name, bsig=None, action=Action()):
         node = self.fs.File(name)
-        node.builder_set(Builder(Environment(self.fs), action))
+        node.builder_set(Builder(Environment(self._CacheDir), action))
         if bsig:
             node.binfo = node.BuildInfo(node)
             node.binfo.ninfo.bsig = bsig
@@ -93,7 +91,7 @@ class CacheDirTestCase(BaseTestCase):
 
         try:
             f5 = self.File("cd.f5", 'a_fake_bsig')
-            result = self.cp.cachepath(f5)
+            result = self._CacheDir.cachepath(f5)
             dirname = os.path.join('cache', 'A')
             filename = os.path.join(dirname, 'a_fake_bsig')
             assert result == (dirname, filename), result
@@ -219,7 +217,7 @@ class FileTestCase(BaseTestCase):
         f6.binfo = f6.BuildInfo(f6)
         exc_caught = 0
         try:
-            cp = self.cp.cachepath(f6)
+            cp = self._CacheDir.cachepath(f6)
         except SCons.Errors.InternalError:
             exc_caught = 1
         assert exc_caught

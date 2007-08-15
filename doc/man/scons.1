@@ -2484,6 +2484,26 @@ The derived files in the cache will be shared
 among all the builds using the same
 .BR CacheDir ()
 call.
+Specifying a
+.I cache_dir
+of
+.B None
+disables derived file caching.
+
+Calling
+.BR env.CacheDir ()
+will only affect targets built
+through the specified construction environment.
+Calling
+.BR CacheDir ()
+sets a global default
+that will be used by all targets built
+through construction environments
+that do
+.I not
+have an
+.BR env.CacheDir ()
+specified.
 
 When a
 .BR CacheDir ()

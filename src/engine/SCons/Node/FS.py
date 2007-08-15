@@ -951,7 +951,6 @@ class FS(LocalFS):
 
         self.Root = {}
         self.SConstruct_dir = None
-        self.CachePath = SCons.Util.Null()
         self.max_drift = default_max_drift
 
         self.Top = None
@@ -1214,10 +1213,6 @@ class FS(LocalFS):
             if not isinstance(d, SCons.Node.Node):
                 d = self.Dir(d)
             self.Top.addRepository(d)
-
-    def CacheDir(self, path):
-        import SCons.CacheDir
-        self.CachePath = SCons.CacheDir.CacheDir(path)
 
     def build_dir_target_climb(self, orig, dir, tail):
         """Create targets in corresponding build directories

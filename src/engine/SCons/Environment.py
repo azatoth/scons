@@ -814,7 +814,12 @@ class Base(SubstitutionEnvironment):
         return c
 
     def get_CacheDir(self):
-        return self.fs.CachePath
+        try:
+            return self._CacheDir
+        except AttributeError:
+            cd = SCons.Defaults.DefaultEnvironment()._CacheDir
+            self._CacheDir = cd
+            return cd
 
     def get_factory(self, factory, default='File'):
         """Return a factory function for creating Nodes for this
@@ -1469,7 +1474,11 @@ class Base(SubstitutionEnvironment):
         return apply(SCons.Builder.Builder, [], nkw)
 
     def CacheDir(self, path):
-        self.fs.CacheDir(self.subst(path))
+        import SCons.CacheDir
+        if path is None:
+            self._CacheDir = SCons.CacheDir.Null()
+        else:
+            self._CacheDir = SCons.CacheDir.CacheDir(self.subst(path))
 
     def Clean(self, targets, files):
         global CleanTargets

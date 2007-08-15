@@ -41,12 +41,12 @@ cache_show = False
 def CacheRetrieveFunc(target, source, env):
     t = target[0]
     fs = t.fs
-    cp = fs.CachePath
-    cachedir, cachefile = cp.cachepath(t)
+    cd = env.get_CacheDir()
+    cachedir, cachefile = cd.cachepath(t)
     if not fs.exists(cachefile):
-        cp.CacheDebug('CacheRetrieve(%s):  %s not in cache\n', t, cachefile)
+        cd.CacheDebug('CacheRetrieve(%s):  %s not in cache\n', t, cachefile)
         return 1
-    cp.CacheDebug('CacheRetrieve(%s):  retrieving from %s\n', t, cachefile)
+    cd.CacheDebug('CacheRetrieve(%s):  retrieving from %s\n', t, cachefile)
     if SCons.Action.execute_actions:
         if fs.islink(cachefile):
             fs.symlink(fs.readlink(cachefile), t.path)
@@ -59,8 +59,8 @@ def CacheRetrieveFunc(target, source, env):
 def CacheRetrieveString(target, source, env):
     t = target[0]
     fs = t.fs
-    cp = fs.CachePath
-    cachedir, cachefile = cp.cachepath(t)
+    cd = env.get_CacheDir()
+    cachedir, cachefile = cd.cachepath(t)
     if t.fs.exists(cachefile):
         return "Retrieved `%s' from cache" % t.path
     return None
@@ -74,8 +74,8 @@ def CachePushFunc(target, source, env):
     if t.nocache:
         return
     fs = t.fs
-    cp = fs.CachePath
-    cachedir, cachefile = cp.cachepath(t)
+    cd = env.get_CacheDir()
+    cachedir, cachefile = cd.cachepath(t)
     if fs.exists(cachefile):
         # Don't bother copying it if it's already there.  Note that
         # usually this "shouldn't happen" because if the file already
@@ -84,10 +84,10 @@ def CachePushFunc(target, source, env):
         # other person running the same build pushes their copy to
         # the cache after we decide we need to build it but before our
         # build completes.
-        cp.CacheDebug('CachePush(%s):  %s already exists in cache\n', t, cachefile)
+        cd.CacheDebug('CachePush(%s):  %s already exists in cache\n', t, cachefile)
         return
 
-    cp.CacheDebug('CachePush(%s):  pushing to %s\n', t, cachefile)
+    cd.CacheDebug('CachePush(%s):  pushing to %s\n', t, cachefile)
 
     if not fs.isdir(cachedir):
         fs.makedirs(cachedir)
@@ -131,7 +131,6 @@ class CacheDir:
         pass
 
     def CacheDebugInit(self, fmt, target, cachefile):
-        #if self.cache_debug:
         if cache_debug:
             if cache_debug == '-':
                 self.debugFP = sys.stdout
@@ -179,13 +178,12 @@ class CacheDir:
         """
         retrieved = False
 
-        #if self.cache_show:
         if cache_show:
-            if CacheRetrieveSilent(node, [], None, execute=1) == 0:
+            if CacheRetrieveSilent(node, [], node.get_build_env(), execute=1) == 0:
                 node.build(presub=0, execute=0)
                 retrieved = 1
         else:
-            if CacheRetrieve(node, [], None, execute=1) == 0:
+            if CacheRetrieve(node, [], node.get_build_env(), execute=1) == 0:
                 retrieved = 1
         if retrieved:
             # Record build signature information, but don't
@@ -196,9 +194,14 @@ class CacheDir:
         return retrieved
 
     def push(self, node):
-        return CachePush(node, [], None)
+        return CachePush(node, [], node.get_build_env())
 
     def push_if_forced(self, node):
-        #if self.cache_force:
         if cache_force:
             return self.push(node)
+
+class Null(SCons.Util.Null):
+    def repr(self):
+        return 'CacheDir.Null()'
+    def retrieve(self, node):
+        return False

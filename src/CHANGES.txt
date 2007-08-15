@@ -18,6 +18,9 @@ RELEASE 0.XX - XXX
     of functions to the list of Builders (now that they're implemented
     as such).
 
+  - Allow env.CacheDir() to be set per construction environment.  The
+    global CacheDir() function now sets an overridable global default.
+
 
 
 RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500

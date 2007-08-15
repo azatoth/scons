@@ -27,6 +27,27 @@ RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500
 
   Please note the following important changes since release 0.97:
 
+    --  env.CacheDir() NOW ONLY AFFECTS CONSTRUCTION ENVIRONMENT TARGETS
+
+        The env.CacheDir() method now only causes derived files to be
+        retrieved from the specified cache directory for targets built
+        with the specified specified construction environment ("env").
+
+        Previously, any call to env.CacheDir() or CacheDir() would modify
+        a global setting and cause all built targets to be retrieved
+        from the specified cache directory.  This behavior was changed so
+        that env.CacheDir() would be consistent with other construction
+        environment methods, which only affect targets built with the
+        specified construction environment.
+
+        The old behavior of changing the global behavior may be preserved
+        by changing any env.CacheDir() calls to:
+
+                CacheDir('/path/to/cache/directory')
+
+        The above change is backwards-compatible and works in all earlier
+        versions of SCons that support CacheDir().
+
     --  INTERPRETATION OF SUFFIX-LESS SOURCE ARGUMENTS HAS CHANGED
 
         The interpretation of source arguments (files) without suffixes
