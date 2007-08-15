@@ -1102,4 +1102,34 @@ def RenameFunction(function, name):
 
 
 
+# From Dinu C. Gherman,
+# Python Cookbook, second edition, recipe 6.17, p. 277.
+# Also:
+# http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/68205
+# ASPN: Python Cookbook: Null Object Design Pattern
+
+class Null:
+    """ Null objects always and reliably "do nothging." """
+
+    def __new__(cls, *args, **kwargs):
+        if not '_inst' in vars(cls):
+            cls._inst = type.__new__(cls, *args, **kwargs)
+        return cls._inst
+    def __init__(self, *args, **kwargs):
+        pass
+    def __call__(self, *args, **kwargs):
+        return self
+    def __repr__(self):
+        return "Null()"
+    def __nonzero__(self):
+        return False
+    def __getattr__(self, mname):
+        return self
+    def __setattr__(self, name, value):
+        return self
+    def __delattr__(self, name):
+        return self
+
+
+
 del __revision__
