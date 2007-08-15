@@ -42,14 +42,18 @@ class Action:
         return 0
 
 class Builder:
-    def __init__(self, action):
+    def __init__(self, environment, action):
+        self.env = environment
         self.action = action
-        self.env = Environment()
         self.overrides = {}
 
 class Environment:
+    def __init__(self, fs):
+        self.fs = fs
     def Override(self, overrides):
         return self
+    def get_CacheDir(self):
+        return self.fs.CachePath
 
 class BaseTestCase(unittest.TestCase):
     """
@@ -63,10 +67,11 @@ class BaseTestCase(unittest.TestCase):
 
         self.fs.CacheDir('cache')
         self.cp = self.fs.CachePath
+        self.fs.CachePath = self.cp
 
     def File(self, name, bsig=None, action=Action()):
         node = self.fs.File(name)
-        node.builder_set(Builder(action))
+        node.builder_set(Builder(Environment(self.fs), action))
         if bsig:
             node.binfo = node.BuildInfo(node)
             node.binfo.ninfo.bsig = bsig

@@ -2020,7 +2020,7 @@ class File(Base):
             return None
         if not self.is_derived():
             return None
-        return self.fs.CachePath.retrieve(self)
+        return self.get_build_env().get_CacheDir().retrieve(self)
 
     def built(self):
         """
@@ -2035,12 +2035,12 @@ class File(Base):
         # value doesn't interfere.
         self.clear_memoized_values()
         if self.exists():
-            self.fs.CachePath.push(self)
+            self.get_build_env().get_CacheDir().push(self)
         SCons.Node.Node.built(self)
 
     def visited(self):
         if self.exists():
-            self.fs.CachePath.push_if_forced(self)
+            self.get_build_env().get_CacheDir().push_if_forced(self)
 
     def has_src_builder(self):
         """Return whether this Node has a source builder or not.

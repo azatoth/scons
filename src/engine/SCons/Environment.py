@@ -813,6 +813,9 @@ class Base(SubstitutionEnvironment):
             c = SCons.Defaults.DefaultEnvironment().get_calculator()
         return c
 
+    def get_CacheDir(self):
+        return self.fs.CachePath
+
     def get_factory(self, factory, default='File'):
         """Return a factory function for creating Nodes for this
         construction environment.
