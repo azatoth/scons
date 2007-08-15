@@ -1113,7 +1113,8 @@ class Null:
 
     def __new__(cls, *args, **kwargs):
         if not '_inst' in vars(cls):
-            cls._inst = type.__new__(cls, *args, **kwargs)
+            #cls._inst = type.__new__(cls, *args, **kwargs)
+            cls._inst = apply(type.__new__, (cls,) + args, kwargs)
         return cls._inst
     def __init__(self, *args, **kwargs):
         pass
