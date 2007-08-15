@@ -32,19 +32,29 @@ from TestCmd import TestCmd
 
 import SCons.CacheDir
 
+built_it = None
+
 class Action:
-    pass
-
-class Scanner:
-    pass
-
-class Environment:
-    pass
+    def __call__(self, targets, sources, env, errfunc, **kw):
+        global built_it
+        if kw.get('execute', 1):
+            built_it = 1
+        return 0
 
 class Builder:
-    pass
+    def __init__(self, action):
+        self.action = action
+        self.env = Environment()
+        self.overrides = {}
 
-class CacheDirTestCase(unittest.TestCase):
+class Environment:
+    def Override(self, overrides):
+        return self
+
+class BaseTestCase(unittest.TestCase):
+    """
+    Base fixtures common to our other unittest classes.
+    """
     def setUp(self):
         self.test = TestCmd(workdir='')
 
@@ -54,6 +64,45 @@ class CacheDirTestCase(unittest.TestCase):
         self.fs.CacheDir('cache')
         self.cp = self.fs.CachePath
 
+    def File(self, name, bsig=None, action=Action()):
+        node = self.fs.File(name)
+        node.builder_set(Builder(action))
+        if bsig:
+            node.binfo = node.BuildInfo(node)
+            node.binfo.ninfo.bsig = bsig
+        return node
+
+class CacheDirTestCase(BaseTestCase):
+    """
+    Test calling CacheDir code directly.
+    """
+    def test_cachepath(self):
+        """Test the cachepath() method"""
+
+        # Verify how the cachepath() method determines the name
+        # of the file in cache.
+        def my_collect(list):
+            return list[0]
+        save_collect = SCons.Sig.MD5.collect
+        SCons.Sig.MD5.collect = my_collect
+
+        try:
+            f5 = self.File("cd.f5", 'a_fake_bsig')
+            result = self.cp.cachepath(f5)
+            dirname = os.path.join('cache', 'A')
+            filename = os.path.join(dirname, 'a_fake_bsig')
+            assert result == (dirname, filename), result
+        finally:
+            SCons.Sig.MD5.collect = save_collect
+
+class FileTestCase(BaseTestCase):
+    """
+    Test calling CacheDir code through Node.FS.File interfaces.
+    """
+    # These tests were originally in Nodes/FSTests.py and got moved
+    # when the CacheDir support was refactored into its own module.
+    # Look in the history for Node/FSTests.py if any of this needs
+    # to be re-examined.
     def retrieve_succeed(self, target, source, env, execute=1):
         self.retrieved.append(target)
         return 0
@@ -72,8 +121,7 @@ class CacheDirTestCase(unittest.TestCase):
         save_CacheRetrieve = SCons.CacheDir.CacheRetrieve
         self.retrieved = []
 
-        f1 = self.fs.File("cd.f1")
-        f1.builder_set(Builder())
+        f1 = self.File("cd.f1")
         try:
             SCons.CacheDir.CacheRetrieve = self.retrieve_succeed
             self.retrieved = []
@@ -102,10 +150,7 @@ class CacheDirTestCase(unittest.TestCase):
 
         SCons.CacheDir.cache_show = 1
 
-        f2 = self.fs.File("cd.f2")
-        f2.binfo = f2.BuildInfo(f2)
-        f2.binfo.ninfo.bsig = 'f2_bsig'
-        f2.builder_set(Builder())
+        f2 = self.File("cd.f2", 'f2_bsig')
         try:
             SCons.CacheDir.CacheRetrieveSilent = self.retrieve_succeed
             self.retrieved = []
@@ -138,7 +183,7 @@ class CacheDirTestCase(unittest.TestCase):
             self.pushed = []
 
             cd_f3 = self.test.workpath("cd.f3")
-            f3 = self.fs.File(cd_f3)
+            f3 = self.File(cd_f3)
             f3.built()
             assert self.pushed == [], self.pushed
             self.test.write(cd_f3, "cd.f3\n")
@@ -148,7 +193,7 @@ class CacheDirTestCase(unittest.TestCase):
             self.pushed = []
 
             cd_f4 = self.test.workpath("cd.f4")
-            f4 = self.fs.File(cd_f4)
+            f4 = self.File(cd_f4)
             f4.visited()
             assert self.pushed == [], self.pushed
             self.test.write(cd_f4, "cd.f4\n")
@@ -162,31 +207,10 @@ class CacheDirTestCase(unittest.TestCase):
         finally:
             SCons.CacheDir.CachePush = save_CachePush
 
-    def test_cachepath(self):
-        """Test the cachepath() method"""
-
-        # Verify how the cachepath() method determines the name
-        # of the file in cache.
-        def my_collect(list):
-            return list[0]
-        save_collect = SCons.Sig.MD5.collect
-        SCons.Sig.MD5.collect = my_collect
-
-        try:
-            f5 = self.fs.File("cd.f5")
-            f5.binfo = f5.BuildInfo(f5)
-            f5.binfo.ninfo.bsig = 'a_fake_bsig'
-            result = self.cp.cachepath(f5)
-            dirname = os.path.join('cache', 'A')
-            filename = os.path.join(dirname, 'a_fake_bsig')
-            assert result == (dirname, filename), result
-        finally:
-            SCons.Sig.MD5.collect = save_collect
-
     def test_no_bsig(self):
         """Test that no bsig raises an InternalError"""
 
-        f6 = self.fs.File("cd.f6")
+        f6 = self.File("cd.f6")
         f6.binfo = f6.BuildInfo(f6)
         exc_caught = 0
         try:
@@ -195,7 +219,7 @@ class CacheDirTestCase(unittest.TestCase):
             exc_caught = 1
         assert exc_caught
 
-    def test_xxx(self):
+    def test_warning(self):
         """Test raising a warning if we can't copy a file to cache."""
 
         test = TestCmd(workdir='')
@@ -214,9 +238,7 @@ class CacheDirTestCase(unittest.TestCase):
         try:
             cd_f7 = self.test.workpath("cd.f7")
             self.test.write(cd_f7, "cd.f7\n")
-            f7 = self.fs.File(cd_f7)
-            f7.binfo = f7.BuildInfo(f7)
-            f7.binfo.ninfo.bsig = 'f7_bsig'
+            f7 = self.File(cd_f7, 'f7_bsig')
 
             warn_caught = 0
             try:
@@ -235,12 +257,7 @@ class CacheDirTestCase(unittest.TestCase):
 
         save_CacheRetrieveSilent = SCons.CacheDir.CacheRetrieveSilent
 
-        act = Action()
-        act.strfunction = None
-        f8 = self.fs.File("cd.f8")
-        f8.binfo = f8.BuildInfo(f8)
-        f8.binfo.ninfo.bsig = 'f8_bsig'
-        f8.builder_set(Builder())
+        f8 = self.File("cd.f8", 'f8_bsig')
         try:
             SCons.CacheDir.CacheRetrieveSilent = self.retrieve_succeed
             self.retrieved = []
@@ -266,6 +283,7 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
     tclasses = [
         CacheDirTestCase,
+        FileTestCase,
     ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
