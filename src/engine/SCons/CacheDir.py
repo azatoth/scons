@@ -42,7 +42,7 @@ def CacheRetrieveFunc(target, source, env):
     t = target[0]
     fs = t.fs
     cp = fs.CachePath
-    cachedir, cachefile = t.cachepath()
+    cachedir, cachefile = cp.cachepath(t)
     if not fs.exists(cachefile):
         cp.CacheDebug('CacheRetrieve(%s):  %s not in cache\n', t, cachefile)
         return 1
@@ -58,7 +58,9 @@ def CacheRetrieveFunc(target, source, env):
 
 def CacheRetrieveString(target, source, env):
     t = target[0]
-    cachedir, cachefile = t.cachepath()
+    fs = t.fs
+    cp = fs.CachePath
+    cachedir, cachefile = cp.cachepath(t)
     if t.fs.exists(cachefile):
         return "Retrieved `%s' from cache" % t.path
     return None
@@ -73,7 +75,7 @@ def CachePushFunc(target, source, env):
         return
     fs = t.fs
     cp = fs.CachePath
-    cachedir, cachefile = t.cachepath()
+    cachedir, cachefile = cp.cachepath(t)
     if fs.exists(cachefile):
         # Don't bother copying it if it's already there.  Note that
         # usually this "shouldn't happen" because if the file already
@@ -142,9 +144,10 @@ class CacheDir:
 
     CacheDebug = CacheDebugInit
 
-    def get_dir_and_path(self, sig):
+    def cachepath(self, node):
         """
         """
+        sig = node.get_cachedir_bsig()
         subdir = string.upper(sig[0])
         dir = os.path.join(self.path, subdir)
         return dir, os.path.join(dir, sig)

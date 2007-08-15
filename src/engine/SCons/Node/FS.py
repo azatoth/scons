@@ -2263,7 +2263,8 @@ class File(Base):
     def rstr(self):
         return str(self.rfile())
 
-    def cachepath(self):
+    def get_cachedir_bsig(self):
+        import SCons.Sig.MD5
         ninfo = self.get_binfo().ninfo
         if not hasattr(ninfo, 'bsig'):
             import SCons.Errors
@@ -2274,9 +2275,7 @@ class File(Base):
         # Add the path to the cache signature, because multiple
         # targets built by the same action will all have the same
         # build signature, and we have to differentiate them somehow.
-        import SCons.Sig.MD5
-        cache_sig = SCons.Sig.MD5.collect([ninfo.bsig, self.path])
-        return self.fs.CachePath.get_dir_and_path(cache_sig)
+        return SCons.Sig.MD5.collect([ninfo.bsig, self.path])
 
 default_fs = None
 

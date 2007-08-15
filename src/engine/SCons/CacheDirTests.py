@@ -52,6 +52,7 @@ class CacheDirTestCase(unittest.TestCase):
         self.fs = SCons.Node.FS.FS()
 
         self.fs.CacheDir('cache')
+        self.cp = self.fs.CachePath
 
     def retrieve_succeed(self, target, source, env, execute=1):
         self.retrieved.append(target)
@@ -170,14 +171,15 @@ class CacheDirTestCase(unittest.TestCase):
             return list[0]
         save_collect = SCons.Sig.MD5.collect
         SCons.Sig.MD5.collect = my_collect
+
         try:
             f5 = self.fs.File("cd.f5")
             f5.binfo = f5.BuildInfo(f5)
             f5.binfo.ninfo.bsig = 'a_fake_bsig'
-            cp = f5.cachepath()
+            result = self.cp.cachepath(f5)
             dirname = os.path.join('cache', 'A')
             filename = os.path.join(dirname, 'a_fake_bsig')
-            assert cp == (dirname, filename), cp
+            assert result == (dirname, filename), result
         finally:
             SCons.Sig.MD5.collect = save_collect
 
@@ -188,7 +190,7 @@ class CacheDirTestCase(unittest.TestCase):
         f6.binfo = f6.BuildInfo(f6)
         exc_caught = 0
         try:
-            cp = f6.cachepath()
+            cp = self.cp.cachepath(f6)
         except SCons.Errors.InternalError:
             exc_caught = 1
         assert exc_caught
