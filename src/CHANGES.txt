@@ -8,9 +8,18 @@
 
 
 
-RELEASE 0.97.Y - XXX
+RELEASE 0.XX - XXX
 
   From Steven Knight:
+
+  - Fix the wix Tool module to handle null entries in $PATH variables.
+
+  - Move the documentation of Install() and InstallAs() from the list
+    of functions to the list of Builders (now that they're implemented
+    as such).
+
+  - Allow env.CacheDir() to be set per construction environment.  The
+    global CacheDir() function now sets an overridable global default.
 
   - Add an env.Decider() method and a Node.Decider() method that allow
     flexible specification of an arbitrary function to decide if a given
@@ -18,7 +27,7 @@ RELEASE 0.97.Y - XXX
 
 
 
-RELEASE 0.97.X - XXX
+RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500
 
   From Lars Albertsson:
 

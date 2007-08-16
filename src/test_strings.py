@@ -124,9 +124,11 @@ check_list = [
         'src',
         search_list = [ '*.py' ],
         remove_list = [
+            'engine/SCons/compat/_scons_optparse.py',
             'engine/SCons/compat/_scons_sets.py',
             'engine/SCons/compat/_scons_sets15.py',
             'engine/SCons/compat/_scons_subprocess.py',
+            'engine/SCons/compat/_scons_textwrap.py',
             'engine/SCons/Conftest.py',
             'engine/SCons/dblite.py',
         ],
@@ -146,9 +148,11 @@ check_list = [
             'debian',
             'dist',
             'gentoo',
+            'engine/SCons/compat/_scons_optparse.py',
             'engine/SCons/compat/_scons_sets.py',
             'engine/SCons/compat/_scons_sets15.py',
             'engine/SCons/compat/_scons_subprocess.py',
+            'engine/SCons/compat/_scons_textwrap.py',
             'engine/SCons/Conftest.py',
             'engine/SCons/dblite.py',
             'MANIFEST',
@@ -157,18 +161,21 @@ check_list = [
         ],
         # We run epydoc on the *.py files, which generates *.pyc files.
         remove_patterns = [
-            '*.pyc'
+            '*.pyc',
         ]
     ),
 
     CheckExpandedCopyright(
         build_local,
         remove_list = [
+            'SCons/compat/_scons_optparse.py',
             'SCons/compat/_scons_sets.py',
             'SCons/compat/_scons_sets15.py',
             'SCons/compat/_scons_subprocess.py',
+            'SCons/compat/_scons_textwrap.py',
             'SCons/Conftest.py',
             'SCons/dblite.py',
+            'scons-%s.egg-info' % scons_version,
         ],
     ),
 
@@ -191,6 +198,7 @@ check_list = [
             'doc/user/SCons-win32-install-2.jpg',
             'doc/user/SCons-win32-install-3.jpg',
             'doc/user/SCons-win32-install-4.jpg',
+            'examples',
             'gentoo',
             'QMTest/classes.qmc',
             'QMTest/configuration',
@@ -203,9 +211,11 @@ check_list = [
             'src/engine/MANIFEST.in',
             'src/engine/MANIFEST-xml.in',
             'src/engine/setup.cfg',
+            'src/engine/SCons/compat/_scons_optparse.py',
             'src/engine/SCons/compat/_scons_sets.py',
             'src/engine/SCons/compat/_scons_sets15.py',
             'src/engine/SCons/compat/_scons_subprocess.py',
+            'src/engine/SCons/compat/_scons_textwrap.py',
             'src/engine/SCons/Conftest.py',
             'src/engine/SCons/dblite.py',
             'src/script/MANIFEST.in',

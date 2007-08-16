@@ -51,7 +51,7 @@ epydoc = whereis('epydoc')
 groff = whereis('groff')
 lynx = whereis('lynx')
 man2html = whereis('man2html')
-jade = whereis('jade')
+jade = whereis('openjade') or whereis('jade')
 jadetex = whereis('jadetex')
 pdfjadetex = whereis('pdfjadetex')
 jw = whereis('jw')
@@ -287,12 +287,27 @@ THIS IS AN AUTOMATICALLY-GENERATED FILE.  DO NOT EDIT.
         text = os.path.join(build, 'TEXT', 'scons-%s.txt' % doc)
 
         if docs[doc].get('html') and jade:
+            def copy_index_html(target, source, env):
+                # Older versions of DocBook|jw|jade|whatever would
+                # create a book1.html file, while newer versions create
+                # an index.html file (logically enough).  The scons.org
+                # web site links expect book1.html, so we're going to
+                # leave the target as is, and run this post-processing
+                # action function to check that the target really did
+                # get created, and if it didn't, copy it from index.html.
+                t = str(target[0])
+                if not os.path.exists(t):
+                    i = os.path.join(os.path.split(t)[0], 'index.html')
+                    open(t, 'w').write(open(i, 'r').read())
+                return None
+
             cmds = [
                 Delete("${TARGET.dir}/*.html"),
                 "jw -b html -o ${TARGET.dir} $SOURCES",
             ]
             if tidy:
                 cmds.append("tidy -m -q $TARGET || true")
+            cmds.append(Action(copy_index_html))
             env.Command(htmlindex, File(main), cmds)
             Local(htmlindex)
 

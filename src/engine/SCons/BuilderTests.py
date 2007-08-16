@@ -900,7 +900,8 @@ class BuilderTestCase(unittest.TestCase):
         assert tgt.builder.source_scanner is None, tgt.builder.source_scanner
         assert tgt.get_source_scanner(bar_y) is None, tgt.get_source_scanner(bar_y)
         assert not src.has_builder(), src.has_builder()
-        assert src.get_source_scanner(bar_y) is None, src.get_source_scanner(bar_y)
+        s = src.get_source_scanner(bar_y)
+        assert isinstance(s, SCons.Util.Null), repr(s)
 
         # An Environment that has suffix-specified SCANNERS should
         # provide a source scanner to the target.
@@ -927,7 +928,8 @@ class BuilderTestCase(unittest.TestCase):
         assert tgt.get_source_scanner(bar_y), tgt.get_source_scanner(bar_y)
         assert str(tgt.get_source_scanner(bar_y)) == 'EnvTestScanner', tgt.get_source_scanner(bar_y)
         assert not src.has_builder(), src.has_builder()
-        assert src.get_source_scanner(bar_y) is None, src.get_source_scanner(bar_y)
+        s = src.get_source_scanner(bar_y)
+        assert isinstance(s, SCons.Util.Null), repr(s)
 
         # Can't simply specify the scanner as a builder argument; it's
         # global to all invocations of this builder.
@@ -938,7 +940,8 @@ class BuilderTestCase(unittest.TestCase):
         assert tgt.get_source_scanner(bar_y), tgt.get_source_scanner(bar_y)
         assert str(tgt.get_source_scanner(bar_y)) == 'EnvTestScanner', tgt.get_source_scanner(bar_y)
         assert not src.has_builder(), src.has_builder()
-        assert src.get_source_scanner(bar_y) is None, src.get_source_scanner(bar_y)
+        s = src.get_source_scanner(bar_y)
+        assert isinstance(s, SCons.Util.Null), s
 
         # Now use a builder that actually has scanners and ensure that
         # the target is set accordingly (using the specified scanner
@@ -956,7 +959,8 @@ class BuilderTestCase(unittest.TestCase):
         assert tgt.get_source_scanner(bar_y) == scanner, tgt.get_source_scanner(bar_y)
         assert str(tgt.get_source_scanner(bar_y)) == 'TestScanner', tgt.get_source_scanner(bar_y)
         assert not src.has_builder(), src.has_builder()
-        assert src.get_source_scanner(bar_y) is None, src.get_source_scanner(bar_y)
+        s = src.get_source_scanner(bar_y)
+        assert isinstance(s, SCons.Util.Null), s
 
 
 

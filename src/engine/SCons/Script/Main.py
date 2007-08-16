@@ -54,6 +54,7 @@ import traceback
 #                         'lib',
 #                         'scons-%d' % SCons.__version__)] + sys.path[1:]
 
+import SCons.CacheDir
 import SCons.Debug
 import SCons.Defaults
 import SCons.Environment
@@ -781,15 +782,14 @@ def _main(parser):
     if options.silent:
         SCons.Action.print_actions = None
 
-    if options.cache_debug:
-        fs.CacheDebugEnable(options.cache_debug)
     if options.cache_disable:
-        def disable(self): pass
-        fs.CacheDir = disable
+        SCons.CacheDir.CacheDir = SCons.Util.Null()
+    if options.cache_debug:
+        SCons.CacheDir.cache_debug = options.cache_debug
     if options.cache_force:
-        fs.cache_force = 1
+        SCons.CacheDir.cache_force = True
     if options.cache_show:
-        fs.cache_show = 1
+        SCons.CacheDir.cache_show = True
 
     if options.site_dir:
         _load_site_scons_dir(d, options.site_dir)

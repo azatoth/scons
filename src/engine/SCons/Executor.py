@@ -305,11 +305,15 @@ class Null(_Executor):
         kw['action'] = []
         apply(_Executor.__init__, (self,), kw)
     def get_build_env(self):
-        class NullEnvironment:
-            def get_scanner(self, key):
-                return None
-            def changed_since_last_build(self, dependency, target, prev_ni):
-                return dependency.changed_since_last_buld(target, prev_ni)
+        import SCons.Util
+        class NullEnvironment(SCons.Util.Null):
+            #def get_scanner(self, key):
+            #    return None
+            #def changed_since_last_build(self, dependency, target, prev_ni):
+            #    return dependency.changed_since_last_buld(target, prev_ni)
+            def get_CacheDir(self):
+                import SCons.CacheDir
+                return SCons.CacheDir.Null()
         return NullEnvironment()
     def get_build_scanner_path(self):
         return None

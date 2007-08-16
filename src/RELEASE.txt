@@ -20,7 +20,7 @@ more effectively, please sign up for the scons-users mailing list at:
 
 
 
-RELEASE 0.98 - XXX
+RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500
 
   This is the eighth beta release of SCons.  Please consult the
   CHANGES.txt file for a list of specific changes since last release.
@@ -52,6 +52,27 @@ RELEASE 0.98 - XXX
         In previous versions of SCons, changing the SourceSignature()
         value would lead to unpredictable behavior, usually including
         rebuilding targets.
+
+    --  env.CacheDir() NOW ONLY AFFECTS CONSTRUCTION ENVIRONMENT TARGETS
+
+        The env.CacheDir() method now only causes derived files to be
+        retrieved from the specified cache directory for targets built
+        with the specified specified construction environment ("env").
+
+        Previously, any call to env.CacheDir() or CacheDir() would modify
+        a global setting and cause all built targets to be retrieved
+        from the specified cache directory.  This behavior was changed so
+        that env.CacheDir() would be consistent with other construction
+        environment methods, which only affect targets built with the
+        specified construction environment.
+
+        The old behavior of changing the global behavior may be preserved
+        by changing any env.CacheDir() calls to:
+
+                CacheDir('/path/to/cache/directory')
+
+        The above change is backwards-compatible and works in all earlier
+        versions of SCons that support CacheDir().
 
     --  INTERPRETATION OF SUFFIX-LESS SOURCE ARGUMENTS HAS CHANGED
 

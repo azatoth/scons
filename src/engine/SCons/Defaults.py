@@ -46,6 +46,7 @@ import sys
 
 import SCons.Action
 import SCons.Builder
+import SCons.CacheDir
 import SCons.Environment
 import SCons.PathList
 import SCons.Subst
@@ -93,6 +94,7 @@ def DefaultEnvironment(*args, **kw):
             _default_env.SourceSignatures('timestamp')
         global DefaultEnvironment
         DefaultEnvironment = _fetch_DefaultEnvironment
+        _default_env._CacheDir = SCons.CacheDir.Null()
     return _default_env
 
 # Emitters for setting the shared attribute on object files,
