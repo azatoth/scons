@@ -11,31 +11,37 @@ TODO
 </tool>
 
 <builder name="Package">
-Builds software distribution packages. Packages consist of files to install
-and packaging information. The former may be specified with the source
-parameter and may be left out, in which case the &-bFindInstalledFiles;
-function will collect all files that have an &-bInstall; or
-&-bInstallAs; Builder attached. The target, if not specified will be deduced
-from additional information given to this Builder.
+<summary>
+Builds software distribution packages.  Packages consist of files
+to install and packaging information.  The former may be specified
+with the &source; parameter and may be left out, in which case the
+&FindInstalledFiles; function will collect all files that have an
+&b-Install; or &b-InstallAs; Builder attached.  If the &target;, is
+not specified it will be deduced from additional information given to
+this Builder.
 
-The packaging information is specified with the help of construction Variables
-documented below. This information is called a tag to stress that some of them
-can also be attached to files with the &-bTag; Builder.The mandatory ones will
-complain if they were not specified. They vary depending on chosen target
-packager.
+The packaging information is specified with the help of construction
+variables documented below.  This information is called a tag to stress
+that some of them can also be attached to files with the &Tag; function.
+The mandatory ones will complain if they were not specified.  They vary
+depending on chosen target packager.
 
-The target packager may be selected with the "PACKAGETYPE" command line option
-or with the &-tPACKAGETYPE; construction variable. Currently there are six
-packagers available:
+The target packager may be selected with the "PACKAGETYPE" command line
+option or with the &cv-PACKAGETYPE; construction variable. Currently
+the following packagers available:
 
  * msi - Microsoft Installer
  * rpm - Redhat Package Manger
  * ipkg - Itsy Package Management System
- * tarbz, tarbz and zip
+ * tarbz2 - compressed tar
+ * targz - compressed tar
+ * zip - zip file
+ * src_tarbz2 - compressed tar source
+ * src_targz - compressed tar source
+ * src_zip - zip file source
 
 An updated list is always available under the "package_type" option when
 running "scons --help" on a project that has packaging activated.
-
 <example>
 env = Environment(tools=['default', 'packaging'])
 env.Install('/bin/', 'my_program')
@@ -50,6 +56,8 @@ env.Package( NAME           = 'foo',
              SOURCE_URL     = 'http://foo.org/foo-1.2.3.tar.gz'
         )
 </example>
+</summary>
+</builder>
 
 <cvar name="DESCRIPTION">
 <summary>
@@ -57,12 +65,12 @@ A long description of what the project is about.
 </summary>
 </cvar>
 
-<cvar name="DESCRIPTION_<lang>">
+<cvar name="DESCRIPTION_lang">
 <summary>
-TODO
+A language-specific long description for
+the specified <varname>lang</varname>.
 </summary>
 </cvar>
-
 
 <cvar name="SUMMARY">
 <summary>
@@ -72,7 +80,10 @@ A short summary of what the project is about.
 
 <cvar name="LICENSE">
 <summary>
-The shorthand of the license this project is under (gpl, lpgl, bsd etc.).
+The abbreviated name of the license under which
+this project is released (gpl, lpgl, bsd etc.).
+See http://www.opensource.org/licenses/alphabetical
+for a list of license names.
 </summary>
 </cvar>
 
@@ -90,20 +101,26 @@ The version of the project, given as a string.
 
 <cvar name="PACKAGEVERSION">
 <summary>
-The version of the package, if only changes in the package were done. Currently
-only used by the rpm packager.
+The version of the package (not the underlying project).
+This is currently only used by the rpm packager
+and should reflect changes in the packaging,
+not the underlying project code itself.
 </summary>
 </cvar>
 
 <cvar name="PACKAGETYPE">
 <summary>
-Selects the package type to build. Currently those are available:
+Selects the package type to build.  Currently these are available:
 
  * msi - Microsoft Installer
  * rpm - Redhat Package Manger
  * ipkg - Itsy Package Management System
- * tarbz2, targz and zip - tarball and zip packager
- * src_tarbz2, src_targz and src_zip - source tarbarll and zip packager
+ * tarbz2 - compressed tar
+ * targz - compressed tar
+ * zip - zip file
+ * src_tarbz2 - compressed tar source
+ * src_targz - compressed tar source
+ * src_zip - zip file source
 
 This may be overridden with the "package_type" command line option.
 </summary>
@@ -129,15 +146,8 @@ TODO
 
 <cvar name="PACKAGEROOT">
 <summary>
-defines the directory where all files in resulting archive will be placed if
-applicable. The default value is "$NAME-$VERSION".
-</summary>
-</cvar>
-
-<cvar name="LICENSE">
-<summary>
-Short name of the license your package is under. Example: gpl, lgpl, bsd ...
-See http://www.opensource.org/licenses/alphabetical
+Specifies the directory where all files in resulting archive will be
+placed if applicable.  The default value is "$NAME-$VERSION".
 </summary>
 </cvar>
 
@@ -225,7 +235,7 @@ TODO
 </summary>
 </cvar>
 
-<cvar name="X_RPM_GROUP_<lang>">
+<cvar name="X_RPM_GROUP_lang">
 <summary>
 TODO
 </summary>
@@ -321,7 +331,7 @@ internal, but overridable
 </summary>
 </cvar>
 
-<cvar name="X_RPM_GROUP_<lang>">
+<cvar name="X_RPM_GROUP_lang">
 <summary>
 TODO
 </summary>
@@ -329,8 +339,9 @@ TODO
 
 <cvar name="X_MSI_LICENSE_TEXT">
 <summary>
-The text of the software license in rtf format. Carriage return chars will be
-replaced with the rtf equivalent \\par.
+The text of the software license in RTF format.
+Carriage return characters will be
+replaced with the RTF equivalent \\par.
 </summary>
 </cvar>
 
@@ -400,17 +411,22 @@ TODO
 </summary>
 </cvar>
 
-</builder>
-
 <builder name="Tag">
-Leaves hints for the Package() Builder on how specific should be packaged.
-All those tags are optional.
+<summary>
+Leaves hints for the Package() Builder on how specific
+files or directories should be packaged.
+All tags are optional.
+
 <example>
-Tag( Library( 'lib.c' ), unix-attr="0644" )  # makes sure the built library will
-                                             # be installed with 0644 file
-                                             # access mode
-Tag( 'file2.txt', doc )  # marks file2.txt to be a documentation file
+# makes sure the built library will be installed with 0644 file
+# access mode
+Tag( Library( 'lib.c' ), unix-attr="0644" )
+
+# marks file2.txt to be a documentation file
+Tag( 'file2.txt', doc )
 </example>
+</summary>
+</builder>
 
 <cvar name="INSTALL_LOCATION">
 <summary>
@@ -436,13 +452,13 @@ TODO
 </summary>
 </cvar>
 
-<cvar name="UNIX_ATTR=">
+<cvar name="UNIX_ATTR">
 <summary>
 TODO
 </summary>
 </cvar>
 
-<cvar name="LANG_<lang>">
+<cvar name="LANG_lang">
 <summary>
 TODO
 </summary>
@@ -472,7 +488,7 @@ TODO
 </summary>
 </cvar>
 
-<cvar name="X_MSI_FEATURE=">
+<cvar name="X_MSI_FEATURE">
 <summary>
 TODO
 </summary>
@@ -508,15 +524,16 @@ TODO
 </summary>
 </cvar>
 
-</builder>
-
-<builder name="FindSourceFiles">
-A convenience function which returns all leafs of the build tree.
-</builder>
+<!--
+<function name="FindSourceFiles">
+<summary>
+A convenience function which returns all leaves of the build tree.
+</summary>
+</function>
 
 <builder name="FindInstalledFiles">
-Returns all files "build" by the install builder.
-</builder>
-
-</tool>
-
+<summary>
+Returns all files "built" by the &b-Install; or &b-InstallAs; builders.
+</summary>
+</function>
+-->
