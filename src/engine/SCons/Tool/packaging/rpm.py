@@ -65,8 +65,9 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
         if kw.has_key('ARCHITECTURE'):
             buildarchitecture = kw['ARCHITECTURE']
 
-        srcrpm = '%s-%s-%s.src.rpm' % (NAME, VERSION, PACKAGEVERSION)
-        binrpm = string.replace(srcrpm, 'src', buildarchitecture)
+        fmt = '%s-%s-%s.%s.rpm'
+        srcrpm = fmt % (NAME, VERSION, PACKAGEVERSION, 'src')
+        binrpm = fmt % (NAME, VERSION, PACKAGEVERSION, buildarchitecture)
 
         target = [ srcrpm, binrpm ]
 
