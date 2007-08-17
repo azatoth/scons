@@ -175,6 +175,7 @@
 <!ENTITY Export "<function>Export</function>">
 <!ENTITY File "<function>File</function>">
 <!ENTITY FindFile "<function>FindFile</function>">
+<!ENTITY FindInstalledFiles "<function>FindInstalledFiles</function>">
 <!ENTITY Finish "<function>Finish</function>">
 <!ENTITY GenerateHelpText "<function>GenerateHelpText</function>">
 <!ENTITY GetOption "<function>GetOption</function>">
@@ -217,6 +218,7 @@
 <!ENTITY SourceSignature "<function>SourceSignature</function>">
 <!ENTITY SourceSignatures "<function>SourceSignatures</function>">
 <!ENTITY Split "<function>Split</function>">
+<!ENTITY Tag "<function>Tag</function>">
 <!ENTITY TargetSignatures "<function>TargetSignatures</function>">
 <!ENTITY Task "<function>Task</function>">
 <!ENTITY Touch "<function>Touch</function>">

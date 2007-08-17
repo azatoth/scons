@@ -64,6 +64,8 @@ SCons/Tool/msvs.xml
 SCons/Tool/mwcc.xml
 SCons/Tool/mwld.xml
 SCons/Tool/nasm.xml
+SCons/Tool/packaging.xml
+SCons/Tool/packaging/__init__.xml
 SCons/Tool/pdf.xml
 SCons/Tool/pdflatex.xml
 SCons/Tool/pdftex.xml

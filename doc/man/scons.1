@@ -4668,6 +4668,26 @@ files = Split("""
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
+.RI Tag( node ", " tags )
+Annotates file or directory Nodes with
+information about how the
+.BR Package ()
+Builder should package those files or directories.
+All tags are optional.
+
+.ES
+# makes sure the built library will be installed with 0644 file
+# access mode
+Tag( Library( 'lib.c' ), UNIX_ATTR="0644" )
+
+# marks file2.txt to be a documentation file
+Tag( 'file2.txt', DOC )
+.EE
+</summary>
+</builder>
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
 .RI TargetSignatures( type )
 .TP
 .RI env.TargetSignatures( type )
