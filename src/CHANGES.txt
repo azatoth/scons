@@ -21,6 +21,9 @@ RELEASE 0.XX - XXX
   - Allow env.CacheDir() to be set per construction environment.  The
     global CacheDir() function now sets an overridable global default.
 
+  - Don't execute Configure actions (while reading SConscript files)
+    when cleaning (-c) or getting help (-h or -H).
+
 
 
 RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500

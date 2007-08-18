@@ -766,6 +766,12 @@ def _main(parser):
         CleanTask.execute = CleanTask.show
     if options.question:
         SCons.SConf.dryrun = 1
+    if options.clean or options.help:
+        # If they're cleaning targets or have asked for help, replace
+        # the whole SCons.SConf module with a Null object so that the
+        # Configure() calls when reading the SConscript files don't
+        # actually do anything.
+        SCons.SConf.SConf = SCons.Util.Null
     SCons.SConf.SetCacheMode(options.config)
     SCons.SConf.SetProgressDisplay(progress_display)
 
@@ -838,7 +844,8 @@ def _main(parser):
     memory_stats.append('after reading SConscript files:')
     count_stats.append(('post-', 'read'))
 
-    SCons.SConf.CreateConfigHBuilder(SCons.Defaults.DefaultEnvironment())
+    if not options.help:
+        SCons.SConf.CreateConfigHBuilder(SCons.Defaults.DefaultEnvironment())
 
     # Now re-parse the command-line options (any to the left of a '--'
     # argument, that is) with any user-defined command-line options that
