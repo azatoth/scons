@@ -2831,7 +2831,6 @@ dependency file has been restored to a version with an
 .I earlier
 timestamp, such as can happen when restoring files from backup archives.
 
-
 .HP 6
 .B MD5
 Specifies that a target shall be considered out of date and rebuilt
@@ -2844,6 +2843,32 @@ last time the target was built.
 .B content
 can be used as a synonym for
 .BR MD5 .
+
+.HP 6
+.B MD5-timestamp
+Specifies that a target shall be considered out of date and rebuilt
+if the dependency's content has changed sine the last time
+the target was built,
+except that dependencies with a timestamp that matches
+the last time the target was rebuilt will be
+assumed to be up-to-date and
+.I not
+rebuilt.
+This provides behavior very similar
+to the
+.B MD5
+behavior of always checksumming file contents,
+with an optimization of not checking
+the contents of files whose timestamps haven't changed.
+The drawback is that SCons will
+.I not
+detect if a file's content has changed
+but its timestamp is the same,
+as might happen in an automated script
+that runs a build,
+updates a file,
+and runs the build again,
+all within a single second.
 .RE
 
 .ES

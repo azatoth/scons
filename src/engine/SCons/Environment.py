@@ -1074,6 +1074,9 @@ class Base(SubstitutionEnvironment):
         else:
             return target_env.decide_target(dependency, target, prev_ni)
 
+    def _changed_timestamp_then_content(self, dependency, target, prev_ni):
+        return dependency.changed_timestamp_then_content(target, prev_ni)
+
     def _changed_timestamp_newer(self, dependency, target, prev_ni):
         return dependency.changed_timestamp_newer(target, prev_ni)
 
@@ -1093,6 +1096,8 @@ class Base(SubstitutionEnvironment):
             if not SCons.Util.md5:
                 raise UserError, "MD5 signatures are not available in this version of Python."
             function = self._changed_content
+        elif function == 'MD5-timestamp':
+            function = self._changed_timestamp_then_content
         elif function in ('timestamp-newer', 'make'):
             function = self._changed_timestamp_newer
         elif function == 'timestamp-match':
@@ -1101,7 +1106,7 @@ class Base(SubstitutionEnvironment):
             raise UserError, "Unknown Decider value %s" % repr(function)
 
         # We don't use AddMethod because we don't want to turn the
-        # function, which only expects three arguments, to become a bound
+        # function, which only expects three arguments, into a bound
         # method, which would add self as an initial, fourth argument.
         self.decide_target = function
         self.decide_source = function

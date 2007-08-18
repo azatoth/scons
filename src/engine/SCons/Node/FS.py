@@ -2363,6 +2363,15 @@ class File(Base):
     def changed_state(self, target, prev_ni):
         return (self.state != SCons.Node.up_to_date)
 
+    def changed_timestamp_then_content(self, target, prev_ni):
+        if not self.changed_timestamp_match(target, prev_ni):
+            try:
+                self.get_ninfo().csig = prev_ni.csig
+            except AttributeError:
+                pass
+            return False
+        return self.changed_content(target, prev_ni)
+
     def changed_timestamp_newer(self, target, prev_ni):
         try:
             return self.get_timestamp() > target.get_timestamp()
