@@ -119,11 +119,12 @@ if checkpoint:
         checkpoint = 'r' + revision
     version = version + checkpoint
 
+svn_status = None
+svn_status_lines = []
+
 if svn:
     svn_status = os.popen("%s status --verbose 2> /dev/null" % svn, "r").read()
     svn_status_lines = svn_status[:-1].split('\n')
-else:
-    svn_status_lines = []
 
 build_id = ARGUMENTS.get('BUILD_ID')
 if build_id is None:
