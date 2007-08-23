@@ -94,6 +94,8 @@ class Action:
         return ""
     def strfunction(self, targets, sources, env):
         return ""
+    def get_implicit_deps(self, target, source, env):
+        return []
 
 class Builder:
     def __init__(self, factory, action=Action()):

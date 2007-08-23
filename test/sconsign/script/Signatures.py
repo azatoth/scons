@@ -35,6 +35,10 @@ import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
+CC = test.detect('CC')
+LINK = test.detect('LINK')
+if LINK is None: LINK = CC
+
 # Note:  We don't use os.path.join() representations of the file names
 # in the expected output because paths in the .sconsign files are
 # canonicalized to use / as the separator.
@@ -103,18 +107,22 @@ date_re = r'\S+ \S+ [ \d]\d \d\d:\d\d:\d\d \d\d\d\d'
 test.run_sconsign(arguments = "-e hello.exe -e hello.obj sub1/.sconsign",
          stdout = r"""hello.exe: %(sig_re)s \d+ \d+
         %(sub1_hello_obj)s: %(sig_re)s \d+ \d+
+        %(LINK)s: None \d+ \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s \d+ \d+
         %(sub1_hello_c)s: None \d+ \d+
+        %(CC)s: None \d+ \d+
         %(sig_re)s \[.*\]
 """ % locals())
 
 test.run_sconsign(arguments = "-e hello.exe -e hello.obj -r sub1/.sconsign",
          stdout = r"""hello.exe: %(sig_re)s '%(date_re)s' \d+
         %(sub1_hello_obj)s: %(sig_re)s '%(date_re)s' \d+
+        %(LINK)s: None '%(date_re)s' \d+
         %(sig_re)s \[.*\]
 hello.obj: %(sig_re)s '%(date_re)s' \d+
         %(sub1_hello_c)s: None '%(date_re)s' \d+
+        %(CC)s: None '%(date_re)s' \d+
         %(sig_re)s \[.*\]
 """ % locals())
 

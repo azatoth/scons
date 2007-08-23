@@ -77,6 +77,9 @@ class MyAction(MyActionBase):
         self.order = built_order
         return 0
 
+    def get_implicit_deps(self, target, source, env):
+        return []
+
 class MyExecutor:
     def __init__(self, env=None, targets=[], sources=[]):
         self.env = env

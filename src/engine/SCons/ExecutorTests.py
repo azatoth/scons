@@ -53,6 +53,8 @@ class MyAction:
         return string.join(['GENSTRING'] + map(str, self.actions) + target + source)
     def get_contents(self, target, source, env):
         return string.join(self.actions + target + source)
+    def get_implicit_deps(self, target, source, env):
+        return []
 
 class MyBuilder:
     def __init__(self, env, overrides):
@@ -367,7 +369,7 @@ class ExecutorTestCase(unittest.TestCase):
         t1 = MyNode('t1')
         t2 = MyNode('t2')
         sources = [MyNode('s1'), MyNode('s2')]
-        x = SCons.Executor.Executor('b', env, [{}], [t1, t2], sources)
+        x = SCons.Executor.Executor(MyAction(), env, [{}], [t1, t2], sources)
 
         deps = x.scan_targets(None)
         assert t1.implicit == ['dep-t1', 'dep-t2'], t1.implicit
@@ -386,7 +388,7 @@ class ExecutorTestCase(unittest.TestCase):
         t1 = MyNode('t1')
         t2 = MyNode('t2')
         sources = [MyNode('s1'), MyNode('s2')]
-        x = SCons.Executor.Executor('b', env, [{}], [t1, t2], sources)
+        x = SCons.Executor.Executor(MyAction(), env, [{}], [t1, t2], sources)
 
         deps = x.scan_sources(None)
         assert t1.implicit == ['dep-s1', 'dep-s2'], t1.implicit

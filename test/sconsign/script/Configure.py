@@ -29,12 +29,17 @@ Verify that we can print .sconsign files with Configure context
 info in them (which have different BuildInfo entries).
 """
 
+import os.path
+
 import TestSCons
 import TestSConsign
 
 _obj = TestSCons._obj
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
+
+CC = test.detect('CC')
+CC_dir, CC_file = os.path.split(CC)
 
 # Note:  We don't use os.path.join() representations of the file names
 # in the expected output because paths in the .sconsign files are
@@ -70,7 +75,10 @@ conftest_0.c:
         %(sig_re)s \[.*\]
 conftest_0%(_obj)s:
         %(_sconf_temp_conftest_0_c)s: %(sig_re)s \d+ \d+
+        %(CC)s: %(sig_re)s \d+ \d+
         %(sig_re)s \[.*\]
+=== %(CC_dir)s:
+%(CC_file)s: %(sig_re)s \d+ \d+
 """ % locals()
 
 test.run_sconsign(arguments = ".sconsign",

@@ -20,10 +20,31 @@ more effectively, please sign up for the scons-users mailing list at:
 
 
 
-RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500
+RELEASE 0.97.0d200709XX - XXX
 
   This is the eighth beta release of SCons.  Please consult the
   CHANGES.txt file for a list of specific changes since last release.
+
+  Please note the following important changes since release 0.97.0d20070809:
+
+    --  TARGETS NOW IMPLICITLY DEPEND ON THE COMMAND THAT BUILDS THEM
+
+        For all targets built by calling external commands (such as a
+        compiler or other utility), SCons now adds an implicit dependency
+        on the command(s) used to build the target.
+
+        This will cause rebuilds of all targets built by external commands
+        when running SCons in a tree built by previous version of SCons,
+        in order to update the recorded signatures.
+
+        The old behavior of not having targets depend on the external
+        commands that build them can be preserved by adding Ignore()
+        calls for any targets where the behavior is desired:
+
+                Ignore('/usr/bin/gcc', 'foo.o')
+
+        Adding Ignore() calls like this is compatible with older versions
+        of SCons.
 
   Please note the following important changes since release 0.97:
 

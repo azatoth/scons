@@ -103,8 +103,7 @@ class Executor:
         return build_env
 
     def get_build_scanner_path(self, scanner):
-        """Fetch the scanner path for this executor's targets
-        and sources.
+        """Fetch the scanner path for this executor's targets and sources.
         """
         env = self.get_build_env()
         try:
@@ -227,9 +226,12 @@ class Executor:
         scanner_list = map(select_specific_scanner, scanner_list)
         scanner_list = filter(remove_null_scanners, scanner_list)
         scanner_path_list = map(add_scanner_path, scanner_list)
+
         deps = []
         for node, scanner, path in scanner_path_list:
             deps.extend(node.get_implicit_deps(env, scanner, path))
+
+        deps.extend(self.get_implicit_deps())
 
         for tgt in self.targets:
             tgt.add_to_implicit(deps)
@@ -287,6 +289,15 @@ class Executor:
 
         memo_dict[memo_key] = result
 
+        return result
+
+    def get_implicit_deps(self):
+        """Return the executor's implicit dependencies, i.e. the nodes of
+        the commands to be executed."""
+        result = []
+        build_env = self.get_build_env()
+        for act in self.get_action_list():
+            result.extend(act.get_implicit_deps(self.targets, self.sources, build_env))
         return result
 
 

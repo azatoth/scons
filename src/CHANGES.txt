@@ -25,6 +25,10 @@ RELEASE 0.XX - XXX
     flexible specification of an arbitrary function to decide if a given
     dependency has changed since the last time a target was built.
 
+  From Christoph Wiedemann:
+
+  - Add implicit dependencies on the commands used to build a target.
+
 
 
 RELEASE 0.97.0d20070809 - Fri, 10 Aug 2007 10:51:27 -0500
