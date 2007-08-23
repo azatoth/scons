@@ -51,8 +51,6 @@ test.run(arguments = '.')
 
 test.up_to_date(arguments = '.')
 
-time_content = os.stat('content2.out')[stat.ST_MTIME]
-
 
 
 test.sleep()
@@ -61,6 +59,7 @@ test.write('content1.in', "content1.in 2\n")
 
 test.touch('content2.in')
 
+time_content = os.stat('content3.in')[stat.ST_MTIME]
 test.write('content3.in', "content3.in 2\n")
 test.touch('content3.in', time_content)
 
