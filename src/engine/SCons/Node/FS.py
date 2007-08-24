@@ -2024,6 +2024,120 @@ class File(Base):
         # See test/chained-build.py for the use case.
         self.dir.sconsign().store_info(self.name, self)
 
+    convert_copy_attrs = [
+        'bsources',
+        'bimplicit',
+        'bdepends',
+        'bact',
+        'bactsig',
+        'ninfo',
+    ]
+
+
+    convert_sig_attrs = [
+        'bsourcesigs',
+        'bimplicitsigs',
+        'bdependsigs',
+    ]
+
+    def convert_old_entry(self, old_entry):
+        # Convert a .sconsign entry from before the Big Signature
+        # Refactoring, doing what we can to convert its information
+        # to the new .sconsign entry format.
+        #
+        # The old format looked essentially like this:
+        #
+        #   BuildInfo
+        #       .ninfo (NodeInfo)
+        #           .bsig
+        #           .csig
+        #           .timestamp
+        #           .size
+        #       .bsources
+        #       .bsourcesigs ("signature" list)
+        #       .bdepends
+        #       .bdependsigs ("signature" list)
+        #       .bimplicit
+        #       .bimplicitsigs ("signature" list)
+        #       .bact
+        #       .bactsig
+        #
+        # The new format looks like this:
+        #
+        #   .ninfo (NodeInfo)
+        #       .bsig
+        #       .csig
+        #       .timestamp
+        #       .size
+        #   .binfo (BuildInfo)
+        #       .bsources
+        #       .bsourcesigs (NodeInfo list)
+        #           .bsig
+        #           .csig
+        #           .timestamp
+        #           .size
+        #       .bdepends
+        #       .bdependsigs (NodeInfo list)
+        #           .bsig
+        #           .csig
+        #           .timestamp
+        #           .size
+        #       .bimplicit
+        #       .bimplicitsigs (NodeInfo list)
+        #           .bsig
+        #           .csig
+        #           .timestamp
+        #           .size
+        #       .bact
+        #       .bactsig
+        #
+        # The basic idea of the new structure is that a NodeInfo always
+        # holds all available information about the state of a given Node
+        # at a certain point in time.  The various .b*sigs lists can just
+        # be a list of pointers to the .ninfo attributes of the different
+        # dependent nodes, without any copying of information until it's
+        # time to pickle it for writing out to a .sconsign file.
+        #
+        # The complicating issue is that the *old* format only stored one
+        # "signature" per dependency, based on however the *last* build
+        # was configured.  We don't know from just looking at it whether
+        # it was a build signature, a content signature, or a timestamp
+        # "signature".  Since we no longer use build signatures, the
+        # best we can do is look at the length and if it's thirty two,
+        # assume that it was (or might have been) a content signature.
+        # If it was actually a build signature, then it will cause a
+        # rebuild anyway when it doesn't match the new content signature,
+        # but that's probably the best we can do.
+        import SCons.SConsign
+        new_entry = SCons.SConsign.SConsignEntry()
+        new_entry.binfo = self.new_binfo()
+        binfo = new_entry.binfo
+        for attr in self.convert_copy_attrs:
+            try:
+                value = getattr(old_entry, attr)
+            except AttributeError:
+                pass
+            else:
+                setattr(binfo, attr, value)
+                delattr(old_entry, attr)
+        for attr in self.convert_sig_attrs:
+            try:
+                sig_list = getattr(old_entry, attr)
+            except AttributeError:
+                pass
+            else:
+                value = []
+                for sig in sig_list:
+                    ninfo = self.new_ninfo()
+                    if len(sig) == 32:
+                        ninfo.csig = sig
+                    else:
+                        ninfo.timestamp = sig
+                    value.append(ninfo)
+                setattr(binfo, attr, value)
+                delattr(old_entry, attr)
+        return new_entry
+
     memoizer_counters.append(SCons.Memoize.CountValue('get_stored_info'))
 
     def get_stored_info(self):
@@ -2040,23 +2154,14 @@ class File(Base):
             sconsign_entry.binfo = self.new_binfo()
             sconsign_entry.ninfo = self.new_ninfo()
         else:
-            pass
-            # XXX This is where we need to handle the transition from
-            # old .sconsign file formats.  There's no test for this,
-            # and the code below is from earlier BSR versions which
-            # stuck the NodeInfo object as an attribute of the
-            # BuildInfo object.  Must revisit before this goes live.
-            #
-            #if not hasattr(binfo, 'ninfo'):
-            #    # Transition:  The .sconsign file entry has no NodeInfo
-            #    # object, which means it's a slightly older BuildInfo.
-            #    # Copy over the relevant attributes.
-            #    ninfo = binfo.ninfo = self.BuildInfo(self)
-            #    for attr in ninfo.__dict__.keys():
-            #        try:
-            #            setattr(ninfo, attr, getattr(binfo, attr))
-            #        except AttributeError:
-            #            pass
+            if isinstance(sconsign_entry, FileBuildInfo):
+                # This is a .sconsign file from before the Big Signature
+                # Refactoring; convert it as best we can.
+                sconsign_entry = self.convert_old_entry(sconsign_entry)
+            try:
+                delattr(sconsign_entry.ninfo, 'bsig')
+            except AttributeError:
+                pass
 
         self._memo['get_stored_info'] = sconsign_entry
 
