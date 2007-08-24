@@ -25,9 +25,13 @@ RELEASE 0.XX - XXX
     flexible specification of an arbitrary function to decide if a given
     dependency has changed since the last time a target was built.
 
+  - Don't execute Configure actions (while reading SConscript files)
+    when cleaning (-c) or getting help (-h or -H).
+
   From Christoph Wiedemann:
 
   - Add implicit dependencies on the commands used to build a target.
+
 
 
 
