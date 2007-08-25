@@ -496,6 +496,11 @@ class CommandAction(_ActionAction):
         return env.subst_target_source(cmd, SUBST_SIG, target, source)
 
     def get_implicit_deps(self, target, source, env):
+        icd = env.get('IMPLICIT_COMMAND_DEPENDENCIES', True)
+        if SCons.Util.is_String(icd) and icd[:1] == '$':
+            icd = env.subst(icd)
+        if not icd or icd in ('0', 'None'):
+            return []
         from SCons.Subst import SUBST_SIG
         cmd_list = env.subst_list(self.cmd_list, SUBST_SIG, target, source)
         res = []
