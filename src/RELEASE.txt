@@ -38,12 +38,18 @@ RELEASE 0.97.0d200709XX - XXX
         in order to update the recorded signatures.
 
         The old behavior of not having targets depend on the external
-        commands that build them can be preserved by adding Ignore()
-        calls for any targets where the behavior is desired:
+        commands that build them can be preserved by setting a new
+        $IMPLICIT_COMMAND_DEPENDENCIES construction variable to a
+        non-True value:
 
-                Ignore('/usr/bin/gcc', 'foo.o')
+            env = Environment(IMPLICIT_COMMAND_DEPENDENCIES = 0)
+        
+        or by adding Ignore() calls for any targets where the behavior
+        is desired:
 
-        Adding Ignore() calls like this is compatible with older versions
+            Ignore('/usr/bin/gcc', 'foo.o')
+
+        Both of these settings are compatible with older versions
         of SCons.
 
   Please note the following important changes since release 0.97:
