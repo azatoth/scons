@@ -2795,6 +2795,159 @@ env.SourceCode('.', env.CVS('/usr/local/CVSROOT', 'foo/bar'))
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
+.RI Decider( function )
+.TP
+.RI env.Decider( function )
+Specifies that all up-to-date decisions for
+targets built through this construction environment
+will be handled by the specified
+.IR function .
+The
+.I function
+can be one of the following strings
+that specify the type of decision function
+to be performed:
+
+.RS 10
+.B timestamp-newer
+Specifies that a target shall be considered out of date and rebuilt
+if the dependency's timestamp is newer than the target file's timestamp.
+This is the behavior of the classic Make utility,
+and
+.B make
+can be used a synonym for
+.BR timestamp-newer .
+
+.HP 6
+.B timestamp-match
+Specifies that a target shall be considered out of date and rebuilt
+if the dependency's timestamp is different than the
+timestamp recorded the last time the target was built.
+This provides behavior very similar to the classic Make utility
+(in particular, files are not opened up so that their
+contents can be checksummed)
+except that the target will also be rebuilt if a
+dependency file has been restored to a version with an
+.I earlier
+timestamp, such as can happen when restoring files from backup archives.
+
+.HP 6
+.B MD5
+Specifies that a target shall be considered out of date and rebuilt
+if the dependency's content has changed sine the last time
+the target was built,
+as determined be performing an MD5 checksum
+on the dependency's contents
+and comparing it to the checksum recorded the
+last time the target was built.
+.B content
+can be used as a synonym for
+.BR MD5 .
+
+.HP 6
+.B MD5-timestamp
+Specifies that a target shall be considered out of date and rebuilt
+if the dependency's content has changed sine the last time
+the target was built,
+except that dependencies with a timestamp that matches
+the last time the target was rebuilt will be
+assumed to be up-to-date and
+.I not
+rebuilt.
+This provides behavior very similar
+to the
+.B MD5
+behavior of always checksumming file contents,
+with an optimization of not checking
+the contents of files whose timestamps haven't changed.
+The drawback is that SCons will
+.I not
+detect if a file's content has changed
+but its timestamp is the same,
+as might happen in an automated script
+that runs a build,
+updates a file,
+and runs the build again,
+all within a single second.
+.RE
+
+.ES
+# Use exact timestamp matches by default.
+Decider('timestamp-match')
+
+# Use MD5 content signatures for any targets built
+# with the attached construction environment.
+env.Decider('content')
+.EE
+
+In addition to the above already-available functions,
+the
+.I function
+argument may be an actual Python function
+that takes the following three arguments:
+
+.IP dependency
+The Node (file) which
+should cause the
+.I target
+to be rebuilt
+if it has "changed" since the last tme
+.I target was built.
+
+.IP target
+The Node (file) being built.
+In the normal case,
+this is what should get rebuilt
+if the
+.I dependency
+has "changed."
+
+.IP prev_ni
+Stored information about the state of the
+.I dependency
+the last time the
+.I target
+was built.
+This can be consulted to match various
+file characteristics
+such as the timestamp,
+size, or content signature.
+
+The
+.I function
+should return a
+.B True
+(non-zero)
+value if the
+.I dependency
+has "changed" since the last time
+the
+.I target
+was built
+(indicating that the target
+.I should
+be rebuilt),
+and
+.B False
+(zero)
+otherwise
+(indicating that the target should
+.I not
+be rebuilt).
+Note that the decision can be made
+using whatever criteria are appopriate.
+Ignoring some or all of the function arguments
+is perfectly normal.
+
+.ES
+def my_decider(dependency, target, prev_ni):
+    return not os.path.exists(str(target))
+
+env.Decider(my_decider)
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP 
 .RI Default( targets )
 .TP
 .RI env.Default( targets )
@@ -4449,10 +4602,17 @@ source_nodes = env.subst('$EXPAND_TO_NODELIST',
 .RI SourceSignatures( type )
 .TP
 .RI env.SourceSignatures( type )
-This function tells SCons what type of signature to use for source files:
+This function tells
+.B scons
+how to decide if a source file
+(a file that is not built from any other files)
+has changed since the last time it
+was used to build a particular target file.
+Legal values are
 .B "MD5"
 or
 .BR "timestamp" .
+
 If the environment method is used,
 the specified type of source signature
 is only used when deciding whether targets
@@ -4462,17 +4622,48 @@ the specified type of source signature becomes the default
 used for all decisions
 about whether targets are up-to-date.
 
-"MD5" means the signature of a source file
-is the MD5 checksum of its contents.
-"timestamp" means the signature of a source file
-is its timestamp (modification time).
+.B "MD5"
+means
+.B scons
+decides that a source file has changed
+if the MD5 checksum of its contents has changed since
+the last time it was used to rebuild a particular target file.
+
+.B "timestamp"
+means
+.B scons
+decides that a source file has changed
+if its timestamp (modification time) is newer than
+the last time it was used to rebuild a particular target file.
+
 There is no different between the two behaviors
 for Python
 .BR Value ()
 node objects.
-"MD5" signatures take longer to compute,
-but are more accurate than "timestamp" signatures.
-The default is "MD5".
+
+.B "MD5"
+signatures take longer to compute,
+but are more accurate than
+.B "timestamp"
+signatures.
+The default value is
+.BR "MD5" .
+
+Note that the default
+.BR TargetSignatures ()
+setting (see below)
+is to use this
+.BR SourceSignatures ()
+setting for any target files that are used
+to build other target files.
+Consequently, changing the value of
+.BR SourceSignatures ()
+will, by default,
+affect the up-to-date decision for all files in the build
+(or all files built with a specific construction environment
+when
+.BR env.SourceSignatures ()
+is used).
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
@@ -4525,13 +4716,25 @@ Tag( 'file2.txt', DOC )
 .RI TargetSignatures( type )
 .TP
 .RI env.TargetSignatures( type )
-This function tells SCons what type of signatures to use
-for target files:
-.B "build"
+This function tells
+.B scons
+how to decide if a target file
+(a file that
+.I is
+built from any other files)
+has changed since the last time it
+was used to build some other target file.
+Legal values are
+.BR "build" ;
+.BR "content"
+(or its synonym
+.BR "MD5" );
+.BR "timestamp" ;
 or
-.BR "content" .
+.BR "source" .
+
 If the environment method is used,
-the specified type of signature is only used
+the specified type of target signature is only used
 for targets built with that environment.
 If the global function is used,
 the specified type of signature becomes the default
@@ -4539,16 +4742,94 @@ used for all target files that
 don't have an explicit target signature type
 specified for their environments.
 
-"build" means the signature of a target file
-is made by concatenating all of the
-signatures of all its source files.
-"content" means the signature of a target
-file is an MD5 checksum of its contents.
-"build" signatures are usually faster to compute,
-but "content" signatures can prevent unnecessary rebuilds
+.B "content"
+(or its synonym
+.BR "MD5" )
+means
+.B scons
+decides that a target file has changed
+if the MD5 checksum of its contents has changed since
+the last time it was used to rebuild some other target file.
+This means
+.B scons
+will open up
+MD5 sum the contents
+of target files after they're built,
+and may decide that it does not need to rebuild
+"downstream" target files if a file was
+rebuilt with exactly the same contents as the last time.
+
+.B "timestamp"
+means
+.B scons
+decides that a target file has changed
+if its timestamp (modification time) is newer than
+the last time it was used to rebuild some other target file.
+
+.B "source"
+means
+.B scons
+decides that a target file has changed
+as specified by the corresponding
+.BR SourceSignatures ()
+setting
+.BR "" ( "MD5"
+or
+.BR "timestamp" ).
+This means that
+.B scons
+will treat all input files to a target the same way,
+regardless of whether they are source files
+or have been built from other files.
+
+.B "build"
+means
+.B scons
+decides that a target file has changed
+if it has been rebuilt in this invocation
+or if its content or timestamp have changed
+as specified by the corresponding
+.BR SourceSignatures ()
+setting.
+This "propagates" the status of a rebuilt file
+so that other "downstream" target files
+will always be rebuilt,
+even if the contents or the timestamp
+have not changed.
+
+.B "build"
+signatures are fastest because
+.B "content"
+(or
+.BR "MD5" )
+signatures take longer to compute,
+but are more accurate than
+.B "timestamp"
+signatures,
+and can prevent unnecessary "downstream" rebuilds
 when a target file is rebuilt to the exact same contents
 as the previous build.
-The default is "build".
+The
+.B "source"
+setting provides the most consistent behavior
+when other target files may be rebuilt from
+both source and target input files.
+The default value is
+.BR "source" .
+
+Because the default setting is
+.BR "source" ,
+using
+.BR SourceSignatures ()
+is generally preferable to
+.BR TargetSignatures () ,
+so that the up-to-date decision
+will be consistent for all files
+(or all files built with a specific construction environment).
+Use of
+.BR TargetSignatures ()
+provides specific control for how built target files
+affect their "downstream" dependencies.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
@@ -4605,7 +4886,10 @@ calling
 .BR str( value )
 changes between SCons runs, any targets depending on
 .BR Value( value )
-will be rebuilt.  When using timestamp source signatures, Value Nodes'
+will be rebuilt.
+(This is true even when using timestamps to decide if
+files are up-to-date.)
+When using timestamp source signatures, Value Nodes'
 timestamps are equal to the system time when the Node is created.
 
 The returned Value Node object has a

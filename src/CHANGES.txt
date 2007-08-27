@@ -21,8 +21,25 @@ RELEASE 0.XX - XXX
   - Allow env.CacheDir() to be set per construction environment.  The
     global CacheDir() function now sets an overridable global default.
 
+  - Add an env.Decider() method and a Node.Decider() method that allow
+    flexible specification of an arbitrary function to decide if a given
+    dependency has changed since the last time a target was built.
+
   - Don't execute Configure actions (while reading SConscript files)
     when cleaning (-c) or getting help (-h or -H).
+
+  - Add to each target an implicit dependency on the external command(s)
+    used to build the target, as found by searching env['ENV']['PATH']
+    for the first argument on each executed command line.
+
+  - Add support for a $IMPLICIT_COMMAND_DEPENDENCIES construction
+    variabe that can be used to disable the automatic implicit
+    dependency on executed commands.
+
+  From Christoph Wiedemann:
+
+  - Add implicit dependencies on the commands used to build a target.
+
 
 
 

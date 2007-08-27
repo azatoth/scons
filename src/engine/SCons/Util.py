@@ -51,6 +51,11 @@ ListType        = types.ListType
 StringType      = types.StringType
 TupleType       = types.TupleType
 
+def dictify(keys, values, result={}):
+    for k, v in zip(keys, values):
+        result[k] = v
+    return result
+
 _altsep = os.altsep
 if _altsep is None and sys.platform == 'win32':
     # My ActivePython 2.0.1 doesn't set os.altsep!  What gives?
@@ -300,7 +305,7 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
         tags.append(' S'[IDX(root.side_effect)])
         tags.append(' P'[IDX(root.precious)])
         tags.append(' A'[IDX(root.always_build)])
-        tags.append(' C'[IDX(root.current())])
+        tags.append(' C'[IDX(root.is_up_to_date())])
         tags.append(' N'[IDX(root.noclean)])
         tags.append(' H'[IDX(root.nocache)])
         tags.append(']')
@@ -996,6 +1001,8 @@ class LogicalLines:
             result.append(line)
         return result
 
+
+
 class Unbuffered:
     """
     A proxy class that wraps a file object, flushing after every write,
@@ -1099,6 +1106,35 @@ def RenameFunction(function, name):
                         function.func_globals,
                         name,
                         func_defaults)
+
+
+md5 = False
+def MD5signature(s):
+    return str(s)
+
+try:
+    import hashlib
+except ImportError:
+    pass
+else:
+    if hasattr(hashlib, 'md5'):
+        md5 = True
+        def MD5signature(s):
+            m = hashlib.md5()
+            m.update(str(s))
+            return m.hexdigest()
+
+def MD5collect(signatures):
+    """
+    Collects a list of signatures into an aggregate signature.
+
+    signatures - a list of signatures
+    returns - the aggregate signature
+    """
+    if len(signatures) == 1:
+        return signatures[0]
+    else:
+        return MD5signature(string.join(signatures, ', '))
 
 
 

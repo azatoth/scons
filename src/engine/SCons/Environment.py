@@ -53,7 +53,6 @@ import SCons.Node.FS
 import SCons.Node.Python
 import SCons.Platform
 import SCons.SConsign
-import SCons.Sig
 import SCons.Subst
 import SCons.Tool
 import SCons.Util
@@ -802,17 +801,6 @@ class Base(SubstitutionEnvironment):
         except KeyError:
             return None
 
-    def get_calculator(self):
-        try:
-            module = self._calc_module
-            c = apply(SCons.Sig.Calculator, (module,), CalculatorArgs)
-        except AttributeError:
-            # Note that we're calling get_calculator() here, so the
-            # DefaultEnvironment() must have a _calc_module attribute
-            # to avoid infinite recursion.
-            c = SCons.Defaults.DefaultEnvironment().get_calculator()
-        return c
-
     def get_CacheDir(self):
         try:
             return self._CacheDir
@@ -901,13 +889,21 @@ class Base(SubstitutionEnvironment):
         """
         self._dict.update(dict)
 
-    def use_build_signature(self):
+    def get_src_sig_type(self):
         try:
-            return self._build_signature
+            return self.src_sig_type
         except AttributeError:
-            b = SCons.Defaults.DefaultEnvironment()._build_signature
-            self._build_signature = b
-            return b
+            t = SCons.Defaults.DefaultEnvironment().src_sig_type
+            self.src_sig_type = t
+            return t
+
+    def get_tgt_sig_type(self):
+        try:
+            return self.tgt_sig_type
+        except AttributeError:
+            t = SCons.Defaults.DefaultEnvironment().tgt_sig_type
+            self.tgt_sig_type = t
+            return t
 
     #######################################################################
     # Public methods for manipulating an Environment.  These begin with
@@ -1061,6 +1057,59 @@ class Base(SubstitutionEnvironment):
 
     def Copy(self, *args, **kw):
         return apply(self.Clone, args, kw)
+
+    def _changed_build(self, dependency, target, prev_ni):
+        if dependency.changed_state(target, prev_ni):
+            return 1
+        return self.decide_source(dependency, target, prev_ni)
+
+    def _changed_content(self, dependency, target, prev_ni):
+        return dependency.changed_content(target, prev_ni)
+
+    def _changed_source(self, dependency, target, prev_ni):
+        target_env = dependency.get_build_env()
+        type = target_env.get_tgt_sig_type()
+        if type == 'source':
+            return target_env.decide_source(dependency, target, prev_ni)
+        else:
+            return target_env.decide_target(dependency, target, prev_ni)
+
+    def _changed_timestamp_then_content(self, dependency, target, prev_ni):
+        return dependency.changed_timestamp_then_content(target, prev_ni)
+
+    def _changed_timestamp_newer(self, dependency, target, prev_ni):
+        return dependency.changed_timestamp_newer(target, prev_ni)
+
+    def _changed_timestamp_match(self, dependency, target, prev_ni):
+        return dependency.changed_timestamp_match(target, prev_ni)
+
+    def decide_source(self, dependency, target, prev_ni):
+        f = SCons.Defaults.DefaultEnvironment().decide_source
+        return f(dependency, target, prev_ni)
+
+    def decide_target(self, dependency, target, prev_ni):
+        f = SCons.Defaults.DefaultEnvironment().decide_target
+        return f(dependency, target, prev_ni)
+
+    def Decider(self, function):
+        if function in ('MD5', 'content'):
+            if not SCons.Util.md5:
+                raise UserError, "MD5 signatures are not available in this version of Python."
+            function = self._changed_content
+        elif function == 'MD5-timestamp':
+            function = self._changed_timestamp_then_content
+        elif function in ('timestamp-newer', 'make'):
+            function = self._changed_timestamp_newer
+        elif function == 'timestamp-match':
+            function = self._changed_timestamp_match
+        elif not callable(function):
+            raise UserError, "Unknown Decider value %s" % repr(function)
+
+        # We don't use AddMethod because we don't want to turn the
+        # function, which only expects three arguments, into a bound
+        # method, which would add self as an initial, fourth argument.
+        self.decide_target = function
+        self.decide_source = function
 
     def Detect(self, progs):
         """Return the first available program in progs.
@@ -1659,21 +1708,15 @@ class Base(SubstitutionEnvironment):
 
     def SourceSignatures(self, type):
         type = self.subst(type)
+        self.src_sig_type = type
         if type == 'MD5':
-            try:
-                import SCons.Sig.MD5
-            except ImportError:
-                msg = "No MD5 module available, using time stamps"
-                SCons.Warnings.warn(SCons.Warnings.NoMD5ModuleWarning, msg)
-                import SCons.Sig.TimeStamp
-                self._calc_module = SCons.Sig.TimeStamp
-            else:
-                self._calc_module = SCons.Sig.MD5
+            if not SCons.Util.md5:
+                raise UserError, "MD5 signatures are not available in this version of Python."
+            self.decide_source = self._changed_content
         elif type == 'timestamp':
-            import SCons.Sig.TimeStamp
-            self._calc_module = SCons.Sig.TimeStamp
+            self.decide_source = self._changed_timestamp_newer
         else:
-            raise UserError, "Unknown source signature type '%s'"%type
+            raise UserError, "Unknown source signature type '%s'" % type
 
     def Split(self, arg):
         """This function converts a string or list into a list of strings
@@ -1695,12 +1738,19 @@ class Base(SubstitutionEnvironment):
 
     def TargetSignatures(self, type):
         type = self.subst(type)
-        if type == 'build':
-            self._build_signature = 1
-        elif type == 'content':
-            self._build_signature = 0
+        self.tgt_sig_type = type
+        if type in ('MD5', 'content'):
+            if not SCons.Util.md5:
+                raise UserError, "MD5 signatures are not available in this version of Python."
+            self.decide_target = self._changed_content
+        elif type == 'timestamp':
+            self.decide_target = self._changed_timestamp_newer
+        elif type == 'build':
+            self.decide_target = self._changed_build
+        elif type == 'source':
+            self.decide_target = self._changed_source
         else:
-            raise SCons.Errors.UserError, "Unknown target signature type '%s'"%type
+            raise UserError, "Unknown target signature type '%s'"%type
 
     def Value(self, value, built_value=None):
         """

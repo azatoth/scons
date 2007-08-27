@@ -1,10 +1,4 @@
-"""SCons.Sig.TimeStamp
-
-The TimeStamp signature package for the SCons software construction
-utility.
-
-"""
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -30,46 +24,52 @@ utility.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-def current(new, old):
-    """Return whether a new timestamp is up-to-date with
-    respect to an old timestamp.
-    """
-    return not old is None and new <= old
+"""
+Verify that we can call get_csig() from a function action without
+causing problems.  (This messed up a lot of internal state before
+the Big Signature Refactoring.)
 
-def collect(signatures):
-    """
-    Collect a list of timestamps, returning
-    the most-recent timestamp from the list 
+Test case courtesy of Damyan Pepper.
+"""
 
-    signatures - a list of timestamps
-    returns - the most recent timestamp
-    """
+import TestSCons
 
-    if len(signatures) == 0:
-        return 0
-    elif len(signatures) == 1:
-        return signatures[0]
-    else:
-        return max(signatures)
+test = TestSCons.TestSCons()
 
-def signature(obj):
-    """Generate a timestamp.
-    """
-    return obj.get_timestamp()
+args = "--debug=explain"
 
-def to_string(signature):
-    """Convert a timestamp to a string"""
-    return str(signature)
+test.write('SConstruct', """\
+env = Environment()
 
-def from_string(string):
-    """Convert a string to a timestamp"""
-    try:
-        return int(string)
-    except ValueError:
-        # if the signature isn't an int, then
-        # the user probably just switched from
-        # MD5 signatures to timestamp signatures,
-        # so ignore the error:
-        return None
+def action( source, target, env ):
+    target[0].get_csig()
+    f = open( str(target[0]), 'w' )
+    for s in source:
+        f.write( s.get_contents() )
+    f.close()
+
+builder = env.Builder( action=action )
+
+builder( env, target = "target.txt", source = "source.txt" )
+""")
+
+test.write("source.txt", "source.txt 1\n")
+
+test.run(arguments=args)
 
 
+
+test.write("source.txt", "source.txt 2")
+
+
+
+expect_rebuild = test.wrap_stdout("""\
+scons: rebuilding `target.txt' because `source.txt' changed
+action(["target.txt"], ["source.txt"])
+""")
+
+test.not_up_to_date(arguments=args)
+
+
+
+test.pass_test()

@@ -117,9 +117,9 @@ class CacheDir:
 
     def __init__(self, path):
         try:
-            import SCons.Sig.MD5
+            import hashlib
         except ImportError:
-            msg = "No MD5 module available, CacheDir() not supported"
+            msg = "No hashlib or MD5 module available, CacheDir() not supported"
             SCons.Warnings.warn(SCons.Warnings.NoMD5ModuleWarning, msg)
         else:
             self.path = path
@@ -203,5 +203,7 @@ class CacheDir:
 class Null(SCons.Util.Null):
     def repr(self):
         return 'CacheDir.Null()'
+    def cachepath(self, node):
+        return None, None
     def retrieve(self, node):
         return False

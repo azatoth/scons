@@ -1,9 +1,4 @@
-"""SCons.Sig
-
-The Signature package for the scons software construction utility.
-
-"""
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -29,25 +24,43 @@ The Signature package for the scons software construction utility.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-try:
-    import MD5
-    default_module = MD5
-except ImportError:
-    import TimeStamp
-    default_module = TimeStamp
+"""
+Test that multiple target files get retrieved from a CacheDir correctly.
+"""
 
-class Calculator:
-    """
-    Encapsulates signature calculations and .sconsign file generating
-    for the build engine.
-    """
+import os.path
+import shutil
 
-    def __init__(self, module=default_module):
-        """
-        Initialize the calculator.
+import TestSCons
 
-        module - the signature module to use for signature calculations
-        """
-        self.module = module
+test = TestSCons.TestSCons()
 
-default_calc = Calculator()
+test.subdir('cache')
+
+test.write('SConstruct', """\
+def touch(env, source, target):
+    open('foo', 'w').write("")
+    open('bar', 'w').write("")
+CacheDir(r'%s')
+env = Environment()
+env.Command(['foo', 'bar'], ['input'], touch)
+""" % (test.workpath('cache')))
+
+test.write('input', "multiple/input\n")
+
+test.run()
+
+test.must_exist(test.workpath('foo'))
+test.must_exist(test.workpath('bar'))
+
+test.run(arguments = '-c')
+
+test.must_not_exist(test.workpath('foo'))
+test.must_not_exist(test.workpath('bar'))
+
+test.run()
+
+test.must_exist(test.workpath('foo'))
+test.must_exist(test.workpath('bar'))
+
+test.pass_test()
