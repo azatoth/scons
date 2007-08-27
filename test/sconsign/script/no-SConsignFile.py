@@ -112,14 +112,14 @@ test.run_sconsign(arguments = "sub1/.sconsign", stdout=expect)
 #print test.stdout()
 
 test.run_sconsign(arguments = "--raw sub1/.sconsign",
-         stdout = r"""hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-hello.exe: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(sub1_hello_obj)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(LINK)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+         stdout = r"""hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+hello.exe: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(sub1_hello_obj)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(LINK)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
         %(sig_re)s \[.*\]
-hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(sub1_hello_c)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(CC)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(sub1_hello_c)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(CC)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
         %(sig_re)s \[.*\]
 """ % locals())
 

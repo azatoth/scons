@@ -267,7 +267,7 @@ def nodeinfo_raw(name, ninfo, prefix=""):
     # to do, except that we want the keys sorted for deterministic output.
     d = ninfo.__dict__
     try:
-        keys = ninfo.field_list
+        keys = ninfo.field_list + ['_version_id']
     except AttributeError:
         keys = d.keys()
         keys.sort()

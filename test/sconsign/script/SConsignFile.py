@@ -132,33 +132,33 @@ inc2.h: %(sig_re)s \d+ \d+
 
 test.run_sconsign(arguments = "--raw .sconsign",
          stdout = r"""=== .:
-SConstruct: {'csig': None, 'timestamp': \d+, 'size': \d+L?}
+SConstruct: {'csig': None, 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
 === %(CC_dir)s:
-%(CC_file)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+%(CC_file)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
 === sub1:
-hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-hello.exe: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(sub1_hello_obj)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(LINK)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+hello.exe: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(sub1_hello_obj)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(LINK)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
         %(sig_re)s \[.*\]
-hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(sub1_hello_c)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(CC)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(sub1_hello_c)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(CC)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
         %(sig_re)s \[.*\]
 === sub2:
-hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-hello.exe: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(sub2_hello_obj)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(LINK)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+hello.c: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+hello.exe: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(sub2_hello_obj)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(LINK)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
         %(sig_re)s \[.*\]
-hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(sub2_hello_c)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(sub2_inc1_h)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(sub2_inc2_h)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-        %(CC)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+hello.obj: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(sub2_hello_c)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(sub2_inc1_h)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(sub2_inc2_h)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+        %(CC)s: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
         %(sig_re)s \[.*\]
-inc1.h: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
-inc2.h: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?}
+inc1.h: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
+inc2.h: {'csig': '%(sig_re)s', 'timestamp': \d+, 'size': \d+L?, '_version_id': 1}
 """ % locals())
 
 expect = r"""=== .:

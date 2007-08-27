@@ -53,7 +53,6 @@ import UserList
 from SCons.Debug import logInstanceCreation
 import SCons.Executor
 import SCons.Memoize
-import SCons.SConsign
 import SCons.Util
 
 from SCons.Debug import Trace
@@ -108,11 +107,11 @@ class NodeInfoBase:
     Node subclasses should subclass NodeInfoBase to provide their own
     logic for dealing with their own Node-specific signature information.
     """
+    current_version_id = 1
     def __init__(self, node):
-        """A null initializer so that subclasses have a superclass
-        initialization method to call for future use.
-        """
-        pass
+        # Create an object attribute from the class attribute so it ends up
+        # in the pickled data in the .sconsign file.
+        self._version_id = self.current_version_id
     def update(self, node):
         try:
             field_list = self.field_list
@@ -123,8 +122,12 @@ class NodeInfoBase:
                 delattr(self, f)
             except AttributeError:
                 pass
-            func = getattr(node, 'get_' + f)
-            setattr(self, f, func())
+            try:
+                func = getattr(node, 'get_' + f)
+            except AttributeError:
+                pass
+            else:
+                setattr(self, f, func())
     def convert(self, node, val):
         pass
     def merge(self, other):
@@ -158,7 +161,11 @@ class BuildInfoBase:
     generic build stuff we have to track:  sources, explicit dependencies,
     implicit dependencies, and action information.
     """
+    current_version_id = 1
     def __init__(self, node):
+        # Create an object attribute from the class attribute so it ends up
+        # in the pickled data in the .sconsign file.
+        self._version_id = self.current_version_id
         self.bsourcesigs = []
         self.bdependsigs = []
         self.bimplicitsigs = []

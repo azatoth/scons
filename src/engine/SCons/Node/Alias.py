@@ -57,12 +57,13 @@ class AliasNameSpace(UserDict.UserDict):
             return None
 
 class AliasNodeInfo(SCons.Node.NodeInfoBase):
+    current_version_id = 1
     field_list = ['csig']
     def str_to_node(self, s):
         return default_ans.Alias(s)
 
 class AliasBuildInfo(SCons.Node.BuildInfoBase):
-    pass
+    current_version_id = 1
 
 class Alias(SCons.Node.Node):
 

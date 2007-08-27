@@ -32,13 +32,15 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import SCons.Node
 
 class ValueNodeInfo(SCons.Node.NodeInfoBase):
+    current_version_id = 1
+
     field_list = ['csig']
 
     def str_to_node(self, s):
         return Value(s)
 
 class ValueBuildInfo(SCons.Node.BuildInfoBase):
-    pass
+    current_version_id = 1
 
 class Value(SCons.Node.Node):
     """A class for Python variables, typically passed on the command line 

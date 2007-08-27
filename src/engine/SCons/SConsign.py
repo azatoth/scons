@@ -116,6 +116,11 @@ class SConsignEntry:
     XXX As coded below, we do expect a '.binfo' attribute to be added,
     but we'll probably generalize this in the next refactorings.
     """
+    current_version_id = 1
+    def __init__(self):
+        # Create an object attribute from the class attribute so it ends up
+        # in the pickled data in the .sconsign file.
+        _version_id = self.current_version_id
     def convert_to_sconsign(self):
         self.binfo.convert_to_sconsign()
     def convert_from_sconsign(self, dir, name):

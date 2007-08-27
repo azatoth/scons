@@ -230,7 +230,8 @@ class NodeInfoBaseTestCase(unittest.TestCase):
         ni2.a3 = 333
 
         ni1.merge(ni2)
-        assert ni1.__dict__ == {'a1':1, 'a2':222, 'a3':333}, ni1.__dict__
+        expect = {'a1':1, 'a2':222, 'a3':333, '_version_id':1}
+        assert ni1.__dict__ == expect, ni1.__dict__
 
     def test_update(self):
         """Test the update() method"""
@@ -245,7 +246,7 @@ class NodeInfoBaseTestCase(unittest.TestCase):
         ni1.zzz = 'z'
 
         f = ni1.format()
-        assert f == ['x', 'y', 'z'], f
+        assert f == ['1', 'x', 'y', 'z'], f
 
         ni1.field_list = ['xxx', 'zzz', 'aaa']
 

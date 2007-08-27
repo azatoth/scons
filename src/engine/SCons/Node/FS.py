@@ -1162,6 +1162,8 @@ class FS(LocalFS):
 
 class DirNodeInfo(SCons.Node.NodeInfoBase):
     # This should get reset by the FS initialization.
+    current_version_id = 1
+
     top = None
 
     def str_to_node(self, s):
@@ -1174,7 +1176,7 @@ class DirNodeInfo(SCons.Node.NodeInfoBase):
         return n
 
 class DirBuildInfo(SCons.Node.BuildInfoBase):
-    pass
+    current_version_id = 1
 
 class Dir(Base):
     """A class for directories in a file system.
@@ -1809,6 +1811,8 @@ class RootDir(Dir):
         return _null
 
 class FileNodeInfo(SCons.Node.NodeInfoBase):
+    current_version_id = 1
+
     field_list = ['csig', 'timestamp', 'size']
 
     # This should get reset by the FS initialization.
@@ -1823,16 +1827,9 @@ class FileNodeInfo(SCons.Node.NodeInfoBase):
             n = top.root._lookup_abs(s, Entry)
         return n
 
-    def get_csig(self):
-        return self.csig
-
-    def get_size(self):
-        return self.size
-
-    def get_timestamp(self):
-        return self.timestamp
-
 class FileBuildInfo(SCons.Node.BuildInfoBase):
+    current_version_id = 1
+
     def convert_to_sconsign(self):
         """
         Converts this FileBuildInfo object for writing to a .sconsign file
