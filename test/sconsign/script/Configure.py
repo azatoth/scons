@@ -38,7 +38,7 @@ _obj = TestSCons._obj
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
-CC = test.detect('CC')
+CC = test.detect('CC', norm=1)
 CC_dir, CC_file = os.path.split(CC)
 
 # Note:  We don't use os.path.join() representations of the file names

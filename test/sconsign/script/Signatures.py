@@ -35,8 +35,8 @@ import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
-CC = test.detect('CC')
-LINK = test.detect('LINK')
+CC = test.detect('CC', norm=1)
+LINK = test.detect('LINK', norm=1)
 if LINK is None: LINK = CC
 
 # Note:  We don't use os.path.join() representations of the file names

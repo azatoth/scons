@@ -35,9 +35,9 @@ import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
-CC = test.detect('CC')
+CC = test.detect('CC', norm=1)
 CC_dir, CC_file = os.path.split(CC)
-LINK = test.detect('LINK')
+LINK = test.detect('LINK', norm=1)
 if LINK is None: LINK = CC
 
 test.subdir('sub1', 'sub2')

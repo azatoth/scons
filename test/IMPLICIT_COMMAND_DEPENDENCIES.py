@@ -71,6 +71,7 @@ env = Environment(BUILDERS = {
                   BUILD_PY = 'build.py',
                   )
 env.PrependENVPath('PATH', '.')
+env.PrependENVPath('PATHEXT', '.PY')
 env0        = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES = 0)
 env1        = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES = 1)
 envNone     = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES = None)
