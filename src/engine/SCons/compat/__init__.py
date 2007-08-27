@@ -60,7 +60,7 @@ _scons_subprocess.py is our compatibility module for subprocess) so
 that we can still try to import the real module name and fall back to
 our compatibility module if we get an ImportError.  The import_as()
 function defined below loads the module as the "real" name (without the
-underscore), after which all of the "import {module}" statements in the
+'_scons'), after which all of the "import {module}" statements in the
 rest of our code will find our pre-loaded compatibility module.
 """
 
@@ -78,6 +78,19 @@ def import_as(module, name):
     imp.load_module(name, file, filename, suffix_mode_type)
 
 import builtins
+
+try:
+    import hashlib
+except ImportError:
+    # Pre-2.5 Python has no hashlib module.
+    try:
+        import_as('_scons_hashlib', 'hashlib')
+    except ImportError:
+        # If we failed importing our compatibility module, it probably
+        # means this version of Python has no md5 module.  Don't do
+        # anything and let the higher layer discover this fact, so it
+        # can fall back to using timestamp.
+        pass
 
 try:
     set

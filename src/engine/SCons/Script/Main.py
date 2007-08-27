@@ -64,7 +64,6 @@ import SCons.Node
 import SCons.Node.FS
 import SCons.SConf
 import SCons.Script
-import SCons.Sig
 import SCons.Taskmaster
 import SCons.Util
 import SCons.Warnings
@@ -276,6 +275,12 @@ class CleanTask(SCons.Taskmaster.Task):
 
     execute = remove
 
+    # We want the Taskmaster to update the Node states (and therefore
+    # handle reference counts, etc.), but we don't want to call
+    # back to the Node's post-build methods, which would do things
+    # we don't want, like store .sconsign information.
+    executed = SCons.Taskmaster.Task.executed_without_callbacks
+
     # Have the taskmaster arrange to "execute" all of the targets, because
     # we'll figure out ourselves (in remove() or show() above) whether
     # anything really needs to be done.
@@ -290,7 +295,8 @@ class QuestionTask(SCons.Taskmaster.Task):
         pass
     
     def execute(self):
-        if self.targets[0].get_state() != SCons.Node.up_to_date:
+        if self.targets[0].get_state() != SCons.Node.up_to_date or \
+           (self.top and not self.targets[0].exists()):
             global exit_status
             exit_status = 1
             self.tm.stop()

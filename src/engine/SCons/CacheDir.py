@@ -116,13 +116,7 @@ CachePush = SCons.Action.Action(CachePushFunc, None)
 class CacheDir:
 
     def __init__(self, path):
-        try:
-            import SCons.Sig.MD5
-        except ImportError:
-            msg = "No MD5 module available, CacheDir() not supported"
-            SCons.Warnings.warn(SCons.Warnings.NoMD5ModuleWarning, msg)
-        else:
-            self.path = path
+        self.path = path
 
     def CacheDebugWrite(self, fmt, target, cachefile):
         self.debugFP.write(fmt % (target, os.path.split(cachefile)[1]))
@@ -203,5 +197,7 @@ class CacheDir:
 class Null(SCons.Util.Null):
     def repr(self):
         return 'CacheDir.Null()'
+    def cachepath(self, node):
+        return None, None
     def retrieve(self, node):
         return False
