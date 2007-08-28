@@ -2255,8 +2255,8 @@ class File(Base):
         max_drift = self.fs.max_drift
         if max_drift > 0:
             if (time.time() - mtime) > max_drift:
-                n = old.ninfo
                 try:
+                    n = old.ninfo
                     if n.timestamp and n.csig and n.timestamp == mtime:
                         csig = n.csig
                 except AttributeError:
