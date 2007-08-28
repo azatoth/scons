@@ -42,6 +42,7 @@ from SCons.Util import make_path_relative
 #
 # We keep track of *all* installed files.
 _INSTALLED_FILES = []
+_UNIQUE_INSTALLED_FILES = None
 
 #
 # Functions doing the actual work of the Install Builder.
@@ -101,12 +102,9 @@ def add_targets_to_INSTALLED_FILES(target, source, env):
     _INSTALLED_FILES global variable. This way all installed files of one
     scons call will be collected.
     """
-    global _INSTALLED_FILES
-    files = _INSTALLED_FILES
-    #files.extend( [ x for x in target if not x in files ] )
-    for x in target:
-        if not x in files:
-            files.append(x)
+    global _INSTALLED_FILES, _UNIQUE_INSTALLED_FILES
+    _INSTALLED_FILES.extend(target)
+    _UNIQUE_INSTALLED_FILES = None
     return (target, source)
 
 class DESTDIR_factory:

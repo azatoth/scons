@@ -216,7 +216,9 @@ def FindInstalledFiles(env, source=[], target=[]):
     """ returns the list of all targets of the Install and InstallAs Builder.
     """
     from SCons.Tool import install
-    return install._INSTALLED_FILES
+    if install._UNIQUE_INSTALLED_FILES is None:
+        install._UNIQUE_INSTALLED_FILES = SCons.Util.uniquer_hashables(install._INSTALLED_FILES)
+    return install._UNIQUE_INSTALLED_FILES
 
 #
 # SCons tool initialization functions
