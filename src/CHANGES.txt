@@ -36,6 +36,10 @@ RELEASE 0.XX - XXX
     variabe that can be used to disable the automatic implicit
     dependency on executed commands.
 
+  - Add an "ensure_suffix" keyword to Builder() definitions that, when
+    true, will add the configured suffix to the targets even if it looks
+    like they already have a different suffix.
+
   From Christoph Wiedemann:
 
   - Add implicit dependencies on the commands used to build a target.

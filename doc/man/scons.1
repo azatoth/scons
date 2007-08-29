@@ -6291,6 +6291,33 @@ b = Builder("build_it < $SOURCE > $TARGET",
                        "$SRC_SFX_A": gen_suffix })
 .EE
 
+.IP ensure_suffix
+When set to any true value, causes 
+.B scons
+to add the target suffix specified by the
+.I suffix
+keyword to any target strings
+that have a different suffix.
+(The default behavior is to leave untouched
+any target file name that looks like it already has any suffix.)
+
+.ES
+b1 = Builder("build_it < $SOURCE > $TARGET"
+             suffix = ".out")
+b2 = Builder("build_it < $SOURCE > $TARGET"
+             suffix = ".out",
+             ensure_suffix)
+env = Environment()
+env['BUILDERS']['B1'] = b1
+env['BUILDERS']['B2'] = b2
+
+# Builds "foo.txt" because ensure_suffix is not set.
+env.B1('foo.txt', 'foo.in')
+
+# Builds "bar.txt.out" because ensure_suffix is set.
+env.B2('bar.txt', 'bar.in')
+.EE
+
 .IP src_suffix
 The expected source file name suffix.  This may be a string or a list
 of strings.

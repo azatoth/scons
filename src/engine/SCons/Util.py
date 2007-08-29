@@ -891,13 +891,16 @@ else:
     def case_sensitive_suffixes(s1, s2):
         return (os.path.normcase(s1) != os.path.normcase(s2))
 
-def adjustixes(fname, pre, suf):
+def adjustixes(fname, pre, suf, ensure_suffix=False):
     if pre:
         path, fn = os.path.split(os.path.normpath(fname))
         if fn[:len(pre)] != pre:
             fname = os.path.join(path, pre + fn)
-    # Only append a suffix if the file does not have one.
-    if suf and not splitext(fname)[1] and fname[-len(suf):] != suf:
+    # Only append a suffix if the suffix we're going to add isn't already
+    # there, and if either we've been asked to ensure the specific suffix
+    # is present or there's no suffix on it at all.
+    if suf and fname[-len(suf):] != suf and \
+       (ensure_suffix or not splitext(fname)[1]):
             fname = fname + suf
     return fname
 
