@@ -79,12 +79,76 @@ progress_display = SCons.Util.DisplayEngine()
 first_command_start = None
 last_command_end = None
 
+class Progressor:
+    prev = ''
+    count = 0
+    target_string = '$TARGET'
+
+    def __init__(self, obj, interval=1, file=None, overwrite=False):
+        if file is None:
+            file = sys.stdout
+
+        self.obj = obj
+        self.file = file
+        self.interval = interval
+        self.overwrite = overwrite
+
+        if callable(obj):
+            self.func = obj
+        elif SCons.Util.is_List(obj):
+            self.func = self.spinner
+        elif string.find(obj, self.target_string) != -1:
+            self.func = self.replace_string
+        else:
+            self.func = self.string
+
+    def write(self, s):
+        self.file.write(s)
+        self.file.flush()
+        self.prev = s
+
+    def erase_previous(self):
+        if self.prev:
+            length = len(self.prev)
+            if self.prev[-1] in ('\n', '\r'):
+                length = length - 1
+            self.write(' ' * length + '\r')
+            self.prev = ''
+
+    def spinner(self, node):
+        self.write(self.obj[self.count % len(self.obj)])
+
+    def string(self, node):
+        self.write(self.obj)
+
+    def replace_string(self, node):
+        self.write(string.replace(self.obj, self.target_string, str(node)))
+
+    def __call__(self, node):
+        self.count = self.count + 1
+        if (self.count % self.interval) == 0:
+            if self.overwrite:
+                self.erase_previous()
+            self.func(node)
+
+ProgressObject = SCons.Util.Null()
+
+def Progress(*args, **kw):
+    global ProgressObject
+    ProgressObject = apply(Progressor, args, kw)
+
 # Task control.
 #
 class BuildTask(SCons.Taskmaster.Task):
     """An SCons build task."""
+    progress = ProgressObject
+
     def display(self, message):
         display('scons: ' + message)
+
+    def prepare(self):
+        self.progress(self.targets[0])
+        return SCons.Taskmaster.Task.prepare(self)
 
     def execute(self):
         for target in self.targets:
@@ -984,6 +1048,8 @@ def _main(parser):
                 failure_message = "cleaning terminated because of errors."
     except AttributeError:
         pass
+
+    task_class.progress = ProgressObject
 
     if options.random:
         def order(dependencies):

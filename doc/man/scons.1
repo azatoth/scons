@@ -3860,6 +3860,124 @@ will work on Windows systems.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
+.RI Progress( callable ", [" interval ])
+.TP
+.RI Progress( string ", [" interval ", " file ", " overwrite ])
+.TP
+.RI Progress( list_of_strings ", [" interval ", " file ", " overwrite ])
+Allows SCons to show progress made during the build
+by displaying a string or calling a function while
+evaluating Nodes (e.g. files).
+
+If the first specified argument is a Python callable
+(a function or an object that has a
+.BR __call__ ()
+method),
+the function will be called
+once every
+.I interval
+times a Node is evaluated.
+The callable will be passed the evaluated Node
+as its only argument.
+(For future compatibility,
+it's a good idea to also add
+.B *args
+and
+.B **kw
+as arguments to your function or method.
+This will prevent the code from breaking
+if SCons ever changes the interface
+to call the function with additional arguments in the future.)
+
+An example of a simple custom progress function
+that prints a string containing the Node name
+every 10 Nodes:
+
+.ES
+def my_progress_function(node, *args, **kw):
+    print 'Evaluating node %s!' % node
+Progress(my_progress_function, interval=10)
+.EE
+.IP
+A more complicated example of a custom progress display object
+that prints a string containing a count
+every 100 evaluated Nodes.
+Note the use of
+.B \\\\r
+(a carriage return)
+at the end so that the string
+will overwrite itself on a display:
+
+.ES
+import sys
+class ProgressCounter:
+    count = 0
+    def __call__(self, node, *args, **kw):
+        self.count += 100
+        sys.stderr.write('Evaluated %s nodes\\r' % self.count)
+Progress(ProgressCounter(), interval=100)
+.EE
+.IP
+If the first argument
+.BR Progress ()
+is a string,
+the string will be displayed
+every
+.I interval
+evaluated Nodes.
+The default is to print the string on standard output;
+an alternate output stream
+may be specified with the
+.B file=
+argument.
+The following will print a series of dots
+on the error output,
+one dot for every 100 evaluated Nodes:
+
+.ES
+import sys
+Progress('.', interval=100, file=sys.stderr)
+.EE
+.IP
+If the string contains the verbatim substring
+.B $TARGET,
+it will be replaced with the Node.
+Note that, for performance reasons, this is
+.I not
+a regular SCons variable substition,
+so you can not use other variables
+or use curly braces.
+The following example will print the name of
+every evaluated Node,
+using a
+.B \\\\r
+(carriage return) to cause each line to overwritten by the next line,
+and the
+.B overwrite=
+keyword argument to make sure the previously-printed
+file name is overwritten with blank spaces:
+
+.ES
+import sys
+Progress('$TARGET\\r', overwrite=True)
+.EE
+.IP
+If the first argument to
+.BR Progress ()
+is a list of strings,
+then each string in the list will be displayed
+in rotating fashion every
+.I interval
+evaluated Nodes.
+This can be used to implement a "spinner"
+on the user's screen as follows:
+
+.ES
+Progress(['-\\r', '\\\\\\r', '|\\r', '/\\r'], interval=5)
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
 .RI Precious( target ", ...)"
 .TP
 .RI env.Precious( target ", ...)"

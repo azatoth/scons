@@ -40,6 +40,9 @@ RELEASE 0.XX - XXX
     true, will add the configured suffix to the targets even if it looks
     like they already have a different suffix.
 
+  - Add a Progress() function that allows for calling a function or string
+    (or list of strings) to display progress while walking the DAG.
+
   From Christoph Wiedemann:
 
   - Add implicit dependencies on the commands used to build a target.

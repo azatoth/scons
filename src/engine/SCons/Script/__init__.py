@@ -110,6 +110,7 @@ QuestionTask            = Main.QuestionTask
 AddOption               = Main.AddOption
 GetOption               = Main.GetOption
 SetOption               = Main.SetOption
+Progress                = Main.Progress
 
 #keep_going_on_error     = Main.keep_going_on_error
 #print_dtree             = Main.print_dtree
