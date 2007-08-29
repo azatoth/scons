@@ -759,7 +759,7 @@ class TestCmd:
                                  stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
-                                 universal_newlines=True)
+                                 universal_newlines=False)
 
         if stdin:
             if is_List(stdin):
