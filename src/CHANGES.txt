@@ -43,6 +43,10 @@ RELEASE 0.XX - XXX
   - Add a Progress() function that allows for calling a function or string
     (or list of strings) to display progress while walking the DAG.
 
+  From Gary Oberbrunner:
+
+  - Add support for the Intel C compiler on Windows64.
+
   From Sohail Somani:
 
   - When Cloning a construction environment, set any variables before
