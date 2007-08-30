@@ -1044,14 +1044,19 @@ class Base(SubstitutionEnvironment):
 
         clone._memo = {}
 
-        apply_tools(clone, tools, toolpath)
-
-        # Apply passed-in variables after the new tools.
+        # Apply passed-in variables before the tools
+        # so the tools can use the new variables
         kw = copy_non_reserved_keywords(kw)
         new = {}
         for key, value in kw.items():
             new[key] = SCons.Subst.scons_subst_once(value, self, key)
         apply(clone.Replace, (), new)
+
+        apply_tools(clone, tools, toolpath)
+
+        # apply them again in case the tools overwrote them
+        apply(clone.Replace, (), new)        
+
         if __debug__: logInstanceCreation(self, 'Environment.EnvironmentClone')
         return clone
 

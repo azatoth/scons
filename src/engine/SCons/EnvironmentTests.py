@@ -1640,6 +1640,25 @@ def generate(env):
         env = env.Clone(tools=['yyy'])
         assert env['YYY'] == 'two', env['YYY']
 
+
+        # Test that
+        real_value = [4]
+
+        def my_tool(env, rv=real_value):
+            assert env['KEY_THAT_I_WANT'] == rv[0]
+            env['KEY_THAT_I_WANT'] = rv[0] + 1
+
+        env = self.TestEnvironment()
+
+        real_value[0] = 5
+        env = env.Clone(KEY_THAT_I_WANT=5, tools=[my_tool])
+        assert env['KEY_THAT_I_WANT'] == real_value[0], env['KEY_THAT_I_WANT']
+
+        real_value[0] = 6
+        env = env.Clone(KEY_THAT_I_WANT=6, tools=[my_tool])
+        assert env['KEY_THAT_I_WANT'] == real_value[0], env['KEY_THAT_I_WANT']
+
+
     def test_Copy(self):
         """Test copying using the old env.Copy() method"""
         env1 = self.TestEnvironment(XXX = 'x', YYY = 'y')
