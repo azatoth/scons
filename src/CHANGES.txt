@@ -43,6 +43,11 @@ RELEASE 0.XX - XXX
   - Add a Progress() function that allows for calling a function or string
     (or list of strings) to display progress while walking the DAG.
 
+  From Greg Ward:
+
+  - Add a $JAVABOOTCLASSPATH variable for directories to be passed to the
+    javac -bootclasspath option.
+
   From Christoph Wiedemann:
 
   - Add implicit dependencies on the commands used to build a target.
