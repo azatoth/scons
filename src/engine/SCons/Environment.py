@@ -38,6 +38,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import copy
 import os
 import os.path
+import shlex
 import string
 from UserDict import UserDict
 
@@ -542,7 +543,7 @@ class SubstitutionEnvironment:
             #  -R dir          (deprecated linker rpath)
             # IBM compilers may also accept -qframeworkdir=foo
     
-            params = string.split(arg)
+            params = shlex.split(arg)
             append_next_arg_to = None   # for multi-word args
             for arg in params:
                 if append_next_arg_to:

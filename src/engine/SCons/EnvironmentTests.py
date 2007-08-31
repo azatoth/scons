@@ -729,7 +729,9 @@ sys.exit(1)
         assert d == empty, d
 
         s = "-I/usr/include/fum -I bar -X\n" + \
+            '-I"C:\\Program Files\\ASCEND\\include" ' + \
             "-L/usr/fax -L foo -lxxx -l yyy " + \
+            '-L"C:\\Program Files\\ASCEND" -lascend ' + \
             "-Wa,-as -Wl,-link " + \
             "-Wl,-rpath=rpath1 " + \
             "-Wl,-R,rpath2 " + \
@@ -743,7 +745,7 @@ sys.exit(1)
             "-pthread " + \
             "-mno-cygwin -mwindows " + \
             "-arch i386 -isysroot /tmp +DD64 " + \
-            "-DFOO -DBAR=value -D BAZ"
+            "-DFOO -DBAR=value -D BAZ "
 
         d = env.ParseFlags(s)
 
@@ -755,11 +757,15 @@ sys.exit(1)
                                   '+DD64'], d['CCFLAGS']
         assert d['CPPDEFINES'] == ['FOO', ['BAR', 'value'], 'BAZ'], d['CPPDEFINES']
         assert d['CPPFLAGS'] == ['-Wp,-cpp'], d['CPPFLAGS']
-        assert d['CPPPATH'] == ['/usr/include/fum', 'bar'], d['CPPPATH']
+        assert d['CPPPATH'] == ['/usr/include/fum',
+                                'bar',
+                                'C:\\Program Files\\ASCEND\\include'], d['CPPPATH']
         assert d['FRAMEWORKPATH'] == ['fwd1', 'fwd2', 'fwd3'], d['FRAMEWORKPATH']
         assert d['FRAMEWORKS'] == ['Carbon'], d['FRAMEWORKS']
-        assert d['LIBPATH'] == ['/usr/fax', 'foo'], d['LIBPATH']
-        assert d['LIBS'] == ['xxx', 'yyy'], d['LIBS']
+        assert d['LIBPATH'] == ['/usr/fax',
+                                'foo',
+                                'C:\\Program Files\\ASCEND'], d['LIBPATH']
+        assert d['LIBS'] == ['xxx', 'yyy', 'ascend'], d['LIBS']
         assert d['LINKFLAGS'] == ['-Wl,-link', '-pthread',
                                   '-mno-cygwin', '-mwindows',
                                   ('-arch', 'i386'),
