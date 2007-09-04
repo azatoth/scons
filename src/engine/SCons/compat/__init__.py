@@ -125,6 +125,25 @@ except ImportError:
     # Pre-2.3 Python has no optparse module.
     import_as('_scons_optparse', 'optparse')
 
+import shlex
+try:
+    shlex.split
+except AttributeError:
+    # Pre-2.3 Python has no shlex.split function.
+    def split(s, comments=False):
+        import StringIO
+        lex = shlex.shlex(StringIO.StringIO(s))
+        lex.wordchars = lex.wordchars + '/\\-+,=:'
+        result = []
+        while True:
+            tt = lex.get_token()
+            if not tt:
+                break
+            result.append(tt)
+        return result
+    shlex.split = split
+    del split
+
 try:
     import subprocess
 except ImportError:
