@@ -57,6 +57,7 @@ SCons/Script/__init__.py
 SCons/Script/Main.py
 SCons/Script/SConscript.py
 SCons/Script/SConsOptions.py
+SCons/Sig.py
 SCons/Subst.py
 SCons/Taskmaster.py
 SCons/Tool/__init__.py
