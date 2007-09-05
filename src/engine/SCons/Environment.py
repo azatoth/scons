@@ -248,6 +248,7 @@ class SubstitutionEnvironment:
         self.lookup_list = SCons.Node.arg2nodes_lookups
         self._dict = kw.copy()
         self._init_special()
+        self.added_methods = []
         #self._memo = {}
 
     def _init_special(self):
@@ -451,6 +452,12 @@ class SubstitutionEnvironment:
         the default name is the name of the function itself.
         """
         SCons.Util.AddMethod(self, function, name)
+        try:
+            added_methods = self.added_methods
+        except AttributeError:
+            pass
+        else:
+            added_methods.append((function, name))
 
     def Override(self, overrides):
         """
@@ -747,6 +754,7 @@ class Base(SubstitutionEnvironment):
         self.lookup_list = SCons.Node.arg2nodes_lookups
         self._dict = semi_deepcopy(SCons.Defaults.ConstructionEnvironment)
         self._init_special()
+        self.added_methods = []
 
         self._dict['BUILDERS'] = BuilderDict(self._dict['BUILDERS'], self)
 
@@ -1057,6 +1065,11 @@ class Base(SubstitutionEnvironment):
 
         # apply them again in case the tools overwrote them
         apply(clone.Replace, (), new)        
+
+        to_be_added_methods = self.added_methods[:]
+        self.added_methods = []
+        for func, name in to_be_added_methods:
+            clone.AddMethod(func, name)
 
         if __debug__: logInstanceCreation(self, 'Environment.EnvironmentClone')
         return clone
