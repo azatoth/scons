@@ -146,27 +146,25 @@ def generate(env):
                   action="store",
                   help='A directory under which all installed files will be placed.')
 
-    try:
-        env['BUILDERS']['Install']
-        env['BUILDERS']['InstallAs']
-
-    except KeyError, e:
+    global BaseInstallBuilder
+    if BaseInstallBuilder is None:
         install_sandbox = GetOption('install_sandbox')
         if install_sandbox:
             target_factory = DESTDIR_factory(env, install_sandbox)
         else:
             target_factory = env.fs
 
-        global BaseInstallBuilder
-        if BaseInstallBuilder is None:
-            BaseInstallBuilder = SCons.Builder.Builder(
-                                  action         = install_action,
-                                  target_factory = target_factory.Entry,
-                                  source_factory = env.fs.Entry,
-                                  multi          = 1,
-                                  emitter        = [ add_targets_to_INSTALLED_FILES, ],
-                                  name           = 'InstallBuilder')
+        BaseInstallBuilder = SCons.Builder.Builder(
+                              action         = install_action,
+                              target_factory = target_factory.Entry,
+                              source_factory = env.fs.Entry,
+                              multi          = 1,
+                              emitter        = [ add_targets_to_INSTALLED_FILES, ],
+                              name           = 'InstallBuilder')
 
+    try:
+        env['BUILDERS']['Install']
+    except KeyError, e:
         global InstallBuilder
         if InstallBuilder is None:
             def InstallBuilderWrapper(env, target, source, dir=None, target_factory=target_factory):
@@ -191,6 +189,11 @@ def generate(env):
 
             InstallBuilder = InstallBuilderWrapper
 
+        env['BUILDERS']['Install']   = InstallBuilder
+
+    try:
+        env['BUILDERS']['InstallAs']
+    except KeyError, e:
         global InstallAsBuilder
         if InstallAsBuilder is None:
             def InstallAsBuilderWrapper(env, target, source):
@@ -201,7 +204,6 @@ def generate(env):
 
             InstallAsBuilder = InstallAsBuilderWrapper
 
-        env['BUILDERS']['Install']   = InstallBuilder
         env['BUILDERS']['InstallAs'] = InstallAsBuilder
 
     # We'd like to initialize this doing something like the following,
