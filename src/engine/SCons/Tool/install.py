@@ -129,8 +129,41 @@ class DESTDIR_factory:
 install_action   = SCons.Action.Action(installFunc, stringFunc)
 installas_action = SCons.Action.Action(installFunc, stringFunc)
 
-InstallBuilder, InstallAsBuilder = None, None
 BaseInstallBuilder               = None
+
+def InstallBuilderWrapper(env, target, source, dir=None):
+    if target and dir:
+        raise SCons.Errors.UserError, "Both target and dir defined for Install(), only one may be defined."
+    if not dir:
+        dir=target
+
+    import SCons.Script
+    install_sandbox = SCons.Script.GetOption('install_sandbox')
+    if install_sandbox:
+        target_factory = DESTDIR_factory(env, install_sandbox)
+    else:
+        target_factory = env.fs
+
+    try:
+        dnodes = env.arg2nodes(dir, target_factory.Dir)
+    except TypeError:
+        raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
+    sources = env.arg2nodes(source, env.fs.Entry)
+    tgt = []
+    for dnode in dnodes:
+        for src in sources:
+            # Prepend './' so the lookup doesn't interpret an initial
+            # '#' on the file name portion as meaning the Node should
+            # be relative to the top-level SConstruct directory.
+            target = env.fs.Entry('.'+os.sep+src.name, dnode)
+            tgt.extend(BaseInstallBuilder(env, target, src))
+    return tgt
+
+def InstallAsBuilderWrapper(env, target, source):
+    result = []
+    for src, tgt in map(lambda x, y: (x, y), source, target):
+        result.extend(BaseInstallBuilder(env, tgt, src))
+    return result
 
 added = None
 
@@ -165,46 +198,12 @@ def generate(env):
     try:
         env['BUILDERS']['Install']
     except KeyError, e:
-        global InstallBuilder
-        if InstallBuilder is None:
-            def InstallBuilderWrapper(env, target, source, dir=None, target_factory=target_factory):
-                if target and dir:
-                    raise SCons.Errors.UserError, "Both target and dir defined for Install(), only one may be defined."
-                if not dir:
-                    dir=target
-                try:
-                    dnodes = env.arg2nodes(dir, target_factory.Dir)
-                except TypeError:
-                    raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
-                sources = env.arg2nodes(source, env.fs.Entry)
-                tgt = []
-                for dnode in dnodes:
-                    for src in sources:
-                        # Prepend './' so the lookup doesn't interpret an initial
-                        # '#' on the file name portion as meaning the Node should
-                        # be relative to the top-level SConstruct directory.
-                        target = env.fs.Entry('.'+os.sep+src.name, dnode)
-                        tgt.extend(BaseInstallBuilder(env, target, src))
-                return tgt
-
-            InstallBuilder = InstallBuilderWrapper
-
-        env['BUILDERS']['Install']   = InstallBuilder
+        env['BUILDERS']['Install']   = InstallBuilderWrapper
 
     try:
         env['BUILDERS']['InstallAs']
     except KeyError, e:
-        global InstallAsBuilder
-        if InstallAsBuilder is None:
-            def InstallAsBuilderWrapper(env, target, source):
-                result = []
-                for src, tgt in map(lambda x, y: (x, y), source, target):
-                    result.extend(BaseInstallBuilder(env, tgt, src))
-                return result
-
-            InstallAsBuilder = InstallAsBuilderWrapper
-
-        env['BUILDERS']['InstallAs'] = InstallAsBuilder
+        env['BUILDERS']['InstallAs'] = InstallAsBuilderWrapper
 
     # We'd like to initialize this doing something like the following,
     # but there isn't yet support for a ${SOURCE.type} expansion that
