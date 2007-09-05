@@ -46,6 +46,10 @@ RELEASE 0.XX - XXX
   - Allow ParseConfig(), MergeFlags() and ParseFlags() to handle output
     from a *config command with quoted path names that contain spaces.
 
+  - Make the Return() function stop processing the SConscript file and
+    return immediately.  Add a "stop=" keyword argument that can be set
+    to False to preserve the old behavior.
+
   From Gary Oberbrunner:
 
   - Add support for the Intel C compiler on Windows64.

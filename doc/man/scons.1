@@ -4147,20 +4147,46 @@ method.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI Return( vars )
-This tells
-.B scons
-what variable(s) to use as the return value(s) of the current SConscript
-file. These variables will be returned to the "calling" SConscript file
-as the return value(s) of 
-.BR SConscript ().
-Multiple variable names should be passed to 
+.RI Return([ vars "... , " stop= ])
+By default,
+this stops processing the current SConscript
+file and returns to the calling SConscript file
+the values of the variables named in the
+.I vars
+string arguments.
+Multiple strings contaning variable names may be passed to
+.BR Return ().
+Any strings that contain white space
+
+The optional
+.B stop=
+keyword argument may be set to a false value
+to continue processing the rest of the SConscript
+file after the
 .BR Return ()
-as a list. Example:
+call.
+This was the default behavior prior to SCons 0.98.
+However, the values returned
+are still the values of the variables in the named
+.I vars
+at the point
+.BR Return ()
+is called.
+
+Examples:
 
 .ES
+# Returns without returning a value.
+Return()
+
+# Returns the value of the 'foo' Python variable.
 Return("foo")
-Return(["foo", "bar"])
+
+# Returns the values of the Python variables 'foo' and 'bar'.
+Return("foo", "bar")
+
+# Returns the values of Python variables 'val1' and 'val2'.
+Return('val1 val2')
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

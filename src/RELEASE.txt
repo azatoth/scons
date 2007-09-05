@@ -91,6 +91,22 @@ RELEASE 0.97.0d200709XX - XXX
         value would lead to unpredictable behavior, usually including
         rebuilding targets.
 
+    --  THE Return() FUNCTION NOW ACTUALLY RETURNS IMMEDIATELY
+
+        The Return() function now immediately stops processing the
+        SConscript file in which it appears and returns the values of the
+        variables named in its arguments.  It used to continue processing
+        the rest of the SConscript file, and then return the values of the
+        specified variables at the point the Return() function was called.
+
+        The old behavior may be requested by adding a "stop=False"
+        keyword argument to the Return() call:
+
+                Return('value', stop=False)
+
+        The "stop=" keyword argument is *not* compatible with SCons
+        versions 0.97.0d20070809 or earlier.
+
   Please note the following important changes since release 0.97:
 
     --  env.CacheDir() NOW ONLY AFFECTS CONSTRUCTION ENVIRONMENT TARGETS

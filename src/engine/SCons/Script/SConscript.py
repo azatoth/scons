@@ -65,6 +65,9 @@ import UserList
 #CommandLineTargets = []
 #DefaultTargets = []
 
+class SConscriptReturn(Exception):
+    pass
+
 launch_dir = os.path.abspath(os.curdir)
 
 GlobalDict = None
@@ -135,7 +138,7 @@ call_stack = []
 
 # For documentation on the methods in this file, see the scons man-page
 
-def Return(*vars):
+def Return(*vars, **kw):
     retval = []
     try:
         for var in vars:
@@ -148,6 +151,11 @@ def Return(*vars):
         call_stack[-1].retval = retval[0]
     else:
         call_stack[-1].retval = tuple(retval)
+
+    stop = kw.get('stop', True)
+
+    if stop:
+        raise SConscriptReturn
 
 
 stack_bottom = '% Stack boTTom %' # hard to define a variable w/this name :)
@@ -246,7 +254,10 @@ def _SConscript(fs, *files, **kw):
                     except KeyError:
                         pass
                     try:
-                        exec _file_ in call_stack[-1].globals
+                        try:
+                            exec _file_ in call_stack[-1].globals
+                        except SConscriptReturn:
+                            pass
                     finally:
                         if old_file is not None:
                             call_stack[-1].globals.update({__file__:old_file})
