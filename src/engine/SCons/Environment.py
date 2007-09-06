@@ -160,11 +160,6 @@ class MethodWrapper:
     object as the first argument, simulating the Python behavior of
     supplying "self" on method calls.
 
-    If the underlying object has a dynamic_methods attribute, we also add
-    ourselves to that list, so that our clone() method can be called to
-    "re-bind" the underlying method to a new object as part of copying
-    the underlying object.
-
     We hang on to the name by which the method was added to the underlying
     base class so that we can provide a method to "clone" ourselves onto
     a new underlying object being copied (without which we wouldn't need
@@ -176,14 +171,7 @@ class MethodWrapper:
         self.object = object
         self.method = method
         self.name = name
-
         setattr(self.object, name, self)
-        try:
-            dm = object.dynamic_methods
-        except AttributeError:
-            pass
-        else:
-            dm.append(self)
 
     def __call__(self, *args, **kwargs):
         nargs = (self.object,) + args
@@ -224,6 +212,9 @@ class BuilderWrapper(MethodWrapper):
         if not source is None and not SCons.Util.is_List(source):
             source = [source]
         return apply(MethodWrapper.__call__, (self, target, source) + args, kw)
+
+    def __repr__(self):
+        return '<BuilderWrapper %s>' % repr(self.name)
 
     def __getattr__(self, name):
         if name == 'env':
@@ -317,7 +308,7 @@ class SubstitutionEnvironment:
         self.lookup_list = SCons.Node.arg2nodes_lookups
         self._dict = kw.copy()
         self._init_special()
-        self.dynamic_methods = []
+        self.added_methods = []
         #self._memo = {}
 
     def _init_special(self):
@@ -520,7 +511,16 @@ class SubstitutionEnvironment:
         environment with the specified name.  If the name is omitted,
         the default name is the name of the function itself.
         """
-        MethodWrapper(self, function, name)
+        method = MethodWrapper(self, function, name)
+        self.added_methods.append(method)
+
+    def RemoveMethod(self, function):
+        """
+        Removes the specified function's MethodWrapper from the
+        added_methods list, so we don't re-bind it when making a clone.
+        """
+        is_not_func = lambda dm, f=function: not dm.method is f
+        self.added_methods = filter(is_not_func, self.added_methods)
 
     def Override(self, overrides):
         """
@@ -817,7 +817,7 @@ class Base(SubstitutionEnvironment):
         self.lookup_list = SCons.Node.arg2nodes_lookups
         self._dict = semi_deepcopy(SCons.Defaults.ConstructionEnvironment)
         self._init_special()
-        self.dynamic_methods = []
+        self.added_methods = []
 
         self._dict['BUILDERS'] = BuilderDict(self._dict['BUILDERS'], self)
 
@@ -847,6 +847,8 @@ class Base(SubstitutionEnvironment):
                 # No value may have been set if they tried to pass in a
                 # reserved variable name like TARGETS.
                 pass
+
+        SCons.Tool.Initializers(self)
 
         if tools is None:
             tools = self._dict.get('TOOLS', None)
@@ -1116,8 +1118,8 @@ class Base(SubstitutionEnvironment):
         else:
             clone._dict['BUILDERS'] = BuilderDict(cbd, clone)
 
-        clone.dynamic_methods = []
-        for mw in self.dynamic_methods:
+        clone.added_methods = []
+        for mw in self.added_methods:
             mw.clone(clone)
 
         clone._memo = {}
