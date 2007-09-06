@@ -903,7 +903,11 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
 
 
 
-    def test_Builder_execs(self):
+    # This unit test is currently disabled because we don't think the
+    # underlying method it tests (Environment.BuilderWrapper.execute())
+    # is necessary, but we're leaving the code here for now in case
+    # that's mistaken.
+    def _DO_NOT_test_Builder_execs(self):
         """Test Builder execution through different environments
 
         One environment is initialized with a single
@@ -927,8 +931,10 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
         assert built_it['out3']
 
         env4 = env3.Clone()
-        assert env4.builder1.env is env4, "builder1.env (%s) == env3 (%s)?" % (env4.builder1.env, env3)
-        assert env4.builder2.env is env4, "builder2.env (%s) == env3 (%s)?" % (env4.builder1.env, env3)
+        assert env4.builder1.env is env4, "builder1.env (%s) == env3 (%s)?" % (
+env4.builder1.env, env3)
+        assert env4.builder2.env is env4, "builder2.env (%s) == env3 (%s)?" % (
+env4.builder1.env, env3)
 
         # Now test BUILDERS as a dictionary.
         built_it = {}
@@ -947,6 +953,8 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
         env6.bar.execute(target='out2')
         assert built_it['out1']
         assert built_it['out2']
+
+
 
     def test_Scanners(self):
         """Test setting SCANNERS in various ways
@@ -1605,15 +1613,15 @@ def exists(env):
         #
         env1 = self.TestEnvironment(BUILDERS = {'b1' : 1})
         assert hasattr(env1, 'b1'), "env1.b1 was not set"
-        assert env1.b1.env == env1, "b1.env doesn't point to env1"
+        assert env1.b1.object == env1, "b1.object doesn't point to env1"
         env2 = env1.Clone(BUILDERS = {'b2' : 2})
         assert env2 is env2
         assert env2 == env2
         assert hasattr(env1, 'b1'), "b1 was mistakenly cleared from env1"
-        assert env1.b1.env == env1, "b1.env was changed"
+        assert env1.b1.object == env1, "b1.object was changed"
         assert not hasattr(env2, 'b1'), "b1 was not cleared from env2"
         assert hasattr(env2, 'b2'), "env2.b2 was not set"
-        assert env2.b2.env == env2, "b2.env doesn't point to env2"
+        assert env2.b2.object == env2, "b2.object doesn't point to env2"
 
         # Ensure that specifying new tools in a copied environment
         # works.

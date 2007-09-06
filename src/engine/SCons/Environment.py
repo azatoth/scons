@@ -125,8 +125,9 @@ def _set_BUILDERS(env, key, value):
         for k in bd.keys():
             del bd[k]
     except KeyError:
-        env._dict[key] = BuilderDict(kwbd, env)
-    env._dict[key].update(value)
+        bd = BuilderDict(kwbd, env)
+        env._dict[key] = bd
+    bd.update(value)
 
 def _del_SCANNERS(env, key):
     del env._dict[key]
@@ -136,13 +137,84 @@ def _set_SCANNERS(env, key, value):
     env._dict[key] = value
     env.scanner_map_delete()
 
-class BuilderWrapper:
-    """Wrapper class that associates an environment with a Builder at
-    instantiation."""
-    def __init__(self, env, builder):
-        self.env = env
-        self.builder = builder
 
+
+# The following is partly based on code in a comment added by Peter
+# Shannon at the following page (there called the "transplant" class):
+#
+# ASPN : Python Cookbook : Dynamically added methods to a class
+# http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/81732
+#
+# We had independently been using the idiom as BuilderWrapper, but
+# factoring out the common parts into this base class, and making
+# BuilderWrapper a subclass that overrides __call__() to enforce specific
+# Builder calling conventions, simplified some of our higher-layer code.
+
+class MethodWrapper:
+    """
+    A generic Wrapper class that associates a method (which can
+    actually be any callable) with an object.  As part of creating this
+    MethodWrapper object an attribute with the specified (by default,
+    the name of the supplied method) is added to the underlying object.
+    When that new "method" is called, our __call__() method adds the
+    object as the first argument, simulating the Python behavior of
+    supplying "self" on method calls.
+
+    If the underlying object has a dynamic_methods attribute, we also add
+    ourselves to that list, so that our clone() method can be called to
+    "re-bind" the underlying method to a new object as part of copying
+    the underlying object.
+
+    We hang on to the name by which the method was added to the underlying
+    base class so that we can provide a method to "clone" ourselves onto
+    a new underlying object being copied (without which we wouldn't need
+    to save that info).
+    """
+    def __init__(self, object, method, name=None):
+        if name is None:
+            name = method.__name__
+        self.object = object
+        self.method = method
+        self.name = name
+
+        setattr(self.object, name, self)
+        try:
+            dm = object.dynamic_methods
+        except AttributeError:
+            pass
+        else:
+            dm.append(self)
+
+    def __call__(self, *args, **kwargs):
+        nargs = (self.object,) + args
+        return apply(self.method, nargs, kwargs)
+
+    def clone(self, new_object):
+        """
+        Returns an object that re-binds the underlying "method" to
+        the specified new object.
+        """
+        return self.__class__(new_object, self.method, self.name)
+
+class BuilderWrapper(MethodWrapper):
+    """
+    A MethodWrapper subclass that that associates an environment with
+    a Builder.
+
+    This mainly exists to wrap the __call__() function so that all calls
+    to Builders can have their argument lists massaged in the same way
+    (treat a lone argument as the source, treat two arguments as target
+    then source, make sure both target and source are lists) without
+    having to have cut-and-paste code to do it.
+
+    As a bit of obsessive backwards compatibility, we also intercept
+    attempts to get or set the "env" or "builder" attributes, which were
+    the names we used before we put the common functionality into the
+    MethodWrapper base class.  We'll keep this around for a while in case
+    people shipped Tool modules that reached into the wrapper (like the
+    Tool/qt.py module does, or did).  There shouldn't be a lot attribute
+    fetching or setting on these, so a little extra work shouldn't hurt.
+    """
     def __call__(self, target=None, source=_null, *args, **kw):
         if source is _null:
             source = target
@@ -151,7 +223,23 @@ class BuilderWrapper:
             target = [target]
         if not source is None and not SCons.Util.is_List(source):
             source = [source]
-        return apply(self.builder, (self.env, target, source) + args, kw)
+        return apply(MethodWrapper.__call__, (self, target, source) + args, kw)
+
+    def __getattr__(self, name):
+        if name == 'env':
+            return self.object
+        elif name == 'builder':
+            return self.method
+        else:
+            return self.__dict__[name]
+
+    def __setattr__(self, name, value):
+        if name == 'env':
+            self.object = value
+        elif name == 'builder':
+            self.method = value
+        else:
+            self.__dict__[name] = value
 
     # This allows a Builder to be executed directly
     # through the Environment to which it's attached.
@@ -160,9 +248,9 @@ class BuilderWrapper:
     # But we do have a unit test for this, and can't
     # yet rule out that it would be useful in the
     # future, so leave it for now.
-    def execute(self, **kw):
-        kw['env'] = self.env
-        apply(self.builder.execute, (), kw)
+    #def execute(self, **kw):
+    #    kw['env'] = self.env
+    #    apply(self.builder.execute, (), kw)
 
 class BuilderDict(UserDict):
     """This is a dictionary-like class used by an Environment to hold
@@ -181,26 +269,7 @@ class BuilderDict(UserDict):
 
     def __setitem__(self, item, val):
         UserDict.__setitem__(self, item, val)
-        try:
-            self.setenvattr(item, val)
-        except AttributeError:
-            # Have to catch this because sometimes __setitem__ gets
-            # called out of __init__, when we don't have an env
-            # attribute yet, nor do we want one!
-            pass
-
-    def setenvattr(self, item, val):
-        """Set the corresponding environment attribute for this Builder.
-
-        If the value is already a BuilderWrapper, we pull the builder
-        out of it and make another one, so that making a copy of an
-        existing BuilderDict is guaranteed separate wrappers for each
-        Builder + Environment pair."""
-        try:
-            builder = val.builder
-        except AttributeError:
-            builder = val
-        setattr(self.env, item, BuilderWrapper(self.env, builder))
+        BuilderWrapper(self.env, val, item)
 
     def __delitem__(self, item):
         UserDict.__delitem__(self, item)
@@ -248,7 +317,7 @@ class SubstitutionEnvironment:
         self.lookup_list = SCons.Node.arg2nodes_lookups
         self._dict = kw.copy()
         self._init_special()
-        self.added_methods = []
+        self.dynamic_methods = []
         #self._memo = {}
 
     def _init_special(self):
@@ -451,13 +520,7 @@ class SubstitutionEnvironment:
         environment with the specified name.  If the name is omitted,
         the default name is the name of the function itself.
         """
-        SCons.Util.AddMethod(self, function, name)
-        try:
-            added_methods = self.added_methods
-        except AttributeError:
-            pass
-        else:
-            added_methods.append((function, name))
+        MethodWrapper(self, function, name)
 
     def Override(self, overrides):
         """
@@ -754,7 +817,7 @@ class Base(SubstitutionEnvironment):
         self.lookup_list = SCons.Node.arg2nodes_lookups
         self._dict = semi_deepcopy(SCons.Defaults.ConstructionEnvironment)
         self._init_special()
-        self.added_methods = []
+        self.dynamic_methods = []
 
         self._dict['BUILDERS'] = BuilderDict(self._dict['BUILDERS'], self)
 
@@ -1045,11 +1108,17 @@ class Base(SubstitutionEnvironment):
         """
         clone = copy.copy(self)
         clone._dict = semi_deepcopy(self._dict)
+
         try:
             cbd = clone._dict['BUILDERS']
-            clone._dict['BUILDERS'] = BuilderDict(cbd, clone)
         except KeyError:
             pass
+        else:
+            clone._dict['BUILDERS'] = BuilderDict(cbd, clone)
+
+        clone.dynamic_methods = []
+        for mw in self.dynamic_methods:
+            mw.clone(clone)
 
         clone._memo = {}
 
@@ -1065,11 +1134,6 @@ class Base(SubstitutionEnvironment):
 
         # apply them again in case the tools overwrote them
         apply(clone.Replace, (), new)        
-
-        to_be_added_methods = self.added_methods[:]
-        self.added_methods = []
-        for func, name in to_be_added_methods:
-            clone.AddMethod(func, name)
 
         if __debug__: logInstanceCreation(self, 'Environment.EnvironmentClone')
         return clone
@@ -1362,11 +1426,13 @@ class Base(SubstitutionEnvironment):
         with new construction variables and/or values.
         """
         try:
-            kwbd = semi_deepcopy(kw['BUILDERS'])
-            del kw['BUILDERS']
-            self.__setitem__('BUILDERS', kwbd)
+            kwbd = kw['BUILDERS']
         except KeyError:
             pass
+        else:
+            kwbd = semi_deepcopy(kwbd)
+            del kw['BUILDERS']
+            self.__setitem__('BUILDERS', kwbd)
         kw = copy_non_reserved_keywords(kw)
         self._update(semi_deepcopy(kw))
         self.scanner_map_delete(kw)
