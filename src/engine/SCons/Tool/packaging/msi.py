@@ -36,7 +36,7 @@ from SCons.Builder import Builder
 from xml.dom.minidom import *
 from xml.sax.saxutils import escape
 
-from SCons.Tool.packaging import stripinstall_emitter
+from SCons.Tool.packaging import stripinstallbuilder
 
 #
 # Utility functions
@@ -491,7 +491,6 @@ def build_wxsfile_header_section(root, spec):
 # this builder is the entry-point for .wxs file compiler.
 wxs_builder = Builder(
     action  = Action( build_wxsfile, string_wxsfile ),
-    emitter = stripinstall_emitter(),
     suffix  = '.wxs' )
 
 def package(env, target, source, PACKAGEROOT, NAME, VERSION,
@@ -506,6 +505,9 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     del loc['kw']
     kw.update(loc)
     del kw['source'], kw['target'], kw['env']
+
+    # strip the install builder from the source files
+    target, source = stripinstallbuilder(target, source, env)
 
     # put the arguments into the env and call the specfile builder.
     env['msi_spec'] = kw

@@ -32,6 +32,7 @@ import SCons.Environment
 from SCons.Options import *
 from SCons.Errors import *
 from SCons.Util import is_List, make_path_relative
+from SCons.Warnings import warn, Warning
 
 import os, imp
 import SCons.Defaults
@@ -257,78 +258,71 @@ def copy_attr(f1, f2):
     for attr in pattrs:
         setattr(f2, attr, getattr(f1, attr))
 #
-# Emitter functions which are reused by the various packagers
+# Some utility functions that are used by the package builders
 #
-def packageroot_emitter(pkg_root, honor_install_location=1):
-    """ creates  the packageroot emitter.
-
-    The package root emitter uses the CopyAs builder to copy all source files
-    to the directory given in pkg_root.
+def putintopackageroot(target, source, env, pkgroot, honor_install_location=1):
+    """ Uses the CopyAs builder to copy all source files to the directory given
+    in pkgroot.
 
     If honor_install_location is set and the copied source file has an
     PACKAGING_INSTALL_LOCATION attribute, the PACKAGING_INSTALL_LOCATION is
-    used as the new name of the source file under pkg_root.
+    used as the new name of the source file under pkgroot.
 
-    The source file will not be copied if it is already under the the pkg_root
+    The source file will not be copied if it is already under the the pkgroot
     directory.
 
     All attributes of the source file will be copied to the new file.
     """
-    def package_root_emitter(target, source, env, pkg_root=pkg_root, honor_install_location=honor_install_location):
-        pkgroot = pkg_root
-        # make sure the packageroot is a Dir object.
-        if SCons.Util.is_String(pkgroot): pkgroot=env.Dir(pkgroot)
+    # make sure the packageroot is a Dir object.
+    if SCons.Util.is_String(pkgroot):  pkgroot=env.Dir(pkgroot)
+    if not SCons.Util.is_List(source): source=[source]
 
-        def copy_file_to_pkg_root(file, env=env, pkgroot=pkgroot, honor_install_location=honor_install_location):
-            if file.is_under(pkgroot):
-                return file
+    new_source = []
+    for file in source:
+        if SCons.Util.is_String(file): file = env.File(file)
+
+        if file.is_under(pkgroot):
+            new_source.append(file)
+        else:
+            if hasattr(file, 'PACKAGING_INSTALL_LOCATION') and\
+                       honor_install_location:
+                new_name=make_path_relative(file.PACKAGING_INSTALL_LOCATION)
             else:
-                if hasattr(file, 'PACKAGING_INSTALL_LOCATION') and\
-                   honor_install_location:
-                    new_name=make_path_relative(file.PACKAGING_INSTALL_LOCATION)
-                else:
-                    new_name=make_path_relative(file.get_path())
+                new_name=make_path_relative(file.get_path())
 
-                new_file=pkgroot.File(new_name)
-                new_file=env.CopyAs(new_file, file)[0]
+            new_file=pkgroot.File(new_name)
+            new_file=env.CopyAs(new_file, file)[0]
+            copy_attr(file, new_file)
+            new_source.append(new_file)
 
-                copy_attr(file, new_file)
+    return (target, new_source)
 
-                return new_file
-        return (target, map(copy_file_to_pkg_root, source))
-    return package_root_emitter
+def stripinstallbuilder(target, source, env):
+    """ strips the install builder action from the source list and stores
+    the final installation location as the "PACKAGING_INSTALL_LOCATION" of
+    the source of the source file. This effectively removes the final installed
+    files from the source list while remembering the installation location.
 
-from SCons.Warnings import warn, Warning
-
-def stripinstall_emitter():
-    """ create the a emitter which:
-     * strips of the Install Builder of the source target, and stores the
-       install location as the "PACKAGING_INSTALL_LOCATION" of the given source
-       File object. This effectively avoids having to execute the Install
-       Action while storing the needed install location.
-     * warns about files that are mangled by this emitter which have no
-       Install Builder.
+    It also warns about files which have no install builder attached.
     """
-    def strip_install_emitter(target, source, env):
-        def has_no_install_location(file):
-            return not (file.has_builder() and\
-                hasattr(file.builder, 'name') and\
-                (file.builder.name=="InstallBuilder" or\
-                 file.builder.name=="InstallAsBuilder"))
+    def has_no_install_location(file):
+        return not (file.has_builder() and\
+            hasattr(file.builder, 'name') and\
+            (file.builder.name=="InstallBuilder" or\
+             file.builder.name=="InstallAsBuilder"))
 
-        if len(filter(has_no_install_location, source)):
-            warn(Warning, "there are file to package which have no\
-            InstallBuilder attached, this might lead to irreproducible packages")
+    if len(filter(has_no_install_location, source)):
+        warn(Warning, "there are files to package which have no\
+        InstallBuilder attached, this might lead to irreproducible packages")
 
-        n_source=[]
-        for s in source:
-            if has_no_install_location(s):
-                n_source.append(s)
-            else:
-                for ss in s.sources:
-                    n_source.append(ss)
-                    copy_attr(s, ss)
-                    setattr(ss, 'PACKAGING_INSTALL_LOCATION', s.get_path())
+    n_source=[]
+    for s in source:
+        if has_no_install_location(s):
+            n_source.append(s)
+        else:
+            for ss in s.sources:
+                n_source.append(ss)
+                copy_attr(s, ss)
+                setattr(ss, 'PACKAGING_INSTALL_LOCATION', s.get_path())
 
-        return (target, n_source)
-    return strip_install_emitter
+    return (target, n_source)
