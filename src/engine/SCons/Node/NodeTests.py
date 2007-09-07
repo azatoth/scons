@@ -67,7 +67,7 @@ class MyAction(MyActionBase):
     def __init__(self):
         self.order = 0
 
-    def __call__(self, target, source, env, errfunc):
+    def __call__(self, target, source, env):
         global built_it, built_target, built_source, built_args, built_order
         built_it = 1
         built_target = target
@@ -107,9 +107,9 @@ class MyExecutor:
 class MyListAction(MyActionBase):
     def __init__(self, list):
         self.list = list
-    def __call__(self, target, source, env, errfunc):
+    def __call__(self, target, source, env):
         for A in self.list:
-            A(target, source, env, errfunc)
+            A(target, source, env)
 
 class Environment:
     def __init__(self, **kw):

@@ -50,6 +50,8 @@ RELEASE 0.XX - XXX
     return immediately.  Add a "stop=" keyword argument that can be set
     to False to preserve the old behavior.
 
+  - Fix use of exitstatfunc on an Action.
+
   From Carsten Koch:
 
   - Avoid race conditions with same-named files and directory creation

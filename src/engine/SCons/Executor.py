@@ -117,24 +117,26 @@ class Executor:
         result.update(kw)
         return result
 
-    def do_nothing(self, target, exitstatfunc, kw):
-        pass
+    def do_nothing(self, target, kw):
+        return 0
 
-    def do_execute(self, target, exitstatfunc, kw):
+    def do_execute(self, target, kw):
         """Actually execute the action list."""
         env = self.get_build_env()
         kw = self.get_kw(kw)
+        status = 0
         for act in self.get_action_list():
-            apply(act,
-                  (self.targets, self.sources, env, exitstatfunc),
-                  kw)
+            status = apply(act, (self.targets, self.sources, env), kw)
+            if status:
+                break
+        return status
 
     # use extra indirection because with new-style objects (Python 2.2
     # and above) we can't override special methods, and nullify() needs
     # to be able to do this.
 
-    def __call__(self, target, exitstatfunc, **kw):
-        self.do_execute(target, exitstatfunc, kw)
+    def __call__(self, target, **kw):
+        return self.do_execute(target, kw)
 
     def cleanup(self):
         self._memo = {}

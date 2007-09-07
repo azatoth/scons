@@ -81,7 +81,7 @@ class Environment:
         pass
 
 class Action:
-    def __call__(self, targets, sources, env, errfunc, **kw):
+    def __call__(self, targets, sources, env, **kw):
         global built_it
         if kw.get('execute', 1):
             built_it = 1
@@ -303,7 +303,7 @@ class BuildDirTestCase(unittest.TestCase):
         class MkdirAction(Action):
             def __init__(self, dir_made):
                 self.dir_made = dir_made
-            def __call__(self, target, source, env, errfunc):
+            def __call__(self, target, source, env):
                 self.dir_made.extend(target)
 
         save_Link = SCons.Node.FS.Link
@@ -2480,7 +2480,7 @@ class prepareTestCase(unittest.TestCase):
         class MkdirAction(Action):
             def __init__(self, dir_made):
                 self.dir_made = dir_made
-            def __call__(self, target, source, env, errfunc):
+            def __call__(self, target, source, env):
                 self.dir_made.extend(target)
 
         dir_made = []

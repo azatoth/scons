@@ -35,7 +35,7 @@ import SCons.CacheDir
 built_it = None
 
 class Action:
-    def __call__(self, targets, sources, env, errfunc, **kw):
+    def __call__(self, targets, sources, env, **kw):
         global built_it
         if kw.get('execute', 1):
             built_it = 1

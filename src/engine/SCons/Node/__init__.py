@@ -361,12 +361,11 @@ class Node:
         in built().
 
         """
-        def exitstatfunc(stat, node=self):
-            if stat:
-                msg = "Error %d" % stat
-                raise SCons.Errors.BuildError(node=node, errstr=msg)
         executor = self.get_executor()
-        apply(executor, (self, exitstatfunc), kw)
+        stat = apply(executor, (self,), kw)
+        if stat:
+            msg = "Error %d" % stat
+            raise SCons.Errors.BuildError(node=self, errstr=msg)
 
     def built(self):
         """Called just after this node is successfully built."""
