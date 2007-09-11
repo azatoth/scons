@@ -1770,6 +1770,7 @@ class RootDir(Dir):
             result = klass(file_name, dir_node, self.fs)
             self._lookupDict[k] = result
             dir_node.entries[_my_normcase(file_name)] = result
+            dir_node.implicit = None
 
             # Double-check on disk (as configured) that the Node we
             # created matches whatever is out there in the real world.

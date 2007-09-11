@@ -96,17 +96,22 @@ tree1 = """
 """ % locals()
 
 test.run(arguments = "--debug=tree Foo.xxx")
-test.fail_test(string.find(test.stdout(), tree1) == -1)
+if string.find(test.stdout(), tree1) == -1:
+    sys.stdout.write('Did not find expected tree in the following output:\n')
+    sys.stdout.write(test.stdout())
+    test.fail_test()
 
 tree2 = """
 +-.
   +-Bar.c
+  +-Bar.h
   +-Bar.ooo
   | +-Bar.c
   | +-Bar.h
   | +-Foo.h
   | +-%(CC)s
   +-Foo.c
+  +-Foo.h
   +-Foo.ooo
   | +-Foo.c
   | +-Foo.h
@@ -128,7 +133,10 @@ tree2 = """
 """ % locals()
 
 test.run(arguments = "--debug=tree .")
-test.fail_test(string.find(test.stdout(), tree2) == -1)
+if string.find(test.stdout(), tree2) == -1:
+    sys.stdout.write('Did not find expected tree in the following output:\n')
+    sys.stdout.write(test.stdout())
+    test.fail_test()
 
 # Make sure we print the debug stuff even if there's a build failure.
 test.write('Bar.h', """
@@ -142,6 +150,9 @@ THIS SHOULD CAUSE A BUILD FAILURE
 test.run(arguments = "--debug=tree Foo.xxx",
          status = 2,
          stderr = None)
-test.fail_test(string.find(test.stdout(), tree1) == -1)
+if string.find(test.stdout(), tree1) == -1:
+    sys.stdout.write('Did not find expected tree in the following output:\n')
+    sys.stdout.write(test.stdout())
+    test.fail_test()
 
 test.pass_test()

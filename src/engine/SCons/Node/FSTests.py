@@ -1581,6 +1581,27 @@ class DirTestCase(_tempdirTestCase):
                         os.path.join('ddd', 'f2'),
                         os.path.join('ddd', 'f3')], kids
 
+    def test_implicit_re_scans(self):
+        """Test that adding entries causes a directory to be re-scanned
+        """
+
+        fs = self.fs
+
+        dir = fs.Dir('ddd')
+
+        fs.File(os.path.join('ddd', 'f1'))
+        dir.scan()
+        kids = map(lambda x: x.path, dir.children())
+        kids.sort()
+        assert kids == [os.path.join('ddd', 'f1')], kids
+
+        fs.File(os.path.join('ddd', 'f2'))
+        dir.scan()
+        kids = map(lambda x: x.path, dir.children())
+        kids.sort()
+        assert kids == [os.path.join('ddd', 'f1'),
+                        os.path.join('ddd', 'f2')], kids
+
     def test_entry_exists_on_disk(self):
         """Test the Dir.entry_exists_on_disk() method
         """

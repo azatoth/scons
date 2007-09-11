@@ -52,6 +52,9 @@ RELEASE 0.XX - XXX
 
   - Fix use of exitstatfunc on an Action.
 
+  - When a file gets added to a directory, make sure the directory gets
+    re-scanned for the new implicit dependency.
+
   From Carsten Koch:
 
   - Avoid race conditions with same-named files and directory creation
