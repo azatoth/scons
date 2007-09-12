@@ -167,8 +167,6 @@ def _SConscript(fs, *files, **kw):
 
     # evaluate each SConscript file
     results = []
-    #from SCons.Debug import Trace
-    #Trace('Dir(.).children():  %s\n' % map(str, fs.Dir('.').children()))
     for fn in files:
         call_stack.append(Frame(fs, exports, fn))
         old_sys_path = sys.path
