@@ -76,7 +76,8 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
 
     # if no "SOURCE_URL" tag is given add a default one.
     if not kw.has_key('SOURCE_URL'):
-        kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
+        #kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
+        kw['SOURCE_URL']=string.replace(str(target[0])+".tar.gz", '.rpm', '')
 
     # mangle the source and target list for the rpmbuild
     env = OverrideEnvironment(env, kw)
