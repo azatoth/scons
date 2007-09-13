@@ -466,7 +466,8 @@ class TestCmd:
                        subdir = None,
                        verbose = None,
                        match = None,
-                       combine = 0):
+                       combine = 0,
+                       universal_newlines = True):
         self._cwd = os.getcwd()
         self.description_set(description)
         self.program_set(program)
@@ -478,6 +479,7 @@ class TestCmd:
                 verbose = 0
         self.verbose_set(verbose)
         self.combine = combine
+        self.universal_newlines = universal_newlines
         if not match is None:
             self.match_func = match
         else:
@@ -692,7 +694,8 @@ class TestCmd:
                   interpreter = None,
                   arguments = None,
                   chdir = None,
-                  stdin = None):
+                  stdin = None,
+                  universal_newlines = None):
         """Runs a test of the program or script for the test
         environment.  Standard output and error output are saved for
         future retrieval via the stdout() and stderr() methods.
@@ -728,6 +731,8 @@ class TestCmd:
         cmd_string = string.join(map(self.escape, cmd), ' ')
         if self.verbose:
             sys.stderr.write(cmd_string + "\n")
+        if universal_newlines is None:
+            universal_newlines = self.universal_newlines
 
         try:
             import subprocess
@@ -759,7 +764,7 @@ class TestCmd:
                                  stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
-                                 universal_newlines=False)
+                                 universal_newlines=universal_newlines)
 
         if stdin:
             if is_List(stdin):

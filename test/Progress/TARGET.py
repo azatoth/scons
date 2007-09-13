@@ -29,31 +29,37 @@ Verify substition of the $TARGET string in progress output, including
 overwriting it by setting the overwrite= keyword argument.
 """
 
+import os
+import string
+
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(universal_newlines=False)
 
 test.write('SConstruct', """\
 env = Environment()
 env['BUILDERS']['C'] = Builder(action=Copy('$TARGET', '$SOURCE'))
 Progress('$TARGET\\r', overwrite=True)
-env.C('f1.out', 'f1.in')
-env.C('f2.out', 'f2.in')
-env.C('f3.out', 'f3.in')
-env.C('f4.out', 'f4.in')
+env.C('S1.out', 'S1.in')
+env.C('S2.out', 'S2.in')
+env.C('S3.out', 'S3.in')
+env.C('S4.out', 'S4.in')
 """)
 
-test.write('f1.in', "f1.in\n")
-test.write('f2.in', "f2.in\n")
-test.write('f3.in', "f3.in\n")
-test.write('f4.in', "f4.in\n")
+test.write('S1.in', "S1.in\n")
+test.write('S2.in', "S2.in\n")
+test.write('S3.in', "S3.in\n")
+test.write('S4.in', "S4.in\n")
 
 expect = """\
-SConstruct\r          \rf1.in\r     \rf1.out\rCopy("f1.out", "f1.in")
-      \rf2.in\r     \rf2.out\rCopy("f2.out", "f2.in")
-      \rf3.in\r     \rf3.out\rCopy("f3.out", "f3.in")
-      \rf4.in\r     \rf4.out\rCopy("f4.out", "f4.in")
-      \r.\r"""
+S1.in\r     \rS1.out\rCopy("S1.out", "S1.in")
+      \rS2.in\r     \rS2.out\rCopy("S2.out", "S2.in")
+      \rS3.in\r     \rS3.out\rCopy("S3.out", "S3.in")
+      \rS4.in\r     \rS4.out\rCopy("S4.out", "S4.in")
+      \rSConstruct\r          \r.\r"""
+
+if os.linesep != '\n':
+    expect = string.replace(expect, '\n', os.linesep)
 
 test.run(arguments = '-Q .', stdout=expect)
 
