@@ -60,6 +60,10 @@ RELEASE 0.XX - XXX
   - Avoid race conditions with same-named files and directory creation
     when pushing copies of files to CacheDir().
 
+  From Tzvetan Mikov:
+
+  - Handle $ in Java class names.
+
   From Gary Oberbrunner:
 
   - Add support for the Intel C compiler on Windows64.
