@@ -261,7 +261,7 @@ def HelpFunction(text):
 sconscript_reading = 0
 
 #
-def Options(files=None, args=ARGUMENTS):
+def Options(files=[], args=ARGUMENTS):
     return SCons.Options.Options(files, args)
 
 # The list of global functions to add to the SConscript name space
