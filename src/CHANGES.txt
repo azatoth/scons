@@ -52,6 +52,8 @@ RELEASE 0.XX - XXX
 
   - Fix use of exitstatfunc on an Action.
 
+  - Introduce all man page function examples with "Example:" or "Examples:".
+
   - When a file gets added to a directory, make sure the directory gets
     re-scanned for the new implicit dependency.
 
