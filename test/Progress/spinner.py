@@ -34,7 +34,7 @@ import string
 
 import TestSCons
 
-test = TestSCons.TestSCons(universal_newlines=False)
+test = TestSCons.TestSCons(universal_newlines=None)
 
 test.write('SConstruct', r"""
 env = Environment()
