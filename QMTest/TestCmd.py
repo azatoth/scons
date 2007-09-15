@@ -467,7 +467,7 @@ class TestCmd:
                        verbose = None,
                        match = None,
                        combine = 0,
-                       universal_newlines = True):
+                       universal_newlines = 1):
         self._cwd = os.getcwd()
         self.description_set(description)
         self.program_set(program)
