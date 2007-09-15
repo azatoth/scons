@@ -765,6 +765,14 @@ def build_source(ss, result):
         elif isinstance(s.disambiguate(), SCons.Node.FS.File):
             result.append(s)
 
+def default_decide_source(dependency, target, prev_ni):
+    f = SCons.Defaults.DefaultEnvironment().decide_source
+    return f(dependency, target, prev_ni)
+
+def default_decide_target(dependency, target, prev_ni):
+    f = SCons.Defaults.DefaultEnvironment().decide_target
+    return f(dependency, target, prev_ni)
+
 class Base(SubstitutionEnvironment):
     """Base class for "real" construction Environments.  These are the
     primary objects used to communicate dependency and construction
@@ -818,6 +826,15 @@ class Base(SubstitutionEnvironment):
         self._dict = semi_deepcopy(SCons.Defaults.ConstructionEnvironment)
         self._init_special()
         self.added_methods = []
+
+        # We don't use AddMethod, or define these as methods in this
+        # class, because we *don't* want these functions to be bound
+        # methods.  They need to operate independently so that the
+        # settings will work properly regardless of whether a given
+        # target ends up being built with a Base environment or an
+        # OverrideEnvironment or what have you.
+        self.decide_target = default_decide_target
+        self.decide_source = default_decide_source
 
         self._dict['BUILDERS'] = BuilderDict(self._dict['BUILDERS'], self)
 
@@ -1167,14 +1184,6 @@ class Base(SubstitutionEnvironment):
 
     def _changed_timestamp_match(self, dependency, target, prev_ni):
         return dependency.changed_timestamp_match(target, prev_ni)
-
-    def decide_source(self, dependency, target, prev_ni):
-        f = SCons.Defaults.DefaultEnvironment().decide_source
-        return f(dependency, target, prev_ni)
-
-    def decide_target(self, dependency, target, prev_ni):
-        f = SCons.Defaults.DefaultEnvironment().decide_target
-        return f(dependency, target, prev_ni)
 
     def Decider(self, function):
         if function in ('MD5', 'content'):
