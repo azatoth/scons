@@ -26,7 +26,8 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
 Verify that we generate the proper warning, but don't die, when someone
-tries to import the SCons.Sig module (which no longer exists).
+tries to import the SCons.Sig module (which no longer exists) and
+use the things we used to define therein.
 """
 
 import TestSCons
@@ -37,6 +38,18 @@ SConstruct = test.workpath('SConstruct')
 
 test.write(SConstruct, """
 import SCons.Sig
+x = SCons.Sig.default_calc
+x = SCons.Sig.default_module
+x = SCons.Sig.MD5.current()
+x = SCons.Sig.MD5.collect()
+x = SCons.Sig.MD5.signature()
+x = SCons.Sig.MD5.to_string()
+x = SCons.Sig.MD5.from_string()
+x = SCons.Sig.TimeStamp.current()
+x = SCons.Sig.TimeStamp.collect()
+x = SCons.Sig.TimeStamp.signature()
+x = SCons.Sig.TimeStamp.to_string()
+x = SCons.Sig.TimeStamp.from_string()
 """)
 
 expect = """

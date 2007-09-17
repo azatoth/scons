@@ -34,9 +34,24 @@ the package (for example, SCons.Sig.MD5.signature()), then they'll still
 get an AttributeError, but at least they'll know where to start looking.
 """
 
+import SCons.Util
 import SCons.Warnings
 
 msg = 'The SCons.Sig module no longer exists.\n' \
       '    Remove the following "import SCons.Sig" line to eliminate this warning:'
 
 SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning, msg)
+
+default_calc = None
+default_module = None
+
+class MD5Null(SCons.Util.Null):
+    def __repr__(self):
+        return "MD5Null()"
+
+class TimeStampNull(SCons.Util.Null):
+    def __repr__(self):
+        return "TimeStampNull()"
+
+MD5 = MD5Null()
+TimeStamp = TimeStampNull()
