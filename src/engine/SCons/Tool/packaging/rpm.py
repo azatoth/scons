@@ -35,6 +35,7 @@ import SCons.Builder
 
 from SCons.Environment import OverrideEnvironment
 from SCons.Tool.packaging import stripinstallbuilder, src_targz
+from SCons.Errors import UserError
 
 def package(env, target, source, PACKAGEROOT, NAME, VERSION,
             PACKAGEVERSION, DESCRIPTION, SUMMARY, X_RPM_GROUP, LICENSE,
@@ -44,8 +45,13 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
 
     bld = env['BUILDERS']['Rpm']
 
-    # override the default target, with the rpm specific ones.
-    if str(target[0])=="%s-%s"%(NAME, VERSION):
+    # Generate a UserError whenever the target name has been set explicitly,
+    # since rpm does not allow for controlling it. This is detected by
+    # checking if the target has been set to the default by the Package()
+    # Environment function.
+    if str(target[0])!="%s-%s"%(NAME, VERSION):
+        raise UserError( "Setting target is not supported for rpm." )
+    else:
         # This should be overridable from the construction environment,
         # which it is by using ARCHITECTURE=.
         # Guessing based on what os.uname() returns at least allows it

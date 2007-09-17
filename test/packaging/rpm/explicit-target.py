@@ -25,17 +25,16 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test the --package-type option.
+Test the ability to create a rpm package from a explicit target name.
 """
 
+import os
 import TestSCons
 
 machine = TestSCons.machine
 _python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
-
-rpm_build_root = test.workpath('rpm_build_root')
 
 scons = test.program
 
@@ -44,45 +43,53 @@ rpm = test.Environment().WhereIs('rpm')
 if not rpm:
     test.skip_test('rpm not found, skipping test\n')
 
+rpm_build_root = test.workpath('rpm_build_root')
+
 test.subdir('src')
 
-test.write( 'main', '' )
+test.write( [ 'src', 'main.c' ], r"""
+int main( int argc, char* argv[] )
+{
+  return 0;
+}
+""")
 
 test.write('SConstruct', """
-# -*- coding: iso-8859-15 -*-
+import os
+
 env=Environment(tools=['default', 'packaging'])
+
 env.Prepend(RPM = 'TAR_OPTIONS=--wildcards ')
 env.Append(RPMFLAGS = r' --buildroot %(rpm_build_root)s')
-prog=env.Install( '/bin', 'main' )
+
+prog = env.Install( '/bin/' , Program( 'src/main.c')  )
+
+env.Alias( 'install', prog )
+
 env.Package( NAME           = 'foo',
              VERSION        = '1.2.3',
-             LICENSE        = 'gpl',
-             SUMMARY        = 'hello',
              PACKAGEVERSION = 0,
-             X_RPM_GROUP    = 'Application/office',
-             X_RPM_INSTALL  = r'%(_python_)s %(scons)s --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"',
-             DESCRIPTION    = 'this should be really long',
+             PACKAGETYPE    = 'rpm',
+             LICENSE        = 'gpl',
+             SUMMARY        = 'balalalalal',
+             X_RPM_GROUP    = 'Application/fu',
+             X_RPM_INSTALL  = r'%(_python_)s %(scons)s --debug=tree --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"',
+             DESCRIPTION    = 'this should be really really long',
              source         = [ prog ],
+             target         = "my_rpm_package.rpm",
              SOURCE_URL     = 'http://foo.org/foo-1.2.3.tar.gz'
-            )
+        )
 """ % locals())
+
+test.run(arguments='', stderr = None)
 
 src_rpm = 'foo-1.2.3-0.src.rpm'
 machine_rpm = 'foo-1.2.3-0.%s.rpm' % machine
 
-test.run(arguments='package PACKAGETYPE=rpm', stderr = None)
-
-test.must_exist( src_rpm )
 test.must_exist( machine_rpm )
-test.must_not_exist( 'bin/main.c' )
-test.must_not_exist( '/bin/main.c' )
-
-test.run(arguments='-c package PACKAGETYPE=rpm', stderr = None)
-
-test.run(arguments='package --package-type=rpm', stderr = None)
 test.must_exist( src_rpm )
-test.must_exist( machine_rpm )
-test.must_not_exist( 'bin/main.c' )
-test.must_not_exist( '/bin/main.c' )
+test.must_not_exist( 'bin/main' )
+test.fail_test( not os.popen('rpm -qpl %s' % machine_rpm).read()=='/bin/main\n')
+test.fail_test( not os.popen('rpm -qpl %s' % src_rpm).read()=='foo-1.2.3.spec\nfoo-1.2.3.tar.gz\n')
 
 test.pass_test()

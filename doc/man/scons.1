@@ -3300,6 +3300,70 @@ foo = env.FindFile('foo', ['dir1', 'dir2'])
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
+.RI FindInstalledFiles( )
+.TP
+.RI env.FindInstalledFiles( )
+Returns the list of targets setup by the
+.B Install()
+or
+.B InstallAs()
+builders.
+
+This function serves as a convenient method to select the contents of
+a Binary Package.
+
+Example:
+
+.ES
+Install( '/bin', [ 'executable_a', 'executable_b' ] )
+
+# will return the file node list
+# [ '/bin/executable_a', '/bin/executable_b' ]
+FindInstalledFiles()
+
+Install( '/lib', [ 'some_library' ] )
+
+# will return the file node list
+# [ '/bin/executable_a', '/bin/executable_b', '/lib/some_library' ]
+FindInstalledFiles()
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI FindSourceFiles( node = '"."' )
+.TP
+.RI env.FindSourceFiles( node = '"."' )
+
+Returns the list of nodes which serve as the source of the built files.
+It does so by inspecting the dependency tree starting at the optional
+argument
+.B node
+which defaults to the '"."'-node. It will then return all leafs of
+.B node.
+These are all children which have no further children.
+
+This function is a convenient method to select the contents of a Source
+Package.
+
+Example:
+
+.ES
+Program( 'src/main_a.c' )
+Program( 'src/main_b.c' )
+Program( 'main_c.c' )
+
+# returns ['main_c.c', 'src/main_a.c', 'SConstruct', 'src/main_b.c']
+FindSourceFiles()
+
+# returns ['src/main_b.c', 'src/main_a.c' ]
+FindSourceFiles( 'src' )
+.EE
+
+As you can see build support files (SConstruct in the above example)
+will also be returned by this function.
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
 .RI FindPathDirs( variable )
 Returns a function
 (actually a callable Python object)

@@ -176,51 +176,6 @@ def Package(env, target=None, source=None, **kw):
     targets.extend(env.Alias( 'package', targets ))
     return targets
 
-def build_source(ss, sources):
-    for s in ss:
-        if s.__class__==SCons.Node.FS.Dir:
-            build_source(s.all_children())
-        elif not s.has_builder() and s.__class__==SCons.Node.FS.File:
-            sources.append(s)
-        else:
-            build_source(s.sources)
-
-def FindSourceFiles(env, target=None, source=None ):
-    """ returns a list of all children of the target nodes, which have no
-    children. This selects all leaves of the DAG that gets build by SCons for
-    handling dependencies.
-    """
-    if target==None: target = '.'
-
-    nodes = env.arg2nodes(target, env.fs.Entry)
-
-    sources = []
-    for node in nodes:
-        build_source(node.all_children(), sources)
-
-    # now strip the build_node from the sources by calling the srcnode
-    # function
-    def get_final_srcnode(file):
-        srcnode = file.srcnode()
-        while srcnode != file.srcnode():
-            srcnode = file.srcnode()
-        return srcnode
-
-    # get the final srcnode for all nodes, this means stripping any
-    # attached build node.
-    map( get_final_srcnode, sources )
-
-    # remove duplicates
-    return list(set(sources))
-
-def FindInstalledFiles(env, source=[], target=[]):
-    """ returns the list of all targets of the Install and InstallAs Builder.
-    """
-    from SCons.Tool import install
-    if install._UNIQUE_INSTALLED_FILES is None:
-        install._UNIQUE_INSTALLED_FILES = SCons.Util.uniquer_hashables(install._INSTALLED_FILES)
-    return install._UNIQUE_INSTALLED_FILES
-
 #
 # SCons tool initialization functions
 #
@@ -228,17 +183,14 @@ def generate(env):
     try:
         env['BUILDERS']['Package']
         env['BUILDERS']['Tag']
-        env['BUILDERS']['FindSourceFiles']
-        env['BUILDERS']['FindInstalledFiles']
     except KeyError:
         env['BUILDERS']['Package'] = Package
         env['BUILDERS']['Tag'] = Tag
-        env['BUILDERS']['FindSourceFiles'] = FindSourceFiles
-        env['BUILDERS']['FindInstalledFiles'] = FindInstalledFiles
 
 def exists(env):
     return 1
 
+# XXX
 def options(opts):
     opts.AddOptions(
         EnumOption( [ 'PACKAGETYPE', '--package-type' ],
@@ -247,6 +199,10 @@ def options(opts):
                     ignorecase=2
                   )
     )
+
+#
+# Internal utility functions
+#
 
 def copy_attr(f1, f2):
     """ copies the special packaging file attributes from f1 to f2.
@@ -257,9 +213,6 @@ def copy_attr(f1, f2):
     pattrs = filter(copyit, dir(f1))
     for attr in pattrs:
         setattr(f2, attr, getattr(f1, attr))
-#
-# Some utility functions that are used by the package builders
-#
 def putintopackageroot(target, source, env, pkgroot, honor_install_location=1):
     """ Uses the CopyAs builder to copy all source files to the directory given
     in pkgroot.

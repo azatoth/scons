@@ -1886,6 +1886,14 @@ class Base(SubstitutionEnvironment):
         # remove duplicates
         return list(set(sources))
 
+    def FindInstalledFiles(self):
+        """ returns the list of all targets of the Install and InstallAs Builder.
+        """
+        from SCons.Tool import install
+        if install._UNIQUE_INSTALLED_FILES is None:
+            install._UNIQUE_INSTALLED_FILES = SCons.Util.uniquer_hashables(install._INSTALLED_FILES)
+        return install._UNIQUE_INSTALLED_FILES
+
 class OverrideEnvironment(Base):
     """A proxy that overrides variables in a wrapped construction
     environment by returning values from an overrides dictionary in
