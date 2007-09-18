@@ -34,6 +34,11 @@ import TestSCons
 
 test = TestSCons.TestSCons()
 
+tar = test.detect('TAR', 'tar')
+
+if not tar:
+    test.skip_test('No TAR executable found; skipping test\n')
+
 test.subdir('one', 'two', 'three')
 
 test.write('SConstruct', """\
