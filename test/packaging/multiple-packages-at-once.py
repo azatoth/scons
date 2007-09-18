@@ -54,7 +54,7 @@ int main( int argc, char* argv[] )
 test.write('SConstruct', """
 Program( 'src/main.c' )
 env=Environment(tools=['default', 'packaging'])
-env.Package( PACKAGETYPE  = ['src_zip', src_targz'],
+env.Package( PACKAGETYPE  = ['src_zip', 'src_targz'],
              target       = ['src.zip', 'src.tar.gz'],
              PACKAGEROOT  = 'test',
              source       = [ 'src/main.c', 'SConstruct' ] )
@@ -68,7 +68,7 @@ test.must_exist( 'src.tar.gz' )
 test.write('SConstruct', """
 Program( 'src/main.c' )
 env=Environment(tools=['default', 'packaging'])
-env.Package( PACKAGETYPE  = ['src_zip', src_targz'],
+env.Package( PACKAGETYPE  = ['src_zip', 'src_targz'],
              NAME = "src", VERSION = "1.0",
              PACKAGEROOT  = 'test',
              source       = [ 'src/main.c', 'SConstruct' ] )
