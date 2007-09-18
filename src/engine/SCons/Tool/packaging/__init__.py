@@ -97,7 +97,11 @@ def Package(env, target=None, source=None, **kw):
     try: kw['PACKAGETYPE']=env['PACKAGETYPE']
     except KeyError: pass
 
-    if not kw.has_key('PACKAGETYPE') or kw['PACKAGETYPE']==None:
+    if not kw.get('PACKAGETYPE'):
+        from SCons.Script import GetOption
+        kw['PACKAGETYPE'] = GetOption('package_type')
+
+    if kw['PACKAGETYPE'] == None:
         if env['BUILDERS'].has_key('Tar'):
             kw['PACKAGETYPE']='targz'
         elif env['BUILDERS'].has_key('Zip'):
@@ -179,7 +183,21 @@ def Package(env, target=None, source=None, **kw):
 #
 # SCons tool initialization functions
 #
+
+added = None
+
 def generate(env):
+    from SCons.Script import AddOption
+    global added
+    if not added:
+        added = 1
+        AddOption('--package-type',
+                  dest='package_type',
+                  default=None,
+                  type="string",
+                  action="store",
+                  help='The type of package to create.')
+
     try:
         env['BUILDERS']['Package']
         env['BUILDERS']['Tag']
@@ -193,7 +211,7 @@ def exists(env):
 # XXX
 def options(opts):
     opts.AddOptions(
-        EnumOption( [ 'PACKAGETYPE', '--package-type' ],
+        EnumOption( 'PACKAGETYPE',
                     'the type of package to create.',
                     None, allowed_values=map( str, __all__ ),
                     ignorecase=2
