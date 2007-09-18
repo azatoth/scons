@@ -329,12 +329,14 @@ class Task:
         # back on the candidates list if the Node is also a waiting
         # parent.
 
+        targets = set(self.targets)
+
         parents = {}
-        for t in self.targets:
+        for t in targets:
             for p in t.waiting_parents.keys():
                 parents[p] = parents.get(p, 0) + 1
 
-        for t in self.targets:
+        for t in targets:
             for s in t.side_effects:
                 if s.get_state() == SCons.Node.executing:
                     s.set_state(SCons.Node.no_state)
@@ -350,7 +352,7 @@ class Task:
             if p.ref_count == 0:
                 self.tm.candidates.append(p)
 
-        for t in self.targets:
+        for t in targets:
             t.postprocess()
 
     # Exception handling subsystem.

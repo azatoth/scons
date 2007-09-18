@@ -57,6 +57,10 @@ RELEASE 0.XX - XXX
   - When a file gets added to a directory, make sure the directory gets
     re-scanned for the new implicit dependency.
 
+  - Fix handling a file that's specified multiple times in a target
+    list so that it doesn't cause dependent Nodes to "disappear" from
+    the dependency graph walk.
+
   From Carsten Koch:
 
   - Avoid race conditions with same-named files and directory creation
