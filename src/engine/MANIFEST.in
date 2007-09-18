@@ -124,7 +124,6 @@ SCons/Tool/nasm.py
 SCons/Tool/packaging/__init__.py
 SCons/Tool/packaging/ipk.py
 SCons/Tool/packaging/msi.py
-SCons/Tool/packaging/packager.py
 SCons/Tool/packaging/rpm.py
 SCons/Tool/packaging/src_tarbz2.py
 SCons/Tool/packaging/src_targz.py
