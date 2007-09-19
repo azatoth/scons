@@ -28,7 +28,8 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test the FindInstalledFiles() and the FindSourceFiles() functions.
 """
 
-import os
+import os.path
+import string
 import TestSCons
 
 python = TestSCons.python
@@ -52,15 +53,23 @@ print src_files
 print oth_files
 """)
 
-expected="""scons: Reading SConscript files ...
+bin_f1 = os.path.join('bin', 'f1')
+bin_f2 = os.path.join('bin', 'f2')
+
+bin__f1 = string.replace(bin_f1, '\\', '\\\\')
+bin__f2 = string.replace(bin_f2, '\\', '\\\\')
+
+expect_read = """\
 ['SConstruct', 'f1', 'f2', 'f3']
-['bin/f1', 'bin/f2']
-scons: done reading SConscript files.
-scons: Building targets ...
-Install file: "f1" as "bin/f1"
-Install file: "f2" as "bin/f2"
-scons: done building targets.
-"""
+['%(bin__f1)s', '%(bin__f2)s']
+""" % locals()
+
+expect_build = """\
+Install file: "f1" as "%(bin_f1)s"
+Install file: "f2" as "%(bin_f2)s"
+""" % locals()
+
+expected = test.wrap_stdout(read_str = expect_read, build_str = expect_build)
 
 test.run(stdout=expected)
 
