@@ -2440,7 +2440,7 @@ class File(Base):
             # which can be the case if they've disabled disk checks,
             # or if an action with a File target actually happens to
             # create a same-named directory by mistake.
-            csig = None
+            csig = ''
         else:
             csig = SCons.Util.MD5signature(contents)
 

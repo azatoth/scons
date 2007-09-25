@@ -10,6 +10,17 @@
 
 RELEASE 0.XX - XXX
 
+  From Ken Deeter:
+
+  - Make the "contents" of Alias Nodes a concatenation of the children's
+    content signatures (MD5 checksums), not a concatenation of the
+    children's contents, to avoid using large amounts of memory during
+    signature calculation.
+
+
+
+RELEASE 0.XX - XXX
+
   From Steven Knight:
 
   - Fix the wix Tool module to handle null entries in $PATH variables.
