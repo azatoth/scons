@@ -29,6 +29,8 @@ customizable variables to an SCons build.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
 import os.path
 import string
 
@@ -64,6 +66,7 @@ class Options:
             else:
                 files = []
         self.files = files
+        self.unknown = {}
 
         # create the singleton instance
         if is_global:
@@ -160,14 +163,18 @@ class Options:
             if os.path.exists(filename):
                 execfile(filename, values)
 
-        # finally set the values specified on the command line
+        # set the values specified on the command line
         if args is None:
             args = self.args
 
         for arg, value in args.items():
-          for option in self.options:
-            if arg in option.aliases + [ option.key ]:
-              values[option.key]=value
+            added = False
+            for option in self.options:
+                if arg in option.aliases + [ option.key ]:
+                    values[option.key] = value
+                    added = True
+            if not added:
+                self.unknown[arg] = value
 
         # put the variables in the environment:
         # (don't copy over variables that are not declared as options)
@@ -194,6 +201,13 @@ class Options:
         for option in self.options:
             if option.validator and values.has_key(option.key):
                 option.validator(option.key, env.subst('${%s}'%option.key), env)
+
+    def UnknownOptions(self):
+        """
+        Returns any options in the specified arguments lists that
+        were not known, declared options in this object.
+        """
+        return self.unknown
 
     def Save(self, filename, env):
         """

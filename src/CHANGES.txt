@@ -17,6 +17,12 @@ RELEASE 0.XX - XXX
     children's contents, to avoid using large amounts of memory during
     signature calculation.
 
+  From Steven Knight:
+
+  - Add an Options.UnknownOption() method that returns any settings
+    (from the command line, or whatever dictionary was passed in)
+    that aren't known to the Options object.
+
 
 
 RELEASE 0.XX - XXX

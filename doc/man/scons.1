@@ -5990,9 +5990,13 @@ written. For example, libraries needed for the build may be in non-standard
 locations, or site-specific compiler options may need to be passed to the
 compiler. 
 .B scons
-provides a mechanism for overridding construction variables from the
-command line or a text-based SConscript file through an Options
-object. To create an Options object, call the Options() function:
+provides an Options object for overridding construction variables
+on the command line:
+.ES
+$ scons VARIABLE=foo
+.EE
+The variable values can also be specified in a text-based SConscript file.
+To create an Options object, call the Options() function:
 
 .TP
 .RI Options([ files "], [" args ])
@@ -6091,8 +6095,17 @@ opt.AddOptions(
 .RI Update( env ", [" args ])
 This updates a construction environment
 .I env
-with the customized construction variables. Normally this method is not
-called directly, but is called indirectly by passing the Options object to
+with the customized construction variables.
+Any specified variables that are
+.I not
+configured for the Options object
+will be saved and may be
+retrieved with the
+.BR UnknownOptions ()
+method, below.
+
+Normally this method is not called directly,
+but is called indirectly by passing the Options object to
 the Environment() function:
 
 .ES
@@ -6105,10 +6118,26 @@ when the Options object was created
 are executed as Python scripts,
 and the values of (global) Python variables set in the file
 are added to the construction environment.
+
 Example:
 
 .ES
 CC = 'my_cc'
+.EE
+
+.TP
+.RI UnknownOptions( )
+Returns a dictionary containing any
+variables that were specified
+either in the files or the dictionary
+with which the Options object was intialized,
+but for which the Options object was
+not configured.
+
+.ES
+env = Environment(options=opts)
+for key, value in opts.UnknownOptions():
+    print "unknown variable:  %s=%s" % (key, value)
 .EE
 
 .TP
