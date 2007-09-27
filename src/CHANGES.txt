@@ -23,6 +23,8 @@ RELEASE 0.XX - XXX
     (from the command line, or whatever dictionary was passed in)
     that aren't known to the Options object.
 
+  - Add a Glob() function.
+
 
 
 RELEASE 0.XX - XXX

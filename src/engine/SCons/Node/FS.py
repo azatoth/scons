@@ -35,8 +35,10 @@ that can be used by scripts or modules looking for the canonical default.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import fnmatch
 import os
 import os.path
+import re
 import shutil
 import stat
 import string
@@ -745,6 +747,9 @@ class Base(SCons.Node.Node):
         self._memo['rentry'] = result
         return result
 
+    def _glob1(self, pattern, ondisk=True, source=False, strings=False):
+        return []
+
 class Entry(Base):
     """This is the class for generic Node.FS entries--that is, things
     that could be a File or a Dir, but we're just not sure yet.
@@ -856,6 +861,9 @@ class Entry(Base):
 
     def changed_since_last_build(self, target, prev_ni):
         return self.disambiguate().changed_since_last_build(target, prev_ni)
+
+    def _glob1(self, pattern, ondisk=True, source=False, strings=False):
+        return self.disambiguate()._glob1(pattern, ondisk, source, strings)
 
 # This is for later so we can differentiate between Entry the class and Entry
 # the method of the FS class.
@@ -1098,7 +1106,7 @@ class FS(LocalFS):
         """
         return self._lookup(name, directory, File, create)
 
-    def Dir(self, name, directory = None, create = 1):
+    def Dir(self, name, directory = None, create = True):
         """Lookup or create a Dir node with the specified name.  If
         the name is a relative path (begins with ./, ../, or a file name),
         then it is looked up relative to the supplied directory node,
@@ -1160,6 +1168,16 @@ class FS(LocalFS):
             message = fmt % string.join(map(str, targets))
         return targets, message
 
+    def Glob(self, pathname, ondisk=True, source=True, strings=False, cwd=None):
+        """
+        Globs
+
+        This is mainly a shim layer 
+        """
+        if cwd is None:
+            cwd = self.getcwd()
+        return cwd.glob(pathname, ondisk, source, strings)
+
 class DirNodeInfo(SCons.Node.NodeInfoBase):
     # This should get reset by the FS initialization.
     current_version_id = 1
@@ -1177,6 +1195,11 @@ class DirNodeInfo(SCons.Node.NodeInfoBase):
 
 class DirBuildInfo(SCons.Node.BuildInfoBase):
     current_version_id = 1
+
+glob_magic_check = re.compile('[*?[]')
+
+def has_glob_magic(s):
+    return glob_magic_check.search(s) is not None
 
 class Dir(Base):
     """A class for directories in a file system.
@@ -1252,12 +1275,12 @@ class Dir(Base):
         """
         return self.fs.Entry(name, self)
 
-    def Dir(self, name):
+    def Dir(self, name, create=True):
         """
         Looks up or creates a directory node named 'name' relative to
         this directory.
         """
-        dir = self.fs.Dir(name, self)
+        dir = self.fs.Dir(name, self, create)
         return dir
 
     def File(self, name):
@@ -1693,6 +1716,105 @@ class Dir(Base):
         for dirname in filter(select_dirs, names):
             entries[dirname].walk(func, arg)
 
+    def glob(self, pathname, ondisk=True, source=False, strings=False):
+        """
+        Teturns Nodes (or strings) matching a specified pathname pattern.
+
+        Pathname patterns follow UNIX shell semantics:  * matches
+        any-length strings of any characters, ? matches any character,
+        and [] can enclose lists or ranges of characters.  Matches do
+        not span directory separators.
+
+        The matches take into account Repositories, returning local
+        Nodes if a corresponding entry exists in a Repository (either
+        an in-memory Node or something on disk).
+
+        By defafult, the glob() function matches entries that exist
+        on-disk, in addition to in-memory Nodes.  Setting the "ondisk"
+        argument to False (or some other non-true value) causes the glob()
+        function to only match in-memory Nodes.  The default behavior is
+
+        The "source" argument, when true, specifies that corresponding
+        source Nodes must be returned if you're globbing in a build
+        directory (initialized with BuildDir()).  The default behavior
+        is to return Nodes local to the BuildDir().
+
+        The "strings" argument, when true, returns the matches as strings,
+        not Nodes.  The strings are path names relative to this directory.
+
+        The underlying algorithm is adaptated from the glob.glob()
+        function in the Python library, and uses fnmatch() under the
+        covers.
+        """
+        dirname, basename = os.path.split(pathname)
+        if not dirname:
+            return self._glob1(basename, ondisk, source, strings)
+        if has_glob_magic(dirname):
+            list = self.glob(dirname, ondisk, source, strings=False)
+        else:
+            try:
+                node = self.Dir(dirname, create=False)
+            except SCons.Errors.UserError:
+                return []
+            list = [node]
+        result = []
+        for dir in list:
+            r = dir._glob1(basename, ondisk, source, strings)
+            if strings:
+                r = map(lambda x, d=str(dir): os.path.join(d, x), r)
+            result.extend(r)
+        return result
+
+    def _glob1(self, pattern, ondisk=True, source=False, strings=False):
+        """
+        Globs for entries matching a single pattern in this directory.
+
+        This searches any repositories and source directories for
+        corresponding entries and returns a Node (or string) relative
+        to the current directory if an entry is found anywhere.
+        """
+        search_dir_list = self.get_all_rdirs()
+        for srcdir in self.srcdir_list():
+            search_dir_list.extend(srcdir.get_all_rdirs())
+
+        names = []
+        for dir in search_dir_list:
+            if ondisk:
+                try:
+                    disk_names = os.listdir(dir.abspath)
+                except os.error:
+                    pass
+                else:
+                    if pattern[0] != '.':
+                        #disk_names = [ d for d in disk_names if d[0] != '.' ]
+                        disk_names = filter(lambda x: x[0] != '.', disk_names)
+                    disk_names = fnmatch.filter(disk_names, pattern)
+                    if strings:
+                        names.extend(disk_names)
+                    else:
+                        rep_nodes = map(dir.Entry, disk_names)
+                        #rep_nodes = [ n.disambiguate() for n in rep_nodes ]
+                        rep_nodes = map(lambda n: n.disambiguate(), rep_nodes)
+                        for node, name in zip(rep_nodes, disk_names):
+                            n = self.Entry(name)
+                            if n.__class__ != node.__class__:
+                                n.__class__ = node.__class__
+                                n._morph()
+            #names.extend([ n for n in dir.entries.keys() if not n in ('.', '..') ])
+            names.extend(filter(lambda n: n not in ('.', '..'), dir.entries.keys()))
+
+        names = set(names)
+        if pattern[0] != '.':
+            #names = [ n for n in names if n[0] != '.' ]
+            names = filter(lambda x: x[0] != '.', names)
+        names = fnmatch.filter(names, pattern)
+
+        if strings:
+            return names
+
+        #return [ self.entries[n] for n in names ]
+        return filter(None, map(lambda n, e=self.entries:  e.get(n), names))
+
 class RootDir(Dir):
     """A class for the root directory of a file system.
 
@@ -1925,10 +2047,10 @@ class File(Base):
         the SConscript directory of this file."""
         return self.cwd.Entry(name)
 
-    def Dir(self, name):
+    def Dir(self, name, create=True):
         """Create a directory node named 'name' relative to
         the SConscript directory of this file."""
-        return self.cwd.Dir(name)
+        return self.cwd.Dir(name, create)
 
     def Dirs(self, pathlist):
         """Create a list of directories relative to the SConscript

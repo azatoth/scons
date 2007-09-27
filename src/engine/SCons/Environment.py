@@ -1728,6 +1728,9 @@ class Base(SubstitutionEnvironment):
         else:
             return result[0]
 
+    def Glob(self, pattern, ondisk=True, source=False, strings=False):
+        return self.fs.Glob(self.subst(pattern), ondisk, source, strings)
+
     def Ignore(self, target, dependency):
         """Ignore a dependency."""
         tlist = self.arg2nodes(target, self.fs.Entry)

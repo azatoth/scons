@@ -3498,6 +3498,111 @@ options from a SConscript file. See
 .IR SetOption () 
 for a description of the options available.
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
+.RI Glob( pattern ", [" ondisk ", " source ", " strings ])
+.TP
+.RI env.Glob( pattern ", [" ondisk ", " source ", " strings ])
+Returns Nodes (or strings) that match the specified
+.IR pattern ,
+relative to the directory of the current
+.B SConscript
+file.
+The
+.BR env.Glob ()
+form performs string substition on
+.I pattern
+and returns whatever matches
+the resulting expanded pattern.
+
+The specified
+.I pattern
+uses Unix shell style metacharacters for matching:
+
+.ES
+  *       matches everything
+  ?       matches any single character
+  [seq]   matches any character in seq
+  [!seq]  matches any char not in seq
+.EE
+
+Character matches do
+.I not
+span directory separators.
+
+The
+.BR Glob ()
+knows about
+repositories
+(see the
+.BR Repository ()
+function)
+and source directories
+(see the
+.BR BuildDir ()
+function)
+and
+returns a Node (or string, if so configured)
+in the local (SConscript) directory
+if matching Node is found
+anywhere in a corresponding
+repository or source directory.
+
+The
+.B ondisk
+argument may be set to
+.B False
+(or any other non-true value)
+to disable the search for matches on disk,
+thereby only returning matches among
+already-configured File or Dir Nodes.
+The default behavior is to
+return corresponding Nodes
+for any on-disk matches found.
+
+The
+.B source
+argument may be set to
+.B True
+(or any equivalent value)
+to specify that,
+when the local directory is a
+.BR BuildDir (),
+the returned Nodes should be from the
+corresponding source directory,
+not the local directory.
+
+The
+.B strings
+argument may be set to
+.B True
+(or any equivalent value)
+to have the
+.BR Glob ()
+function return strings, not Nodes,
+that represent the matched files or directories.
+The returned strings will be relative to
+the local (SConscript) directory.
+(Note that This may make it easier to perform
+arbitrary manipulation of file names,
+but if the returned strings are
+passed to a different
+.B SConscript
+file,
+any Node translation will be relative
+to the other
+.B SConscript
+directory,
+not the original
+.B SConscript
+directory.)
+
+Example:
+
+.ES
+Program('foo', Glob('*.c'))
+.EE
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 '\".TP
 '\".RI GlobalBuilders( flag )

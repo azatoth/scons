@@ -125,6 +125,8 @@
   XXX GetOption('num_jobs')
   XXX SetOption('num_jobs')
 
+  XXX Glob()
+
   XXX - - diskcheck=
 
   XXX site_scons

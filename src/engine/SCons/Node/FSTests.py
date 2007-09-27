@@ -1978,6 +1978,219 @@ class FileTestCase(_tempdirTestCase):
 
 
 
+class GlobTestCase(_tempdirTestCase):
+    def setUp(self):
+        _tempdirTestCase.setUp(self)
+
+        # Make entries on disk that will not have Nodes, so we can verify
+        # the behavior of looking for things on disk.
+        self.test.write('disk-aaa', "disk-aaa\n")
+        self.test.write('disk-bbb', "disk-bbb\n")
+        self.test.write('disk-ccc', "disk-ccc\n")
+        self.test.subdir('disk-sub')
+        self.test.write(['disk-sub', 'disk-ddd'], "disk-sub/disk-ddd\n")
+        self.test.write(['disk-sub', 'disk-eee'], "disk-sub/disk-eee\n")
+        self.test.write(['disk-sub', 'disk-fff'], "disk-sub/disk-fff\n")
+
+        # Make various Nodes (that don't have on-disk entries) so we
+        # can verify how we match them.
+        fs = SCons.Node.FS.FS()
+        self.fs = fs
+        self.aaa = fs.File('aaa')
+        self.bbb = fs.File('bbb')
+        self.ccc = fs.File('ccc')
+        self.subdir1 = fs.Dir('subdir1')
+        self.subdir1_ddd = self.subdir1.File('ddd')
+        self.subdir1_eee = self.subdir1.File('eee')
+        self.subdir1_fff = self.subdir1.File('fff')
+        self.subdir2 = fs.Dir('subdir2')
+        self.subdir2_ddd = self.subdir2.File('ddd')
+        self.subdir2_eee = self.subdir2.File('eee')
+        self.subdir2_fff = self.subdir2.File('fff')
+        self.sub = fs.Dir('sub')
+        self.sub_dir3 = self.sub.Dir('dir3')
+        self.sub_dir3_ddd = self.sub_dir3.File('ddd')
+        self.sub_dir3_eee = self.sub_dir3.File('eee')
+        self.sub_dir3_fff = self.sub_dir3.File('fff')
+
+    def do_cases(self, cases, **kwargs):
+
+        # First, execute all of the cases with string=True and verify
+        # that we get the expected strings returned.  We do this first
+        # so the Glob() calls don't add Nodes to the self.fs file system
+        # hierarchy.
+
+        import copy
+        strings_kwargs = copy.copy(kwargs)
+        strings_kwargs['strings'] = True
+        for input, string_expect, node_expect in cases:
+            r = apply(self.fs.Glob, (input,), strings_kwargs)
+            r.sort()
+            assert r == string_expect, "Glob(%s, strings=True) expected %s, got %s" % (input, string_expect, r)
+
+        # Now execute all of the cases without string=True and look for
+        # the expected Nodes to be returned.  If we don't have a list of
+        # actual expected Nodes, that means we're expecting a search for
+        # on-disk-only files to have returned some newly-created nodes.
+        # Verify those by running the list through str() before comparing
+        # them with the expected list of strings.
+        for input, string_expect, node_expect in cases:
+            r = apply(self.fs.Glob, (input,), kwargs)
+            if node_expect:
+                r.sort(lambda a,b: cmp(a.path, b.path))
+                result = node_expect
+            else:
+                r = map(str, r)
+                r.sort()
+                result = string_expect
+            assert r == result, "Glob(%s) expected %s, got %s" % (input, map(str, result), map(str, r))
+
+    def test_exact_match(self):
+        """Test globbing for exact Node matches"""
+        cases = (
+            ('aaa',             ['aaa'],                [self.aaa]),
+
+            ('subdir1',         ['subdir1'],            [self.subdir1]),
+
+            ('subdir1/ddd',     ['subdir1/ddd'],        [self.subdir1_ddd]),
+
+            ('disk-aaa',        ['disk-aaa'],           None),
+
+            ('disk-sub',        ['disk-sub'],           None),
+        )
+
+        self.do_cases(cases)
+
+    def test_subdir_matches(self):
+        """Test globbing for exact Node matches in subdirectories"""
+        cases = (
+            ('*/ddd',
+             ['subdir1/ddd', 'subdir2/ddd'],
+             [self.subdir1_ddd, self.subdir2_ddd]),
+
+            ('*/disk-ddd',
+             ['disk-sub/disk-ddd'],
+             None),
+        )
+
+        self.do_cases(cases)
+
+    def test_asterisk(self):
+        """Test globbing for simple asterisk Node matches"""
+
+        cases = (
+            ('b*',
+             ['bbb'],
+             [self.bbb]),
+
+            ('*',
+             ['aaa', 'bbb', 'ccc', 'sub', 'subdir1', 'subdir2'],
+             [self.aaa, self.bbb, self.ccc, self.sub, self.subdir1, self.subdir2]),
+        )
+
+        self.do_cases(cases, ondisk=False)
+
+        cases = (
+            ('disk-b*',
+             ['disk-bbb'],
+             None),
+
+            ('*',
+             ['aaa', 'bbb', 'ccc',
+              'disk-aaa', 'disk-bbb', 'disk-ccc', 'disk-sub',
+              'sub', 'subdir1', 'subdir2'],
+             None),
+        )
+
+        self.do_cases(cases)
+
+    def test_question_mark(self):
+        """Test globbing for simple question-mark Node matches"""
+
+        cases = (
+            ('cc?',
+             ['ccc'],
+             [self.ccc]),
+
+            ('subdir?/ddd',
+             ['subdir1/ddd', 'subdir2/ddd'],
+             [self.subdir1_ddd, self.subdir2_ddd]),
+
+            ('disk-cc?',
+             ['disk-ccc'],
+             None),
+        )
+
+        self.do_cases(cases)
+
+    def test_does_not_exist(self):
+        """Test globbing for things that don't exist"""
+
+        cases = (
+            ('does_not_exist',  [], []),
+            ('no_subdir/*',     [], []),
+            ('subdir?/no_file', [], []),
+        )
+
+        self.do_cases(cases)
+
+    def test_subdir_asterisk(self):
+        """Test globbing for asterisk Node matches in subdirectories"""
+        cases = (
+            ('*/e*',
+             ['subdir1/eee', 'subdir2/eee'],
+             [self.subdir1_eee, self.subdir2_eee]),
+
+            ('subdir?/*',
+             ['subdir1/ddd', 'subdir1/eee', 'subdir1/fff',
+              'subdir2/ddd', 'subdir2/eee', 'subdir2/fff'],
+             [self.subdir1_ddd, self.subdir1_eee, self.subdir1_fff,
+              self.subdir2_ddd, self.subdir2_eee, self.subdir2_fff]),
+
+            ('sub/*/*',
+             ['sub/dir3/ddd', 'sub/dir3/eee', 'sub/dir3/fff'],
+             [self.sub_dir3_ddd, self.sub_dir3_eee, self.sub_dir3_fff]),
+
+            ('*/e*',
+             ['subdir1/eee', 'subdir2/eee'],
+             None),
+
+            ('subdir?/*',
+             ['subdir1/ddd', 'subdir1/eee', 'subdir1/fff',
+              'subdir2/ddd', 'subdir2/eee', 'subdir2/fff'],
+             None),
+
+            ('sub/*/*',
+             ['sub/dir3/ddd', 'sub/dir3/eee', 'sub/dir3/fff'],
+             None),
+        )
+
+        self.do_cases(cases)
+
+    def test_subdir_question(self):
+        """Test globbing for question-mark Node matches in subdirectories"""
+        cases = (
+            ('*/?ee',
+             ['subdir1/eee', 'subdir2/eee'],
+             [self.subdir1_eee, self.subdir2_eee]),
+
+            ('subdir?/f?f',
+             ['subdir1/fff', 'subdir2/fff'],
+             [self.subdir1_fff, self.subdir2_fff]),
+
+            ('*/disk-?ff',
+             ['disk-sub/disk-fff'],
+             None),
+
+            ('subdir?/f?f',
+             ['subdir1/fff', 'subdir2/fff'],
+             None),
+        )
+
+        self.do_cases(cases)
+
+
+
 class RepositoryTestCase(_tempdirTestCase):
 
     def setUp(self):
@@ -2913,6 +3126,7 @@ if __name__ == "__main__":
         FileBuildInfoTestCase,
         FileNodeInfoTestCase,
         FSTestCase,
+        GlobTestCase,
         RepositoryTestCase,
     ]
     for tclass in tclasses:
