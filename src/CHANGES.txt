@@ -25,6 +25,10 @@ RELEASE 0.XX - XXX
 
   - Add a Glob() function.
 
+  - When removing targets with the -c option, use the absolute path (to
+    avoid problems interpreting BuildDir() when the top-level directory
+    is the source directory).
+
 
 
 RELEASE 0.XX - XXX

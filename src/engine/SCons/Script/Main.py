@@ -276,34 +276,31 @@ class BuildTask(SCons.Taskmaster.Task):
 
 class CleanTask(SCons.Taskmaster.Task):
     """An SCons clean task."""
-    def dir_index(self, directory):
-        dirname = lambda f, d=directory: os.path.join(d, f)
-        files = map(dirname, os.listdir(directory))
-
-        # os.listdir() isn't guaranteed to return files in any specific order,
-        # but some of the test code expects sorted output.
-        files.sort()
-        return files
-
-    def fs_delete(self, path, remove=1):
+    def fs_delete(self, path, pathstr, remove=1):
         try:
             if os.path.exists(path):
                 if os.path.isfile(path):
                     if remove: os.unlink(path)
-                    display("Removed " + path)
+                    display("Removed " + pathstr)
                 elif os.path.isdir(path) and not os.path.islink(path):
                     # delete everything in the dir
-                    for p in self.dir_index(path):
+                    entries = os.listdir(path)
+                    # Sort for deterministic output (os.listdir() Can
+                    # return entries in a random order).
+                    entries.sort()
+                    for e in entries:
+                        p = os.path.join(path, e)
+                        s = os.path.join(pathstr, e)
                         if os.path.isfile(p):
                             if remove: os.unlink(p)
-                            display("Removed " + p)
+                            display("Removed " + s)
                         else:
-                            self.fs_delete(p, remove)
+                            self.fs_delete(p, s, remove)
                     # then delete dir itself
                     if remove: os.rmdir(path)
-                    display("Removed directory " + path)
+                    display("Removed directory " + pathstr)
         except (IOError, OSError), e:
-            print "scons: Could not remove '%s':" % str(path), e.strerror
+            print "scons: Could not remove '%s':" % pathstr, e.strerror
 
     def show(self):
         target = self.targets[0]
@@ -314,7 +311,7 @@ class CleanTask(SCons.Taskmaster.Task):
         if SCons.Environment.CleanTargets.has_key(target):
             files = SCons.Environment.CleanTargets[target]
             for f in files:
-                self.fs_delete(str(f), 0)
+                self.fs_delete(f.abspath, str(f), 0)
 
     def remove(self):
         target = self.targets[0]
@@ -335,7 +332,7 @@ class CleanTask(SCons.Taskmaster.Task):
         if SCons.Environment.CleanTargets.has_key(target):
             files = SCons.Environment.CleanTargets[target]
             for f in files:
-                self.fs_delete(str(f))
+                self.fs_delete(f.abspath, str(f))
 
     execute = remove
 
