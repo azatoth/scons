@@ -80,8 +80,8 @@ The TestCommon module also provides the following variables
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCommon.py 0.26.D001 2007/08/20 21:58:58 knight"
-__version__ = "0.26"
+__revision__ = "TestCommon.py 0.28.D001 2007/09/29 05:15:13 knight"
+__version__ = "0.28"
 
 import os
 import os.path
@@ -95,8 +95,6 @@ from TestCmd import *
 from TestCmd import __all__
 
 __all__.extend([ 'TestCommon',
-                 'TestFailed',
-                 'TestNoResult',
                  'exe_suffix',
                  'obj_suffix',
                  'shobj_suffix',
@@ -196,24 +194,16 @@ def separate_files(flist):
             missing.append(f)
     return existing, missing
 
-class TestFailed(Exception):
-    def __init__(self, args=None):
-        self.args = args
-
-class TestNoResult(Exception):
-    def __init__(self, args=None):
-        self.args = args
-
 if os.name == 'posix':
     def _failed(self, status = 0):
         if self.status is None or status is None:
-            return None
-        if os.WIFSIGNALED(self.status):
             return None
         return _status(self) != status
     def _status(self):
         if os.WIFEXITED(self.status):
             return os.WEXITSTATUS(self.status)
+        elif os.WIFSIGNALED(self.status):
+            return os.WTERMSIG(self.status)
         else:
             return None
 elif os.name == 'nt':
@@ -399,12 +389,18 @@ class TestCommon(TestCmd):
             apply(TestCmd.run, [self], kw)
         except KeyboardInterrupt:
             raise
-        except:
+        except Exception, e:
             print self.banner('STDOUT ')
-            print self.stdout()
+            try:
+                print self.stdout()
+            except IndexError:
+                pass
             print self.banner('STDERR ')
-            print self.stderr()
-            raise
+            try:
+                print self.stderr()
+            except IndexError:
+                pass
+            raise e
         if _failed(self, status):
             expect = ''
             if status != 0:
@@ -414,19 +410,19 @@ class TestCommon(TestCmd):
             print self.stdout()
             print self.banner('STDERR ')
             print self.stderr()
-            raise TestFailed
+            self.fail_test()
         if not stdout is None and not match(self.stdout(), stdout):
             self.diff(stdout, self.stdout(), 'STDOUT ')
             stderr = self.stderr()
             if stderr:
                 print self.banner('STDERR ')
                 print stderr
-            raise TestFailed
+            self.fail_test()
         if not stderr is None and not match(self.stderr(), stderr):
             print self.banner('STDOUT ')
             print self.stdout()
             self.diff(stderr, self.stderr(), 'STDERR ')
-            raise TestFailed
+            self.fail_test()
 
     def skip_test(self, message="Skipping test.\n"):
         """Skips a test.
