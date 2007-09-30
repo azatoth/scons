@@ -3303,14 +3303,14 @@ foo = env.FindFile('foo', ['dir1', 'dir2'])
 .RI FindInstalledFiles( )
 .TP
 .RI env.FindInstalledFiles( )
-Returns the list of targets setup by the
+Returns the list of targets set up by the
 .B Install()
 or
 .B InstallAs()
 builders.
 
 This function serves as a convenient method to select the contents of
-a Binary Package.
+a binary package.
 
 Example:
 
@@ -3338,7 +3338,7 @@ Returns the list of nodes which serve as the source of the built files.
 It does so by inspecting the dependency tree starting at the optional
 argument
 .B node
-which defaults to the '"."'-node. It will then return all leafs of
+which defaults to the '"."'-node. It will then return all leaves of
 .B node.
 These are all children which have no further children.
 
