@@ -36,11 +36,15 @@ provided by the TestCommon class:
 
     test.must_contain('file', 'required text\n')
 
+    test.must_contain_lines(lines, output)
+
     test.must_exist('file1', ['file2', ...])
 
     test.must_match('file', "expected contents\n")
 
     test.must_not_be_writable('file1', ['file2', ...])
+
+    test.must_not_contain_lines(lines, output)
 
     test.must_not_exist('file1', ['file2', ...])
 
@@ -80,8 +84,8 @@ The TestCommon module also provides the following variables
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCommon.py 0.28.D001 2007/09/29 05:15:13 knight"
-__version__ = "0.28"
+__revision__ = "TestCommon.py 0.29.D001 2007/10/01 12:54:20 knight"
+__version__ = "0.29"
 
 import os
 import os.path
@@ -291,6 +295,19 @@ class TestCommon(TestCmd):
             print file_contents
             self.fail_test(not contains)
 
+    def must_contain_lines(self, lines, output, title=None):
+        if title is None:
+            title = 'output'
+
+        missing = filter(lambda l, o=output: string.find(o, l) == -1, lines)
+
+        if missing:
+            print "Missing lines from %s:" % title
+            print string.join(missing, '\n')
+            print "%s ============================================================" % title
+            print output
+            self.fail_test()
+
     def must_exist(self, *files):
         """Ensures that the specified file(s) must exist.  An individual
         file be specified as a list of directory names, in which case the
@@ -318,6 +335,19 @@ class TestCommon(TestCmd):
             print "Unexpected contents of `%s'" % file
             self.diff(expect, file_contents, 'contents ')
             raise
+
+    def must_not_contain_lines(self, lines, output=None, title=None):
+        if title is None:
+            title = 'output'
+
+        unexpected = filter(lambda l, o=output: string.find(o, l) != -1, lines)
+
+        if unexpected:
+            print "Unexpected lines in %s:" % title
+            print string.join(unexpected, '\n')
+            print "%s ============================================================" % title
+            print output
+            self.fail_test()
 
     def must_not_exist(self, *files):
         """Ensures that the specified file(s) must not exist.
