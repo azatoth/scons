@@ -84,8 +84,8 @@ The TestCommon module also provides the following variables
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCommon.py 0.29.D001 2007/10/01 12:54:20 knight"
-__version__ = "0.29"
+__revision__ = "TestCommon.py 0.30.D001 2007/10/01 16:53:55 knight"
+__version__ = "0.30"
 
 import os
 import os.path
