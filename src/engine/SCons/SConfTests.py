@@ -95,7 +95,7 @@ class SConfTestCase(unittest.TestCase):
         # 'TryLink'), so we are aware of reloading modules.
         
         def checks(self, sconf, TryFuncString):
-            TryFunc = self.SConf.SConf.__dict__[TryFuncString]
+            TryFunc = self.SConf.SConfBase.__dict__[TryFuncString]
             res1 = TryFunc( sconf, "int main() { return 0; }\n", ".c" )
             res2 = TryFunc( sconf,
                             '#include "no_std_header.h"\nint main() {return 0; }\n',

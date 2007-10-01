@@ -5659,9 +5659,9 @@ command line option.
 The following methods can be used to perform checks:
 
 .TP
-.RI Configure( env ", [" custom_tests ", " conf_dir ", " log_file ", " config_h ])
+.RI Configure( env ", [" custom_tests ", " conf_dir ", " log_file ", " config_h ", " clean ", " help])
 .TP
-.RI env.Configure([ custom_tests ", " conf_dir ", " log_file ", " config_h ])
+.RI env.Configure([ custom_tests ", " conf_dir ", " log_file ", " config_h ", " clean ", " help])
 This creates a configure context, which can be used to perform checks.
 .I env
 specifies the environment for building the tests.
@@ -5708,6 +5708,30 @@ but is only rebuilt if its contents will have changed
 and some target that depends on the
 .I config_h
 file is being built.
+
+The optional
+.B clean
+and
+.B help
+arguments can be used to suppress execution of the configuration
+tests when the
+.B -c/--clean
+or
+.B -H/-h/--help
+options are used, respectively.
+The default behavior is always to execute
+configure context tests,
+since the results of the tests may
+affect the list of targets to be cleaned
+or the help text.
+If the configure tests do not affect these,
+then you may add the
+.B clean=False
+or
+.B help=False
+arguments
+(or both)
+to avoid unnecessary test execution.
 
 .EE
 A created

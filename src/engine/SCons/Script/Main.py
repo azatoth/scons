@@ -833,12 +833,10 @@ def _main(parser):
         CleanTask.execute = CleanTask.show
     if options.question:
         SCons.SConf.dryrun = 1
-    if options.clean or options.help:
-        # If they're cleaning targets or have asked for help, replace
-        # the whole SCons.SConf module with a Null object so that the
-        # Configure() calls when reading the SConscript files don't
-        # actually do anything.
-        SCons.SConf.SConf = SCons.Util.Null
+    if options.clean:
+        SCons.SConf.SetBuildType('clean')
+    if options.help:
+        SCons.SConf.SetBuildType('help')
     SCons.SConf.SetCacheMode(options.config)
     SCons.SConf.SetProgressDisplay(progress_display)
 
