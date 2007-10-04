@@ -29,6 +29,9 @@ RELEASE 0.XX - XXX
     avoid problems interpreting BuildDir() when the top-level directory
     is the source directory).
 
+  - Fix problems with Install() and InstallAs() when called through a
+    clone (of a clone, ...) of a cloned construction environment.
+
 
 
 RELEASE 0.XX - XXX

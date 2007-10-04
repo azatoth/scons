@@ -1137,7 +1137,7 @@ class Base(SubstitutionEnvironment):
 
         clone.added_methods = []
         for mw in self.added_methods:
-            mw.clone(clone)
+            clone.added_methods.append(mw.clone(clone))
 
         clone._memo = {}
 
