@@ -1982,6 +1982,9 @@ class GlobTestCase(_tempdirTestCase):
     def setUp(self):
         _tempdirTestCase.setUp(self)
 
+        fs = SCons.Node.FS.FS()
+        self.fs = fs
+
         # Make entries on disk that will not have Nodes, so we can verify
         # the behavior of looking for things on disk.
         self.test.write('disk-aaa', "disk-aaa\n")
@@ -1992,26 +1995,51 @@ class GlobTestCase(_tempdirTestCase):
         self.test.write(['disk-sub', 'disk-eee'], "disk-sub/disk-eee\n")
         self.test.write(['disk-sub', 'disk-fff'], "disk-sub/disk-fff\n")
 
+        # Make some entries that have both Nodes and on-disk entries,
+        # so we can verify what we do with
+        self.test.write('both-aaa', "both-aaa\n")
+        self.test.write('both-bbb', "both-bbb\n")
+        self.test.write('both-ccc', "both-ccc\n")
+        self.test.subdir('both-sub1')
+        self.test.write(['both-sub1', 'both-ddd'], "both-sub1/both-ddd\n")
+        self.test.write(['both-sub1', 'both-eee'], "both-sub1/both-eee\n")
+        self.test.write(['both-sub1', 'both-fff'], "both-sub1/both-fff\n")
+        self.test.subdir('both-sub2')
+        self.test.write(['both-sub2', 'both-ddd'], "both-sub2/both-ddd\n")
+        self.test.write(['both-sub2', 'both-eee'], "both-sub2/both-eee\n")
+        self.test.write(['both-sub2', 'both-fff'], "both-sub2/both-fff\n")
+
+        self.both_aaa = fs.File('both-aaa')
+        self.both_bbb = fs.File('both-bbb')
+        self.both_ccc = fs.File('both-ccc')
+        self.both_sub1 = fs.Dir('both-sub1')
+        self.both_sub1_both_ddd = self.both_sub1.File('both-ddd')
+        self.both_sub1_both_eee = self.both_sub1.File('both-eee')
+        self.both_sub1_both_fff = self.both_sub1.File('both-fff')
+        self.both_sub2 = fs.Dir('both-sub2')
+        self.both_sub2_both_ddd = self.both_sub2.File('both-ddd')
+        self.both_sub2_both_eee = self.both_sub2.File('both-eee')
+        self.both_sub2_both_fff = self.both_sub2.File('both-fff')
+
         # Make various Nodes (that don't have on-disk entries) so we
         # can verify how we match them.
-        fs = SCons.Node.FS.FS()
-        self.fs = fs
-        self.aaa = fs.File('aaa')
-        self.bbb = fs.File('bbb')
-        self.ccc = fs.File('ccc')
+        self.ggg = fs.File('ggg')
+        self.hhh = fs.File('hhh')
+        self.iii = fs.File('iii')
         self.subdir1 = fs.Dir('subdir1')
-        self.subdir1_ddd = self.subdir1.File('ddd')
-        self.subdir1_eee = self.subdir1.File('eee')
-        self.subdir1_fff = self.subdir1.File('fff')
+        self.subdir1_jjj = self.subdir1.File('jjj')
+        self.subdir1_kkk = self.subdir1.File('kkk')
+        self.subdir1_lll = self.subdir1.File('lll')
         self.subdir2 = fs.Dir('subdir2')
-        self.subdir2_ddd = self.subdir2.File('ddd')
-        self.subdir2_eee = self.subdir2.File('eee')
-        self.subdir2_fff = self.subdir2.File('fff')
+        self.subdir2_jjj = self.subdir2.File('jjj')
+        self.subdir2_kkk = self.subdir2.File('kkk')
+        self.subdir2_lll = self.subdir2.File('lll')
         self.sub = fs.Dir('sub')
         self.sub_dir3 = self.sub.Dir('dir3')
-        self.sub_dir3_ddd = self.sub_dir3.File('ddd')
-        self.sub_dir3_eee = self.sub_dir3.File('eee')
-        self.sub_dir3_fff = self.sub_dir3.File('fff')
+        self.sub_dir3_jjj = self.sub_dir3.File('jjj')
+        self.sub_dir3_kkk = self.sub_dir3.File('kkk')
+        self.sub_dir3_lll = self.sub_dir3.File('lll')
+
 
     def do_cases(self, cases, **kwargs):
 
@@ -2047,29 +2075,35 @@ class GlobTestCase(_tempdirTestCase):
 
     def test_exact_match(self):
         """Test globbing for exact Node matches"""
+        join = os.path.join
+
         cases = (
-            ('aaa',             ['aaa'],                [self.aaa]),
+            ('ggg',         ['ggg'],                    [self.ggg]),
 
-            ('subdir1',         ['subdir1'],            [self.subdir1]),
+            ('subdir1',     ['subdir1'],                [self.subdir1]),
 
-            ('subdir1/ddd',     ['subdir1/ddd'],        [self.subdir1_ddd]),
+            ('subdir1/jjj', [join('subdir1', 'jjj')],   [self.subdir1_jjj]),
 
-            ('disk-aaa',        ['disk-aaa'],           None),
+            ('disk-aaa',    ['disk-aaa'],               None),
 
-            ('disk-sub',        ['disk-sub'],           None),
+            ('disk-sub',    ['disk-sub'],               None),
+
+            ('both-aaa',    ['both-aaa'],               []),
         )
 
         self.do_cases(cases)
 
     def test_subdir_matches(self):
         """Test globbing for exact Node matches in subdirectories"""
+        join = os.path.join
+
         cases = (
-            ('*/ddd',
-             ['subdir1/ddd', 'subdir2/ddd'],
-             [self.subdir1_ddd, self.subdir2_ddd]),
+            ('*/jjj',
+             [join('subdir1', 'jjj'), join('subdir2', 'jjj')],
+             [self.subdir1_jjj, self.subdir2_jjj]),
 
             ('*/disk-ddd',
-             ['disk-sub/disk-ddd'],
+             [join('disk-sub', 'disk-ddd')],
              None),
         )
 
@@ -2077,15 +2111,20 @@ class GlobTestCase(_tempdirTestCase):
 
     def test_asterisk(self):
         """Test globbing for simple asterisk Node matches"""
-
         cases = (
-            ('b*',
-             ['bbb'],
-             [self.bbb]),
+            ('h*',
+             ['hhh'],
+             [self.hhh]),
 
             ('*',
-             ['aaa', 'bbb', 'ccc', 'sub', 'subdir1', 'subdir2'],
-             [self.aaa, self.bbb, self.ccc, self.sub, self.subdir1, self.subdir2]),
+             ['both-aaa', 'both-bbb', 'both-ccc',
+              'both-sub1', 'both-sub2',
+              'ggg', 'hhh', 'iii',
+              'sub', 'subdir1', 'subdir2'],
+             [self.both_aaa, self.both_bbb, self.both_ccc,
+              self.both_sub1, self.both_sub2,
+              self.ggg, self.hhh, self.iii,
+              self.sub, self.subdir1, self.subdir2]),
         )
 
         self.do_cases(cases, ondisk=False)
@@ -2096,8 +2135,9 @@ class GlobTestCase(_tempdirTestCase):
              None),
 
             ('*',
-             ['aaa', 'bbb', 'ccc',
+             ['both-aaa', 'both-bbb', 'both-ccc', 'both-sub1', 'both-sub2',
               'disk-aaa', 'disk-bbb', 'disk-ccc', 'disk-sub',
+              'ggg', 'hhh', 'iii',
               'sub', 'subdir1', 'subdir2'],
              None),
         )
@@ -2106,15 +2146,20 @@ class GlobTestCase(_tempdirTestCase):
 
     def test_question_mark(self):
         """Test globbing for simple question-mark Node matches"""
+        join = os.path.join
 
         cases = (
-            ('cc?',
-             ['ccc'],
-             [self.ccc]),
+            ('ii?',
+             ['iii'],
+             [self.iii]),
 
-            ('subdir?/ddd',
-             ['subdir1/ddd', 'subdir2/ddd'],
-             [self.subdir1_ddd, self.subdir2_ddd]),
+            ('both-sub?/both-eee',
+             [join('both-sub1', 'both-eee'), join('both-sub2', 'both-eee')],
+             [self.both_sub1_both_eee, self.both_sub2_both_eee]),
+
+            ('subdir?/jjj',
+             [join('subdir1', 'jjj'), join('subdir2', 'jjj')],
+             [self.subdir1_jjj, self.subdir2_jjj]),
 
             ('disk-cc?',
              ['disk-ccc'],
@@ -2136,32 +2181,57 @@ class GlobTestCase(_tempdirTestCase):
 
     def test_subdir_asterisk(self):
         """Test globbing for asterisk Node matches in subdirectories"""
+        join = os.path.join
+
         cases = (
-            ('*/e*',
-             ['subdir1/eee', 'subdir2/eee'],
-             [self.subdir1_eee, self.subdir2_eee]),
+            ('*/k*',
+             [join('subdir1', 'kkk'), join('subdir2', 'kkk')],
+             [self.subdir1_kkk, self.subdir2_kkk]),
+
+            ('both-sub?/*',
+             [join('both-sub1', 'both-ddd'),
+              join('both-sub1', 'both-eee'),
+              join('both-sub1', 'both-fff'),
+              join('both-sub2', 'both-ddd'),
+              join('both-sub2', 'both-eee'),
+              join('both-sub2', 'both-fff')],
+             [self.both_sub1_both_ddd, self.both_sub1_both_eee, self.both_sub1_both_fff,
+              self.both_sub2_both_ddd, self.both_sub2_both_eee, self.both_sub2_both_fff],
+             ),
 
             ('subdir?/*',
-             ['subdir1/ddd', 'subdir1/eee', 'subdir1/fff',
-              'subdir2/ddd', 'subdir2/eee', 'subdir2/fff'],
-             [self.subdir1_ddd, self.subdir1_eee, self.subdir1_fff,
-              self.subdir2_ddd, self.subdir2_eee, self.subdir2_fff]),
+             [join('subdir1', 'jjj'),
+              join('subdir1', 'kkk'),
+              join('subdir1', 'lll'),
+              join('subdir2', 'jjj'),
+              join('subdir2', 'kkk'),
+              join('subdir2', 'lll')],
+             [self.subdir1_jjj, self.subdir1_kkk, self.subdir1_lll,
+              self.subdir2_jjj, self.subdir2_kkk, self.subdir2_lll]),
 
             ('sub/*/*',
-             ['sub/dir3/ddd', 'sub/dir3/eee', 'sub/dir3/fff'],
-             [self.sub_dir3_ddd, self.sub_dir3_eee, self.sub_dir3_fff]),
+             [join('sub', 'dir3', 'jjj'),
+              join('sub', 'dir3', 'kkk'),
+              join('sub', 'dir3', 'lll')],
+             [self.sub_dir3_jjj, self.sub_dir3_kkk, self.sub_dir3_lll]),
 
-            ('*/e*',
-             ['subdir1/eee', 'subdir2/eee'],
+            ('*/k*',
+             [join('subdir1', 'kkk'), join('subdir2', 'kkk')],
              None),
 
             ('subdir?/*',
-             ['subdir1/ddd', 'subdir1/eee', 'subdir1/fff',
-              'subdir2/ddd', 'subdir2/eee', 'subdir2/fff'],
+             [join('subdir1', 'jjj'),
+              join('subdir1', 'kkk'),
+              join('subdir1', 'lll'),
+              join('subdir2', 'jjj'),
+              join('subdir2', 'kkk'),
+              join('subdir2', 'lll')],
              None),
 
             ('sub/*/*',
-             ['sub/dir3/ddd', 'sub/dir3/eee', 'sub/dir3/fff'],
+             [join('sub', 'dir3', 'jjj'),
+              join('sub', 'dir3', 'kkk'),
+              join('sub', 'dir3', 'lll')],
              None),
         )
 
@@ -2169,21 +2239,23 @@ class GlobTestCase(_tempdirTestCase):
 
     def test_subdir_question(self):
         """Test globbing for question-mark Node matches in subdirectories"""
-        cases = (
-            ('*/?ee',
-             ['subdir1/eee', 'subdir2/eee'],
-             [self.subdir1_eee, self.subdir2_eee]),
+        join = os.path.join
 
-            ('subdir?/f?f',
-             ['subdir1/fff', 'subdir2/fff'],
-             [self.subdir1_fff, self.subdir2_fff]),
+        cases = (
+            ('*/?kk',
+             [join('subdir1', 'kkk'), join('subdir2', 'kkk')],
+             [self.subdir1_kkk, self.subdir2_kkk]),
+
+            ('subdir?/l?l',
+             [join('subdir1', 'lll'), join('subdir2', 'lll')],
+             [self.subdir1_lll, self.subdir2_lll]),
 
             ('*/disk-?ff',
-             ['disk-sub/disk-fff'],
+             [join('disk-sub', 'disk-fff')],
              None),
 
-            ('subdir?/f?f',
-             ['subdir1/fff', 'subdir2/fff'],
+            ('subdir?/l?l',
+             [join('subdir1', 'lll'), join('subdir2', 'lll')],
              None),
         )
 

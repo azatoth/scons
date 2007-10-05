@@ -675,7 +675,7 @@ class Base(SCons.Node.Node):
     def target_from_source(self, prefix, suffix, splitext=SCons.Util.splitext):
         """
 
-	Generates a target entry that corresponds to this entry (usually
+        Generates a target entry that corresponds to this entry (usually
         a source file) with the specified prefix and suffix.
 
         Note that this method can be overridden dynamically for generated
@@ -747,7 +747,7 @@ class Base(SCons.Node.Node):
         self._memo['rentry'] = result
         return result
 
-    def _glob1(self, pattern, ondisk=True, source=False, strings=False):
+    def _glob1(self, pattern, ondisk):
         return []
 
 class Entry(Base):
@@ -862,8 +862,8 @@ class Entry(Base):
     def changed_since_last_build(self, target, prev_ni):
         return self.disambiguate().changed_since_last_build(target, prev_ni)
 
-    def _glob1(self, pattern, ondisk=True, source=False, strings=False):
-        return self.disambiguate()._glob1(pattern, ondisk, source, strings)
+    def _glob1(self, pattern, ondisk):
+        return self.disambiguate()._glob1(pattern, ondisk)
 
 # This is for later so we can differentiate between Entry the class and Entry
 # the method of the FS class.
@@ -1716,9 +1716,10 @@ class Dir(Base):
         for dirname in filter(select_dirs, names):
             entries[dirname].walk(func, arg)
 
-    def glob(self, pathname, ondisk=True, source=False, strings=False):
+    def glob(self, pathname, ondisk, source, strings):
         """
-        Teturns Nodes (or strings) matching a specified pathname pattern.
+        Returns a list of Nodes (or strings) matching a specified
+        pathname pattern.
 
         Pathname patterns follow UNIX shell semantics:  * matches
         any-length strings of any characters, ? matches any character,
@@ -1733,6 +1734,7 @@ class Dir(Base):
         on-disk, in addition to in-memory Nodes.  Setting the "ondisk"
         argument to False (or some other non-true value) causes the glob()
         function to only match in-memory Nodes.  The default behavior is
+        to return both the on-disk and in-memory Nodes.
 
         The "source" argument, when true, specifies that corresponding
         source Nodes must be returned if you're globbing in a build
@@ -1742,36 +1744,52 @@ class Dir(Base):
         The "strings" argument, when true, returns the matches as strings,
         not Nodes.  The strings are path names relative to this directory.
 
-        The underlying algorithm is adaptated from the glob.glob()
-        function in the Python library, and uses fnmatch() under the
-        covers.
+        The underlying algorithm is adapted from the glob.glob() function
+        in the Python library (but heavily modified), and uses fnmatch()
+        under the covers.
         """
         dirname, basename = os.path.split(pathname)
         if not dirname:
-            return self._glob1(basename, ondisk, source, strings)
-        if has_glob_magic(dirname):
-            list = self.glob(dirname, ondisk, source, strings=False)
+            names = self._glob1(basename, ondisk)
         else:
-            try:
-                node = self.Dir(dirname, create=False)
-            except SCons.Errors.UserError:
-                return []
-            list = [node]
-        result = []
-        for dir in list:
-            r = dir._glob1(basename, ondisk, source, strings)
-            if strings:
+            if has_glob_magic(dirname):
+                dirlist = self.glob(dirname, ondisk, source, strings=False)
+            else:
+                try:
+                    node = self.Dir(dirname, create=False)
+                except SCons.Errors.UserError:
+                    return []
+                dirlist = [node]
+            names = []
+            for dir in dirlist:
+                r = dir._glob1(basename, ondisk)
                 r = map(lambda x, d=str(dir): os.path.join(d, x), r)
-            result.extend(r)
-        return result
+                names.extend(r)
 
-    def _glob1(self, pattern, ondisk=True, source=False, strings=False):
+        names = list(set(names))
+        if strings: return names
+
+        nodes = []
+        for name in names:
+            # I'm not sure this was translated correctly...
+            n1 = self.Entry(name)
+            n2 = n1.disambiguate()
+            if n1.__class__ != n2.__class__:
+                n1.__class__ = n2.__class__
+                n1._morph()
+            nodes.append(n1)
+        return nodes
+
+    def _glob1(self, pattern, ondisk):
         """
-        Globs for entries matching a single pattern in this directory.
+        Globs for and returns a list of entry names matching a single
+        pattern in this directory.
 
         This searches any repositories and source directories for
-        corresponding entries and returns a Node (or string) relative
-        to the current directory if an entry is found anywhere.
+        corresponding entries and returns a string relative to the
+        current directory if an entry is found anywhere.
+
+        TODO: handle pattern with no wildcard
         """
         search_dir_list = self.get_all_rdirs()
         for srcdir in self.srcdir_list():
@@ -1779,6 +1797,16 @@ class Dir(Base):
 
         names = []
         for dir in search_dir_list:
+            # We use the .name attribute from the Node because the keys of
+            # the dir.entries  dictionary are normalized (that is, all upper
+            # case) on case-insensitve filesystems like Window.
+            #node_names = [ v.name for k, v in dir.entries.items() if k not in ('.', '..') ]
+            node_names = filter(lambda n: n not in ('.', '..'), dir.entries.keys())
+            node_names = map(lambda n, e=dir.entries: e[n].name, node_names)
+            if pattern[0] != '.':
+                #node_names = [ d for d in node_names if d[0] != '.' ]
+                node_names = filter(lambda x: x[0] != '.', node_names)
+            names.extend(fnmatch.filter(node_names, pattern))
             if ondisk:
                 try:
                     disk_names = os.listdir(dir.abspath)
@@ -1789,31 +1817,9 @@ class Dir(Base):
                         #disk_names = [ d for d in disk_names if d[0] != '.' ]
                         disk_names = filter(lambda x: x[0] != '.', disk_names)
                     disk_names = fnmatch.filter(disk_names, pattern)
-                    if strings:
-                        names.extend(disk_names)
-                    else:
-                        rep_nodes = map(dir.Entry, disk_names)
-                        #rep_nodes = [ n.disambiguate() for n in rep_nodes ]
-                        rep_nodes = map(lambda n: n.disambiguate(), rep_nodes)
-                        for node, name in zip(rep_nodes, disk_names):
-                            n = self.Entry(name)
-                            if n.__class__ != node.__class__:
-                                n.__class__ = node.__class__
-                                n._morph()
-            #names.extend([ n for n in dir.entries.keys() if not n in ('.', '..') ])
-            names.extend(filter(lambda n: n not in ('.', '..'), dir.entries.keys()))
+                    names.extend(disk_names)
 
-        names = set(names)
-        if pattern[0] != '.':
-            #names = [ n for n in names if n[0] != '.' ]
-            names = filter(lambda x: x[0] != '.', names)
-        names = fnmatch.filter(names, pattern)
-
-        if strings:
-            return names
-
-        #return [ self.entries[n] for n in names ]
-        return filter(None, map(lambda n, e=self.entries:  e.get(n), names))
+        return names
 
 class RootDir(Dir):
     """A class for the root directory of a file system.
