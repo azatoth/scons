@@ -747,7 +747,7 @@ class Base(SCons.Node.Node):
         self._memo['rentry'] = result
         return result
 
-    def _glob1(self, pattern, ondisk):
+    def _glob1(self, pattern, ondisk=True, source=False, strings=False):
         return []
 
 class Entry(Base):
@@ -862,8 +862,8 @@ class Entry(Base):
     def changed_since_last_build(self, target, prev_ni):
         return self.disambiguate().changed_since_last_build(target, prev_ni)
 
-    def _glob1(self, pattern, ondisk):
-        return self.disambiguate()._glob1(pattern, ondisk)
+    def _glob1(self, pattern, ondisk=True, source=False, strings=False):
+        return self.disambiguate()._glob1(pattern, ondisk, source, strings)
 
 # This is for later so we can differentiate between Entry the class and Entry
 # the method of the FS class.
@@ -1716,7 +1716,7 @@ class Dir(Base):
         for dirname in filter(select_dirs, names):
             entries[dirname].walk(func, arg)
 
-    def glob(self, pathname, ondisk, source, strings):
+    def glob(self, pathname, ondisk=True, source=False, strings=False):
         """
         Returns a list of Nodes (or strings) matching a specified
         pathname pattern.
@@ -1750,44 +1750,31 @@ class Dir(Base):
         """
         dirname, basename = os.path.split(pathname)
         if not dirname:
-            names = self._glob1(basename, ondisk)
+            return self._glob1(basename, ondisk, source, strings)
+        if has_glob_magic(dirname):
+            list = self.glob(dirname, ondisk, source, strings=False)
         else:
-            if has_glob_magic(dirname):
-                dirlist = self.glob(dirname, ondisk, source, strings=False)
-            else:
-                try:
-                    node = self.Dir(dirname, create=False)
-                except SCons.Errors.UserError:
-                    return []
-                dirlist = [node]
-            names = []
-            for dir in dirlist:
-                r = dir._glob1(basename, ondisk)
+            try:
+                node = self.Dir(dirname, create=False)
+            except SCons.Errors.UserError:
+                return []
+            list = [node]
+        result = []
+        for dir in list:
+            r = dir._glob1(basename, ondisk, source, strings)
+            if strings:
                 r = map(lambda x, d=str(dir): os.path.join(d, x), r)
-                names.extend(r)
+            result.extend(r)
+        return result
 
-        names = list(set(names))
-        if strings: return names
-
-        nodes = []
-        for name in names:
-            # I'm not sure this was translated correctly...
-            n1 = self.Entry(name)
-            n2 = n1.disambiguate()
-            if n1.__class__ != n2.__class__:
-                n1.__class__ = n2.__class__
-                n1._morph()
-            nodes.append(n1)
-        return nodes
-
-    def _glob1(self, pattern, ondisk):
+    def _glob1(self, pattern, ondisk=True, source=False, strings=False):
         """
         Globs for and returns a list of entry names matching a single
         pattern in this directory.
 
         This searches any repositories and source directories for
-        corresponding entries and returns a string relative to the
-        current directory if an entry is found anywhere.
+        corresponding entries and returns a Node (or string) relative
+        to the current directory if an entry is found anywhere.
 
         TODO: handle pattern with no wildcard
         """
@@ -1800,7 +1787,7 @@ class Dir(Base):
             # We use the .name attribute from the Node because the keys of
             # the dir.entries  dictionary are normalized (that is, all upper
             # case) on case-insensitve filesystems like Window.
-            #node_names = [ v.name for k, v in dir.entries.items() if k not in ('.', '..') ]
+            #node_names = [ v.name for k, v in dir.entries.items() if k not in '.', '..') ]
             node_names = filter(lambda n: n not in ('.', '..'), dir.entries.keys())
             node_names = map(lambda n, e=dir.entries: e[n].name, node_names)
             if pattern[0] != '.':
@@ -1817,9 +1804,31 @@ class Dir(Base):
                         #disk_names = [ d for d in disk_names if d[0] != '.' ]
                         disk_names = filter(lambda x: x[0] != '.', disk_names)
                     disk_names = fnmatch.filter(disk_names, pattern)
-                    names.extend(disk_names)
+                    if strings:
+                        names.extend(disk_names)
+                    else:
+                        rep_nodes = map(dir.Entry, disk_names)
+                        #rep_nodes = [ n.disambiguate() for n in rep_nodes ]
+                        rep_nodes = map(lambda n: n.disambiguate(), rep_nodes)
+                        for node, name in zip(rep_nodes, disk_names):
+                            n = self.Entry(name)
+                            if n.__class__ != node.__class__:
+                                n.__class__ = node.__class__
+                                n._morph()
+            #names.extend([ n for n in dir.entries.keys() if not n in ('.', '..') ])
+            names.extend(filter(lambda n: n not in ('.', '..'), dir.entries.keys()))
 
-        return names
+        names = set(names)
+        if pattern[0] != '.':
+            #names = [ n for n in names if n[0] != '.' ]
+            names = filter(lambda x: x[0] != '.', names)
+        names = fnmatch.filter(names, pattern)
+
+        if strings:
+            return names
+
+        #return [ self.entries[n] for n in names ]
+        return filter(None, map(lambda n, e=self.entries:  e.get(n), names))
 
 class RootDir(Dir):
     """A class for the root directory of a file system.
