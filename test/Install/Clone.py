@@ -34,12 +34,21 @@ import TestSCons
 test = TestSCons.TestSCons()
 
 test.write('SConstruct', """
-env1 = Environment(DESTDIR='sub1')
+env1 = Environment(DESTDIR='sub1', tools=[])
+
+# Call env1.Install() but not env1.InstallAs() *before* we clone it.
+# This is to verify that re-initializing the Install() attribute on the
+# construction environment doesn't mess up the environment settings in
+# a way that leaves the InstallAs() intializer in place, which leads to
+# infinite recursion.
+env1.Install('$DESTDIR', 'foo.in')
+
 env2 = env1.Clone(DESTDIR='sub2')
 env3 = env2.Clone(DESTDIR='sub3')
-env1.Install('$DESTDIR', 'foo.in')
+
 env2.Install('$DESTDIR', 'foo.in')
 env3.Install('$DESTDIR', 'foo.in')
+
 env1.InstallAs('$DESTDIR/foo.out', 'foo.in')
 env2.InstallAs('$DESTDIR/foo.out', 'foo.in')
 env3.InstallAs('$DESTDIR/foo.out', 'foo.in')

@@ -216,6 +216,9 @@ class BuilderWrapper(MethodWrapper):
     def __repr__(self):
         return '<BuilderWrapper %s>' % repr(self.name)
 
+    def __str__(self):
+        return self.__repr__()
+
     def __getattr__(self, name):
         if name == 'env':
             return self.object
@@ -259,6 +262,12 @@ class BuilderDict(UserDict):
         return self.__class__(self.data, self.env)
 
     def __setitem__(self, item, val):
+        try:
+            method = getattr(self.env, item).method
+        except AttributeError:
+            pass
+        else:
+            self.env.RemoveMethod(method)
         UserDict.__setitem__(self, item, val)
         BuilderWrapper(self.env, val, item)
 
