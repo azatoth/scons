@@ -1785,28 +1785,32 @@ class Dir(Base):
         names = []
         for dir in search_dir_list:
             # We use the .name attribute from the Node because the keys of
-            # the dir.entries  dictionary are normalized (that is, all upper
-            # case) on case-insensitve filesystems like Window.
-            #node_names = [ v.name for k, v in dir.entries.items() if k not in '.', '..') ]
-            node_names = filter(lambda n: n not in ('.', '..'), dir.entries.keys())
-            node_names = map(lambda n, e=dir.entries: e[n].name, node_names)
-            if pattern[0] != '.':
-                #node_names = [ d for d in node_names if d[0] != '.' ]
-                node_names = filter(lambda x: x[0] != '.', node_names)
-            names.extend(fnmatch.filter(node_names, pattern))
+            # the dir.entries dictionary are normalized (that is, all upper
+            # case) on case-insensitive systems like Windows.
+            #node_names = [ v.name for k, v in dir.entries.items() if k not in ('.', '..') ]
+            entry_names = filter(lambda n: n not in ('.', '..'), dir.entries.keys())
+            node_names = map(lambda n, e=dir.entries: e[n].name, entry_names)
+            names.extend(node_names)
             if ondisk:
                 try:
                     disk_names = os.listdir(dir.abspath)
                 except os.error:
                     pass
                 else:
-                    if pattern[0] != '.':
-                        #disk_names = [ d for d in disk_names if d[0] != '.' ]
-                        disk_names = filter(lambda x: x[0] != '.', disk_names)
-                    disk_names = fnmatch.filter(disk_names, pattern)
-                    if strings:
-                        names.extend(disk_names)
-                    else:
+                    names.extend(disk_names)
+                    if not strings:
+                        # We're going to return corresponding Nodes in
+                        # the local directory, so we need to make sure
+                        # those Nodes exist.  We only want to create
+                        # Nodes for the entries that will match the
+                        # specified pattern, though, which means we
+                        # need to filter the list here, even though
+                        # the overall list will also be filtered later,
+                        # after we exit this loop.
+                        if pattern[0] != '.':
+                            #disk_names = [ d for d in disk_names if d[0] != '.' ]
+                            disk_names = filter(lambda x: x[0] != '.', disk_names)
+                        disk_names = fnmatch.filter(disk_names, pattern)
                         rep_nodes = map(dir.Entry, disk_names)
                         #rep_nodes = [ n.disambiguate() for n in rep_nodes ]
                         rep_nodes = map(lambda n: n.disambiguate(), rep_nodes)
@@ -1815,8 +1819,6 @@ class Dir(Base):
                             if n.__class__ != node.__class__:
                                 n.__class__ = node.__class__
                                 n._morph()
-            #names.extend([ n for n in dir.entries.keys() if not n in ('.', '..') ])
-            names.extend(filter(lambda n: n not in ('.', '..'), dir.entries.keys()))
 
         names = set(names)
         if pattern[0] != '.':
@@ -1827,8 +1829,8 @@ class Dir(Base):
         if strings:
             return names
 
-        #return [ self.entries[n] for n in names ]
-        return filter(None, map(lambda n, e=self.entries:  e.get(n), names))
+        #return [ self.entries[_my_normcase(n)] for n in names ]
+        return map(lambda n, e=self.entries:  e[_my_normcase(n)], names)
 
 class RootDir(Dir):
     """A class for the root directory of a file system.
