@@ -910,43 +910,47 @@ class FSTestCase(_tempdirTestCase):
 
         drive, path = os.path.splitdrive(os.getcwd())
 
+        def _do_Dir_test(lpath, path_, abspath_, up_path_, sep, fileSys=fs, drive=drive):
+            dir = fileSys.Dir(string.replace(lpath, '/', sep))
+
+            if os.sep != '/':
+                path_ = string.replace(path_, '/', os.sep)
+                abspath_ = string.replace(abspath_, '/', os.sep)
+                up_path_ = string.replace(up_path_, '/', os.sep)
+
+            def strip_slash(p, drive=drive):
+                if p[-1] == os.sep and len(p) > 1:
+                    p = p[:-1]
+                if p[0] == os.sep:
+                    p = drive + p
+                return p
+            path = strip_slash(path_)
+            abspath = strip_slash(abspath_)
+            up_path = strip_slash(up_path_)
+            name = string.split(abspath, os.sep)[-1]
+
+            assert dir.name == name, \
+                   "dir.name %s != expected name %s" % \
+                   (dir.name, name)
+            assert dir.path == path, \
+                   "dir.path %s != expected path %s" % \
+                   (dir.path, path)
+            assert str(dir) == path, \
+                   "str(dir) %s != expected path %s" % \
+                   (str(dir), path)
+            assert dir.get_abspath() == abspath, \
+                   "dir.abspath %s != expected absolute path %s" % \
+                   (dir.get_abspath(), abspath)
+            assert dir.up().path == up_path, \
+                   "dir.up().path %s != expected parent path %s" % \
+                   (dir.up().path, up_path)
+
         for sep in seps:
 
-            def Dir_test(lpath, path_, abspath_, up_path_, fileSys=fs, s=sep, drive=drive):
-                dir = fileSys.Dir(string.replace(lpath, '/', s))
+            def Dir_test(lpath, path_, abspath_, up_path_, sep=sep):
+                return _do_Dir_test(lpath, path_, abspath_, up_path_, sep)
 
-                if os.sep != '/':
-                    path_ = string.replace(path_, '/', os.sep)
-                    abspath_ = string.replace(abspath_, '/', os.sep)
-                    up_path_ = string.replace(up_path_, '/', os.sep)
-
-                def strip_slash(p, drive=drive):
-                    if p[-1] == os.sep and len(p) > 1:
-                        p = p[:-1]
-                    if p[0] == os.sep:
-                        p = drive + p
-                    return p
-                path = strip_slash(path_)
-                abspath = strip_slash(abspath_)
-                up_path = strip_slash(up_path_)
-                name = string.split(abspath, os.sep)[-1]
-
-                assert dir.name == name, \
-                       "dir.name %s != expected name %s" % \
-                       (dir.name, name)
-                assert dir.path == path, \
-                       "dir.path %s != expected path %s" % \
-                       (dir.path, path)
-                assert str(dir) == path, \
-                       "str(dir) %s != expected path %s" % \
-                       (str(dir), path)
-                assert dir.get_abspath() == abspath, \
-                       "dir.abspath %s != expected absolute path %s" % \
-                       (dir.get_abspath(), abspath)
-                assert dir.up().path == up_path, \
-                       "dir.up().path %s != expected parent path %s" % \
-                       (dir.up().path, up_path)
-
+            Dir_test('',            './',          sub_dir,           sub)
             Dir_test('foo',         'foo/',        sub_dir_foo,       './')
             Dir_test('foo/bar',     'foo/bar/',    sub_dir_foo_bar,   'foo/')
             Dir_test('/foo',        '/foo/',       '/foo/',           '/')
@@ -1373,6 +1377,105 @@ class FSTestCase(_tempdirTestCase):
         assert f.get_string(0) == os.path.normpath('foo/bar/baz'), \
                f.get_string(0)
         assert f.get_string(1) == 'baz', f.get_string(1)
+
+    def test_drive_letters(self):
+        """Test drive-letter look-ups"""
+
+        test = self.test
+
+        test.subdir('sub', ['sub', 'dir'])
+
+        def drive_workpath(drive, *dirs):
+            x = apply(test.workpath, dirs)
+            drive, path = os.path.splitdrive(x)
+            return 'X:' + path
+
+        wp              = drive_workpath('X:', '')
+
+        if wp[-1] in (os.sep, '/'):
+            tmp         = os.path.split(wp[:-1])[0]
+        else:
+            tmp         = os.path.split(wp)[0]
+
+        parent_tmp      = os.path.split(tmp)[0]
+        if parent_tmp == 'X:':
+            parent_tmp = 'X:' + os.sep
+
+        tmp_foo         = os.path.join(tmp, 'foo')
+
+        foo             = drive_workpath('X:', 'foo')
+        foo_bar         = drive_workpath('X:', 'foo', 'bar')
+        sub             = drive_workpath('X:', 'sub', '')
+        sub_dir         = drive_workpath('X:', 'sub', 'dir', '')
+        sub_dir_foo     = drive_workpath('X:', 'sub', 'dir', 'foo', '')
+        sub_dir_foo_bar = drive_workpath('X:', 'sub', 'dir', 'foo', 'bar', '')
+        sub_foo         = drive_workpath('X:', 'sub', 'foo', '')
+
+        fs = SCons.Node.FS.FS()
+
+        seps = [os.sep]
+        if os.sep != '/':
+            seps = seps + ['/']
+
+        def _do_Dir_test(lpath, path_, up_path_, sep, fileSys=fs):
+            dir = fileSys.Dir(string.replace(lpath, '/', sep))
+
+            if os.sep != '/':
+                path_ = string.replace(path_, '/', os.sep)
+                up_path_ = string.replace(up_path_, '/', os.sep)
+
+            def strip_slash(p):
+                if p[-1] == os.sep and len(p) > 3:
+                    p = p[:-1]
+                return p
+            path = strip_slash(path_)
+            up_path = strip_slash(up_path_)
+            name = string.split(path, os.sep)[-1]
+
+            assert dir.name == name, \
+                   "dir.name %s != expected name %s" % \
+                   (dir.name, name)
+            assert dir.path == path, \
+                   "dir.path %s != expected path %s" % \
+                   (dir.path, path)
+            assert str(dir) == path, \
+                   "str(dir) %s != expected path %s" % \
+                   (str(dir), path)
+            assert dir.up().path == up_path, \
+                   "dir.up().path %s != expected parent path %s" % \
+                   (dir.up().path, up_path)
+
+        save_os_path = os.path
+        save_os_sep = os.sep
+        try:
+            import ntpath
+            os.path = ntpath
+            os.sep = '\\'
+
+            for sep in seps:
+
+                def Dir_test(lpath, path_, up_path_, sep=sep):
+                    return _do_Dir_test(lpath, path_, up_path_, sep)
+
+                Dir_test('#X:',         wp,             tmp)
+                Dir_test('X:foo',       foo,            wp)
+                Dir_test('X:foo/bar',   foo_bar,        foo)
+                Dir_test('X:/foo',      'X:/foo',       'X:/')
+                Dir_test('X:/foo/bar',  'X:/foo/bar/',  'X:/foo/')
+                Dir_test('X:..',        tmp,            parent_tmp)
+                Dir_test('X:foo/..',    wp,             tmp)
+                Dir_test('X:../foo',    tmp_foo,        tmp)
+                Dir_test('X:.',         wp,             tmp)
+                Dir_test('X:./.',       wp,             tmp)
+                Dir_test('X:foo/./bar', foo_bar,        foo)
+                Dir_test('#X:../foo',   tmp_foo,        tmp)
+                Dir_test('#X:/../foo',  tmp_foo,        tmp)
+                Dir_test('#X:foo/bar',  foo_bar,        foo)
+                Dir_test('#X:/foo/bar', foo_bar,        foo)
+                Dir_test('#X:/',        wp,             tmp)
+        finally:
+            os.path = save_os_path
+            os.sep = save_os_sep
 
     def test_target_from_source(self):
         """Test the method for generating target nodes from sources"""

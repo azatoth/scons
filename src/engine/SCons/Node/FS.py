@@ -1036,11 +1036,16 @@ class FS(LocalFS):
 
         This translates arbitrary input into a canonical Node.FS object
         of the specified fsclass.  The general approach for strings is
-        to turn it into a normalized absolute path and then call the
-        root directory's lookup_abs() method for the heavy lifting.
+        to turn it into a fully normalized absolute path and then call
+        the root directory's lookup_abs() method for the heavy lifting.
 
         If the path name begins with '#', it is unconditionally
-        interpreted relative to the top-level directory of this FS.
+        interpreted relative to the top-level directory of this FS.  '#'
+        is treated as a synonym for the top-level SConstruct directory,
+        much like '~' is treated as a synonym for the user's home
+        directory in a UNIX shell.  So both '#foo' and '#/foo' refer
+        to the 'foo' subdirectory underneath the top-level SConstruct
+        directory.
 
         If the path name is relative, then the path is looked up relative
         to the specified directory, or the current directory (self._cwd,
@@ -1054,33 +1059,47 @@ class FS(LocalFS):
             return p
         # str(p) in case it's something like a proxy object
         p = str(p)
+
+        initial_hash = (p[0:1] == '#')
+        if initial_hash:
+            # There was an initial '#', so we strip it and override
+            # whatever directory they may have specified with the
+            # top-level SConstruct directory.
+            p = p[1:]
+            directory = self.Top
+
+        if directory and not isinstance(directory, Dir):
+            directory = self.Dir(directory)
+
         drive, p = os.path.splitdrive(p)
         if drive and not p:
-            # A drive letter without a path...
+            # This causes a naked drive letter to be treated as a synonym
+            # for the root directory on that drive.
             p = os.sep
-            root = self.get_root(drive)
-        elif os.path.isabs(p):
-            # An absolute path...
-            p = os.path.normpath(p)
+        absolute = os.path.isabs(p)
+
+        if initial_hash or not absolute:
+            # This is a relative lookup, either to the top-level
+            # SConstruct directory (because of the initial '#') or to
+            # the current directory (the path name is not absolute).
+            # Add the string to the appropriate directory lookup path,
+            # after which the whole thing gets normalized.
+            if not directory:
+                directory = self._cwd
+            if isinstance(directory, RootDir):
+                import traceback
+                traceback.print_stack(file=open('/dev/tty', 'w'))
+            p = directory.labspath + '/' + p
+
+        p = os.path.normpath(p)
+
+        if drive or absolute:
             root = self.get_root(drive)
         else:
-            if p[0:1] == '#':
-                # A top-relative path...
-                directory = self.Top
-                offset = 1
-                if p[1:2] in(os.sep, '/'):
-                    offset = 2
-                p = p[offset:]
-            else:
-                # A relative path...
-                if not directory:
-                    # ...to the current (SConscript) directory.
-                    directory = self._cwd
-                elif not isinstance(directory, Dir):
-                    # ...to the specified directory.
-                    directory = self.Dir(directory)
-            p = os.path.normpath(directory.labspath + '/' + p)
+            if not directory:
+                directory = self._cwd
             root = directory.root
+
         if os.sep != '/':
             p = string.replace(p, os.sep, '/')
         return root._lookup_abs(p, fsclass, create)
