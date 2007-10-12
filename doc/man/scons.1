@@ -264,8 +264,8 @@ scons foo bar
 in which case only the specified targets will be built
 (along with any derived files on which they depend).
 
-Specifying "cleanup" targets in SConscript files is not
-necessary.  The 
+Specifying "cleanup" targets in SConscript files is not usually necessary.
+The 
 .B -c
 flag removes all files
 necessary to build the specified target:
@@ -1530,10 +1530,12 @@ Build rules are specified by calling a construction
 environment's builder methods.
 The arguments to the builder methods are
 .B target
-(a list of target files)
+(a list of targets to be built,
+usually file names)
 and
 .B source
-(a list of source files).
+(a list of sources to be built,
+usually file names).
 
 Because long lists of file names
 can lead to a lot of quoting,
@@ -1567,6 +1569,58 @@ env.Program(source =  ['bar.c', 'foo.c'], target = 'bar')
 env.Program(target = 'bar', Split('bar.c foo.c'))
 env.Program(target = 'bar', env.Split('bar.c foo.c'))
 env.Program('bar', source = string.split('bar.c foo.c'))
+.EE
+
+Target and source file names
+that are not absolute path names
+(that is, do not begin with
+.B /
+on POSIX systems
+or 
+.B \\
+on Windows systems,
+with or without
+an optional drive letter)
+are interpreted relative to the directory containing the
+.B SConscript
+file being read.
+An initial
+.B #
+(hash mark)
+on a path name means that the rest of the file name
+is interpreted relative to
+the directory containing
+the top-level
+.B SConstruct
+file,
+even if the
+.B #
+is followed by a directory separator character
+(slash or backslash).
+
+Examples:
+
+.ES
+# The comments describing the targets that will be built
+# assume these calls are in a SConscript file in the
+# a subdirectory named "subdir".
+
+# Builds the program "subdir/foo" from "subdir/foo.c":
+env.Program('foo', 'foo.c')
+
+# Builds the program "/tmp/bar" from "subdir/bar.c":
+env.Program('/tmp/bar', 'bar.c')
+
+# An initial '#' or '#/' are equivalent; the following
+# calls build the programs "foo" and "bar" (in the
+# top-level SConstruct directory) from "subdir/foo.c" and
+# "subdir/bar.c", respectively:
+env.Program('#foo', 'foo.c')
+env.Program('#/bar', 'bar.c')
+
+# Builds the program "other/foo" (relative to the top-level
+# SConstruct directory) from "subdir/foo.c":
+env.Program('#other/foo', 'foo.c')
 .EE
 
 When the target shares the same base name
@@ -1712,7 +1766,7 @@ for object in objects:
 
 Or you can use the
 .BR Flatten ()
-supplied by scons
+function supplied by scons
 to create a list containing just the Nodes,
 which may be more convenient:
 
