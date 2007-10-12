@@ -947,8 +947,8 @@ class FSTestCase(_tempdirTestCase):
 
         for sep in seps:
 
-            def Dir_test(lpath, path_, abspath_, up_path_, sep=sep):
-                return _do_Dir_test(lpath, path_, abspath_, up_path_, sep)
+            def Dir_test(lpath, path_, abspath_, up_path_, sep=sep, func=_do_Dir_test):
+                return func(lpath, path_, abspath_, up_path_, sep)
 
             Dir_test('',            './',          sub_dir,           sub)
             Dir_test('foo',         'foo/',        sub_dir_foo,       './')
@@ -1385,12 +1385,12 @@ class FSTestCase(_tempdirTestCase):
 
         test.subdir('sub', ['sub', 'dir'])
 
-        def drive_workpath(drive, *dirs):
+        def drive_workpath(drive, dirs, test=test):
             x = apply(test.workpath, dirs)
             drive, path = os.path.splitdrive(x)
             return 'X:' + path
 
-        wp              = drive_workpath('X:', '')
+        wp              = drive_workpath('X:', [''])
 
         if wp[-1] in (os.sep, '/'):
             tmp         = os.path.split(wp[:-1])[0]
@@ -1403,13 +1403,13 @@ class FSTestCase(_tempdirTestCase):
 
         tmp_foo         = os.path.join(tmp, 'foo')
 
-        foo             = drive_workpath('X:', 'foo')
-        foo_bar         = drive_workpath('X:', 'foo', 'bar')
-        sub             = drive_workpath('X:', 'sub', '')
-        sub_dir         = drive_workpath('X:', 'sub', 'dir', '')
-        sub_dir_foo     = drive_workpath('X:', 'sub', 'dir', 'foo', '')
-        sub_dir_foo_bar = drive_workpath('X:', 'sub', 'dir', 'foo', 'bar', '')
-        sub_foo         = drive_workpath('X:', 'sub', 'foo', '')
+        foo             = drive_workpath('X:', ['foo'])
+        foo_bar         = drive_workpath('X:', ['foo', 'bar'])
+        sub             = drive_workpath('X:', ['sub', ''])
+        sub_dir         = drive_workpath('X:', ['sub', 'dir', ''])
+        sub_dir_foo     = drive_workpath('X:', ['sub', 'dir', 'foo', ''])
+        sub_dir_foo_bar = drive_workpath('X:', ['sub', 'dir', 'foo', 'bar', ''])
+        sub_foo         = drive_workpath('X:', ['sub', 'foo', ''])
 
         fs = SCons.Node.FS.FS()
 
@@ -1454,8 +1454,8 @@ class FSTestCase(_tempdirTestCase):
 
             for sep in seps:
 
-                def Dir_test(lpath, path_, up_path_, sep=sep):
-                    return _do_Dir_test(lpath, path_, up_path_, sep)
+                def Dir_test(lpath, path_, up_path_, sep=sep, func=_do_Dir_test):
+                    return func(lpath, path_, up_path_, sep)
 
                 Dir_test('#X:',         wp,             tmp)
                 Dir_test('X:foo',       foo,            wp)
