@@ -822,8 +822,9 @@ class ActionCaller:
         # was called by using this hard-coded value as a special return.
         if s == '$__env__':
             return env
-        else:
+        elif SCons.Util.is_String(s):
             return env.subst(s, 0, target, source)
+        return self.parent.convert(s)
     def subst_args(self, target, source, env):
         return map(lambda x, self=self, t=target, s=source, e=env:
                           self.subst(x, t, s, e),
@@ -853,9 +854,10 @@ class ActionFactory:
     called with and give them to the ActionCaller object we create,
     so it can hang onto them until it needs them.
     """
-    def __init__(self, actfunc, strfunc):
+    def __init__(self, actfunc, strfunc, convert=lambda x: x):
         self.actfunc = actfunc
         self.strfunc = strfunc
+        self.convert = convert
     def __call__(self, *args, **kw):
         ac = ActionCaller(self, args, kw)
         action = Action(ac, strfunction=ac.strfunction)
