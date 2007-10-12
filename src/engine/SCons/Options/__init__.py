@@ -33,6 +33,7 @@ import SCons.compat
 
 import os.path
 import string
+import sys
 
 import SCons.Errors
 import SCons.Util
@@ -161,7 +162,16 @@ class Options:
         # next set the value specified in the options file
         for filename in self.files:
             if os.path.exists(filename):
-                execfile(filename, values)
+                dir = os.path.split(os.path.abspath(filename))[0]
+                if dir:
+                    sys.path.insert(0, dir)
+                try:
+                    values['__name__'] = filename
+                    execfile(filename, {}, values)
+                finally:
+                    if dir:
+                        del sys.path[0]
+                    del values['__name__']
 
         # set the values specified on the command line
         if args is None:

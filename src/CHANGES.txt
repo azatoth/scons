@@ -32,6 +32,11 @@ RELEASE 0.XX - XXX
   - Fix problems with Install() and InstallAs() when called through a
     clone (of a clone, ...) of a cloned construction environment.
 
+  - When executing a file containing Options() settings, add the file's
+    directory to sys.path (so modules can be imported from there) and
+    explicity set __name__ to the name of the file so the statement's
+    in the file can deduce the location if they need to.
+
 
 
 RELEASE 0.XX - XXX
