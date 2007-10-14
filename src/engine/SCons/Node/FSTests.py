@@ -288,8 +288,9 @@ class BuildDirTestCase(unittest.TestCase):
 
         assert not f7.exists()
         assert f7.rexists()
-        assert f7.rfile().path == os.path.normpath(test.workpath('rep1/build/var1/test2.out')),\
-               f7.rfile().path
+        r = f7.rfile().path
+        expect = os.path.normpath(test.workpath('rep1/build/var1/test2.out'))
+        assert r == expect, (repr(r), repr(expect))
 
         assert not f8.exists()
         assert f8.rexists()
@@ -1451,6 +1452,7 @@ class FSTestCase(_tempdirTestCase):
             import ntpath
             os.path = ntpath
             os.sep = '\\'
+            SCons.Node.FS.initialize_normpath_check()
 
             for sep in seps:
 
@@ -1476,6 +1478,7 @@ class FSTestCase(_tempdirTestCase):
         finally:
             os.path = save_os_path
             os.sep = save_os_sep
+            SCons.Node.FS.initialize_normpath_check()
 
     def test_target_from_source(self):
         """Test the method for generating target nodes from sources"""
@@ -2767,7 +2770,7 @@ class StringDirTestCase(unittest.TestCase):
         fs = SCons.Node.FS.FS(test.workpath(''))
 
         d = fs.Dir('sub', '.')
-        assert str(d) == 'sub'
+        assert str(d) == 'sub', str(d)
         assert d.exists()
         f = fs.File('file', 'sub')
         assert str(f) == os.path.join('sub', 'file')

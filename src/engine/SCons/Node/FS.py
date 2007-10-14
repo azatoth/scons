@@ -87,6 +87,26 @@ def save_strings(val):
     Save_Strings = val
 
 #
+
+needs_normpath_check = None
+
+def initialize_normpath_check():
+    """
+    Initialize the normpath_check regular expression.
+
+    This function is used by the unit tests to re-initialize the pattern
+    when testing for behavior with different values of os.sep.
+    """
+    global needs_normpath_check
+    if os.sep == '/':
+        pattern = r'.*/|\.$|\.\.$'
+    else:
+        pattern = r'.*[/%s]|\.$|\.\.$' % re.escape(os.sep)
+    needs_normpath_check = re.compile(pattern)
+
+initialize_normpath_check()
+
+#
 # SCons.Action objects for interacting with the outside world.
 #
 # The Node.FS methods in this module should use these actions to
@@ -1078,6 +1098,8 @@ class FS(LocalFS):
             p = os.sep
         absolute = os.path.isabs(p)
 
+        needs_normpath = needs_normpath_check.match(p)
+
         if initial_hash or not absolute:
             # This is a relative lookup, either to the top-level
             # SConstruct directory (because of the initial '#') or to
@@ -1086,12 +1108,13 @@ class FS(LocalFS):
             # after which the whole thing gets normalized.
             if not directory:
                 directory = self._cwd
-            if isinstance(directory, RootDir):
-                import traceback
-                traceback.print_stack(file=open('/dev/tty', 'w'))
-            p = directory.labspath + '/' + p
+            if p:
+                p = directory.labspath + '/' + p
+            else:
+                p = directory.labspath
 
-        p = os.path.normpath(p)
+        if needs_normpath:
+            p = os.path.normpath(p)
 
         if drive or absolute:
             root = self.get_root(drive)
@@ -1355,7 +1378,10 @@ class Dir(Base):
         while dir:
             for rep in dir.getRepositories():
                 result.append(rep.Dir(fname))
-            fname = dir.name + os.sep + fname
+            if fname == '.':
+                fname = dir.name
+            else:
+                fname = dir.name + os.sep + fname
             dir = dir.up()
 
         self._memo['get_all_rdirs'] = result
