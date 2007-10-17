@@ -63,14 +63,20 @@ Command('f4', 'f4.in', r'@%(_python_)s myfail.py f3 f4 $TARGET $SOURCE')
 Command('f5', 'f5.in', r'@%(_python_)s myfail.py f4 f5 $TARGET $SOURCE')
 Command('f6', 'f6.in', r'@%(_python_)s mypass.py f5 -  $TARGET $SOURCE')
 
-import atexit
-
 def print_build_failures():
     from SCons.Script import GetBuildFailures
-    for bf in GetBuildFailures():
+    bf_list = GetBuildFailures()
+    bf_list.sort(lambda a,b: cmp(a.filename, b.filename))
+    for bf in bf_list:
         print "%%s failed:  %%s" %% (bf.node, bf.errstr)
 
-atexit.register(print_build_failures)
+try:
+    import atexit
+except ImportError:
+    import sys
+    sys.exitfunc = print_build_failures
+else:
+    atexit.register(print_build_failures)
 """ % locals())
 
 test.write('f3.in', "f3.in\n")
