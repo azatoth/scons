@@ -139,6 +139,12 @@ def Progress(*args, **kw):
 
 # Task control.
 #
+
+_BuildFailures = []
+
+def GetBuildFailures():
+    return _BuildFailures
+
 class BuildTask(SCons.Taskmaster.Task):
     """An SCons build task."""
     progress = ProgressObject
@@ -174,6 +180,7 @@ class BuildTask(SCons.Taskmaster.Task):
                 display("scons: `%s' is up to date." % str(self.node))
 
     def do_failed(self, status=2):
+        _BuildFailures.append(self.exception[1])
         global exit_status
         if self.options.ignore_errors:
             SCons.Taskmaster.Task.executed(self)
@@ -1062,7 +1069,6 @@ def _main(parser):
             """Leave the order of dependencies alone."""
             return dependencies
 
-    progress_display("scons: " + opening_message)
     if options.taskmastertrace_file == '-':
         tmtrace = sys.stdout
     elif options.taskmastertrace_file:
@@ -1087,6 +1093,7 @@ def _main(parser):
     count_stats.append(('pre-', 'build'))
 
     try:
+        progress_display("scons: " + opening_message)
         jobs.run()
     finally:
         jobs.cleanup()

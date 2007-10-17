@@ -3507,6 +3507,98 @@ for object in Flatten(objects):
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP 
+.RI GetBuildFailures()
+Returns a list of exceptions for the
+actions that failed while
+attempting to build targets.
+Each element in the returned list is a
+.B BuildError
+object
+with the following attributes
+that record various aspects
+of the build failure:
+
+.B .node
+The node that was being built
+when the build failure occurred.
+
+.B .errstr
+The SCons error string
+describing the build failure.
+(This is often a generic
+message like "Error 2"
+to indicate that an executed
+commend exited with a status of 2.)
+
+.B .filename
+The name of the file or
+directory that actually caused the failure.
+This may be different from the
+.B .node
+attribute.
+For example,
+if an attempt to build a target named
+.B sub/dir/target
+fails because the
+.B sub/dir
+directory could not be created,
+then the
+.B .node
+attribute will be
+.B sub/dir/target
+but the
+.B .filename
+attribute will be
+.BR sub/dir .
+
+.B .executor
+The SCons Executor object
+for the target Node
+being built.
+This can be used to retrieve
+the construction environment used
+for the failed action.
+
+.B .action
+The actual SCons Action object that failed.
+This will be one specific action
+out of the possible list of
+actions that would have been
+executed to build the target.
+
+Note that the
+.BR GetBuildFailures ()
+function
+will always return an empty list
+until any build failure has occurred,
+which means that
+.BR GetBuildFailures ()
+will always return an empty list
+while the
+.B SConscript
+files are being read.
+Its primary intended use is
+for functions that will be
+executed before SCons exits
+by passing them to the
+standard Python
+.BR atexit.register ()
+function.
+Example:
+
+.ES
+import atexit
+
+def print_build_failures():
+    from SCons.Script import BuildFailures
+    for bf in BuildFailures:
+        print "%s failed: %s" % (bf.node, bf.errstr)
+
+atexit.register(print_build_failures)
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI GetBuildPath( file ", [" ... ])
 .TP

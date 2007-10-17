@@ -33,6 +33,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import string
 
 from SCons.Debug import logInstanceCreation
+import SCons.Errors
 import SCons.Memoize
 
 
@@ -128,7 +129,8 @@ class Executor:
         for act in self.get_action_list():
             status = apply(act, (self.targets, self.sources, env), kw)
             if status:
-                break
+                msg = "Error %d" % status
+                raise SCons.Errors.BuildError(errstr=msg, executor=self, action=act)
         return status
 
     # use extra indirection because with new-style objects (Python 2.2

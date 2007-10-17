@@ -236,7 +236,12 @@ class ExecutorTestCase(unittest.TestCase):
         x = SCons.Executor.Executor(a, env, [], t, ['s1', 's2'])
         x.add_pre_action(pre_err)
         x.add_post_action(post)
-        x(t)
+        try:
+            x(t)
+        except SCons.Errors.BuildError:
+            pass
+        else:
+            raise Exception, "Did not catch expected BuildError"
         assert result == ['pre_err'], result
         del result[:]
 
