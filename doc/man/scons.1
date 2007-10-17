@@ -3591,8 +3591,8 @@ Example:
 import atexit
 
 def print_build_failures():
-    from SCons.Script import BuildFailures
-    for bf in BuildFailures:
+    from SCons.Script import GetBuildFailures
+    for bf in GetBuildFailures():
         print "%s failed: %s" % (bf.node, bf.errstr)
 
 atexit.register(print_build_failures)
