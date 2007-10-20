@@ -59,7 +59,7 @@ if wait_marker != '-.marker':
     while not os.path.exists(wait_marker):
         time.sleep(1)
 if sys.argv[0] == 'mypass.py':
-    open(sys.argv[3], 'w').write(open(sys.argv[4], 'r').read())
+    open(sys.argv[3], 'wb').write(open(sys.argv[4], 'rb').read())
     exit_value = 0
 elif sys.argv[0] == 'myfail.py':
     exit_value = 1
