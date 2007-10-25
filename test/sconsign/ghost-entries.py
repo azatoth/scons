@@ -30,6 +30,10 @@ created for them on subsequent runs (which would cause errors
 when scanning directories).
 """
 
+import os.path
+
+d_current_txt = os.path.join('d', 'current.txt')
+
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -46,9 +50,14 @@ test = TestSCons.TestSCons()
 # rather than making entries for them.
 
 test.write('SConstruct', """\
+def cat(target, source, env):
+    fp = open(str(target[0]), 'wb')
+    for s in source:
+        fp.write(open(str(s), 'rb').read())
+    fp.close()
 env=Environment()
 Export('env')
-env['BUILDERS']['Cat']=Builder(action="cat $SOURCE > $TARGET", multi=1)
+env['BUILDERS']['Cat']=Builder(action=cat, multi=1)
 SConscript('src/SConscript',build_dir='build')
 """)
 
@@ -86,13 +95,17 @@ Command("installer.exe", ['d'], [Touch("$TARGET")])
 """)
 
 test.run(arguments='-Q pass=1')
+
 # Now delete the created files
 test.unlink(['d', 'obsolete.txt'])
 test.unlink(['d', 'current.txt'])
 test.rmdir(['d'])
+
 # Run again, as pass 2
-test.run(arguments='-Q pass=2', stdout="""Touch("d/current.txt")
+expect = """Touch("%(d_current_txt)s")
 Touch("installer.exe")
-""")
+""" % locals()
+
+test.run(arguments='-Q pass=2', stdout=expect)
 
 test.pass_test()
