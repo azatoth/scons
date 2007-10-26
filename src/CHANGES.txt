@@ -37,6 +37,10 @@ RELEASE 0.XX - XXX
     explicity set __name__ to the name of the file so the statement's
     in the file can deduce the location if they need to.
 
+  From Maxim Kartashev:
+
+  - Fix test scripts when run on Solaris.
+
 
 
 RELEASE 0.XX - XXX
