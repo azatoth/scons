@@ -10,6 +10,10 @@
 
 RELEASE 0.XX - XXX
 
+  From David Cournapeau:
+
+  - Add a CheckTypeSize() call to configure contexts.
+
   From Ken Deeter:
 
   - Make the "contents" of Alias Nodes a concatenation of the children's

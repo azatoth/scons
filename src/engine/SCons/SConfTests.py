@@ -497,6 +497,40 @@ int main() {
         finally:
             sconf.Finish()
 
+    def test_CheckTypeSize(self):
+        """Test SConf.CheckTypeSize()
+        """
+        self._resetSConfState()
+        sconf = self.SConf.SConf(self.scons_env,
+                                 conf_dir=self.test.workpath('config.tests'),
+                                 log_file=self.test.workpath('config.log'))
+        try:
+            # CheckTypeSize()
+
+            # In ANSI C, sizeof(char) == 1.
+            r = sconf.CheckTypeSize('char', expect = 1)
+            assert r == 1, "sizeof(char) != 1 ??"
+            r = sconf.CheckTypeSize('char', expect = 0)
+            assert r == 0, "sizeof(char) == 0 ??"
+            r = sconf.CheckTypeSize('char', expect = 2)
+            assert r == 0, "sizeof(char) == 2 ??"
+            r = sconf.CheckTypeSize('char')
+            assert r == 1, "sizeof(char) != 1 ??"
+            r = sconf.CheckTypeSize('const unsigned char')
+            assert r == 1, "sizeof(const unsigned char) != 1 ??"
+
+            # Checking C++
+            r = sconf.CheckTypeSize('const unsigned char', language = 'C++')
+            assert r == 1, "sizeof(const unsigned char) != 1 ??"
+
+            # Checking Non-existing type
+            r = sconf.CheckTypeSize('thistypedefhasnotchancetosexist_scons')
+            assert r == 0, \
+                   "Checking size of thistypedefhasnotchancetosexist_scons succeeded ?"
+
+        finally:
+            sconf.Finish()
+
     def test_(self):
         """Test SConf.CheckType()
         """

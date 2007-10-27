@@ -6118,6 +6118,33 @@ if conf.CheckLibWithHeader( 'qt', 'qapp.h', 'c++', 'QApplication qapp(0,0);' ):
 env = conf.Finish() 
 .EE
 
+.TP
+.RI Configure.CheckTypeSize( self ", " type_name ", [" header ", " language ", " expect ])
+Checks for the size of a type defined by
+.BR typedef .
+.I type_name
+specifies the typedef name to check for.
+The optional
+.I header
+argument is a string
+that will be
+placed at the top
+of the test file
+that will be compiled
+to check if the function exists;
+the default is empty.
+The optional
+.I language
+argument should be
+.B C
+or
+.B C++
+and selects the compiler to be used for the check;
+the default is "C".
+
+.ES
+.EE
+
 .EE
 You can define your own custom checks. 
 in addition to the predefined checks.
