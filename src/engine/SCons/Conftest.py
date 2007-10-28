@@ -359,7 +359,7 @@ def CheckTypeSize(context, type_name, header = None, language = None, expect = N
         # test code taken from autoconf: this is a pretty clever hack to find that
         # a type is of a given size using only compilation. This speeds things up
         # quite a bit compared to straightforward code using TryRun
-        src += r"""
+        src = src + r"""
 typedef %s scons_check_type;
 
 int main()
@@ -392,7 +392,7 @@ int main()
         # '-Wall -Werror' flags since the variables argc and argv would not be
         # used in the program...
         #
-        src += """
+        src = src + """
 #include <stdlib.h>
 #include <stdio.h>
 int main() {
