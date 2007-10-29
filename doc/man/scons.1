@@ -6141,6 +6141,15 @@ or
 .B C++
 and selects the compiler to be used for the check;
 the default is "C".
+The optional
+.I expect
+argument should be an integer.
+If this argument is used,
+the function will only check whether the type
+given in type_name has the expected size (in bytes).
+For example,
+.B "CheckTypeSize('short', expect = 2)"
+will return success only if short is two bytes.
 
 .ES
 .EE
