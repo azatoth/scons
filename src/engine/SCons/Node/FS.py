@@ -1799,11 +1799,7 @@ class Dir(Base):
         if has_glob_magic(dirname):
             list = self.glob(dirname, ondisk, source, strings=False)
         else:
-            try:
-                node = self.Dir(dirname, create=False)
-            except SCons.Errors.UserError:
-                return []
-            list = [node]
+            list = [self.Dir(dirname, create=True)]
         result = []
         for dir in list:
             r = dir._glob1(basename, ondisk, source, strings)

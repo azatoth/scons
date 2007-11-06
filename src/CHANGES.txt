@@ -45,6 +45,10 @@ RELEASE 0.XX - XXX
 
   - Fix test scripts when run on Solaris.
 
+  From Gary Oberbrunner:
+
+  - Fix Glob() when a pattern is in an explicitly-named subdirectory.
+
 
 
 RELEASE 0.XX - XXX
