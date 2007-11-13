@@ -41,6 +41,9 @@ RELEASE 0.XX - XXX
     explicity set __name__ to the name of the file so the statement's
     in the file can deduce the location if they need to.
 
+  - Fix an O(n^2) performance problem when adding sources to a target
+    through calls to a multi Builder (including Aliases).
+
   From Maxim Kartashev:
 
   - Fix test scripts when run on Solaris.
