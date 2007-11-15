@@ -44,6 +44,10 @@ RELEASE 0.XX - XXX
   - Fix an O(n^2) performance problem when adding sources to a target
     through calls to a multi Builder (including Aliases).
 
+  - Redefine the $WINDOWSPROGMANIFESTSUFFIX and
+    $WINDOWSSHLIBMANIFESTSUFFIX variables so they pick up changes to
+    the underlying $SHLIBSUFFIX and $PROGSUFFIX variables.
+
   From Maxim Kartashev:
 
   - Fix test scripts when run on Solaris.
