@@ -330,7 +330,14 @@ class _ActionAction(ActionBase):
                 os.chdir(chdir)
             try:
                 stat = self.execute(target, source, env)
-                stat = exitstatfunc(stat)
+                if isinstance(stat, SCons.Errors.BuildError):
+                    s = exitstatfunc(stat.status)
+                    if s:
+                        stat.status = s
+                    else:
+                        stat = s
+                else:
+                    stat = exitstatfunc(stat)
             finally:
                 if save_cwd:
                     os.chdir(save_cwd)
@@ -478,7 +485,11 @@ class CommandAction(_ActionAction):
             cmd_line = escape_list(cmd_line, escape)
             result = spawn(shell, escape, cmd_line[0], cmd_line, ENV)
             if not ignore and result:
-                return result
+                msg = "Error %s" % result
+                return SCons.Errors.BuildError(errstr=msg,
+                                               status=result,
+                                               action=self,
+                                               command=cmd_line)
         return 0
 
     def get_contents(self, target, source, env):
@@ -689,9 +700,19 @@ class FunctionAction(_ActionAction):
             # target file will appear).
             try: filename = e.filename
             except AttributeError: filename = None
-            raise SCons.Errors.BuildError(node=target,
-                                          errstr=e.strerror,
-                                          filename=filename)
+            result = SCons.Errors.BuildError(node=target,
+                                             errstr=e.strerror,
+                                             status=1,
+                                             filename=filename,
+                                             action=self,
+                                             command=self.strfunction(target, source, env))
+        else:
+            if result:
+                msg = "Error %s" % result
+                result = SCons.Errors.BuildError(errstr=msg,
+                                                 status=result,
+                                                 action=self,
+                                                 command=self.strfunction(target, source, env))
         return result
 
     def get_contents(self, target, source, env):

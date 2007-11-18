@@ -129,8 +129,11 @@ class Executor:
         status = 0
         for act in self.get_action_list():
             status = apply(act, (self.targets, self.get_sources(), env), kw)
-            if status:
-                msg = "Error %d" % status
+            if isinstance(status, SCons.Errors.BuildError):
+                status.executor = self
+                raise status
+            elif status:
+                msg = "Error %s" % status
                 raise SCons.Errors.BuildError(errstr=msg, executor=self, action=act)
         return status
 

@@ -48,6 +48,10 @@ RELEASE 0.XX - XXX
     $WINDOWSSHLIBMANIFESTSUFFIX variables so they pick up changes to
     the underlying $SHLIBSUFFIX and $PROGSUFFIX variables.
 
+  - Add a GetBuildFailures() function that can be called from functions
+    registered with the Python atexit module to print summary information
+    about any failures encountered while building.
+
   From Maxim Kartashev:
 
   - Fix test scripts when run on Solaris.

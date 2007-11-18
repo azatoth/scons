@@ -3523,13 +3523,19 @@ of the build failure:
 The node that was being built
 when the build failure occurred.
 
+.B .status
+The numeric exit status
+returned by the command or Python function
+that failed when trying to build the
+specified Node.
+
 .B .errstr
 The SCons error string
 describing the build failure.
 (This is often a generic
 message like "Error 2"
 to indicate that an executed
-commend exited with a status of 2.)
+command exited with a status of 2.)
 
 .B .filename
 The name of the file or
@@ -3566,6 +3572,13 @@ This will be one specific action
 out of the possible list of
 actions that would have been
 executed to build the target.
+
+.B .command
+The actual expanded command that was executed and failed,
+after expansion of
+.BR $TARGET ,
+.BR $SOURCE ,
+and other construction variables.
 
 Note that the
 .BR GetBuildFailures ()

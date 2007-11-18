@@ -2509,7 +2509,9 @@ class File(Base):
 
     def _rmv_existing(self):
         self.clear_memoized_values()
-        Unlink(self, [], None)
+        e = Unlink(self, [], None)
+        if isinstance(e, SCons.Errors.BuildError):
+            raise e
 
     #
     # Taskmaster interface subsystem
@@ -2547,13 +2549,9 @@ class File(Base):
 
     def do_duplicate(self, src):
         self._createDir()
-        try:
-            Unlink(self, None, None)
-        except SCons.Errors.BuildError:
-            pass
-        try:
-            Link(self, src, None)
-        except SCons.Errors.BuildError, e:
+        Unlink(self, None, None)
+        e = Link(self, src, None)
+        if isinstance(e, SCons.Errors.BuildError):
             desc = "Cannot duplicate `%s' in `%s': %s." % (src.path, self.dir.path, e.errstr)
             raise SCons.Errors.StopError, desc
         self.linked = 1
@@ -2691,7 +2689,9 @@ class File(Base):
                     # ...and it's even up-to-date...
                     if self._local:
                         # ...and they'd like a local copy.
-                        LocalCopy(self, r, None)
+                        e = LocalCopy(self, r, None)
+                        if isinstance(e, SCons.Errors.BuildError):
+                            raise 
                         self.store_info()
                     if T: Trace(' 1\n')
                     return 1

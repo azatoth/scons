@@ -1715,7 +1715,11 @@ class Base(SubstitutionEnvironment):
         """Directly execute an action through an Environment
         """
         action = apply(self.Action, (action,) + args, kw)
-        return action([], [], self)
+        result = action([], [], self)
+        if isinstance(result, SCons.Errors.BuildError):
+            return result.status
+        else:
+            return result
 
     def File(self, name, *args, **kw):
         """

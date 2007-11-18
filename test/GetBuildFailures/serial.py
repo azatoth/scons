@@ -24,7 +24,8 @@
 
 """
 Verify that the GetBuildFailures() function returns a list of
-BuildError exceptions.
+BuildError exceptions.  Also verify printing the BuildError
+attributes we expect to be most commonly used.
 """
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
@@ -68,7 +69,8 @@ def print_build_failures():
     bf_list = GetBuildFailures()
     bf_list.sort(lambda a,b: cmp(a.filename, b.filename))
     for bf in bf_list:
-        print "%%s failed:  %%s" %% (bf.node, bf.errstr)
+        print "%%s failed (%%s):  %%s" %% (bf.node, bf.status, bf.errstr)
+        print "    %%s" %% ' '.join(bf.command)
 
 try:
     import atexit
@@ -89,7 +91,8 @@ scons: Reading SConscript files ...
 scons: done reading SConscript files.
 scons: Building targets ...
 scons: building terminated because of errors.
-f4 failed:  Error 1
+f4 failed (1):  Error 1
+    %(_python_)s myfail.py f3 f4 "f4" "f4.in"
 """ % locals()
 
 expect_stderr = """\
