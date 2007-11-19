@@ -21,6 +21,10 @@ RELEASE 0.XX - XXX
     children's contents, to avoid using large amounts of memory during
     signature calculation.
 
+  From Geoffrey Irving:
+
+  - Speed up conversion of paths in .sconsign files to File or Dir Nodes.
+
   From Steven Knight:
 
   - Add an Options.UnknownOption() method that returns any settings

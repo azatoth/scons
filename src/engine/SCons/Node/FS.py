@@ -87,6 +87,22 @@ def save_strings(val):
     Save_Strings = val
 
 #
+# Avoid unnecessary function calls by recording a Boolean value that
+# tells us whether or not os.path.splitdrive() actually does anything
+# on this system, and therefore whether we need to bother calling it
+# when looking up path names in various methods below.
+# 
+
+do_splitdrive = None
+
+def initialize_do_splitdrive():
+    global do_splitdrive
+    drive, path = os.path.splitdrive('X:/foo')
+    do_splitdrive = not not drive
+
+initialize_do_splitdrive()
+
+#
 
 needs_normpath_check = None
 
@@ -1003,8 +1019,8 @@ class FS(LocalFS):
         self.Top.tpath = '.'
         self._cwd = self.Top
 
-        DirNodeInfo.top = self.Top
-        FileNodeInfo.top = self.Top
+        DirNodeInfo.fs = self
+        FileNodeInfo.fs = self
     
     def set_SConstruct_dir(self, dir):
         self.SConstruct_dir = dir
@@ -1091,7 +1107,10 @@ class FS(LocalFS):
         if directory and not isinstance(directory, Dir):
             directory = self.Dir(directory)
 
-        drive, p = os.path.splitdrive(p)
+        if do_splitdrive:
+            drive, p = os.path.splitdrive(p)
+        else:
+            drive = ''
         if drive and not p:
             # This causes a naked drive letter to be treated as a synonym
             # for the root directory on that drive.
@@ -1224,16 +1243,18 @@ class DirNodeInfo(SCons.Node.NodeInfoBase):
     # This should get reset by the FS initialization.
     current_version_id = 1
 
-    top = None
+    fs = None
 
     def str_to_node(self, s):
-        top = self.top
-        if os.path.isabs(s):
-            n = top.fs._lookup(s, top, Entry)
-        else:
+        top = self.fs.Top
+        root = top.root
+        if do_splitdrive:
+            drive, s = os.path.splitdrive(s)
+            if drive:
+                root = self.fs.get_root(drive)
+        if not os.path.isabs(s):
             s = top.labspath + '/' + s
-            n = top.root._lookup_abs(s, Entry)
-        return n
+        return root._lookup_abs(s, Entry)
 
 class DirBuildInfo(SCons.Node.BuildInfoBase):
     current_version_id = 1
@@ -1997,16 +2018,18 @@ class FileNodeInfo(SCons.Node.NodeInfoBase):
     field_list = ['csig', 'timestamp', 'size']
 
     # This should get reset by the FS initialization.
-    top = None
+    fs = None
 
     def str_to_node(self, s):
-        top = self.top
-        if os.path.isabs(s):
-            n = top.fs._lookup(s, top, Entry)
-        else:
+        top = self.fs.Top
+        root = top.root
+        if do_splitdrive:
+            drive, s = os.path.splitdrive(s)
+            if drive:
+                root = self.fs.get_root(drive)
+        if not os.path.isabs(s):
             s = top.labspath + '/' + s
-            n = top.root._lookup_abs(s, Entry)
-        return n
+        return root._lookup_abs(s, Entry)
 
 class FileBuildInfo(SCons.Node.BuildInfoBase):
     current_version_id = 1

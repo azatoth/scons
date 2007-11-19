@@ -1452,6 +1452,7 @@ class FSTestCase(_tempdirTestCase):
             import ntpath
             os.path = ntpath
             os.sep = '\\'
+            SCons.Node.FS.initialize_do_splitdrive()
             SCons.Node.FS.initialize_normpath_check()
 
             for sep in seps:
@@ -1478,6 +1479,7 @@ class FSTestCase(_tempdirTestCase):
         finally:
             os.path = save_os_path
             os.sep = save_os_sep
+            SCons.Node.FS.initialize_do_splitdrive()
             SCons.Node.FS.initialize_normpath_check()
 
     def test_target_from_source(self):
