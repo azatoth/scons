@@ -535,6 +535,8 @@ class BuildDirTestCase(unittest.TestCase):
                 'work/src/b1/b2',
                 'work/src/b1/b2/b1',
                 'work/src/b1/b2/b1/b2',
+                'work/src/b1/b2/b1/b2/b1',
+                'work/src/b1/b2/b1/b2/b1/b2',
         ]
 
         srcnode_map = {
@@ -544,6 +546,10 @@ class BuildDirTestCase(unittest.TestCase):
                 'work/src/b1/b2/b1/f' : 'work/src/b1/f',
                 'work/src/b1/b2/b1/b2' : 'work/src/b1/b2',
                 'work/src/b1/b2/b1/b2/f' : 'work/src/b1/b2/f',
+                'work/src/b1/b2/b1/b2/b1' : 'work/src/b1/b2/b1',
+                'work/src/b1/b2/b1/b2/b1/f' : 'work/src/b1/b2/b1/f',
+                'work/src/b1/b2/b1/b2/b1/b2' : 'work/src/b1/b2/b1/b2',
+                'work/src/b1/b2/b1/b2/b1/b2/f' : 'work/src/b1/b2/b1/b2/f',
         }
 
         alter_map = {

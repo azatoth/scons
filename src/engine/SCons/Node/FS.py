@@ -645,15 +645,11 @@ class Base(SCons.Node.Node):
         corresponding to its source file.  Otherwise, return
         ourself.
         """
-        dir=self.dir
-        name=self.name
-        while dir:
-            if dir.srcdir:
-                srcnode = dir.srcdir.Entry(name)
-                srcnode.must_be_same(self.__class__)
-                return srcnode
-            name = dir.name + os.sep + name
-            dir = dir.up()
+        srcdir_list = self.dir.srcdir_list()
+        if srcdir_list:
+            srcnode = srcdir_list[0].Entry(self.name)
+            srcnode.must_be_same(self.__class__)
+            return srcnode
         return self
 
     def get_path(self, dir=None):
