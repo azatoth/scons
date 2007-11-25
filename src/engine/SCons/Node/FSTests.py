@@ -1777,10 +1777,10 @@ class DirTestCase(_tempdirTestCase):
         check(s, ['src/b1'])
 
         s = b1_b2_b1_b2.srcdir_list()
-        check(s, [])
+        check(s, ['src/b1/b2'])
 
         s = b1_b2_b1_b2_sub.srcdir_list()
-        check(s, [])
+        check(s, ['src/b1/b2/sub'])
 
     def test_srcdir_duplicate(self):
         """Test the Dir.srcdir_duplicate() method

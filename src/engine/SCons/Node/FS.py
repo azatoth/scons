@@ -1664,13 +1664,7 @@ class Dir(Base):
         dir = self
         while dir:
             if dir.srcdir:
-                d = dir.srcdir.Dir(dirname)
-                if d.is_under(dir):
-                    # Shouldn't source from something in the build path:
-                    # build_dir is probably under src_dir, in which case
-                    # we are reflecting.
-                    break
-                result.append(d)
+                result.append(dir.srcdir.Dir(dirname))
             dirname = dir.name + os.sep + dirname
             dir = dir.up()
 
@@ -1680,6 +1674,11 @@ class Dir(Base):
 
     def srcdir_duplicate(self, name):
         for dir in self.srcdir_list():
+            if self.is_under(dir):
+                # We shouldn't source from something in the build path;
+                # build_dir is probably under src_dir, in which case
+                # we are reflecting.
+                break
             if dir.entry_exists_on_disk(name):
                 srcnode = dir.Entry(name).disambiguate()
                 if self.duplicate:
