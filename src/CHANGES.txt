@@ -10,6 +10,11 @@
 
 RELEASE 0.XX - XXX
 
+  From Benoit Belley:
+
+  - Fix occasional spurious rebuilds and inefficiency when using
+    --implicit-cache and Builders that produce multiple targets.
+
   From David Cournapeau:
 
   - Add a CheckTypeSize() call to configure contexts.

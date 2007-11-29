@@ -614,6 +614,7 @@ class Node:
             return
 
         build_env = self.get_build_env()
+        executor = self.get_executor()
 
         # Here's where we implement --implicit-cache.
         if implicit_cache and not implicit_deps_changed:
@@ -623,7 +624,14 @@ class Node:
                 # stored .sconsign entry to have already been converted
                 # to Nodes for us.  (We used to run them through a
                 # source_factory function here.)
-                self._add_child(self.implicit, self.implicit_dict, implicit)
+
+                # Update all of the targets with them.  This
+                # essentially short-circuits an N*M scan of the
+                # sources for each individual target, which is a hell
+                # of a lot more efficient.
+                for tgt in executor.targets:
+                    tgt.add_to_implicit(implicit)
+
                 if implicit_deps_unchanged or self.is_up_to_date():
                     return
                 # one of this node's sources has changed,
@@ -632,8 +640,6 @@ class Node:
                 self.implicit_dict = {}
                 self._children_reset()
                 self.del_binfo()
-
-        executor = self.get_executor()
 
         # Have the executor scan the sources.
         executor.scan_sources(self.builder.source_scanner)
