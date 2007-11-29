@@ -1719,15 +1719,16 @@ to the Python module:
 from SCons.Script import *
 .EE
 
-All builder methods return a list of Nodes
-that represent the target or targets that will be built.
+All builder methods return a list-like object
+containing Nodes that
+represent the target or targets that will be built.
 A
 .I Node
 is an internal SCons object
 which represents
 build targets or sources.
 
-The returned Node(s)
+The returned Node-list object
 can be passed to other builder methods as source(s)
 or passed to any SCons function or method
 where a filename would normally be accepted.
@@ -1776,6 +1777,40 @@ bar = Object('bar.c')
 objects = Flatten(['begin.o', foo, 'middle.o', bar, 'end.o'])
 for object in objects:
     print str(object)
+.EE
+
+Note also that because Builder calls return
+a list-like object, not an actual Python list,
+you should
+.I not
+use the Python
+.B +=
+operator to append Builder results to a Python list.
+Because the list and the object are different types,
+Python will not update the original list in place,
+but will instead create a new Node-list object
+containing the concatenation of the list
+elements and the Builder results.
+This will cause problems for any other Python variables
+in your SCons configuration
+that still hold on to a reference to the original list.
+Instead, use the Python
+.B .extend()
+method to make sure the list is updated in-place.
+Example:
+
+.ES
+object_files = []
+
+# Do NOT use += as follows:
+#
+#    object_files += Object('bar.c')
+#
+# It will not update the object_files list in place.
+#
+# Instead, use the .extend() method:
+object_files.extend(Object('bar.c'))
+
 .EE
 
 The path name for a Node's file may be used
