@@ -31,7 +31,7 @@
   when source files change--or, put another way,
   &SCons; should <emphasis>not</emphasis>
   waste time rebuilding things that have already been built.
-  You can see this at work simply be re-invoking &SCons;
+  You can see this at work simply by re-invoking &SCons;
   after building our simple &hello; example:
 
   </para>
@@ -359,7 +359,7 @@
     <para>
 
     Now suppose that our "Hello, World!" program
-    actually has a <literal>#include</literal> line
+    actually has an <literal>#include</literal> line
     to include the &hello_h; file in the compilation:
 
     </para>
@@ -458,7 +458,7 @@
     the &cv-CPPPATH; variable
     may be a list of directories,
     or a string separated by
-    the system-specific path separate character
+    the system-specific path separation character
     (':' on POSIX/Linux, ';' on Windows).
     Either way, &SCons; creates the
     right command-line options
@@ -749,7 +749,7 @@
 
     Now, the above example is a little contrived,
     because it's hard to imagine a real-world situation
-    where you wouldn't to rebuild &hello;
+    where you wouldn't want to rebuild &hello;
     if the &hello_h; file changed.
     A more realistic example
     might be if the &hello;
