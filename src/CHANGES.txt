@@ -56,6 +56,9 @@ RELEASE 0.XX - XXX
     registered with the Python atexit module to print summary information
     about any failures encountered while building.
 
+  - Return a NodeList object, not a Python list, when a single_source
+    Builder like Object() is called with more than one file.
+
   From Maxim Kartashev:
 
   - Fix test scripts when run on Solaris.
