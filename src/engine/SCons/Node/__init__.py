@@ -1206,19 +1206,18 @@ class Node:
             lines = ["%s:\n" % preamble] + lines
             return string.join(lines, ' '*11)
 
-l = [1]
-ul = UserList.UserList([2])
 try:
-    l.extend(ul)
+    [].extend(UserList.UserList([]))
 except TypeError:
+    # Python 1.5.2 doesn't allow a list to be extended by list-like
+    # objects (such as UserList instances), so just punt and use
+    # real lists.
     def NodeList(l):
         return l
 else:
     class NodeList(UserList.UserList):
         def __str__(self):
             return str(map(str, self.data))
-del l
-del ul
 
 def get_children(node, parent): return node.children()
 def ignore_cycle(node, stack): pass
