@@ -4566,6 +4566,29 @@ method.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
+.RI Requires( target ", " prerequisite )
+.TP
+.RI env.Requires( target ", " prerequisite )
+Specifies an order-only relationship
+between the specified target file(s)
+and the specified prerequisite file(s).
+The prerequisite file(s)
+will be (re)built, if necessary,
+.I before
+the target file(s),
+but the target file(s) do not actually
+depend on the prerequisites
+and will not be rebuilt simply because
+the prerequisite file(s) change.
+
+Example:
+
+.ES
+env.Requires('foo', 'file-that-must-be-built-before-foo')
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
 .RI Return([ vars "... , " stop= ])
 By default,
 this stops processing the current SConscript

@@ -312,6 +312,7 @@ GlobalDefaultEnvironmentFunctions = [
     'ParseDepends',
     'Precious',
     'Repository',
+    'Requires',
     'SConsignFile',
     'SideEffect',
     'SourceCode',

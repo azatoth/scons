@@ -207,6 +207,7 @@ class Node:
         self.depends_dict = {}
         self.ignore = []        # dependencies to ignore
         self.ignore_dict = {}
+        self.prerequisites = SCons.Util.UniqueList()
         self.implicit = None    # implicit (scanned) dependencies (None means not scanned yet)
         self.waiting_parents = {}
         self.waiting_s_e = {}
@@ -830,6 +831,11 @@ class Node:
             else:
                 s = str(e)
             raise SCons.Errors.UserError("attempted to add a non-Node dependency to %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
+
+    def add_prerequisite(self, prerequisite):
+        """Adds prerequisites"""
+        self.prerequisites.extend(prerequisite)
+        self._children_reset()
 
     def add_ignore(self, depend):
         """Adds dependencies to ignore."""

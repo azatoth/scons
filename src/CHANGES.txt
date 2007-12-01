@@ -72,6 +72,10 @@ RELEASE 0.XX - XXX
     in a $*PATH list, don't create Dir Nodes for directories that
     don't actually exist on-disk.
 
+  - Add a Requires() function to allow the specification of order-only
+    prerequisites, which will be updated before specified "downstream"
+    targets but which don't actually cause the target to be rebuilt.
+
   From Maxim Kartashev:
 
   - Fix test scripts when run on Solaris.

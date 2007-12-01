@@ -1779,6 +1779,16 @@ class Base(SubstitutionEnvironment):
         dirs = self.arg2nodes(list(dirs), self.fs.Dir)
         apply(self.fs.Repository, dirs, kw)
 
+    def Requires(self, target, prerequisite):
+        """Specify that 'prerequisite' must be built before 'target',
+        (but 'target' does not actually depend on 'prerequisite'
+        and need not be rebuilt if it changes)."""
+        tlist = self.arg2nodes(target, self.fs.Entry)
+        plist = self.arg2nodes(prerequisite, self.fs.Entry)
+        for t in tlist:
+            t.add_prerequisite(plist)
+        return tlist
+
     def Scanner(self, *args, **kw):
         nargs = []
         for arg in args:
