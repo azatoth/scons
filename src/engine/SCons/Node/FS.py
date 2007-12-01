@@ -2808,6 +2808,36 @@ class FileFinder:
     def __init__(self):
         self._memo = {}
 
+    def filedir_lookup(self, p, fd=None):
+        """
+        A helper method for find_file() that looks up a directory for
+        a file we're trying to find.  This only creates the Dir Node if
+        it exists on-disk, since if the directory doesn't exist we know
+        we won't find any files in it...  :-)
+
+        It would be more compact to just use this as a nested function
+        with a default keyword argument (see the commented-out version
+        below), but that doesn't work unless you have nested scopes,
+        so we define it here just this works work under Python 1.5.2.
+        """
+        if fd is None:
+            fd = self.default_filedir
+        dir, name = os.path.split(fd)
+        if dir:
+            p = self.filedir_lookup(p, dir)
+            if not p:
+                return None
+        norm_name = _my_normcase(name)
+        try:
+            node = p.entries[norm_name]
+        except KeyError:
+            return p.dir_on_disk(name)
+        # Once we move to Python 2.2 we can do:
+        #if isinstance(node, (Dir, Entry)):
+        if isinstance(node, Dir) or isinstance(node, Entry):
+            return node
+        return None
+
     def _find_file_key(self, filename, paths, verbose=None):
         return (filename, paths)
         
@@ -2853,14 +2883,35 @@ class FileFinder:
 
         filedir, filename = os.path.split(filename)
         if filedir:
-            def filedir_lookup(p, fd=filedir):
-                try:
-                    return p.Dir(fd)
-                except TypeError:
-                    # We tried to look up a Dir, but it seems there's
-                    # already a File (or something else) there.  No big.
-                    return None
-            paths = filter(None, map(filedir_lookup, paths))
+            # More compact code that we can't use until we drop
+            # support for Python 1.5.2:
+            #
+            #def filedir_lookup(p, fd=filedir):
+            #    """
+            #    A helper function that looks up a directory for a file
+            #    we're trying to find.  This only creates the Dir Node
+            #    if it exists on-disk, since if the directory doesn't
+            #    exist we know we won't find any files in it...  :-)
+            #    """
+            #    dir, name = os.path.split(fd)
+            #    if dir:
+            #        p = filedir_lookup(p, dir)
+            #        if not p:
+            #            return None
+            #    norm_name = _my_normcase(name)
+            #    try:
+            #        node = p.entries[norm_name]
+            #    except KeyError:
+            #        return p.dir_on_disk(name)
+            #    # Once we move to Python 2.2 we can do:
+            #    #if isinstance(node, (Dir, Entry)):
+            #    if isinstance(node, Dir) or isinstance(node, Entry):
+            #        return node
+            #    return None
+            #paths = filter(None, map(filedir_lookup, paths))
+
+            self.default_filedir = filedir
+            paths = filter(None, map(self.filedir_lookup, paths))
 
         result = None
         for dir in paths:

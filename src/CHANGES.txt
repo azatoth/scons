@@ -68,6 +68,10 @@ RELEASE 0.XX - XXX
   - Return a NodeList object, not a Python list, when a single_source
     Builder like Object() is called with more than one file.
 
+  - When searching for implicit dependency files in the directories
+    in a $*PATH list, don't create Dir Nodes for directories that
+    don't actually exist on-disk.
+
   From Maxim Kartashev:
 
   - Fix test scripts when run on Solaris.
