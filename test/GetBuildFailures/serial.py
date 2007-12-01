@@ -66,11 +66,12 @@ Command('f6', 'f6.in', r'@%(_python_)s mypass.py f5 -  $TARGET $SOURCE')
 
 def print_build_failures():
     from SCons.Script import GetBuildFailures
+    import string
     bf_list = GetBuildFailures()
     bf_list.sort(lambda a,b: cmp(a.filename, b.filename))
     for bf in bf_list:
         print "%%s failed (%%s):  %%s" %% (bf.node, bf.status, bf.errstr)
-        print "    %%s" %% ' '.join(bf.command)
+        print "    %%s" %% string.join(bf.command)
 
 try:
     import atexit
