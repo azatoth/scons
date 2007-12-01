@@ -40,7 +40,9 @@ _python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 
-test.subdir('subdir', 'inc1')
+test.subdir('subdir', 'inc1', 'inc2')
+
+inc2_include_h = test.workpath('inc2', 'include.h')
 
 test.write('build.py', r"""
 import os.path
@@ -51,6 +53,8 @@ input = open(sys.argv[2], 'rb')
 output = open(sys.argv[3], 'wb')
 
 def find_file(f):
+    if os.path.isabs(f):
+        return open(f, 'rb')
     for dir in path:
         p = dir + os.sep + f
         if os.path.exists(p):
@@ -98,10 +102,15 @@ env.Command('foo', 'foo.k', r'%(_python_)s build.py "$KPATH" $SOURCES $TARGET')
 test.write(['subdir', 'foo.k'], """\
 subdir/foo.k
 include inc1/include.h
-""")
+include %(inc2_include_h)s
+""" % locals())
 
 test.write(['inc1', 'include.h'], """\
 inc1/include.h
+""")
+
+test.write(['inc2', 'include.h'], """\
+inc2/include.h
 """)
 
 test.run(arguments = '.')
@@ -109,6 +118,7 @@ test.run(arguments = '.')
 test.must_match('subdir/foo', """\
 subdir/foo.k
 inc1/include.h
+inc2/include.h
 """)
 
 test.must_match('list.out', """\
