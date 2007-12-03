@@ -882,11 +882,11 @@ class Entry(Base):
         directory."""
         return self.disambiguate().exists()
 
-#    def rel_path(self, other):
-#        d = self.disambiguate()
-#        if d.__class__ == Entry:
-#            raise "rel_path() could not disambiguate File/Dir"
-#        return d.rel_path(other)
+    def rel_path(self, other):
+        d = self.disambiguate()
+        if d.__class__ == Entry:
+            raise "rel_path() could not disambiguate File/Dir"
+        return d.rel_path(other)
 
     def new_ninfo(self):
         return self.disambiguate().new_ninfo()
@@ -1414,66 +1414,68 @@ class Dir(Base):
     def up(self):
         return self.entries['..']
 
-# This complicated method, which constructs relative paths between
-# arbitrary Node.FS objects, is no longer used.  It was introduced to
-# store dependency paths in .sconsign files relative to the target, but
-# that ended up being significantly inefficient.  We're leaving the code
-# here, commented out, because it would be too easy for someone to decide
-# to re-invent this wheel in the future (if it becomes necessary) because
-# they didn't know this code was buried in some source-code change from
-# the distant past...
-#
-#    def _rel_path_key(self, other):
-#        return str(other)
-#
-#    memoizer_counters.append(SCons.Memoize.CountDict('rel_path', _rel_path_key))
-#
-#    def rel_path(self, other):
-#        """Return a path to "other" relative to this directory.
-#        """
-#        try:
-#            memo_dict = self._memo['rel_path']
-#        except KeyError:
-#            memo_dict = {}
-#            self._memo['rel_path'] = memo_dict
-#        else:
-#            try:
-#                return memo_dict[other]
-#            except KeyError:
-#                pass
-#
-#        if self is other:
-#
-#            result = '.'
-#
-#        elif not other in self.path_elements:
-#
-#            try:
-#                other_dir = other.get_dir()
-#            except AttributeError:
-#                result = str(other)
-#            else:
-#                if other_dir is None:
-#                    result = other.name
-#                else:
-#                    dir_rel_path = self.rel_path(other_dir)
-#                    if dir_rel_path == '.':
-#                        result = other.name
-#                    else:
-#                        result = dir_rel_path + os.sep + other.name
-#
-#        else:
-#
-#            i = self.path_elements.index(other) + 1
-#
-#            path_elems = ['..'] * (len(self.path_elements) - i) \
-#                         + map(lambda n: n.name, other.path_elements[i:])
-#             
-#            result = string.join(path_elems, os.sep)
-#
-#        memo_dict[other] = result
-#
-#        return result
+    def _rel_path_key(self, other):
+        return str(other)
+
+    memoizer_counters.append(SCons.Memoize.CountDict('rel_path', _rel_path_key))
+
+    def rel_path(self, other):
+        """Return a path to "other" relative to this directory.
+        """
+
+	# This complicated and expensive method, which constructs relative
+	# paths between arbitrary Node.FS objects, is no longer used
+	# by SCons itself.  It was introduced to store dependency paths
+	# in .sconsign files relative to the target, but that ended up
+	# being significantly inefficient.
+        #
+	# We're continuing to support the method because some SConstruct
+	# files out there started using it when it was available, and
+	# we're all about backwards compatibility..
+
+        try:
+            memo_dict = self._memo['rel_path']
+        except KeyError:
+            memo_dict = {}
+            self._memo['rel_path'] = memo_dict
+        else:
+            try:
+                return memo_dict[other]
+            except KeyError:
+                pass
+
+        if self is other:
+
+            result = '.'
+
+        elif not other in self.path_elements:
+
+            try:
+                other_dir = other.get_dir()
+            except AttributeError:
+                result = str(other)
+            else:
+                if other_dir is None:
+                    result = other.name
+                else:
+                    dir_rel_path = self.rel_path(other_dir)
+                    if dir_rel_path == '.':
+                        result = other.name
+                    else:
+                        result = dir_rel_path + os.sep + other.name
+
+        else:
+
+            i = self.path_elements.index(other) + 1
+
+            path_elems = ['..'] * (len(self.path_elements) - i) \
+                         + map(lambda n: n.name, other.path_elements[i:])
+             
+            result = string.join(path_elems, os.sep)
+
+        memo_dict[other] = result
+
+        return result
 
     def get_env_scanner(self, env, kw={}):
         import SCons.Defaults
@@ -2369,8 +2371,8 @@ class File(Base):
         try: return binfo.bimplicit
         except AttributeError: return None
 
-#    def rel_path(self, other):
-#        return self.dir.rel_path(other)
+    def rel_path(self, other):
+        return self.dir.rel_path(other)
 
     def _get_found_includes_key(self, env, scanner, path):
         return (id(env), id(scanner), path)
