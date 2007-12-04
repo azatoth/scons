@@ -584,7 +584,11 @@ class Base(SCons.Node.Node):
     def _get_str(self):
         if self.duplicate or self.is_derived():
             return self.get_path()
-        return self.srcnode().get_path()
+        srcnode = self.srcnode()
+        if srcnode.stat() is None and not self.stat() is None:
+            return self.get_path()
+        else:
+            return srcnode.get_path()
 
     rstr = __str__
 

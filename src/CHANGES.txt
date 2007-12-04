@@ -15,6 +15,10 @@ RELEASE 0.XX - XXX
   - Fix occasional spurious rebuilds and inefficiency when using
     --implicit-cache and Builders that produce multiple targets.
 
+  - Allow SCons to not have to know about the builders of generated
+    files when BuildDir(duplicate=0) is used, potentially allowing some
+    SConscript files to be ignored for smaller builds.
+
   From David Cournapeau:
 
   - Add a CheckTypeSize() call to configure contexts.
