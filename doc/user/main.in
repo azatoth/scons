@@ -103,6 +103,7 @@
   XXX GetBuildPath()
   XXX GetLaunchDir()
 
+  XXX ParseConfig()
   XXX MergeFlags()
   XXX ParseFlags()
 
@@ -125,7 +126,19 @@
   XXX GetOption('num_jobs')
   XXX SetOption('num_jobs')
 
+  XXX Options.UnknownOption()
+
+  XXX GetBuildFailures()
+
+  XXX Requires()
+
+  XXX CheckTypeSize()
+
   XXX Glob()
+
+  XXX Progress()
+
+  XXX AddMethod()
 
   XXX - - diskcheck=
 

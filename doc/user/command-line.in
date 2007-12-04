@@ -1557,3 +1557,9 @@
     </para>
 
   </section>
+
+  <!--
+
+  AddOption() function for things like - -prefix=, - -force
+
+  -->

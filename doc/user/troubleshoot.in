@@ -292,6 +292,10 @@
     In a real-life situation,
     the construction environments will
     likely contain a great many more variables.
+    Also note that we've massaged the example output above
+    to make the memory address of all objects a constant 0x700000.
+    In reality, you would see a different hexadecimal
+    number for each object.
 
     </para>
 

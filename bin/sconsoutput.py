@@ -285,6 +285,7 @@ def CCCom(target, source, env):
         lines = open(src, "rb").readlines()
         lines = filter(lambda l: l[:11] != "STRIP CCCOM", lines)
         f.write(string.join(lines))
+        f.write('debug = ' + ARGUMENTS.get('debug', '0') + '\\n')
     f.close()
 
 public_class_re = re.compile('^public class (\S+)', re.MULTILINE)
@@ -728,6 +729,7 @@ class MySGML(sgmllib.SGMLParser):
             elif lines:
                 content = string.join(lines, '\n' + p)
             if content:
+                content = re.sub(' at 0x[0-9a-fA-F]*\>', ' at 0x700000&gt;', content)
                 content = string.replace(content, '<', '&lt;')
                 content = string.replace(content, '>', '&gt;')
                 sys.stdout.write(p + content + '\n')

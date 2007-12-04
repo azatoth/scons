@@ -722,6 +722,10 @@ make no difference to the build.
         ranlib libprog.a
       </screen>
 
+      <!--
+      XXX Return(stop=False)
+      -->
+
     </section>
 
   </section>
