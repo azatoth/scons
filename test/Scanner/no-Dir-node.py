@@ -34,11 +34,17 @@ utility function that is used by the Scanner.Classic class to search
 directories in variables such as $CPPPATH.
 """
 
+import os.path
+
 import TestSCons
 
 _python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
+
+subdir_SConscript = os.path.join('subdir', 'SConscript')
+subdir_foo        = os.path.join('subdir', 'foo')
+subdir_foo_k      = os.path.join('subdir', 'foo.k')
 
 test.subdir('subdir', 'inc1', 'inc2')
 
@@ -122,9 +128,9 @@ inc2/include.h
 """)
 
 test.must_match('list.out', """\
-subdir/SConscript
-subdir/foo
-subdir/foo.k
-""")
+%(subdir_SConscript)s
+%(subdir_foo)s
+%(subdir_foo_k)s
+""" % locals())
 
 test.pass_test()

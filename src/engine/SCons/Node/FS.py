@@ -2829,7 +2829,8 @@ class FileFinder:
         if fd is None:
             fd = self.default_filedir
         dir, name = os.path.split(fd)
-        if dir in ('/', os.sep):
+        drive, d = os.path.splitdrive(dir)
+        if d in ('/', os.sep):
             return p
         if dir:
             p = self.filedir_lookup(p, dir)
