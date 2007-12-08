@@ -40,11 +40,39 @@ import tempfile
 
 from SCons.Platform.posix import exitvalmap
 from SCons.Platform import TempFileMunge
-
-# XXX See note below about why importing SCons.Action should be
-# eventually refactored.
-import SCons.Action
 import SCons.Util
+
+
+
+import __builtin__
+
+try:
+    import msvcrt
+    import win32api
+    import win32con
+except ImportError:
+    pass
+else:
+    _builtin_file = __builtin__.file
+    _builtin_open = __builtin__.open
+
+    def _scons_file(*args, **kw):
+        fp = apply(_builtin_file, args, kw)
+        win32api.SetHandleInformation(msvcrt.get_osfhandle(fp.fileno()),
+                                      win32con.HANDLE_FLAG_INHERIT,
+                                      0)
+        return fp
+
+    def _scons_open(*args, **kw):
+        fp = apply(_builtin_open, args, kw)
+        win32api.SetHandleInformation(msvcrt.get_osfhandle(fp.fileno()),
+                                      win32con.HANDLE_FLAG_INHERIT,
+                                      0)
+        return fp
+
+    __builtin__.file = _scons_file
+    __builtin__.open = _scons_open
+
 
 
 # The upshot of all this is that, if you are using Python 1.5.2,

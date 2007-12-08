@@ -88,6 +88,10 @@ RELEASE 0.XX - XXX
   - Fix use of CacheDir with Decider('timestamp-newer') by updating
     the modification time when copying files from the cache.
 
+  - Fix random issues with parallel (-j) builds on Windows when Python
+    holds open file handles (especially for SCons temporary files,
+    or targets built by Python function actions) across process creation.
+
   From Maxim Kartashev:
 
   - Fix test scripts when run on Solaris.
