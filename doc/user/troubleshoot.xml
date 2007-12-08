@@ -200,6 +200,10 @@
       cc -o file1.o -c -I. file1.c
       scons: rebuilding `file3.o' because `hello.h' changed
       cc -o file3.o -c -I. file3.c
+      scons: rebuilding `prog' because:
+                 `file1.o' changed
+                 `file3.o' changed
+      cc -o prog file1.o file2.o file3.o
     </screen>
 
     <para>
@@ -1117,7 +1121,7 @@
           return SCons.Taskmaster.Task.prepare(self)
         File "/home/knight/SCons/Work/users-guide/src/engine/SCons/Taskmaster.py", line 169, in prepare
           t.prepare()
-        File "/home/knight/SCons/Work/users-guide/src/engine/SCons/Node/FS.py", line 2546, in prepare
+        File "/home/knight/SCons/Work/users-guide/src/engine/SCons/Node/FS.py", line 2550, in prepare
           SCons.Node.Node.prepare(self)
         File "/home/knight/SCons/Work/users-guide/src/engine/SCons/Node/__init__.py", line 349, in prepare
           raise SCons.Errors.StopError, desc
