@@ -82,6 +82,12 @@ RELEASE 0.XX - XXX
 
   - Restore the FS.{Dir,File,Entry}.rel_path() method.
 
+  - Make the default behavior of {Source,Target}Signatures('timestamp')
+    be equivalent to 'timestamp-match', not 'timestamp-newer'.
+
+  - Fix use of CacheDir with Decider('timestamp-newer') by updating
+    the modification time when copying files from the cache.
+
   From Maxim Kartashev:
 
   - Fix test scripts when run on Solaris.

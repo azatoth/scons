@@ -929,6 +929,8 @@ class LocalFS:
     #    return os.chdir(path)
     def chmod(self, path, mode):
         return os.chmod(path, mode)
+    def copy(self, src, dst):
+        return shutil.copy(src, dst)
     def copy2(self, src, dst):
         return shutil.copy2(src, dst)
     def exists(self, path):

@@ -782,6 +782,10 @@ def default_decide_target(dependency, target, prev_ni):
     f = SCons.Defaults.DefaultEnvironment().decide_target
     return f(dependency, target, prev_ni)
 
+def default_copy_from_cache(src, dst):
+    f = SCons.Defaults.DefaultEnvironment().copy_from_cache
+    return f(src, dst)
+
 class Base(SubstitutionEnvironment):
     """Base class for "real" construction Environments.  These are the
     primary objects used to communicate dependency and construction
@@ -844,6 +848,8 @@ class Base(SubstitutionEnvironment):
         # OverrideEnvironment or what have you.
         self.decide_target = default_decide_target
         self.decide_source = default_decide_source
+
+        self.copy_from_cache = default_copy_from_cache
 
         self._dict['BUILDERS'] = BuilderDict(self._dict['BUILDERS'], self)
 
@@ -1194,7 +1200,14 @@ class Base(SubstitutionEnvironment):
     def _changed_timestamp_match(self, dependency, target, prev_ni):
         return dependency.changed_timestamp_match(target, prev_ni)
 
+    def _copy_from_cache(self, src, dst):
+        return self.fs.copy(src, dst)
+
+    def _copy2_from_cache(self, src, dst):
+        return self.fs.copy2(src, dst)
+
     def Decider(self, function):
+        copy_function = self._copy2_from_cache
         if function in ('MD5', 'content'):
             if not SCons.Util.md5:
                 raise UserError, "MD5 signatures are not available in this version of Python."
@@ -1203,6 +1216,7 @@ class Base(SubstitutionEnvironment):
             function = self._changed_timestamp_then_content
         elif function in ('timestamp-newer', 'make'):
             function = self._changed_timestamp_newer
+            copy_function = self._copy_from_cache
         elif function == 'timestamp-match':
             function = self._changed_timestamp_match
         elif not callable(function):
@@ -1213,6 +1227,8 @@ class Base(SubstitutionEnvironment):
         # method, which would add self as an initial, fourth argument.
         self.decide_target = function
         self.decide_source = function
+
+        self.copy_from_cache = copy_function
 
     def Detect(self, progs):
         """Return the first available program in progs.
@@ -1836,7 +1852,7 @@ class Base(SubstitutionEnvironment):
                 raise UserError, "MD5 signatures are not available in this version of Python."
             self.decide_source = self._changed_content
         elif type == 'timestamp':
-            self.decide_source = self._changed_timestamp_newer
+            self.decide_source = self._changed_timestamp_match
         else:
             raise UserError, "Unknown source signature type '%s'" % type
 
@@ -1866,7 +1882,7 @@ class Base(SubstitutionEnvironment):
                 raise UserError, "MD5 signatures are not available in this version of Python."
             self.decide_target = self._changed_content
         elif type == 'timestamp':
-            self.decide_target = self._changed_timestamp_newer
+            self.decide_target = self._changed_timestamp_match
         elif type == 'build':
             self.decide_target = self._changed_build
         elif type == 'source':

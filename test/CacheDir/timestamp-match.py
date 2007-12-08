@@ -25,24 +25,35 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that CacheDir() works even when using timestamp signatures.
+Verify that CAcheDir() works when using 'timestamp-match' decisions.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.write('SConstruct', """
-SourceSignatures('timestamp')
-TargetSignatures('content')
+test.write(['SConstruct'], """\
+Decider('timestamp-match')
 CacheDir('cache')
 Command('file.out', 'file.in', Copy('$TARGET', '$SOURCE'))
 """)
 
 test.write('file.in', "file.in\n")
 
-test.run()
+test.run(arguments = '--cache-show --debug=explain .')
 
 test.must_match('file.out', "file.in\n")
+
+test.up_to_date(options = '--cache-show --debug=explain', arguments = '.')
+
+test.sleep()
+
+test.touch('file.in')
+
+test.not_up_to_date(options = '--cache-show --debug=explain', arguments = '.')
+
+test.up_to_date(options = '--cache-show --debug=explain', arguments = '.')
+
+test.up_to_date(options = '--cache-show --debug=explain', arguments = '.')
 
 test.pass_test()

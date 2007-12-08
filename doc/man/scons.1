@@ -5197,7 +5197,16 @@ source_nodes = env.subst('$EXPAND_TO_NODELIST',
 .RI SourceSignatures( type )
 .TP
 .RI env.SourceSignatures( type )
-This function tells
+Note:  Although it is not yet officially deprecated,
+use of this function is discouraged.
+See the
+.BR Decider ()
+function for a more flexible and straightforward way
+to configure SCons' decision-making.
+
+The
+.BR SourceSignatures ()
+function tells
 .B scons
 how to decide if a source file
 (a file that is not built from any other files)
@@ -5228,8 +5237,12 @@ the last time it was used to rebuild a particular target file.
 means
 .B scons
 decides that a source file has changed
-if its timestamp (modification time) is newer than
+if its timestamp (modification time) has changed since
 the last time it was used to rebuild a particular target file.
+(Note that although this is similar to the behavior of Make,
+by default it will also rebuild if the dependency is
+.I older
+than the last time it was used to rebuild the target file.)
 
 There is no different between the two behaviors
 for Python
@@ -5315,7 +5328,16 @@ Tag( 'file2.txt', DOC )
 .RI TargetSignatures( type )
 .TP
 .RI env.TargetSignatures( type )
-This function tells
+Note:  Although it is not yet officially deprecated,
+use of this function is discouraged.
+See the
+.BR Decider ()
+function for a more flexible and straightforward way
+to configure SCons' decision-making.
+
+The
+.BR TargetSignatures ()
+function tells
 .B scons
 how to decide if a target file
 (a file that
@@ -5362,8 +5384,12 @@ rebuilt with exactly the same contents as the last time.
 means
 .B scons
 decides that a target file has changed
-if its timestamp (modification time) is newer than
+if its timestamp (modification time) has changed since
 the last time it was used to rebuild some other target file.
+(Note that although this is similar to the behavior of Make,
+by default it will also rebuild if the dependency is
+.I older
+than the last time it was used to rebuild the target file.)
 
 .B "source"
 means
