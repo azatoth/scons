@@ -582,13 +582,29 @@ class Base(SCons.Node.Node):
         return result
 
     def _get_str(self):
+        global Save_Strings
         if self.duplicate or self.is_derived():
             return self.get_path()
         srcnode = self.srcnode()
         if srcnode.stat() is None and not self.stat() is None:
-            return self.get_path()
+            result = self.get_path()
         else:
-            return srcnode.get_path()
+            result = srcnode.get_path()
+        if not Save_Strings:
+            # We're not at the point where we're saving the string string
+            # representations of FS Nodes (because we haven't finished
+            # reading the SConscript files and need to have str() return
+            # things relative to them).  That also means we can't yet
+            # cache values returned (or not returned) by stat(), since
+            # Python code in the SConscript files might still create
+            # or otherwise affect the on-disk file.  So get rid of the
+            # values that the underlying stat() method saved.
+            try: del self._memo['stat']
+            except KeyError: pass
+            if not self is srcnode:
+                try: del srcnode._memo['stat']
+                except KeyError: pass
+        return result
 
     rstr = __str__
 
