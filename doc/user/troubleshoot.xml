@@ -1115,16 +1115,11 @@
       % <userinput>scons -Q --debug=stacktrace</userinput>
       scons: *** Source `prog.c' not found, needed by target `prog.o'.  Stop.
       scons: internal stack trace:
-        File "/home/knight/SCons/Work/users-guide/src/engine/SCons/Job.py", line 114, in start
-          task.prepare()
-        File "/home/knight/SCons/Work/users-guide/src/engine/SCons/Script/Main.py", line 157, in prepare
-          return SCons.Taskmaster.Task.prepare(self)
-        File "/home/knight/SCons/Work/users-guide/src/engine/SCons/Taskmaster.py", line 169, in prepare
-          t.prepare()
-        File "/home/knight/SCons/Work/users-guide/src/engine/SCons/Node/FS.py", line 2550, in prepare
-          SCons.Node.Node.prepare(self)
-        File "/home/knight/SCons/Work/users-guide/src/engine/SCons/Node/__init__.py", line 349, in prepare
-          raise SCons.Errors.StopError, desc
+        File "bootstrap/src/engine/SCons/Job.py", line 114, in start
+        File "bootstrap/src/engine/SCons/Script/Main.py", line 157, in prepare
+        File "bootstrap/src/engine/SCons/Taskmaster.py", line 169, in prepare
+        File "bootstrap/src/engine/SCons/Node/FS.py", line 2568, in prepare
+        File "bootstrap/src/engine/SCons/Node/__init__.py", line 349, in prepare
     </screen>
 
     <para>

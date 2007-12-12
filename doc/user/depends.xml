@@ -648,7 +648,7 @@
     </section>
 
     <section>
-    <title>The TargetSignatures; Function</title>
+    <title>The &TargetSignatures; Function</title>
 
       <para>
 
@@ -1131,7 +1131,44 @@
   </section>
 
   <section>
-  <title>Ignoring Dependencies:  the &Ignore; Method</title>
+  <title>Explicit Dependencies:  the &Depends; Function</title>
+
+    <para>
+
+    Sometimes a file depends on another file
+    that is not detected by an &SCons; scanner.
+    For this situation,
+    &SCons; allows you to specific explicitly that one file
+    depends on another file,
+    and must be rebuilt whenever that file changes.
+    This is specified using the &Depends; method:
+
+    </para>
+
+    <programlisting>
+       hello = Program('hello.c')
+       Depends(hello, 'other_file')
+    </programlisting>
+
+    <!-- XXX mention that you can use arrays for target and source? -->
+
+    <screen>
+       % <userinput>scons -Q hello</userinput>
+       cc -c hello.c -o hello.o
+       cc -o hello hello.o
+       % <userinput>scons -Q hello</userinput>
+       scons: `hello' is up to date.
+       % <userinput>edit other_file</userinput>
+           [CHANGE THE CONTENTS OF other_file]
+       % <userinput>scons -Q hello</userinput>
+       cc -c hello.c -o hello.o
+       cc -o hello hello.o
+    </screen>
+
+  </section>
+
+  <section>
+  <title>Ignoring Dependencies:  the &Ignore; Function</title>
 
     <para>
 
@@ -1202,45 +1239,7 @@
   </section>
 
   <section>
-  <title>Explicit Dependencies:  the &Depends; Method</title>
-
-    <para>
-
-    On the other hand,
-    sometimes a file depends on another file
-    that is not detected by an &SCons; scanner.
-    For this situation,
-    &SCons; allows you to specific explicitly that one file
-    depends on another file,
-    and must be rebuilt whenever that file changes.
-    This is specified using the &Depends; method:
-
-    </para>
-
-    <programlisting>
-       hello = Program('hello.c')
-       Depends(hello, 'other_file')
-    </programlisting>
-
-    <!-- XXX mention that you can use arrays for target and source? -->
-
-    <screen>
-       % <userinput>scons -Q hello</userinput>
-       cc -c hello.c -o hello.o
-       cc -o hello hello.o
-       % <userinput>scons -Q hello</userinput>
-       scons: `hello' is up to date.
-       % <userinput>edit other_file</userinput>
-           [CHANGE THE CONTENTS OF other_file]
-       % <userinput>scons -Q hello</userinput>
-       cc -c hello.c -o hello.o
-       cc -o hello hello.o
-    </screen>
-
-  </section>
-
-  <section>
-  <title>The &AlwaysBuild; Method</title>
+  <title>The &AlwaysBuild; Function</title>
 
     <para>
 
