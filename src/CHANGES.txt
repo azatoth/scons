@@ -8,7 +8,7 @@
 
 
 
-RELEASE 0.XX - XXX
+RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
   From Benoit Belley:
 
