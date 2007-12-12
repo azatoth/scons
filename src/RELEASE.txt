@@ -25,6 +25,34 @@ RELEASE 0.97.0d200709XX - XXX
   This is the eighth beta release of SCons.  Please consult the
   CHANGES.txt file for a list of specific changes since last release.
 
+  Please note the following important changes since release 0.97.0d20070918:
+
+    --  SCons REDEFINES PYTHON open() AND file() ON Windows TO NOT PASS
+        ON OPEN FILE HANDLES TO CREATED PROCESSES
+
+        On Windows systems, SCons now redefines the Python open()
+        and file() functions so that, if the Python Win32 extensions
+        are available, the file handles for any opened files will *not*
+        be inherited by subprocesses, such as the spawned compilers and
+        other tools invoked to build the software.
+
+        This prevents certain race conditions where a file handle for
+        a file opened by Python (either in a Python function action,
+        or directly in a SConscript file) could be inherited and help
+        open by a subprocess, interfering with the ability of other
+        processes to create or modify the file.
+
+        In general, this should not cause problems for the vast majority
+        of configurations.  The only time this would be a problem would be
+        in the unlikely event that a process spawned by SCons specifically
+        *expected* to use an inherited file handle opened by SCons.
+
+        If the Python Win32 extensions are not installed or are an
+        earlier version that does not have the ability to disable file
+        handle inheritance, SCons will print a warning message when the
+        -j option is used.  The warning message may be suppressed by
+        specifying --warn=no-parallel-support.
+
   Please note the following important changes since release 0.97.0d20070809:
 
     --  "content" SIGNATURES ARE NOW THE DEFAULT BEHAVIOR

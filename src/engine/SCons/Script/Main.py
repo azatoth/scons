@@ -730,6 +730,7 @@ def version_string(label, module):
                   module.__buildsys__)
 
 def _main(parser):
+    import SCons
     global exit_status
 
     options = parser.values
@@ -1084,10 +1085,16 @@ def _main(parser):
     global num_jobs
     num_jobs = options.num_jobs
     jobs = SCons.Job.Jobs(num_jobs, taskmaster)
-    if num_jobs > 1 and jobs.num_jobs == 1:
-        msg = "parallel builds are unsupported by this version of Python;\n" + \
-              "\tignoring -j or num_jobs option.\n"
-        SCons.Warnings.warn(SCons.Warnings.NoParallelSupportWarning, msg)
+    if num_jobs > 1:
+        msg = None
+        if jobs.num_jobs == 1:
+            msg = "parallel builds are unsupported by this version of Python;\n" + \
+                  "\tignoring -j or num_jobs option.\n"
+        elif sys.platform == 'win32':
+            import SCons.Platform.win32
+            msg = SCons.Platform.win32.parallel_msg
+        if msg:
+            SCons.Warnings.warn(SCons.Warnings.NoParallelSupportWarning, msg)
 
     memory_stats.append('before building targets:')
     count_stats.append(('pre-', 'build'))

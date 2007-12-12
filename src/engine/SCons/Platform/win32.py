@@ -44,15 +44,27 @@ import SCons.Util
 
 
 
-import __builtin__
-
 try:
     import msvcrt
     import win32api
     import win32con
+
+    msvcrt.get_osfhandle
+    win32api.SetHandleInformation
+    win32con.HANDLE_FLAG_INHERIT
 except ImportError:
-    pass
+    parallel_msg = \
+        "you do not seem to have the pywin32 extensions installed;\n" + \
+        "\tparallel (-j) builds may not work reliably with open Python files."
+except AttributeError:
+    parallel_msg = \
+        "your pywin32 extensions do not support file handle operations;\n" + \
+        "\tparallel (-j) builds may not work reliably with open Python files."
 else:
+    parallel_msg = None
+
+    import __builtin__
+
     _builtin_file = __builtin__.file
     _builtin_open = __builtin__.open
 
