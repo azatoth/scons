@@ -40,7 +40,7 @@ RELEASE 0.XX - XXX
 
   From Steven Knight:
 
-  - Add an Options.UnknownOption() method that returns any settings
+  - Add an Options.UnknownOptions() method that returns any settings
     (from the command line, or whatever dictionary was passed in)
     that aren't known to the Options object.
 
@@ -100,9 +100,14 @@ RELEASE 0.XX - XXX
 
   - Fix Glob() when a pattern is in an explicitly-named subdirectory.
 
+  From Philipp Scholl:
+
+  - Fix setting up targets if multiple Package builders are specified
+    at once.
 
 
-RELEASE 0.XX - XXX
+
+RELEASE 0.97.0d20070918 - Tue, 18 Sep 2007 10:51:27 -0500
 
   From Steven Knight:
 
