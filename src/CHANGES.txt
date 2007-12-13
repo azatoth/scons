@@ -8,6 +8,15 @@
 
 
 
+RELEASE 0.XX - XXX
+
+  From Benoit Belley:
+
+  - Fix the --keep-going flag so it builds all possible targets even when
+    a later top-level target depends on a child that failed its build.
+
+
+
 RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
   From Benoit Belley:
