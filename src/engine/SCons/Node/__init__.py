@@ -375,7 +375,6 @@ class Node:
         # waiting for this Node to be built.
         for parent in self.waiting_parents.keys():
             parent.implicit = None
-            parent.del_binfo()
 
         self.clear()
 
@@ -639,8 +638,6 @@ class Node:
                 # so we must recalculate the implicit deps:
                 self.implicit = []
                 self.implicit_dict = {}
-                self._children_reset()
-                self.del_binfo()
 
         # Have the executor scan the sources.
         executor.scan_sources(self.builder.source_scanner)
@@ -744,12 +741,16 @@ class Node:
 
         return binfo
 
-    def del_binfo(self):
-        """Delete the build info from this node."""
-        try:
-            delattr(self, 'binfo')
-        except AttributeError:
-            pass
+    # This is no longer being used since the Big Signature Refactoring
+    # changed how the Taskmaster interacts with the Nodes.  Leave it
+    # commented out for now in case there's a reason to restore it.
+    #
+    #def del_binfo(self):
+    #    """Delete the build info from this node."""
+    #    try:
+    #        delattr(self, 'binfo')
+    #    except AttributeError:
+    #        pass
 
     def get_csig(self):
         try:
