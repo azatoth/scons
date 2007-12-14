@@ -2662,16 +2662,19 @@ class File(Base):
         except AttributeError:
             pass
 
-        try:
-            contents = self.get_contents()
-        except IOError:
-            # This can happen if there's actually a directory on-disk,
-            # which can be the case if they've disabled disk checks,
-            # or if an action with a File target actually happens to
-            # create a same-named directory by mistake.
-            csig = ''
-        else:
-            csig = SCons.Util.MD5signature(contents)
+        csig = self.get_max_drift_csig()
+        if csig is None:
+
+            try:
+                contents = self.get_contents()
+            except IOError:
+                # This can happen if there's actually a directory on-disk,
+                # which can be the case if they've disabled disk checks,
+                # or if an action with a File target actually happens to
+                # create a same-named directory by mistake.
+                csig = ''
+            else:
+                csig = SCons.Util.MD5signature(contents)
 
         ninfo.csig = csig
 
