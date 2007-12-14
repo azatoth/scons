@@ -2469,38 +2469,20 @@ class File(Base):
             self.get_build_env().get_CacheDir().push_if_forced(self)
 
         ninfo = self.get_ninfo()
-        old = self.get_stored_info()
 
-        csig = None
-        mtime = self.get_timestamp()
-        size = self.get_size()
-
-        max_drift = self.fs.max_drift
-        if max_drift > 0:
-            if (time.time() - mtime) > max_drift:
-                try:
-                    n = old.ninfo
-                    if n.timestamp and n.csig and n.timestamp == mtime:
-                        csig = n.csig
-                except AttributeError:
-                    pass
-        elif max_drift == 0:
-            try:
-                csig = old.ninfo.csig
-            except AttributeError:
-                pass
-
+        csig = self.get_max_drift_csig()
         if csig:
             ninfo.csig = csig
 
-        ninfo.timestamp = mtime
-        ninfo.size = size
+        ninfo.timestamp = self.get_timestamp()
+        ninfo.size      = self.get_size()
 
         if not self.has_builder():
             # This is a source file, but it might have been a target file
             # in another build that included more of the DAG.  Copy
             # any build information that's stored in the .sconsign file
             # into our binfo object so it doesn't get lost.
+            old = self.get_stored_info()
             self.get_binfo().__dict__.update(old.binfo.__dict__)
 
         self.store_info()
@@ -2637,6 +2619,33 @@ class File(Base):
     #
     # SIGNATURE SUBSYSTEM
     #
+
+    def get_max_drift_csig(self):
+        """
+        Returns the content signature currently stored for this node
+        if it's been unmodified longer than the max_drift value, or the
+        max_drift value is 0.  Returns None otherwise.
+        """
+        old = self.get_stored_info()
+        mtime = self.get_timestamp()
+
+        csig = None
+        max_drift = self.fs.max_drift
+        if max_drift > 0:
+            if (time.time() - mtime) > max_drift:
+                try:
+                    n = old.ninfo
+                    if n.timestamp and n.csig and n.timestamp == mtime:
+                        csig = n.csig
+                except AttributeError:
+                    pass
+        elif max_drift == 0:
+            try:
+                csig = old.ninfo.csig
+            except AttributeError:
+                pass
+
+        return csig
 
     def get_csig(self):
         """
