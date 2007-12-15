@@ -36,7 +36,14 @@ test = TestSCons.TestSCons()
 python_include_dir = test.get_python_inc()
 
 test.write(['SConstruct'], """\
-env = Environment(SWIGFLAGS = '-python', CPPPATH=r"%(python_include_dir)s")
+env = Environment(SWIGFLAGS = '-python',
+                  CPPPATH=r"%(python_include_dir)s")
+
+import sys
+if sys.version[0] == '1':
+    # SWIG requires the -classic flag on pre-2.0 Python versions.
+    env.Append(SWIGFLAGS = ' -classic')
+
 env.SharedLibrary('test1.so', 'test1.i')
 env.SharedLibrary('test2.so', 'test2.i')
 """ % locals())
