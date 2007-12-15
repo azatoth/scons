@@ -190,6 +190,7 @@ class SubstTestCase(unittest.TestCase):
             'T'         : ('x', 'y'),
             'CS'        : cs,
             'CL'        : cl,
+            'US'        : UserString.UserString('us'),
 
             # Test function calls within ${}.
             'FUNCCALL'  : '${FUNC1("$AAA $FUNC2 $BBB")}',
@@ -316,6 +317,12 @@ class SubstTestCase(unittest.TestCase):
             #cl,                     'cl',
             '$CS',                  'cs',
             '$CL',                  'cl',
+
+            # Various uses of UserString.
+            UserString.UserString('x'),         'x',
+            UserString.UserString('$X'),        'x',
+            UserString.UserString('$US'),       'us',
+            '$US',                              'us',
 
             # Test function calls within ${}.
             '$FUNCCALL',            'a xc b',
@@ -653,6 +660,7 @@ class SubstTestCase(unittest.TestCase):
             'L'         : ['x', 'y'],
             'CS'        : cs,
             'CL'        : cl,
+            'US'        : UserString.UserString('us'),
 
             # Test function calls within ${}.
             'FUNCCALL'  : '${FUNC1("$AAA $FUNC2 $BBB")}',
@@ -785,6 +793,16 @@ class SubstTestCase(unittest.TestCase):
             ['$CS'],                [['cs']],
             '$CL',                  [['cl']],
             ['$CL'],                [['cl']],
+
+            # Various uses of UserString.
+            UserString.UserString('x'),         [['x']],
+            [UserString.UserString('x')],       [['x']],
+            UserString.UserString('$X'),        [['x']],
+            [UserString.UserString('$X')],      [['x']],
+            UserString.UserString('$US'),       [['us']],
+            [UserString.UserString('$US')],     [['us']],
+            '$US',                              [['us']],
+            ['$US'],                            [['us']],
 
             # Test function calls within ${}.
             '$FUNCCALL',            [['a', 'xc', 'b']],

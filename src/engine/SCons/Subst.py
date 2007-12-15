@@ -458,6 +458,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
             separate tokens.
             """
             if is_String(args) and not isinstance(args, CmdStringHolder):
+                args = str(args)        # In case it's a UserString.
                 try:
                     def sub_match(match, conv=self.conv, expand=self.expand, lvars=lvars):
                         return conv(expand(match.group(1), lvars))
@@ -666,6 +667,7 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
             """
 
             if is_String(args) and not isinstance(args, CmdStringHolder):
+                args = str(args)        # In case it's a UserString.
                 args = _separate_args.findall(args)
                 for a in args:
                     if a[0] in ' \t\n\r\f\v':
