@@ -21,6 +21,11 @@ RELEASE 0.XX - XXX
 
   - Re-run LaTeX when it issues a package warning that it must be re-run.
 
+  From Ben Webb:
+
+  - Support the SWIG %module statement with following modifiers in
+    parenthese (e.g., '%module(directors="1")').
+
 
 
 RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
