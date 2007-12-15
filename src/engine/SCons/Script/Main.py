@@ -68,6 +68,16 @@ import SCons.Taskmaster
 import SCons.Util
 import SCons.Warnings
 
+def fetch_win32_parallel_msg():
+    # A subsidiary function that exists solely to isolate this import
+    # so we don't have to pull it in on all platforms, and so that an
+    # in-line "import" statement in the _main() function below doesn't
+    # cause warnings about local names shadowing use of the 'SCons'
+    # globl in nest scopes and UnboundLocalErrors and the like in some
+    # versions (2.1) of Python.
+    import SCons.Platform.win32
+    SCons.Platform.win32.parallel_msg
+
 #
 
 class SConsPrintHelpException(Exception):
@@ -730,7 +740,6 @@ def version_string(label, module):
                   module.__buildsys__)
 
 def _main(parser):
-    import SCons
     global exit_status
 
     options = parser.values
@@ -1091,8 +1100,7 @@ def _main(parser):
             msg = "parallel builds are unsupported by this version of Python;\n" + \
                   "\tignoring -j or num_jobs option.\n"
         elif sys.platform == 'win32':
-            import SCons.Platform.win32
-            msg = SCons.Platform.win32.parallel_msg
+            msg = fetch_win32_parallel_msg()
         if msg:
             SCons.Warnings.warn(SCons.Warnings.NoParallelSupportWarning, msg)
 
