@@ -15,6 +15,8 @@ RELEASE 0.XX - XXX
   - Fix the --keep-going flag so it builds all possible targets even when
     a later top-level target depends on a child that failed its build.
 
+  - Fix being able to use $PDB and $WINDWOWS_INSERT_MANIFEST together.
+
   From Steven Knight:
 
   - Support the ability to subclass the new-style "str" class as input
