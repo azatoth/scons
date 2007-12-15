@@ -196,8 +196,22 @@ def get_all_compiler_versions():
                 if ok:
                     versions.append(subkey)
                 else:
-                    # Registry points to nonexistent dir.  Ignore this version.
-                    print "Ignoring "+str(get_intel_registry_value('ProductDir', subkey, 'IA32'))
+                    try:
+                        # Registry points to nonexistent dir.  Ignore this
+                        # version.
+                        value = get_intel_registry_value('ProductDir', subkey, 'IA32')
+                    except MissingRegistryError, e:
+
+                        # Registry key is left dangling (potentially
+                        # after uninstalling).
+
+                        print \
+                            "scons: *** Ignoring the registry key for the Intel compiler version %s.\n" \
+                            "scons: *** It seems that the compiler was uninstalled and that the registry\n" \
+                            "scons: *** was not cleaned up properly.\n" % subkey
+                    else:
+                        print "scons: *** Ignoring "+str(value)
+
                 i = i + 1
         except EnvironmentError:
             # no more subkeys
