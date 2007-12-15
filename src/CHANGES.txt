@@ -20,6 +20,9 @@ RELEASE 0.XX - XXX
   - Don't crash if un-installing the Intel C compiler leaves left-over,
     dangling entries in the Windows registry.
 
+  - Improve support for non-standard library prefixes and suffixes by
+    stripping all prefixes/suffixes from file name string as appropriate.
+
   From Steven Knight:
 
   - Support the ability to subclass the new-style "str" class as input
