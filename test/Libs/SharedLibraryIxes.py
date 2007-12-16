@@ -109,7 +109,12 @@ def buildAndlinkAgainst(builder, target, source,  method, lib, libname, **kw):
                 lib = [l]
                 break
     (source, LIBS) = method(source, lib, libname)
-    build = builder(target=target, source=source, LIBS=LIBS, **kw)
+    #build = builder(target=target, source=source, LIBS=LIBS, **kw)
+    kw = kw.copy()
+    kw['target'] = target
+    kw['source'] = source
+    kw['LIBS'] = LIBS
+    build = apply(builder, (), kw)
 
     # Check that the build target depends on at least one of the
     # library target.
@@ -173,7 +178,7 @@ for foolibprefix in prefixes:
                             (i, 
                              goomethod, goolibprefix, goolibsuffix, 
                              foomethod, foolibprefix, foolibsuffix))
-                        i += 1
+                        i = i + 1
 
 #
 # Pseudo-randomly choose 200 tests to run out of the possible
@@ -181,7 +186,10 @@ for foolibprefix in prefixes:
 #
 import random
 random.seed(123456)
-random.shuffle(tests)
+try:
+    random.shuffle(tests)
+except AttributeError:
+    pass
 
 for i in range(200):
   apply(prog, tests[i])
