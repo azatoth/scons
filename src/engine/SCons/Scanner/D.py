@@ -50,4 +50,6 @@ class D(SCons.Scanner.Classic):
         inc = string.replace(include, '.', '/')
 
         i = SCons.Node.FS.find_file(inc + '.d', (source_dir,) + path)
+        if i is None:
+            i = SCons.Node.FS.find_file (inc + '.di', (source_dir,) + path)
         return i, include

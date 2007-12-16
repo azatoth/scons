@@ -23,6 +23,10 @@ RELEASE 0.XX - XXX
   - Improve support for non-standard library prefixes and suffixes by
     stripping all prefixes/suffixes from file name string as appropriate.
 
+  From Jérôme Berger:
+
+  - Have the D language scanner search for .di files as well as .d files.
+
   From Steven Knight:
 
   - Support the ability to subclass the new-style "str" class as input
