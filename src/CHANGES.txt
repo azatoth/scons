@@ -41,6 +41,9 @@ RELEASE 0.XX - XXX
   - Improve the performance of our type-checking by using isinstance()
     with new-style classes.
 
+  - Fix #include (and other $*PATH variables searches) of files with
+    absolute path names.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

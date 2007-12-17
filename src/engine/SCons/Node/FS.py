@@ -2854,7 +2854,7 @@ class FileFinder:
         It would be more compact to just use this as a nested function
         with a default keyword argument (see the commented-out version
         below), but that doesn't work unless you have nested scopes,
-        so we define it here just this works work under Python 1.5.2.
+        so we define it here just so this work under Python 1.5.2.
         """
         if fd is None:
             fd = self.default_filedir
@@ -2919,6 +2919,11 @@ class FileFinder:
                 verbose = lambda s, v=verbose: sys.stdout.write(v + s)
         else:
             verbose = lambda x: x
+
+        if os.path.isabs(filename):
+            drive, filename = os.path.splitdrive(filename)
+            root = get_default_fs().get_root(drive)
+            return root._lookup_abs(filename, File, 1)
 
         filedir, filename = os.path.split(filename)
         if filedir:
