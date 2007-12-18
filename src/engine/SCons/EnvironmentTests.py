@@ -576,13 +576,13 @@ class SubstitutionTestCase(unittest.TestCase):
                           BAR=StringableObj("bar"))
 
         r = env.subst_path([ "${FOO}/bar", "${BAR}/baz" ])
-        assert r == [ "foo/bar", "bar/baz" ]
+        assert r == [ "foo/bar", "bar/baz" ], r
 
         r = env.subst_path([ "bar/${FOO}", "baz/${BAR}" ])
-        assert r == [ "bar/foo", "baz/bar" ]
+        assert r == [ "bar/foo", "baz/bar" ], r
 
         r = env.subst_path([ "bar/${FOO}/bar", "baz/${BAR}/baz" ])
-        assert r == [ "bar/foo/bar", "baz/bar/baz" ]
+        assert r == [ "bar/foo/bar", "baz/bar/baz" ], r
 
     def test_subst_target_source(self):
         """Test the base environment subst_target_source() method"""
