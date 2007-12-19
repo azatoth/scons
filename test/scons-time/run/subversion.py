@@ -67,7 +67,7 @@ def tempdir_re(*args):
     import tempfile
 
     sep = re.escape(os.sep)
-    args = (tempfile.gettempdir(), 'scons-time-svn-',) + args
+    args = (os.path.realpath(tempfile.gettempdir()), 'scons-time-svn-',) + args
     x = apply(os.path.join, args)
     x = re.escape(x)
     x = string.replace(x, 'svn\\-', 'svn\\-[^%s]*' % sep)

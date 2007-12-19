@@ -66,7 +66,7 @@ def tempdir_re(*args):
     import tempfile
 
     sep = re.escape(os.sep)
-    args = (tempfile.gettempdir(), 'scons-time-aegis-',) + args
+    args = (os.path.realpath(tempfile.gettempdir()), 'scons-time-aegis-',) + args
     x = apply(os.path.join, args)
     x = re.escape(x)
     x = string.replace(x, 'aegis\\-', 'aegis\\-[^%s]*' % sep)
