@@ -42,7 +42,8 @@ RELEASE 0.XX - XXX
     with new-style classes.
 
   - Fix #include (and other $*PATH variables searches) of files with
-    absolute path names.
+    absolute path names.  Don't die if they don't exist (due to being
+    #ifdef'ed out or the like).
 
   From Rob Managan:
 

@@ -36,6 +36,7 @@ test = TestSCons.TestSCons()
 test.subdir('include', 'work')
 
 inc_h = test.workpath('include', 'inc.h')
+does_not_exist_h = test.workpath('include', 'does_not_exist.h')
 
 test.write(['work', 'SConstruct'], """\
 Program('prog.c')
@@ -44,6 +45,9 @@ Program('prog.c')
 test.write(['work', 'prog.c'], """\
 #include <stdio.h>
 #include "%(inc_h)s"
+#if     0
+#include "%(does_not_exist_h)s"
+#endif
 
 int
 main(int argc, char *argv[])

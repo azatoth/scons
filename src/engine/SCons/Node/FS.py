@@ -2861,7 +2861,7 @@ class FileFinder:
         dir, name = os.path.split(fd)
         drive, d = os.path.splitdrive(dir)
         if d in ('/', os.sep):
-            return p
+            return p.fs.get_root(drive).dir_on_disk(name)
         if dir:
             p = self.filedir_lookup(p, dir)
             if not p:
@@ -2919,11 +2919,6 @@ class FileFinder:
                 verbose = lambda s, v=verbose: sys.stdout.write(v + s)
         else:
             verbose = lambda x: x
-
-        if os.path.isabs(filename):
-            drive, filename = os.path.splitdrive(filename)
-            root = get_default_fs().get_root(drive)
-            return root._lookup_abs(filename, File, 1)
 
         filedir, filename = os.path.split(filename)
         if filedir:
