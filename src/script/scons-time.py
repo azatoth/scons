@@ -38,6 +38,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import getopt
 import glob
 import os
+import os.path
 import re
 import shutil
 import string
@@ -61,7 +62,7 @@ except NameError:
 
 def make_temp_file(**kw):
     try:
-        result = tempfile.mktemp(**kw)
+        result = os.path.realpath(tempfile.mktemp(**kw))
     except TypeError:
         try:
             save_template = tempfile.template
