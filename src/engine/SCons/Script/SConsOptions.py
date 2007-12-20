@@ -122,6 +122,7 @@ class SConsValues(optparse.Values):
         'no_exec',
         'num_jobs',
         'random',
+        'stack_size',
     ]
 
     def set_option(self, name, value):
@@ -163,6 +164,11 @@ class SConsValues(optparse.Values):
                 # Set this right away so it can affect the rest of the
                 # file/Node lookups while processing the SConscript files.
                 SCons.Node.FS.set_diskcheck(value)
+        elif name == 'stack_size':
+            try:
+                value = int(value)
+            except ValueError:
+                raise SCons.Errors.UserError, "An integer is required: %s"%repr(value)
 
         self.__SConscript_settings__[name] = value
 
@@ -729,6 +735,13 @@ def Parser(version):
                   action="store",
                   help="Use DIR instead of the usual site_scons dir.",
                   metavar="DIR")
+
+    op.add_option('--stack-size',
+                  nargs=1, type="int",
+                  dest='stack_size',
+                  action="store",
+                  help="Set the stack size of the threads used to run jobs to N kilobytes.",
+                  metavar="N")
 
     op.add_option('--taskmastertrace',
                   nargs=1,

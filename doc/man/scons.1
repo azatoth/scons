@@ -1044,6 +1044,26 @@ will get loaded if it exists, and
 will get added to the default toolpath.
 
 .TP
+.RI --stack-size= KILOBYTES
+Set the size stack used to run threads to
+.IR KILOBYTES . 
+This value determines the stack size of the threads used to run jobs.
+These are the threads that execute the actions of the builders for the
+nodes that are out-of-date.
+Note that this option has no effect unless the
+.B num_jobs
+option, which corresponds to -j and --jobs, is larger than one.  Using
+a stack size that is too small may cause stack overflow errors.  This
+usually shows up as segmentation faults that cause scons to abort
+before building anything.  Using a stack size that is too large will
+cause scons to use more memory than required and may slow down the entire
+build process.
+
+The default value is to use a stack size of 256 kilobytes, which should
+be appropriate for most uses.  You should not need to increase this value
+unless you encounter stack overflow errors.
+
+.TP
 -t, --touch
 Ignored for compatibility with GNU
 .BR make .  
@@ -1243,6 +1263,12 @@ reserved construction variable names
 or
 .BR SOURCES .
 These warnings are disabled by default.
+
+.TP
+--warn=stack-size, --warn=no-stack-size
+Enables or disables warnings about requests to set the stack size
+that could not be honored.
+These warnings are enabled by default.
 
 .\" .TP
 .\" .RI --write-filenames= file
@@ -4949,9 +4975,11 @@ which corresponds to --max-drift;
 .B no_exec
 which corresponds to -n, --no-exec, --just-print, --dry-run and --recon;
 .B num_jobs
-which corresponds to -j and --jobs.
+which corresponds to -j and --jobs;
 .B random
-which corresponds to --random.
+which corresponds to --random; and
+.B stack_size
+which corresponds to --stack-size.
 See the documentation for the
 corresponding command line object for information about each specific
 option.

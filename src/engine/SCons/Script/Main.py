@@ -759,7 +759,8 @@ def _main(parser):
                          SCons.Warnings.NoMetaclassSupportWarning,
                          SCons.Warnings.NoObjectCountWarning,
                          SCons.Warnings.NoParallelSupportWarning,
-                         SCons.Warnings.MisleadingKeywordsWarning, ]
+                         SCons.Warnings.MisleadingKeywordsWarning,
+                         SCons.Warnings.StackSizeWarning, ]
     for warning in default_warnings:
         SCons.Warnings.enableWarningClass(warning)
     SCons.Warnings._warningOut = _scons_internal_warning
@@ -965,6 +966,8 @@ def _main(parser):
     SCons.Node.implicit_cache = options.implicit_cache
     SCons.Node.FS.set_duplicate(options.duplicate)
     fs.set_max_drift(options.max_drift)
+    if not options.stack_size is None:
+        SCons.Job.stack_size = options.stack_size
 
     lookup_top = None
     if targets or SCons.Script.BUILD_TARGETS != SCons.Script._build_plus_default:

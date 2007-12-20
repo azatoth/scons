@@ -23,6 +23,10 @@ RELEASE 0.XX - XXX
   - Improve support for non-standard library prefixes and suffixes by
     stripping all prefixes/suffixes from file name string as appropriate.
 
+  - Reduce the default stack size for -j worker threads to 256 Kbytes.
+    Provide user control over this value by adding --stack-size and
+    --warn=stack-size options, and a SetOption('stack_size') function.
+
   From Jérôme Berger:
 
   - Have the D language scanner search for .di files as well as .d files.
