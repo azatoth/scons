@@ -41,6 +41,8 @@ RELEASE 0.XX - XXX
 
   - Add a CheckDeclaration() call to configure contexts.
 
+  - Improve the CheckTypeSize() code.
+
   From Steven Knight:
 
   - Support the ability to subclass the new-style "str" class as input

@@ -798,6 +798,12 @@ class CheckContext:
         # TODO: should use self.vardict for $CC, $CPPFLAGS, etc.
         return not self.TryBuild(self.env.Object, text, ext)
 
+    def RunProg(self, text, ext):
+        self.sconf.cached = 1
+        # TODO: should use self.vardict for $CC, $CPPFLAGS, etc.
+        st, out = self.TryRun(text, ext)
+        return not st, out
+
     def AppendLIBS(self, lib_name_list):
         oldLIBS = self.env.get( 'LIBS', [] )
         self.env.Append(LIBS = lib_name_list)
