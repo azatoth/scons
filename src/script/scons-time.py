@@ -62,7 +62,12 @@ except NameError:
 
 def make_temp_file(**kw):
     try:
-        result = os.path.realpath(tempfile.mktemp(**kw))
+        result = tempfile.mktemp(**kw)
+        try:
+            result = os.path.realpath(result)
+        except AttributeError:
+            # Python 2.1 has no os.path.realpath() method.
+            pass
     except TypeError:
         try:
             save_template = tempfile.template
