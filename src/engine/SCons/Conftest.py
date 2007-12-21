@@ -415,6 +415,56 @@ int main() {
         else:
             return 0
 
+def CheckDeclaration(context, symbol, includes = None, language = None):
+    """Checks whether symbol is declared.
+
+    Use the same test as autoconf, that is test whether the symbol is defined
+    as a macro or can be used as an r-value.
+
+    Arguments:
+        symbol : str
+            the symbol to check
+        includes : str
+            Optional "header" can be defined to include a header file.
+        language : str
+            only C and C++ supported.
+
+    Returns:
+        status : bool
+            True if the check failed, False if succeeded."""
+    
+    # Include "confdefs.h" first, so that the header can use HAVE_HEADER_H.
+    if context.headerfilename:
+        includetext = '#include "%s"' % context.headerfilename
+    else:
+        includetext = ''
+
+    if not includes:
+        includes = ""
+
+    lang, suffix, msg = _lang2suffix(language)
+    if msg:
+        context.Display("Cannot check for declaration %s: %s\n" % (type_name, msg))
+        return msg
+
+    src = includetext + includes 
+    context.Display('Checking whether %s is declared... ' % symbol)
+
+    src = src + r"""
+int main()
+{
+#ifndef %s
+    (void) %s;
+#endif
+    ;
+    return 0;
+}
+""" % (symbol, symbol)
+
+    st = context.CompileProg(src, suffix)
+    _YesNoResult(context, st, "HAVE_DECL_" + symbol, src)
+    return st
+
 def CheckLib(context, libs, func_name = None, header = None,
                  extra_libs = None, call = None, language = None, autoadd = 1):
     """

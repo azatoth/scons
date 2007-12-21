@@ -37,6 +37,10 @@ RELEASE 0.XX - XXX
   - Allow the D language scanner to detect multiple modules imported by
     a single statement.
 
+  From David Cournapeau:
+
+  - Add a CheckDeclaration() call to configure contexts.
+
   From Steven Knight:
 
   - Support the ability to subclass the new-style "str" class as input

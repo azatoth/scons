@@ -6279,6 +6279,25 @@ will return success only if short is two bytes.
 .ES
 .EE
 
+.TP
+.RI Configure.CheckDeclaration( self ", " symbol ", [" includes ", " language ])
+Checks if the specified
+.I symbol
+is declared.
+.I includes
+is a string containing one or more
+.B #include
+lines that will be inserted into the program
+that will be run to test for the existence of the type.
+The optional
+.I language
+argument should be
+.B C
+or
+.B C++
+and selects the compiler to be used for the check;
+the default is "C".
+
 .EE
 You can define your own custom checks. 
 in addition to the predefined checks.

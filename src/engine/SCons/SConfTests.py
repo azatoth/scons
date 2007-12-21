@@ -531,6 +531,25 @@ int main() {
         finally:
             sconf.Finish()
 
+    def test_CheckDeclaration(self):
+        """Test SConf.CheckDeclaration()
+        """
+        self._resetSConfState()
+        sconf = self.SConf.SConf(self.scons_env,
+                                 conf_dir=self.test.workpath('config.tests'),
+                                 log_file=self.test.workpath('config.log'))
+        try:
+            # In ANSI C, malloc should be available in stdlib
+            r = sconf.CheckDeclaration('malloc', includes = "#include <stdlib.h>")
+            assert r, "malloc not declared ??"
+            # For C++, __cplusplus should be declared 
+            r = sconf.CheckDeclaration('__cplusplus', language = 'C++')
+            assert r, "__cplusplus not declared in C++ ??"
+            r = sconf.CheckDeclaration('__cplusplus', language = 'C')
+            assert not r, "__cplusplus declared  in C ??"
+        finally:
+            sconf.Finish()
+
     def test_(self):
         """Test SConf.CheckType()
         """
