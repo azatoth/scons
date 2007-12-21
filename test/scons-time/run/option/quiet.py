@@ -45,7 +45,12 @@ def tempdir_re(*args):
     import tempfile
 
     sep = re.escape(os.sep)
-    args = (os.path.realpath(tempfile.gettempdir()), 'scons-time-',) + args
+    tempdir = tempfile.gettempdir()
+    try:
+        tempdir = os.path.relpath(tempdir)
+    except AttributeError:
+        pass
+    args = (tempdir, 'scons-time-',) + args
     x = apply(os.path.join, args)
     x = re.escape(x)
     x = string.replace(x, 'time\\-', 'time\\-[^%s]*' % sep)
