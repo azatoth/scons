@@ -55,8 +55,9 @@ file.close()
 test.write(['work1', 'SConstruct'], """
 B = Builder(action = r'%(_python_)s ../build.py $TARGETS $SOURCES')
 env = Environment(BUILDERS = { 'B' : B })
-env.B(target = 'f1.out', source = 'f1.in')
-env.B(target = 'f2.out', source = 'f2.in')
+f1 = env.B(target = 'f1.out', source = 'f1.in')
+f2 = env.B(target = 'f2.out', source = 'f2.in')
+Requires(f2, f1)
 """ % locals())
 
 test.write(['work1', 'f1.in'], "f1.in\n")
@@ -67,8 +68,9 @@ test.write(['work2', 'SConstruct'], """
 SetOption('stack_size', 128)
 B = Builder(action = r'%(_python_)s ../build.py $TARGETS $SOURCES')
 env = Environment(BUILDERS = { 'B' : B })
-env.B(target = 'f1.out', source = 'f1.in')
-env.B(target = 'f2.out', source = 'f2.in')
+f1 = env.B(target = 'f1.out', source = 'f1.in')
+f2 = env.B(target = 'f2.out', source = 'f2.in')
+Requires(f2, f1)
 """ % locals())
 
 test.write(['work2', 'f1.in'], "f1.in\n")
