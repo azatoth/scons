@@ -78,6 +78,11 @@ sh: %s:  not found
 scons: *** [%s] Error 1
 """
 
+not_found_127 = """\
+sh: %s: not found
+scons: *** [%s] Error 127
+"""
+
 No_such = """\
 %s: No such file or directory
 scons: *** [%s] Error 127
@@ -115,6 +120,7 @@ else:
     errs = [
         not_found_1 % (no_such_file, 'f1'),
         not_found_2 % (no_such_file, 'f1'),
+        not_found_127 % (no_such_file, 'f1'),
         No_such % (no_such_file, 'f1'),
     ]
     error_message_not_found = 1
@@ -179,6 +185,7 @@ else:
     errs = [
         cannot_execute % (not_executable, 'f3'),
         is_a_directory % (test.workdir, 'f3'),
+        Permission_denied % (test.workdir, 'f3'),
     ]
     error_message_not_found = 1
     for err in errs:
