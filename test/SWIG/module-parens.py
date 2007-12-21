@@ -33,6 +33,11 @@ import TestSCons
 
 test = TestSCons.TestSCons()
 
+swig = test.where_is('swig')
+
+if not swig:
+    test.skip_test('Can not find installed "swig", skipping test.\n')
+
 python_include_dir = test.get_python_inc()
 
 test.write(['SConstruct'], """\
