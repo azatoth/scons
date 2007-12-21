@@ -37,6 +37,14 @@ RELEASE 0.XX - XXX
   - Allow the D language scanner to detect multiple modules imported by
     a single statement.
 
+  From Konstantin Bozhikov:
+
+  - Support expansion of construction variables that contain or refer
+    to lists of other variables or Nodes within expansions like $PCPPATH.
+
+  - Change variable substitution (the env.subst() method) so that an
+    input sequence (list or tuple) is preserved as a list in the output.
+
   From David Cournapeau:
 
   - Add a CheckDeclaration() call to configure contexts.

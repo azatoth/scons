@@ -5094,9 +5094,10 @@ env.SourceCode('no_source.c', None)
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI env.subst( string ", [" raw ", " target ", " source ", " conv ])
+.RI env.subst( input ", [" raw ", " target ", " source ", " conv ])
 Performs construction variable interpolation
-on the specified string argument.
+on the specified string or sequence argument
+.IR input .
 
 By default,
 leading or trailing white space will
@@ -5128,6 +5129,12 @@ and
 pairs
 (as is done for signature calculation).
 
+If the input is a sequence
+(list or tuple),
+the individual elements of
+the sequence will be expanded,
+and the results will be returned as a list.
+
 The optional
 .I target
 and
@@ -5148,9 +5155,8 @@ calling
 from within a Python function used
 as an SCons action.
 
-By default,
-all returned values are converted
-to their string representation.
+Returned string values or sequence elements
+are converted to their string representation by default.
 The optional
 .I conv
 argument

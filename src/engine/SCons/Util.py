@@ -133,9 +133,16 @@ def to_String_for_signature(obj):
     try:
         f = obj.for_signature
     except AttributeError:
-        return to_String(obj)
+        return to_String_for_subst(obj)
     else:
         return f()
+
+def to_String_for_subst(s):
+    if is_Sequence( s ):
+        return string.join( map(to_String_for_subst, s) )
+    
+    return to_String( s )
+
 
 class CallableComposite(UserList):
     """A simple composite callable class that, when called, will invoke all

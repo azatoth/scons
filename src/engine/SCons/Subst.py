@@ -42,8 +42,8 @@ import SCons.Errors
 from SCons.Util import is_String, is_Sequence
 
 # Indexed by the SUBST_* constants below.
-_strconv = [SCons.Util.to_String,
-            SCons.Util.to_String,
+_strconv = [SCons.Util.to_String_for_subst,
+            SCons.Util.to_String_for_subst,
             SCons.Util.to_String_for_signature]
 
 
@@ -312,6 +312,25 @@ _remove = re.compile(r'\$\([^\$]*(\$[^\)][^\$]*)*\$\)')
 # Indexed by the SUBST_* constants above.
 _regex_remove = [ _rm, None, _remove ]
 
+def _rm_list(list):
+    #return [ l for l in list if not l in ('$(', '$)') ]
+    return filter(lambda l: not l in ('$(', '$)'), list)
+
+def _remove_list(list):
+    result = []
+    do_append = result.append
+    for l in list:
+        if l == '$(':
+            do_append = lambda x: None
+        elif l == '$)':
+            do_append = result.append
+        else:
+            do_append(l)
+    return result
+
+# Indexed by the SUBST_* constants above.
+_list_remove = [ _rm_list, None, _remove_list ]
+
 # Regular expressions for splitting strings and handling substitutions,
 # for use by the scons_subst() and scons_subst_list() functions:
 #
@@ -342,7 +361,8 @@ _separate_args = re.compile(r'(%s|\s+|[^\s\$]+|\$)' % _dollar_exps_str)
 _space_sep = re.compile(r'[\t ]+(?![^{]*})')
 
 def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={}, lvars={}, conv=None):
-    """Expand a string containing construction variable substitutions.
+    """Expand a string or list containing construction variable
+    substitutions.
 
     This is the work-horse function for substitutions in file names
     and the like.  The companion scons_subst_list() function (below)
@@ -430,8 +450,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
             elif is_Sequence(s):
                 def func(l, conv=self.conv, substitute=self.substitute, lvars=lvars):
                     return conv(substitute(l, lvars))
-                r = map(func, s)
-                return string.join(r)
+                return map(func, s)
             elif callable(s):
                 try:
                     s = s(target=self.target,
@@ -473,11 +492,10 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
                     result = []
                     for a in args:
                         result.append(self.conv(self.expand(a, lvars)))
-                    try:
-                        result = string.join(result, '')
-                    except TypeError:
-                        if len(result) == 1:
-                            result = result[0]
+                    if len(result) == 1:
+                        result = result[0]
+                    else:
+                        result = string.join(map(str, result), '')
                 return result
             else:
                 return self.expand(args, lvars)
@@ -525,6 +543,10 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
             # Compress strings of white space characters into
             # a single space.
             result = string.strip(_space_sep.sub(' ', result))
+    elif is_Sequence(result):
+        remove = _list_remove[mode]
+        if remove:
+            result = remove(result)
 
     return result
 

@@ -481,7 +481,7 @@ class SubstitutionEnvironment:
                         # We have an object plus a string, or multiple
                         # objects that we need to smush together.  No choice
                         # but to make them into a string.
-                        p = string.join(map(SCons.Util.to_String, p), '')
+                        p = string.join(map(SCons.Util.to_String_for_subst, p), '')
             else:
                 p = s(p)
             r.append(p)

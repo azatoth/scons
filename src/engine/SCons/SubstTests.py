@@ -411,9 +411,9 @@ class SubstTestCase(unittest.TestCase):
                "This is test",
 
             ["|", "$(", "$AAA", "|", "$BBB", "$)", "|", "$CCC", 1],
-                "| $( a | b $) | c 1",
-                "| a | b | c 1",
-                "| | c 1",
+                ["|", "$(", "a", "|", "b", "$)", "|", "c", "1"],
+                ["|", "a", "|", "b", "|", "c", "1"],
+                ["|", "|", "c", "1"],
         ]
 
         gvars = env.Dictionary()
@@ -577,7 +577,7 @@ class SubstTestCase(unittest.TestCase):
         cmd = SCons.Util.CLVar("test $FOO $BAR $CALL test")
 
         newcmd = scons_subst(cmd, env, gvars=env.Dictionary())
-        assert newcmd == 'test foo bar call test', newcmd
+        assert newcmd == ['test', 'foo', 'bar', 'call', 'test'], newcmd
 
         cmd_list = scons_subst_list(cmd, env, gvars=env.Dictionary())
         assert len(cmd_list) == 1, cmd_list
