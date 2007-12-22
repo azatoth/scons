@@ -337,8 +337,8 @@ class TestSCons(TestCommon):
         return x
 
     def normalize_pdf(self, s):
-        s = re.sub(r'/CreationDate \(D:[^)]*\)',
-                   r'/CreationDate (D:XXXX)', s)
+        s = re.sub(r'/(Creation|Mod)Date \(D:[^)]*\)',
+                   r'/\1Date (D:XXXX)', s)
         s = re.sub(r'/ID \[<[0-9a-fA-F]*> <[0-9a-fA-F]*>\]',
                    r'/ID [<XXXX> <XXXX>]', s)
         s = re.sub(r'/(BaseFont|FontName) /[A-Z]{6}',
