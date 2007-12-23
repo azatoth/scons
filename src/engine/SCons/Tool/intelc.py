@@ -219,11 +219,15 @@ def get_all_compiler_versions():
     elif is_linux:
         for d in glob.glob('/opt/intel_cc_*'):
             # Typical dir here is /opt/intel_cc_80.
-            versions.append(re.search(r'cc_(.*)$', d).group(1))
+            m = re.search(r'cc_(.*)$', d)
+            if m:
+                versions.append(m.group(1))
         for d in glob.glob('/opt/intel/cc*/*'):
             # Typical dir here is /opt/intel/cc/9.0 for IA32,
             # /opt/intel/cce/9.0 for EMT64 (AMD64)
-            versions.append(re.search(r'([0-9.]+)$', d).group(1))
+            m = re.search(r'([0-9.]+)$', d)
+            if m:
+                versions.append(m.group(1))
     versions = uniquify(versions)       # remove dups
     versions.sort(vercmp)
     return versions
@@ -339,8 +343,8 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
 
     if topdir:
         if verbose:
-            print "Intel C compiler: using version '%s' (%g), abi %s, in '%s'"%\
-                  (version, linux_ver_normalize(version),abi,topdir)
+            print "Intel C compiler: using version %s (%g), abi %s, in '%s'"%\
+                  (repr(version), linux_ver_normalize(version),abi,topdir)
             if is_linux:
                 # Show the actual compiler version by running the compiler.
                 os.system('%s/bin/icc --version'%topdir)
@@ -358,6 +362,10 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
             paths=(('INCLUDE', 'IncludeDir', 'Include'),
                    ('LIB'    , 'LibDir',     'Lib'),
                    ('PATH'   , 'BinDir',     'Bin'))
+            # We are supposed to ignore version if topdir is set, so set
+            # it to the emptry string if it's not already set.
+            if version is None:
+                version = ''
             # Each path has a registry entry, use that or default to subdir
             for p in paths:
                 try:
@@ -406,7 +414,9 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
 
         licdir = None
         for ld in [envlicdir, reglicdir]:
-            if ld and os.path.exists(ld):
+            # If the string contains an '@', then assume it's a network
+            # license (port@system) and good by definition.
+            if ld and (string.find(ld, '@') != -1 or os.path.exists(ld)):
                 licdir = ld
                 break
         if not licdir:

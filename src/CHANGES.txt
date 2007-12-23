@@ -27,6 +27,9 @@ RELEASE 0.XX - XXX
     Provide user control over this value by adding --stack-size and
     --warn=stack-size options, and a SetOption('stack_size') function.
 
+  - Fix a crash on Linux systems when trying to use the Intel C compiler
+    and no /opt/intel_cc_* directories are found.
+
   From Jérôme Berger:
 
   - Have the D language scanner search for .di files as well as .d files.
@@ -68,6 +71,13 @@ RELEASE 0.XX - XXX
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).
 
   - Re-run LaTeX when it issues a package warning that it must be re-run.
+
+  From Jonas Olsson:
+
+  - Fix use of the Intel C compiler when the top compiler directory,
+    but not the compiler version, is specified.
+
+  - Handle Intel C compiler network license files (port@system).
 
   From Ben Webb:
 
