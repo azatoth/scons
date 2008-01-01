@@ -432,14 +432,10 @@ class Node:
         can be re-evaluated by interfaces that do continuous integration
         builds).
         """
-        # Note in case it's important in the future:  We also used to clear
-        # the build information (the lists of dependencies) here like this:
-        #
-        #    self.del_binfo()
-        #
-        # But we now rely on the fact that we're going to look at that
-        # once before the build, and then store the results in the
-        # .sconsign file after the build.
+        # The del_binfo() call here isn't necessary for normal execution,
+        # but is for interactive mode, where we might rebuild the same
+        # target and need to start from scratch.
+        self.del_binfo()
         self.clear_memoized_values()
         self.ninfo = self.new_ninfo()
         self.executor_cleanup()
@@ -741,16 +737,12 @@ class Node:
 
         return binfo
 
-    # This is no longer being used since the Big Signature Refactoring
-    # changed how the Taskmaster interacts with the Nodes.  Leave it
-    # commented out for now in case there's a reason to restore it.
-    #
-    #def del_binfo(self):
-    #    """Delete the build info from this node."""
-    #    try:
-    #        delattr(self, 'binfo')
-    #    except AttributeError:
-    #        pass
+    def del_binfo(self):
+        """Delete the build info from this node."""
+        try:
+            delattr(self, 'binfo')
+        except AttributeError:
+            pass
 
     def get_csig(self):
         try:
