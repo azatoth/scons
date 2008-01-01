@@ -121,7 +121,7 @@ def CachePushFunc(target, source, env):
 
 CachePush = SCons.Action.Action(CachePushFunc, None)
 
-class CacheDir:
+class CacheDirEnabled:
 
     def __init__(self, path):
         try:
@@ -215,3 +215,5 @@ class Null(SCons.Util.Null):
         return None, None
     def retrieve(self, node):
         return False
+
+CacheDir = CacheDirEnabled
