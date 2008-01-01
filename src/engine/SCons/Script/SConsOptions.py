@@ -472,6 +472,7 @@ def Parser(version):
                            usage="usage: scons [OPTION] [TARGET] ...",)
 
     op.preserve_unknown_options = True
+    op.version = version
 
     # Add the options to the parser we just created.
     #
@@ -790,8 +791,8 @@ def Parser(version):
                   help="Search up directory tree for SConstruct,       "
                        "build Default() targets from local SConscript.")
 
-    def opt_version(option, opt, value, parser, version=version):
-        sys.stdout.write(version + '\n')
+    def opt_version(option, opt, value, parser):
+        sys.stdout.write(parser.version + '\n')
         sys.exit(0)
     op.add_option("-v", "--version",
                   action="callback", callback=opt_version,
