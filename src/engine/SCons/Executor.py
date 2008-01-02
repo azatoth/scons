@@ -341,7 +341,7 @@ class Null(_Executor):
             #    return dependency.changed_since_last_buld(target, prev_ni)
             def get_CacheDir(self):
                 import SCons.CacheDir
-                return SCons.CacheDir.Null()
+                return SCons.CacheDir.CacheDir(None)
         return NullEnvironment()
     def get_build_scanner_path(self):
         return None

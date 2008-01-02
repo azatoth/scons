@@ -2589,10 +2589,10 @@ def generate(env):
         env = self.TestEnvironment(CD = 'CacheDir')
 
         env.CacheDir('foo')
-        assert env._CacheDir.path == 'foo', env._CacheDir.path
+        assert env._CacheDir_path == 'foo', env._CacheDir_path
 
         env.CacheDir('$CD')
-        assert env._CacheDir.path == 'CacheDir', env._CacheDir.path
+        assert env._CacheDir_path == 'CacheDir', env._CacheDir_path
 
     def test_Clean(self):
         """Test the Clean() method"""

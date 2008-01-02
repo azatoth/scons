@@ -866,7 +866,7 @@ def _main(parser):
         SCons.Action.print_actions = None
 
     if options.cache_disable:
-        SCons.CacheDir.CacheDir = SCons.Util.Null()
+        SCons.CacheDir.cache_enabled = False
     if options.cache_debug:
         SCons.CacheDir.cache_debug = options.cache_debug
     if options.cache_force:

@@ -93,7 +93,7 @@ def DefaultEnvironment(*args, **kw):
             _default_env.Decider('timestamp-match')
         global DefaultEnvironment
         DefaultEnvironment = _fetch_DefaultEnvironment
-        _default_env._CacheDir = SCons.CacheDir.Null()
+        _default_env._CacheDir_path = None
     return _default_env
 
 # Emitters for setting the shared attribute on object files,
