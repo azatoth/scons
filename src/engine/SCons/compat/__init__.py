@@ -162,7 +162,7 @@ except AttributeError:
     def split(s, comments=False):
         import StringIO
         lex = shlex.shlex(StringIO.StringIO(s))
-        lex.wordchars = lex.wordchars + '/\\-+,=:'
+        lex.wordchars = lex.wordchars + '/\\-+,=:.'
         result = []
         while True:
             tt = lex.get_token()

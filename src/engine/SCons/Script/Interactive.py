@@ -100,11 +100,6 @@ except ImportError:
 
 from SCons.Debug import Trace
 
-try:
-    shlex.split
-except AttributeError:
-    shlex.split = string.split
-
 class SConsInteractiveCmd(cmd.Cmd):
     """\
     build [TARGETS]         Build the specified TARGETS and their dependencies.
