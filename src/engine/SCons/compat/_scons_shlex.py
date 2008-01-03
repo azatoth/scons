@@ -9,7 +9,27 @@
 
 import os.path
 import sys
-from collections import deque
+#from collections import deque
+
+class deque:
+    def __init__(self):
+        self.data = []
+    def __len__(self):
+        return len(self.data)
+    def appendleft(self, item):
+        self.data.insert(0, item)
+    def popleft(self):
+        return self.data.pop(0)
+
+try:
+    basestring
+except NameError:
+    import types
+    def is_basestring(s):
+        return type(s) is types.StringType
+else:
+    def is_basestring(s):
+        return isinstance(s, basestring)
 
 try:
     from cStringIO import StringIO
@@ -21,7 +41,7 @@ __all__ = ["shlex", "split"]
 class shlex:
     "A lexical analyzer class for simple shell-like syntaxes."
     def __init__(self, instream=None, infile=None, posix=False):
-        if isinstance(instream, basestring):
+        if is_basestring(instream):
             instream = StringIO(instream)
         if instream is not None:
             self.instream = instream
@@ -38,7 +58,7 @@ class shlex:
         self.wordchars = ('abcdfeghijklmnopqrstuvwxyz'
                           'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_')
         if self.posix:
-            self.wordchars += ('ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ'
+            self.wordchars = self.wordchars + ('ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ'
                                'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞ')
         self.whitespace = ' \t\r\n'
         self.whitespace_split = False
@@ -64,7 +84,7 @@ class shlex:
 
     def push_source(self, newstream, newfile=None):
         "Push an input source onto the lexer's input source stack."
-        if isinstance(newstream, basestring):
+        if is_basestring(newstream):
             newstream = StringIO(newstream)
         self.filestack.appendleft((self.infile, self.instream, self.lineno))
         self.infile = newfile
@@ -250,7 +270,7 @@ class shlex:
         if newfile[0] == '"':
             newfile = newfile[1:-1]
         # This implements cpp-like semantics for relative-path inclusion.
-        if isinstance(self.infile, basestring) and not os.path.isabs(newfile):
+        if is_basestring(self.infile) and not os.path.isabs(newfile):
             newfile = os.path.join(os.path.dirname(self.infile), newfile)
         return (newfile, open(newfile, "r"))
 
@@ -276,7 +296,14 @@ def split(s, comments=False):
     lex.whitespace_split = True
     if not comments:
         lex.commenters = ''
-    return list(lex)
+    #return list(lex)
+    result = []
+    while True:
+        token = lex.get_token()
+        if token == lex.eof:
+            break
+        result.append(token)
+    return result
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
