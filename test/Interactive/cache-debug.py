@@ -28,6 +28,7 @@ Verify the --interactive command line option to build a target when the
 --cache-debug option is used.
 """
 
+import TestCmd
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -94,22 +95,22 @@ test.must_match(test.workpath('foo.out'), "foo.in\n")
 
 
 
-expect_stdout = """\
-scons>>> Copy("foo.out", "foo.in")
-scons>>> Touch("1")
+expect_stdout = \
+r"""scons>>> Copy\("foo.out", "foo.in"\)
+scons>>> Touch\("1"\)
 scons>>> Removed foo.out
-scons>>> Touch("2")
+scons>>> Touch\("2"\)
 scons>>> Retrieved `foo.out' from cache
-scons>>> Touch("3")
+scons>>> Touch\("3"\)
 scons>>> Removed foo.out
-scons>>> Touch("4")
+scons>>> Touch\("4"\)
 scons>>> Retrieved `foo.out' from cache
-CacheRetrieve(foo.out):  retrieving from 26c0ed00d50f809f223618d12d465624
-scons>>> Touch("5")
+CacheRetrieve\(foo.out\):  retrieving from [0-9A-za-z]+
+scons>>> Touch\("5"\)
 scons>>> 
 """
 
-test.finish(scons, stdout = expect_stdout)
+test.finish(scons, stdout = expect_stdout, match=TestCmd.match_re)
 
 
 
