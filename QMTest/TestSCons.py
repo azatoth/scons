@@ -935,7 +935,7 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
                     self.finish(popen)
                 self.fail_test()
             time.sleep(1.0)
-            waited += 1.0
+            waited = waited + 1.0
 
 # In some environments, $AR will generate a warning message to stderr
 # if the library doesn't previously exist and is being created.  One
