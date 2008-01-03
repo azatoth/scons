@@ -226,7 +226,7 @@ class SConsInteractiveCmd(cmd.Cmd):
             while n:
                 n = walker.next()
 
-        for node in seen_nodes:
+        for node in seen_nodes.keys():
             # Call node.clear() to clear most of the state
             node.clear()
             # node.clear() doesn't reset node.state, so call
@@ -277,11 +277,17 @@ class SConsInteractiveCmd(cmd.Cmd):
     def _strip_initial_spaces(self, s):
         lines = s.split('\n')
         spaces = re.match(' *', lines[0]).group(0)
-        def strip_spaces(l):
-            if l.startswith(spaces):
-                l = l[len(spaces):]
+        #def strip_spaces(l):
+        #    if l.startswith(spaces):
+        #        l = l[len(spaces):]
+        #    return l
+        #return '\n'.join([ strip_spaces(l) for l in lines ])
+        def strip_spaces(l, spaces=spaces):
+            if l[:len(spaces)] == spaces:
+                l = l[len(spaces)]
             return l
-        return '\n'.join([ strip_spaces(l) for l in lines ])
+        lines = map(strip_spaces, lines)
+        return string.join(lines, '\n')
 
     def do_exit(self, argv):
         """\
