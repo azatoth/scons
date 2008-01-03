@@ -868,6 +868,132 @@ This implies
 .BR --implicit-cache .
 
 .TP
+--interactive
+Starts SCons in interactive mode.
+The SConscript files are read once and a
+.B "scons>>>"
+prompt is printed.
+Targets may now be rebuilt by typing commands at interactive prompt
+without having to re-read the SConscript files
+and re-initialize the dependency graph from scratch.
+
+SCons interactive mode supports the following commands:
+
+.RS 10
+.TP 6
+.BI build "[OPTIONS] [TARGETS] ..."
+Builds the specified
+.I TARGETS
+(and their dependencies)
+with the specified
+SCons command-line
+.IR OPTIONS .
+.B b
+and
+.B scons
+are synonyms.
+
+The following SCons command-line options affect the
+.B build
+command:
+
+.ES
+--cache-debug=FILE
+--cache-disable, --no-cache
+--cache-force, --cache-populate
+--cache-show
+--debug=TYPE
+-i, --ignore-errors
+-j N, --jobs=N
+-k, --keep-going
+-n, --no-exec, --just-print, --dry-run, --recon
+-Q
+-s, --silent, --quiet
+-s, --silent, --quiet
+--taskmastertrace=FILE
+--tree=OPTIONS
+.EE
+
+.IP "" 6
+Any other SCons command-line options that are specified
+do not cause errors
+but have no effect on the
+.B build
+command
+(mainly because they affect how the SConscript files are read,
+which only happens once at the beginning of interactive mode).
+
+.TP 6
+.BI clean "[OPTIONS] [TARGETS] ..."
+Cleans the specified
+.I TARGETS
+(and their dependencies)
+with the specified options.
+.B c
+is a synonym.
+This command is itself a synonym for
+.B "build --clean"
+
+.TP 6
+.BI exit
+Exits SCons interactive mode.
+You can also exit by terminating input
+(CTRL+D on UNIX or Linux systems,
+CTRL+Z on Windows systems).
+
+.TP 6
+.BI help "[COMMAND]"
+Provides a help message about
+the commands available in SCons interactive mode.
+If
+.I COMMAND
+is specified,
+.B h
+and
+.B ?
+are synonyms.
+
+.TP 6
+.BI shell "[COMMANDLINE]"
+Executes the specified
+.I COMMANDLINE
+in a subshell.
+If no
+.I COMMANDLINE
+is specified,
+executes the interactive command interpreter
+specified in the
+.B SHELL
+environment variable
+(on UNIX and Linux systems)
+or the
+.B COMSPEC
+environment variable
+(on Windows systems).
+.B sh
+and
+.B !
+are synonyms.
+
+.TP 6
+.B version
+Prints SCons version information.
+.RE
+
+An empty line repeats the last typed command.
+Command-line editing can be used if the
+.B readline
+module is available.
+
+.ES
+$ scons --interactive
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons>>> build -n prog
+scons>>> exit
+.EE
+
+.TP
 .RI -j " N" ", --jobs=" N
 Specifies the number of jobs (commands) to run simultaneously.
 If there is more than one 
@@ -2943,6 +3069,7 @@ that specify the type of decision function
 to be performed:
 
 .RS 10
+.HP 6
 .B timestamp-newer
 Specifies that a target shall be considered out of date and rebuilt
 if the dependency's timestamp is newer than the target file's timestamp.

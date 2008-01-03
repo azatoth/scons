@@ -339,6 +339,7 @@ class Null(_Executor):
             #    return None
             #def changed_since_last_build(self, dependency, target, prev_ni):
             #    return dependency.changed_since_last_buld(target, prev_ni)
+            _CacheDir_path = None
             def get_CacheDir(self):
                 import SCons.CacheDir
                 return SCons.CacheDir.CacheDir(None)

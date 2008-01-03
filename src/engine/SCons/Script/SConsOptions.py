@@ -674,6 +674,11 @@ def Parser(version):
                   action="callback", callback=opt_implicit_deps,
                   help="Ignore changes in implicit dependencies.")
 
+    op.add_option('--interact', '--interactive',
+                  dest='interactive', default=False,
+                  action="store_true",
+                  help="Run in interactive mode.")
+
     op.add_option('-j', '--jobs',
                   nargs=1, type="int",
                   dest="num_jobs", default=1,

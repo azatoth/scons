@@ -21,6 +21,7 @@ import os.path
 import re
 import string
 import sys
+import time
 
 import __builtin__
 try:
@@ -919,6 +920,22 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
                                 'python' + self.get_python_version())
         else:
             return distutils.sysconfig.get_python_inc()
+
+    def wait_for(self, fname, timeout=10.0, popen=None):
+        """
+        Waits for the specified file name to exist.
+        """
+        waited = 0.0
+        while not os.path.exists(fname):
+            if timeout and waited >= timeout:
+                sys.stderr.write('timed out waiting for %s to exist\n' % fname)
+                if popen:
+                    popen.stdin.close()
+                    self.status = 1
+                    self.finish(popen)
+                self.fail_test()
+            time.sleep(1.0)
+            waited += 1.0
 
 # In some environments, $AR will generate a warning message to stderr
 # if the library doesn't previously exist and is being created.  One

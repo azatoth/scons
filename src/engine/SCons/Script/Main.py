@@ -68,6 +68,8 @@ import SCons.Taskmaster
 import SCons.Util
 import SCons.Warnings
 
+import SCons.Script.Interactive
+
 def fetch_win32_parallel_msg():
     # A subsidiary function that exists solely to isolate this import
     # so we don't have to pull it in on all platforms, and so that an
@@ -845,10 +847,10 @@ def _main(parser):
     SCons.Node.implicit_cache = options.implicit_cache
     SCons.Node.implicit_deps_changed = options.implicit_deps_changed
     SCons.Node.implicit_deps_unchanged = options.implicit_deps_unchanged
+
     if options.no_exec:
         SCons.SConf.dryrun = 1
         SCons.Action.execute_actions = None
-        CleanTask.execute = CleanTask.show
     if options.question:
         SCons.SConf.dryrun = 1
     if options.clean:
@@ -860,19 +862,6 @@ def _main(parser):
 
     if options.no_progress or options.silent:
         progress_display.set_mode(0)
-    if options.silent:
-        display.set_mode(0)
-    if options.silent:
-        SCons.Action.print_actions = None
-
-    if options.cache_disable:
-        SCons.CacheDir.cache_enabled = False
-    if options.cache_debug:
-        SCons.CacheDir.cache_debug = options.cache_debug
-    if options.cache_force:
-        SCons.CacheDir.cache_force = True
-    if options.cache_show:
-        SCons.CacheDir.cache_show = True
 
     if options.site_dir:
         _load_site_scons_dir(d, options.site_dir)
@@ -968,6 +957,43 @@ def _main(parser):
     fs.set_max_drift(options.max_drift)
     if not options.stack_size is None:
         SCons.Job.stack_size = options.stack_size
+
+    platform = SCons.Platform.platform_module()
+
+    if options.interactive:
+        SCons.Script.Interactive.interact(fs, OptionsParser, options,
+                                          targets, target_top)
+
+    else:
+
+        # Build the targets
+        nodes = _build_targets(fs, options, targets, target_top)
+
+def _build_targets(fs, options, targets, target_top):
+
+    progress_display.set_mode(not (options.no_progress or options.silent))
+    display.set_mode(not options.silent)
+    SCons.Action.print_actions          = not options.silent
+    SCons.Action.execute_actions        = not options.no_exec
+    SCons.SConf.dryrun                  = options.no_exec
+
+    if options.diskcheck:
+        SCons.Node.FS.set_diskcheck(options.diskcheck)
+
+    _set_debug_values(options)
+    SCons.Node.implicit_cache = options.implicit_cache
+    SCons.Node.implicit_deps_changed = options.implicit_deps_changed
+    SCons.Node.implicit_deps_unchanged = options.implicit_deps_unchanged
+
+    SCons.CacheDir.cache_enabled = not options.cache_disable
+    SCons.CacheDir.cache_debug = options.cache_debug
+    SCons.CacheDir.cache_force = options.cache_force
+    SCons.CacheDir.cache_show = options.cache_show
+
+    if options.no_exec:
+        CleanTask.execute = CleanTask.show
+    else:
+        CleanTask.execute = CleanTask.remove
 
     lookup_top = None
     if targets or SCons.Script.BUILD_TARGETS != SCons.Script._build_plus_default:
@@ -1112,7 +1138,15 @@ def _main(parser):
 
     try:
         progress_display("scons: " + opening_message)
-        jobs.run()
+        try:
+            jobs.run()
+        except KeyboardInterrupt:
+            # If we are in interactive mode, a KeyboardInterrupt
+            # interrupts only this current run.  Return 'nodes' normally
+            # so that the outer loop can clean up the nodes and continue.
+            if options.interactive:
+                print "Build interrupted."
+                # Continue and return normally
     finally:
         jobs.cleanup()
         if exit_status:
@@ -1124,6 +1158,8 @@ def _main(parser):
 
     memory_stats.append('after building targets:')
     count_stats.append(('post-', 'build'))
+
+    return nodes
 
 def _exec_main(parser, values):
     sconsflags = os.environ.get('SCONSFLAGS', '')

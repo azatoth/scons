@@ -54,6 +54,7 @@ SCons/Scanner/Prog.py
 SCons/SConf.py
 SCons/SConsign.py
 SCons/Script/__init__.py
+SCons/Script/Interactive.py
 SCons/Script/Main.py
 SCons/Script/SConscript.py
 SCons/Script/SConsOptions.py
