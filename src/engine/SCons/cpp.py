@@ -359,6 +359,9 @@ class PreProcessor:
                 return f
         return None
 
+    def read_file(self, file):
+        return open(file).read()
+
     # Start and stop processing include lines.
 
     def start_handling_includes(self, t=None):
@@ -489,7 +492,7 @@ class PreProcessor:
         if include_file:
             #print "include_file =", include_file
             self.result.append(include_file)
-            contents = open(include_file).read()
+            contents = self.read_file(include_file)
             new_tuples = self.tupleize(contents)
             self.tuples[:] = new_tuples + self.tuples
 
