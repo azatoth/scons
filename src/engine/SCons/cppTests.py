@@ -569,6 +569,10 @@ if __name__ == '__main__':
                ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
+        try:
+            names = set(names)
+        except NameError:
+            pass
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
