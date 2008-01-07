@@ -183,7 +183,11 @@ class FunctionEvaluator:
         """
         self.name = name
         self.args = function_arg_separator.split(args)
-        self.expansion = string.split(expansion, '##')
+        try:
+            expansion = string.split(expansion, '##')
+        except AttributeError:
+            pass
+        self.expansion = expansion
     def __call__(self, *values):
         """
         Evaluates the expansion of a #define macro function called

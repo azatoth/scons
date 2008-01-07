@@ -296,6 +296,9 @@ macro_function_input = """
 
 #include FUNC39c(ZERO, ONE)
 #include FUNC40c(ZERO, ONE)
+
+/* Make sure we don't die if the expansion isn't a string. */
+#define FUNC_INTEGER(x)       1
 """
 
 
@@ -376,7 +379,7 @@ class cppTestCase(unittest.TestCase):
         assert expect == result, (expect, result)
 
     def test_token_pasting(self):
-        """Test taken-pasting to construct file names"""
+        """Test token-pasting to construct file names"""
         expect = self.token_pasting_expect
         result = self.cpp(token_pasting_input)
         assert expect == result, (expect, result)
