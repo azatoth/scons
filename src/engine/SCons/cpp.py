@@ -185,7 +185,9 @@ class FunctionEvaluator:
         self.args = function_arg_separator.split(args)
         try:
             expansion = string.split(expansion, '##')
-        except AttributeError:
+        except (AttributeError, TypeError):
+            # Python 1.5 throws TypeError if "expansion" isn't a string,
+            # later versions throw AttributeError.
             pass
         self.expansion = expansion
     def __call__(self, *values):
