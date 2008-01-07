@@ -234,7 +234,7 @@ class PreProcessor:
     """
     The main workhorse class for handling C pre-processing.
     """
-    def __init__(self, current='.', cpppath=(), dict={}, all=0):
+    def __init__(self, current=os.curdir, cpppath=(), dict={}, all=0):
         global Table
 
         cpppath = tuple(cpppath)
@@ -351,7 +351,10 @@ class PreProcessor:
         """
         fname = t[2]
         for d in self.searchpath[t[1]]:
-            f = os.path.join(d, fname)
+            if d == os.curdir:
+                f = fname
+            else:
+                f = os.path.join(d, fname)
             if os.path.isfile(f):
                 return f
         return None

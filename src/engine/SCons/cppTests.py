@@ -562,17 +562,86 @@ class DumbPreProcessorTestCase(cppAllTestCase):
         ('include', '<', 'file42-yes'),
     ]
 
+
+
+import os
+import re
+import shutil
+import tempfile
+
+tempfile.template = 'cppTests.'
+if os.name in ('posix', 'nt'):
+    tempfile.template = 'cppTests.' + str(os.getpid()) + '.'
+else:
+    tempfile.template = 'cppTests.'
+
+_Cleanup = []
+
+def _clean():
+    for dir in _Cleanup:
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
+
+sys.exitfunc = _clean
+
+class fileTestCase(unittest.TestCase):
+    cpp_class = cpp.DumbPreProcessor
+
+    def setUp(self):
+        path = tempfile.mktemp(prefix=tempfile.template)
+        _Cleanup.append(path)
+        os.mkdir(path)
+        self.tempdir = path
+        self.orig_cwd = os.getcwd()
+        os.chdir(path)
+        self.cpp = self.cpp_class(current = ".",
+                                  cpppath = ['.'])
+
+    def tearDown(self):
+        shutil.rmtree(self.tempdir)
+        _Cleanup.remove(self.tempdir)
+        os.chdir(self.orig_cwd)
+
+    def strip_initial_spaces(self, s):
+        lines = s.split('\n')
+        spaces = re.match(' *', lines[0]).group(0)
+        def strip_spaces(l):
+            if l.startswith(spaces):
+                l = l[len(spaces):]
+            return l
+        return '\n'.join([ strip_spaces(l) for l in lines ])
+
+    def write(self, file, contents):
+        open(file, 'w').write(self.strip_initial_spaces(contents))
+
+    def test_basic(self):
+        """Test basic file inclusion"""
+        #self.write('f1.h', """\
+        ##include "f2.h"
+        #""")
+        self.write('f2.h', """\
+        #include <f3.h>
+        """)
+        self.write('f3.h', """\
+        """)
+        result = self.cpp('#include "f2.h"\n')
+        assert result == ['f2.h', 'f3.h'], result
+
+
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     tclasses = [ PreProcessorTestCase,
                  DumbPreProcessorTestCase,
+                 fileTestCase,
                ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
         try:
-            names = set(names)
+            names = list(set(names))
         except NameError:
             pass
+        names.sort()
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
