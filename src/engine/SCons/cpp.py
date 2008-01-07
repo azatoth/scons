@@ -228,12 +228,14 @@ class PreProcessor:
     """
     The main workhorse class for handling C pre-processing.
     """
-    def __init__(self, current='.', cpppath=[], dict={}, all=0):
+    def __init__(self, current='.', cpppath=(), dict={}, all=0):
         global Table
 
+        cpppath = tuple(cpppath)
+
         self.searchpath = {
-            '"' :       [current] + cpppath,
-            '<' :       cpppath + [current],
+            '"' :       (current,) + cpppath,
+            '<' :       cpppath + (current,),
         }
 
         # Initialize our C preprocessor namespace for tracking the
