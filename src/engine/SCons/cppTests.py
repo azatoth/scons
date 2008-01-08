@@ -314,6 +314,12 @@ token_pasting_input = """
 """
 
 
+no_space_input = """
+#include<file43-yes>
+#include"file44-yes"
+"""
+
+
 
 #    pp_class = PreProcessor
 #    #pp_class = DumbPreProcessor
@@ -382,6 +388,12 @@ class cppTestCase(unittest.TestCase):
         """Test token-pasting to construct file names"""
         expect = self.token_pasting_expect
         result = self.cpp.process_contents(token_pasting_input)
+        assert expect == result, (expect, result)
+
+    def test_no_space(self):
+        """Test no space between #include and the quote"""
+        expect = self.no_space_expect
+        result = self.cpp.process_contents(no_space_input)
         assert expect == result, (expect, result)
 
 class cppAllTestCase(cppTestCase):
@@ -460,6 +472,11 @@ class PreProcessorTestCase(cppAllTestCase):
     token_pasting_expect = [
         ('include', '"', 'file41-yes'),
         ('include', '<', 'file42-yes'),
+    ]
+
+    no_space_expect = [
+        ('include', '<', 'file43-yes'),
+        ('include', '"', 'file44-yes'),
     ]
 
 class DumbPreProcessorTestCase(cppAllTestCase):
@@ -560,6 +577,11 @@ class DumbPreProcessorTestCase(cppAllTestCase):
     token_pasting_expect = [
         ('include', '"', 'file41-yes'),
         ('include', '<', 'file42-yes'),
+    ]
+
+    no_space_expect = [
+        ('include', '<', 'file43-yes'),
+        ('include', '"', 'file44-yes'),
     ]
 
 

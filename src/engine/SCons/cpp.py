@@ -45,10 +45,15 @@ import string
 # that we want to fetch, using the regular expressions to which the lists
 # of preprocessor directives map.
 cpp_lines_dict = {
-    # Fetch the rest of a #if/#elif/#ifdef/#ifndef/#import/#include/
-    # #include_next line as one argument.
-    ('if', 'elif', 'ifdef', 'ifndef', 'import', 'include', 'include_next',)
+    # Fetch the rest of a #if/#elif/#ifdef/#ifndef as one argument,
+    # separated from the keyword by white space.
+    ('if', 'elif', 'ifdef', 'ifndef',)
                         : '\s+(.+)',
+
+    # Fetch the rest of a #import/#include/#include_next line as one
+    # argument, with white space optional.
+    ('import', 'include', 'include_next',)
+                        : '\s*(.+)',
 
     # We don't care what comes after a #else or #endif line.
     ('else', 'endif',)  : '',
