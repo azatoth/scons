@@ -333,55 +333,55 @@ class cppTestCase(unittest.TestCase):
     def test_basic(self):
         """Test basic #include scanning"""
         expect = self.basic_expect
-        result = self.cpp(basic_input)
+        result = self.cpp.process_contents(basic_input)
         assert expect == result, (expect, result)
 
     def test_substitution(self):
         """Test substitution of #include files using CPP variables"""
         expect = self.substitution_expect
-        result = self.cpp(substitution_input)
+        result = self.cpp.process_contents(substitution_input)
         assert expect == result, (expect, result)
 
     def test_ifdef(self):
         """Test basic #ifdef processing"""
         expect = self.ifdef_expect
-        result = self.cpp(ifdef_input)
+        result = self.cpp.process_contents(ifdef_input)
         assert expect == result, (expect, result)
 
     def test_if_boolean(self):
         """Test #if with Boolean values"""
         expect = self.if_boolean_expect
-        result = self.cpp(if_boolean_input)
+        result = self.cpp.process_contents(if_boolean_input)
         assert expect == result, (expect, result)
 
     def test_if_defined(self):
         """Test #if defined() idioms"""
         expect = self.if_defined_expect
-        result = self.cpp(if_defined_input)
+        result = self.cpp.process_contents(if_defined_input)
         assert expect == result, (expect, result)
 
     def test_expression(self):
         """Test #if with arithmetic expressions"""
         expect = self.expression_expect
-        result = self.cpp(expression_input)
+        result = self.cpp.process_contents(expression_input)
         assert expect == result, (expect, result)
 
     def test_undef(self):
         """Test #undef handling"""
         expect = self.undef_expect
-        result = self.cpp(undef_input)
+        result = self.cpp.process_contents(undef_input)
         assert expect == result, (expect, result)
 
     def test_macro_function(self):
         """Test using macro functions to express file names"""
         expect = self.macro_function_expect
-        result = self.cpp(macro_function_input)
+        result = self.cpp.process_contents(macro_function_input)
         assert expect == result, (expect, result)
 
     def test_token_pasting(self):
         """Test token-pasting to construct file names"""
         expect = self.token_pasting_expect
-        result = self.cpp(token_pasting_input)
+        result = self.cpp.process_contents(token_pasting_input)
         assert expect == result, (expect, result)
 
 class cppAllTestCase(cppTestCase):
@@ -594,8 +594,6 @@ class fileTestCase(unittest.TestCase):
         self.tempdir = path
         self.orig_cwd = os.getcwd()
         os.chdir(path)
-        self.cpp = self.cpp_class(current = ".",
-                                  cpppath = ['.'])
 
     def tearDown(self):
         shutil.rmtree(self.tempdir)
@@ -616,16 +614,44 @@ class fileTestCase(unittest.TestCase):
 
     def test_basic(self):
         """Test basic file inclusion"""
-        #self.write('f1.h', """\
-        ##include "f2.h"
-        #""")
+        self.write('f1.h', """\
+        #include "f2.h"
+        """)
         self.write('f2.h', """\
         #include <f3.h>
         """)
         self.write('f3.h', """\
         """)
-        result = self.cpp('#include "f2.h"\n')
+        p = cpp.DumbPreProcessor(current = os.curdir,
+                                 cpppath = [os.curdir])
+        result = p('f1.h')
         assert result == ['f2.h', 'f3.h'], result
+
+    def test_current_file(self):
+        """Test use of the .current_file attribute"""
+        self.write('f1.h', """\
+        #include <f2.h>
+        """)
+        self.write('f2.h', """\
+        #include "f3.h"
+        """)
+        self.write('f3.h', """\
+        """)
+        class MyPreProcessor(cpp.DumbPreProcessor):
+            def __init__(self, *args, **kw):
+                apply(cpp.DumbPreProcessor.__init__, (self,) + args, kw)
+                self.files = []
+            def __call__(self, file):
+                self.files.append(file)
+                return cpp.DumbPreProcessor.__call__(self, file)
+            def scons_current_file(self, t):
+                r = cpp.DumbPreProcessor.scons_current_file(self, t)
+                self.files.append(self.current_file)
+                return r
+        p = MyPreProcessor(current = os.curdir, cpppath = [os.curdir])
+        result = p('f1.h')
+        assert result == ['f2.h', 'f3.h'], result
+        assert p.files == ['f1.h', 'f2.h', 'f3.h', 'f2.h', 'f1.h'], p.files
 
 
 

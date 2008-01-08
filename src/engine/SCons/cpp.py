@@ -262,7 +262,9 @@ class PreProcessor:
         # stack and changing what method gets called for each relevant
         # directive we might see next at this level (#else, #elif).
         # #endif will simply pop the stack.
-        d = {}
+        d = {
+            'scons_current_file'    : self.scons_current_file
+        }
         for op in Table.keys():
             d[op] = getattr(self, 'do_' + op)
         self.default_table = d
@@ -286,14 +288,24 @@ class PreProcessor:
                            (m[0],) + t[m[0]].match(m[1]).groups(),
                     cpp_tuples)
 
-    def __call__(self, contents):
+    def __call__(self, file):
+        """
+        Pre-processes a file.
+
+        This is the main public entry point.
+        """
+        self.current_file = file
+        return self.process_contents(self.read_file(file), file)
+
+    def process_contents(self, contents, fname=None):
         """
         Pre-processes a file contents.
 
-        This is the main entry point, which
+        This is the main internal entry point.
         """
         self.stack = []
         self.dispatch_table = self.default_table.copy()
+        self.current_file = fname
         self.tuples = self.tupleize(contents)
 
         self.result = []
@@ -332,6 +344,9 @@ class PreProcessor:
         specific preprocessor directive to do nothing.
         """
         pass
+
+    def scons_current_file(self, t):
+        self.current_file = t[1]
 
     def eval_expression(self, t):
         """
@@ -493,7 +508,9 @@ class PreProcessor:
             #print "include_file =", include_file
             self.result.append(include_file)
             contents = self.read_file(include_file)
-            new_tuples = self.tupleize(contents)
+            new_tuples = [('scons_current_file', include_file)] + \
+                         self.tupleize(contents) + \
+                         [('scons_current_file', self.current_file)]
             self.tuples[:] = new_tuples + self.tuples
 
     # Date: Tue, 22 Nov 2005 20:26:09 -0500
