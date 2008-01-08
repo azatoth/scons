@@ -23,6 +23,7 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import string
 import sys
 import unittest
 
@@ -610,7 +611,13 @@ class fileTestCase(unittest.TestCase):
     cpp_class = cpp.DumbPreProcessor
 
     def setUp(self):
-        path = tempfile.mktemp(prefix=tempfile.template)
+        try:
+            path = tempfile.mktemp(prefix=tempfile.template)
+        except TypeError:
+            # The tempfile.mktemp() function in earlier versions of Python
+            # has no prefix argument, but uses the tempfile.template
+            # value that we set above.
+            path = tempfile.mktemp()
         _Cleanup.append(path)
         os.mkdir(path)
         self.tempdir = path
@@ -623,13 +630,16 @@ class fileTestCase(unittest.TestCase):
         os.chdir(self.orig_cwd)
 
     def strip_initial_spaces(self, s):
-        lines = s.split('\n')
+        #lines = s.split('\n')
+        lines = string.split(s, '\n')
         spaces = re.match(' *', lines[0]).group(0)
-        def strip_spaces(l):
-            if l.startswith(spaces):
+        def strip_spaces(l, spaces=spaces):
+            #if l.startswith(spaces):
+            if l[:len(spaces)] == spaces:
                 l = l[len(spaces):]
             return l
-        return '\n'.join([ strip_spaces(l) for l in lines ])
+        #return '\n'.join([ strip_spaces(l) for l in lines ])
+        return string.join(map(strip_spaces, lines), '\n')
 
     def write(self, file, contents):
         open(file, 'w').write(self.strip_initial_spaces(contents))
