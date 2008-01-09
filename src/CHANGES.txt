@@ -62,6 +62,9 @@ RELEASE 0.XX - XXX
 
   - Improve the CheckTypeSize() code.
 
+  - Add a Define() call to configure contexts, to add arbitrary #define
+    lines to a generated configure header file.
+
   From Steven Knight:
 
   - Support the ability to subclass the new-style "str" class as input

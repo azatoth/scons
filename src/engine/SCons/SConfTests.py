@@ -497,6 +497,42 @@ int main() {
         finally:
             sconf.Finish()
 
+    def test_Define(self):
+        """Test SConf.Define()
+        """
+        self._resetSConfState()
+        sconf = self.SConf.SConf(self.scons_env,
+                                 conf_dir=self.test.workpath('config.tests'),
+                                 log_file=self.test.workpath('config.log'),
+                                 config_h = self.test.workpath('config.h'))
+        try:
+            # XXX: we test the generated config.h string. This is not so good,
+            # ideally, we would like to test if the generated file included in
+            # a test program does what we want.
+
+            # Test defining one symbol wo value
+            sconf.config_h_text = ''
+            sconf.Define('YOP')
+            assert sconf.config_h_text == '#define YOP\n'
+
+            # Test defining one symbol with integer value
+            sconf.config_h_text = ''
+            sconf.Define('YOP', 1)
+            assert sconf.config_h_text == '#define YOP 1\n'
+
+            # Test defining one symbol with string value
+            sconf.config_h_text = ''
+            sconf.Define('YOP', '"YIP"')
+            assert sconf.config_h_text == '#define YOP "YIP"\n'
+
+            # Test defining one symbol with string value
+            sconf.config_h_text = ''
+            sconf.Define('YOP', "YIP")
+            assert sconf.config_h_text == '#define YOP YIP\n'
+
+        finally:
+            sconf.Finish()
+
     def test_CheckTypeSize(self):
         """Test SConf.CheckTypeSize()
         """

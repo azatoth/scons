@@ -6431,6 +6431,63 @@ or
 and selects the compiler to be used for the check;
 the default is "C".
 
+.TP
+.RI Configure.Define(self ", " symbol ", [" value ", " comment ])
+This function does not check for anything, but defines a
+preprocessor symbol that will be added to the configuration header file.
+It is the equivalent of AC_DEFINE,
+and defines the symbol
+.I name
+with the optional
+.B value
+and the optional comment
+.BR comment .
+
+.IP
+Examples:
+
+.ES
+env = Environment()
+conf = Configure( env )
+
+# Puts the following line in the config header file:
+#    #define A_SYMBOL
+conf.Define('A_SYMBOL')
+
+# Puts the following line in the config header file:
+#    #define A_SYMBOL 1
+conf.Define('A_SYMBOL', 1)
+.EE
+
+.IP
+Be careful about quoting string values, though:
+
+.ES
+env = Environment()
+conf = Configure( env )
+
+# Puts the following line in the config header file:
+#    #define A_SYMBOL YA
+conf.Define('A_SYMBOL', "YA")
+
+# Puts the following line in the config header file:
+#    #define A_SYMBOL "YA"
+conf.Define('A_SYMBOL', '"YA"')
+.EE
+
+.IP
+For comment:
+
+.ES
+env = Environment()
+conf = Configure( env )
+
+# Puts the following lines in the config header file:
+#    /* Set to 1 if you have a symbol */
+#    #define A_SYMBOL 1
+conf.Define('A_SYMBOL', 1, 'Set to 1 if you have a symbol')
+.EE
+
 .EE
 You can define your own custom checks. 
 in addition to the predefined checks.
