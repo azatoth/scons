@@ -90,6 +90,11 @@ RELEASE 0.XX - XXX
 
   - Re-run LaTeX when it issues a package warning that it must be re-run.
 
+  From Jan Nijtmans:
+
+  - If $JARCHDIR isn't set explicitly, use the .java_classdir attribute
+    that was set when the Java() Builder built the .class files.
+
   From Jonas Olsson:
 
   - Fix use of the Intel C compiler when the top compiler directory,

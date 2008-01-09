@@ -64,9 +64,9 @@ public class Example1
 
 expect = test.wrap_stdout("""\
 %(where_javac)s -d classes -sourcepath src src/Example1\.java
-%(where_jar)s cvf test.jar classes/src/Example1\.class
+%(where_jar)s cvf test.jar -C classes src/Example1\.class
 .*
-adding: classes/src/Example1\.class.*
+adding: src/Example1\.class.*
 """ % locals())
 
 expect = string.replace(expect, '/', os.sep)
