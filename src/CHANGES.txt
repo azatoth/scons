@@ -30,6 +30,14 @@ RELEASE 0.XX - XXX
   - Fix a crash on Linux systems when trying to use the Intel C compiler
     and no /opt/intel_cc_* directories are found.
 
+  - Improve using Python functions as actions by incorporating into
+    a FunctionAction's signature:
+      - literal values referenced by the byte code.
+      - values of default arguments
+      - code of nested functions
+      - values of variables captured by closures
+      - names of referenced global variables and functions
+
   From Jérôme Berger:
 
   - Have the D language scanner search for .di files as well as .d files.
