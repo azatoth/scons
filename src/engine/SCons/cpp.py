@@ -313,15 +313,14 @@ class PreProcessor:
         self.current_file = fname
         self.tuples = self.tupleize(contents)
 
-        self.result = []
+        self.initialize_result(fname)
         while self.tuples:
             t = self.tuples.pop(0)
             # Uncomment to see the list of tuples being processed (e.g.,
             # to validate the CPP lines are being translated correctly).
             #print t
             self.dispatch_table[t[0]](t)
-
-        return self.result
+        return self.finalize_result(fname)
 
     # Dispatch table stack manipulation methods.
 
@@ -364,6 +363,12 @@ class PreProcessor:
         t = CPP_to_Python(string.join(t[1:]))
         try: return eval(t, self.cpp_namespace)
         except (NameError, TypeError): return 0
+
+    def initialize_result(self, fname):
+        self.result = [fname]
+
+    def finalize_result(self, fname):
+        return self.result[1:]
 
     def find_include_file(self, t):
         """
