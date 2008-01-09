@@ -886,7 +886,16 @@ def _main(parser):
     SCons.Script._Add_Targets(targets + parser.rargs)
     SCons.Script._Add_Arguments(xmit_args)
 
-    sys.stdout = SCons.Util.Unbuffered(sys.stdout)
+    # If stdout is not a tty, replace it with a wrapper object to call flush
+    # after every write.
+    #
+    # Tty devices automatically flush after every newline, so the replacement
+    # isn't necessary.  Furthermore, if we replace sys.stdout, the readline
+    # module will no longer work.  This affects the behavior during
+    # --interactive mode.  --interactive should only be used when stdin and
+    # stdout refer to a tty.
+    if not sys.stdout.isatty():
+        sys.stdout = SCons.Util.Unbuffered(sys.stdout)
 
     memory_stats.append('before reading SConscript files:')
     count_stats.append(('pre-', 'read'))

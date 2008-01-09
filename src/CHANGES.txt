@@ -84,6 +84,8 @@ RELEASE 0.XX - XXX
   - Add a --interactive option that starts a session for building (or
     cleaning) targets without re-reading the SConscript files every time.
 
+  - Fix use of readline command-line editing in --interactive mode.
+
   From Ben Webb:
 
   - Support the SWIG %module statement with following modifiers in
