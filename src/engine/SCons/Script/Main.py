@@ -1095,7 +1095,7 @@ def _build_targets(fs, options, targets, target_top):
             opening_message = "Cleaning targets ..."
             closing_message = "done cleaning targets."
             if options.keep_going:
-                closing_message = "done cleaning targets (errors occurred during clean)."
+                failure_message = "done cleaning targets (errors occurred during clean)."
             else:
                 failure_message = "cleaning terminated because of errors."
     except AttributeError:

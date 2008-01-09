@@ -38,6 +38,9 @@ RELEASE 0.XX - XXX
       - values of variables captured by closures
       - names of referenced global variables and functions
 
+  - Fix the closing message when --clean and --keep-going are both
+    used and no errors occur.
+
   From Jérôme Berger:
 
   - Have the D language scanner search for .di files as well as .d files.

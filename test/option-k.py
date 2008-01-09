@@ -95,6 +95,22 @@ test.must_not_exist(test.workpath('work1', 'aaa.1'))
 test.must_not_exist(test.workpath('work1', 'aaa.out'))
 test.must_match(['work1', 'bbb.out'], "succeed.py: bbb.out\n")
 
+expect = """\
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Cleaning targets ...
+Removed bbb.out
+scons: done cleaning targets.
+"""
+
+test.run(chdir = 'work1',
+         arguments = '--clean --keep-going aaa.out bbb.out',
+         stdout = expect)
+
+test.must_not_exist(test.workpath('work1', 'aaa.1'))
+test.must_not_exist(test.workpath('work1', 'aaa.out'))
+test.must_not_exist(test.workpath('work1', 'bbb.out'))
+
 
 
 #
