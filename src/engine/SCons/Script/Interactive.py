@@ -169,12 +169,21 @@ class SConsInteractiveCmd(cmd.Cmd):
         options, targets = self.parser.parse_args(argv[1:], values=options)
 
         SCons.Script.COMMAND_LINE_TARGETS = targets
-        SCons.Script.BUILD_TARGETS = targets
+
+        if targets:
+            SCons.Script.BUILD_TARGETS = targets
+        else:
+            # If the user didn't specify any targets on the command line,
+            # use the list of default targets.
+            SCons.Script.BUILD_TARGETS = SCons.Script._build_plus_default
 
         nodes = SCons.Script.Main._build_targets(self.fs,
                                                  options,
                                                  targets,
                                                  self.target_top)
+
+        if not nodes:
+            return
 
         # Clean up so that we can perform the next build correctly.
         #

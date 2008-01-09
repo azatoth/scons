@@ -66,6 +66,8 @@ RELEASE 0.XX - XXX
     absolute path names.  Don't die if they don't exist (due to being
     #ifdef'ed out or the like).
 
+  - Fix --interactive mode when Default(None) is used.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).
@@ -85,6 +87,9 @@ RELEASE 0.XX - XXX
     cleaning) targets without re-reading the SConscript files every time.
 
   - Fix use of readline command-line editing in --interactive mode.
+
+  - Have the --interactive mode "build" command with no arguments
+    build the specified Default() targets.
 
   From Ben Webb:
 

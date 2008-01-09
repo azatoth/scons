@@ -977,6 +977,8 @@ def _main(parser):
 
         # Build the targets
         nodes = _build_targets(fs, options, targets, target_top)
+        if not nodes:
+            exit_status = 2
 
 def _build_targets(fs, options, targets, target_top):
 
@@ -1050,7 +1052,7 @@ def _build_targets(fs, options, targets, target_top):
 
     if not targets:
         sys.stderr.write("scons: *** No targets specified and no Default() targets found.  Stop.\n")
-        sys.exit(2)
+        return None
 
     def Entry(x, ltop=lookup_top, ttop=target_top, fs=fs):
         if isinstance(x, SCons.Node.Node):
