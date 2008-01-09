@@ -91,6 +91,7 @@ SCons/Tool/g++.py
 SCons/Tool/g77.py
 SCons/Tool/gas.py
 SCons/Tool/gcc.py
+SCons/Tool/gfortran.py
 SCons/Tool/gnulink.py
 SCons/Tool/gs.py
 SCons/Tool/hpc++.py

@@ -68,6 +68,8 @@ RELEASE 0.XX - XXX
   - Add a Define() call to configure contexts, to add arbitrary #define
     lines to a generated configure header file.
 
+  - Add a "gfortran" Tool module for the GNU F95/F2003 compiler.
+
   From Steven Knight:
 
   - Support the ability to subclass the new-style "str" class as input
