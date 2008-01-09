@@ -67,7 +67,7 @@ class FindPathDirs:
     will return all of the *path directories."""
     def __init__(self, variable):
         self.variable = variable
-    def __call__(self, env, dir, target=None, source=None, argument=None):
+    def __call__(self, env, dir=None, target=None, source=None, argument=None):
         import SCons.PathList
         try:
             path = env[self.variable]
