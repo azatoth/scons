@@ -52,9 +52,6 @@ scons.send("build foo.out\n")
 
 scons.send("build 1\n")
 
-#scons.stdin.close()
-#print scons.stdout.read()
-
 test.wait_for(test.workpath('1'))
 
 test.must_match(test.workpath('foo.out'), "foo.in 1\n")
