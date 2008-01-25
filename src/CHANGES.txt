@@ -95,6 +95,10 @@ RELEASE 0.XX - XXX
   - If $JARCHDIR isn't set explicitly, use the .java_classdir attribute
     that was set when the Java() Builder built the .class files.
 
+  From Gary Oberbrunner:
+
+  - Fix the ability to build an Alias in --interactive mode.
+
   From Jonas Olsson:
 
   - Fix use of the Intel C compiler when the top compiler directory,

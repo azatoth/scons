@@ -223,7 +223,12 @@ class SConsInteractiveCmd(cmd.Cmd):
             # particular to clear cached implicit dependencies on the
             # source file, since the scanner will scan it if the
             # BuildDir was created with duplicate=0.
-            rfile = node.rfile()
+            try:
+                rfile_method = node.rfile
+            except AttributeError:
+                return
+            else:
+                rfile = rfile_method()
             if rfile != node:
                 seen_nodes[rfile] = 1
 
