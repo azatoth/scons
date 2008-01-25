@@ -30,7 +30,7 @@ option to build things in parallel.
 
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(combine=1)
 
 test.write('SConstruct', """\
 import os
@@ -69,16 +69,21 @@ def must_wait_for_f2_b_out(target, source, env):
     fp.close()
     os.mkdir(t + '.finished')
 
-def f2_a_out_must_not_be_finished(target, source, env):
+def _f2_a_out_must_not_be_finished(target, source, env):
     f2_a_started = 'f2-a.out.started'
     f2_a_finished = 'f2-a.out.finished'
     while not os.path.exists(f2_a_started):
         time.sleep(1)
+    msg = 'f2_a_out_must_not_be_finished(["%s"], ["%s"])\\n' % (target[0], source[0])
+    sys.stdout.write(msg)
     if os.path.exists(f2_a_finished):
         msg = 'build failed, %s exists\\n' % f2_a_finished
         sys.stderr.write(msg)
         return 1
     return cat(target, source, env)
+
+f2_a_out_must_not_be_finished = Action(_f2_a_out_must_not_be_finished,
+                                       strfunction = None)
 
 Cat = Action(cat)
 f1_a = Command('f1-a.out', 'f1-a.in', cat)
@@ -110,7 +115,7 @@ scons.send("build f1.out\n")
 
 scons.send("build 1\n")
 
-test.wait_for(test.workpath('1'))
+test.wait_for(test.workpath('1'), popen=scons)
 
 test.must_match(test.workpath('f1.out'), "f1-a.in\nf1-b.in\n")
 
@@ -120,7 +125,7 @@ scons.send("build -j2 f2.out\n")
 
 scons.send("build 2\n")
 
-test.wait_for(test.workpath('2'))
+test.wait_for(test.workpath('2'), popen=scons)
 
 test.must_match(test.workpath('f2.out'), "f2-a.in\nf2-b.in\n")
 
