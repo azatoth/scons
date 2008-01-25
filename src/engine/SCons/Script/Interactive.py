@@ -336,7 +336,7 @@ class SConsInteractiveCmd(cmd.Cmd):
         except EnvironmentError, e:
             sys.stderr.write('scons: %s: %s\n' % (argv[0], e.strerror))
         else:
-            os.waitpid(p.pid, 0)
+            p.wait()
 
     def do_version(self, argv):
         """\

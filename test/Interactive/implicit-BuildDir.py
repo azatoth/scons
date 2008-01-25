@@ -37,7 +37,7 @@ deps must be cleared on the source files.
 """
 
 import os.path
-import sys
+import string
 
 import TestSCons
 
@@ -93,15 +93,16 @@ test.write(['src', 'inc', 'foo.h'], """
 """)
 
 # Start scons, to build only "build/foo"
-build_foo_exe = os.path.join('build', 'foo' + TestSCons._exe)
-abs_foo_exe = test.workpath(build_foo_exe)
+build_foo_exe   = os.path.join('build', 'foo' + TestSCons._exe)
+_build_foo_exe_ = '"%s"' % string.replace(build_foo_exe, '\\', '\\\\')
+abs_foo_exe     = test.workpath(build_foo_exe)
 
 scons = test.start(arguments = '--interactive', combine=1)
 
 
 
 # Build build/foo
-scons.send('build %(build_foo_exe)s 1\n' % locals())
+scons.send('build %(_build_foo_exe_)s 1\n' % locals())
 
 test.wait_for(test.workpath('1'))
 
@@ -123,7 +124,7 @@ int main()
 """)
 
 # Build build/foo
-scons.send('build %(build_foo_exe)s 2\n' % locals())
+scons.send('build %(_build_foo_exe_)s 2\n' % locals())
 
 test.wait_for(test.workpath('2'))
 

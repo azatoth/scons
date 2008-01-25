@@ -896,6 +896,8 @@ def _main(parser):
     # stdout refer to a tty.
     if not sys.stdout.isatty():
         sys.stdout = SCons.Util.Unbuffered(sys.stdout)
+    if not sys.stderr.isatty():
+        sys.stderr = SCons.Util.Unbuffered(sys.stderr)
 
     memory_stats.append('before reading SConscript files:')
     count_stats.append(('pre-', 'read'))

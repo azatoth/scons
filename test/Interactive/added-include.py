@@ -30,9 +30,7 @@ rebuild a target when an implicit dependency (include line) is
 added to the source file.
 """
 
-import os
-import sys
-import time
+import string
 
 import TestSCons
 
@@ -61,16 +59,17 @@ Command('2', [], Touch('$TARGET'))
 Command('3', [], Touch('$TARGET'))
 """)
 
-foo_exe = test.workpath('foo' + TestSCons._exe)
+foo_exe     = test.workpath('foo' + TestSCons._exe)
+_foo_exe_   = '"%s"' % string.replace(foo_exe, '\\', '\\\\')
 
 
 
 # Start scons, to build "foo"
 scons = test.start(arguments = '--interactive')
 
-scons.send("build %(foo_exe)s 1\n" % locals())
+scons.send("build %(_foo_exe_)s 1\n" % locals())
 
-test.wait_for(test.workpath('1'))
+test.wait_for(test.workpath('1'), popen=scons)
 
 test.run(program = foo_exe, stdout = 'foo.c\n')
 
@@ -92,7 +91,7 @@ int main()
 }
 """)
 
-scons.send("build %(foo_exe)s 2\n" % locals())
+scons.send("build %(_foo_exe_)s 2\n" % locals())
 
 test.wait_for(test.workpath('2'))
 
@@ -107,7 +106,7 @@ test.write('foo.h.in', """
 
 
 
-scons.send("build %(foo_exe)s 3\n" % locals())
+scons.send("build %(_foo_exe_)s 3\n" % locals())
 
 test.wait_for(test.workpath('3'))
 

@@ -28,12 +28,17 @@ Verify the ability of the "shell" command (and its "sh" and "!" aliases)
 to shell out of interactive mode.
 """
 
+import string
+import sys
+
 import TestSCons
 
 test = TestSCons.TestSCons(combine=1)
 
 _python_ = TestSCons._python_
-shell_command_py = test.workpath('shell_command.py')
+
+shell_command_py    = test.workpath('shell_command.py')
+_shell_command_py_  = '"%s"' % string.replace(shell_command_py, '\\', '\\\\')
 
 test.write(shell_command_py, """\
 print 'hello from shell_command.py'
@@ -58,15 +63,15 @@ test.must_match(test.workpath('foo.out'), "foo.in 1\n")
 
 
 
-scons.send('!%(_python_)s %(shell_command_py)s\n' % locals())
+scons.send('!%(_python_)s %(_shell_command_py_)s\n' % locals())
 
 scons.send("\n")
 
-scons.send('shell %(_python_)s %(shell_command_py)s\n' % locals())
+scons.send('shell %(_python_)s %(_shell_command_py_)s\n' % locals())
 
 scons.send("\n")
 
-scons.send('sh %(_python_)s %(shell_command_py)s\n' % locals())
+scons.send('sh %(_python_)s %(_shell_command_py_)s\n' % locals())
 
 scons.send("\n")
 
@@ -78,21 +83,26 @@ scons.send("build foo.out\n")
 
 scons.send("\n")
 
+if sys.platform == 'win32':
+    no_such_error = 'The system cannot find the file specified'
+else:
+    no_such_error = 'No such file or directory'
+
 expect_stdout = """\
 scons>>> Copy("foo.out", "foo.in")
 Touch("1")
 scons>>> hello from shell_command.py
-scons>>> !%(_python_)s %(shell_command_py)s
+scons>>> !%(_python_)s %(_shell_command_py_)s
 hello from shell_command.py
 scons>>> hello from shell_command.py
-scons>>> shell %(_python_)s %(shell_command_py)s
+scons>>> shell %(_python_)s %(_shell_command_py_)s
 hello from shell_command.py
 scons>>> hello from shell_command.py
-scons>>> sh %(_python_)s %(shell_command_py)s
+scons>>> sh %(_python_)s %(_shell_command_py_)s
 hello from shell_command.py
-scons>>> scons: no_such_command: No such file or directory
+scons>>> scons: no_such_command: %(no_such_error)s
 scons>>> !no_such_command arg1 arg2
-scons: no_such_command: No such file or directory
+scons: no_such_command: %(no_such_error)s
 scons>>> scons: `foo.out' is up to date.
 scons>>> build foo.out
 scons: `foo.out' is up to date.
