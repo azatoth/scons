@@ -203,10 +203,12 @@ def _object_contents(obj):
                     # Should be a pickable Python object. 
                     try:
                         return cPickle.dumps(obj)
-                    except cPickle.PicklingError:
-                        # This is weird, but it seems that nested
-                        # classes are unpickable. Just do the best we
-                        # can.
+                    except (cPickle.PicklingError, TypeError):
+                        # This is weird, but it seems that nested classes
+                        # are unpickable. The Python docs say it should
+                        # always be a PicklingError, but some Python
+                        # versions seem to return TypeError.  Just do
+                        # the best we can.
                         return str(obj)
 
 

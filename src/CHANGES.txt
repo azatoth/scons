@@ -99,6 +99,10 @@ RELEASE 0.XX - XXX
 
   - Fix the ability to build an Alias in --interactive mode.
 
+  - Fix the ability to hash the contents of actions for nested Python
+    functions on Python versions where the inability to pickle them
+    returns a TypeError (instead of the documented PicklingError).
+
   From Jonas Olsson:
 
   - Fix use of the Intel C compiler when the top compiler directory,
