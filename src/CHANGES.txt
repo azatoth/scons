@@ -70,6 +70,8 @@ RELEASE 0.XX - XXX
 
   - Add a "gfortran" Tool module for the GNU F95/F2003 compiler.
 
+  - Avoid use of -rpath with the Mac OS X linker.
+
   From Steven Knight:
 
   - Support the ability to subclass the new-style "str" class as input
