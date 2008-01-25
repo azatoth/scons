@@ -24,10 +24,8 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os.path
-import os
 import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -82,6 +80,8 @@ expected_stdout = test.wrap_stdout("""\
 %(_python_)s ../build.py f1.out f1.in
 %(_python_)s ../build.py f2.out f2.in
 """ % locals())
+
+re_expected_stdout = string.replace(expected_stdout, '\\', '\\\\')
 
 expect_unsupported = """
 scons: warning: Setting stack size is unsupported by this version of Python:
@@ -173,7 +173,7 @@ if isStackSizeAvailable:
     test.run(chdir='work1', 
              arguments = '-j2 --stack-size=16 .',
              match=TestSCons.match_re,
-             stdout=expected_stdout,
+             stdout=re_expected_stdout,
              stderr="""
 scons: warning: Setting stack size failed:
     size not valid: 16384 bytes
@@ -261,7 +261,7 @@ else:
     test.run(chdir='work1', 
              arguments = '-j2 --stack-size=128 .',
              match=TestSCons.match_re,
-             stdout=expected_stdout,
+             stdout=re_expected_stdout,
              stderr=expect_unsupported)
     test.must_exist(['work1', 'f1.out'])
     test.must_exist(['work1', 'f2.out'])
@@ -279,7 +279,7 @@ else:
     test.run(chdir='work1', 
              arguments = '-j2 --stack-size=16 .',
              match=TestSCons.match_re,
-             stdout=expected_stdout,
+             stdout=re_expected_stdout,
              stderr=expect_unsupported)
     test.must_exist(['work1', 'f1.out'])
     test.must_exist(['work1', 'f2.out'])
@@ -297,7 +297,7 @@ else:
     test.run(chdir='work2', 
              arguments = '-j2 .',
              match=TestSCons.match_re,
-             stdout=expected_stdout,
+             stdout=re_expected_stdout,
              stderr=expect_unsupported)
     test.must_exist(['work2', 'f1.out'])
     test.must_exist(['work2', 'f2.out'])
