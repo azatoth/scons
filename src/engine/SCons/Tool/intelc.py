@@ -41,10 +41,13 @@ is_win64 = is_windows and (os.environ['PROCESSOR_ARCHITECTURE'] == 'AMD64' or
                            (os.environ.has_key('PROCESSOR_ARCHITEW6432') and
                             os.environ['PROCESSOR_ARCHITEW6432'] == 'AMD64'))
 is_linux = sys.platform == 'linux2'
+is_mac     = sys.platform == 'darwin'
 
 if is_windows:
     import SCons.Tool.msvc
 elif is_linux:
+    import SCons.Tool.gcc
+elif is_mac:
     import SCons.Tool.gcc
 import SCons.Util
 import SCons.Warnings
@@ -106,6 +109,11 @@ def check_abi(abi):
                       'x86_64' : 'x86_64',
                       'em64t'  : 'x86_64',
                       'amd64'  : 'x86_64'}
+    if is_mac:
+        valid_abis = {'ia32'   : 'ia32',
+                      'x86'    : 'ia32',
+                      'x86_64' : 'x86_64',
+                      'em64t'  : 'x86_64'}
     try:
         abi = valid_abis[abi]
     except KeyError:
@@ -228,6 +236,13 @@ def get_all_compiler_versions():
             m = re.search(r'([0-9.]+)$', d)
             if m:
                 versions.append(m.group(1))
+    elif is_mac:
+        for d in glob.glob('/opt/intel/cc*/*'):
+            # Typical dir here is /opt/intel/cc/9.0 for IA32,
+            # /opt/intel/cce/9.0 for EMT64 (AMD64)
+            m = re.search(r'([0-9.]+)$', d)
+            if m:
+                versions.append(m.group(1))
     versions = uniquify(versions)       # remove dups
     versions.sort(vercmp)
     return versions
@@ -247,7 +262,7 @@ def get_intel_compiler_top(version, abi):
         if not os.path.exists(os.path.join(top, "Bin", "icl.exe")):
             raise MissingDirError, \
                   "Can't find Intel compiler in %s"%(top)
-    elif is_linux:
+    elif is_mac or is_linux:
         # first dir is new (>=9.0) style, second is old (8.0) style.
         dirs=('/opt/intel/cc/%s', '/opt/intel_cc_%s')
         if abi == 'x86_64':
@@ -274,13 +289,15 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
                         If topdir is used, version and abi are ignored.
       verbose: (int)    if >0, prints compiler version used.
     """
-    if not (is_linux or is_windows):
+    if not (is_mac or is_linux or is_windows):
         # can't handle this platform
         return
 
     if is_windows:
         SCons.Tool.msvc.generate(env)
     elif is_linux:
+        SCons.Tool.gcc.generate(env)
+    elif is_mac:
         SCons.Tool.gcc.generate(env)
 
     # if version is unspecified, use latest
@@ -302,7 +319,7 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
     # alternatives are ia64 for Itanium, or amd64 or em64t or x86_64 (all synonyms here)
     abi = check_abi(abi)
     if abi is None:
-        if is_linux:
+        if is_mac or is_linux:
             # Check if we are on 64-bit linux, default to 64 then.
             uname_m = os.uname()[4]
             if uname_m == 'x86_64':
@@ -326,7 +343,7 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
         # on $PATH and the user is importing their env.
         class ICLTopDirWarning(SCons.Warnings.Warning):
             pass
-        if is_linux and not env.Detect('icc') or \
+        if (is_mac or is_linux) and not env.Detect('icc') or \
            is_windows and not env.Detect('icl'):
 
             SCons.Warnings.enableWarningClass(ICLTopDirWarning)
@@ -348,9 +365,19 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
             if is_linux:
                 # Show the actual compiler version by running the compiler.
                 os.system('%s/bin/icc --version'%topdir)
+            if is_mac:
+                # Show the actual compiler version by running the compiler.
+                os.system('%s/bin/icc --version'%topdir)
 
         env['INTEL_C_COMPILER_TOP'] = topdir
         if is_linux:
+            paths={'INCLUDE'         : 'include',
+                   'LIB'             : 'lib',
+                   'PATH'            : 'bin',
+                   'LD_LIBRARY_PATH' : 'lib'}
+            for p in paths:
+                env.PrependENVPath(p, os.path.join(topdir, paths[p]))
+        if is_mac:
             paths={'INCLUDE'         : 'include',
                    'LIB'             : 'lib',
                    'PATH'            : 'bin',
@@ -433,7 +460,7 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
         env['ENV']['INTEL_LICENSE_FILE'] = licdir
 
 def exists(env):
-    if not (is_linux or is_windows):
+    if not (is_mac or is_linux or is_windows):
         # can't handle this platform
         return 0
 
@@ -447,6 +474,8 @@ def exists(env):
         if is_windows:
             return env.Detect('icl')
         elif is_linux:
+            return env.Detect('icc')
+        elif is_mac:
             return env.Detect('icc')
     return detected
 

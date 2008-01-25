@@ -41,6 +41,8 @@ RELEASE 0.XX - XXX
   - Fix the closing message when --clean and --keep-going are both
     used and no errors occur.
 
+  - Add support for the Intel C compiler on Mac OS X.
+
   From Jérôme Berger:
 
   - Have the D language scanner search for .di files as well as .d files.
