@@ -130,6 +130,7 @@ class CacheDir:
         except ImportError:
             msg = "No hashlib or MD5 module available, CacheDir() not supported"
             SCons.Warnings.warn(SCons.Warnings.NoMD5ModuleWarning, msg)
+            self.path = None
         else:
             self.path = path
         self.current_cache_debug = None
