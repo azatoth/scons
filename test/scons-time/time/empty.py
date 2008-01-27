@@ -42,7 +42,7 @@ line_fmt    = '   11.123456    22.234567    33.345678    44.456789    %s\n'
 empty_fmt   = '                                                       %s\n'
 
 for i in xrange(9):
-    logfile_name = 'foo-%s.log' % i
+    logfile_name = 'foo-%s-0.log' % i
     if i == 5:
         test.write(test.workpath(logfile_name), "")
         lines.append(empty_fmt % logfile_name)
@@ -54,6 +54,38 @@ expect = [header] + lines
 
 test.run(arguments = 'time foo-*.log',
          stdout = ''.join(expect),
-         stderr = "file 'foo-5.log' has no contents!\n")
+         stderr = "file 'foo-5-0.log' has no contents!\n")
+
+expect = """\
+set key bottom left
+plot '-' title "Startup" with lines lt 1
+# Startup
+0 11.123456
+1 11.123456
+2 11.123456
+3 11.123456
+4 11.123456
+6 11.123456
+7 11.123456
+8 11.123456
+e
+"""
+
+stderr = "file 'foo-5-0.log' has no contents!\n"
+
+test.run(arguments = 'time --fmt gnuplot --which total foo-*.log',
+         stdout = expect,
+         stderr = stderr)
+
+expect = """\
+set key bottom left
+plot '-' title "Startup" with lines lt 1
+# Startup
+e
+"""
+
+test.run(arguments = 'time --fmt gnuplot foo-5-0.log',
+         stdout = expect,
+         stderr = stderr)
 
 test.pass_test()

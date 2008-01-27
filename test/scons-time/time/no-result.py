@@ -59,8 +59,17 @@ for i in xrange(9):
 
 expect = [header] + lines + [footer]
 
+stderr = "file 'foo-5-0.log' has no results!\n"
+
+
 test.run(arguments = 'time --fmt gnuplot --which total foo*.log',
          stdout = ''.join(expect),
-         stderr = "file 'foo-5-0.log' has no results!\n")
+         stderr = stderr)
+
+expect = [header] + [footer]
+
+test.run(arguments = 'time --fmt gnuplot foo-5-0.log',
+         stdout = ''.join(expect),
+         stderr = stderr)
 
 test.pass_test()

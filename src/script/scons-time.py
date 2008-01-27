@@ -166,40 +166,52 @@ class Gnuplotter(Plotter):
         result = []
         for line in self.lines:
             result.extend(line.get_x_values())
-        return result
+        return filter(None, result)
 
     def get_all_y_values(self):
         result = []
         for line in self.lines:
             result.extend(line.get_y_values())
-        return result
+        return filter(None, result)
 
     def get_min_x(self):
         try:
             return self.min_x
         except AttributeError:
-            self.min_x = min(self.get_all_x_values())
+            try:
+                self.min_x = min(self.get_all_x_values())
+            except ValueError:
+                self.min_x = 0
             return self.min_x
 
     def get_max_x(self):
         try:
             return self.max_x
         except AttributeError:
-            self.max_x = max(self.get_all_x_values())
+            try:
+                self.max_x = max(self.get_all_x_values())
+            except ValueError:
+                self.max_x = 0
             return self.max_x
 
     def get_min_y(self):
         try:
             return self.min_y
         except AttributeError:
-            self.min_y = min(self.get_all_y_values())
+            try:
+                self.min_y = min(self.get_all_y_values())
+            except ValueError:
+                self.min_y = 0
             return self.min_y
 
     def get_max_y(self):
         try:
             return self.max_y
         except AttributeError:
-            self.max_y = max(self.get_all_y_values())
+            try:
+                self.max_y = max(self.get_all_y_values())
+            except ValueError:
+                self.max_y = 0
             return self.max_y
 
     def draw(self):
@@ -496,6 +508,8 @@ class SConsTimer:
 
         for file in files:
             t = line_function(file, *args, **kw)
+            if t is None:
+                t = []
             diff = len(columns) - len(t)
             if diff > 0:
                 t += [''] * diff
@@ -626,7 +640,7 @@ class SConsTimer:
         contents = open(file).read()
         if not contents:
             sys.stderr.write('file %s has no contents!\n' % repr(file))
-            return []
+            return None
         result = re.findall(r'%s: ([\d\.]*)' % search_string, contents)[-4:]
         result = [ float(r) for r in result ]
         if not time_string is None:
