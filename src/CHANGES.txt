@@ -92,6 +92,8 @@ RELEASE 0.XX - XXX
     initialization (by just not allowing Memoization in Python versions
     that have the bug).
 
+  - Have the "scons-time time" subcommand handle empty files gracefully.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).
