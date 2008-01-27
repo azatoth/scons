@@ -575,7 +575,7 @@ class SConsTimer:
             except ValueError:
                 x, type, label = bar_tuple
                 comment = label
-            gp.vertical_bar(x, type, None, label, comment)
+            gp.vertical_bar(x, type, label, comment)
 
         gp.draw()
 
