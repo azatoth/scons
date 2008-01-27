@@ -88,6 +88,10 @@ RELEASE 0.XX - XXX
 
   - Fix --interactive mode when Default(None) is used.
 
+  - Fix --debug=memoizer to work around a bug in base Python 2.2 metaclass
+    initialization (by just not allowing Memoization in Python versions
+    that have the bug).
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).
