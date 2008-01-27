@@ -92,7 +92,8 @@ RELEASE 0.XX - XXX
     initialization (by just not allowing Memoization in Python versions
     that have the bug).
 
-  - Have the "scons-time time" subcommand handle empty files gracefully.
+  - Have the "scons-time time" subcommand handle empty log files, and
+    log files that contain no results specified by the --which option.
 
   From Rob Managan:
 

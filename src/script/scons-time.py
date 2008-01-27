@@ -128,7 +128,12 @@ class Line:
         if self.comment:
             print '# %s' % self.comment
         for x, y in self.points:
-            print fmt % (x, y)
+            # If y is None, it usually represents some kind of break
+            # in the line's index number.  We might want to represent
+            # this some way rather than just drawing the line straight
+            # between the two points on either side.
+            if not y is None:
+                print fmt % (x, y)
         print 'e'
 
     def get_x_values(self):
@@ -625,7 +630,11 @@ class SConsTimer:
         result = re.findall(r'%s: ([\d\.]*)' % search_string, contents)[-4:]
         result = [ float(r) for r in result ]
         if not time_string is None:
-            result = result[0]
+            try:
+                result = result[0]
+            except IndexError:
+                sys.stderr.write('file %s has no results!\n' % repr(file))
+                return None
         return result
 
     def get_function_profile(self, file, function):
