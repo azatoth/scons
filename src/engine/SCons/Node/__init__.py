@@ -1006,6 +1006,7 @@ class Node:
             # entries to equal the new dependency list, for the benefit
             # of the loop below that updates node information.
             then.extend([None] * diff)
+            if t: Trace(': old %s new %s' % (len(then), len(children)))
             result = True
 
         for child, prev_ni in zip(children, then):
