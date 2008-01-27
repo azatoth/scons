@@ -95,6 +95,8 @@ RELEASE 0.XX - XXX
   - Have the "scons-time time" subcommand handle empty log files, and
     log files that contain no results specified by the --which option.
 
+  - Fix the max Y of vertical bars drawn by "scons-time --fmt=gnuplot".
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

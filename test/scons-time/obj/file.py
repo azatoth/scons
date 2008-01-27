@@ -68,7 +68,7 @@ plot '-' title "Startup" with lines lt 1, \
 2 16040.000
 e
 1.5 0
-1.5 2
+1.5 16040
 e
 """
 

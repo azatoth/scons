@@ -159,7 +159,7 @@ class Gnuplotter(Plotter):
 
     def vertical_bar(self, x, type, label, comment):
         if self.get_min_x() <= x and x <= self.get_max_x():
-            points = [(x, 0), (x, self.get_max_x())]
+            points = [(x, 0), (x, self.get_max_y())]
             self.line(points, type, label, comment)
 
     def get_all_x_values(self):
