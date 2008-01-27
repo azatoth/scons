@@ -223,10 +223,17 @@ class Gnuplotter(Plotter):
             print 'set title "%s"' % self.title
         print 'set key %s' % self.key_location
 
+        min_y = self.get_min_y()
+        max_y = self.max_graph_value(self.get_max_y())
+        range = max_y - min_y
+        incr = range / 10.0
+        start = min_y + (max_y / 2.0) + (2.0 * incr)
+        position = [ start - (i * incr) for i in xrange(5) ]
+
         inx = 1
-        max_y = self.max_graph_value(self.get_max_y())/2
         for line in self.lines:
-            line.print_label(inx, line.points[0][0]-1, max_y)
+            line.print_label(inx, line.points[0][0]-1,
+                             position[(inx-1) % len(position)])
             inx += 1
 
         plot_strings = [ self.plot_string(l) for l in self.lines ]

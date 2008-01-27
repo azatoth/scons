@@ -65,21 +65,33 @@ test.write('st2.conf', """\
 prefix = 'foo'
 title = 'ST2.CONF TITLE'
 vertical_bars = (
-    ( 1.5, 7, None ),
+    ( 1.4, 7, None ),
+    ( 1.5, 7, "label 1.5" ),
+    ( 1.6, 7, "label 1.6" ),
 )
 """)
 
 expect2 = \
 r"""set title "ST2.CONF TITLE"
 set key bottom left
+set label 3 "label 1.5" at 0.5,0.5 right
+set label 4 "label 1.6" at 0.6,0.4 right
 plot '-' title "Startup" with lines lt 1, \
-     '-' notitle with lines lt 7
+     '-' notitle with lines lt 7, \
+     '-' title "label 1.5" with lines lt 7, \
+     '-' title "label 1.6" with lines lt 7
 # Startup
 1 0.000
 2 0.000
 e
+1.4 0
+1.4 0
+e
 1.5 0
-1.5 0.0
+1.5 0
+e
+1.6 0
+1.6 0
 e
 """
 
