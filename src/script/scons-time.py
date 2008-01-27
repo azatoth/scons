@@ -1312,7 +1312,12 @@ class SConsTimer:
                 commands.append((shutil.copytree, 'cp -r %%s %%s', archive, dest))
             else:
                 suffix = self.archive_splitext(archive)[1]
-                commands.append(self.unpack_map[suffix] + (archive,))
+                unpack_command = self.unpack_map.get(suffix)
+                if not unpack_command:
+                    dest = os.path.split(archive)[1]
+                    commands.append((shutil.copyfile, 'cp %%s %%s', archive, dest))
+                else:
+                    commands.append(unpack_command + (archive,))
 
         commands.extend([
             (os.chdir, 'cd %%s', self.subdir),
