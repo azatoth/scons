@@ -122,7 +122,6 @@ foopack_jar = env.Jar(target = 'foopack.jar', source = 'classes')
 # generate a warning about the sWIG_JavaThrowException() function
 # being defined but not used.
 test.run(arguments = '.', stderr=None)
-print test.stdout()
 
 #test.must_exist(['java', 'classes', 'foopack', 'foopack.class'])
 #test.must_exist(['java', 'classes', 'foopack', 'foopackJNI.class'])
