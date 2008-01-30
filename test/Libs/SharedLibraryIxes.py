@@ -53,6 +53,8 @@ weird_prefixes = ['libXX', 'libYY']
 if isWindows:
     weird_suffixes = ['.xxx', '.yyy', '.xxx.dll', '.yyy.dll']
     env.Append(CCFLAGS = '/MD')
+elif env['PLATFORM'] == 'darwin':
+    weird_suffixes = ['.xxx.dylib', '.yyy.dylib']
 else:
     weird_suffixes = ['.xxx.so', '.yyy.so']
 
