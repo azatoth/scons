@@ -100,6 +100,9 @@ RELEASE 0.XX - XXX
   - On Mac OS X, account for the fact that the header file generated
     from a C++ file will be named (e.g.) file.cpp.h, not file.hpp.
 
+  - Fix floating-point numbers confusing the Java parser about
+    generated .class file names in some configurations.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

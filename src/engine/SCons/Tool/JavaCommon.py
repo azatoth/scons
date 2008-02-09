@@ -49,14 +49,14 @@ if java_parsing:
     #     double-backslashes;
     #     a single-line comment "//";
     #     single or double quotes preceeded by a backslash;
-    #     single quotes, double quotes, open or close braces, semi-colons;
+    #     single quotes, double quotes, open or close braces, semi-colons,
+    #         periods, open or close parentheses;
+    #     floating-point numbers;
     #     any alphanumeric token (keyword, class name, specifier);
     #     the multi-line comment begin and end tokens /* and */;
-    #     array declarations "[]";
-    #     semi-colons;
-    #     periods.
+    #     array declarations "[]".
     _reToken = re.compile(r'(\n|\\\\|//|\\[\'"]|[\'"\{\}\;\.\(\)]|' +
-                          r'[A-Za-z_][\w\$\.]*|/\*|\*/|\[\])')
+                          r'\d*\.\d*|[A-Za-z_][\w\$\.]*|/\*|\*/|\[\])')
 
     class OuterState:
         """The initial state for parsing a Java file for classes,
