@@ -719,7 +719,7 @@ class BuilderBase:
             source = [source]
         for s in source:
             if SCons.Util.is_String(s):
-                match_suffix = match_src_suffix(s)
+                match_suffix = match_src_suffix(env.subst(s))
                 if not match_suffix and not '.' in s:
                     src_suf = self.get_src_suffix(env)
                     s = self._adjustixes(s, None, src_suf)[0]

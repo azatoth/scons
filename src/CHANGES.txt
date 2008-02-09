@@ -108,6 +108,10 @@ RELEASE 0.XX - XXX
   - Fix use of file names containing strings of multiple spaces when
     using ActionFactory instances like the Copy() or Move() function.
 
+  - Fix a 0.97 regression when using a variable expansion (like
+    $OBJSUFFIX) in a source file name to a builder with attached source
+    builders that match suffix (like Program()+Object()).
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).
