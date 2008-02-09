@@ -3280,6 +3280,23 @@ class SaveStringsTestCase(unittest.TestCase):
         assert s == expect, 'node str() not cached: %s'%s
 
 
+class AbsolutePathTestCase(unittest.TestCase):
+    def test_root_lookup_equivalence(self):
+        """Test looking up /fff vs. fff in the / directory"""
+        test=TestCmd(workdir='')
+
+        fs = SCons.Node.FS.FS('/')
+
+        save_cwd = os.getcwd()
+        try:
+            os.chdir('/')
+            fff1 = fs.File('fff')
+            fff2 = fs.File('/fff')
+            assert fff1 is fff2, "fff and /fff returned different Nodes!"
+        finally:
+            os.chdir(save_cwd)
+
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
@@ -3296,6 +3313,7 @@ if __name__ == "__main__":
     suite.addTest(SpecialAttrTestCase())
     suite.addTest(SaveStringsTestCase())
     tclasses = [
+        AbsolutePathTestCase,
         BaseTestCase,
         CacheDirTestCase,
         DirTestCase,

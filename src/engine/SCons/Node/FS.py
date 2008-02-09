@@ -1385,7 +1385,7 @@ class Dir(Base):
         a path containing '..'), an absolute path name, a top-relative
         ('#foo') path name, or any kind of object.
         """
-        name = self.labspath + '/' + name
+        name = self.entry_labspath(name)
         return self.root._lookup_abs(name, klass, create)
 
     def link(self, srcdir, duplicate):
@@ -1940,7 +1940,7 @@ class RootDir(Dir):
         # except for the "lookup abspath," which does not have the
         # drive letter.
         self.abspath = name + os.sep
-        self.labspath = '/'
+        self.labspath = ''
         self.path = name + os.sep
         self.tpath = name + os.sep
         self._morph()
@@ -1951,6 +1951,7 @@ class RootDir(Dir):
         # os.path.normpath() seems to preserve double slashes at the
         # beginning of a path (presumably for UNC path names), but
         # collapses triple slashes to a single slash.
+        self._lookupDict[''] = self
         self._lookupDict['/'] = self
         self._lookupDict['//'] = self
         self._lookupDict[os.sep] = self
@@ -2008,7 +2009,7 @@ class RootDir(Dir):
         return self.abspath + name
 
     def entry_labspath(self, name):
-        return self.labspath + name
+        return '/' + name
 
     def entry_path(self, name):
         return self.path + name
