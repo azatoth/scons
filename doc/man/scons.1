@@ -980,6 +980,7 @@ are synonyms.
 Prints SCons version information.
 .RE
 
+.IP
 An empty line repeats the last typed command.
 Command-line editing can be used if the
 .B readline
@@ -2168,11 +2169,14 @@ calling the functionality through a construction environment will
 substitute construction variables into
 any supplied strings.
 For example:
+
 .ES
 env = Environment(FOO = 'foo')
 Default('$FOO')
 env.Default('$FOO')
 .EE
+
+In the above example,
 the first call to the global
 .B Default()
 function will actually add a target named
@@ -3133,6 +3137,7 @@ and runs the build again,
 all within a single second.
 .RE
 
+.IP
 Examples:
 
 .ES
@@ -3144,12 +3149,14 @@ Decider('timestamp-match')
 env.Decider('content')
 .EE
 
+.IP
 In addition to the above already-available functions,
 the
 .I function
 argument may be an actual Python function
 that takes the following three arguments:
 
+.RS 10
 .IP dependency
 The Node (file) which
 should cause the
@@ -3176,7 +3183,9 @@ This can be consulted to match various
 file characteristics
 such as the timestamp,
 size, or content signature.
+.RE
 
+.IP
 The
 .I function
 should return a
@@ -3602,6 +3611,7 @@ FindSourceFiles()
 FindSourceFiles( 'src' )
 .EE
 
+.IP
 As you can see build support files (SConstruct in the above example)
 will also be returned by this function.
 
@@ -3841,12 +3851,113 @@ file is found.
 .RI GetOption( name )
 .TP
 .RI env.GetOption( name )
-This function provides a way to query a select subset of the scons command line
-options from a SConscript file. See 
+This function provides a way to query the value of
+SCons options set on scons command line
+(or set using the
 .IR SetOption () 
-for a description of the options available.
+function).
+The options supported are:
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.RS 10
+.TP 6
+.B cache_debug
+.TP 6
+which corresponds to --cache_debug;
+.TP 6
+.B cache_disable
+which corresponds to --cache_disable;
+.TP 6
+.B cache_force
+which corresponds to --cache_force;
+.TP 6
+.B cache_show
+which corresponds to --cache_show;
+.TP 6
+.B clean
+which corresponds to -c, --clean and --remove;
+.TP 6
+.B config
+which corresponds to --config;
+.TP 6
+.B directory
+which corresponds to -C and --directory;
+.TP 6
+.B diskcheck
+which corresponds to --diskcheck
+.TP 6
+.B duplicate
+which corresponds to --duplicate;
+.TP 6
+.B file
+which corresponds to -f, --file, --makefile and --sconstruct;
+.TP 6
+.B help
+which corresponds to -h and --help;
+.TP 6
+.B ignore_errors
+which corresponds to --ignore-errors;
+.TP 6
+.B implicit_cache
+which corresponds to --implicit-cache;
+.TP 6
+.B implicit_deps_changed
+which corresponds to --implicit-deps-changed;
+.TP 6
+.B implicit_deps_unchanged
+which corresponds to --implicit-deps-unchanged;
+.TP 6
+.B interactive
+which corresponds to --interact and --interactive;
+.TP 6
+.B keep_going
+which corresponds to -k and --keep-going;
+.TP 6
+.B max_drift
+which corresponds to --max-drift;
+.TP 6
+.B no_exec
+which corresponds to -n, --no-exec, --just-print, --dry-run and --recon;
+.TP 6
+.B no_site_dir
+which corresponds to --no-site-dir;
+.TP 6
+.B num_jobs
+which corresponds to -j and --jobs;
+.TP 6
+.B profile_file
+which corresponds to --profile;
+.TP 6
+.B question
+which corresponds to -q and --question;
+.TP 6
+.B random
+which corresponds to --random;
+.TP 6
+.B repository
+which corresponds to -Y, --repository and --srcdir;
+.TP 6
+.B silent
+which corresponds to -s, --silent and --quiet;
+.TP 6
+.B site_dir
+which corresponds to --site-dir;
+.TP 6
+.B stack_size
+which corresponds to --stack-size;
+.TP 6
+.B taskmastertrace_file
+which corresponds to --taskmastertrace; and
+.TP 6
+.B warn
+which corresponds to --warn and --warning.
+.RE
+
+.IP
+See the documentation for the
+corresponding command line object for information about each specific
+option.
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI Glob( pattern ", [" ondisk ", " source ", " strings ])
 .TP
@@ -3874,6 +3985,7 @@ uses Unix shell style metacharacters for matching:
   [!seq]  matches any char not in seq
 .EE
 
+.IP
 Character matches do
 .I not
 span directory separators.
@@ -5090,24 +5202,38 @@ if not env.has_key('FOO'): env['FOO'] = 'foo'
 .RI env.SetOption( name ", " value )
 This function provides a way to set a select subset of the scons command
 line options from a SConscript file. The options supported are:
+
+.RS 10
+.TP 6
 .B clean
 which corresponds to -c, --clean and --remove;
+.TP 6
 .B duplicate
 which corresponds to --duplicate;
+.TP 6
 .B help
 which corresponds to -h and --help;
+.TP 6
 .B implicit_cache
 which corresponds to --implicit-cache;
+.TP 6
 .B max_drift
 which corresponds to --max-drift;
+.TP 6
 .B no_exec
 which corresponds to -n, --no-exec, --just-print, --dry-run and --recon;
+.TP 6
 .B num_jobs
 which corresponds to -j and --jobs;
+.TP 6
 .B random
 which corresponds to --random; and
+.TP 6
 .B stack_size
 which corresponds to --stack-size.
+.RE
+
+.IP
 See the documentation for the
 corresponding command line object for information about each specific
 option.
