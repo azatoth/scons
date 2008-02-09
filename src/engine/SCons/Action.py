@@ -955,7 +955,7 @@ class ActionCaller:
         if s == '$__env__':
             return env
         elif SCons.Util.is_String(s):
-            return env.subst(s, 0, target, source)
+            return env.subst(s, 1, target, source)
         return self.parent.convert(s)
     def subst_args(self, target, source, env):
         return map(lambda x, self=self, t=target, s=source, e=env:

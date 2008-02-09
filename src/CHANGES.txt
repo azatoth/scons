@@ -103,6 +103,11 @@ RELEASE 0.XX - XXX
   - Fix floating-point numbers confusing the Java parser about
     generated .class file names in some configurations.
 
+  - Document (nearly) all the values you can now fetch with GetOption().
+
+  - Fix use of file names containing strings of multiple spaces when
+    using ActionFactory instances like the Copy() or Move() function.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

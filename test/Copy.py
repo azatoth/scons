@@ -58,6 +58,8 @@ env.Command('f9.out', 'f9.in', [Cat, Copy('${TARGET}-Copy', '$SOURCE')])
 env.CopyTo( 'd4', 'f10.in' )
 env.CopyAs( 'd4/f11.out', 'f11.in')
 env.CopyAs( 'd4/f12.out', 'd5/f12.in')
+
+env.Command('f   13.out', 'f   13.in', Copy('$TARGET', '$SOURCE'))
 """)
 
 test.write('f1.in', "f1.in\n")
@@ -78,6 +80,7 @@ test.write('f10.in', "f10.in\n")
 test.write('f11.in', "f11.in\n")
 test.subdir('d5')
 test.write(['d5', 'f12.in'], "f12.in\n")
+test.write('f   13.in', "f   13.in\n")
 
 d4_f10_in   = os.path.join('d4', 'f10.in')
 d4_f11_out  = os.path.join('d4', 'f11.out')
@@ -97,6 +100,7 @@ Copy("d6.out", "f6.in")
 Copy file(s): "f10.in" to "%(d4_f10_in)s"
 Copy file(s): "f11.in" to "%(d4_f11_out)s"
 Copy file(s): "%(d5_f12_in)s" to "%(d4_f12_out)s"
+Copy("f   13.out", "f   13.in")
 Copy("f7.out", "f7.in")
 cat(["f8.out"], ["f8.in"])
 cat(["f9.out"], ["f9.in"])
@@ -117,6 +121,8 @@ test.must_not_exist('f9.out-Copy')
 test.must_not_exist('d4/f10.in')
 test.must_not_exist('d4/f11.out')
 test.must_not_exist('d4/f12.out')
+test.must_not_exist('f 13.out')
+test.must_not_exist('f    13.out')
 
 test.run()
 
@@ -133,5 +139,6 @@ test.must_match('f9.out-Copy', "f9.in\n")
 test.must_match('d4/f10.in', 'f10.in\n')
 test.must_match('d4/f11.out', 'f11.in\n')
 test.must_match('d4/f12.out', 'f12.in\n')
+test.must_match('f   13.out', 'f   13.in\n')
 
 test.pass_test()
