@@ -112,6 +112,9 @@ RELEASE 0.XX - XXX
     $OBJSUFFIX) in a source file name to a builder with attached source
     builders that match suffix (like Program()+Object()).
 
+  - Have the Java parser recognize generics (surrounded by angle brackets)
+    so they don't interfere with identifying anonymous inner classes.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

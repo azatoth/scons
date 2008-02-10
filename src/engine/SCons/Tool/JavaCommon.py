@@ -53,10 +53,12 @@ if java_parsing:
     #         periods, open or close parentheses;
     #     floating-point numbers;
     #     any alphanumeric token (keyword, class name, specifier);
+    #     any alphanumeric token surrounded by angle brackets (generics);
     #     the multi-line comment begin and end tokens /* and */;
     #     array declarations "[]".
     _reToken = re.compile(r'(\n|\\\\|//|\\[\'"]|[\'"\{\}\;\.\(\)]|' +
-                          r'\d*\.\d*|[A-Za-z_][\w\$\.]*|/\*|\*/|\[\])')
+                          r'\d*\.\d*|[A-Za-z_][\w\$\.]*|<[A-Za-z_]+>|' +
+                          r'/\*|\*/|\[\])')
 
     class OuterState:
         """The initial state for parsing a Java file for classes,
@@ -198,6 +200,8 @@ if java_parsing:
             elif token == '/*':
                 return IgnoreState('*/', self)
             elif token == '\n':
+                return self
+            elif token[0] == '<' and token[-1] == '>':
                 return self
             elif token == '(':
                 self.brace_level = self.brace_level + 1

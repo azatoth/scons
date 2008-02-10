@@ -507,6 +507,35 @@ class Broken
         assert expect == classes, (expect, classes)
 
 
+    def test_genercis(self):
+        """Test that generics don't interfere with detecting anonymous classes"""
+
+        input = """\
+import java.util.Date;
+import java.util.Comparator;
+
+public class Foo
+{
+  public void foo()
+  {
+    Comparator<Date> comp = new Comparator<Date>()
+      {
+        static final long serialVersionUID = 1L;
+        public int compare(Date lhs, Date rhs)
+        {
+          return 0;
+        }
+      };
+  }
+}
+"""
+
+        expect = [ 'Foo$1', 'Foo' ]
+
+        pkg_dir, classes = SCons.Tool.JavaCommon.parse_java(input, '1.6')
+        assert expect == classes, (expect, classes)
+
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
