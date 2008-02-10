@@ -151,6 +151,9 @@ RELEASE 0.XX - XXX
   - Have the --interactive mode "build" command with no arguments
     build the specified Default() targets.
 
+  - Fix the Chmod(), Delete(), Mkdir() and Touch() Action factories to
+    take a list (of Nodes or strings) as arguments.
+
   From Ben Webb:
 
   - Support the SWIG %module statement with following modifiers in

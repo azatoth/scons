@@ -949,6 +949,14 @@ class ActionCaller:
         contents = remove_set_lineno_codes(contents)
         return contents
     def subst(self, s, target, source, env):
+        # If s is a list, recursively apply subst()
+        # to every element in the list
+        if SCons.Util.is_List(s):
+            result = []
+            for elem in s:
+                result.append(self.subst(elem, target, source, env))
+            return self.parent.convert(result)
+
         # Special-case hack:  Let a custom function wrapped in an
         # ActionCaller get at the environment through which the action
         # was called by using this hard-coded value as a special return.

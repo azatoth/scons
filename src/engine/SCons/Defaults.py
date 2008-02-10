@@ -40,6 +40,7 @@ import os
 import os.path
 import shutil
 import stat
+import string
 import time
 import types
 import sys
@@ -157,11 +158,26 @@ LdModuleLinkAction = SCons.Action.Action("$LDMODULECOM", "$LDMODULECOMSTR")
 # ways by creating ActionFactory instances.
 ActionFactory = SCons.Action.ActionFactory
 
-def chmod_func(path, mode):
-    return os.chmod(str(path), mode)
+def get_paths_str(dest):
+    # If dest is a list, we need to manually call str() on each element
+    if SCons.Util.is_List(dest):
+        elem_strs = []
+        for element in dest:
+            elem_strs.append('"' + str(element) + '"')
+        return '[' + string.join(elem_strs, ', ') + ']'
+    else:
+        return '"' + str(dest) + '"'
 
-Chmod = ActionFactory(chmod_func,
-                      lambda dest, mode: 'Chmod("%s", 0%o)' % (dest, mode))
+def chmod_func(dest, mode):
+    if not SCons.Util.is_List(dest):
+        dest = [dest]
+    for element in dest:
+        os.chmod(str(element), mode)
+
+def chmod_strfunc(dest, mode):
+    return 'Chmod(%s, 0%o)' % (get_paths_str(dest), mode)
+
+Chmod = ActionFactory(chmod_func, chmod_strfunc)
 
 def copy_func(dest, src):
     if SCons.Util.is_List(src) and os.path.isdir(dest):
@@ -177,40 +193,53 @@ Copy = ActionFactory(copy_func,
                      lambda dest, src: 'Copy("%s", "%s")' % (dest, src),
                      convert=str)
 
-def delete_func(entry, must_exist=0):
-    entry = str(entry)
-    if not must_exist and not os.path.exists(entry):
-        return None
-    if not os.path.exists(entry) or os.path.isfile(entry):
-        return os.unlink(entry)
-    else:
-        return shutil.rmtree(entry, 1)
+def delete_func(dest, must_exist=0):
+    if not SCons.Util.is_List(dest):
+        dest = [dest]
+    for entry in dest:
+        entry = str(entry)
+        if not must_exist and not os.path.exists(entry):
+            continue
+        if not os.path.exists(entry) or os.path.isfile(entry):
+            os.unlink(entry)
+            continue
+        else:
+            shutil.rmtree(entry, 1)
+            continue
 
-def delete_strfunc(entry, must_exist=0):
-    return 'Delete("%s")' % entry
+def delete_strfunc(dest, must_exist=0):
+    return 'Delete(%s)' % get_paths_str(dest)
 
 Delete = ActionFactory(delete_func, delete_strfunc)
 
-Mkdir = ActionFactory(os.makedirs,
-                      lambda dir: 'Mkdir("%s")' % dir,
-                      convert=str)
+def mkdir_func(dest):
+    if not SCons.Util.is_List(dest):
+        dest = [dest]
+    for entry in dest:
+        os.makedirs(str(entry))
+
+Mkdir = ActionFactory(mkdir_func,
+                      lambda dir: 'Mkdir(%s)' % get_paths_str(dir))
 
 Move = ActionFactory(lambda dest, src: os.rename(src, dest),
                      lambda dest, src: 'Move("%s", "%s")' % (dest, src),
                      convert=str)
 
-def touch_func(file):
-    file = str(file)
-    mtime = int(time.time())
-    if os.path.exists(file):
-        atime = os.path.getatime(file)
-    else:
-        open(file, 'w')
-        atime = mtime
-    return os.utime(file, (atime, mtime))
+def touch_func(dest):
+    if not SCons.Util.is_List(dest):
+        dest = [dest]
+    for file in dest:
+        file = str(file)
+        mtime = int(time.time())
+        if os.path.exists(file):
+            atime = os.path.getatime(file)
+        else:
+            open(file, 'w')
+            atime = mtime
+        os.utime(file, (atime, mtime))
 
 Touch = ActionFactory(touch_func,
-                      lambda file: 'Touch("%s")' % file)
+                      lambda file: 'Touch(%s)' % get_paths_str(file))
 
 # Internal utility functions
 
