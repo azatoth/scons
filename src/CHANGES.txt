@@ -74,6 +74,9 @@ RELEASE 0.XX - XXX
 
   - Avoid use of -rpath with the Mac OS X linker.
 
+  - Add comment lines to the generated config.h file to describe what
+    the various #define/#undef lines are doing.
+
   From Steven Knight:
 
   - Support the ability to subclass the new-style "str" class as input
