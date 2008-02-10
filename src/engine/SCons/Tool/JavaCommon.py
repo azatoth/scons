@@ -57,7 +57,7 @@ if java_parsing:
     #     the multi-line comment begin and end tokens /* and */;
     #     array declarations "[]".
     _reToken = re.compile(r'(\n|\\\\|//|\\[\'"]|[\'"\{\}\;\.\(\)]|' +
-                          r'\d*\.\d*|[A-Za-z_][\w\$\.]*|<[A-Za-z_]+>|' +
+                          r'\d*\.\d*|[A-Za-z_][\w\$\.]*|<[A-Za-z_]\w+>|' +
                           r'/\*|\*/|\[\])')
 
     class OuterState:
