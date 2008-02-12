@@ -49,7 +49,8 @@ from SCons.Options import ListOption
 
 list_of_libs = Split('x11 gl qt ical')
 
-opts = Options(args=ARGUMENTS)
+optsfile = 'scons.options'
+opts = Options(optsfile, args=ARGUMENTS)
 opts.AddOptions(
     ListOption('shared',
                'libraries to build as shared libraries',
@@ -59,6 +60,7 @@ opts.AddOptions(
     )
 
 env = Environment(options=opts)
+opts.Save(optsfile, env)
 Help(opts.GenerateHelpText(env))
 
 print env['shared']
@@ -72,6 +74,11 @@ Default(env.Alias('dummy', None))
 """)
 
 test.run()
+check(['all', '1', 'gl ical qt x11', 'gl ical qt x11'])
+
+test.must_match(test.workpath('scons.options'), "shared = 'all'\n")
+
+test.run(arguments='shared=all')
 check(['all', '1', 'gl ical qt x11', 'gl ical qt x11'])
 
 test.run(arguments='shared=none')
@@ -96,7 +103,7 @@ check(['gl,qt', '0', 'gl qt', 'gl qt'])
 expect_stderr = """
 scons: *** Error converting option: shared
 Invalid value(s) for option: foo
-""" + test.python_file_line(SConstruct_path, 14)
+""" + test.python_file_line(SConstruct_path, 15)
 
 test.run(arguments='shared=foo', stderr=expect_stderr, status=2)
 
@@ -105,28 +112,28 @@ test.run(arguments='shared=foo', stderr=expect_stderr, status=2)
 expect_stderr = """
 scons: *** Error converting option: shared
 Invalid value(s) for option: foo
-""" + test.python_file_line(SConstruct_path, 14)
+""" + test.python_file_line(SConstruct_path, 15)
 
 test.run(arguments='shared=foo,ical', stderr=expect_stderr, status=2)
 
 expect_stderr = """
 scons: *** Error converting option: shared
 Invalid value(s) for option: foo
-""" + test.python_file_line(SConstruct_path, 14)
+""" + test.python_file_line(SConstruct_path, 15)
 
 test.run(arguments='shared=ical,foo', stderr=expect_stderr, status=2)
 
 expect_stderr = """
 scons: *** Error converting option: shared
 Invalid value(s) for option: foo
-""" + test.python_file_line(SConstruct_path, 14)
+""" + test.python_file_line(SConstruct_path, 15)
 
 test.run(arguments='shared=ical,foo,x11', stderr=expect_stderr, status=2)
 
 expect_stderr = """
 scons: *** Error converting option: shared
 Invalid value(s) for option: foo,bar
-""" + test.python_file_line(SConstruct_path, 14)
+""" + test.python_file_line(SConstruct_path, 15)
 
 test.run(arguments='shared=foo,x11,,,bar', stderr=expect_stderr, status=2)
 

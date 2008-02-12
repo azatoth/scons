@@ -234,19 +234,25 @@ class Options:
             fh = open(filename, 'w')
 
             try:
-                # Make an assignment in the file for each option within the environment
-                # that was assigned a value other than the default.
+                # Make an assignment in the file for each option
+                # within the environment that was assigned a value
+                # other than the default.
                 for option in self.options:
                     try:
                         value = env[option.key]
                         try:
-                            eval(repr(value))
-                        except KeyboardInterrupt:
-                            raise
-                        except:
-                            # Convert stuff that has a repr() that
-                            # cannot be evaluated into a string
-                            value = SCons.Util.to_String(value)
+                            prepare = value.prepare_to_store
+                        except AttributeError:
+                            try:
+                                eval(repr(value))
+                            except KeyboardInterrupt:
+                                raise
+                            except:
+                                # Convert stuff that has a repr() that
+                                # cannot be evaluated into a string
+                                value = SCons.Util.to_String(value)
+                        else:
+                            value = prepare()
 
                         defaultVal = env.subst(SCons.Util.to_String(option.default))
                         if option.converter:

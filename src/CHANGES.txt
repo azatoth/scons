@@ -157,6 +157,11 @@ RELEASE 0.XX - XXX
   - Fix the Chmod(), Delete(), Mkdir() and Touch() Action factories to
     take a list (of Nodes or strings) as arguments.
 
+  From Vaclav Smilauer:
+
+  - Fix saving and restoring an Options value of 'all' on Python
+    versions where all() is a builtin function.
+
   From Ben Webb:
 
   - Support the SWIG %module statement with following modifiers in
