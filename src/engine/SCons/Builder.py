@@ -712,12 +712,7 @@ class BuilderBase:
             return None
 
         result = []
-
-        if SCons.Util.is_List(source):
-            source = SCons.Util.flatten(source)
-        else:
-            source = [source]
-        for s in source:
+        for s in SCons.Util.flatten(source):
             if SCons.Util.is_String(s):
                 match_suffix = match_src_suffix(env.subst(s))
                 if not match_suffix and not '.' in s:

@@ -373,10 +373,7 @@ class SubstitutionEnvironment:
         if not args:
             return []
 
-        if SCons.Util.is_List(args):
-            args = SCons.Util.flatten(args)
-        else:
-            args = [args]
+        args = SCons.Util.flatten(args)
 
         nodes = []
         for v in args:

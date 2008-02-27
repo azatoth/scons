@@ -635,6 +635,14 @@ class UtilTestCase(unittest.TestCase):
     def test_Selector(self):
         """Test the Selector class"""
 
+        class MyNode:
+            def __init__(self, name):
+                self.name = name
+                self.suffix = os.path.splitext(name)[1]
+
+            def __str__(self):
+                return self.name
+
         s = Selector({'a' : 'AAA', 'b' : 'BBB'})
         assert s['a'] == 'AAA', s['a']
         assert s['b'] == 'BBB', s['b']
@@ -658,22 +666,22 @@ class UtilTestCase(unittest.TestCase):
         s = Selector({'.d' : 'DDD', '.e' : 'EEE'})
         ret = s(env, [])
         assert ret == None, ret
-        ret = s(env, ['foo.d'])
+        ret = s(env, [MyNode('foo.d')])
         assert ret == 'DDD', ret
-        ret = s(env, ['bar.e'])
+        ret = s(env, [MyNode('bar.e')])
         assert ret == 'EEE', ret
-        ret = s(env, ['bar.x'])
+        ret = s(env, [MyNode('bar.x')])
         assert ret == None, ret
         s[None] = 'XXX'
-        ret = s(env, ['bar.x'])
+        ret = s(env, [MyNode('bar.x')])
         assert ret == 'XXX', ret
 
         env = DummyEnv({'FSUFF' : '.f', 'GSUFF' : '.g'})
 
         s = Selector({'$FSUFF' : 'FFF', '$GSUFF' : 'GGG'})
-        ret = s(env, ['foo.f'])
+        ret = s(env, [MyNode('foo.f')])
         assert ret == 'FFF', ret
-        ret = s(env, ['bar.g'])
+        ret = s(env, [MyNode('bar.g')])
         assert ret == 'GGG', ret
 
     def test_adjustixes(self):
@@ -746,9 +754,18 @@ class MD5TestCase(unittest.TestCase):
         s = MD5signature('222')
         assert 'bcbe3365e6ac95ea2c0343a2395834dd' == s, s
 
+
+class flattenTestCase(unittest.TestCase):
+
+    def test_scalar(self):
+        """Test flattening a scalar"""
+        result = flatten('xyz')
+        assert result == ['xyz'], result
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     tclasses = [ dictifyTestCase,
+                 flattenTestCase,
                  MD5TestCase,
                  UtilTestCase,
                ]

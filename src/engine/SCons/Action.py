@@ -566,7 +566,7 @@ class CommandAction(_ActionAction):
         """
         from SCons.Subst import escape_list
         import SCons.Util
-        flatten = SCons.Util.flatten
+        flatten_sequence = SCons.Util.flatten_sequence
         is_String = SCons.Util.is_String
         is_List = SCons.Util.is_List
 
@@ -601,7 +601,7 @@ class CommandAction(_ActionAction):
                     # If the value is a list, then we assume it is a
                     # path list, because that's a pretty common list-like
                     # value to stick in an environment variable:
-                    value = flatten(value)
+                    value = flatten_sequence(value)
                     ENV[key] = string.join(map(str, value), os.pathsep)
                 else:
                     # If it isn't a string or a list, then we just coerce
@@ -891,9 +891,8 @@ class ListAction(ActionBase):
         return string.join(map(str, self.list), '\n')
     
     def presub_lines(self, env):
-        return SCons.Util.flatten(map(lambda a, env=env:
-                                      a.presub_lines(env),
-                                      self.list))
+        return SCons.Util.flatten_sequence(
+            map(lambda a, env=env: a.presub_lines(env), self.list))
 
     def get_contents(self, target, source, env):
         """Return the signature contents of this action list.

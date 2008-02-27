@@ -253,9 +253,6 @@ def _concat(prefix, list, suffix, env, f=lambda x: x, target=None, source=None):
     if not list:
         return list
 
-    if SCons.Util.is_List(list):
-        list = SCons.Util.flatten(list)
-
     l = f(SCons.PathList.PathList(list).subst_path(env, target, source))
     if not l is None:
         list = l
@@ -321,18 +318,8 @@ def _stripixes(prefix, list, suffix, stripprefixes, stripsuffixes, env, c=None):
         else:
             c = _concat_ixes
     
-    if SCons.Util.is_List(list):
-        list = SCons.Util.flatten(list)
-
-    if SCons.Util.is_List(stripprefixes):
-        stripprefixes = map(env.subst, SCons.Util.flatten(stripprefixes))
-    else:
-        stripprefixes = [env.subst(stripprefixes)]
-
-    if SCons.Util.is_List(stripsuffixes):
-        stripsuffixes = map(env.subst, SCons.Util.flatten(stripsuffixes))
-    else:
-        stripsuffixes = [stripsuffixes]
+    stripprefixes = map(env.subst, SCons.Util.flatten(stripprefixes))
+    stripsuffixes = map(env.subst, SCons.Util.flatten(stripsuffixes))
 
     stripped = []
     for l in SCons.PathList.PathList(list).subst_path(env, None, None):

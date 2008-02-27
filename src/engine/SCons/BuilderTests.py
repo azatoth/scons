@@ -159,6 +159,7 @@ class MyNode_without_target_from_source:
         self.builder = None
         self.is_explicit = None
         self.side_effect = 0
+        self.suffix = os.path.splitext(name)[1]
     def disambiguate(self):
         return self
     def __str__(self):
@@ -1110,9 +1111,9 @@ class BuilderTestCase(unittest.TestCase):
         assert r == 'A_', r
         r = builder.get_suffix(env)
         assert r == '.B', r
-        r = builder.get_prefix(env, ['X.C'])
+        r = builder.get_prefix(env, [MyNode('X.C')])
         assert r == 'E_', r
-        r = builder.get_suffix(env, ['X.C'])
+        r = builder.get_suffix(env, [MyNode('X.C')])
         assert r == '.D', r
 
         builder = SCons.Builder.Builder(prefix='A_', suffix={}, action={})
@@ -1143,7 +1144,7 @@ class BuilderTestCase(unittest.TestCase):
         assert r == 'A_', r
         r = builder.get_suffix(env)
         assert r == None, r
-        r = builder.get_suffix(env, ['X.src_sfx1'])
+        r = builder.get_suffix(env, [MyNode('X.src_sfx1')])
         assert r == None, r
         r = builder.get_src_suffix(env)
         assert r == '.src_sfx1', r

@@ -43,6 +43,12 @@ RELEASE 0.XX - XXX
 
   - Add support for the Intel C compiler on Mac OS X.
 
+  - Speed up reading SConscript files by about 20% (for some
+    configurations) by:  1) optimizing the SCons.Util.is_*() and
+    SCons.Util.flatten() functions; 2) avoiding unnecessary os.stat()
+    calls by using a File's .suffix attribute directly instead of
+    stringifying it.
+
   From Jérôme Berger:
 
   - Have the D language scanner search for .di files as well as .d files.
