@@ -168,6 +168,10 @@ RELEASE 0.XX - XXX
   - Fix saving and restoring an Options value of 'all' on Python
     versions where all() is a builtin function.
 
+  From Daniel Svensson:
+
+  - Code correction in SCons.Util.is_List().
+
   From Ben Webb:
 
   - Support the SWIG %module statement with following modifiers in

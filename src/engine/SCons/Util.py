@@ -470,7 +470,7 @@ else:
         return isinstance(obj, DictTypes)
 
     def is_List(obj, isinstance=isinstance, ListTypes=ListTypes):
-        return isinstance(obj, (list, UserList))
+        return isinstance(obj, ListTypes)
 
     def is_Sequence(obj, isinstance=isinstance, SequenceTypes=SequenceTypes):
         return isinstance(obj, SequenceTypes)
