@@ -124,6 +124,10 @@ RELEASE 0.XX - XXX
   - Have the Java parser recognize generics (surrounded by angle brackets)
     so they don't interfere with identifying anonymous inner classes.
 
+  - Avoid an infinite loop when trying to use saved copies of the
+    env.Install() or env.InstallAs() after replacing the method
+    attributes.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).
