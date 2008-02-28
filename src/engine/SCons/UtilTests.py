@@ -384,38 +384,6 @@ class UtilTestCase(unittest.TestCase):
 
         finally:
             os.environ['PATH'] = env_path
-            
-
-    def test_is_valid_construction_var(self):
-        """Testing is_valid_construction_var()"""
-        r = is_valid_construction_var("_a")
-        assert not r is None, r
-        r = is_valid_construction_var("z_")
-        assert not r is None, r
-        r = is_valid_construction_var("X_")
-        assert not r is None, r
-        r = is_valid_construction_var("2a")
-        assert r is None, r
-        r = is_valid_construction_var("a2_")
-        assert not r is None, r
-        r = is_valid_construction_var("/")
-        assert r is None, r
-        r = is_valid_construction_var("_/")
-        assert r is None, r
-        r = is_valid_construction_var("a/")
-        assert r is None, r
-        r = is_valid_construction_var(".b")
-        assert r is None, r
-        r = is_valid_construction_var("_.b")
-        assert r is None, r
-        r = is_valid_construction_var("b1._")
-        assert r is None, r
-        r = is_valid_construction_var("-b")
-        assert r is None, r
-        r = is_valid_construction_var("_-b")
-        assert r is None, r
-        r = is_valid_construction_var("b1-_")
-        assert r is None, r
 
     def test_get_env_var(self):
         """Testing get_environment_var()."""

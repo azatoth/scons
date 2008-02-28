@@ -38,6 +38,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import copy
 import os
 import os.path
+import re
 import shlex
 import string
 from UserDict import UserDict
@@ -279,6 +280,18 @@ class BuilderDict(UserDict):
         for i, v in dict.items():
             self.__setitem__(i, v)
 
+
+
+_valid_var = re.compile(r'[_a-zA-Z]\w*$')
+
+def is_valid_construction_var(varstr):
+    """Return if the specified string is a legitimate construction
+    variable.
+    """
+    return _valid_var.match(varstr)
+
+
+
 class SubstitutionEnvironment:
     """Base class for different flavors of construction environments.
 
@@ -350,7 +363,7 @@ class SubstitutionEnvironment:
         if special:
             special(self, key, value)
         else:
-            if not SCons.Util.is_valid_construction_var(key):
+            if not is_valid_construction_var(key):
                 raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
             self._dict[key] = value
 
@@ -1981,7 +1994,7 @@ class OverrideEnvironment(Base):
         except KeyError:
             return self.__dict__['__subject'].__getitem__(key)
     def __setitem__(self, key, value):
-        if not SCons.Util.is_valid_construction_var(key):
+        if not is_valid_construction_var(key):
             raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
         self.__dict__['overrides'][key] = value
     def __delitem__(self, key):

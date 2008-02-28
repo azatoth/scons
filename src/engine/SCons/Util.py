@@ -190,14 +190,7 @@ class NodeList(UserList):
             return CallableComposite(attrList)
         return self.__class__(attrList)
 
-_valid_var = re.compile(r'[_a-zA-Z]\w*$')
 _get_env_var = re.compile(r'^\$([_a-zA-Z]\w*|{[_a-zA-Z]\w*})$')
-
-def is_valid_construction_var(varstr):
-    """Return if the specified string is a legitimate construction
-    variable.
-    """
-    return _valid_var.match(varstr)
 
 def get_environment_var(varstr):
     """Given a string, first determine if it looks like a reference

@@ -35,6 +35,7 @@ import os.path
 import string
 import sys
 
+import SCons.Environment
 import SCons.Errors
 import SCons.Util
 import SCons.Warnings
@@ -121,7 +122,7 @@ class Options:
             return
 
         if not SCons.Util.is_String(key) or \
-           not SCons.Util.is_valid_construction_var(key):
+           not SCons.Environment.is_valid_construction_var(key):
             raise SCons.Errors.UserError, "Illegal Options.Add() key `%s'" % str(key)
 
         self._do_add(key, help, default, validator, converter)

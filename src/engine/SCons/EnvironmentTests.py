@@ -3609,6 +3609,39 @@ class NoSubstitutionProxyTestCase(unittest.TestCase,TestEnvironmentFixture):
         x = apply(proxy.subst_target_source, args, kw)
         assert x == ' ttt sss ', x
 
+class EnvironmentVariableTestCase(unittest.TestCase):
+
+    def test_is_valid_construction_var(self):
+        """Testing is_valid_construction_var()"""
+        r = is_valid_construction_var("_a")
+        assert not r is None, r
+        r = is_valid_construction_var("z_")
+        assert not r is None, r
+        r = is_valid_construction_var("X_")
+        assert not r is None, r
+        r = is_valid_construction_var("2a")
+        assert r is None, r
+        r = is_valid_construction_var("a2_")
+        assert not r is None, r
+        r = is_valid_construction_var("/")
+        assert r is None, r
+        r = is_valid_construction_var("_/")
+        assert r is None, r
+        r = is_valid_construction_var("a/")
+        assert r is None, r
+        r = is_valid_construction_var(".b")
+        assert r is None, r
+        r = is_valid_construction_var("_.b")
+        assert r is None, r
+        r = is_valid_construction_var("b1._")
+        assert r is None, r
+        r = is_valid_construction_var("-b")
+        assert r is None, r
+        r = is_valid_construction_var("_-b")
+        assert r is None, r
+        r = is_valid_construction_var("b1-_")
+        assert r is None, r
+
 
 
 if __name__ == "__main__":
@@ -3616,7 +3649,8 @@ if __name__ == "__main__":
     tclasses = [ SubstitutionTestCase,
                  BaseTestCase,
                  OverrideEnvironmentTestCase,
-                 NoSubstitutionProxyTestCase ]
+                 NoSubstitutionProxyTestCase,
+                 EnvironmentVariableTestCase ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
         suite.addTests(map(tclass, names))
