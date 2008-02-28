@@ -209,7 +209,7 @@ for o, a in opts:
     elif o in ['-P', '--python']:
         python = a
     elif o in ['--qmtest']:
-        qmtest = 'qmtest.py'
+        qmtest = 'qmtest'
     elif o in ['-q', '--quiet']:
         printcommand = 0
     elif o in ['--sp']:
@@ -268,7 +268,7 @@ else:
 try:
     qmtest
 except NameError:
-    q = 'qmtest.py'
+    q = 'qmtest'
     qmtest = whereis(q)
     if qmtest:
         qmtest = q
