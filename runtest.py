@@ -165,7 +165,9 @@ opts, args = getopt.getopt(sys.argv[1:], "ab:df:hlno:P:p:qv:Xx:t",
                             ['all', 'aegis', 'baseline=', 'builddir=',
                              'debug', 'file=', 'help',
                              'list', 'no-exec', 'noqmtest', 'output=',
-                             'version=', 'exec=', 'time',
+                             'package=', 'passed', 'python=', 'qmtest',
+                             'quiet', 'sp=', 'spe=', 'time',
+                             'version=', 'exec=',
                              'verbose=', 'xml'])
 
 for o, a in opts:
