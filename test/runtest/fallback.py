@@ -26,7 +26,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
 Test that runtest.py falls back (with a warning) using --noqmtest
-if it can't find qmtest.py on the $PATH.
+if it can't find qmtest on the $PATH.
 """
 
 import os
@@ -41,10 +41,10 @@ _python_ = TestRuntest._python_
 
 test = TestRuntest.TestRuntest(noqmtest=1)
 
-qmtest_py = test.where_is('qmtest.py')
+qmtest = test.where_is('qmtest')
 
-if qmtest_py:
-    dir = os.path.split(qmtest_py)[0]
+if qmtest:
+    dir = os.path.split(qmtest)[0]
     path = string.split(os.environ['PATH'], os.pathsep)
     path.remove(dir)
     os.environ['PATH'] = string.join(path, os.pathsep)
@@ -92,7 +92,7 @@ NO RESULT from the following test:
 """ % locals()
 
 expect_stderr = """\
-Warning:  qmtest.py not found on $PATH, assuming --noqmtest option.
+Warning:  qmtest not found on $PATH, assuming --noqmtest option.
 FAILING TEST STDERR
 NO RESULT TEST STDERR
 PASSING TEST STDERR
