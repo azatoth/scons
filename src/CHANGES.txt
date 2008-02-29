@@ -128,6 +128,8 @@ RELEASE 0.XX - XXX
     env.Install() or env.InstallAs() after replacing the method
     attributes.
 
+  - Improve the performance of setting construction variables.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

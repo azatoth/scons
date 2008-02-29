@@ -282,13 +282,13 @@ class BuilderDict(UserDict):
 
 
 
-_valid_var = re.compile(r'[_a-zA-Z]\w*$')
+_is_valid_var = re.compile(r'[_a-zA-Z]\w*$')
 
 def is_valid_construction_var(varstr):
     """Return if the specified string is a legitimate construction
     variable.
     """
-    return _valid_var.match(varstr)
+    return _is_valid_var.match(varstr)
 
 
 
@@ -345,6 +345,11 @@ class SubstitutionEnvironment:
         self._special_set['BUILDERS'] = _set_BUILDERS
         self._special_set['SCANNERS'] = _set_SCANNERS
 
+        # Freeze the keys of self._special_set in a list for use by
+        # methods that need to check.  (Empirically, list scanning has
+        # gotten better than dict.has_key() in Python 2.5.)
+        self._special_set_keys = self._special_set.keys()
+
     def __cmp__(self, other):
         return cmp(self._dict, other._dict)
 
@@ -359,12 +364,28 @@ class SubstitutionEnvironment:
         return self._dict[key]
 
     def __setitem__(self, key, value):
-        special = self._special_set.get(key)
-        if special:
-            special(self, key, value)
+        # This is heavily used.  This implementation is the best we have
+        # according to the timings in bench/env.__setitem__.py.
+        #
+        # The "key in self._special_set_keys" test here seems to perform
+        # pretty well for the number of keys we have.  A hard-coded
+        # list works a little better in Python 2.5, but that has the
+        # disadvantage of maybe getting out of sync if we ever add more
+        # variable names.  Using self._special_set.has_key() works a
+        # little better in Python 2.4, but is worse then this test.
+        # So right now it seems like a good trade-off, but feel free to
+        # revisit this with bench/env.__setitem__.py as needed (and
+        # as newer versions of Python come out).
+        if key in self._special_set_keys:
+            self._special_set[key](self, key, value)
         else:
-            if not is_valid_construction_var(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+            # If we already have the entry, then it's obviously a valid
+            # key and we don't need to check.  If we do check, using a
+            # global, pre-compiled regular expression directly is more
+            # efficient than calling another function or a method.
+            if not self._dict.has_key(key) \
+               and not _is_valid_var.match(key):
+                    raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
             self._dict[key] = value
 
     def get(self, key, default=None):
