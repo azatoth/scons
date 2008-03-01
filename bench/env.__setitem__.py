@@ -30,7 +30,7 @@ class Timing:
     def getResult(self):
         return self.__result
 
-def times(num=1000000, reverse=False, init='', title='Results:', **statements):
+def times(num=1000000, init='', title='Results:', **statements):
     # time each statement
     timings = []
     for n, s in statements.iteritems():
@@ -39,10 +39,10 @@ def times(num=1000000, reverse=False, init='', title='Results:', **statements):
         timings.append(t)
     
     print title
-    timings.sort(key=Timing.getResult, reverse=reverse)
-    for t in timings:
-        #print "%s => %.3f s" % (t.name, t.getResult())
-        print "    %.3f s   %s" % (t.getResult(), t.name)
+    l = []
+    for i in timings: l.append((i.getResult(),i.name))
+    l.sort()
+    for i in l: print "  %9.3f s   %s" % i
 
 # Import the necessary local SCons.* modules used by some of our
 # alternative implementations below, first manipulating sys.path so
@@ -264,21 +264,28 @@ class env_Best_list(Environment):
                     raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
             self._dict[key] = value
 
-class env_isalnum(Environment):
-    """Greg's Folly: isalnum instead of probe"""
-    def __setitem__(self, key, value):
-        if self._special_set.has_key(key):
-            self._special_set[key](self, key, value)
-        else:
-            if not key.isalnum() and not global_valid_var.match(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
-            self._dict[key] = value
+try:
+    ''.isalnum
+except NameError: pass
+else:
+	class env_isalnum(Environment):
+	    """Greg's Folly: isalnum instead of probe"""
+	    def __setitem__(self, key, value):
+		if self._special_set.has_key(key):
+		    self._special_set[key](self, key, value)
+		else:
+		    if not key.isalnum() and not global_valid_var.match(key):
+			raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+		    self._dict[key] = value
 
 # We'll use the names of all the env_* classes we find later to build
 # the dictionary of statements to be timed, and the import statement
 # that the timer will use to get at these classes.
 
-env_class_names = [ n for n in locals().keys() if n.startswith('env_') ]
+class_names = []
+for n in locals().keys():
+    if n.startswith('env_'):
+        class_names.append(n)
 
 # This is *the* function that gets timed.  It will get called for the
 # specified number of iterations for the cross product of the number of
@@ -297,7 +304,7 @@ def do_it(names, env_class):
 
 statements = {}
 
-for class_name in env_class_names:
+for class_name in class_names:
     ec = eval(class_name)
     statements[ec.__doc__] = 'do_it(names, %s)' % class_name
 
@@ -305,7 +312,7 @@ for class_name in env_class_names:
 # test run.  The timeit module insulates the test snippets from the
 # global namespace, so we have to import these explicitly from __main__.
 
-common_import_variables = ['do_it'] + env_class_names
+common_import_variables = ['do_it'] + class_names
 
 common_imports = """
 from __main__ import %s
@@ -314,31 +321,30 @@ from __main__ import %s
 # The test data (lists of variable names) that we'll use for the runs.
 
 same_variable_names = ['XXX'] * 100
-uniq_variable_names = [ 'X%02d' % i for i in xrange(100) ]
-mixed_variable_names = same_variable_names[:50] + uniq_variable_names[:50]
+uniq_variable_names = []
+for i in range(100): uniq_variable_names.append('X%05d' % i)
+mixed_variable_names = uniq_variable_names[:50] + same_variable_names[:50]
 
 # Lastly, put it all together...
 
-times(num = iterations,
-      title = 'Results for re-adding an existing variable name 100 times:',
-      init = common_imports + """
+def run_it(title, init):
+      s = statements.copy()
+      s['num'] = iterations
+      s['title'] = title
+      s['init'] = init
+      apply(times,(),s)
+
+run_it('Results for re-adding an existing variable name 100 times:',
+      common_imports + """
 from __main__ import same_variable_names as names
-""",
-      **statements
-)
+""")
 
-times(num = iterations,
-      title = 'Results for adding 100 variable names, 50 existing and 50 new:',
-      init = common_imports + """
+run_it('Results for adding 100 variable names, 50 existing and 50 new:',
+      common_imports + """
 from __main__ import mixed_variable_names as names
-""",
-      **statements
-)
+""")
 
-times(num = iterations,
-      title = 'Results for adding 100 new, unique variable names:',
-      init = common_imports + """
+run_it('Results for adding 100 new, unique variable names:',
+      common_imports + """
 from __main__ import uniq_variable_names as names
-""",
-      **statements
-)
+""")
