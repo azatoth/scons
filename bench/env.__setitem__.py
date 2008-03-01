@@ -39,6 +39,7 @@ def times(num=1000000, init='', title='Results:', **statements):
         t.timeit()
         timings.append(t)
     
+    print
     print title
     l = []
     for i in timings: l.append((i.getResult(),i.name))
@@ -274,15 +275,15 @@ try:
 except AttributeError:
     pass
 else:
-	class env_isalnum(Environment):
-	    """Greg's Folly: isalnum instead of probe"""
-	    def __setitem__(self, key, value):
-		if self._special_set.has_key(key):
-		    self._special_set[key](self, key, value)
-		else:
-		    if not key.isalnum() and not global_valid_var.match(key):
-			raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
-		    self._dict[key] = value
+    class env_isalnum(Environment):
+        """Greg's Folly: isalnum instead of probe"""
+        def __setitem__(self, key, value):
+            if self._special_set.has_key(key):
+                self._special_set[key](self, key, value)
+            else:
+                if not key.isalnum() and not global_valid_var.match(key):
+                    raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                self._dict[key] = value
 
 # We'll use the names of all the env_* classes we find later to build
 # the dictionary of statements to be timed, and the import statement
@@ -340,6 +341,10 @@ def run_it(title, init):
       s['title'] = title
       s['init'] = init
       apply(times,(),s)
+
+print 'Environment __setitem__ benchmark using',
+print 'Python', string.split(sys.version)[0],
+print 'on', sys.platform, os.name
 
 run_it('Results for re-adding an existing variable name 100 times:',
       common_imports + """
