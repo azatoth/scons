@@ -51,7 +51,17 @@ use python -O for the older versions to avoid timing SET_LINENO
 instructions.
 """
 
-import gc
+try:
+    import gc
+except ImportError:
+    class _fake_gc:
+        def isenabled(self):
+            return None
+        def enable(self):
+            pass
+        def disable(self):
+            pass
+    gc = _fake_gc()
 import sys
 import time
 try:
@@ -59,6 +69,8 @@ try:
 except ImportError:
     # Must be an older Python version (see timeit() below)
     itertools = None
+
+import string
 
 __all__ = ["Timer"]
 
@@ -88,7 +100,7 @@ def inner(_it, _timer):
 
 def reindent(src, indent):
     """Helper to reindent a multi-line statement."""
-    return src.replace("\n", "\n" + " "*indent)
+    return string.replace(src, "\n", "\n" + " "*indent)
 
 class Timer:
     """Class for timing execution speed of small code snippets.
@@ -214,7 +226,7 @@ def main(args=None):
         print "use -h/--help for command line help"
         return 2
     timer = default_timer
-    stmt = "\n".join(args) or "pass"
+    stmt = string.join(args, "\n") or "pass"
     number = 0 # auto-determine
     setup = []
     repeat = default_repeat
@@ -235,12 +247,12 @@ def main(args=None):
             timer = time.clock
         if o in ("-v", "--verbose"):
             if verbose:
-                precision += 1
-            verbose += 1
+                precision = precision + 1
+            verbose = precision + 1
         if o in ("-h", "--help"):
             print __doc__,
             return 0
-    setup = "\n".join(setup) or "pass"
+    setup = string.join(setup, "\n") or "pass"
     # Include the current directory, so that local imports work (sys.path
     # contains the directory of this script, rather than the current
     # directory)
@@ -267,7 +279,7 @@ def main(args=None):
         return 1
     best = min(r)
     if verbose:
-        print "raw times:", " ".join(["%.*g" % (precision, x) for x in r])
+        print "raw times:", string.join(map(lambda x, p=precision: "%.*g" % (p, x), r))
     print "%d loops," % number,
     usec = best * 1e6 / number
     if usec < 1000:

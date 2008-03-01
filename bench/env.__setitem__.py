@@ -6,6 +6,7 @@
 
 import os.path
 import re
+import string
 import sys
 import timeit
 
@@ -33,7 +34,7 @@ class Timing:
 def times(num=1000000, init='', title='Results:', **statements):
     # time each statement
     timings = []
-    for n, s in statements.iteritems():
+    for n, s in statements.items():
         t = Timing(n, num, init, s)
         t.timeit()
         timings.append(t)
@@ -50,7 +51,11 @@ def times(num=1000000, init='', title='Results:', **statements):
 # PYTHONPATH.
 
 import __main__
-script_dir = os.path.split(__main__.__file__)[0]
+try:
+    filename = __main__.__file__
+except AttributeError:
+    filename = sys.argv[0]
+script_dir = os.path.split(filename)[0]
 if script_dir:
     script_dir = script_dir + '/'
 sys.path = [os.path.abspath(script_dir + '../src/engine')] + sys.path
@@ -266,7 +271,8 @@ class env_Best_list(Environment):
 
 try:
     ''.isalnum
-except NameError: pass
+except AttributeError:
+    pass
 else:
 	class env_isalnum(Environment):
 	    """Greg's Folly: isalnum instead of probe"""
@@ -284,7 +290,8 @@ else:
 
 class_names = []
 for n in locals().keys():
-    if n.startswith('env_'):
+    #if n.startswith('env_'):
+    if n[:4] == 'env_':
         class_names.append(n)
 
 # This is *the* function that gets timed.  It will get called for the
@@ -316,7 +323,7 @@ common_import_variables = ['do_it'] + class_names
 
 common_imports = """
 from __main__ import %s
-""" % ', '.join(common_import_variables)
+""" % string.join(common_import_variables, ', ')
 
 # The test data (lists of variable names) that we'll use for the runs.
 
@@ -336,15 +343,15 @@ def run_it(title, init):
 
 run_it('Results for re-adding an existing variable name 100 times:',
       common_imports + """
-from __main__ import same_variable_names as names
+import __main__ ; names = __main__.same_variable_names
 """)
 
 run_it('Results for adding 100 variable names, 50 existing and 50 new:',
       common_imports + """
-from __main__ import mixed_variable_names as names
+import __main__ ; names = __main__.mixed_variable_names
 """)
 
 run_it('Results for adding 100 new, unique variable names:',
       common_imports + """
-from __main__ import uniq_variable_names as names
+import __main__ ; names = __main__.uniq_variable_names
 """)
