@@ -264,6 +264,16 @@ class env_Best_list(Environment):
                     raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
             self._dict[key] = value
 
+class env_isalnum(Environment):
+    """Greg's Folly: isalnum instead of probe"""
+    def __setitem__(self, key, value):
+        if self._special_set.has_key(key):
+            self._special_set[key](self, key, value)
+        else:
+            if not key.isalnum() and not global_valid_var.match(key):
+                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+            self._dict[key] = value
+
 # We'll use the names of all the env_* classes we find later to build
 # the dictionary of statements to be timed, and the import statement
 # that the timer will use to get at these classes.
