@@ -1188,9 +1188,14 @@ class Base(SubstitutionEnvironment):
         else:
             clone._dict['BUILDERS'] = BuilderDict(cbd, clone)
 
+        # Check the methods added via AddMethod() and re-bind them to
+        # the cloned environment.  Only do this if the attribute hasn't
+        # been overwritten by the user explicitly and still points to
+        # the added method.
         clone.added_methods = []
         for mw in self.added_methods:
-            clone.added_methods.append(mw.clone(clone))
+            if mw == getattr(self, mw.name):
+                clone.added_methods.append(mw.clone(clone))
 
         clone._memo = {}
 

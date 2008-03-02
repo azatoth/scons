@@ -689,6 +689,16 @@ sys.exit(1)
         r = env4.func2()
         assert r == 'func2-4', r
 
+        # Test that clones don't re-bind an attribute that the user
+        env1 = Environment(FOO = '1')
+        env1.AddMethod(func2)
+        def replace_func2():
+            return 'replace_func2'
+        env1.func2 = replace_func2
+        env2 = env1.Clone(FOO = '2')
+        r = env2.func2()
+        assert r == 'replace_func2', r
+
     def test_Override(self):
         "Test overriding construction variables"
         env = SubstitutionEnvironment(ONE=1, TWO=2, THREE=3, FOUR=4)

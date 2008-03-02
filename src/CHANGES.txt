@@ -130,6 +130,9 @@ RELEASE 0.XX - XXX
 
   - Improve the performance of setting construction variables.
 
+  - When cloning a construction environment, avoid over-writing an
+    attribute for an added method if the user explicitly replaced it.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

@@ -522,7 +522,13 @@ class ToolInitializer:
 	# the ToolInitializer class.
 
 def Initializers(env):
-    ToolInitializer(env, ['install'], ['Install', 'InstallAs'])
+    ToolInitializer(env, ['install'], ['_InternalInstall', '_InternalInstallAs'])
+    def Install(self, *args, **kw):
+        return apply(self._InternalInstall, args, kw)
+    def InstallAs(self, *args, **kw):
+        return apply(self._InternalInstallAs, args, kw)
+    env.AddMethod(Install)
+    env.AddMethod(InstallAs)
 
 def FindTool(tools, env):
     for tool in tools:

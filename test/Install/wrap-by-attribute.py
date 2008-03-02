@@ -31,15 +31,6 @@ Builder instances are saved and then re-used from a different, Clone()d
 construction environment, after the .Install() and .InstallAs() methods
 are replaced by wrappers that fetch the saved methods from a different
 environment.
-
-XXX Right now, this doesn't work completely as intended.  The SConstruct
-code below is trying to replace .Install() and .InstallAs() such that
-every installed target automatically gets prefixed with $DESTDIR.  Because
-of the way the new ToolInitializer class gets replaced in an environment
-when the method is called, the saved versions don't know anything about
-$DESTDIR, so it only works for the first target.  But right now this
-test is making sure that we don't go into an infinite loop by trying to
-constantly re-apply the ToolInitializer objectto the environment.
 """
 
 import TestSCons
@@ -66,8 +57,7 @@ env.SconsInternalInstallAsFunc = env.InstallAs
 def InstallWithDestDir(dir, source):
     return env.SconsInternalInstallFunc('$DESTDIR'+env.Dir(dir).abspath, source)
 def InstallAsWithDestDir(target, source):
-    target = map(lambda t, e=env: '$DESTDIR'+e.File(t).abspath, target)
-    return env.SconsInternalInstallAsFunc(target, source)
+    return env.SconsInternalInstallAsFunc('$DESTDIR'+env.File(target).abspath, source)
 
 # Add the wrappers directly as attributes.
 env.Install = InstallWithDestDir
@@ -96,13 +86,10 @@ test.write('f4.in', "f4.in\n")
 
 test.run(arguments = '.')
 
-# XXX The intent of the SConstruct file is to have all of these files
-# installed in test.workpath('dest'), but currently only the first
-# called target does so.
 f1_out     = test.workpath('dest') + test.workpath('export', 'f1.out')
-f2_new_out = test.workpath('export', 'f2-new.out')
-f3_out     = test.workpath('export', 'f3.out')
-f4_new_out = test.workpath('export', 'f4-new.out')
+f2_new_out = test.workpath('dest') + test.workpath('export', 'f2-new.out')
+f3_out     = test.workpath('dest') + test.workpath('export', 'f3.out')
+f4_new_out = test.workpath('dest') + test.workpath('export', 'f4-new.out')
 
 test.must_match(f1_out,         "f1.in\n")
 test.must_match(f2_new_out,     "f2.in\n")

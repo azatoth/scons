@@ -131,8 +131,9 @@ installas_action = SCons.Action.Action(installFunc, stringFunc)
 
 BaseInstallBuilder               = None
 
-def InstallBuilderWrapper(env, target, source, dir=None):
+def InstallBuilderWrapper(env, target=None, source=None, dir=None):
     if target and dir:
+        import SCons.Errors
         raise SCons.Errors.UserError, "Both target and dir defined for Install(), only one may be defined."
     if not dir:
         dir=target
@@ -159,7 +160,7 @@ def InstallBuilderWrapper(env, target, source, dir=None):
             tgt.extend(BaseInstallBuilder(env, target, src))
     return tgt
 
-def InstallAsBuilderWrapper(env, target, source):
+def InstallAsBuilderWrapper(env, target=None, source=None):
     result = []
     for src, tgt in map(lambda x, y: (x, y), source, target):
         result.extend(BaseInstallBuilder(env, tgt, src))
@@ -195,15 +196,8 @@ def generate(env):
                               emitter        = [ add_targets_to_INSTALLED_FILES, ],
                               name           = 'InstallBuilder')
 
-    try:
-        env['BUILDERS']['Install']
-    except KeyError, e:
-        env['BUILDERS']['Install']   = InstallBuilderWrapper
-
-    try:
-        env['BUILDERS']['InstallAs']
-    except KeyError, e:
-        env['BUILDERS']['InstallAs'] = InstallAsBuilderWrapper
+    env['BUILDERS']['_InternalInstall'] = InstallBuilderWrapper
+    env['BUILDERS']['_InternalInstallAs'] = InstallAsBuilderWrapper
 
     # We'd like to initialize this doing something like the following,
     # but there isn't yet support for a ${SOURCE.type} expansion that
