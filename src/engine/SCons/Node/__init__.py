@@ -1161,7 +1161,10 @@ class Node:
         # so we only print them after running them through this lambda
         # to turn them into the right relative Node and then return
         # its string.
-        stringify = lambda s, E=self.dir.Entry: str(E(s))
+        def stringify( s, E=self.dir.Entry ) :
+            if hasattr( s, 'dir' ) :
+                return str(E(s))
+            return str(s)
 
         lines = []
 

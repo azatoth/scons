@@ -159,6 +159,10 @@ RELEASE 0.XX - XXX
 
   - Handle Intel C compiler network license files (port@system).
 
+  From Jim Randall:
+
+  - Fix how Python Value Nodes are printed in --debug=explain output.
+
   From Adam Simpkins:
 
   - Add a --interactive option that starts a session for building (or
