@@ -1743,7 +1743,10 @@ class Base(SubstitutionEnvironment):
         """
         s = self.subst(name)
         if SCons.Util.is_Sequence(s):
-            s = string.join(s)
+            result=[]
+            for e in s:
+                result.append(apply(self.fs.Dir, (e,) + args, kw))
+            return result
         return apply(self.fs.Dir, (s,) + args, kw)
 
     def NoClean(self, *targets):
@@ -1769,7 +1772,10 @@ class Base(SubstitutionEnvironment):
         """
         s = self.subst(name)
         if SCons.Util.is_Sequence(s):
-            s = string.join(s)
+            result=[]
+            for e in s:
+                result.append(apply(self.fs.Entry, (e,) + args, kw))
+            return result
         return apply(self.fs.Entry, (s,) + args, kw)
 
     def Environment(self, **kw):
@@ -1790,7 +1796,10 @@ class Base(SubstitutionEnvironment):
         """
         s = self.subst(name)
         if SCons.Util.is_Sequence(s):
-            s = string.join(s)
+            result=[]
+            for e in s:
+                result.append(apply(self.fs.File, (e,) + args, kw))
+            return result
         return apply(self.fs.File, (s,) + args, kw)
 
     def FindFile(self, file, dirs):

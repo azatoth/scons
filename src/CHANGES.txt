@@ -146,6 +146,10 @@ RELEASE 0.XX - XXX
 
   From Gary Oberbrunner:
 
+  - Make File(), Dir() and Entry() return a list of Nodes when passed
+    a list of names, instead of trying to make a string from the name
+    list and making a Node from that string.
+
   - Fix the ability to build an Alias in --interactive mode.
 
   - Fix the ability to hash the contents of actions for nested Python

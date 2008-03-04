@@ -3331,6 +3331,12 @@ If no
 .I directory
 is specified, the current script's directory is used as the parent.
 
+If 
+.I name
+is a list, SCons returns a list of Dir nodes.
+Construction variables are expanded in
+.IR name .
+
 Directory Nodes can be used anywhere you
 would supply a string as a directory name
 to a Builder method or function.
@@ -3522,6 +3528,12 @@ an object that represents the specified file
 can be a relative or absolute path. 
 .I directory
 is an optional directory that will be used as the parent directory. 
+
+If 
+.I name
+is a list, SCons returns a list of File nodes.
+Construction variables are expanded in
+.IR name .
 
 File Nodes can be used anywhere you
 would supply a string as a file name

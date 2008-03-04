@@ -27,6 +27,19 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
   Please note the following important changes since release 0.97.0d20071212:
 
+    --  File(), Dir() and Entry() NOW RETURN A LIST WHEN THE INPUT IS A SEQUENCE
+        Previously, if these methods were passed a list, the list was
+	substituted and stringified, then passed as a single string to
+	create a File/Dir/Entry Node.  This rarely if ever worked with
+	more than one element in the list.  They now return a list of
+	Nodes when passed a list.
+
+	One case that works differently now is a passing in a
+	single-element sequence; that formerly was stringified
+	(returning its only element) and then a single Node would be
+	returned.  Now a single-element list containing the Node will
+	be returned, for consistency.
+
     --  THE env.subst() METHOD NOW RETURNS A LIST WHEN THE INPUT IS A SEQUENCE
 
         The env.subst() method now returns a list with the elements
