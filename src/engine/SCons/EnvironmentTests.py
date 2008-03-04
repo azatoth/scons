@@ -2727,6 +2727,12 @@ def generate(env):
         d = env.Dir('${BAR}_$BAR')
         assert d == 'Dir(bardir_bardir)', d
 
+        d = env.Dir(['dir1'])
+        assert d == 'Dir(dir1)', d
+
+        d = env.Dir(['dir1', 'dir2'])
+        assert d == 'Dir(dir1 dir2)', d
+
     def test_NoClean(self):
         """Test the NoClean() method"""
         env = self.TestEnvironment(FOO='ggg', BAR='hhh')
@@ -2798,6 +2804,12 @@ def generate(env):
         e = env.Entry('${BAR}_$BAR')
         assert e == 'Entry(barentry_barentry)', e
 
+        e = env.Entry(['entry1'])
+        assert e == 'Entry(entry1)', e
+
+        e = env.Entry(['entry1', 'entry2'])
+        assert e == 'Entry(entry1 entry2)', e
+
     def test_File(self):
         """Test the File() method"""
         class MyFS:
@@ -2815,6 +2827,12 @@ def generate(env):
 
         f = env.File('${BAR}_$BAR')
         assert f == 'File(barfile_barfile)', f
+
+        f = env.File(['file1'])
+        assert f == 'File(file1)', f
+
+        f = env.File(['file1', 'file2'])
+        assert f == 'File(file1 file2)', f
 
     def test_FindFile(self):
         """Test the FindFile() method"""

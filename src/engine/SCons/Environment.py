@@ -1741,7 +1741,10 @@ class Base(SubstitutionEnvironment):
     def Dir(self, name, *args, **kw):
         """
         """
-        return apply(self.fs.Dir, (self.subst(name),) + args, kw)
+        s = self.subst(name)
+        if SCons.Util.is_Sequence(s):
+            s = string.join(s)
+        return apply(self.fs.Dir, (s,) + args, kw)
 
     def NoClean(self, *targets):
         """Tags a target so that it will not be cleaned by -c"""
@@ -1764,7 +1767,10 @@ class Base(SubstitutionEnvironment):
     def Entry(self, name, *args, **kw):
         """
         """
-        return apply(self.fs.Entry, (self.subst(name),) + args, kw)
+        s = self.subst(name)
+        if SCons.Util.is_Sequence(s):
+            s = string.join(s)
+        return apply(self.fs.Entry, (s,) + args, kw)
 
     def Environment(self, **kw):
         return apply(SCons.Environment.Environment, [], self.subst_kw(kw))
@@ -1782,7 +1788,10 @@ class Base(SubstitutionEnvironment):
     def File(self, name, *args, **kw):
         """
         """
-        return apply(self.fs.File, (self.subst(name),) + args, kw)
+        s = self.subst(name)
+        if SCons.Util.is_Sequence(s):
+            s = string.join(s)
+        return apply(self.fs.File, (s,) + args, kw)
 
     def FindFile(self, file, dirs):
         file = self.subst(file)
