@@ -131,7 +131,7 @@ installas_action = SCons.Action.Action(installFunc, stringFunc)
 
 BaseInstallBuilder               = None
 
-def InstallBuilderWrapper(env, target=None, source=None, dir=None):
+def InstallBuilderWrapper(env, target=None, source=None, dir=None, **kw):
     if target and dir:
         import SCons.Errors
         raise SCons.Errors.UserError, "Both target and dir defined for Install(), only one may be defined."
@@ -157,13 +157,13 @@ def InstallBuilderWrapper(env, target=None, source=None, dir=None):
             # '#' on the file name portion as meaning the Node should
             # be relative to the top-level SConstruct directory.
             target = env.fs.Entry('.'+os.sep+src.name, dnode)
-            tgt.extend(BaseInstallBuilder(env, target, src))
+            tgt.extend(BaseInstallBuilder(env, target, src, **kw))
     return tgt
 
-def InstallAsBuilderWrapper(env, target=None, source=None):
+def InstallAsBuilderWrapper(env, target=None, source=None, **kw):
     result = []
     for src, tgt in map(lambda x, y: (x, y), source, target):
-        result.extend(BaseInstallBuilder(env, tgt, src))
+        result.extend(BaseInstallBuilder(env, tgt, src, **kw))
     return result
 
 added = None
