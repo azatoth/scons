@@ -157,13 +157,15 @@ def InstallBuilderWrapper(env, target=None, source=None, dir=None, **kw):
             # '#' on the file name portion as meaning the Node should
             # be relative to the top-level SConstruct directory.
             target = env.fs.Entry('.'+os.sep+src.name, dnode)
-            tgt.extend(BaseInstallBuilder(env, target, src, **kw))
+            #tgt.extend(BaseInstallBuilder(env, target, src, **kw))
+            tgt.extend(apply(BaseInstallBuilder, (env, target, src), kw))
     return tgt
 
 def InstallAsBuilderWrapper(env, target=None, source=None, **kw):
     result = []
     for src, tgt in map(lambda x, y: (x, y), source, target):
-        result.extend(BaseInstallBuilder(env, tgt, src, **kw))
+        #result.extend(BaseInstallBuilder(env, tgt, src, **kw))
+        result.extend(apply(BaseInstallBuilder, (env, tgt, src), kw))
     return result
 
 added = None
