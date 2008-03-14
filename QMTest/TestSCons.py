@@ -187,6 +187,8 @@ class TestSCons(TestCommon):
             kw['match'] = match_exact
         if not kw.has_key('workdir'):
             kw['workdir'] = ''
+        # TERM can cause test failures due to control chars in prompts etc.
+        os.environ['TERM'] = 'dumb'
         apply(TestCommon.__init__, [self], kw)
 
         import SCons.Node.FS
