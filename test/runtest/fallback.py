@@ -41,13 +41,15 @@ _python_ = TestRuntest._python_
 
 test = TestRuntest.TestRuntest(noqmtest=1)
 
-qmtest = test.where_is('qmtest')
-
-if qmtest:
+# qmtest may be in more than one location in your path
+while test.where_is('qmtest'):
+    qmtest=test.where_is('qmtest')
     dir = os.path.split(qmtest)[0]
     path = string.split(os.environ['PATH'], os.pathsep)
     path.remove(dir)
     os.environ['PATH'] = string.join(path, os.pathsep)
+
+print "PATH: %s"%os.environ['PATH']
 
 test.subdir('test')
 

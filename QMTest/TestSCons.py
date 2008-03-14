@@ -44,7 +44,7 @@ from TestCommon import __all__
 
 default_version = '0.97.0'
 
-SConsVersion = '__VERSION__'
+SConsVersion = '0.97.0'
 if SConsVersion == '__' + 'VERSION' + '__':
     SConsVersion = default_version
 
@@ -187,6 +187,9 @@ class TestSCons(TestCommon):
             kw['match'] = match_exact
         if not kw.has_key('workdir'):
             kw['workdir'] = ''
+
+	# Term causing test failures due to bogus readline init
+	# control character output on FC8
         # TERM can cause test failures due to control chars in prompts etc.
         os.environ['TERM'] = 'dumb'
         apply(TestCommon.__init__, [self], kw)
@@ -383,6 +386,16 @@ class TestSCons(TestCommon):
 
         return s
 
+    def paths(self,patterns):
+        import glob
+        result = []
+        for p in patterns:
+            paths = glob.glob(p)
+            paths.sort()
+            result.extend(paths)
+        return result
+
+
     def java_ENV(self, version=None):
         """
         Initialize with a default external environment that uses a local
@@ -399,30 +412,51 @@ class TestSCons(TestCommon):
         env = SCons.Environment.Environment()
         self._java_env[version] = env
 
-        def paths(patterns):
-            import glob
-            result = []
-            for p in patterns:
-                paths = glob.glob(p)
-                paths.sort()
-                result.extend(paths)
-            return result
 
         if version:
             patterns = [
+                '/usr/java/jdk%s*/bin'    % version,
                 '/usr/lib/jvm/*-%s*/bin' % version,
                 '/usr/local/j2sdk%s*/bin' % version,
             ]
-            java_path = paths(patterns) + [env['ENV']['PATH']]
+            java_path = self.paths(patterns) + [env['ENV']['PATH']]
         else:
             patterns = [
+                '/usr/java/latest/bin',
                 '/usr/lib/jvm/*/bin',
                 '/usr/local/j2sdk*/bin',
             ]
-            java_path = paths(patterns) + [env['ENV']['PATH']]
+            java_path = self.paths(patterns) + [env['ENV']['PATH']]
 
         env['ENV']['PATH'] = string.join(java_path, os.pathsep)
         return env['ENV']
+
+    def java_where_includes(self,version=None):
+        """
+        Return java include paths compiling java jni code
+        """
+        import glob
+        import sys
+        if not version:
+            version=''
+        jni_dirs = ['/usr/lib/jvm/java-*-sun-%s*/include/jni.h'%version,
+                    '/usr/java/jdk%s*/include/jni.h'%version,
+                    ]
+        d=os.path.dirname(self.paths(jni_dirs)[0])
+        result=[d]
+
+        if sys.platform == 'win32':
+            result.append(os.path.join(d,'win32'))
+        elif sys.platform == 'linux2':
+            result.append(os.path.join(d,'linux'))
+        return result
+
+
+    def java_where_java_home(self,version=None):
+        import os.path
+        jar=self.java_where_jar(version)
+        home=os.path.normpath('%s/..'%jar)
+        return home
 
     def java_where_jar(self, version=None):
         ENV = self.java_ENV(version)

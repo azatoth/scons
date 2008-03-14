@@ -35,6 +35,7 @@ test = TestSCons.TestSCons()
 
 where_javac, java_version = test.java_where_javac()
 where_javah = test.java_where_javah()
+where_java_include=test.java_where_includes()
 
 swig = test.where_is('swig')
 if not swig:
@@ -64,6 +65,7 @@ test.subdir(['src'],
 test.write(['SConstruct'], """\
 import os,sys
 env=Environment(tools = ['default', 'javac', 'javah'],
+                CPPPATH=%(where_java_include)s,                 
                 JAVAC = r'%(where_javac)s',
                 JAVAH = r'%(where_javah)s')
 Export('env')

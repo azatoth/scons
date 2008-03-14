@@ -38,6 +38,7 @@ test = TestSCons.TestSCons()
 test = TestSCons.TestSCons()
 
 swig = test.where_is('swig')
+where_java_include=test.java_where_includes()
 
 if not swig:
     test.skip_test('Can not find installed "swig", skipping test.\n')
@@ -45,7 +46,9 @@ if not swig:
 
 
 test.write(['SConstruct'], """\
-env = Environment(tools = ['default', 'swig'])
+env = Environment(tools = ['default', 'swig'],
+                CPPPATH=%(where_java_include)s,                 
+                )
 
 Java_foo_interface = env.SharedLibrary(
     'Java_foo_interface', 
