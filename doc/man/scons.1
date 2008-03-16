@@ -7290,6 +7290,95 @@ foo = env.Program('foo.c')
 print "foo will be built in %s"%foo.path
 .EE
 
+A
+.I Dir
+Node or
+.I File
+Node can also be used to create
+file and subdirectory Nodes relative to the generating Node.
+A
+.I Dir
+Node will place the new Nodes within the directory it represents.
+A
+.I File
+node will place the new Nodes within its parent directory
+(that is, "beside" the file in question).
+If
+.I d
+is a
+.I Dir
+(directory) Node and
+.I f
+is a
+.I File
+(file) Node,
+then these methods are available:
+
+.TP
+.IR d .Dir( name )
+Returns a directory Node for a subdirectory of
+.I d
+named
+.IR name .
+
+.TP
+.IR d .File( name )
+Returns a file Node for a file within
+.I d
+named
+.IR name .
+
+.TP
+.IR d .Entry( name )
+Returns an unresolved Node within
+.I d
+named
+.IR name .
+
+.TP
+.IR f .Dir( name )
+Returns a directory named
+.I name
+within the parent directory of
+.IR f .
+
+.TP
+.IR f .File( name )
+Returns a file named
+.I name
+within the parent directory of
+.IR f .
+
+.TP
+.IR f .Entry( name )
+Returns an unresolved Node named
+.I name
+within the parent directory of
+.IR f .
+
+.RE
+For example:
+
+.ES
+# Get a Node for a file within a directory
+incl = Dir('include')
+f = incl.File('header.h')
+
+# Get a Node for a subdirectory within a directory
+dist = Dir('project-3.2.1)
+src = dist.Dir('src')
+
+# Get a Node for a file in the same directory
+cfile = File('sample.c')
+hfile = cfile.File('sample.h')
+
+# Combined example
+docs = Dir('docs')
+html = docs.Dir('html')
+index = html.File('index.html')
+css = index.File('app.css')
+.EE
+
 .SH EXTENDING SCONS
 .SS Builder Objects
 .B scons

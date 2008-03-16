@@ -148,6 +148,10 @@ RELEASE 0.XX - XXX
   - If $JARCHDIR isn't set explicitly, use the .java_classdir attribute
     that was set when the Java() Builder built the .class files.
 
+  From Greg Noel:
+
+  - Document the Dir(), File() and Entry() methods of Dir and File Nodes.
+
   From Gary Oberbrunner:
 
   - Make File(), Dir() and Entry() return a list of Nodes when passed
