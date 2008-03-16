@@ -139,6 +139,27 @@ def re_escape(str):
     return str
 
 
+
+def python_version():
+    return string.split(sys.version)[0]
+
+def python_major_version():
+    return sys.version[:3]
+
+def deprecated_python_version(version=python_major_version()):
+    return version in ('1.5', '2.0', '2.1')
+
+if deprecated_python_version():
+    msg = """
+scons: warning: Support for Python version %s will be deprecated in a future release.
+"""
+    deprecated_python_expr = re_escape(msg % python_version()) + file_expr
+    del msg
+else:
+    deprecated_python_expr = ""
+
+
+
 class TestSCons(TestCommon):
     """Class for testing SCons.
 
@@ -193,7 +214,7 @@ class TestSCons(TestCommon):
         # TERM can cause test failures due to control chars in prompts etc.
         os.environ['TERM'] = 'dumb'
 
-        if sys.version[:3] in ('1.5', '2.0', '2.1'):
+        if deprecated_python_version():
             sconsflags = os.environ.get('SCONSFLAGS')
             if sconsflags:
                 sconsflags = [sconsflags]
@@ -895,7 +916,7 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
         hand-code slicing the right number of characters).
         """
         # see also sys.prefix documentation
-        return sys.version[:3]
+        return python_major_version()
 
     def get_platform_python(self):
         """

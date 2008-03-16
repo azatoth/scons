@@ -70,19 +70,23 @@ test.write("foo.c","""
 #include "not_there.h"
 """)
 
-test.run(arguments='--warn=dependency .', stderr=r"""
-scons: warning: No dependency generated for file: not_there\.h \(included from: foo\.c\) \-\- file not found
-""" + TestSCons.file_expr)
 
-test.run(arguments='--warn=all .', stderr=r"""
-scons: warning: No dependency generated for file: not_there\.h \(included from: foo\.c\) \-\- file not found
-""" + TestSCons.file_expr)
 
-test.run(arguments='--warn=all --warn=no-dependency .', stderr="")
-
-test.run(arguments='--warn=no-dependency --warn=all .', stderr=r"""
+expect = r"""
 scons: warning: No dependency generated for file: not_there\.h \(included from: foo\.c\) \-\- file not found
-""" + TestSCons.file_expr)
+"""
+
+test.run(arguments='--warn=dependency .',
+         stderr=expect + TestSCons.file_expr)
+
+test.run(arguments='--warn=dependency .',
+         stderr=expect + TestSCons.file_expr)
+
+test.run(arguments='--warn=all --warn=no-dependency .',
+         stderr=TestSCons.deprecated_python_expr)
+
+test.run(arguments='--warn=no-dependency --warn=all .',
+         stderr=TestSCons.deprecated_python_expr + expect + TestSCons.file_expr)
 
 
 

@@ -51,7 +51,7 @@ if python_major_version in ():
     error = error % re.escape(python_version) + "\n"
     test.run(arguments = '-Q', status = 1, stderr = error)
 
-elif python_major_version in ('1.5', '2.0', '2.1'):
+elif TestSCons.deprecated_python_version():
 
     import os
 
@@ -62,7 +62,7 @@ elif python_major_version in ('1.5', '2.0', '2.1'):
 
     warn = "\nscons: warning: Support for Python version %s will be deprecated in a future release.\n"
     warn = warn % re.escape(python_version)
-    test.run(arguments = '-Q', stderr = warn + TestSCons.file_expr)
+    test.run(arguments = '-Q', stderr = TestSCons.deprecated_python_expr)
 
     test.run(arguments = '-f SetOption -Q')
 
