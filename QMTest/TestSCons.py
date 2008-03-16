@@ -140,23 +140,33 @@ def re_escape(str):
 
 
 
-def python_version():
+try:
+    sys.version_info
+except AttributeError:
+    # Pre-1.6 Python has no sys.version_info
+    version_string = string.split(sys.version)[0]
+    version_ints = map(int, string.split(version_string, '.'))
+    sys.version_info = tuple(version_ints + ['final', 0])
+
+def python_version_string():
     return string.split(sys.version)[0]
 
-def python_major_version():
+def python_minor_version_string():
     return sys.version[:3]
 
-def deprecated_python_version(version=python_major_version()):
-    return version in ('1.5', '2.0', '2.1')
+def unsupported_python_version(version=sys.version_info):
+    return version < (1, 5, 2)
+
+def deprecated_python_version(version=sys.version_info):
+    return version < (2, 2, 0)
 
 if deprecated_python_version():
     msg = r"""
-scons: warning: Support for Python %s is deprecated and will
-    be withdrawn in a future release.  If you believe this
-    will cause you hardship, contact dev@scons.tigris.org.
+scons: warning: Support for Python %s is deprecated.
+    If this will cause hardship, contact dev@scons.tigris.org.
 """
 
-    deprecated_python_expr = re_escape(msg % python_version()) + file_expr
+    deprecated_python_expr = re_escape(msg % python_version_string()) + file_expr
     del msg
 else:
     deprecated_python_expr = ""
@@ -919,7 +929,7 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
         hand-code slicing the right number of characters).
         """
         # see also sys.prefix documentation
-        return python_major_version()
+        return python_minor_version_string()
 
     def get_platform_python(self):
         """

@@ -404,11 +404,14 @@ class TreePrinter:
         SCons.Util.print_tree(t, func, prune=self.prune, showtags=s)
 
 
-def python_version_unsupported(version):
-    return version[:3] in ()
+def python_version_string():
+    return string.split(sys.version)[0]
 
-def python_version_deprecated(version):
-    return version[:3] in ('1.5', '2.0', '2.1')
+def python_version_unsupported(version=sys.version_info):
+    return version < (1, 5, 2)
+
+def python_version_deprecated(version=sys.version_info):
+    return version < (2, 2, 0)
 
 
 # Global variables
@@ -939,7 +942,7 @@ def _main(parser):
     # Re-{enable,disable} warnings in case they disabled some in
     # the SConscript file.
     #
-    # We delay enabled the PythonVersionWarning class until here so that,
+    # We delay enabling the PythonVersionWarning class until here so that,
     # if they explicity disabled it in either in the command line or in
     # $SCONSFLAGS, or in the SConscript file, then the search through
     # the list of deprecated warning classes will find that disabling
@@ -950,13 +953,11 @@ def _main(parser):
     # Now that we've read the SConscript files, we can check for the
     # warning about deprecated Python versions--delayed until here
     # in case they disabled the warning in the SConscript files.
-    python_version = string.split(sys.version)[0]
-    if python_version_deprecated(python_version):
-        msg = "Support for Python %s is deprecated and will\n" + \
-              "    be withdrawn in a future release.  If you believe this\n" + \
-              "    will cause you hardship, contact dev@scons.tigris.org."
+    if python_version_deprecated():
+        msg = "Support for Python %s is deprecated.\n" + \
+              "    If this will cause hardship, contact dev@scons.tigris.org."
         SCons.Warnings.warn(SCons.Warnings.PythonVersionWarning,
-                            msg % python_version)
+                            msg % python_version_string())
 
     if not options.help:
         SCons.SConf.CreateConfigHBuilder(SCons.Defaults.DefaultEnvironment())
@@ -1250,10 +1251,9 @@ def main():
     # delay the check for deprecated Python versions until later,
     # after the SConscript files have been read, in case they
     # disable that warning.
-    python_version = string.split(sys.version)[0]
-    if python_version_unsupported(python_version):
+    if python_version_unsupported():
         msg = "scons: *** SCons version %s does not run under Python version %s.\n"
-        sys.stderr.write(msg % (SCons.__version__, python_version))
+        sys.stderr.write(msg % (SCons.__version__, python_version_string()))
         sys.exit(1)
 
     parts = ["SCons by Steven Knight et al.:\n"]

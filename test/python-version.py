@@ -45,13 +45,10 @@ test.write('SetOption-deprecated', "SetOption('warn', 'no-deprecated')\n")
 
 test.write('SetOption-python', "SetOption('warn', ['no-python-version'])\n")
 
-python_version = string.split(sys.version)[0]
-python_major_version = python_version[:3]
-
-if python_major_version in ():
+if TestSCons.unsupported_python_version():
 
     error = "scons: \*\*\* SCons version \S+ does not run under Python version %s."
-    error = error % re.escape(python_version) + "\n"
+    error = error % re.escape(TestSCons.python_version_string()) + "\n"
     test.run(arguments = '-Q', status = 1, stderr = error)
 
 else:

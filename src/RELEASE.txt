@@ -27,26 +27,26 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
   Please note the following important changes since release 0.97.0d20071212:
 
-    --  SCONS NOW WARNS ABOUT DEPRECATED SUPPORT FOR PYTHON 1.5, 2.0 AND 2.1
+    --  SUPPORT FOR PYTHON VERSIONS BEFORE 2.2 IS NOW DEPRECATED
 
         SCons now prints the following warning when it is run by any
         Python 1.5, 2.0 or 2.1 release or sub-release:
 
-            scons: Warning: Support for Python $PYVER is deprecated and will
-                be withdrawn in a future release.  If you believe this will
-                cause you hardship, contact dev@scons.tigris.org.
+            scons: warning: Support for Python $VERSION is deprecated.
+                If this will cause hardship, contact dev@scons.tigris.org.
 
         You may disable all warnings about deprecated features by adding
-        the option "--warn=no-python-version" to the command line or
-        the $SCONSFLAGS environment variable:
+        the option "--warn=no-deprecated" to the command line or to the
+        $SCONSFLAGS environment variable:
 
             $ scons --warn=no-deprecated
 
         Using '--warn=no-deprecated' is compatible with earlier versions
         of SCons.
 
-        You may also disable all warnings about deprecated features by
-        adding the following to any SConscript file:
+        You may also, as of this version of SCons, disable all warnings
+        about deprecated features by adding the following to any
+        SConscript file:
 
             SetOption('warn', 'no-deprecated')
 
@@ -60,10 +60,10 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
             $ scons --warn=no-python-version
 
-        Or by specifying the above option in the $SCONSFLAGS environment
-        variable.
+        Or by specifying the --warn=no-python-version option in the
+        $SCONSFLAGS environment variable.
 
-        Using SetOption('warn', ...), and using the 'no-python-version'
+        Using SetOption('warn', ...), and the 'no-python-version'
         command-line option for suppressing this specific warning,
         are *not* backwards-compatible to earlier versions of SCons.
 
