@@ -38,12 +38,14 @@ test = TestSCons.TestSCons()
 test = TestSCons.TestSCons()
 
 swig = test.where_is('swig')
-where_java_include=test.java_where_includes()
 
 if not swig:
     test.skip_test('Can not find installed "swig", skipping test.\n')
 
+where_java_include=test.java_where_includes()
 
+if not where_java_include:
+    test.skip_test('Can not find installed Java include files, skipping test.\n')
 
 test.write(['SConstruct'], """\
 env = Environment(tools = ['default', 'swig'],

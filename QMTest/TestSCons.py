@@ -486,6 +486,9 @@ class TestSCons(TestCommon):
         jni_dirs = ['/usr/lib/jvm/java-*-sun-%s*/include/jni.h'%version,
                     '/usr/java/jdk%s*/include/jni.h'%version,
                     ]
+        dirs = self.paths(jni_dirs)
+        if not dirs:
+            return None
         d=os.path.dirname(self.paths(jni_dirs)[0])
         result=[d]
 
