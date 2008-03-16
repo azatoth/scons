@@ -3307,6 +3307,42 @@ def generate(env):
         for x in added + ['OVERRIDE']:
             assert over.has_key(x), bad_msg % x
 
+    def test_parse_flags(self):
+        '''Test the Base class parse_flags argument'''
+        # all we have to show is that it gets to MergeFlags internally
+        env = Environment(parse_flags = '-X')
+        assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
+
+        env = Environment(CCFLAGS=None, parse_flags = '-Y')
+        assert env['CCFLAGS'] == ['-Y'], env['CCFLAGS']
+
+        env = Environment(CPPDEFINES = 'FOO', parse_flags = '-std=c99 -X -DBAR')
+        assert env['CFLAGS']  == ['-std=c99'], env['CFLAGS']
+        assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
+        assert env['CPPDEFINES'] == ['FOO', 'BAR'], env['CPPDEFINES']
+
+    def test_clone_parse_flags(self):
+        '''Test the env.Clone() parse_flags argument'''
+        # all we have to show is that it gets to MergeFlags internally
+        env = Environment(tools = [])
+        env2 = env.Clone(parse_flags = '-X')
+        assert not env.has_key('CCFLAGS')
+        assert env2['CCFLAGS'] == ['-X'], env2['CCFLAGS']
+
+        env = Environment(tools = [], CCFLAGS=None)
+        env2 = env.Clone(parse_flags = '-Y')
+        assert env['CCFLAGS'] is None, env['CCFLAGS']
+        assert env2['CCFLAGS'] == ['-Y'], env2['CCFLAGS']
+
+        env = Environment(tools = [], CPPDEFINES = 'FOO')
+        env2 = env.Clone(parse_flags = '-std=c99 -X -DBAR')
+        assert not env.has_key('CFLAGS')
+        assert env2['CFLAGS']  == ['-std=c99'], env2['CFLAGS']
+        assert not env.has_key('CCFLAGS')
+        assert env2['CCFLAGS'] == ['-X'], env2['CCFLAGS']
+        assert env['CPPDEFINES'] == 'FOO', env['CPPDEFINES']
+        assert env2['CPPDEFINES'] == ['FOO','BAR'], env2['CPPDEFINES']
+
 
 
 class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
@@ -3534,6 +3570,28 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
         assert x == ['x2', 'y'], x
         x = env3.Split('$AAA')
         assert x == ['x3', 'y3', 'z3'], x
+
+    def test_parse_flags(self):
+        '''Test the OverrideEnvironment parse_flags argument'''
+        # all we have to show is that it gets to MergeFlags internally
+        env = SubstitutionEnvironment()
+        env2 = env.Override({'parse_flags' : '-X'})
+        assert not env.has_key('CCFLAGS')
+        assert env2['CCFLAGS'] == ['-X'], env2['CCFLAGS']
+
+        env = SubstitutionEnvironment(CCFLAGS=None)
+        env2 = env.Override({'parse_flags' : '-Y'})
+        assert env['CCFLAGS'] is None, env['CCFLAGS']
+        assert env2['CCFLAGS'] == ['-Y'], env2['CCFLAGS']
+
+        env = SubstitutionEnvironment(CPPDEFINES = 'FOO')
+        env2 = env.Override({'parse_flags' : '-std=c99 -X -DBAR'})
+        assert not env.has_key('CFLAGS')
+        assert env2['CFLAGS']  == ['-std=c99'], env2['CFLAGS']
+        assert not env.has_key('CCFLAGS')
+        assert env2['CCFLAGS'] == ['-X'], env2['CCFLAGS']
+        assert env['CPPDEFINES'] == 'FOO', env['CPPDEFINES']
+        assert env2['CPPDEFINES'] == ['FOO','BAR'], env2['CPPDEFINES']
 
 
 

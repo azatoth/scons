@@ -1,10 +1,10 @@
 #!/bin/sh
 
-if test "X$1" = "X-m"; then
-    svn diff --diff-cmd diff -x -c $* | alpine scons-dev
-else
-    svn diff --diff-cmd diff -x -c $*
-fi
+case "$1" in
+'')	exec svn diff --diff-cmd diff -x -c $* ;;
+-m)	svn diff --diff-cmd diff -x -c $* | alpine scons-dev ;;
+*)	echo "Error: unknown option '$1"; exit 1 ;;
+esac
 
 # OLD CODE FOR USE WITH AEGIS
 #

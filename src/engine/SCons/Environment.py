@@ -574,16 +574,19 @@ class SubstitutionEnvironment:
         environment, and doesn't even create a wrapper object if there
         are no overrides.
         """
-        if overrides:
-            o = copy_non_reserved_keywords(overrides)
-            overrides = {}
-            for key, value in o.items():
+        if not overrides: return self
+        o = copy_non_reserved_keywords(overrides)
+        if not o: return self
+        overrides = {}
+        merges = None
+        for key, value in o.items():
+            if key == 'parse_flags':
+                merges = value
+            else:
                 overrides[key] = SCons.Subst.scons_subst_once(value, self, key)
-        if overrides:
-            env = OverrideEnvironment(self, overrides)
-            return env
-        else:
-            return self
+        env = OverrideEnvironment(self, overrides)
+        if merges: env.MergeFlags(merges)
+        return env
 
     def ParseFlags(self, *flags):
         """
@@ -851,6 +854,7 @@ class Base(SubstitutionEnvironment):
                  tools=None,
                  toolpath=None,
                  options=None,
+                 parse_flags = None,
                  **kw):
         """
         Initialization of a basic SCons construction environment,
@@ -924,6 +928,9 @@ class Base(SubstitutionEnvironment):
         # should override any values set by the tools.
         for key, val in save.items():
             self._dict[key] = val
+
+        # Finally, apply any flags to be merged in
+        if parse_flags: self.MergeFlags(parse_flags)
 
     #######################################################################
     # Utility methods that are primarily for internal use by SCons.
@@ -1170,7 +1177,7 @@ class Base(SubstitutionEnvironment):
                     self._dict[key] = self._dict[key] + val
         self.scanner_map_delete(kw)
 
-    def Clone(self, tools=[], toolpath=None, **kw):
+    def Clone(self, tools=[], toolpath=None, parse_flags = None, **kw):
         """Return a copy of a construction Environment.  The
         copy is like a Python "deep copy"--that is, independent
         copies are made recursively of each objects--except that
@@ -1211,6 +1218,9 @@ class Base(SubstitutionEnvironment):
 
         # apply them again in case the tools overwrote them
         apply(clone.Replace, (), new)        
+
+        # Finally, apply any flags to be merged in
+        if parse_flags: clone.MergeFlags(parse_flags)
 
         if __debug__: logInstanceCreation(self, 'Environment.EnvironmentClone')
         return clone

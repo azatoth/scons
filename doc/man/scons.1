@@ -1442,6 +1442,40 @@ function:
 env = Environment()
 .EE
 
+Variables, called
+.I construction
+.IR variables ,
+may be set in a construction environment
+either by specifyng them as keywords when the object is created
+or by assigning them a value after the object is created:
+
+.ES
+env = Environment(FOO = 'foo')
+env['BAR'] = 'bar'
+.EE
+
+As a convenience,
+construction variables may also be set or modified by the
+.I parse_flags
+keyword argument, which applies the
+.B ParseFlags
+method (described below) to the argument value
+after all other processing is completed.
+This is useful either if the exact content of the flags is unknown
+(for example, read from a control file)
+or if the flags are distributed to a number of construction variables.
+
+.ES
+env = Environment(parse_flags = '-Iinclude -DEBUG -lm')
+.EE
+
+This example adds 'include' to
+.BR CPPPATH ,
+\'EBUG' to
+.BR CPPDEFINES ,
+and 'm' to
+.BR LIBS .
+
 By default, a new construction environment is
 initialized with a set of builder methods
 and construction variables that are appropriate
@@ -1846,6 +1880,21 @@ env.SharedLibrary('word', 'word.cpp',
 if you want SCons to search automatically
 for dependencies on the non-standard library names;
 see the descriptions of these variables, below, for more information.)
+
+It is also possible to use the
+.I parse_flags
+keyword argument in an override:
+
+.ES
+env = Program('hello', 'hello.c', parse_flags = '-Iinclude -DEBUG -lm')
+.EE
+
+This example adds 'include' to
+.BR CPPPATH ,
+\'EBUG' to
+.BR CPPDEFINES ,
+and 'm' to
+.BR LIBS .
 
 Although the builder methods defined by
 .B scons
@@ -3007,6 +3056,15 @@ the Environment constructor:
 .ES
 def MyTool(env): env['FOO'] = 'bar'
 env4 = env.Clone(tools = ['msvc', MyTool])
+.EE
+
+The
+.I parse_flags
+keyword argument is also recognized:
+
+.ES
+# create an environment for compiling programs that use wxWidgets
+wx_env = env.Clone(parse_flags = '!wx-config --cflags --cxxflags')
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -4224,6 +4282,8 @@ env.MergeFlags('-O3')
 # flag and merge the result into the construction variables.
 env.MergeFlags(['!pkg-config gtk+-2.0 --cflags', '-O3'])
 
+# Combine an optimization flag with the flags returned from running pkg-config
+# twice and merge the result into the construction variables.
 env.MergeFlags(['-O3',
                '!pkg-config gtk+-2.0 --cflags --libs',
                '!pkg-config libpng12 --cflags --libs'])

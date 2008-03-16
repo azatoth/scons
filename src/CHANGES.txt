@@ -152,6 +152,8 @@ RELEASE 0.XX - XXX
 
   - Document the Dir(), File() and Entry() methods of Dir and File Nodes.
 
+  - Add the parse_flags option when creating Environments
+
   From Gary Oberbrunner:
 
   - Make File(), Dir() and Entry() return a list of Nodes when passed
