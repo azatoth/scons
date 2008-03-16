@@ -162,7 +162,7 @@ def deprecated_python_version(version=sys.version_info):
 
 if deprecated_python_version():
     msg = r"""
-scons: warning: Support for Python %s is deprecated.
+scons: warning: Support for pre-2.2 Python (%s) is deprecated.
     If this will cause hardship, contact dev@scons.tigris.org.
 """
 

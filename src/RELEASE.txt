@@ -32,7 +32,7 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
         SCons now prints the following warning when it is run by any
         Python 1.5, 2.0 or 2.1 release or sub-release:
 
-            scons: warning: Support for Python $VERSION is deprecated.
+            scons: warning: Support for pre-2.2 Python (VERSION) is deprecated.
                 If this will cause hardship, contact dev@scons.tigris.org.
 
         You may disable all warnings about deprecated features by adding
