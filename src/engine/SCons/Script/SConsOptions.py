@@ -123,6 +123,7 @@ class SConsValues(optparse.Values):
         'num_jobs',
         'random',
         'stack_size',
+        'warn',
     ]
 
     def set_option(self, name, value):
@@ -169,6 +170,10 @@ class SConsValues(optparse.Values):
                 value = int(value)
             except ValueError:
                 raise SCons.Errors.UserError, "An integer is required: %s"%repr(value)
+        elif name == 'warn':
+            if SCons.Util.is_String(value):
+                value = [value]
+            value = self.__SConscript_settings__.get(name, []) + value
 
         self.__SConscript_settings__[name] = value
 
@@ -803,10 +808,15 @@ def Parser(version):
                   action="callback", callback=opt_version,
                   help="Print the SCons version number and exit.")
 
+    def opt_warn(option, opt, value, parser, tree_options=tree_options):
+        if SCons.Util.is_String(value):
+            value = string.split(value, ',')
+        parser.values.warn.extend(value)
+
     op.add_option('--warn', '--warning',
-                  nargs=1,
-                  dest="warn", default=None,
-                  action="store",
+                  nargs=1, type="string",
+                  dest="warn", default=[],
+                  action="callback", callback=opt_warn,
                   help="Enable or disable warnings.",
                   metavar="WARNING-SPEC")
 

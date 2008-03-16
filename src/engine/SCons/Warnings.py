@@ -70,6 +70,9 @@ class NoObjectCountWarning(Warning):
 class NoParallelSupportWarning(Warning):
     pass
 
+class PythonVersionWarning(Warning):
+    pass
+
 class ReservedVariableWarning(Warning):
     pass
 

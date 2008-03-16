@@ -133,6 +133,10 @@ RELEASE 0.XX - XXX
   - When cloning a construction environment, avoid over-writing an
     attribute for an added method if the user explicitly replaced it.
 
+  - Add a warning about deprecated support for Python 1.5, 2.0 and 2.1.
+
+  - Fix being able to SetOption('warn', ...) in SConscript files.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).
