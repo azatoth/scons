@@ -70,7 +70,7 @@ class NoObjectCountWarning(Warning):
 class NoParallelSupportWarning(Warning):
     pass
 
-class PythonVersionWarning(Warning):
+class PythonVersionWarning(DeprecatedWarning):
     pass
 
 class ReservedVariableWarning(Warning):
@@ -91,7 +91,7 @@ def suppressWarningClass(clazz):
     """Suppresses all warnings that are of type clazz or
     derived from clazz."""
     _enabled.insert(0, (clazz, 0))
-    
+
 def enableWarningClass(clazz):
     """Suppresses all warnings that are of type clazz or
     derived from clazz."""
@@ -113,7 +113,7 @@ def warn(clazz, *args):
             if flag:
                 if _warningAsException:
                     raise warning
-            
+
                 if _warningOut:
                     _warningOut(warning)
             break

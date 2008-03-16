@@ -29,6 +29,7 @@ Verify the behavior of our check for unsupported or deprecated versions
 of Python.
 """
 
+import os
 import re
 import string
 import sys
@@ -40,7 +41,9 @@ test = TestSCons.TestSCons(match = TestCmd.match_re_dotall)
 
 test.write('SConstruct', "\n")
 
-test.write('SetOption', "SetOption('warn', 'no-python-version')\n")
+test.write('SetOption-deprecated', "SetOption('warn', 'no-deprecated')\n")
+
+test.write('SetOption-python', "SetOption('warn', ['no-python-version'])\n")
 
 python_version = string.split(sys.version)[0]
 python_major_version = python_version[:3]
@@ -51,25 +54,25 @@ if python_major_version in ():
     error = error % re.escape(python_version) + "\n"
     test.run(arguments = '-Q', status = 1, stderr = error)
 
-elif TestSCons.deprecated_python_version():
-
-    import os
-
-    sconsflags = os.environ.get('SCONSFLAGS')
-    if sconsflags:
-        sconsflags = string.replace(sconsflags, '--warn=no-python-version', '')
-        os.environ['SCONSFLAGS'] = sconsflags
-
-    warn = "\nscons: warning: Support for Python version %s will be deprecated in a future release.\n"
-    warn = warn % re.escape(python_version)
-    test.run(arguments = '-Q', stderr = TestSCons.deprecated_python_expr)
-
-    test.run(arguments = '-f SetOption -Q')
-
 else:
 
-    test.run(arguments = '-Q')
+    if TestSCons.deprecated_python_version():
 
-    test.run(arguments = '-f SetOption -Q')
+        sconsflags = os.environ.get('SCONSFLAGS')
+        if sconsflags:
+            sconsflags = string.replace(sconsflags, '--warn=no-python-version', '')
+            os.environ['SCONSFLAGS'] = sconsflags
+
+        test.run(arguments = '-Q', stderr = TestSCons.deprecated_python_expr)
+
+    else:
+
+        test.run(arguments = '-Q')
+
+    test.run(arguments = '-Q --warn=no-deprecated')
+
+    test.run(arguments = '-f SetOption-deprecated -Q')
+
+    test.run(arguments = '-f SetOption-python -Q')
 
 test.pass_test()

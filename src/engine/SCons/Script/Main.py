@@ -772,7 +772,6 @@ def _main(parser):
                          SCons.Warnings.NoObjectCountWarning,
                          SCons.Warnings.NoParallelSupportWarning,
                          SCons.Warnings.MisleadingKeywordsWarning,
-                         SCons.Warnings.PythonVersionWarning,
                          SCons.Warnings.StackSizeWarning, ]
     for warning in default_warnings:
         SCons.Warnings.enableWarningClass(warning)
@@ -939,6 +938,13 @@ def _main(parser):
 
     # Re-{enable,disable} warnings in case they disabled some in
     # the SConscript file.
+    #
+    # We delay enabled the PythonVersionWarning class until here so that,
+    # if they explicity disabled it in either in the command line or in
+    # $SCONSFLAGS, or in the SConscript file, then the search through
+    # the list of deprecated warning classes will find that disabling
+    # first and not issue the warning.
+    SCons.Warnings.enableWarningClass(SCons.Warnings.PythonVersionWarning)
     _setup_warn(options.warn)
 
     # Now that we've read the SConscript files, we can check for the
@@ -946,7 +952,9 @@ def _main(parser):
     # in case they disabled the warning in the SConscript files.
     python_version = string.split(sys.version)[0]
     if python_version_deprecated(python_version):
-        msg = "Support for Python version %s will be deprecated in a future release."
+        msg = "Support for Python %s is deprecated and will\n" + \
+              "    be withdrawn in a future release.  If you believe this\n" + \
+              "    will cause you hardship, contact dev@scons.tigris.org."
         SCons.Warnings.warn(SCons.Warnings.PythonVersionWarning,
                             msg % python_version)
 

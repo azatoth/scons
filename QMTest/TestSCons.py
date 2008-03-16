@@ -150,9 +150,12 @@ def deprecated_python_version(version=python_major_version()):
     return version in ('1.5', '2.0', '2.1')
 
 if deprecated_python_version():
-    msg = """
-scons: warning: Support for Python version %s will be deprecated in a future release.
+    msg = r"""
+scons: warning: Support for Python %s is deprecated and will
+    be withdrawn in a future release.  If you believe this
+    will cause you hardship, contact dev@scons.tigris.org.
 """
+
     deprecated_python_expr = re_escape(msg % python_version()) + file_expr
     del msg
 else:
