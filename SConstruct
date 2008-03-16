@@ -808,7 +808,9 @@ for p in [ scons ]:
 
     Local(env.Install('$DISTDIR', distutils_targets))
 
-    if gzip:
+    if not gzip:
+        print "gzip not found; skipping .tar.gz package for %s." % pkg
+    else:
 
         distutils_formats.append('gztar')
 
@@ -892,7 +894,9 @@ for p in [ scons ]:
                                                                 bytes))
         env.Command(digest, tar_gz, Digestify)
 
-    if zipit:
+    if not zipit:
+        print "zip not found; skipping .zip package for %s." % pkg
+    else:
 
         distutils_formats.append('zip')
 
@@ -1159,7 +1163,9 @@ SConscript('doc/SConscript')
 # source archive from the project files and files in the change.
 #
 
-if svn_status:
+if not svn_status:
+   "Not building in a Subversion tree; skipping building src package."
+else:
     slines = filter(lambda l: l[0] in ' MA', svn_status_lines)
     sentries = map(lambda l: l.split()[-1], slines)
     sfiles = filter(os.path.isfile, sentries)
