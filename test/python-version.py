@@ -45,7 +45,6 @@ test.write('SetOption', "SetOption('warn', 'no-python-version')\n")
 python_version = string.split(sys.version)[0]
 python_major_version = python_version[:3]
 
-
 if python_major_version in ():
 
     error = "scons: \*\*\* SCons version \S+ does not run under Python version %s."
@@ -53,6 +52,13 @@ if python_major_version in ():
     test.run(arguments = '-Q', status = 1, stderr = error)
 
 elif python_major_version in ('1.5', '2.0', '2.1'):
+
+    import os
+
+    sconsflags = os.environ.get('SCONSFLAGS')
+    if sconsflags:
+        sconsflags = string.replace(sconsflags, '--warn=no-python-version', '')
+        os.environ['SCONSFLAGS'] = sconsflags
 
     warn = "\nscons: warning: Support for Python version %s will be deprecated in a future release.\n"
     warn = warn % re.escape(python_version)

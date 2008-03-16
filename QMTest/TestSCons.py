@@ -192,6 +192,16 @@ class TestSCons(TestCommon):
 	# control character output on FC8
         # TERM can cause test failures due to control chars in prompts etc.
         os.environ['TERM'] = 'dumb'
+
+        if sys.version[:3] in ('1.5', '2.0', '2.1'):
+            sconsflags = os.environ.get('SCONSFLAGS')
+            if sconsflags:
+                sconsflags = [sconsflags]
+            else:
+                sconsflags = []
+            sconsflags = sconsflags + ['--warn=no-python-version']
+            os.environ['SCONSFLAGS'] = string.join(sconsflags)
+
         apply(TestCommon.__init__, [self], kw)
 
         import SCons.Node.FS
