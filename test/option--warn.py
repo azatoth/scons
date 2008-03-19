@@ -28,29 +28,8 @@ import os.path
 import sys
 
 import TestSCons
-import TestCmd
 
-test = TestSCons.TestSCons(match = TestCmd.match_re_dotall)
-
-# How to warn about deprecated features (whenever we have one again).
-#
-#test.write("SConstruct","""
-#b=Builder(name='b', action='foo')
-#""")
-#
-#test.run(arguments='.', stderr=r"""
-#scons: warning: The use of the 'name' parameter to Builder\(\) is deprecated\.
-#File "SConstruct", line 2, in \?
-#""")
-#
-#test.run(arguments='--warn=no-deprecated .', stderr='')
-#
-#test.run(arguments='--warn=no-all .', stderr='')
-#
-#test.run(arguments='--warn=no-all --warn=deprecated .', stderr=r"""
-#scons: warning: The use of the 'name' parameter to Builder\(\) is deprecated\.
-#File "SConstruct", line 2, in \?
-#""")
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 
 
