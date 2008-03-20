@@ -137,6 +137,8 @@ RELEASE 0.XX - XXX
 
   - Fix being able to SetOption('warn', ...) in SConscript files.
 
+  - Add a warning about env.Copy() being deprecated.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

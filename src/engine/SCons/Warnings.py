@@ -49,6 +49,9 @@ class DependencyWarning(Warning):
 class DeprecatedWarning(Warning):
     pass
 
+class DeprecatedCopyWarning(DeprecatedWarning):
+    pass
+
 class DuplicateEnvironmentWarning(Warning):
     pass
 

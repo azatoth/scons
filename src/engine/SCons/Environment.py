@@ -65,6 +65,8 @@ class _Null:
 
 _null = _Null
 
+_warn_copy_deprecated = True
+
 CleanTargets = {}
 CalculatorArgs = {}
 
@@ -1226,6 +1228,11 @@ class Base(SubstitutionEnvironment):
         return clone
 
     def Copy(self, *args, **kw):
+        global _warn_copy_deprecated
+        if _warn_copy_deprecated:
+            msg = "The env.Copy() method is deprecated; use the env.Clone() method instead."
+            SCons.Warnings.warn(SCons.Warnings.DeprecatedCopyWarning, msg)
+            _warn_copy_deprecated = False
         return apply(self.Clone, args, kw)
 
     def _changed_build(self, dependency, target, prev_ni):

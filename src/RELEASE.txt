@@ -67,6 +67,46 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
         command-line option for suppressing this specific warning,
         are *not* backwards-compatible to earlier versions of SCons.
 
+    --  THE env.Copy() METHOD IS NOW OFFICIALLY DEPRECATED
+
+        The env.Copy() method is now officially deprecated and will
+        be removed in a future release.  Using the env.Copy() method
+        now generates the following message:
+
+            scons: warning: The env.Copy() method is deprecated; use the env.Clone() method instead.
+
+        You may disable all warnings about deprecated features by adding
+        the option "--warn=no-deprecated" to the command line or to the
+        $SCONSFLAGS environment variable:
+
+            $ scons --warn=no-deprecated
+
+        Using '--warn=no-deprecated' is compatible with earlier versions
+        of SCons.
+
+        You may also, as of this version of SCons, disable all warnings
+        about deprecated features by adding the following to any
+        SConscript file:
+
+            SetOption('warn', 'no-deprecated')
+
+        You may disable only the specific warning about running under
+        a deprecated Python version by adding the following to any
+        SConscript file:
+
+            SetOption('warn', 'no-deprecated-copy')
+
+        The warning may also be suppressed on the command line:
+
+            $ scons --warn=no-deprecated-copy
+
+        Or by specifying the --warn=no-deprecated-copy option in the
+        $SCONSFLAGS environment variable.
+
+        Using SetOption('warn', ...), and the 'no-deprecated-copy'
+        command-line option for suppressing this specific warning,
+        are *not* backwards-compatible to earlier versions of SCons.
+
     --  File(), Dir() and Entry() NOW RETURN A LIST WHEN THE INPUT IS A SEQUENCE
 
         Previously, if these methods were passed a list, the list was
