@@ -568,29 +568,32 @@ def Parser(version):
                   help="Search up directory tree for SConstruct,       "
                        "build all Default() targets.")
 
-    debug_options = ["count", "dtree", "explain", "findlibs",
-                     "includes", "memoizer", "memory", "objects",
-                     "pdb", "presub", "stacktrace", "stree",
-                     "time", "tree"]
-
     deprecated_debug_options = {
-        "nomemoizer" : ' and has no effect',
+        "dtree"         : '; please use --tree=derived instead',
+        "nomemoizer"    : ' and has no effect',
+        "stree"         : '; please use --tree=all,status instead',
+        "tree"          : '; please use --tree=all instead',
     }
+
+    debug_options = ["count", "explain", "findlibs",
+                     "includes", "memoizer", "memory", "objects",
+                     "pdb", "presub", "stacktrace",
+                     "time"] + deprecated_debug_options.keys()
 
     def opt_debug(option, opt, value, parser,
                   debug_options=debug_options,
                   deprecated_debug_options=deprecated_debug_options):
         if value in debug_options:
             parser.values.debug.append(value)
-        elif value in deprecated_debug_options.keys():
-            try:
-                parser.values.delayed_warnings
-            except AttributeError:
-                parser.values.delayed_warnings = []
-            msg = deprecated_debug_options[value]
-            w = "The --debug=%s option is deprecated%s." % (value, msg)
-            t = (SCons.Warnings.DeprecatedWarning, w)
-            parser.values.delayed_warnings.append(t)
+            if value in deprecated_debug_options.keys():
+                try:
+                    parser.values.delayed_warnings
+                except AttributeError:
+                    parser.values.delayed_warnings = []
+                msg = deprecated_debug_options[value]
+                w = "The --debug=%s option is deprecated%s." % (value, msg)
+                t = (SCons.Warnings.DeprecatedWarning, w)
+                parser.values.delayed_warnings.append(t)
         else:
             raise OptionValueError("Warning:  %s is not a valid debug type" % value)
     opt_debug_help = "Print various types of debugging information: %s." \

@@ -35,7 +35,7 @@ import string
 import re
 import time
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 test.write('SConstruct', """
 env = Environment(OBJSUFFIX = '.ooo', PROGSUFFIX = '.xxx')
@@ -73,13 +73,20 @@ test.write('bar.h', """
 #endif
 """)
 
+expect = """
+scons: warning: The --debug=dtree option is deprecated; please use --tree=derived instead.
+"""
+
+stderr = TestSCons.re_escape(expect) + TestSCons.file_expr
+
 dtree1 = """
 +-foo.xxx
   +-foo.ooo
   +-bar.ooo
 """
 
-test.run(arguments = "--debug=dtree foo.xxx")
+test.run(arguments = "--debug=dtree foo.xxx",
+         stderr = stderr)
 test.fail_test(string.find(test.stdout(), dtree1) == -1)
 
 dtree2 = """
@@ -90,7 +97,8 @@ dtree2 = """
     +-foo.ooo
     +-bar.ooo
 """
-test.run(arguments = "--debug=dtree .")
+test.run(arguments = "--debug=dtree .",
+         stderr = stderr)
 test.fail_test(string.find(test.stdout(), dtree2) == -1)
 
 # Make sure we print the debug stuff even if there's a build failure.

@@ -139,6 +139,9 @@ RELEASE 0.XX - XXX
 
   - Add a warning about env.Copy() being deprecated.
 
+  - Add warnings about the --debug={dtree,stree,tree} options
+    being deprecated.
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

@@ -35,7 +35,7 @@ import string
 import re
 import time
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 CC = test.detect('CC')
 LINK = test.detect('LINK')
@@ -81,6 +81,12 @@ test.write('Bar.h', """
 #endif
 """)
 
+expect = """
+scons: warning: The --debug=tree option is deprecated; please use --tree=all instead.
+"""
+
+stderr = TestSCons.re_escape(expect) + TestSCons.file_expr
+
 tree1 = """
 +-Foo.xxx
   +-Foo.ooo
@@ -96,7 +102,8 @@ tree1 = """
   +-%(LINK)s
 """ % locals()
 
-test.run(arguments = "--debug=tree Foo.xxx")
+test.run(arguments = "--debug=tree Foo.xxx",
+         stderr = stderr)
 if string.find(test.stdout(), tree1) == -1:
     sys.stdout.write('Did not find expected tree in the following output:\n')
     sys.stdout.write(test.stdout())
@@ -133,7 +140,8 @@ tree2 = """
   +-SConstruct
 """ % locals()
 
-test.run(arguments = "--debug=tree .")
+test.run(arguments = "--debug=tree .",
+         stderr = stderr)
 if string.find(test.stdout(), tree2) == -1:
     sys.stdout.write('Did not find expected tree in the following output:\n')
     sys.stdout.write(test.stdout())

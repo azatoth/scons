@@ -35,7 +35,7 @@ import string
 import re
 import time
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 CC = test.detect('CC')
 LINK = test.detect('LINK')
@@ -77,6 +77,12 @@ test.write('bar.h', """
 #endif
 """)
 
+expect = """
+scons: warning: The --debug=stree option is deprecated; please use --tree=all,status instead.
+"""
+
+stderr = TestSCons.re_escape(expect) + TestSCons.file_expr
+
 stree = """
 [E B   C  ]+-foo.xxx
 [E B   C  ]  +-foo.ooo
@@ -92,7 +98,8 @@ stree = """
 [E     C  ]  +-%(LINK)s
 """ % locals()
 
-test.run(arguments = "--debug=stree foo.xxx")
+test.run(arguments = "--debug=stree foo.xxx",
+         stderr = stderr)
 test.fail_test(string.find(test.stdout(), stree) == -1)
 
 stree2 = """
@@ -123,7 +130,8 @@ stree2 = """
 
 test.run(arguments = '-c foo.xxx')
 
-test.run(arguments = "--no-exec --debug=stree foo.xxx")
+test.run(arguments = "--no-exec --debug=stree foo.xxx",
+         stderr = stderr)
 test.fail_test(string.find(test.stdout(), stree2) == -1)
 
 test.pass_test()
