@@ -426,7 +426,7 @@ class SConsEnvironment(SCons.Environment.Base):
                 else:
                     files = [fn.abspath]
                 kw['src_dir'] = build_dir
-            self.fs.BuildDir(build_dir, src_dir, duplicate)
+            self.fs.VariantDir(build_dir, src_dir, duplicate)
 
         return (files, exports)
 

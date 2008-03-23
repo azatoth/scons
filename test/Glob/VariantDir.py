@@ -25,45 +25,47 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that the logic that "guesses" the associated BuildDir for a
-subdirectory correctly builds targets in the BuildDir subdirectory.
+Verify that default use of the Glob() function within a VariantDir()
+finds the local file Nodes.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.subdir(['work'], ['work', 'src'])
+test.subdir('src')
 
-test.write(['work', 'SConstruct'], """
-c_builddir = r'%s'
-BuildDir(c_builddir, '.', duplicate=0)
-SConscript(c_builddir + '/SConscript')
-""" % test.workpath('debug'))
+test.write('SConstruct', """\
+VariantDir('var1', 'src')
+VariantDir('var2', 'src')
 
-test.write(['work', 'SConscript'], """
-SConscript('src/SConscript')
+SConscript('var1/SConscript')
+SConscript('var2/SConscript')
 """)
 
-test.write(['work', 'src', 'SConscript'], """
-env = Environment(OBJSUFFIX='.obj',
-                  PROGSUFFIX='.exe')
-env.Program('test.cpp')
+test.write(['src', 'SConscript'], """\
+env = Environment() 
+
+def concatenate(target, source, env):
+    fp = open(str(target[0]), 'wb')
+    for s in source:
+        fp.write(open(str(s), 'rb').read())
+    fp.close()
+
+env['BUILDERS']['Concatenate'] = Builder(action=concatenate)
+
+f_in = Glob('f*.in')
+f_in.sort(lambda a,b: cmp(a.name, b.name))
+env.Concatenate('f.out', f_in)
 """)
 
-test.write(['work', 'src', 'test.cpp'], """\
-#include <stdio.h>
-#include <stdlib.h>
-int
-main(int argc, char *argv[])
-{
-    printf("work/src/test.cpp\\n");
-}
-""")
+test.write(['src', 'f1.in'], "src/f1.in\n")
+test.write(['src', 'f2.in'], "src/f2.in\n")
+test.write(['src', 'f3.in'], "src/f3.in\n")
 
-test.run(chdir = 'work', arguments = '.')
+test.run(arguments = '.')
 
-test.must_exist(test.workpath('debug', 'src', 'test.obj'))
-test.must_exist(test.workpath('debug', 'src', 'test.exe'))
+test.must_match(['var1', 'f.out'], "src/f1.in\nsrc/f2.in\nsrc/f3.in\n")
+test.must_match(['var2', 'f.out'], "src/f1.in\nsrc/f2.in\nsrc/f3.in\n")
 
 test.pass_test()

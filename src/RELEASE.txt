@@ -109,16 +109,16 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
     --  THE --debug=dtree, --debug=stree AND --debug=tree OPTIONS ARE DEPRECATED
 
-	The --debug=dtree, --debug=stree and --debug=tree methods
-	are now officially deprecated and will be removed in a
-	future release.  Using these options now generate a warning
-	message recommending use of the --tree=derived, --tree=all,status
-	and --tree=all options, respectively.
+        The --debug=dtree, --debug=stree and --debug=tree methods
+        are now officially deprecated and will be removed in a
+        future release.  Using these options now generate a warning
+        message recommending use of the --tree=derived, --tree=all,status
+        and --tree=all options, respectively.
 
-	You may disable these warnings, and all warnings about
-	deprecated features, by adding the option "--warn=no-deprecated"
-	to the command line or to the $SCONSFLAGS environment
-	variable:
+        You may disable these warnings, and all warnings about
+        deprecated features, by adding the option "--warn=no-deprecated"
+        to the command line or to the $SCONSFLAGS environment
+        variable:
 
             $ scons --warn=no-deprecated
 
@@ -128,16 +128,16 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
     --  File(), Dir() and Entry() NOW RETURN A LIST WHEN THE INPUT IS A SEQUENCE
 
         Previously, if these methods were passed a list, the list was
-	substituted and stringified, then passed as a single string to
-	create a File/Dir/Entry Node.  This rarely if ever worked with
-	more than one element in the list.  They now return a list of
-	Nodes when passed a list.
+        substituted and stringified, then passed as a single string to
+        create a File/Dir/Entry Node.  This rarely if ever worked with
+        more than one element in the list.  They now return a list of
+        Nodes when passed a list.
 
-	One case that works differently now is a passing in a
-	single-element sequence; that formerly was stringified
-	(returning its only element) and then a single Node would be
-	returned.  Now a single-element list containing the Node will
-	be returned, for consistency.
+        One case that works differently now is a passing in a
+        single-element sequence; that formerly was stringified
+        (returning its only element) and then a single Node would be
+        returned.  Now a single-element list containing the Node will
+        be returned, for consistency.
 
     --  THE env.subst() METHOD NOW RETURNS A LIST WHEN THE INPUT IS A SEQUENCE
 
@@ -810,6 +810,52 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
   Please note the following planned, future changes:
 
+    --  THE BuildDir() METHOD AND FUNCTION WILL BE DEPRECATED
+
+        The env.BuildDir() method and BuildDir() function will be
+        replaced by the new env.VariantDir() method nd VariantDir()
+        function.
+
+        In some future release a deprecation warning will be added
+        to existing uses of the env.BuildDir() method and BuildDir()
+        function.  At some point after the deprecation warning, the
+        env.Builder() method and BuildDir() function will either
+        be removed entirely or have their behavior changed.
+
+        You can prepare for this by changing all your uses of the
+        env.BuildDir() method to env.VariantDir() and uses of the
+        global BuildDir() function to VariantDir().
+
+        NOTE:  CHANGING USES OF env.BuildDir() AND BuildDir() to
+        env.VariantDir() AND VariantDir() IS NOT BACKWARDS COMPATIBLE
+        TO VERSIONS OF SCons BEFORE 0.98.  YOUR SConscript FILES
+        WILL NOT WORK ON EARLIER VERSIONS OF SCons AFTER MAKING
+        THIS CHANGE.
+
+        If you change SConscript files in software that you make
+        available for download or otherwise distribute, other users
+        may try to build your software with an earlier version of
+        SCons that does not have the env.VariantDir() method or
+        VariantDir() fnction.  We recommend preparing for this in
+        one of two ways:
+
+            --  Make your SConscript files backwards-compatible by
+                including the following code near the beginning of your
+                top-level SConstruct file:
+
+                    import SCons.Environment
+                    try:
+                        SCons.Environment.Environment.VariantDir
+                    except AttributeError:
+                        SCons.Environment.Environment.VariantDir = \
+                              SCons.Environment.Environment.BuildDir
+
+            --  Use the EnsureSConsVersion() function to provide a
+                descriptive error message if your SConscript files
+                are executed by an earlier version of SCons:
+
+                    EnsureSConsVersion(0, 98)
+
     --  SCANNER NAMES HAVE BEEN DEPRECATED AND WILL BE REMOVED
 
         Several internal variable names in SCons.Defaults for various
@@ -836,22 +882,23 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
         The env.Copy() method (to make a copy of a construction
         environment) is being replaced by the env.Clone() method.
 
-        In some future release, a deprecation warning will be added
-        to current uses of the env.Copy() method.  At some point after
-        the deprecation warning, the env.Copy() method will either be
-        removed entirely or have its behavior changed.
+        As of SCons 0.98, a deprecation warning has been added to
+        current uses of the env.Copy() method.  At some point in
+        the future, the env.Copy() method will either be removed
+        entirely or have its behavior changed.
 
         You can prepare for this by changing all your uses of env.Copy()
         to env.Clone(), which has the exact same calling arguments.
 
-        NOTE:  CHANGING USES OF env.Copy() TO env.Clone() WILL MAKE YOUR
-        SConscript FILES NOT WORK ON EARLIER VERSIONS OF SCons.
+        NOTE:  CHANGING USES OF env.Copy() TO env.Clone() WILL MAKE
+        YOUR SConscript FILES NOT WORK ON VERSIONS OF SCons BEFORE
+        0.96.93.
 
-        If you change SConscript files in software that you make available
-        for download or otherwise distribute, other users may try to
-        build your software with an earlier version of SCons that does
-        not have the env.Clone() method.  We recommend preparing for
-        this in one of two ways:
+        If you change SConscript files in software that you make
+        available for download or otherwise distribute, other users
+        may try to build your software with an earlier version of
+        SCons that does not have the env.Clone() method.  We recommend
+        preparing for this in one of two ways:
 
             --  Make your SConscript files backwards-compatible by
                 including the following code near the beginning of your

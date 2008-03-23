@@ -25,46 +25,47 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that explicit use of File() Nodes in a BuildDir, followed by
-*direct* creation of the file by Python in the SConscript file itself,
-works correctly, with both duplicate=0 and duplicate=1.
-
-Right now it only works if you explicitly str() the Node before the file
-is created on disk, but we at least want to make sure that continues
-to work.  The non-str() case, which doesn't currently work, is captured
-here but commented out.
+Verify that toolpath works with VariantDir() for an SConscript.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.subdir('src')
+test.subdir('subdir', ['subdir', 'src'], ['subdir', 'src', 'tools'])
 
 test.write('SConstruct', """\
-SConscript('src/SConscript', build_dir='build0', chdir=1, duplicate=0)
-SConscript('src/SConscript', build_dir='build1', chdir=1, duplicate=1)
+VariantDir('build', 'subdir', duplicate=0)
+SConscript('build/SConscript')
 """)
 
-test.write(['src', 'SConscript'], """\
-#f1_in = File('f1.in')
-#Command('f1.out', f1_in, Copy('$TARGET', '$SOURCE'))
-#open('f1.in', 'wb').write("f1.in\\n")
-
-f2_in = File('f2.in')
-str(f2_in)
-Command('f2.out', f2_in, Copy('$TARGET', '$SOURCE'))
-open('f2.in', 'wb').write("f2.in\\n")
+test.write(['subdir', 'SConscript'], """\
+env = Environment(tools = ['MyBuilder'], toolpath = ['src/tools'])
+env.MyCopy('src/file.out', 'src/file.in')
 """)
 
-test.run(arguments = '--tree=all .')
+test.write(['subdir', 'src', 'file.in'], "subdir/src/file.in\n")
 
-#test.must_match(['build0', 'f1.out'], "f1.in\n")
-test.must_match(['build0', 'f2.out'], "f2.in\n")
+test.write(['subdir', 'src', 'tools', 'MyBuilder.py'], """\
+from SCons.Script import Builder
+def generate(env):
+    def my_copy(target, source, env):
+        content = open(str(source[0]), 'rb').read()
+        open(str(target[0]), 'wb').write(content)
+    env['BUILDERS']['MyCopy'] = Builder(action = my_copy)
 
-#test.must_match(['build1', 'f1.out'], "f1.in\n")
-test.must_match(['build1', 'f2.out'], "f2.in\n")
+def exists(env):
+    return 1
+""")
 
-test.up_to_date(arguments = '.')
+test.run()
+
+test.must_match(['build', 'src', 'file.out'], "subdir/src/file.in\n")
+
+# We should look for the underlying tool in both the build/src/tools
+# (which doesn't exist) and subdir/src/tools (which still does).  If we
+# don't, the following would fail because the execution directory is
+# now relative to the created VariantDir.
+test.run()
 
 test.pass_test()

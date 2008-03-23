@@ -139,7 +139,7 @@ if ARGUMENTS.get('build_dir', 0):
         SConscriptChdir(1)
     else:
         SConscriptChdir(0)
-    BuildDir('build', '.', duplicate=1)
+    VariantDir('build', '.', duplicate=1)
     sconscript = Dir('build').File('SConscript')
 else:
     sconscript = File('SConscript')

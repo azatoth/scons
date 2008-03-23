@@ -2657,97 +2657,9 @@ env.SourceCode('.', env.BitKeeper())
 .RI BuildDir( build_dir ", " src_dir ", [" duplicate ])
 .TP
 .RI env.BuildDir( build_dir ", " src_dir ", [" duplicate ])
-This specifies a build directory
-.I build_dir
-in which to build all derived files
-that would normally be built under
-.IR src_dir .
-Multiple build directories can be set up for multiple build variants, for
-example. 
-.I src_dir
-must be underneath the SConstruct file's directory,
-and
-.I build_dir
-may not be underneath the
-.I src_dir .
-
-The default behavior is for
-.B scons
-to duplicate all of the files in the tree underneath
-.I src_dir
-into
-.IR build_dir ,
-and then build the derived files within the copied tree.
-(The duplication is performed by
-linking or copying,
-depending on the platform; see also the
-.IR --duplicate
-option.)
-This guarantees correct builds
-regardless of whether intermediate source files
-are generated during the build,
-where preprocessors or other scanners search
-for included files,
-or whether individual compilers or other invoked tools
-are hard-coded to put derived files in the same directory as source files.
-
-This behavior of making a complete copy of the source tree
-may be disabled by setting
-.I duplicate
-to 0.
-This will cause
-.B scons
-to invoke Builders using the
-path names of source files in
-.I src_dir
-and the path names of derived files within
-.IR build_dir .
-This is always more efficient than
-.IR duplicate =1,
-and is usually safe for most builds.
-Specifying
-.IR duplicate =0,
-however,
-may cause build problems
-if source files are generated during the build,
-if any invoked tools are hard-coded to
-put derived files in the same directory as the source files.
-
-Note that specifying a
-.B BuildDir
-works most naturally
-with a subsidiary SConscript file
-in the source directory.
-However,
-you would then call the subsidiary SConscript file
-not in the source directory,
-but in the
-.I build_dir ,
-as if
-.B scons
-had made a virtual copy of the source tree
-regardless of the value of 
-.IR duplicate .
-This is how you tell
-.B scons
-which variant of a source tree to build.
-For example:
-
-.ES
-BuildDir('build-variant1', 'src')
-SConscript('build-variant1/SConscript')
-BuildDir('build-variant2', 'src')
-SConscript('build-variant2/SConscript')
-.EE
-
-.IP
-See also the
-.BR SConscript ()
-function, described below,
-for another way to 
-specify a build directory
-in conjunction with calling a subsidiary
-SConscript file.)
+A synonym for
+.BR env.VariantDir() .
+(This will be officially deprecated some day.)
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP 
@@ -3070,9 +2982,8 @@ wx_env = env.Clone(parse_flags = '!wx-config --cflags --cxxflags')
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI env.Copy([ key = val ", ...])"
-A synonym for
+A now-deprecated synonym for
 .BR env.Clone() .
-(This will probably be officially deprecated some day.)
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
@@ -3712,7 +3623,7 @@ for the following reasons:
 1) The returned list will contain all appropriate directories
 found in source trees
 (when
-.BR BuildDir ()
+.BR VariantDir ()
 is used)
 or in code repositories
 (when
@@ -4069,7 +3980,7 @@ repositories
 function)
 and source directories
 (see the
-.BR BuildDir ()
+.BR VariantDir ()
 function)
 and
 returns a Node (or string, if so configured)
@@ -4097,7 +4008,7 @@ argument may be set to
 (or any equivalent value)
 to specify that,
 when the local directory is a
-.BR BuildDir (),
+.BR VariantDir (),
 the returned Nodes should be from the
 corresponding source directory,
 not the local directory.
@@ -5105,7 +5016,7 @@ of the calling SConscript file.
 By default,
 .B scons
 will link or copy (depending on the platform)
-all the source files into the build directory.
+all the source files into the variant directory tree.
 This behavior may be disabled by
 setting the optional
 .I duplicate
@@ -5931,6 +5842,103 @@ env.UpdateValue(target = Value(output), source = Value(input))
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
+.RI VariantDir( build_dir ", " src_dir ", [" duplicate ])
+.TP
+.RI env.VariantDir( build_dir ", " src_dir ", [" duplicate ])
+This specifies a variant directory tree
+.I build_dir
+in which to build all derived files
+that would normally be built under
+.IR src_dir .
+Multiple directory trees
+can be set up for multiple build variants.
+.I src_dir
+must be underneath the SConstruct file's directory,
+and
+.I build_dir
+may not be underneath the
+.I src_dir .
+
+The default behavior is for
+.B scons
+to duplicate all of the files in the tree underneath
+.I src_dir
+into
+.IR build_dir ,
+and then build the derived files within the copied tree.
+(The duplication is performed by
+linking or copying,
+depending on the platform; see also the
+.IR --duplicate
+option.)
+This guarantees correct builds
+regardless of whether intermediate source files
+are generated during the build,
+where preprocessors or other scanners search
+for included files,
+or whether individual compilers or other invoked tools
+are hard-coded to put derived files in the same directory as source files.
+
+This behavior of making a complete copy of the source tree
+may be disabled by setting
+.I duplicate
+to 0.
+This will cause
+.B scons
+to invoke Builders using the
+path names of source files in
+.I src_dir
+and the path names of derived files within
+.IR build_dir .
+This is always more efficient than
+.IR duplicate =1,
+and is usually safe for most builds.
+Specifying
+.IR duplicate =0,
+however,
+may cause build problems
+if source files are generated during the build,
+or if any invoked tools are hard-coded to
+put derived files in the same directory as the source files.
+
+Note that specifying a
+.B VariantDir
+works most naturally
+with a subsidiary SConscript file
+in the source directory.
+However,
+you would then call the subsidiary SConscript file
+not in the source directory,
+but in the
+.I build_dir ,
+as if
+.B scons
+had made a virtual copy of the source tree
+regardless of the value of 
+.IR duplicate .
+This is how you tell
+.B scons
+which variant of a source tree to build.
+For example:
+
+.ES
+VariantDir('build-variant1', 'src')
+SConscript('build-variant1/SConscript')
+VariantDir('build-variant2', 'src')
+SConscript('build-variant2/SConscript')
+.EE
+
+.IP
+See also the
+.BR SConscript ()
+function, described below,
+for another way to 
+specify a variant directory
+in conjunction with calling a subsidiary
+SConscript file.)
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TP
 .RI WhereIs( program ", [" path  ", " pathext ", " reject ])
 .TP
 .RI env.WhereIs( program ", [" path  ", " pathext ", " reject ])
@@ -6284,9 +6292,9 @@ specifies a file which collects the output from commands
 that are executed to check for the existence of header files, libraries, etc.
 The default is the file #/config.log.
 If you are using the
-.B BuildDir
+.B VariantDir
 method,
-you may want to specify a subdirectory under your build directory.
+you may want to specify a subdirectory under your variant directory.
 .I config_h
 specifies a C header file where the results of tests 
 will be written, e.g. #define HAVE_STDIO_H, #define HAVE_LIBM, etc. 
@@ -8532,24 +8540,24 @@ when a path references a file on other (POSIX) systems.
 
 .IP srcpath
 The directory and file name to the source file linked to this file
-through BuildDir.  If this file isn't linked, it just returns the
+through VariantDir.  If this file isn't linked, it just returns the
 directory and filename unchanged.
 
 .IP srcdir
 The directory containing the source file linked to this file
-through BuildDir.  If this file isn't linked, it just returns the
+through VariantDir.  If this file isn't linked, it just returns the
 directory part of the filename.
 
 .IP rsrcpath
 The directory and file name to the source file linked to this file
-through BuildDir.  If the file does not exist locally but exists in
+through VariantDir.  If the file does not exist locally but exists in
 a Repository, the path in the Repository is returned.
 If this file isn't linked, it just returns the
 directory and filename unchanged.
 
 .IP rsrcdir
 The Repository directory containing the source file linked to this file
-through BuildDir.  If this file isn't linked, it just returns the
+through VariantDir.  If this file isn't linked, it just returns the
 directory part of the filename.
 
 .LP
@@ -9335,8 +9343,8 @@ subdirectory/SConscript:
 
 Use the build_dir keyword argument to
 the SConscript function to establish
-one or more separate build directories for
-a given source directory:
+one or more separate variant build directory trees
+for a given source directory:
 
 .ES
 SConstruct:

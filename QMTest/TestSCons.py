@@ -695,7 +695,7 @@ if ARGUMENTS.get('build_dir', 0):
         env['QT_DEBUG'] = 1
     else:
         builddir = 'build'
-    BuildDir(builddir, '.', duplicate=dup)
+    VariantDir(builddir, '.', duplicate=dup)
     print builddir, dup
     sconscript = Dir(builddir).File('SConscript')
 else:

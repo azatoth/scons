@@ -351,6 +351,7 @@
 <!ENTITY StaticLibrary "<function>StaticLibrary</function>">
 <!ENTITY StaticObject "<function>StaticObject</function>">
 <!ENTITY Tar "<function>Tar</function>">
+<!ENTITY VariantDir "<function>VariantDir</function>">
 <!ENTITY Zip "<function>Zip</function>">
 
 <!-- Obsolete, but referenced in old documents.  -->

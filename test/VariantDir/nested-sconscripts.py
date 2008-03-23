@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that nested SConscript files in a BuildDir don't throw
+Test that nested SConscript files in a VariantDir don't throw
 an OSError exception looking for the wrong file.
 """
 
@@ -47,7 +47,7 @@ for flavor in ['prod', 'debug']:
     # In real life, we would modify build_env appropriately here
     FLAVOR_DIR = BUILD_DIR + '/' + flavor
     Export('build_env')
-    BuildDir(FLAVOR_DIR, 'md', duplicate=0)
+    VariantDir(FLAVOR_DIR, 'md', duplicate=0)
     SConscript(FLAVOR_DIR + '/SConscript')
 """)
 

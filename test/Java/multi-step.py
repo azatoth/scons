@@ -81,7 +81,7 @@ env.Append(SWIGFLAGS=['-c++','$_CPPINCFLAGS'])
 
 env.Append(CPPPATH='.')
 
-env.BuildDir('buildout', 'src', duplicate=0)
+env.VariantDir('buildout', 'src', duplicate=0)
 
 if sys.platform=='darwin':
    env.Append(CPPPATH=['/System/Library/Frameworks/JavaVM.framework/Headers'])

@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that Configure contexts work with basic use of BuildDir.
+Verify that Configure contexts work with basic use of VariantDir.
 """
 
 import os.path
@@ -45,7 +45,7 @@ test.write('SConstruct', """\
 env = Environment(LOGFILE='build/config.log')
 import os
 env.AppendENVPath('PATH', os.environ['PATH'])
-BuildDir( 'build', '.' )
+VariantDir( 'build', '.' )
 conf = env.Configure(conf_dir='build/config.tests', log_file='$LOGFILE')
 r1 = conf.CheckCHeader( 'math.h' )
 r2 = conf.CheckCHeader( 'no_std_c_header.h' ) # leads to compile error

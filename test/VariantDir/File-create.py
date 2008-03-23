@@ -25,8 +25,14 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that default use of the Glob() function within a BuildDir()
-finds the local file Nodes.
+Verify that explicit use of File() Nodes in a VariantDir, followed by
+*direct* creation of the file by Python in the SConscript file itself,
+works correctly, with both duplicate=0 and duplicate=1.
+
+Right now it only works if you explicitly str() the Node before the file
+is created on disk, but we at least want to make sure that continues
+to work.  The non-str() case, which doesn't currently work, is captured
+here but commented out.
 """
 
 import TestSCons
@@ -36,36 +42,29 @@ test = TestSCons.TestSCons()
 test.subdir('src')
 
 test.write('SConstruct', """\
-BuildDir('var1', 'src')
-BuildDir('var2', 'src')
-
-SConscript('var1/SConscript')
-SConscript('var2/SConscript')
+SConscript('src/SConscript', build_dir='build0', chdir=1, duplicate=0)
+SConscript('src/SConscript', build_dir='build1', chdir=1, duplicate=1)
 """)
 
 test.write(['src', 'SConscript'], """\
-env = Environment() 
+#f1_in = File('f1.in')
+#Command('f1.out', f1_in, Copy('$TARGET', '$SOURCE'))
+#open('f1.in', 'wb').write("f1.in\\n")
 
-def concatenate(target, source, env):
-    fp = open(str(target[0]), 'wb')
-    for s in source:
-        fp.write(open(str(s), 'rb').read())
-    fp.close()
-
-env['BUILDERS']['Concatenate'] = Builder(action=concatenate)
-
-f_in = Glob('f*.in')
-f_in.sort(lambda a,b: cmp(a.name, b.name))
-env.Concatenate('f.out', f_in)
+f2_in = File('f2.in')
+str(f2_in)
+Command('f2.out', f2_in, Copy('$TARGET', '$SOURCE'))
+open('f2.in', 'wb').write("f2.in\\n")
 """)
 
-test.write(['src', 'f1.in'], "src/f1.in\n")
-test.write(['src', 'f2.in'], "src/f2.in\n")
-test.write(['src', 'f3.in'], "src/f3.in\n")
+test.run(arguments = '--tree=all .')
 
-test.run(arguments = '.')
+#test.must_match(['build0', 'f1.out'], "f1.in\n")
+test.must_match(['build0', 'f2.out'], "f2.in\n")
 
-test.must_match(['var1', 'f.out'], "src/f1.in\nsrc/f2.in\nsrc/f3.in\n")
-test.must_match(['var2', 'f.out'], "src/f1.in\nsrc/f2.in\nsrc/f3.in\n")
+#test.must_match(['build1', 'f1.out'], "f1.in\n")
+test.must_match(['build1', 'f2.out'], "f2.in\n")
+
+test.up_to_date(arguments = '.')
 
 test.pass_test()

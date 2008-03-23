@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-This test validates the correct operation of a BuildDir specification
+This test validates the correct operation of a VariantDir specification
 in avoiding reflection: reflection is the case where the build_dir is
 located under the corresponding source dir, and trying to use elements
 in the build_dir as sources for that same build dir.
@@ -89,7 +89,7 @@ INC_CNI = re.escape(os.path.join('INC_dir1', 'dir2', 'dir1', 'dir2_CNI'))
 
 # The .+ after mycc\\.py below handles /nologo flags from Visual C/C++.
 expect = test.wrap_stdout("""\
-scons: building associated BuildDir targets: %(targets)s
+scons: building associated VariantDir targets: %(targets)s
 "%(re_python)s" mycc\\.py.* %(INC_CNI)s .+
 Compile
 "%(re_python)s" mylink\\.py .+
@@ -119,7 +119,7 @@ INC_CNI = re.escape(os.path.join('INC_dir1', 'dir2_CNI'))
 # The .* after mycc\\.py below handles /nologo flags from Visual C/C++.
 test.run(arguments = '',
          stdout=test.wrap_stdout("""\
-scons: building associated BuildDir targets: %(targets)s
+scons: building associated VariantDir targets: %(targets)s
 "%(re_python)s" mycc\\.py.* %(INC_CNI)s .+
 Compile
 "%(re_python)s" mylink\\.py .+

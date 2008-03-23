@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test BuildDir handling of removal of source files.
+Test VariantDir handling of removal of source files.
 
 A C++ Program is created and compiled. First, a header is missing. Then
 the header is added and the compilation should succeed, then the header
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 
 test.write('SConstruct', """
 env = Environment()
-env.BuildDir('bin', 'src')
+env.VariantDir('bin', 'src')
 o = env.Object('bin/dep', 'bin/dep.cpp')
 env.Program('bin/dep', o)
 """)

@@ -142,6 +142,8 @@ RELEASE 0.XX - XXX
   - Add warnings about the --debug={dtree,stree,tree} options
     being deprecated.
 
+  - Add VariantDir() as the first step towards deprecating BuildDir().
+
   From Rob Managan:
 
   - Enhance TeX and LaTeX support to work with BuildDir(duplicate=0).

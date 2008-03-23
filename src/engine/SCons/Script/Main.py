@@ -924,7 +924,7 @@ def _main(parser):
             SCons.Script._SConscript._SConscript(fs, script)
     except SCons.Errors.StopError, e:
         # We had problems reading an SConscript file, such as it
-        # couldn't be copied in to the BuildDir.  Since we're just
+        # couldn't be copied in to the VariantDir.  Since we're just
         # reading SConscript files and haven't started building
         # things yet, stop regardless of whether they used -i or -k
         # or anything else.
@@ -985,7 +985,7 @@ def _main(parser):
 
     # Change directory to the top-level SConstruct directory, then tell
     # the Node.FS subsystem that we're all done reading the SConscript
-    # files and calling Repository() and BuildDir() and changing
+    # files and calling Repository() and VariantDir() and changing
     # directories and the like, so it can go ahead and start memoizing
     # the string values of file system nodes.
 

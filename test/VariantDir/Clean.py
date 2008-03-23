@@ -25,44 +25,47 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-XXX Put a description of the test here.
+Verify that we can Clean() files in a VariantDir() that's underneath us.
+(At one point this didn't work because we were using str() instead of
+abspath to remove the files, which would interfere with the removal by
+returning a path relative to the VariantDir(), not the top-level SConstruct
+directory, if the source directory was the top-level directory.)
 """
-
-import os
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-if not hasattr(os, 'symlink'):
-    print "No os.symlink() method, no symlinks to test."
-    test.no_result(1)
+test.write('SConstruct', """\
+VariantDir('build0', '.', duplicate=0)
+VariantDir('build1', '.', duplicate=1)
 
-test.subdir('obj',
-            ['obj', 'subdir'],
-            'src',
-            'srcdir')
+def build_sample(target, source, env):
+    targetdir = str(target[0].dir)
+    target = str(target[0])
+    open(target, 'wb').write(open(str(source[0]), 'rb').read())
+    open(targetdir+'/sample.junk', 'wb').write('Side effect!\\n')
 
-test.write('SConstruct', """
-env = Environment()
-BuildDir('obj/subdir', 'src')
-Program('hello', ['obj/subdir/main.c'])
+t0 = Command("build0/sample.out", "sample.in", build_sample)
+t1 = Command("build1/sample.out", "sample.in", build_sample)
+
+Clean(t0, 'build0/sample.junk')
+Clean(t1, 'build1/sample.junk')
 """)
 
-test.write(['srcdir', 'main.c'], r"""
-#include <stdio.h>
-#include <stdlib.h>
-
-int
-main(int ac, char *argv[])
-{
-    printf("srcdir/main.c\n");
-    exit(0);
-}
-""")
-
-os.symlink('../srcdir/main.c', 'src/main.c')
+test.write('sample.in', "sample.in\n")
 
 test.run(arguments = '.')
+
+test.must_match(['build0', 'sample.out'], "sample.in\n")
+test.must_exist(['build0', 'sample.junk'])
+
+test.must_match(['build1', 'sample.out'], "sample.in\n")
+test.must_exist(['build1', 'sample.junk'])
+
+test.run(arguments = '-c .')
+
+test.must_not_exist(['build', 'sample.out'])
+test.must_not_exist(['build', 'sample.junk'])
 
 test.pass_test()

@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test retrieving derived files from a CacheDir when a BuildDir is used.
+Test retrieving derived files from a CacheDir when a VariantDir is used.
 """
 
 import os.path
@@ -68,7 +68,7 @@ test.write(['src', 'ccc.in'], "ccc.in\n")
 test.write('SConstruct', """\
 env = Environment(TWO = '2')
 CacheDir(r'%s')
-BuildDir('build', 'src', duplicate=0)
+VariantDir('build', 'src', duplicate=0)
 SConscript('build/SConscript')
 """ % test.workpath('cache${TWO}'))
 

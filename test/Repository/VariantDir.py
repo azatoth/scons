@@ -38,8 +38,8 @@ opts = "-Y " + test.workpath('repository')
 
 #
 test.write(['repository', 'SConstruct'], r"""
-BuildDir('build0', 'src', duplicate=0)
-BuildDir('build1', 'src', duplicate=1)
+VariantDir('build0', 'src', duplicate=0)
+VariantDir('build1', 'src', duplicate=1)
 SConscript('build0/SConscript')
 SConscript('build1/SConscript')
 """)

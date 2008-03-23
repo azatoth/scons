@@ -26,7 +26,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
 Validate successful handling of errors when duplicating things in
-BuildDirs.  This is generally when the BuildDir, or something in it,
+VariantDirs.  This is generally when the VariantDir, or something in it,
 is read-only.
 """
 
@@ -43,7 +43,7 @@ for dir in ['normal', 'ro-dir', 'ro-SConscript', 'ro-src']:
 
     test.write([dir, 'SConstruct'], """\
 import os.path
-BuildDir('build', 'src')
+VariantDir('build', 'src')
 SConscript(os.path.join('build', 'SConscript'))
 """) 
 
@@ -81,7 +81,7 @@ test.run(chdir = 'normal', arguments = ".")
 
 test.fail_test(test.read(['normal', 'build', 'file.out']) != "normal/src/file.in\n")
 
-# Verify the error when the BuildDir itself is read-only.  Don't bother
+# Verify the error when the VariantDir itself is read-only.  Don't bother
 # to test this on Windows, because the ACL (I think) still allows the
 # owner to create files in the directory even when it's read-only.
 if sys.platform != 'win32':
@@ -94,7 +94,7 @@ if sys.platform != 'win32':
              status = 2,
              stderr = "scons: *** Cannot duplicate `%s' in `build': Permission denied.  Stop.\n" % os.path.join('src', 'SConscript'))
 
-# Verify the error when the SConscript file within the BuildDir is
+# Verify the error when the SConscript file within the VariantDir is
 # read-only.  Note that we have to make the directory read-only too,
 # because otherwise our duplication logic will be able to unlink
 # the read-only SConscript and duplicate the new one.
@@ -119,11 +119,11 @@ test.run(chdir = 'ro-SConscript',
          status = 2,
          stderr = "scons: *** Cannot duplicate `%s' in `build': Permission denied.  Stop.\n" % os.path.join('src', 'SConscript'))
 
-# Verify the error when the source file within the BuildDir is
+# Verify the error when the source file within the VariantDir is
 # read-only.  Note that we have to make the directory read-only too,
 # because otherwise our duplication logic will be able to unlink the
 # read-only source file and duplicate the new one.  But because we've
-# made the BuildDir read-only, we must also create a writable SConscript
+# made the VariantDir read-only, we must also create a writable SConscript
 # file there so it can be duplicated from the source directory.
 dir = os.path.join('ro-src', 'build')
 test.subdir(dir)
@@ -158,8 +158,8 @@ test.subdir('duplicate', ['duplicate', 'src1'], ['duplicate', 'src2'])
 duplicate_SConstruct_path = test.workpath('duplicate', 'SConstruct')
 
 test.write(duplicate_SConstruct_path, """\
-BuildDir('build', 'src1')
-BuildDir('build', 'src2')
+VariantDir('build', 'src1')
+VariantDir('build', 'src2')
 """)
 
 expect_stderr = """

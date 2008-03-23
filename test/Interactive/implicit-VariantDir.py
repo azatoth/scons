@@ -30,8 +30,8 @@ This is a regression test for a bug in earlier versions of the
 submitted by Adam Simpkins, who created this test case).
 
 It tests to make sure that cached state is cleared between files for
-nodes in both the build tree and the source tree when BuildDirs are used.
-This is needed especially with BuildDirs created with duplicate=0, since
+nodes in both the build tree and the source tree when VariantDirs are used.
+This is needed especially with VariantDirs created with duplicate=0, since
 the scanners scan the files in the source tree.  Any cached implicit
 deps must be cleared on the source files.
 """
@@ -55,7 +55,7 @@ hdr_dir = '#build/include'
 BUILD_ENV['HDR_DIR'] = hdr_dir
 BUILD_ENV.Append(CPPPATH = hdr_dir)
 
-BUILD_ENV.BuildDir('build', 'src', duplicate = 0)
+BUILD_ENV.VariantDir('build', 'src', duplicate = 0)
 SConscript('build/SConscript')
 
 Command('1', [], Touch('$TARGET'))

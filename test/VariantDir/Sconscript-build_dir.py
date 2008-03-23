@@ -75,7 +75,7 @@ SConscript('src/SConscript', build_dir='build/var2', src_dir=src)
 
 SConscript('src/SConscript', build_dir='build/var3', duplicate=0)
 
-#XXX We can't support var4 and var5 yet, because our BuildDir linkage
+#XXX We can't support var4 and var5 yet, because our VariantDir linkage
 #XXX is to an entire source directory.  We haven't yet generalized our
 #XXX infrastructure to be able to take the SConscript file from one source
 #XXX directory, but the rest of the files from a different one.
@@ -92,7 +92,7 @@ env.SConscript('src/SConscript', build_dir='../$BUILD/var8', duplicate=0)
 # we set the path of the SConscript accordingly.  The below is
 # equivalent to saying:
 #
-# BuildDir('build/var9', '.')
+# VariantDir('build/var9', '.')
 # SConscript('build/var9/src/SConscript')
 SConscript('src/SConscript', build_dir='build/var9', src_dir='.')
 """) 
@@ -123,7 +123,7 @@ all_alt = "test/alt/aaa.in\ntest/alt/bbb.in\ntest/alt/ccc.in\n"
 test.must_match(all1, all_src)
 test.must_match(all2, all_src)
 test.must_match(all3, all_src)
-#XXX We can't support var4 and var5 yet, because our BuildDir linkage
+#XXX We can't support var4 and var5 yet, because our VariantDir linkage
 #XXX is to an entire source directory.  We haven't yet generalized our
 #XXX infrastructure to be able to take the SConscript file from one source
 #XXX directory, but the rest of the files from a different one.
@@ -161,7 +161,7 @@ test.must_not_exist(test.workpath('test', 'build', 'var3', 'aaa.in'))
 test.must_not_exist(test.workpath('test', 'build', 'var3', 'bbb.in'))
 test.must_not_exist(test.workpath('test', 'build', 'var3', 'ccc.in'))
  
-#XXX We can't support var4 and var5 yet, because our BuildDir linkage
+#XXX We can't support var4 and var5 yet, because our VariantDir linkage
 #XXX is to an entire source directory.  We haven't yet generalized our
 #XXX infrastructure to be able to take the SConscript file from one source
 #XXX directory, but the rest of the files from a different one.
@@ -170,7 +170,7 @@ test.must_not_exist(test.workpath('test', 'build', 'var3', 'ccc.in'))
 #XXXtest.must_not_exist(test.workpath('test', 'build', 'var4', 'bbb.in'))
 #XXXtest.must_not_exist(test.workpath('test', 'build', 'var4', 'ccc.in'))
 
-#XXX We can't support var4 and var5 yet, because our BuildDir linkage
+#XXX We can't support var4 and var5 yet, because our VariantDir linkage
 #XXX is to an entire source directory.  We haven't yet generalized our
 #XXX infrastructure to be able to take the SConscript file from one source
 #XXX directory, but the rest of the files from a different one.

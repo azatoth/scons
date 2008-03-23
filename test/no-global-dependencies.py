@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that files are correctly located in the build directory even when
+Test that files are correctly located in the variant directory even when
 Scons does not have a global view of all targets.
 
 Sometimes, it might be interesting to not tell scons about every
@@ -48,7 +48,7 @@ test.write('SConstruct', """\
 opts = Options()
 opts.AddOptions(
     BoolOption('view_all_dependencies', 'View all dependencies', True),
-    BoolOption('duplicate', 'Duplicate sources to build dir', True)
+    BoolOption('duplicate', 'Duplicate sources to variant dir', True)
 )
 
 env = Environment(options=opts)

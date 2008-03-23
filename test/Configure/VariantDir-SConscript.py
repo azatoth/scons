@@ -26,7 +26,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
 Verify that Configure calls in SConscript files work when used
-with BuildDir.
+with VariantDir.
 """
 
 import os.path
@@ -52,7 +52,7 @@ if env['chdir'] == 'yes':
   SConscriptChdir(1)
 else:
   SConscriptChdir(0)
-BuildDir( 'build', '.' )
+VariantDir( 'build', '.' )
 SConscript( 'build/SConscript' )
 """)
 

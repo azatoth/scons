@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Make sure SWIG works when a BuildDir (or build_dir) is used.
+Make sure SWIG works when a VariantDir (or build_dir) is used.
 
 Test case courtesy Joe Maruszewski.
 """

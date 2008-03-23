@@ -1694,10 +1694,8 @@ class Base(SubstitutionEnvironment):
             t.set_always_build()
         return tlist
 
-    def BuildDir(self, build_dir, src_dir, duplicate=1):
-        build_dir = self.arg2nodes(build_dir, self.fs.Dir)[0]
-        src_dir = self.arg2nodes(src_dir, self.fs.Dir)[0]
-        self.fs.BuildDir(build_dir, src_dir, duplicate)
+    def BuildDir(self, *args, **kw):
+        return apply(self.VariantDir, args, kw)
 
     def Builder(self, **kw):
         nkw = self.subst_kw(kw)
@@ -1971,6 +1969,11 @@ class Base(SubstitutionEnvironment):
         """
         """
         return SCons.Node.Python.Value(value, built_value)
+
+    def VariantDir(self, build_dir, src_dir, duplicate=1):
+        build_dir = self.arg2nodes(build_dir, self.fs.Dir)[0]
+        src_dir = self.arg2nodes(src_dir, self.fs.Dir)[0]
+        self.fs.VariantDir(build_dir, src_dir, duplicate)
 
     def FindSourceFiles(self, node='.'):
         """ returns a list of all source files.

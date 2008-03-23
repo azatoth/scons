@@ -2521,12 +2521,12 @@ def generate(env):
         assert t[6].path == 'file'
         assert t[6].always_build
 
-    def test_BuildDir(self):
-        """Test the BuildDir() method"""
+    def test_VariantDir(self):
+        """Test the VariantDir() method"""
         class MyFS:
              def Dir(self, name):
                  return name
-             def BuildDir(self, build_dir, src_dir, duplicate):
+             def VariantDir(self, build_dir, src_dir, duplicate):
                  self.build_dir = build_dir
                  self.src_dir = src_dir
                  self.duplicate = duplicate
@@ -2534,12 +2534,12 @@ def generate(env):
         env = self.TestEnvironment(FOO = 'fff', BAR = 'bbb')
         env.fs = MyFS()
 
-        env.BuildDir('build', 'src')
+        env.VariantDir('build', 'src')
         assert env.fs.build_dir == 'build', env.fs.build_dir
         assert env.fs.src_dir == 'src', env.fs.src_dir
         assert env.fs.duplicate == 1, env.fs.duplicate
 
-        env.BuildDir('build${FOO}', '${BAR}src', 0)
+        env.VariantDir('build${FOO}', '${BAR}src', 0)
         assert env.fs.build_dir == 'buildfff', env.fs.build_dir
         assert env.fs.src_dir == 'bbbsrc', env.fs.src_dir
         assert env.fs.duplicate == 0, env.fs.duplicate

@@ -25,47 +25,45 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that toolpath works with BuildDir() for an SConscript.
+Test that the logic that "guesses" the associated VariantDir for a
+subdirectory correctly builds targets in the VariantDir subdirectory.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.subdir('subdir', ['subdir', 'src'], ['subdir', 'src', 'tools'])
+test.subdir(['work'], ['work', 'src'])
 
-test.write('SConstruct', """\
-BuildDir('build', 'subdir', duplicate=0)
-SConscript('build/SConscript')
+test.write(['work', 'SConstruct'], """
+c_builddir = r'%s'
+VariantDir(c_builddir, '.', duplicate=0)
+SConscript(c_builddir + '/SConscript')
+""" % test.workpath('debug'))
+
+test.write(['work', 'SConscript'], """
+SConscript('src/SConscript')
 """)
 
-test.write(['subdir', 'SConscript'], """\
-env = Environment(tools = ['MyBuilder'], toolpath = ['src/tools'])
-env.MyCopy('src/file.out', 'src/file.in')
+test.write(['work', 'src', 'SConscript'], """
+env = Environment(OBJSUFFIX='.obj',
+                  PROGSUFFIX='.exe')
+env.Program('test.cpp')
 """)
 
-test.write(['subdir', 'src', 'file.in'], "subdir/src/file.in\n")
-
-test.write(['subdir', 'src', 'tools', 'MyBuilder.py'], """\
-from SCons.Script import Builder
-def generate(env):
-    def my_copy(target, source, env):
-        content = open(str(source[0]), 'rb').read()
-        open(str(target[0]), 'wb').write(content)
-    env['BUILDERS']['MyCopy'] = Builder(action = my_copy)
-
-def exists(env):
-    return 1
+test.write(['work', 'src', 'test.cpp'], """\
+#include <stdio.h>
+#include <stdlib.h>
+int
+main(int argc, char *argv[])
+{
+    printf("work/src/test.cpp\\n");
+}
 """)
 
-test.run()
+test.run(chdir = 'work', arguments = '.')
 
-test.must_match(['build', 'src', 'file.out'], "subdir/src/file.in\n")
-
-# We should look for the underlying tool in both the build/src/tools
-# (which doesn't exist) and subdir/src/tools (which still does).  If we
-# don't, the following would fail because the execution directory is
-# now relative to the created BuildDir.
-test.run()
+test.must_exist(test.workpath('debug', 'src', 'test.obj'))
+test.must_exist(test.workpath('debug', 'src', 'test.exe'))
 
 test.pass_test()

@@ -71,12 +71,12 @@ var6 = Dir('../build/var6')
 
 env = Environment(BUILD = 'build', SRC = 'src')
 
-BuildDir('build/var1', src)
-BuildDir(var2, src)
-BuildDir(var3, src, duplicate=0)
-env.BuildDir("$BUILD/var4", "$SRC", duplicate=0)
-BuildDir(var5, src, duplicate=0)
-BuildDir(var6, src)
+VariantDir('build/var1', src)
+VariantDir(var2, src)
+VariantDir(var3, src, duplicate=0)
+env.VariantDir("$BUILD/var4", "$SRC", duplicate=0)
+VariantDir(var5, src, duplicate=0)
+VariantDir(var6, src)
 
 env = Environment(CPPPATH='#src', FORTRANPATH='#src')
 SConscript('build/var1/SConscript', "env")
@@ -356,7 +356,7 @@ test.up_to_date(chdir='work2', arguments='.')
 #
 test.write(['work2', 'SConstruct'], """\
 env = Environment()
-BuildDir('build', '.')
+VariantDir('build', '.')
 Export('env')
 SConscript('build/SConscript')
 """)
@@ -372,13 +372,13 @@ test.fail_test(not blank_output(test.stderr()))
 
 test.run(chdir='work2', arguments='.',
          stdout=test.wrap_stdout("""\
-scons: building associated BuildDir targets: build
+scons: building associated VariantDir targets: build
 scons: `.' is up to date.
 """))
 
 test.write( ['work3', 'SConstruct'], """\
 SConscriptChdir(0)
-BuildDir('build', '.', duplicate=1 ) 
+VariantDir('build', '.', duplicate=1 ) 
 SConscript( 'build/SConscript' )
 """)
 
@@ -397,7 +397,7 @@ test.write( ['work3', 'existing.h'], """\
 
 test.run(chdir='work3',
          stdout=test.wrap_stdout("""\
-scons: building associated BuildDir targets: build
+scons: building associated VariantDir targets: build
 scons: `.' is up to date.
 """),
          stderr="""\
