@@ -26,7 +26,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
 Verify correct operation of SideEffect() when an SConscript()
-build_dir is used.
+variant_dir is used.
 """
 
 import os.path
@@ -49,7 +49,7 @@ def build(env, source, target):
 Build = Builder(action=build)
 env = Environment(BUILDERS={'Build':Build})
 Export('env')
-SConscript('SConscript', build_dir='build', duplicate=0)""")
+SConscript('SConscript', variant_dir='build', duplicate=0)""")
 
 test.write('SConscript', """
 Import('env')

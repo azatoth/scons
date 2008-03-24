@@ -134,7 +134,7 @@ env = Environment(QTDIR = r'%s',
                   QT_UIC = r'%s',
                   %s
                   tools=['default','qt'])
-if ARGUMENTS.get('build_dir', 0):
+if ARGUMENTS.get('variant_dir', 0):
     if ARGUMENTS.get('chdir', 0):
         SConscriptChdir(1)
     else:

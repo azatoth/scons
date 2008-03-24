@@ -134,13 +134,13 @@ program using the F<build/foo.c> path name.
     uses the fact that the usual way to
     set up a build hierarchy is to have an
     &SConscript; file in the source subdirectory.
-    If you then pass a &build_dir; argument to the
+    If you then pass a &variant_dir; argument to the
     &SConscript; function call:
 
     </para>
 
     <programlisting>
-      SConscript('src/SConscript', build_dir='build')
+      SConscript('src/SConscript', variant_dir='build')
     </programlisting>
 
     <para>
@@ -282,7 +282,7 @@ program using the F<build/foo.c> path name.
     </para>
 
     <programlisting>
-      SConscript('src/SConscript', build_dir='build', duplicate=0)
+      SConscript('src/SConscript', variant_dir='build', duplicate=0)
     </programlisting>
 
     <para>
@@ -452,7 +452,7 @@ program using the F<build/foo.c> path name.
 
     <para>
 
-    XXX why call VariantDir() instead of SConscript(build_dir=)
+    XXX why call VariantDir() instead of SConscript(variant_dir=)
 
     </para>
 

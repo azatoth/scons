@@ -2657,7 +2657,17 @@ env.SourceCode('.', env.BitKeeper())
 .RI BuildDir( build_dir ", " src_dir ", [" duplicate ])
 .TP
 .RI env.BuildDir( build_dir ", " src_dir ", [" duplicate ])
-A synonym for
+Synonyms for
+.B VariantDir()
+and
+.BR env.VariantDir() .
+The
+.I build_dir
+argument bedomes the
+.I variant_dir
+argument of
+.B VariantDir()
+or
 .BR env.VariantDir() .
 (This will be officially deprecated some day.)
 
@@ -4925,13 +4935,13 @@ for a specific subdirectory.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI SConscript( scripts ", [" exports ", " build_dir ", " src_dir ", " duplicate ])
+.RI SConscript( scripts ", [" exports ", " variant_dir ", " src_dir ", " duplicate ])
 .TP
-.RI env.SConscript( scripts ", [" exports ", " build_dir ", " src_dir ", " duplicate ])
+.RI env.SConscript( scripts ", [" exports ", " variant_dir ", " src_dir ", " duplicate ])
 .TP
-.RI SConscript(dirs= subdirs ", [name=" script ", " exports ", " build_dir ", " src_dir ", " duplicate ])
+.RI SConscript(dirs= subdirs ", [name=" script ", " exports ", " variant_dir ", " src_dir ", " duplicate ])
 .TP
-.RI env.SConscript(dirs= subdirs ", [name=" script ", " exports ", " build_dir ", " src_dir ", " duplicate ])
+.RI env.SConscript(dirs= subdirs ", [name=" script ", " exports ", " variant_dir ", " src_dir ", " duplicate ])
 This tells
 .B scons
 to execute
@@ -4990,15 +5000,15 @@ must use the
 function to import the variables.
 
 The optional
-.I build_dir
+.I variant_dir
 argument specifies that all of the target files
 (for example, object files and executables)
 that would normally be built in the subdirectory in which
 .I script
 resides should actually
 be built in
-.IR build_dir .
-.I build_dir
+.IR variant_dir .
+.I variant_dir
 is interpreted relative to the directory
 of the calling SConscript file.
 
@@ -5049,7 +5059,7 @@ Examples:
 SConscript('subdir/SConscript')
 foo = SConscript('sub/SConscript', exports='env')
 SConscript('dir/SConscript', exports=['env', 'variable'])
-SConscript('src/SConscript', build_dir='build', duplicate=0)
+SConscript('src/SConscript', variant_dir='build', duplicate=0)
 SConscript('bld/SConscript', src_dir='src', exports='env variable')
 SConscript(dirs=['sub1', 'sub2'])
 SConscript(dirs=['sub3', 'sub4'], name='MySConscript')
@@ -5842,11 +5852,11 @@ env.UpdateValue(target = Value(output), source = Value(input))
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI VariantDir( build_dir ", " src_dir ", [" duplicate ])
+.RI VariantDir( variant_dir ", " src_dir ", [" duplicate ])
 .TP
-.RI env.VariantDir( build_dir ", " src_dir ", [" duplicate ])
+.RI env.VariantDir( variant_dir ", " src_dir ", [" duplicate ])
 This specifies a variant directory tree
-.I build_dir
+.I variant_dir
 in which to build all derived files
 that would normally be built under
 .IR src_dir .
@@ -5855,7 +5865,7 @@ can be set up for multiple build variants.
 .I src_dir
 must be underneath the SConstruct file's directory,
 and
-.I build_dir
+.I variant_dir
 may not be underneath the
 .I src_dir .
 
@@ -5864,7 +5874,7 @@ The default behavior is for
 to duplicate all of the files in the tree underneath
 .I src_dir
 into
-.IR build_dir ,
+.IR variant_dir ,
 and then build the derived files within the copied tree.
 (The duplication is performed by
 linking or copying,
@@ -5889,7 +5899,7 @@ to invoke Builders using the
 path names of source files in
 .I src_dir
 and the path names of derived files within
-.IR build_dir .
+.IR variant_dir .
 This is always more efficient than
 .IR duplicate =1,
 and is usually safe for most builds.
@@ -5910,7 +5920,7 @@ However,
 you would then call the subsidiary SConscript file
 not in the source directory,
 but in the
-.I build_dir ,
+.I variant_dir ,
 as if
 .B scons
 had made a virtual copy of the source tree
@@ -7322,7 +7332,7 @@ This path is relative to the top-level directory
 .B SConstruct
 file is found).
 The build path is the same as the source path if
-.I build_dir
+.I variant_dir
 is not being used.
 
 .IP abspath
@@ -8573,7 +8583,7 @@ ${TARGET.filebase}   => file
 ${TARGET.suffix}     => .x
 ${TARGET.abspath}    => /top/dir/sub/dir/file.x
 
-SConscript('src/SConscript', build_dir='sub/dir')
+SConscript('src/SConscript', variant_dir='sub/dir')
 $SOURCE              => sub/dir/file.x
 ${SOURCE.srcpath}    => src/file.x
 ${SOURCE.srcdir}     => src
@@ -9341,7 +9351,7 @@ subdirectory/SConscript:
 
 .SS Building Multiple Variants From the Same Source
 
-Use the build_dir keyword argument to
+Use the variant_dir keyword argument to
 the SConscript function to establish
 one or more separate variant build directory trees
 for a given source directory:
@@ -9351,11 +9361,11 @@ SConstruct:
 
     cppdefines = ['FOO']
     Export("cppdefines")
-    SConscript('src/SConscript', build_dir='foo')
+    SConscript('src/SConscript', variant_dir='foo')
 
     cppdefines = ['BAR']
     Export("cppdefines")
-    SConscript('src/SConscript', build_dir='bar')
+    SConscript('src/SConscript', variant_dir='bar')
 
 src/SConscript:
 

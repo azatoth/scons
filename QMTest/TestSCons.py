@@ -684,7 +684,7 @@ env = Environment(QTDIR = QTDIR,
                   QT_UIC = r'%s',
                   tools=['default','qt'])
 dup = 1
-if ARGUMENTS.get('build_dir', 0):
+if ARGUMENTS.get('variant_dir', 0):
     if ARGUMENTS.get('chdir', 0):
         SConscriptChdir(1)
     else:

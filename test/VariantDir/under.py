@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test various combinations of build_dir when the source directory is,
+Test various combinations of variant_dir when the source directory is,
 or is not, underneath the SConstruct directory.
 """
 
@@ -45,7 +45,7 @@ test.write(['work', 'file.in'], "work/file.in\n")
 
 
 test.write(['work', 'sub', 'SConstruct'], """\
-SConscript('../SConscript', build_dir='build1')
+SConscript('../SConscript', variant_dir='build1')
 """)
 
 test.run(chdir='work/sub')
@@ -55,7 +55,7 @@ test.must_match(['work', 'sub', 'build1', 'file.out'], "work/file.in\n")
 
 
 test.write(['work', 'sub', 'SConstruct'], """
-SConscript('../SConscript', build_dir='../build2')
+SConscript('../SConscript', variant_dir='../build2')
 """)
 
 test.run(chdir='work/sub')
@@ -65,7 +65,7 @@ test.must_match(['work', 'build2', 'file.out'], "work/file.in\n")
 
 
 test.write(['work', 'sub', 'SConstruct'], """
-SConscript('../SConscript', build_dir='../../build3')
+SConscript('../SConscript', variant_dir='../../build3')
 """)
 
 test.run(chdir='work/sub')
@@ -75,7 +75,7 @@ test.must_match(['build3', 'file.out'], "work/file.in\n")
 
 
 test.write(['work', 'SConstruct'], """
-SConscript('../other/SConscript', build_dir='build4')
+SConscript('../other/SConscript', variant_dir='build4')
 """)
 
 test.write(['other', 'SConscript'], """\

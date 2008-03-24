@@ -143,6 +143,8 @@ RELEASE 0.XX - XXX
     being deprecated.
 
   - Add VariantDir() as the first step towards deprecating BuildDir().
+    Add the keyword argument "variant_dir" as the replacement for
+    "build_dir".
 
   From Rob Managan:
 

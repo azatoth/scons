@@ -311,6 +311,7 @@
 <!ENTITY exports "<varname>exports</varname>">
 <!ENTITY source "<varname>source</varname>">
 <!ENTITY target "<varname>target</varname>">
+<!ENTITY variant_dir "<varname>variant_dir</varname>">
 
 
 

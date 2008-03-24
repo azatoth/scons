@@ -1197,21 +1197,21 @@ class FS(LocalFS):
         """
         return self._lookup(name, directory, Dir, create)
 
-    def VariantDir(self, build_dir, src_dir, duplicate=1):
+    def VariantDir(self, variant_dir, src_dir, duplicate=1):
         """Link the supplied variant directory to the source directory
         for purposes of building files."""
 
         if not isinstance(src_dir, SCons.Node.Node):
             src_dir = self.Dir(src_dir)
-        if not isinstance(build_dir, SCons.Node.Node):
-            build_dir = self.Dir(build_dir)
-        if src_dir.is_under(build_dir):
+        if not isinstance(variant_dir, SCons.Node.Node):
+            variant_dir = self.Dir(variant_dir)
+        if src_dir.is_under(variant_dir):
             raise SCons.Errors.UserError, "Source directory cannot be under variant directory."
-        if build_dir.srcdir:
-            if build_dir.srcdir == src_dir:
+        if variant_dir.srcdir:
+            if variant_dir.srcdir == src_dir:
                 return # We already did this.
-            raise SCons.Errors.UserError, "'%s' already has a source directory: '%s'."%(build_dir, build_dir.srcdir)
-        build_dir.link(src_dir, duplicate)
+            raise SCons.Errors.UserError, "'%s' already has a source directory: '%s'."%(variant_dir, variant_dir.srcdir)
+        variant_dir.link(src_dir, duplicate)
 
     def Repository(self, *dirs):
         """Specify Repository directories to search."""
@@ -1220,7 +1220,7 @@ class FS(LocalFS):
                 d = self.Dir(d)
             self.Top.addRepository(d)
 
-    def build_dir_target_climb(self, orig, dir, tail):
+    def variant_dir_target_climb(self, orig, dir, tail):
         """Create targets in corresponding variant directories
 
         Climb the directory tree, and look up path names
@@ -1235,7 +1235,7 @@ class FS(LocalFS):
         fmt = "building associated VariantDir targets: %s"
         start_dir = dir
         while dir:
-            for bd in dir.build_dirs:
+            for bd in dir.variant_dirs:
                 if start_dir.is_under(bd):
                     # If already in the build-dir location, don't reflect
                     return [orig], fmt % str(orig)
@@ -1314,7 +1314,7 @@ class Dir(Base):
         self.cwd = self
         self.searched = 0
         self._sconsign = None
-        self.build_dirs = []
+        self.variant_dirs = []
         self.root = self.dir.root
 
         # Don't just reset the executor, replace its action list,
@@ -1394,7 +1394,7 @@ class Dir(Base):
         self.srcdir = srcdir
         self.duplicate = duplicate
         self.__clearRepositoryCache(duplicate)
-        srcdir.build_dirs.append(self)
+        srcdir.variant_dirs.append(self)
 
     def getRepositories(self):
         """Returns a list of repositories for this directory.
@@ -1582,7 +1582,7 @@ class Dir(Base):
     def alter_targets(self):
         """Return any corresponding targets in a variant directory.
         """
-        return self.fs.build_dir_target_climb(self, self, [])
+        return self.fs.variant_dir_target_climb(self, self, [])
 
     def scanner_key(self):
         """A directory does not get scanned."""
@@ -1696,7 +1696,7 @@ class Dir(Base):
         for dir in self.srcdir_list():
             if self.is_under(dir):
                 # We shouldn't source from something in the build path;
-                # build_dir is probably under src_dir, in which case
+                # variant_dir is probably under src_dir, in which case
                 # we are reflecting.
                 break
             if dir.entry_exists_on_disk(name):
@@ -2530,7 +2530,7 @@ class File(Base):
         """
         if self.is_derived():
             return [], None
-        return self.fs.build_dir_target_climb(self, self.dir, [self.name])
+        return self.fs.variant_dir_target_climb(self, self.dir, [self.name])
 
     def _rmv_existing(self):
         self.clear_memoized_values()

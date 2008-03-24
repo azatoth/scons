@@ -2526,8 +2526,8 @@ def generate(env):
         class MyFS:
              def Dir(self, name):
                  return name
-             def VariantDir(self, build_dir, src_dir, duplicate):
-                 self.build_dir = build_dir
+             def VariantDir(self, variant_dir, src_dir, duplicate):
+                 self.variant_dir = variant_dir
                  self.src_dir = src_dir
                  self.duplicate = duplicate
 
@@ -2535,12 +2535,12 @@ def generate(env):
         env.fs = MyFS()
 
         env.VariantDir('build', 'src')
-        assert env.fs.build_dir == 'build', env.fs.build_dir
+        assert env.fs.variant_dir == 'build', env.fs.variant_dir
         assert env.fs.src_dir == 'src', env.fs.src_dir
         assert env.fs.duplicate == 1, env.fs.duplicate
 
         env.VariantDir('build${FOO}', '${BAR}src', 0)
-        assert env.fs.build_dir == 'buildfff', env.fs.build_dir
+        assert env.fs.variant_dir == 'buildfff', env.fs.variant_dir
         assert env.fs.src_dir == 'bbbsrc', env.fs.src_dir
         assert env.fs.duplicate == 0, env.fs.duplicate
 

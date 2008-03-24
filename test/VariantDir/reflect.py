@@ -26,9 +26,9 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
 This test validates the correct operation of a VariantDir specification
-in avoiding reflection: reflection is the case where the build_dir is
+in avoiding reflection: reflection is the case where the variant_dir is
 located under the corresponding source dir, and trying to use elements
-in the build_dir as sources for that same build dir.
+in the variant_dir as sources for that same build dir.
 
 Test based on bug #1055521 filed by Gary Oberbrunner.
 """
@@ -58,7 +58,7 @@ env = Environment(CC = r'%(_python_)s mycc.py',
                   INCSUFFIX = '_CNI',
                   CPPPATH='%(cpppath)s')  # note no leading '#'
 Export("env")
-SConscript('SConscript', build_dir="dir1/dir2", src_dir=".")
+SConscript('SConscript', variant_dir="dir1/dir2", src_dir=".")
 """
 
 test.write('SConscript', """\

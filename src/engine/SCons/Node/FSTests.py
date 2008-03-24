@@ -525,7 +525,7 @@ class VariantDirTestCase(unittest.TestCase):
                 shutil.copy2 = real_copy
 
         # Test VariantDir "reflection," where a same-named subdirectory
-        # exists underneath a build_dir.
+        # exists underneath a variant_dir.
         fs = SCons.Node.FS.FS()
         fs.VariantDir('work/src/b1/b2', 'work/src')
 

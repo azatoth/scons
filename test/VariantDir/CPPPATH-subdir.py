@@ -40,7 +40,7 @@ test.subdir('src', ['src', 'glscry'])
 test.write('SConstruct', """\
 env = Environment()
 Export('env')
-SConscript(dirs=['src'], build_dir='build', duplicate=0)
+SConscript(dirs=['src'], variant_dir='build', duplicate=0)
 """)
 
 

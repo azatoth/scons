@@ -54,7 +54,7 @@ opts.AddOptions(
 env = Environment(options=opts)
 Export('env')
 
-SConscript(dirs='.', build_dir='build', duplicate=env['duplicate'])
+SConscript(dirs='.', variant_dir='build', duplicate=env['duplicate'])
 """ % locals())
 
 

@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that .pdb files get put in a build_dir correctly.
+Verify that .pdb files get put in a variant_dir correctly.
 """
 
 import sys
@@ -47,7 +47,7 @@ env = Environment()
 env.Append(BINDIR = '#bin')
 
 Export('env')
-SConscript('#src/SConscript', duplicate = 0, build_dir = '#.build')
+SConscript('#src/SConscript', duplicate = 0, variant_dir = '#.build')
 """)
 
 test.write(['src', 'SConscript'], """\

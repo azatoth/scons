@@ -812,8 +812,8 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
     --  THE BuildDir() METHOD AND FUNCTION WILL BE DEPRECATED
 
-        The env.BuildDir() method and BuildDir() function will be
-        replaced by the new env.VariantDir() method nd VariantDir()
+        The env.BuildDir() method and BuildDir() function are being
+        replaced by the new env.VariantDir() method and VariantDir()
         function.
 
         In some future release a deprecation warning will be added
@@ -822,9 +822,17 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
         env.Builder() method and BuildDir() function will either
         be removed entirely or have their behavior changed.
 
-        You can prepare for this by changing all your uses of the
-        env.BuildDir() method to env.VariantDir() and uses of the
-        global BuildDir() function to VariantDir().
+	You can prepare for this by changing all your uses of the
+	env.BuildDir() method to env.VariantDir() and uses of the
+	global BuildDir() function to VariantDir().  If you use a
+	named keyword argument of "build_dir" when calling
+	env.BuildDir() or BuildDir():
+
+            env.BuildDir(build_dir='opt', src_dir='src')
+
+        The keyword must be changed to "variant_dir":
+
+            env.VariantDir(variant_dir='opt', src_dir='src')
 
         NOTE:  CHANGING USES OF env.BuildDir() AND BuildDir() to
         env.VariantDir() AND VariantDir() IS NOT BACKWARDS COMPATIBLE
@@ -855,6 +863,51 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
                 are executed by an earlier version of SCons:
 
                     EnsureSConsVersion(0, 98)
+
+    --  THE SConscript() "build_dir" KEYWORD ARGUMENT WILL BE DEPRECATED
+
+	The "build_dir" keyword argument of the SConscript function
+	and env.SConscript() method are being replaced by a new
+	"variant_dir" keyword argument.
+
+	In some future release a deprecation warning will be added
+	to existing uses of the SConscript()/env.SConscript()
+	"build_dir" keyword argument.  At some point after the
+	deprecation warning, support for this keyword argument will
+	be removed entirely.
+
+	You can prepare for this by changing all your uses of the
+	SConscript()/env.SConscript() 'build_dir" keyword argument:
+
+            SConscript('src/SConscript', build_dir='opt')
+
+        To use the new "variant_dir" keyword argument:
+
+            SConscript('src/SConscript', variant_dir='opt')
+
+	NOTE:  USING THE NEW "variant_dir" KEYWORD IS NOT BACKWARDS
+	COMPATIBLE TO VERSIONS OF SCons BEFORE 0.98.  YOUR SConscript
+	FILES WILL NOT WORK ON EARLIER VERSIONS OF SCons AFTER
+	MAKING THIS CHANGE.
+
+	If you change SConscript files in software that you make
+	available for download or otherwise distribute, other users
+	may try to build your software with an earlier version of
+	SCons that does not support the "variant_dir" keyword.
+
+	If you can insist that users use a recent version of SCons
+	that supports "variant_dir", we recommend using the
+	EnsureSConsVersion() function to provide a descriptive error
+	message if your SConscript files are executed by an earlier
+	version of SCons:
+
+                    EnsureSConsVersion(0, 98)
+
+	If you want to make sure that your SConscript files will
+	still work with earlier versions of SCons, then your best
+	bet is to continue to use the "build_dir" keyword until the
+	support is removed (which, in all likelihood, won't happen
+	for quite some time).
 
     --  SCANNER NAMES HAVE BEEN DEPRECATED AND WILL BE REMOVED
 

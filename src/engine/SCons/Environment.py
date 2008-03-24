@@ -1695,6 +1695,9 @@ class Base(SubstitutionEnvironment):
         return tlist
 
     def BuildDir(self, *args, **kw):
+        if kw.has_key('build_dir'):
+            kw['variant_dir'] = kw['build_dir']
+            del kw['build_dir']
         return apply(self.VariantDir, args, kw)
 
     def Builder(self, **kw):
@@ -1970,10 +1973,10 @@ class Base(SubstitutionEnvironment):
         """
         return SCons.Node.Python.Value(value, built_value)
 
-    def VariantDir(self, build_dir, src_dir, duplicate=1):
-        build_dir = self.arg2nodes(build_dir, self.fs.Dir)[0]
+    def VariantDir(self, variant_dir, src_dir, duplicate=1):
+        variant_dir = self.arg2nodes(variant_dir, self.fs.Dir)[0]
         src_dir = self.arg2nodes(src_dir, self.fs.Dir)[0]
-        self.fs.VariantDir(build_dir, src_dir, duplicate)
+        self.fs.VariantDir(variant_dir, src_dir, duplicate)
 
     def FindSourceFiles(self, node='.'):
         """ returns a list of all source files.

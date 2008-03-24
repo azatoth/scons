@@ -42,8 +42,8 @@ test = TestSCons.TestSCons()
 test.subdir('src')
 
 test.write('SConstruct', """\
-SConscript('src/SConscript', build_dir='build0', chdir=1, duplicate=0)
-SConscript('src/SConscript', build_dir='build1', chdir=1, duplicate=1)
+SConscript('src/SConscript', variant_dir='build0', chdir=1, duplicate=0)
+SConscript('src/SConscript', variant_dir='build1', chdir=1, duplicate=1)
 """)
 
 test.write(['src', 'SConscript'], """\

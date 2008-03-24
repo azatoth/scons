@@ -125,6 +125,18 @@ program using the F<build/foo.c> path name.
 
   </para>
 
+  <para>
+
+  One historical note:  the &VariantDir; function
+  used to be called &BuildDir;.
+  That name is still supported
+  but has been deprecated
+  because the &SCons; functionality
+  differs from the model of a "build directory"
+  implemented by other build systems like the GNU Autotools.
+
+  </para>
+
   <section>
   <title>Specifying a Variant Directory Tree as Part of an &SConscript; Call</title>
 
@@ -134,14 +146,14 @@ program using the F<build/foo.c> path name.
     uses the fact that the usual way to
     set up a build hierarchy is to have an
     &SConscript; file in the source subdirectory.
-    If you then pass a &build_dir; argument to the
+    If you then pass a &variant_dir; argument to the
     &SConscript; function call:
 
     </para>
 
     <scons_example name="ex1">
       <file name="SConstruct" printme="1">
-      SConscript('src/SConscript', build_dir='build')
+      SConscript('src/SConscript', variant_dir='build')
       </file>
       <file name="src/SConscript">
       env = Environment()
@@ -287,7 +299,7 @@ program using the F<build/foo.c> path name.
     </para>
 
     <sconstruct>
-      SConscript('src/SConscript', build_dir='build', duplicate=0)
+      SConscript('src/SConscript', variant_dir='build', duplicate=0)
     </sconstruct>
 
     <para>
@@ -461,7 +473,7 @@ program using the F<build/foo.c> path name.
 
     <para>
 
-    XXX why call VariantDir() instead of SConscript(build_dir=)
+    XXX why call VariantDir() instead of SConscript(variant_dir=)
 
     </para>
 

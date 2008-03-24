@@ -25,7 +25,9 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that specifying a build_dir argument to SConscript works properly.
+Verify that specifying a build_dir argument to SConscript still works.
+
+Note that the build_dir argument does not yet print a deprecation warning.
 """
 
 import TestSCons

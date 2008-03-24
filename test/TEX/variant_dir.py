@@ -26,7 +26,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
 Test creation of a fully-featured TeX document (with bibliography
-and index) in a build_dir.
+and index) in a variant_dir.
 
 Test courtesy Rob Managan.
 """
@@ -50,7 +50,7 @@ env = Environment(ENV = { 'PATH' : os.environ['PATH'] },
 Export(['env'])
 
 SConscript(os.path.join('docs', 'SConscript'),
-           build_dir=os.path.join('mybuild','docs'),
+           variant_dir=os.path.join('mybuild','docs'),
            duplicate=1)
 """)
 
@@ -237,7 +237,7 @@ All done now.
 test.run(arguments = '.', stderr=None)
 
 
-# All (?) the files we expect will get created in the build_dir
+# All (?) the files we expect will get created in the variant_dir
 # (mybuild/docs) and not in the srcdir (docs).
 files = [
     'test.aux',
