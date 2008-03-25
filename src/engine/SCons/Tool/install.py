@@ -75,7 +75,8 @@ def installFunc(target, source, env):
     except KeyError:
         raise SCons.Errors.UserError('Missing INSTALL construction variable.')
 
-    assert( len(target)==len(source) )
+    assert len(target)==len(source), \
+           "Installing source %s into target %s: target and source lists must have same length."%(map(str, source), map(str, target))
     for t,s in zip(target,source):
         if install(t.get_path(),s.get_path(),env):
             return 1
