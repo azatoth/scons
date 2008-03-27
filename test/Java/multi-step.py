@@ -112,7 +112,7 @@ test.write(['src', 'HelloApplet', 'Hello.html'], """\
 test.write(['src', 'HelloApplet', 'SConscript'], """\
 import os
 Import ("env")
-denv=env.Copy()
+denv=env.Clone()
 classes=denv.Java(target='classes',source=['com'])
 #set correct path for jar
 denv['JARCHDIR']=os.path.join(denv.Dir('.').get_abspath(),'classes')
@@ -167,7 +167,7 @@ public class MyID
 
 test.write(['src', 'javah', 'SConscript'], """\
 Import('env')
-denv=env.Copy()
+denv=env.Clone()
 denv['JARCHDIR']=denv.Dir('.').get_abspath()
 denv.Jar('myid','MyID.java')
 denv.JavaH(denv.Dir('.').get_abspath(),'MyID.java')
@@ -364,7 +364,7 @@ private:
 
 test.write(['src', 'jni', 'SConscript'], """\
 Import ("env")
-denv=env.Copy()
+denv=env.Clone()
 
 denv.Append(SWIGFLAGS=['-java'])
 denv.SharedLibrary('scons',['JniWrapper.cc','Sample.i'])

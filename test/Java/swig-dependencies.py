@@ -94,7 +94,7 @@ import os
 Import('env')
 
 # unnecessary?
-env = env.Copy()
+env = env.Clone()
 
 env.Prepend(CPPPATH = ['#foo',])
 
