@@ -38,6 +38,7 @@ except ImportError:
 _ = gettext
 
 import SCons.Node.FS
+import SCons.Warnings
 
 OptionValueError        = optparse.OptionValueError
 SUPPRESS_HELP           = optparse.SUPPRESS_HELP
@@ -174,6 +175,7 @@ class SConsValues(optparse.Values):
             if SCons.Util.is_String(value):
                 value = [value]
             value = self.__SConscript_settings__.get(name, []) + value
+            SCons.Warnings.process_warn_strings(value)
 
         self.__SConscript_settings__[name] = value
 
