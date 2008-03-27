@@ -66,6 +66,8 @@ class _Null:
 _null = _Null
 
 _warn_copy_deprecated = True
+_warn_source_signatures_deprecated = True
+_warn_target_signatures_deprecated = True
 
 CleanTargets = {}
 CalculatorArgs = {}
@@ -1923,6 +1925,12 @@ class Base(SubstitutionEnvironment):
         return entries
 
     def SourceSignatures(self, type):
+        global _warn_source_signatures_deprecated
+        if _warn_source_signatures_deprecated:
+            msg = "The env.SourceSignatures() method is deprecated;\n" + \
+                  "\tconvert your build to use the env.Decider() method instead."
+            SCons.Warnings.warn(SCons.Warnings.DeprecatedSourceSignaturesWarning, msg)
+            _warn_source_signatures_deprecated = False
         type = self.subst(type)
         self.src_sig_type = type
         if type == 'MD5':
@@ -1953,6 +1961,12 @@ class Base(SubstitutionEnvironment):
             return [self.subst(arg)]
 
     def TargetSignatures(self, type):
+        global _warn_target_signatures_deprecated
+        if _warn_target_signatures_deprecated:
+            msg = "The env.TargetSignatures() method is deprecated;\n" + \
+                  "\tconvert your build to use the env.Decider() method instead."
+            SCons.Warnings.warn(SCons.Warnings.DeprecatedTargetSignaturesWarning, msg)
+            _warn_target_signatures_deprecated = False
         type = self.subst(type)
         self.tgt_sig_type = type
         if type in ('MD5', 'content'):

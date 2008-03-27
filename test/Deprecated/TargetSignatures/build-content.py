@@ -37,6 +37,7 @@ test = TestSCons.TestSCons()
 
 
 sconstruct_contents = """\
+SetOption('warn', 'no-deprecated-target-signatures')
 env = Environment()
 
 def copy1(env, source, target):

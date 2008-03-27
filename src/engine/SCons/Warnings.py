@@ -30,6 +30,7 @@ This file implements the warnings framework for SCons.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import string
+import sys
 
 import SCons.Errors
 
@@ -52,6 +53,12 @@ class DeprecatedWarning(Warning):
     pass
 
 class DeprecatedCopyWarning(DeprecatedWarning):
+    pass
+
+class DeprecatedSourceSignaturesWarning(DeprecatedWarning):
+    pass
+
+class DeprecatedTargetSignaturesWarning(DeprecatedWarning):
     pass
 
 class DuplicateEnvironmentWarning(Warning):

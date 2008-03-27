@@ -34,6 +34,7 @@ import TestSCons
 test = TestSCons.TestSCons()
 
 test.write('SConstruct', """
+SetOption('warn', 'no-deprecated')
 SourceSignatures('timestamp')
 TargetSignatures('content')
 CacheDir('cache')

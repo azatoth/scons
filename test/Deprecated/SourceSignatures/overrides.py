@@ -25,37 +25,33 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that CacheDir() works when using both SourceSignatures()
-and TargetSignatures values of 'timestamp'.
+Make sure that SourceSignatures() works when overrides are used on a
+Builder call.  (Previous implementations used methods that would stay
+bound to the underlying construction environment, which in this case
+meant ignoring the 'timestamp' setting and still using the underlying
+content signature.)
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.write(['SConstruct'], """\
-SourceSignatures('timestamp')
-TargetSignatures('timestamp')
-CacheDir('cache')
-Command('file.out', 'file.in', Copy('$TARGET', '$SOURCE'))
+test.write('SConstruct', """\
+SetOption('warn', 'no-deprecated-source-signatures')
+DefaultEnvironment().SourceSignatures('MD5')
+env = Environment()
+env.SourceSignatures('timestamp')
+env.Command('foo.out', 'foo.in', Copy('$TARGET', '$SOURCE'), FOO=1)
 """)
 
-test.write('file.in', "file.in\n")
+test.write('foo.in', "foo.in 1\n")
 
-test.run(arguments = '--cache-show --debug=explain .')
-
-test.must_match('file.out', "file.in\n")
-
-test.up_to_date(options = '--cache-show --debug=explain', arguments = '.')
+test.run(arguments = 'foo.out')
 
 test.sleep()
 
-test.touch('file.in')
+test.write('foo.in', "foo.in 1\n")
 
-test.not_up_to_date(options = '--cache-show --debug=explain', arguments = '.')
-
-test.up_to_date(options = '--cache-show --debug=explain', arguments = '.')
-
-test.up_to_date(options = '--cache-show --debug=explain', arguments = '.')
+test.not_up_to_date(arguments = 'foo.out')
 
 test.pass_test()

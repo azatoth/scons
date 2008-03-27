@@ -25,56 +25,63 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that switching SourceSignature() types no longer causes rebuilds.
+Test the simultaneous use of implicit_cache and
+SourceSignatures('timestamp')
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-
-base_sconstruct_contents = """\
-SourceSignatures('%s')
+test.write('SConstruct', """\
+SetOption('warn', 'no-deprecated-source-signatures')
+SetOption('implicit_cache', 1)
+SourceSignatures('timestamp')
 
 def build(env, target, source):
     open(str(target[0]), 'wt').write(open(str(source[0]), 'rt').read())
 B = Builder(action = build)
 env = Environment(BUILDERS = { 'B' : B })
-env.B(target = 'switch.out', source = 'switch.in')
-"""
+env.B(target = 'both.out', source = 'both.in')
+""")
 
-def write_SConstruct(test, sig_type):
-    contents = base_sconstruct_contents % sig_type
-    test.write('SConstruct', contents)
-
-
-write_SConstruct(test, 'MD5')
-
-test.write('switch.in', "switch.in\n")
-
-switch_out_switch_in = test.wrap_stdout('build(["switch.out"], ["switch.in"])\n')
-
-test.run(arguments = 'switch.out', stdout = switch_out_switch_in)
-
-test.up_to_date(arguments = 'switch.out')
+both_out_both_in = test.wrap_stdout('build(["both.out"], ["both.in"])\n')
 
 
 
-write_SConstruct(test, 'timestamp')
+test.write('both.in', "both.in 1\n")
 
-test.up_to_date(arguments = 'switch.out')
-
-
-
-write_SConstruct(test, 'MD5')
-
-test.not_up_to_date(arguments = 'switch.out')
+test.run(arguments = 'both.out', stdout = both_out_both_in)
 
 
 
-test.write('switch.in', "switch.in 2\n")
+test.sleep(2)
 
-test.run(arguments = 'switch.out', stdout = switch_out_switch_in)
+test.write('both.in', "both.in 2\n")
+
+test.run(arguments = 'both.out', stdout = both_out_both_in)
+
+
+
+test.sleep(2)
+
+test.write('both.in', "both.in 3\n")
+
+test.run(arguments = 'both.out', stdout = both_out_both_in)
+
+
+
+test.sleep(2)
+
+test.write('both.in', "both.in 4\n")
+
+test.run(arguments = 'both.out', stdout = both_out_both_in)
+
+
+
+test.sleep(2)
+
+test.up_to_date(arguments = 'both.out')
 
 
 

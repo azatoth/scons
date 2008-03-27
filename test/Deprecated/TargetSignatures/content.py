@@ -25,62 +25,58 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test the simultaneous use of implicit_cache and
-SourceSignatures('timestamp')
+Verify use of the TargetSignatures('content') setting to override
+SourceSignatures('timestamp') settings.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
+
+
 test.write('SConstruct', """\
-SetOption('implicit_cache', 1)
+SetOption('warn', 'no-deprecated-source-signatures')
+SetOption('warn', 'no-deprecated-target-signatures')
+env = Environment()
+
+def copy(env, source, target):
+    fp = open(str(target[0]), 'wb')
+    for s in source:
+       fp.write(open(str(s), 'rb').read())
+    fp.close()
+
+copyAction = Action(copy, "Copying $TARGET")
+
 SourceSignatures('timestamp')
 
-def build(env, target, source):
-    open(str(target[0]), 'wt').write(open(str(source[0]), 'rt').read())
-B = Builder(action = build)
-env = Environment(BUILDERS = { 'B' : B })
-env.B(target = 'both.out', source = 'both.in')
+env['BUILDERS']['Copy'] = Builder(action=copyAction)
+
+env.Copy('foo.out', 'foo.in')
+
+env2 = env.Clone()
+env2.TargetSignatures('content')
+env2.Copy('bar.out', 'bar.in')
+AlwaysBuild('bar.out')
+
+env.Copy('final', ['foo.out', 'bar.out', 'extra.in'])
+env.Ignore('final', 'extra.in')
 """)
 
-both_out_both_in = test.wrap_stdout('build(["both.out"], ["both.in"])\n')
+test.write('foo.in', "foo.in\n")
+test.write('bar.in', "bar.in\n")
+test.write('extra.in', "extra.in 1\n")
 
+test.run()
 
+test.must_match('final', "foo.in\nbar.in\nextra.in 1\n")
 
-test.write('both.in', "both.in 1\n")
+test.sleep()
+test.write('extra.in', "extra.in 2\n")
 
-test.run(arguments = 'both.out', stdout = both_out_both_in)
+test.run()
 
-
-
-test.sleep(2)
-
-test.write('both.in', "both.in 2\n")
-
-test.run(arguments = 'both.out', stdout = both_out_both_in)
-
-
-
-test.sleep(2)
-
-test.write('both.in', "both.in 3\n")
-
-test.run(arguments = 'both.out', stdout = both_out_both_in)
-
-
-
-test.sleep(2)
-
-test.write('both.in', "both.in 4\n")
-
-test.run(arguments = 'both.out', stdout = both_out_both_in)
-
-
-
-test.sleep(2)
-
-test.up_to_date(arguments = 'both.out')
+test.must_match('final', "foo.in\nbar.in\nextra.in 1\n")
 
 
 

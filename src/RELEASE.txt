@@ -90,9 +90,9 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
             SetOption('warn', 'no-deprecated')
 
-        You may disable only the specific warning about running under
-        a deprecated Python version by adding the following to any
-        SConscript file:
+	You may disable only the specific warning about the deprecated
+	env.Copy() method by adding the following to any SConscript
+	file:
 
             SetOption('warn', 'no-deprecated-copy')
 
@@ -124,6 +124,51 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
 
         Using '--warn=no-deprecated' is compatible with earlier versions
         of SCons.
+
+    --  THE TargetSignatures() AND SourceSignatures() FUNCTIONS ARE DEPRECATED
+
+	The TargetSignatures() and SourceSignatures() functions,
+	and their corresponding env.TargetSignatures() and
+	env.SourceSignatures() methods, are now officially deprecated
+	and will be be removed in a future release.  Using ahy of
+	these functions or methods now generates a message
+	similar to the following:
+
+            scons: warning: The env.TargetSignatures() method is deprecated;
+                    convert your build to use the env.Decider() method instead.
+
+        You may disable all warnings about deprecated features by adding
+        the option "--warn=no-deprecated" to the command line or to the
+        $SCONSFLAGS environment variable:
+
+            $ scons --warn=no-deprecated
+
+        Using '--warn=no-deprecated' is compatible with earlier versions
+        of SCons.
+
+        You may also, as of this version of SCons, disable all warnings
+        about deprecated features by adding the following to any
+        SConscript file:
+
+            SetOption('warn', 'no-deprecated')
+
+	You may disable only the specific warning about the use of
+	TargetSignatures() or SourceSignatures() by adding the
+	following to any SConscript file:
+
+            SetOption('warn', 'no-deprecated-target-signatures')
+            SetOption('warn', 'no-deprecated-source-signatures')
+
+        The warnings may also be suppressed on the command line:
+
+            $ scons --warn=no-deprecated-target-signatures --warn=no-deprecated-source-signatures
+
+	Or by specifying these options in the $SCONSFLAGS environment
+	variable.
+
+	Using SetOption('warn', ...), or the command-line options
+	for suppressing these warnings, is *not* backwards-compatible
+	to earlier versions of SCons.
 
     --  File(), Dir() and Entry() NOW RETURN A LIST WHEN THE INPUT IS A SEQUENCE
 

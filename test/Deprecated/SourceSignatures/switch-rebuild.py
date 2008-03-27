@@ -25,8 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify use of the TargetSignatures('content') setting to override
-SourceSignatures('timestamp') settings.
+Test that switching SourceSignature() types no longer causes rebuilds.
 """
 
 import TestSCons
@@ -34,47 +33,49 @@ import TestSCons
 test = TestSCons.TestSCons()
 
 
+base_sconstruct_contents = """\
+SetOption('warn', 'no-deprecated-source-signatures')
+SourceSignatures('%s')
 
-test.write('SConstruct', """\
-env = Environment()
+def build(env, target, source):
+    open(str(target[0]), 'wt').write(open(str(source[0]), 'rt').read())
+B = Builder(action = build)
+env = Environment(BUILDERS = { 'B' : B })
+env.B(target = 'switch.out', source = 'switch.in')
+"""
 
-def copy(env, source, target):
-    fp = open(str(target[0]), 'wb')
-    for s in source:
-       fp.write(open(str(s), 'rb').read())
-    fp.close()
+def write_SConstruct(test, sig_type):
+    contents = base_sconstruct_contents % sig_type
+    test.write('SConstruct', contents)
 
-copyAction = Action(copy, "Copying $TARGET")
 
-SourceSignatures('timestamp')
+write_SConstruct(test, 'MD5')
 
-env['BUILDERS']['Copy'] = Builder(action=copyAction)
+test.write('switch.in', "switch.in\n")
 
-env.Copy('foo.out', 'foo.in')
+switch_out_switch_in = test.wrap_stdout('build(["switch.out"], ["switch.in"])\n')
 
-env2 = env.Clone()
-env2.TargetSignatures('content')
-env2.Copy('bar.out', 'bar.in')
-AlwaysBuild('bar.out')
+test.run(arguments = 'switch.out', stdout = switch_out_switch_in)
 
-env.Copy('final', ['foo.out', 'bar.out', 'extra.in'])
-env.Ignore('final', 'extra.in')
-""")
+test.up_to_date(arguments = 'switch.out')
 
-test.write('foo.in', "foo.in\n")
-test.write('bar.in', "bar.in\n")
-test.write('extra.in', "extra.in 1\n")
 
-test.run()
 
-test.must_match('final', "foo.in\nbar.in\nextra.in 1\n")
+write_SConstruct(test, 'timestamp')
 
-test.sleep()
-test.write('extra.in', "extra.in 2\n")
+test.up_to_date(arguments = 'switch.out')
 
-test.run()
 
-test.must_match('final', "foo.in\nbar.in\nextra.in 1\n")
+
+write_SConstruct(test, 'MD5')
+
+test.not_up_to_date(arguments = 'switch.out')
+
+
+
+test.write('switch.in', "switch.in 2\n")
+
+test.run(arguments = 'switch.out', stdout = switch_out_switch_in)
 
 
 

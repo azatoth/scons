@@ -34,6 +34,7 @@ test = TestSCons.TestSCons()
 
 
 base_sconstruct_contents = """\
+SetOption('warn', 'no-deprecated-source-signatures')
 def build(env, target, source):
     open(str(target[0]), 'wt').write(open(str(source[0]), 'rt').read())
 B = Builder(action = build)

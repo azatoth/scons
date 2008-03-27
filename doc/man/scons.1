@@ -1329,8 +1329,30 @@ These warnings are disabled by default.
 
 .TP
 --warn=deprecated, --warn=no-deprecated
-Enables or disables warnings about use of deprecated features.
+Enables or disables all warnings about use of deprecated features.
 These warnings are enabled by default.
+Warnings for some specific deprecated features
+may be enabled or disabled individually;
+see below.
+
+--warn=deprecated-copy, --warn=no-deprecated-copy
+Enables or disables warnings about use of the deprecated
+.B env.Copy()
+method.
+
+--warn=deprecated-source-signatures, --warn=no-deprecated-source-signatures
+Enables or disables warnings about use of the deprecated
+SourceSignatures() function
+or
+.B env.SourceSignatures()
+method.
+
+--warn=deprecated-target-signatures, --warn=no-deprecated-target-signatures
+Enables or disables warnings about use of the deprecated
+TargetSignatures() function
+or
+.B env.TargetSignatures()
+method.
 
 .TP
 --warn=duplicate-environment, --warn=no-duplicate-environment
@@ -1373,11 +1395,27 @@ option is used.
 These warnings are enabled by default.
 
 .TP
+--warn=no-object-count, --warn=no-no-object-count
+Enables or disables warnings about the
+.B --debug=object
+feature not working when
+.B scons
+is run with the python
+.B \-O
+option or from optimized Python (.pyo) modules.
+
+.TP
 --warn=no-parallel-support, --warn=no-no-parallel-support
 Enables or disables warnings about the version of Python
 not being able to support parallel builds when the
 .B -j
 option is used.
+These warnings are enabled by default.
+
+.TP
+--warn=python-version, --warn=no-python-version
+Enables or disables the warning about running
+SCons with a deprecated version of Python.
 These warnings are enabled by default.
 
 .TP

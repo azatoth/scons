@@ -25,28 +25,38 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Make sure that TargetSignatures() works when overrides are used on a
-Builder call.  Previous implementations used methods that would stay
-bound to the underlying construction environment and cause weird
-behavior like infinite recursion.
+Verify that CacheDir() works when using both SourceSignatures()
+and TargetSignatures values of 'timestamp'.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.write('SConstruct', """\
-env = Environment()
-env.TargetSignatures('content')
-env.Command('foo.out', 'foo.mid', Copy('$TARGET', '$SOURCE'), FOO=1)
-env.Command('foo.mid', 'foo.in', Copy('$TARGET', '$SOURCE'), FOO=2)
+test.write(['SConstruct'], """\
+SetOption('warn', 'no-deprecated')
+SourceSignatures('timestamp')
+TargetSignatures('timestamp')
+CacheDir('cache')
+Command('file.out', 'file.in', Copy('$TARGET', '$SOURCE'))
 """)
 
-test.write('foo.in', "foo.in\n")
+test.write('file.in', "file.in\n")
 
-test.run(arguments = '.')
+test.run(arguments = '--cache-show --debug=explain .')
 
-test.must_match('foo.mid', "foo.in\n")
-test.must_match('foo.out', "foo.in\n")
+test.must_match('file.out', "file.in\n")
+
+test.up_to_date(options = '--cache-show --debug=explain', arguments = '.')
+
+test.sleep()
+
+test.touch('file.in')
+
+test.not_up_to_date(options = '--cache-show --debug=explain', arguments = '.')
+
+test.up_to_date(options = '--cache-show --debug=explain', arguments = '.')
+
+test.up_to_date(options = '--cache-show --debug=explain', arguments = '.')
 
 test.pass_test()

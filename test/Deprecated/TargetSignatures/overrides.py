@@ -25,11 +25,10 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Make sure that SourceSignatures() works when overrides are used on a
-Builder call.  (Previous implementations used methods that would stay
-bound to the underlying construction environment, which in this case
-meant ignoring the 'timestamp' setting and still using the underlying
-content signature.)
+Make sure that TargetSignatures() works when overrides are used on a
+Builder call.  Previous implementations used methods that would stay
+bound to the underlying construction environment and cause weird
+behavior like infinite recursion.
 """
 
 import TestSCons
@@ -37,20 +36,18 @@ import TestSCons
 test = TestSCons.TestSCons()
 
 test.write('SConstruct', """\
-DefaultEnvironment().SourceSignatures('MD5')
+SetOption('warn', 'no-deprecated-target-signatures')
 env = Environment()
-env.SourceSignatures('timestamp')
-env.Command('foo.out', 'foo.in', Copy('$TARGET', '$SOURCE'), FOO=1)
+env.TargetSignatures('content')
+env.Command('foo.out', 'foo.mid', Copy('$TARGET', '$SOURCE'), FOO=1)
+env.Command('foo.mid', 'foo.in', Copy('$TARGET', '$SOURCE'), FOO=2)
 """)
 
-test.write('foo.in', "foo.in 1\n")
+test.write('foo.in', "foo.in\n")
 
-test.run(arguments = 'foo.out')
+test.run(arguments = '.')
 
-test.sleep()
-
-test.write('foo.in', "foo.in 1\n")
-
-test.not_up_to_date(arguments = 'foo.out')
+test.must_match('foo.mid', "foo.in\n")
+test.must_match('foo.out', "foo.in\n")
 
 test.pass_test()
