@@ -82,11 +82,11 @@ fooMain = foo.Clone(LIBS='foo', LIBPATH='.')
 foo_obj = fooMain.Object(target='foomain', source='main.c')
 fooMain.Program(target='fooprog', source=foo_obj)
 
-barMain = bar.Copy(LIBS='bar', LIBPATH='.')
+barMain = bar.Clone(LIBS='bar', LIBPATH='.')
 bar_obj = barMain.Object(target='barmain', source='main.c')
 barMain.Program(target='barprog', source=bar_obj)
 
-gooMain = foo.Copy(LIBS='goo', LIBPATH='bld')
+gooMain = foo.Clone(LIBS='goo', LIBPATH='bld')
 goo_obj = gooMain.Object(target='goomain', source='main.c')
 gooMain.Program(target='gooprog', source=goo_obj)
 """
