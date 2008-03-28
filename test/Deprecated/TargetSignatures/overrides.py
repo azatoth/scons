@@ -33,7 +33,7 @@ behavior like infinite recursion.
 
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 test.write('SConstruct', """\
 SetOption('warn', 'no-deprecated-target-signatures')
@@ -45,7 +45,8 @@ env.Command('foo.mid', 'foo.in', Copy('$TARGET', '$SOURCE'), FOO=2)
 
 test.write('foo.in', "foo.in\n")
 
-test.run(arguments = '.')
+test.run(arguments = '.',
+         stderr = TestSCons.deprecated_python_expr)
 
 test.must_match('foo.mid', "foo.in\n")
 test.must_match('foo.out', "foo.in\n")

@@ -26,10 +26,11 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
+import re
 
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 
 
@@ -60,15 +61,17 @@ test.write('f2.in', "f2.in\n")
 test.write('f3.in', "f3.in\n")
 test.write('f4.in', "f4.in\n")
 
-test.run(arguments = 'f1.out f3.out')
+test.run(arguments = 'f1.out f3.out',
+         stderr = TestSCons.deprecated_python_expr)
 
 test.run(arguments = 'f1.out f2.out f3.out f4.out',
-         stdout = test.wrap_stdout("""\
+         stdout = re.escape(test.wrap_stdout("""\
 scons: `f1.out' is up to date.
 build(["f2.out"], ["f2.in"])
 scons: `f3.out' is up to date.
 build(["f4.out"], ["f4.in"])
-"""))
+""")),
+         stderr = TestSCons.deprecated_python_expr)
 
 
 
@@ -80,12 +83,13 @@ os.utime(test.workpath('f3.in'),
           os.path.getmtime(test.workpath('f3.in'))+10))
 
 test.run(arguments = 'f1.out f2.out f3.out f4.out',
-         stdout = test.wrap_stdout("""\
+         stdout = re.escape(test.wrap_stdout("""\
 build(["f1.out"], ["f1.in"])
 scons: `f2.out' is up to date.
 build(["f3.out"], ["f3.in"])
 scons: `f4.out' is up to date.
-"""))
+""")),
+         stderr = TestSCons.deprecated_python_expr)
 
 
 
@@ -94,7 +98,8 @@ scons: `f4.out' is up to date.
 
 write_SConstruct(test, 'MD5')
 
-test.not_up_to_date(arguments = 'f1.out f2.out f3.out f4.out')
+test.not_up_to_date(arguments = 'f1.out f2.out f3.out f4.out',
+                    stderr = TestSCons.deprecated_python_expr)
 
 
 
@@ -105,20 +110,20 @@ test.write('f2.in', "f2.in\n")
 test.write('f3.in', "f3.in\n")
 test.write('f4.in', "f4.in\n")
 
-test.up_to_date(arguments = 'f1.out f2.out f3.out f4.out')
+test.up_to_date(arguments = 'f1.out f2.out f3.out f4.out', stderr = None)
 
 
 
 test.touch('f1.in', os.path.getmtime(test.workpath('f1.in'))+10)
 test.touch('f3.in', os.path.getmtime(test.workpath('f3.in'))+10)
 
-test.up_to_date(arguments = 'f1.out f2.out f3.out f4.out')
+test.up_to_date(arguments = 'f1.out f2.out f3.out f4.out', stderr = None)
 
 
 
 write_SConstruct(test, None)
 
-test.up_to_date(arguments = 'f1.out f2.out f3.out f4.out')
+test.up_to_date(arguments = 'f1.out f2.out f3.out f4.out', stderr = None)
 
 
 

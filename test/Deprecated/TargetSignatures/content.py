@@ -31,7 +31,7 @@ SourceSignatures('timestamp') settings.
 
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 
 
@@ -67,14 +67,14 @@ test.write('foo.in', "foo.in\n")
 test.write('bar.in', "bar.in\n")
 test.write('extra.in', "extra.in 1\n")
 
-test.run()
+test.run(stderr = TestSCons.deprecated_python_expr)
 
 test.must_match('final', "foo.in\nbar.in\nextra.in 1\n")
 
 test.sleep()
 test.write('extra.in', "extra.in 2\n")
 
-test.run()
+test.run(stderr = TestSCons.deprecated_python_expr)
 
 test.must_match('final', "foo.in\nbar.in\nextra.in 1\n")
 

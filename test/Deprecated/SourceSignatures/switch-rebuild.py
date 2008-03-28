@@ -28,9 +28,11 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test that switching SourceSignature() types no longer causes rebuilds.
 """
 
+import re
+
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 
 base_sconstruct_contents = """\
@@ -53,29 +55,33 @@ write_SConstruct(test, 'MD5')
 
 test.write('switch.in', "switch.in\n")
 
-switch_out_switch_in = test.wrap_stdout('build(["switch.out"], ["switch.in"])\n')
+switch_out_switch_in = re.escape(test.wrap_stdout('build(["switch.out"], ["switch.in"])\n'))
 
-test.run(arguments = 'switch.out', stdout = switch_out_switch_in)
+test.run(arguments = 'switch.out',
+         stdout = switch_out_switch_in,
+         stderr = TestSCons.deprecated_python_expr)
 
-test.up_to_date(arguments = 'switch.out')
+test.up_to_date(arguments = 'switch.out', stderr = None)
 
 
 
 write_SConstruct(test, 'timestamp')
 
-test.up_to_date(arguments = 'switch.out')
+test.up_to_date(arguments = 'switch.out', stderr = None)
 
 
 
 write_SConstruct(test, 'MD5')
 
-test.not_up_to_date(arguments = 'switch.out')
+test.not_up_to_date(arguments = 'switch.out', stderr = None)
 
 
 
 test.write('switch.in', "switch.in 2\n")
 
-test.run(arguments = 'switch.out', stdout = switch_out_switch_in)
+test.run(arguments = 'switch.out',
+         stdout = switch_out_switch_in,
+         stderr = TestSCons.deprecated_python_expr)
 
 
 

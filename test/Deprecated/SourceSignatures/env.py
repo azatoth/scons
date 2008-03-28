@@ -31,10 +31,11 @@ default behavior.
 
 import os
 import os.path
+import re
 
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 base_sconstruct_contents = """\
 SetOption('warn', 'no-deprecated-source-signatures')
@@ -65,15 +66,17 @@ test.write('f2.in', "f2.in\n")
 test.write('f3.in', "f3.in\n")
 test.write('f4.in', "f4.in\n")
 
-test.run(arguments = 'f1.out f3.out')
+test.run(arguments = 'f1.out f3.out',
+         stderr = TestSCons.deprecated_python_expr)
 
 test.run(arguments = 'f1.out f2.out f3.out f4.out',
-         stdout = test.wrap_stdout("""\
+         stdout = re.escape(test.wrap_stdout("""\
 scons: `f1.out' is up to date.
 build(["f2.out"], ["f2.in"])
 scons: `f3.out' is up to date.
 build(["f4.out"], ["f4.in"])
-"""))
+""")),
+         stderr = TestSCons.deprecated_python_expr)
 
 
 
@@ -83,14 +86,15 @@ test.touch('f1.in')
 test.touch('f3.in')
 
 test.run(arguments = 'f1.out f2.out f3.out f4.out',
-         stdout = test.wrap_stdout("""\
+         stdout = re.escape(test.wrap_stdout("""\
 build(["f1.out"], ["f1.in"])
 scons: `f2.out' is up to date.
 scons: `f3.out' is up to date.
 scons: `f4.out' is up to date.
-"""))
+""")),
+         stderr = TestSCons.deprecated_python_expr)
 
-test.up_to_date(arguments = 'f1.out f2.out f3.out f4.out')
+test.up_to_date(arguments = 'f1.out f2.out f3.out f4.out', stderr = None)
 
 
 

@@ -71,7 +71,8 @@ test.run(arguments='--warn=no-misleading-keywords .')
 test.run(arguments='WARN=misleading-keywords .', 
          stderr=expect + TestSCons.file_expr + expect + TestSCons.file_expr)
 
-test.run(arguments='WARN=no-misleading-keywords .')
+test.run(arguments='WARN=no-misleading-keywords .',
+         stderr = TestSCons.deprecated_python_expr)
 
 
 

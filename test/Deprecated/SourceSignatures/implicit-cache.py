@@ -29,9 +29,11 @@ Test the simultaneous use of implicit_cache and
 SourceSignatures('timestamp')
 """
 
+import re
+
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 test.write('SConstruct', """\
 SetOption('warn', 'no-deprecated-source-signatures')
@@ -45,13 +47,15 @@ env = Environment(BUILDERS = { 'B' : B })
 env.B(target = 'both.out', source = 'both.in')
 """)
 
-both_out_both_in = test.wrap_stdout('build(["both.out"], ["both.in"])\n')
+both_out_both_in = re.escape(test.wrap_stdout('build(["both.out"], ["both.in"])\n'))
 
 
 
 test.write('both.in', "both.in 1\n")
 
-test.run(arguments = 'both.out', stdout = both_out_both_in)
+test.run(arguments = 'both.out',
+         stdout = both_out_both_in,
+         stderr = TestSCons.deprecated_python_expr)
 
 
 
@@ -59,7 +63,9 @@ test.sleep(2)
 
 test.write('both.in', "both.in 2\n")
 
-test.run(arguments = 'both.out', stdout = both_out_both_in)
+test.run(arguments = 'both.out',
+         stdout = both_out_both_in,
+         stderr = TestSCons.deprecated_python_expr)
 
 
 
@@ -67,7 +73,9 @@ test.sleep(2)
 
 test.write('both.in', "both.in 3\n")
 
-test.run(arguments = 'both.out', stdout = both_out_both_in)
+test.run(arguments = 'both.out',
+         stdout = both_out_both_in,
+         stderr = TestSCons.deprecated_python_expr)
 
 
 
@@ -75,13 +83,15 @@ test.sleep(2)
 
 test.write('both.in', "both.in 4\n")
 
-test.run(arguments = 'both.out', stdout = both_out_both_in)
+test.run(arguments = 'both.out',
+         stdout = both_out_both_in,
+         stderr = TestSCons.deprecated_python_expr)
 
 
 
 test.sleep(2)
 
-test.up_to_date(arguments = 'both.out')
+test.up_to_date(arguments = 'both.out', stderr = None)
 
 
 

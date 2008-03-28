@@ -61,7 +61,8 @@ test.run(arguments = 'WARN=missing-sconscript .', stderr = r"""
 scons: warning: Ignoring missing SConscript 'no_such_file'
 """ + TestSCons.file_expr)
 
-test.run(arguments = 'WARN=no-missing-sconscript .', stderr = "")
+test.run(arguments = 'WARN=no-missing-sconscript .',
+         stderr = TestSCons.deprecated_python_expr)
 
 
 

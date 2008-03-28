@@ -28,6 +28,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import os
 import os.path
 
+import TestSCons
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
@@ -47,7 +48,8 @@ SourceSignatures('timestamp')
 test.write('f1.in', "f1.in\n")
 test.write('f2.in', "f2.in\n")
 
-test.run(arguments = '.')
+test.run(arguments = '.',
+         stderr = TestSCons.deprecated_python_expr)
 
 
 

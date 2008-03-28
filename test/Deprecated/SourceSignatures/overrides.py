@@ -34,7 +34,7 @@ content signature.)
 
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 test.write('SConstruct', """\
 SetOption('warn', 'no-deprecated-source-signatures')
@@ -46,12 +46,14 @@ env.Command('foo.out', 'foo.in', Copy('$TARGET', '$SOURCE'), FOO=1)
 
 test.write('foo.in', "foo.in 1\n")
 
-test.run(arguments = 'foo.out')
+test.run(arguments = 'foo.out',
+         stderr = TestSCons.deprecated_python_expr)
 
 test.sleep()
 
 test.write('foo.in', "foo.in 1\n")
 
-test.not_up_to_date(arguments = 'foo.out')
+test.not_up_to_date(arguments = 'foo.out',
+                    stderr = TestSCons.deprecated_python_expr)
 
 test.pass_test()

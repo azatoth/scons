@@ -30,9 +30,11 @@ and TargetSignatures('content') settings, overriding one with
 the other in specific construction environments.
 """
 
+import re
+
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 
 
@@ -73,14 +75,15 @@ test.write('foo.in', 'foo.in')
 test.write('bar.in', 'bar.in')
 
 test.run(arguments="bar.out foo.out",
-         stdout=test.wrap_stdout("""\
+         stdout=re.escape(test.wrap_stdout("""\
 copy2(["bar.mid"], ["bar.in"])
 copy1(["bar.out"], ["bar.mid"])
 copy2(["foo.mid"], ["foo.in"])
 copy1(["foo.out"], ["foo.mid"])
-"""))
+""")),
+         stderr = TestSCons.deprecated_python_expr)
 
-test.up_to_date(arguments='bar.out foo.out')
+test.up_to_date(arguments='bar.out foo.out', stderr=None)
 
 
 
@@ -90,12 +93,13 @@ test.up_to_date(arguments='bar.out foo.out')
 write_SConstruct(test, 'x = 2 # added this line', 'build', 'content')
 
 test.run(arguments="bar.out foo.out",
-         stdout=test.wrap_stdout("""\
+         stdout=re.escape(test.wrap_stdout("""\
 copy2(["bar.mid"], ["bar.in"])
 copy1(["bar.out"], ["bar.mid"])
 copy2(["foo.mid"], ["foo.in"])
 scons: `foo.out' is up to date.
-"""))
+""")),
+         stderr = TestSCons.deprecated_python_expr)
 
 
 
@@ -104,7 +108,7 @@ scons: `foo.out' is up to date.
 
 write_SConstruct(test, 'x = 2 # added this line', 'content', 'build')
 
-test.up_to_date(arguments="bar.out foo.out")
+test.up_to_date(arguments="bar.out foo.out", stderr=None)
 
 
 
@@ -114,12 +118,13 @@ test.up_to_date(arguments="bar.out foo.out")
 write_SConstruct(test, '', 'content', 'build')
 
 test.run(arguments='bar.out foo.out',
-         stdout=test.wrap_stdout("""\
+         stdout=re.escape(test.wrap_stdout("""\
 copy2(["bar.mid"], ["bar.in"])
 scons: `bar.out' is up to date.
 copy2(["foo.mid"], ["foo.in"])
 copy1(["foo.out"], ["foo.mid"])
-"""))
+""")),
+         stderr = TestSCons.deprecated_python_expr)
 
 
 

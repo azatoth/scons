@@ -72,7 +72,8 @@ test.run(arguments='--warn=no-duplicate-environment file1.out')
 test.run(arguments='WARN=duplicate-environment file1.out', 
          stderr=expect + TestSCons.file_expr)
 
-test.run(arguments='WARN=no-duplicate-environment file1.out')
+test.run(arguments='WARN=no-duplicate-environment file1.out',
+         stderr = TestSCons.deprecated_python_expr)
 
 
 
