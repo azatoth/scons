@@ -25,10 +25,14 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that the Delete() Action works.
+Verify that the Copy() Action works, and preserves file modification
+times and modes.
 """
 
+import os
 import os.path
+import sys
+import stat
 
 import TestSCons
 
@@ -82,6 +86,11 @@ test.subdir('d5')
 test.write(['d5', 'f12.in'], "f12.in\n")
 test.write('f   13.in', "f   13.in\n")
 
+os.chmod('f1.in', 0646)
+os.chmod('f4.in', 0644)
+
+test.sleep()
+
 d4_f10_in   = os.path.join('d4', 'f10.in')
 d4_f11_out  = os.path.join('d4', 'f11.out')
 d4_f12_out  = os.path.join('d4', 'f12.out')
@@ -106,6 +115,7 @@ cat(["f8.out"], ["f8.in"])
 cat(["f9.out"], ["f9.in"])
 Copy("f9.out-Copy", "f9.in")
 """ % locals())
+
 test.run(options = '-n', arguments = '.', stdout = expect)
 
 test.must_not_exist('f1.out')
@@ -140,5 +150,39 @@ test.must_match('d4/f10.in', 'f10.in\n')
 test.must_match('d4/f11.out', 'f11.in\n')
 test.must_match('d4/f12.out', 'f12.in\n')
 test.must_match('f   13.out', 'f   13.in\n')
+
+errors = 0
+
+def must_be_same(f1, f2):
+    global errors
+    if type(f1) is type([]):
+        f1 = apply(os.path.join, f1)
+    if type(f2) is type([]):
+        f2 = apply(os.path.join, f2)
+    s1 = os.stat(f1)
+    s2 = os.stat(f2)
+    for value in ['ST_ATIME', 'ST_MODE', 'ST_MTIME']:
+        v = getattr(stat, value)
+        if s1[v] != s2[v]:
+            msg = '%s[%s] %s != %s[%s] %s\n' % \
+                  (repr(f1), value, s1[v],
+                   repr(f2), value, s2[v],)
+            sys.stderr.write(msg)
+            errors = errors + 1
+
+must_be_same('f1.out',                  'f1.in')
+must_be_same(['d2.out', 'file'],        ['d2.in', 'file'])
+must_be_same(['d3.out', 'f3.in'],       'f3.in')
+must_be_same('f4.out',                  'f4.in')
+must_be_same(['d5.out', 'file'],        ['d5.in', 'file'])
+must_be_same(['d6.out', 'f6.in'],       'f6.in')
+must_be_same('f7.out',                  'f7.in')
+must_be_same(['d4', 'f10.in'],          'f10.in')
+must_be_same(['d4', 'f11.out'],         'f11.in')
+must_be_same(['d4', 'f12.out'],         ['d5', 'f12.in'])
+must_be_same('f   13.out',              'f   13.in')
+
+if errors:
+    test.fail_test()
 
 test.pass_test()

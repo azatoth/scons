@@ -155,6 +155,11 @@ RELEASE 0.XX - XXX
 
   - Re-run LaTeX when it issues a package warning that it must be re-run.
 
+  From Leanid Nazdrynau:
+
+  - Have the Copy() action factory preserve file modes and times
+    when copying individual files.
+
   From Jan Nijtmans:
 
   - If $JARCHDIR isn't set explicitly, use the .java_classdir attribute

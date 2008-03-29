@@ -182,10 +182,10 @@ Chmod = ActionFactory(chmod_func, chmod_strfunc)
 def copy_func(dest, src):
     if SCons.Util.is_List(src) and os.path.isdir(dest):
         for file in src:
-            shutil.copy(file, dest)
+            shutil.copy2(file, dest)
         return 0
     elif os.path.isfile(src):
-        return shutil.copy(src, dest)
+        return shutil.copy2(src, dest)
     else:
         return shutil.copytree(src, dest, 1)
 
