@@ -161,7 +161,7 @@ def must_be_same(f1, f2):
         f2 = apply(os.path.join, f2)
     s1 = os.stat(f1)
     s2 = os.stat(f2)
-    for value in ['ST_ATIME', 'ST_MODE', 'ST_MTIME']:
+    for value in ['ST_MODE', 'ST_MTIME']:
         v = getattr(stat, value)
         if s1[v] != s2[v]:
             msg = '%s[%s] %s != %s[%s] %s\n' % \
