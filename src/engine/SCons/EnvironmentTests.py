@@ -542,15 +542,22 @@ class SubstitutionTestCase(unittest.TestCase):
                 return self.val
 
         class MyObj:
-            pass
+            def get(self):
+                return self
 
-        env = SubstitutionEnvironment(FOO='foo', BAR='bar', PROXY=MyProxy('my1'))
+        env = SubstitutionEnvironment(FOO='foo',
+                                      BAR='bar',
+                                      LIST=['one', 'two'],
+                                      PROXY=MyProxy('my1'))
 
         r = env.subst_path('$FOO')
         assert r == ['foo'], r
 
         r = env.subst_path(['$FOO', 'xxx', '$BAR'])
         assert r == ['foo', 'xxx', 'bar'], r
+
+        r = env.subst_path(['$FOO', '$LIST', '$BAR'])
+        assert map(str, r) == ['foo', 'one two', 'bar'], r
 
         r = env.subst_path(['$FOO', '$TARGET', '$SOURCE', '$BAR'])
         assert r == ['foo', '', '', 'bar'], r

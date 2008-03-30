@@ -500,7 +500,7 @@ class SubstitutionEnvironment:
             try:
                 get = obj.get
             except AttributeError:
-                pass
+                obj = SCons.Util.to_String_for_subst(obj)
             else:
                 obj = get()
             return obj

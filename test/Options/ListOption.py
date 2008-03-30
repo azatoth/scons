@@ -70,34 +70,39 @@ for x in  env['shared']:
     print x,
 print
 print env.subst('$shared')
+# Test subst_path() because it's used in $CPPDEFINES expansions.
+print env.subst_path('$shared')
 Default(env.Alias('dummy', None))
 """)
 
 test.run()
-check(['all', '1', 'gl ical qt x11', 'gl ical qt x11'])
+check(['all', '1', 'gl ical qt x11', 'gl ical qt x11',
+       "['gl ical qt x11']"])
 
 test.must_match(test.workpath('scons.options'), "shared = 'all'\n")
 
-test.run(arguments='shared=all')
-check(['all', '1', 'gl ical qt x11', 'gl ical qt x11'])
+check(['all', '1', 'gl ical qt x11', 'gl ical qt x11',
+       "['gl ical qt x11']"])
 
 test.run(arguments='shared=none')
-check(['none', '0', '', ''])
+check(['none', '0', '', '', "['']"])
 
 test.run(arguments='shared=')
-check(['none', '0', '', ''])
+check(['none', '0', '', '', "['']"])
 
 test.run(arguments='shared=x11,ical')
-check(['ical,x11', '1', 'ical x11', 'ical x11'])
+check(['ical,x11', '1', 'ical x11', 'ical x11',
+       "['ical x11']"])
 
 test.run(arguments='shared=x11,,ical,,')
-check(['ical,x11', '1', 'ical x11', 'ical x11'])
+check(['ical,x11', '1', 'ical x11', 'ical x11',
+       "['ical x11']"])
 
 test.run(arguments='shared=GL')
 check(['gl', '0', 'gl', 'gl'])
 
 test.run(arguments='shared=QT,GL')
-check(['gl,qt', '0', 'gl qt', 'gl qt'])
+check(['gl,qt', '0', 'gl qt', 'gl qt', "['gl qt']"])
 
 
 expect_stderr = """

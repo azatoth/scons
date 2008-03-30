@@ -62,7 +62,7 @@ RELEASE 0.XX - XXX
   From Konstantin Bozhikov:
 
   - Support expansion of construction variables that contain or refer
-    to lists of other variables or Nodes within expansions like $PCPPATH.
+    to lists of other variables or Nodes within expansions like $CPPPATH.
 
   - Change variable substitution (the env.subst() method) so that an
     input sequence (list or tuple) is preserved as a list in the output.
