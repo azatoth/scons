@@ -8,7 +8,7 @@
 
 
 
-RELEASE 0.XX - XXX
+RELEASE 0.98 - Sun, 30 Mar 2008 23:33:05 -0700
 
   From Benoit Belley:
 

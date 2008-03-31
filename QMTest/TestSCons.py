@@ -42,9 +42,9 @@ from TestCommon import __all__
 # here provides some independent verification that what we packaged
 # conforms to what we expect.
 
-default_version = '0.97.0'
+default_version = '0.98.0'
 
-SConsVersion = '0.97.0'
+SConsVersion = '0.98.0'
 if SConsVersion == '__' + 'VERSION' + '__':
     SConsVersion = default_version
 

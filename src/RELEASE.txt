@@ -20,9 +20,9 @@ more effectively, please sign up for the scons-users mailing list at:
 
 
 
-RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
+RELEASE 0.98 - Sun, 30 Mar 2008 23:33:05 -0700
 
-  This is the eighth beta release of SCons.  Please consult the
+  This is the ninth beta release of SCons.  Please consult the
   CHANGES.txt file for a list of specific changes since last release.
 
   Please note the following important changes since release 0.97.0d20071212:
@@ -1091,10 +1091,6 @@ RELEASE 0.97.0d20071212 - Wed, 12 Dec 2007 09:29:32 -0600
     - The -c option does not clean up .sconsign files or directories
       created as part of the build, and also does not clean up
       SideEffect files (for example, Visual Studio .pdb files).
-
-    - Switching content signatures from "MD5" to "timestamp" and back
-      again can cause unusual errors.  These errors can be cleared up by
-      removing all .sconsign files.
 
     - When using multiple Repositories, changing the name of an include
       file can cause an old version of the file to be used.
