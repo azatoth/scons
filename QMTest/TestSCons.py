@@ -44,6 +44,8 @@ from TestCommon import __all__
 
 default_version = '0.98.0'
 
+copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008'
+
 SConsVersion = '0.98.0'
 if SConsVersion == '__' + 'VERSION' + '__':
     SConsVersion = default_version
