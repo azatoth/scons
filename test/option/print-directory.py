@@ -24,16 +24,21 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+"""
+Verify that the -w and --print-directory options are ignored.
+"""
+
 import TestSCons
-import string
-import sys
 
 test = TestSCons.TestSCons()
 
 test.write('SConstruct', "")
 
-test.run(arguments = '--no-print-directory .',
-         stderr = "Warning:  the --no-print-directory option is not yet implemented\n")
+test.run(arguments = '-w .',
+         stderr = "Warning:  ignoring -w option\n")
+
+test.run(arguments = '--print-directory .',
+         stderr = "Warning:  ignoring --print-directory option\n")
 
 test.pass_test()
  

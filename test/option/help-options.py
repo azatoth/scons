@@ -24,19 +24,45 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import TestSCons
+"""
+Verify behavior of the -H and --help-options options.
+"""
+
+import re
 import string
-import sys
+
+import TestSCons
 
 test = TestSCons.TestSCons()
 
 test.write('SConstruct', "")
 
-test.run(arguments = '-e .',
-         stderr = "Warning:  the -e option is not yet implemented\n")
+test.run(arguments = '-H')
 
-test.run(arguments = '--environment-overrides .',
-         stderr = "Warning:  the --environment-overrides option is not yet implemented\n")
+test.fail_test(string.find(test.stdout(), '-H, --help-options') == -1)
+test.fail_test(string.find(test.stdout(), '--debug=TYPE') == -1)
+
+# Validate that the help output lists the options in case-insensitive
+# alphabetical order.
+
+# Don't include in the sorted comparison the options that are ignored
+# for compatibility.  They're all printed at the top of the list.
+ignored_re = re.compile('.*Ignored for compatibility\\.\n', re.S)
+stdout = ignored_re.sub('', test.stdout())
+
+lines = string.split(stdout, '\n')
+lines = filter(lambda x: x[:3] == '  -', lines)
+lines = map(lambda x: x[3:], lines)
+lines = map(lambda x: x[0] == '-' and x[1:] or x, lines)
+options = map(lambda x: string.split(x)[0], lines)
+options = map(lambda x: x[-1] == ',' and x[:-1] or x, options)
+lowered = map(lambda x: string.lower(x), options)
+sorted = lowered[:]
+sorted.sort()
+if lowered != sorted:
+    print "lowered =", lowered
+    print "sorted =", sorted
+    test.fail_test()
 
 test.pass_test()
  

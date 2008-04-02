@@ -8,6 +8,15 @@
 
 
 
+RELEASE X.XX - XXX
+
+  From Steven Knight
+
+  - Make the -d, -e, -w and --no-print-directory options "Ignored for
+    compatibility."  (We're not going to implement them.)
+
+
+
 RELEASE 0.98 - Sun, 30 Mar 2008 23:33:05 -0700
 
   From Benoit Belley:
