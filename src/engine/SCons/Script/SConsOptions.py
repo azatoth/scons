@@ -31,7 +31,12 @@ import string
 import sys
 import textwrap
 
-no_hyphen_re = re.compile(r'(\s+|(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w))')
+try:
+    no_hyphen_re = re.compile(r'(\s+|(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w))')
+except re.error:
+    # Pre-2.0 Python versions don't have the (?<= negative
+    # look-behind assertion.
+    no_hyphen_re = re.compile(r'(\s+|-*\w{2,}-(?=\w{2,}))')
 
 try:
     from gettext import gettext
