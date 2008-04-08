@@ -165,6 +165,17 @@ class Task:
             self.display(self.tm.message)
             self.tm.message = None
 
+        # Let the targets take care of any necessary preparations.
+        # This includes verifying that all of the necessary sources
+        # and dependencies exist, removing the target file(s), etc.
+        #
+        # As of April 2008, the get_executor().prepare() method makes
+        # sure that all of the aggregate sources necessary to build this
+        # Task's target(s) exist in one up-front check.  The individual
+        # target t.prepare() methods check that each target's explicit
+        # or implicit dependencies exists, and also initialize the
+        # .sconsign info.
+        self.targets[0].get_executor().prepare()
         for t in self.targets:
             t.prepare()
             for s in t.side_effects:

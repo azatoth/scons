@@ -15,6 +15,10 @@ RELEASE X.XX - XXX
   - Make the -d, -e, -w and --no-print-directory options "Ignored for
     compatibility."  (We're not going to implement them.)
 
+  - Fix a serious inefficiency (especially noticeable with larger Java
+    projects) in how SCons checks for whether any source files are missing
+    when a Builder call creates many targets from many input source files.
+
 
 
 RELEASE 0.98 - Sun, 30 Mar 2008 23:33:05 -0700

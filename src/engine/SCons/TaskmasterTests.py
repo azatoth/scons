@@ -168,11 +168,13 @@ class Node:
         self.postprocessed = 1
 
     def get_executor(self):
-        class Executor:
-            pass
-        e = Executor()
-        e.targets = self.targets
-        return e
+        if not hasattr(self, 'executor'):
+            class Executor:
+                def prepare(self):
+                    pass
+            self.executor = Executor()
+        self.executor.targets = self.targets
+        return self.executor
 
 class OtherError(Exception):
     pass
@@ -814,6 +816,22 @@ class TaskmasterTestCase(unittest.TestCase):
         assert n8.prepared
         assert n9.prepared
         assert n10.prepared
+
+        # Make sure we call an Executor's prepare() method.
+        class ExceptionExecutor:
+            def prepare(self):
+                raise Exception, "Executor.prepare() exception"
+
+        n11 = Node("n11")
+        n11.executor = ExceptionExecutor()
+        tm = SCons.Taskmaster.Taskmaster([n11])
+        t = tm.next_task()
+        try:
+            t.prepare()
+        except Exception, e:
+            assert str(e) == "Executor.prepare() exception", e
+        else:
+            raise AssertionError, "did not catch expected exception"
 
     def test_execute(self):
         """Test executing a task

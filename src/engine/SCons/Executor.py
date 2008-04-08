@@ -160,6 +160,16 @@ class Executor:
             self.sources_need_sorting = False
         return self.sources
 
+    def prepare(self):
+        """
+        Preparatory checks for whether this Executor can go ahead
+        and (try to) build its targets.
+        """
+        for s in self.get_sources():
+            if s.missing():
+                msg = "Source `%s' not found, needed by target `%s'."
+                raise SCons.Errors.StopError, msg % (s, self.targets[0])
+
     def add_pre_action(self, action):
         self.pre_actions.append(action)
 
@@ -250,11 +260,6 @@ class Executor:
         for tgt in self.targets:
             tgt.add_to_implicit(deps)
 
-    def get_missing_sources(self):
-        """
-        """
-        return filter(lambda s: s.missing(), self.get_sources())
-
     def _get_unignored_sources_key(self, ignore=()):
         return tuple(ignore)
 
@@ -344,4 +349,6 @@ class Null(_Executor):
     def get_build_scanner_path(self):
         return None
     def cleanup(self):
+        pass
+    def prepare(self):
         pass

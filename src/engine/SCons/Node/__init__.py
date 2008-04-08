@@ -330,24 +330,29 @@ class Node:
         is out-of-date and must be rebuilt, but before actually calling
         the method to build the Node.
 
-        This default implemenation checks that all children either exist
-        or are derived, and initializes the BuildInfo structure that
-        will hold the information about how this node is, uh, built.
+        This default implementation checks that explicit or implicit
+        dependencies either exist or are derived, and initializes the
+        BuildInfo structure that will hold the information about how
+        this node is, uh, built.
+
+        (The existence of source files is checked separately by the
+        Executor, which aggregates checks for all of the targets built
+        by a specific action.)
 
         Overriding this method allows for for a Node subclass to remove
         the underlying file from the file system.  Note that subclass
         methods should call this base class method to get the child
         check and the BuildInfo structure.
         """
-        l = self.depends
+        for d in self.depends:
+            if d.missing():
+                msg = "Explicit dependency `%s' not found, needed by target `%s'."
+                raise SCons.Errors.StopError, msg % (d, self)
         if not self.implicit is None:
-            l = l + self.implicit
-        missing_sources = self.get_executor().get_missing_sources() \
-                          + filter(lambda c: c.missing(), l)
-        if missing_sources:
-            desc = "Source `%s' not found, needed by target `%s'." % (missing_sources[0], self)
-            raise SCons.Errors.StopError, desc
-
+            for i in self.implicit:
+                if i.missing():
+                    msg = "Implicit dependency `%s' not found, needed by target `%s'."
+                    raise SCons.Errors.StopError, msg % (i, self)
         self.binfo = self.get_binfo()
 
     def build(self, **kw):
