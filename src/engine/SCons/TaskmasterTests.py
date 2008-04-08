@@ -937,37 +937,46 @@ class TaskmasterTestCase(unittest.TestCase):
         ]
         assert str(exc_value) in exception_values, exc_value
 
-        t.exception_set(("exception 1", None))
+        class Exception1(Exception):
+            pass
+
+        t.exception_set((Exception1, None))
         try:
             t.exception_raise()
         except:
             exc_type, exc_value = sys.exc_info()[:2]
-            assert exc_type == "exception 1", exc_type
-            assert exc_value is None, exc_value
+            assert exc_type == Exception1, exc_type
+            assert str(exc_value) == '', exc_value
         else:
             assert 0, "did not catch expected exception"
 
-        t.exception_set(("exception 2", "xyzzy"))
+        class Exception2(Exception):
+            pass
+
+        t.exception_set((Exception2, "xyzzy"))
         try:
             t.exception_raise()
         except:
             exc_type, exc_value = sys.exc_info()[:2]
-            assert exc_type == "exception 2", exc_type
-            assert exc_value == "xyzzy", exc_value
+            assert exc_type == Exception2, exc_type
+            assert str(exc_value) == "xyzzy", exc_value
         else:
             assert 0, "did not catch expected exception"
+
+        class Exception3(Exception):
+            pass
 
         try:
             1/0
         except:
             tb = sys.exc_info()[2]
-        t.exception_set(("exception 3", "arg", tb))
+        t.exception_set((Exception3, "arg", tb))
         try:
             t.exception_raise()
         except:
             exc_type, exc_value, exc_tb = sys.exc_info()
-            assert exc_type == 'exception 3', exc_type
-            assert exc_value == "arg", exc_value
+            assert exc_type == Exception3, exc_type
+            assert str(exc_value) == "arg", exc_value
             import traceback
             x = traceback.extract_tb(tb)[-1]
             y = traceback.extract_tb(exc_tb)[-1]
