@@ -10,7 +10,11 @@
 
 RELEASE X.XX - XXX
 
-  From Steven Knight
+  From Benoit Belley:
+
+  - Speed up the SCons.Util.to_string*() functions.
+
+  From Steven Knight:
 
   - Make the -d, -e, -w and --no-print-directory options "Ignored for
     compatibility."  (We're not going to implement them.)
