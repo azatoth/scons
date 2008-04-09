@@ -712,33 +712,33 @@ class Node:
         self.binfo = binfo
 
         executor = self.get_executor()
-
-        sources = executor.get_unignored_sources(self.ignore)
-
-        depends = self.depends
-        implicit = self.implicit or []
-
-        if self.ignore:
-            depends = filter(self.do_not_ignore, depends)
-            implicit = filter(self.do_not_ignore, implicit)
-
-        def get_ninfo(node):
-            return node.get_ninfo()
-
-        sourcesigs = map(get_ninfo, sources)
-        dependsigs = map(get_ninfo, depends)
-        implicitsigs = map(get_ninfo, implicit)
+        ignore_set = self.ignore_dict.keys()
 
         if self.has_builder():
             binfo.bact = str(executor)
             binfo.bactsig = SCons.Util.MD5signature(executor.get_contents())
 
+        sources = executor.get_unignored_sources(self.ignore)
+        sourcesigs = []
+        for s in sources:
+            sourcesigs.append(s.get_ninfo())
         binfo.bsources = sources
-        binfo.bdepends = depends
-        binfo.bimplicit = implicit
-
         binfo.bsourcesigs = sourcesigs
+
+        depends = self.depends
+        dependsigs = []
+        for d in depends:
+            if d not in ignore_set:
+                dependsigs.append(d.get_ninfo())
+        binfo.bdepends = depends
         binfo.bdependsigs = dependsigs
+
+        implicit = self.implicit or []
+        implicitsigs = []
+        for i in implicit:
+            if i not in ignore_set:
+                implicitsigs.append(i.get_ninfo())
+        binfo.bimplicit = implicit
         binfo.bimplicitsigs = implicitsigs
 
         return binfo
