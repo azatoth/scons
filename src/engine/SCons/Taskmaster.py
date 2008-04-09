@@ -52,6 +52,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import SCons.compat
 
+from itertools import chain
 import operator
 import string
 import sys
@@ -67,7 +68,6 @@ NODE_EXECUTING = SCons.Node.executing
 NODE_UP_TO_DATE = SCons.Node.up_to_date
 NODE_EXECUTED = SCons.Node.executed
 NODE_FAILED = SCons.Node.failed
-
 
 
 # A subsystem for recording stats about how different Nodes are handled by
@@ -192,6 +192,17 @@ class Task:
         """
         return self.node
 
+    def needs_execute(self):
+        """
+        Called to determine whether the task's execute() method should
+        be run.
+
+        This method allows one to skip the somethat costly execution
+        of the execute() method in a seperate thread. For example,
+        that would be unnecessary for up-to-date targets.
+        """
+        return True
+
     def execute(self):
         """
         Called to execute the task.
@@ -267,8 +278,12 @@ class Task:
         """
         Explicit stop-the-build failure.
         """
-        for t in self.targets:
-            t.set_state(NODE_FAILED)
+        
+        # Invoke fail_continue() to clean-up the pending children
+        # list.
+        self.fail_continue()
+
+        # Tell the taskmaster to not start any new tasks
         self.tm.stop()
 
         # We're stopping because of a build failure, but give the
@@ -284,11 +299,43 @@ class Task:
         This sets failure status on the target nodes and all of
         their dependent parent nodes.
         """
+        
+        pending_children = self.tm.pending_children
+
+        to_visit = set()
         for t in self.targets:
             # Set failure state on all of the parents that were dependent
             # on this failed build.
-            def set_state(node): node.set_state(NODE_FAILED)
-            t.call_for_all_waiting_parents(set_state)
+            if t.state != NODE_FAILED:
+                t.state = NODE_FAILED
+                parents = t.waiting_parents
+                to_visit = to_visit | parents
+                pending_children = pending_children - parents
+
+        try:
+            while 1:
+                try:
+                    node = to_visit.pop()
+                except AttributeError:
+                    # Python 1.5.2
+                    if len(to_visit):
+                        node = to_visit[0]
+                        to_visit.remove(node)
+                    else:
+                        break
+                if node.state != NODE_FAILED:
+                    node.state = NODE_FAILED
+                    parents = node.waiting_parents
+                    to_visit = to_visit | parents
+                    pending_children = pending_children - parents
+        except KeyError:
+            # The container to_visit has been emptied.
+            pass
+
+        # We have the stick back the pending_children list into the
+        # task master because the python 1.5.2 compatibility does not
+        # allow us to use in-place updates
+        self.tm.pending_children = pending_children
 
     def make_ready_all(self):
         """
@@ -311,6 +358,7 @@ class Task:
         This is the default behavior for building only what's necessary.
         """
         self.out_of_date = []
+        needs_executing = False
         for t in self.targets:
             try:
                 t.disambiguate().make_ready()
@@ -318,13 +366,24 @@ class Task:
                                 (not t.always_build and t.is_up_to_date())
             except EnvironmentError, e:
                 raise SCons.Errors.BuildError(node=t, errstr=e.strerror, filename=e.filename)
-            if is_up_to_date:
-                t.set_state(NODE_UP_TO_DATE)
-            else:
+
+            if not is_up_to_date:
                 self.out_of_date.append(t)
+                needs_executing = True
+
+        if needs_executing:
+            for t in self.targets:
                 t.set_state(NODE_EXECUTING)
                 for s in t.side_effects:
                     s.set_state(NODE_EXECUTING)
+        else:                
+            for t in self.targets:
+                # We must invoke visited() to ensure that the node
+                # information has been computed before allowing the
+                # parent nodes to execute. (That could occur in a
+                # parallel build...)
+                t.visited()
+                t.set_state(NODE_UP_TO_DATE)
 
     make_ready = make_ready_current
 
@@ -350,24 +409,25 @@ class Task:
 
         parents = {}
         for t in targets:
-            for p in t.waiting_parents.keys():
+            for p in t.waiting_parents:
                 parents[p] = parents.get(p, 0) + 1
 
         for t in targets:
             for s in t.side_effects:
                 if s.get_state() == NODE_EXECUTING:
                     s.set_state(NODE_NO_STATE)
-                    for p in s.waiting_parents.keys():
-                        if not parents.has_key(p):
-                            parents[p] = 1
-                for p in s.waiting_s_e.keys():
+                    for p in s.waiting_parents:
+                        parents[p] = parents.get(p, 0) + 1
+                for p in s.waiting_s_e:
                     if p.ref_count == 0:
                         self.tm.candidates.append(p)
+                        self.tm.pending_children.discard(p)
 
         for p, subtract in parents.items():
             p.ref_count = p.ref_count - subtract
             if p.ref_count == 0:
                 self.tm.candidates.append(p)
+                self.tm.pending_children.discard(p)
 
         for t in targets:
             t.postprocess()
@@ -426,12 +486,15 @@ class Task:
         raise exc_type, exc_value, exc_traceback
 
 
-def find_cycle(stack):
-    if stack[0] == stack[-1]:
-        return stack
-    for n in stack[-1].waiting_parents.keys():
+def find_cycle(stack, visited):
+    if stack[-1] in visited:
+        return None
+    visited.add(stack[-1])
+    for n in stack[-1].waiting_parents:
         stack.append(n)
-        if find_cycle(stack):
+        if stack[0] == stack[-1]:
+            return stack
+        if find_cycle(stack, visited):
             return stack
         stack.pop()
     return None
@@ -454,6 +517,8 @@ class Taskmaster:
         self.message = None
         self.trace = trace
         self.next_candidate = self.find_next_candidate
+        self.pending_children = set()
+
 
     def find_next_candidate(self):
         """
@@ -522,10 +587,12 @@ class Taskmaster:
         self.ready_exc = None
 
         T = self.trace
+        if T: T.write('\nTaskmaster: Looking for a node to evaluate\n')
 
         while 1:
             node = self.next_candidate()
             if node is None:
+                if T: T.write('Taskmaster: No candidate anymore.\n\n')
                 return None
 
             node = node.disambiguate()
@@ -539,25 +606,26 @@ class Taskmaster:
                 S.considered = S.considered + 1
             else:
                 S = None
+  
+            if T: T.write('Taskmaster:     Considering node <%-10s %s> and its children:\n' % 
+                          (StateString[node.get_state()], repr(str(node))))
 
-            if T: T.write('Taskmaster: %s:' % repr(str(node)))
-
-            # Skip this node if it has already been evaluated:
-            if state > NODE_PENDING:
+            if state == NODE_NO_STATE:
+                # Mark this node as being on the execution stack:
+                node.set_state(NODE_PENDING)
+            elif state > NODE_PENDING:
+                # Skip this node if it has already been evaluated:
                 if S: S.already_handled = S.already_handled + 1
-                if T: T.write(' already handled (%s)\n' % StateString[state])
+                if T: T.write('Taskmaster:        already handled (executed)\n')
                 continue
 
-            # Mark this node as being on the execution stack:
-            node.set_state(NODE_PENDING)
-
             try:
-                children = node.children() + node.prerequisites
+                children = node.children()
             except SystemExit:
                 exc_value = sys.exc_info()[1]
                 e = SCons.Errors.ExplicitExit(node, exc_value.code)
                 self.ready_exc = (SCons.Errors.ExplicitExit, e)
-                if T: T.write(' SystemExit\n')
+                if T: T.write('Taskmaster:        SystemExit\n')
                 return node
             except KeyboardInterrupt:
                 if T: T.write(' KeyboardInterrupt\n')
@@ -569,70 +637,36 @@ class Taskmaster:
                 # raise the exception when the Task is "executed."
                 self.ready_exc = sys.exc_info()
                 if S: S.problem = S.problem + 1
-                if T: T.write(' exception\n')
+                if T: T.write('Taskmaster:        exception while scanning children.\n')
                 return node
 
-            if T and children:
-                c = map(str, children)
-                c.sort()
-                T.write(' children:\n    %s\n   ' % c)
+            children_not_visited = []
+            children_pending = set()
+            children_not_ready = []
+            children_failed = False
 
-            childstate = map(lambda N: (N, N.get_state()), children)
+            for child in chain(children,node.prerequisites):
+                childstate = child.get_state()
 
-            # Detect dependency cycles:
-            pending_nodes = filter(lambda I: I[1] == NODE_PENDING, childstate)
-            if pending_nodes:
-                for p in pending_nodes:
-                    cycle = find_cycle([p[0], node])
-                    if cycle:
-                        desc = "Dependency cycle: " + string.join(map(str, cycle), " -> ")
-                        if T: T.write(' dependency cycle\n')
-                        raise SCons.Errors.UserError, desc
+                if T: T.write('Taskmaster:        <%-10s %s>\n' % 
+                              (StateString[childstate], repr(str(child))))
 
-            not_built = filter(lambda I: I[1] <= NODE_EXECUTING, childstate)
-            if not_built:
-                # We're waiting on one or more derived targets that have
-                # not yet finished building.
+                if childstate == NODE_NO_STATE:
+                    children_not_visited.append(child)
+                elif childstate == NODE_PENDING:
+                    children_pending.add(child)
+                elif childstate == NODE_FAILED:
+                    children_failed = True
 
-                not_visited = filter(lambda I: not I[1], not_built)
-                if not_visited:
-                    # Some of them haven't even been visited yet.
-                    # Add them to the list so that on some next pass
-                    # we can take a stab at evaluating them (or
-                    # their children).
-                    not_visited = map(lambda I: I[0], not_visited)
-                    not_visited.reverse()
-                    self.candidates.extend(self.order(not_visited))
+                if childstate <= NODE_EXECUTING:
+                    children_not_ready.append(child)
 
-                n_b_nodes = map(lambda I: I[0], not_built)
 
-                # Add this node to the waiting parents lists of anything
-                # we're waiting on, with a reference count so we can be
-                # put back on the list for re-evaluation when they've
-                # all finished.
-                map(lambda n, P=node: n.add_to_waiting_parents(P), n_b_nodes)
-                node.ref_count = len(set(n_b_nodes))
-
-                if S: S.not_built = S.not_built + 1
-                if T:
-                    c = map(str, n_b_nodes)
-                    c.sort()
-                    T.write(' waiting on unfinished children:\n    %s\n' % c)
-                continue
-
-            # Skip this node if it has side-effects that are
-            # currently being built:
-            side_effects = filter(lambda N:
-                                  N.get_state() == NODE_EXECUTING,
-                                  node.side_effects)
-            if side_effects:
-                map(lambda n, P=node: n.add_to_waiting_s_e(P), side_effects)
-                if S: S.side_effects = S.side_effects + 1
-                if T:
-                    c = map(str, side_effects)
-                    c.sort()
-                    T.write(' waiting on side effects:\n    %s\n' % c)
-                continue
+            # These nodes have not even been visited yet.  Add
+            # them to the list so that on some next pass we can
+            # take a stab at evaluating them (or their children).
+            children_not_visited.reverse()
+            self.candidates.extend(self.order(children_not_visited))
 
             # Skip this node if any of its children have failed.
             #
@@ -652,21 +686,47 @@ class Taskmaster:
             # Note that even if one of the children fails, we still
             # added the other children to the list of candidate nodes
             # to keep on building (--keep-going).
-            failed_children = filter(lambda I: I[1] == NODE_FAILED,
-                                     childstate)
-            if failed_children:
+            if children_failed:
                 node.set_state(NODE_FAILED)
+
                 if S: S.child_failed = S.child_failed + 1
-                if T:
-                    c = map(lambda I: str(I[0]), failed_children)
-                    c.sort()
-                    T.write(' children failed:\n    %s\n' % c)
+                if T: T.write('Taskmaster:****** <%-10s %s>\n' % 
+                              (StateString[node.get_state()], repr(str(node))))
+                continue
+
+            if children_not_ready:
+                for child in children_not_ready:
+                    # We're waiting on one or more derived targets
+                    # that have not yet finished building.
+                    if S: S.not_built = S.not_built + 1
+
+                    # Add this node to the waiting parents lists of
+                    # anything we're waiting on, with a reference
+                    # count so we can be put back on the list for
+                    # re-evaluation when they've all finished.
+                    node.ref_count =  node.ref_count + child.add_to_waiting_parents(node)
+
+                self.pending_children = self.pending_children | children_pending
+                
+                continue
+
+            # Skip this node if it has side-effects that are
+            # currently being built:
+            wait_side_effects = False
+            for se in node.side_effects:
+                if se.get_state() == NODE_EXECUTING:
+                    se.add_to_waiting_s_e(node)
+                    wait_side_effects = True
+
+            if wait_side_effects:
+                if S: S.side_effects = S.side_effects + 1
                 continue
 
             # The default when we've gotten through all of the checks above:
             # this node is ready to be built.
             if S: S.build = S.build + 1
-            if T: T.write(' evaluating %s\n' % node)
+            if T: T.write('Taskmaster: Evaluating <%-10s %s>\n' % 
+                          (StateString[node.get_state()], repr(str(node))))
             return node
 
         return None
@@ -709,3 +769,18 @@ class Taskmaster:
         Stops the current build completely.
         """
         self.next_candidate = self.no_next_candidate
+
+    def cleanup(self):
+        """
+        Check for dependency cycles.
+        """
+        if self.pending_children:
+            desc = 'Found dependency cycle(s):\n'
+            for node in self.pending_children:
+                cycle = find_cycle([node], set())
+                if cycle:
+                    desc = desc + "  " + string.join(map(str, cycle), " -> ") + "\n"
+                else:
+                    desc = desc + "  Internal Error: no cycle found for node %s (%s)\n" %  \
+                        (node, repr(node)) 
+            raise SCons.Errors.UserError, desc

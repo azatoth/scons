@@ -14,6 +14,12 @@ RELEASE X.XX - XXX
 
   - Speed up the SCons.Util.to_string*() functions.
 
+  - Optimize various Node intialization and calculations.
+
+  - Optimize Executor scanning code.
+
+  - Optimize Taskmaster execution, including dependency-cycle checking.
+
   From Steven Knight:
 
   - Make the -d, -e, -w and --no-print-directory options "Ignored for

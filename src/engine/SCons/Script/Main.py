@@ -168,28 +168,29 @@ class BuildTask(SCons.Taskmaster.Task):
         self.progress(self.targets[0])
         return SCons.Taskmaster.Task.prepare(self)
 
-    def execute(self):
-        for target in self.targets:
-            if target.get_state() == SCons.Node.up_to_date: 
-                continue
-            if target.has_builder() and not hasattr(target.builder, 'status'):
-                if print_time:
-                    start_time = time.time()
-                    global first_command_start
-                    if first_command_start is None:
-                        first_command_start = start_time
-                SCons.Taskmaster.Task.execute(self)
-                if print_time:
-                    global cumulative_command_time
-                    global last_command_end
-                    finish_time = time.time()
-                    last_command_end = finish_time
-                    cumulative_command_time = cumulative_command_time+finish_time-start_time
-                    sys.stdout.write("Command execution time: %f seconds\n"%(finish_time-start_time))
-                break
+    def needs_execute(self):
+        target = self.targets[0]
+        if target.get_state() == SCons.Node.executing:
+            return True
         else:
             if self.top and target.has_builder():
                 display("scons: `%s' is up to date." % str(self.node))
+            return False
+
+    def execute(self):
+        if print_time:
+            start_time = time.time()
+            global first_command_start
+            if first_command_start is None:
+                first_command_start = start_time
+        SCons.Taskmaster.Task.execute(self)
+        if print_time:
+            global cumulative_command_time
+            global last_command_end
+            finish_time = time.time()
+            last_command_end = finish_time
+            cumulative_command_time = cumulative_command_time+finish_time-start_time
+            sys.stdout.write("Command execution time: %f seconds\n"%(finish_time-start_time))
 
     def do_failed(self, status=2):
         _BuildFailures.append(self.exception[1])

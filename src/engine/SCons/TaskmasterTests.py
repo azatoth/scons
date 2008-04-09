@@ -56,8 +56,8 @@ class Node:
         self.state = SCons.Node.no_state
         self.prepared = None
         self.ref_count = 0
-        self.waiting_parents = {}
-        self.waiting_s_e = {}
+        self.waiting_parents = set()
+        self.waiting_s_e = set()
         self.side_effect = 0
         self.side_effects = []
         self.alttargets = []
@@ -119,17 +119,10 @@ class Node:
 
     def add_to_waiting_parents(self, node):
         wp = self.waiting_parents
-        if wp.has_key(node):
-            result = 0
-        else:
-            result = 1
-        wp[node] = 1
-        return result
-
-    def call_for_all_waiting_parents(self, func):
-        func(self)
-        for parent in self.waiting_parents.keys():
-            parent.call_for_all_waiting_parents(func)
+        if node in wp:
+            return 0
+        wp.add(node)
+        return 1
 
     def get_state(self):
         return self.state
@@ -166,6 +159,7 @@ class Node:
 
     def postprocess(self):
         self.postprocessed = 1
+        self.waiting_parents = set()
 
     def get_executor(self):
         if not hasattr(self, 'executor'):
@@ -471,7 +465,7 @@ class TaskmasterTestCase(unittest.TestCase):
         t.postprocess()
 
         s = n1.get_state()
-        assert s == SCons.Node.up_to_date, s
+        assert s == SCons.Node.executed, s
         s = n2.get_state()
         assert s == SCons.Node.executed, s
 
@@ -1057,16 +1051,29 @@ class TaskmasterTestCase(unittest.TestCase):
 
         value = trace.getvalue()
         expect = """\
-Taskmaster: 'n1': evaluating n1
-Taskmaster: 'n1': already handled (executed)
-Taskmaster: 'n3': children:
-    ['n1', 'n2']
-    waiting on unfinished children:
-    ['n2']
-Taskmaster: 'n2': evaluating n2
-Taskmaster: 'n3': children:
-    ['n1', 'n2']
-    evaluating n3
+
+Taskmaster: Looking for a node to evaluate
+Taskmaster:     Considering node <no_state   'n1'> and its children:
+Taskmaster: Evaluating <pending    'n1'>
+
+Taskmaster: Looking for a node to evaluate
+Taskmaster:     Considering node <executed   'n1'> and its children:
+Taskmaster:        already handled (executed)
+Taskmaster:     Considering node <no_state   'n3'> and its children:
+Taskmaster:        <executed   'n1'>
+Taskmaster:        <no_state   'n2'>
+Taskmaster:     Considering node <no_state   'n2'> and its children:
+Taskmaster: Evaluating <pending    'n2'>
+
+Taskmaster: Looking for a node to evaluate
+Taskmaster:     Considering node <pending    'n3'> and its children:
+Taskmaster:        <executed   'n1'>
+Taskmaster:        <executed   'n2'>
+Taskmaster: Evaluating <pending    'n3'>
+
+Taskmaster: Looking for a node to evaluate
+Taskmaster: No candidate anymore.
+
 """
         assert value == expect, value
 

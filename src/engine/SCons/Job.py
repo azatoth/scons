@@ -129,7 +129,8 @@ class Serial:
 
             try:
                 task.prepare()
-                task.execute()
+                if task.needs_execute():
+                    task.execute()
             except KeyboardInterrupt:
                 raise
             except:
@@ -141,6 +142,7 @@ class Serial:
                 task.executed()
 
             task.postprocess()
+        self.taskmaster.cleanup()
 
     def cleanup(self):
         pass
@@ -318,13 +320,16 @@ else:
                         # Let the failed() callback function arrange
                         # for the build to stop if that's appropriate.
                         task.exception_set()
-                        self.tp.preparation_failed(task)
-                        jobs = jobs + 1
-                        continue
-
-                    # dispatch task
-                    self.tp.put(task)
-                    jobs = jobs + 1
+                        task.failed()
+                        task.postprocess()
+                    else:
+                        if task.needs_execute():
+                            # dispatch task
+                            self.tp.put(task)
+                            jobs = jobs + 1
+                        else:
+                            task.executed()
+                            task.postprocess()
 
                 if not task and not jobs: break
 
@@ -346,3 +351,4 @@ else:
 
         def cleanup(self):
             self.tp.cleanup()
+            self.taskmaster.cleanup()
