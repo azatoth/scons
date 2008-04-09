@@ -57,10 +57,16 @@ import string
 import sys
 import traceback
 
-import SCons.Node
 import SCons.Errors
+import SCons.Node
 
 StateString = SCons.Node.StateString
+NODE_NO_STATE = SCons.Node.no_state
+NODE_PENDING = SCons.Node.pending
+NODE_EXECUTING = SCons.Node.executing
+NODE_UP_TO_DATE = SCons.Node.up_to_date
+NODE_EXECUTED = SCons.Node.executed
+NODE_FAILED = SCons.Node.failed
 
 
 
@@ -223,10 +229,10 @@ class Task:
         the Node's callback methods.
         """
         for t in self.targets:
-            if t.get_state() == SCons.Node.executing:
+            if t.get_state() == NODE_EXECUTING:
                 for side_effect in t.side_effects:
-                    side_effect.set_state(SCons.Node.no_state)
-                t.set_state(SCons.Node.executed)
+                    side_effect.set_state(NODE_NO_STATE)
+                t.set_state(NODE_EXECUTED)
 
     def executed_with_callbacks(self):
         """
@@ -242,10 +248,10 @@ class Task:
         or not the target was an actual built target or a source Node.
         """
         for t in self.targets:
-            if t.get_state() == SCons.Node.executing:
+            if t.get_state() == NODE_EXECUTING:
                 for side_effect in t.side_effects:
-                    side_effect.set_state(SCons.Node.no_state)
-                t.set_state(SCons.Node.executed)
+                    side_effect.set_state(NODE_NO_STATE)
+                t.set_state(NODE_EXECUTED)
                 t.built()
             t.visited()
 
@@ -262,7 +268,7 @@ class Task:
         Explicit stop-the-build failure.
         """
         for t in self.targets:
-            t.set_state(SCons.Node.failed)
+            t.set_state(NODE_FAILED)
         self.tm.stop()
 
         # We're stopping because of a build failure, but give the
@@ -281,7 +287,7 @@ class Task:
         for t in self.targets:
             # Set failure state on all of the parents that were dependent
             # on this failed build.
-            def set_state(node): node.set_state(SCons.Node.failed)
+            def set_state(node): node.set_state(NODE_FAILED)
             t.call_for_all_waiting_parents(set_state)
 
     def make_ready_all(self):
@@ -293,9 +299,9 @@ class Task:
         """
         self.out_of_date = self.targets[:]
         for t in self.targets:
-            t.disambiguate().set_state(SCons.Node.executing)
+            t.disambiguate().set_state(NODE_EXECUTING)
             for s in t.side_effects:
-                s.set_state(SCons.Node.executing)
+                s.set_state(NODE_EXECUTING)
 
     def make_ready_current(self):
         """
@@ -313,12 +319,12 @@ class Task:
             except EnvironmentError, e:
                 raise SCons.Errors.BuildError(node=t, errstr=e.strerror, filename=e.filename)
             if is_up_to_date:
-                t.set_state(SCons.Node.up_to_date)
+                t.set_state(NODE_UP_TO_DATE)
             else:
                 self.out_of_date.append(t)
-                t.set_state(SCons.Node.executing)
+                t.set_state(NODE_EXECUTING)
                 for s in t.side_effects:
-                    s.set_state(SCons.Node.executing)
+                    s.set_state(NODE_EXECUTING)
 
     make_ready = make_ready_current
 
@@ -349,8 +355,8 @@ class Task:
 
         for t in targets:
             for s in t.side_effects:
-                if s.get_state() == SCons.Node.executing:
-                    s.set_state(SCons.Node.no_state)
+                if s.get_state() == NODE_EXECUTING:
+                    s.set_state(NODE_NO_STATE)
                     for p in s.waiting_parents.keys():
                         if not parents.has_key(p):
                             parents[p] = 1
@@ -537,13 +543,13 @@ class Taskmaster:
             if T: T.write('Taskmaster: %s:' % repr(str(node)))
 
             # Skip this node if it has already been evaluated:
-            if state > SCons.Node.pending:
+            if state > NODE_PENDING:
                 if S: S.already_handled = S.already_handled + 1
                 if T: T.write(' already handled (%s)\n' % StateString[state])
                 continue
 
             # Mark this node as being on the execution stack:
-            node.set_state(SCons.Node.pending)
+            node.set_state(NODE_PENDING)
 
             try:
                 children = node.children() + node.prerequisites
@@ -574,7 +580,7 @@ class Taskmaster:
             childstate = map(lambda N: (N, N.get_state()), children)
 
             # Detect dependency cycles:
-            pending_nodes = filter(lambda I: I[1] == SCons.Node.pending, childstate)
+            pending_nodes = filter(lambda I: I[1] == NODE_PENDING, childstate)
             if pending_nodes:
                 for p in pending_nodes:
                     cycle = find_cycle([p[0], node])
@@ -583,7 +589,7 @@ class Taskmaster:
                         if T: T.write(' dependency cycle\n')
                         raise SCons.Errors.UserError, desc
 
-            not_built = filter(lambda I: I[1] <= SCons.Node.executing, childstate)
+            not_built = filter(lambda I: I[1] <= NODE_EXECUTING, childstate)
             if not_built:
                 # We're waiting on one or more derived targets that have
                 # not yet finished building.
@@ -617,7 +623,7 @@ class Taskmaster:
             # Skip this node if it has side-effects that are
             # currently being built:
             side_effects = filter(lambda N:
-                                  N.get_state() == SCons.Node.executing,
+                                  N.get_state() == NODE_EXECUTING,
                                   node.side_effects)
             if side_effects:
                 map(lambda n, P=node: n.add_to_waiting_s_e(P), side_effects)
@@ -646,10 +652,10 @@ class Taskmaster:
             # Note that even if one of the children fails, we still
             # added the other children to the list of candidate nodes
             # to keep on building (--keep-going).
-            failed_children = filter(lambda I: I[1] == SCons.Node.failed,
+            failed_children = filter(lambda I: I[1] == NODE_FAILED,
                                      childstate)
             if failed_children:
-                node.set_state(SCons.Node.failed)
+                node.set_state(NODE_FAILED)
                 if S: S.child_failed = S.child_failed + 1
                 if T:
                     c = map(lambda I: str(I[0]), failed_children)
