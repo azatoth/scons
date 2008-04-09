@@ -204,6 +204,7 @@ class Node:
         # future if we had a good reason to...).
         self.sources = []       # source files used to build node
         self.sources_set = set()
+        self._specific_sources = False
         self.depends = []       # explicit dependencies (from Depends)
         self.depends_set = set()
         self.ignore = []        # dependencies to ignore
@@ -709,7 +710,13 @@ class Node:
             binfo.bact = str(executor)
             binfo.bactsig = SCons.Util.MD5signature(executor.get_contents())
 
-        sources = executor.get_unignored_sources(self.ignore)
+        if self._specific_sources:
+            sources = []
+            for s in self.sources:
+                if s not in ignore_set:
+                    sources.append(s)
+        else:
+            sources = executor.get_unignored_sources(self.ignore)
         sourcesigs = []
         for s in sources:
             sourcesigs.append(s.get_ninfo())
@@ -841,6 +848,8 @@ class Node:
 
     def add_source(self, source):
         """Adds sources."""
+        if self._specific_sources:
+            return
         try:
             self._add_child(self.sources, self.sources_set, source)
         except TypeError, e:
@@ -867,6 +876,10 @@ class Node:
                 added = 1
         if added:
             self._children_reset()
+
+    def set_specific_source(self, source):
+        self.add_source(source)
+        self._specific_sources = True
 
     def add_wkid(self, wkid):
         """Add a node to the list of kids waiting to be evaluated"""
