@@ -34,6 +34,10 @@ RELEASE X.XX - XXX
   - In Java projects, make the target .class files depend only on the
     specific target .java files where the individual classes are defined.
 
+  From Matthew Wesley:
+
+  - Add support for the GDC 'D' language compiler.
+
 
 
 RELEASE 0.98 - Sun, 30 Mar 2008 23:33:05 -0700
