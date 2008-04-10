@@ -20,6 +20,8 @@ RELEASE X.XX - XXX
 
   - Optimize Taskmaster execution, including dependency-cycle checking.
 
+  - Fix the --debug=stree option so it prints its tree once, not twice.
+
   From Steven Knight:
 
   - Make the -d, -e, -w and --no-print-directory options "Ignored for

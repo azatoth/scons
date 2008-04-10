@@ -978,11 +978,6 @@ def _build_targets(fs, options, targets, target_top):
     if options.diskcheck:
         SCons.Node.FS.set_diskcheck(options.diskcheck)
 
-    _set_debug_values(options)
-    SCons.Node.implicit_cache = options.implicit_cache
-    SCons.Node.implicit_deps_changed = options.implicit_deps_changed
-    SCons.Node.implicit_deps_unchanged = options.implicit_deps_unchanged
-
     SCons.CacheDir.cache_enabled = not options.cache_disable
     SCons.CacheDir.cache_debug = options.cache_debug
     SCons.CacheDir.cache_force = options.cache_force
