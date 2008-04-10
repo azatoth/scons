@@ -107,14 +107,15 @@ def generate(env):
     env['DVERSIONS'] = []
     env['DDEBUG'] = []
 
-    # Add the path to the standard library.
-    # This is merely for the convenience of the dependency scanner.
-    dmd_path = env.WhereIs(dc)
-    if dmd_path:
-        x = string.rindex(dmd_path, dc)
-        phobosDir = dmd_path[:x] + '/../src/phobos'
-        if os.path.isdir(phobosDir):
-            env.Append(DPATH = [phobosDir])
+    if dc:
+        # Add the path to the standard library.
+        # This is merely for the convenience of the dependency scanner.
+        dmd_path = env.WhereIs(dc)
+        if dmd_path:
+            x = string.rindex(dmd_path, dc)
+            phobosDir = dmd_path[:x] + '/../src/phobos'
+            if os.path.isdir(phobosDir):
+                env.Append(DPATH = [phobosDir])
 
     env['DINCPREFIX'] = '-I'
     env['DINCSUFFIX'] = ''
