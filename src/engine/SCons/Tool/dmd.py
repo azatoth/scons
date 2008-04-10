@@ -200,10 +200,10 @@ def generate(env):
                     except KeyError:
                         libs = []
                     if 'phobos' not in libs:
-			if dc is 'dmd':
-			    env.Append(LIBS = ['phobos'])
-			elif dc is 'gdmd':
-			    env.Append(LIBS = ['gphobos'])
+                        if dc is 'dmd':
+                            env.Append(LIBS = ['phobos'])
+                        elif dc is 'gdmd':
+                            env.Append(LIBS = ['gphobos'])
                     if 'pthread' not in libs:
                         env.Append(LIBS = ['pthread'])
                     if 'm' not in libs:
