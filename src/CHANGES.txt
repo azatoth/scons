@@ -38,6 +38,11 @@ RELEASE X.XX - XXX
   - In Java projects, make the target .class files depend only on the
     specific target .java files where the individual classes are defined.
 
+  From Anatoly Techtonik:
+
+  - Have the scons.bat file add the script execution directory to its
+    local %PATH% on Windows, so the Python executable can be found.
+
   From Mike Wake:
 
   - Fix passing variable names as a list to the Return() function.
