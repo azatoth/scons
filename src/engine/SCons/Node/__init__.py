@@ -717,11 +717,16 @@ class Node:
                     sources.append(s)
         else:
             sources = executor.get_unignored_sources(self.ignore)
-        sourcesigs = []
+        seen = set()
+        bsources = []
+        bsourcesigs = []
         for s in sources:
-            sourcesigs.append(s.get_ninfo())
-        binfo.bsources = sources
-        binfo.bsourcesigs = sourcesigs
+            if not s in seen:
+                seen.add(s)
+                bsources.append(s)
+                bsourcesigs.append(s.get_ninfo())
+        binfo.bsources = bsources
+        binfo.bsourcesigs = bsourcesigs
 
         depends = self.depends
         dependsigs = []

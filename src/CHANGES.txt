@@ -38,6 +38,9 @@ RELEASE X.XX - XXX
   - In Java projects, make the target .class files depend only on the
     specific target .java files where the individual classes are defined.
 
+  - Don't store duplicate source file entries  in the .sconsign file so
+    we don't endlessly rebuild the target(s) for no reason.
+
   From Anatoly Techtonik:
 
   - Have the scons.bat file add the script execution directory to its
