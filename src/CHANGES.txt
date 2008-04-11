@@ -36,10 +36,16 @@ RELEASE X.XX - XXX
     input source files.
 
   - In Java projects, make the target .class files depend only on the
-    specific target .java files where the individual classes are defined.
+    specific source .java files where the individual classes are defined.
 
   - Don't store duplicate source file entries  in the .sconsign file so
     we don't endlessly rebuild the target(s) for no reason.
+
+  - Add a Variables object as the first step towards deprecating the
+    Options object name.  Similarly, add BoolVariable(), EnumVariable(),
+    ListVariable(), PackageVariable() and PathVariable() functions
+    as first steps towards replacing BoolOption(), EnumOption(),
+    ListOption(), PackageOption() and PathOption().
 
   From Anatoly Techtonik:
 

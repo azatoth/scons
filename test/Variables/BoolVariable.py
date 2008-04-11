@@ -25,31 +25,63 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that setting Variables in an Environment doesn't prevent the
-Environment from being copied.
+Test the BoolVariable canned Variable type.
 """
+
+import os.path
+import string
+
+try:
+    True, False
+except NameError:
+    True = (0 == 0)
+    False = (0 != 0)
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.write('SConstruct', """
-gpib_options = ['NI_GPIB', 'NI_ENET']
-gpib_include = '/'
+SConstruct_path = test.workpath('SConstruct')
 
-#0.96 broke copying  ListVariables ???
-opts = Variables('config.py', ARGUMENTS)
+def check(expect):
+    result = string.split(test.stdout(), '\n')
+    assert result[1:len(expect)+1] == expect, (result[1:len(expect)+1], expect)
+
+
+
+test.write(SConstruct_path, """\
+from SCons.Variables import BoolVariable
+
+opts = Variables(args=ARGUMENTS)
 opts.AddVariables(
-    BoolVariable('gpib', 'enable gpib support', 1),
-    ListVariable('gpib_options',
-        'whether and what kind of gpib support shall be enabled',
-        'all',
-        gpib_options),
+    BoolVariable('warnings', 'compilation with -Wall and similiar', 1),
+    BoolVariable('profile', 'create profiling informations', 0),
     )
-env = Environment(options = opts, CPPPATH = ['#/'])
-new_env=env.Clone()
+
+env = Environment(options=opts)
+Help(opts.GenerateHelpText(env))
+
+print env['warnings']
+print env['profile']
+
+Default(env.Alias('dummy', None))
 """)
 
-test.run(arguments = '.')
+
+
+test.run()
+check([str(True), str(False)])
+
+test.run(arguments='warnings=0 profile=no profile=true')
+check([str(False), str(True)])
+
+expect_stderr = """
+scons: *** Error converting option: warnings
+Invalid value for boolean option: irgendwas
+""" + test.python_file_line(SConstruct_path, 9)
+
+test.run(arguments='warnings=irgendwas', stderr = expect_stderr, status=2)
+
+
 
 test.pass_test()

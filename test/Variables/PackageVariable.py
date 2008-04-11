@@ -25,31 +25,65 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that setting Variables in an Environment doesn't prevent the
-Environment from being copied.
+Test the PackageVariable canned Variable type.
 """
+
+import os.path
+import string
+
+try:
+    True, False
+except NameError:
+    True = (0 == 0)
+    False = (0 != 0)
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.write('SConstruct', """
-gpib_options = ['NI_GPIB', 'NI_ENET']
-gpib_include = '/'
+SConstruct_path = test.workpath('SConstruct')
 
-#0.96 broke copying  ListVariables ???
-opts = Variables('config.py', ARGUMENTS)
+def check(expect):
+    result = string.split(test.stdout(), '\n')
+    assert result[1:len(expect)+1] == expect, (result[1:len(expect)+1], expect)
+
+
+
+test.write(SConstruct_path, """\
+from SCons.Variables import PackageVariable
+
+opts = Variables(args=ARGUMENTS)
 opts.AddVariables(
-    BoolVariable('gpib', 'enable gpib support', 1),
-    ListVariable('gpib_options',
-        'whether and what kind of gpib support shall be enabled',
-        'all',
-        gpib_options),
+    PackageVariable('x11',
+                  'use X11 installed here (yes = search some places',
+                  'yes'),
     )
-env = Environment(options = opts, CPPPATH = ['#/'])
-new_env=env.Clone()
+
+env = Environment(options=opts)
+Help(opts.GenerateHelpText(env))
+
+print env['x11']
+Default(env.Alias('dummy', None))
 """)
 
-test.run(arguments = '.')
+test.run()
+check([str(True)])
+
+test.run(arguments='x11=no')
+check([str(False)])
+
+test.run(arguments='x11=0')
+check([str(False)])
+
+test.run(arguments=['x11=%s' % test.workpath()])
+check([test.workpath()])
+
+expect_stderr = """
+scons: *** Path does not exist for option x11: /non/existing/path/
+""" + test.python_file_line(SConstruct_path, 10)
+
+test.run(arguments='x11=/non/existing/path/', stderr=expect_stderr, status=2)
+
+
 
 test.pass_test()

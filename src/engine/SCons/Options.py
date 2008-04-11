@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -24,32 +23,34 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+__doc__ = """Place-holder for the old SCons.Options module hierarchy
+
+This is for backwards compatibility.  The new equivalent is the Variables/
+class hierarchy.  These will have deprecation warnings added (some day),
+and will then be removed entirely (some day).
 """
-Test that setting Variables in an Environment doesn't prevent the
-Environment from being copied.
-"""
 
-import TestSCons
+import SCons.Variables
 
-test = TestSCons.TestSCons()
+class Options(SCons.Variables.Variables):
 
-test.write('SConstruct', """
-gpib_options = ['NI_GPIB', 'NI_ENET']
-gpib_include = '/'
+    def AddOptions(self, *args, **kw):
+        return apply(SCons.Variables.Variables.AddVariables,
+                     (self,) + args,
+                     kw)
 
-#0.96 broke copying  ListVariables ???
-opts = Variables('config.py', ARGUMENTS)
-opts.AddVariables(
-    BoolVariable('gpib', 'enable gpib support', 1),
-    ListVariable('gpib_options',
-        'whether and what kind of gpib support shall be enabled',
-        'all',
-        gpib_options),
-    )
-env = Environment(options = opts, CPPPATH = ['#/'])
-new_env=env.Clone()
-""")
+    def UnknownOptions(self, *args, **kw):
+        return apply(SCons.Variables.Variables.UnknownVariables,
+                     (self,) + args,
+                     kw)
 
-test.run(arguments = '.')
+    def FormatOptionHelpText(self, *args, **kw):
+        return apply(SCons.Variables.Variables.FormatVariableHelpText,
+                     (self,) + args,
+                     kw)
 
-test.pass_test()
+BoolOption      = SCons.Variables.BoolVariable
+EnumOption      = SCons.Variables.EnumVariable
+ListOption      = SCons.Variables.ListVariable
+PackageOption   = SCons.Variables.PackageVariable
+PathOption      = SCons.Variables.PathVariable

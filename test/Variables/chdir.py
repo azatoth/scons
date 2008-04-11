@@ -25,31 +25,47 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that setting Variables in an Environment doesn't prevent the
-Environment from being copied.
+Verify that we can chdir() to the directory in which an Variables
+file lives by using the __name__ value.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.write('SConstruct', """
-gpib_options = ['NI_GPIB', 'NI_ENET']
-gpib_include = '/'
+test.subdir('bin', 'subdir')
 
-#0.96 broke copying  ListVariables ???
-opts = Variables('config.py', ARGUMENTS)
-opts.AddVariables(
-    BoolVariable('gpib', 'enable gpib support', 1),
-    ListVariable('gpib_options',
-        'whether and what kind of gpib support shall be enabled',
-        'all',
-        gpib_options),
-    )
-env = Environment(options = opts, CPPPATH = ['#/'])
-new_env=env.Clone()
+test.write('SConstruct', """\
+opts = Variables('../bin/opts.cfg', ARGUMENTS)
+opts.Add('VARIABLE')
+Export("opts")
+SConscript('subdir/SConscript')
 """)
 
-test.run(arguments = '.')
+SConscript_contents = """\
+Import("opts")
+env = Environment()
+opts.Update(env)
+print "VARIABLE =", repr(env['VARIABLE'])
+"""
+
+test.write(['bin', 'opts.cfg'], """\
+import os
+import os.path
+os.chdir(os.path.split(__name__)[0])
+execfile('opts2.cfg')
+""")
+
+test.write(['bin', 'opts2.cfg'], """\
+VARIABLE = 'opts2.cfg value'
+""")
+
+test.write(['subdir', 'SConscript'], SConscript_contents)
+
+expect = """\
+VARIABLE = 'opts2.cfg value'
+"""
+
+test.run(arguments = '-q -Q .', stdout=expect)
 
 test.pass_test()

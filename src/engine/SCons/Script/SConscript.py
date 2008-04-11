@@ -39,7 +39,6 @@ import SCons.Errors
 import SCons.Node
 import SCons.Node.Alias
 import SCons.Node.FS
-import SCons.Options
 import SCons.Platform
 import SCons.SConf
 import SCons.Script.Main

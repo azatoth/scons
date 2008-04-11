@@ -25,31 +25,45 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that setting Variables in an Environment doesn't prevent the
-Environment from being copied.
+Verify that an Variables file in a different directory can import
+a module in that directory.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.write('SConstruct', """
-gpib_options = ['NI_GPIB', 'NI_ENET']
-gpib_include = '/'
+workpath = test.workpath('')
 
-#0.96 broke copying  ListVariables ???
-opts = Variables('config.py', ARGUMENTS)
-opts.AddVariables(
-    BoolVariable('gpib', 'enable gpib support', 1),
-    ListVariable('gpib_options',
-        'whether and what kind of gpib support shall be enabled',
-        'all',
-        gpib_options),
-    )
-env = Environment(options = opts, CPPPATH = ['#/'])
-new_env=env.Clone()
+test.subdir('bin', 'subdir')
+
+test.write('SConstruct', """\
+opts = Variables('../bin/opts.cfg', ARGUMENTS)
+opts.Add('VARIABLE')
+Export("opts")
+SConscript('subdir/SConscript')
 """)
 
-test.run(arguments = '.')
+SConscript_contents = """\
+Import("opts")
+env = Environment()
+opts.Update(env)
+print "VARIABLE =", env.get('VARIABLE')
+"""
+
+test.write(['bin', 'opts.cfg'], """\
+import sys
+from local_options import VARIABLE
+""" % locals())
+
+test.write(['bin', 'local_options.py'], """\
+VARIABLE = 'bin/local_options.py'
+""")
+
+test.write(['subdir', 'SConscript'], SConscript_contents)
+
+expect = "VARIABLE = bin/local_options.py\n"
+
+test.run(arguments = '-q -Q .', stdout = expect)
 
 test.pass_test()

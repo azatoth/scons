@@ -420,6 +420,92 @@ RELEASE 0.98 - Sun, 30 Mar 2008 23:33:05 -0700
 
   Please note the following planned, future changes:
 
+    --  THE Options OBJECT AND RELATED FUNCTIONS WILL BE DEPRECATED
+
+        The Options object is being replaced by a new Variables
+        object, which uses a new Variables.AddVariable() method
+        where the previous interface used Options.AddOptions().
+
+        Similarly, the following utility functions are being replaced
+        by the following similarly-named functions:
+
+                BoolOption()            BoolVariable()
+                EnumOption()            EnumVariable()
+                ListOption()            ListVariable()
+                PackageOption()         PackageVariable()
+                PathOption()            PathVariable()
+
+        In some future release a deprecation warning will be added to
+        existing uses of the Options object, its methods, and the
+        above utility functions.  At some point after the deprecation
+        warning is added, the Option object and related functions will
+        be removed entirely.
+
+        You can prepare for this by changing all your uses of the Options
+        object and related functions to the Variables object and the
+        new function names.
+
+        NOTE:  CONVERTING TO USING THE NEW Variables OBJECT OR THE
+        RELATED *Variable() FUNCTIONS IS NOT BACKWARDS COMPATIBLE TO
+        VERSIONS OF SCons BEFORE 0.98.  YOUR SConscript FILES WILL NOT
+        WORK ON EARLIER VERSIONS OF SCons AFTER MAKING THIS CHANGE.
+
+        If you change SConscript files in software that you make available
+        for download or otherwise distribute, other users may try to
+        build your software with an earlier version of SCons that does
+        not have the Variables object or related *Variable() functions.
+        We recommend preparing for this in one of two ways:
+
+            --  Make your SConscript files backwards-compatible by
+                modifying your calls with a Python try:-except: block
+                as followins:
+
+                    try:
+                        vars = Variables('custom.py', ARGUMENTS)
+                        vars.AddVariables(
+                            BoolVariable('WARNINGS', 'cmopile with -Wall', 1),
+                            EnumVariable('DEBUG', 'debug version', 'no'
+                                       allowed_values=('yes', 'no', 'full'),
+                                       map={}, ignorecase=0),
+                            ListVariable('SHAREDLIBS',
+                                         'libraries to build shared',
+                                         'all',
+                                         names = list_of_libs),
+                            PackageVariable('X11',
+                                            'use X11 from here',
+                                            '/usr/bin/X11'),
+                            PathVariable('QTDIR', 'root of Qt', qtdir),
+                        )
+                    except NameError:
+                        vars = Options('custom.py', ARGUMENTS)
+                        vars.AddOptions(
+                            BoolOption('WARNINGS', 'cmopile with -Wall', 1),
+                            EnumOption('DEBUG', 'debug version', 'no'
+                                       allowed_values=('yes', 'no', 'full'),
+                                       map={}, ignorecase=0),
+                            ListOption('SHAREDLIBS',
+                                       'libraries to build shared',
+                                       'all',
+                                       names = list_of_libs),
+                            PackageOption('X11',
+                                          'use X11 from here',
+                                          '/usr/bin/X11'),
+                            PathOption('QTDIR', 'root of Qt', qtdir),
+                        )
+
+                (Note that we plan to maintain the existing Options object
+                name for some time, to ensure backwards compatibility,
+                so in practice it may be easier to just continue to use
+                the old name until you're reasonably sure you won't have
+                people trying to build your software with versions of
+                SCons earlier than 0.98.1.)
+
+            --  Use the EnsureSConsVersion() function to provide a
+                descriptive error message if your SConscript files
+                are executed by an earlier version of SCons:
+
+                    EnsureSConsVersion(0, 98, 1)
+
     --  THE BuildDir() METHOD AND FUNCTION WILL BE DEPRECATED
 
         The env.BuildDir() method and BuildDir() function are being
