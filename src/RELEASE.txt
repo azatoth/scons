@@ -20,10 +20,41 @@ more effectively, please sign up for the scons-users mailing list at:
 
 
 
-RELEASE 0.98 - Sun, 30 Mar 2008 23:33:05 -0700
+RELEASE 0.98.1 - XXX
 
-  This is the ninth beta release of SCons.  Please consult the
-  CHANGES.txt file for a list of specific changes since last release.
+  This is an update to the ninth beta release of SCons.  Please consult
+  the CHANGES.txt file for a list of specific changes since last release.
+
+  Please note the following important changes since release 0.98:
+
+    --  SCONS NO LONGER SETS THE GNU TOOLCHAIN -fPIC FLAG IN $SHCXXFLAGS
+
+        The GNU toolchain support in previous versions of SCons would
+        add the -fPIC flag to the $SHCXXFLAGS construction variable.
+        The -fPIC flag has been now been removed from the default
+        $SHCXXFLAGS setting.  Instead, the $SHCXXCOM construction variable
+        (the default SCons command line for compiling shared objects
+        from C++ source files) has been changed to add the $SHCCFLAGS
+        variable, which contains the -fPIC flag.
+
+        This change was made in order to make the behavior of the default
+        C++ compilation line including $SHCCFLAGS consistent with the
+        default C compilation line including $CCFLAGS.
+
+        This change should have no impact on configurations that use
+        the default $SHCXXCOM command line.  It may have an impact on
+        configurations that were using the default $SHCXXFLAGS value
+        *without* the $SHCCFLAGS variable to get the -fPIC flag into a
+        custom command line.  You can fix these by adding the $SHCCFLAGS
+        to the custom command line.
+
+        Adding $SHCCFLAGS is backwards compatible with older SCons
+        releases, although it might cause the -fPIC flag to be repeated
+        on the command line if you execute it on an older version of
+        SCons that sets -fPIC in both the $SHCCLAFGS and $SHCXXFLAGS
+        variables.  Duplicating the -fPIC flag on the g++ command line
+        will not cause any compilation problems, but the change to the
+        command line may cause SCons to rebuild object files.
 
   Please note the following important changes since release 0.97.0d20071212:
 

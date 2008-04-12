@@ -50,6 +50,9 @@ RELEASE X.XX - XXX
   - When $SWIGFLAGS contains the -python flag, expect the generated .py
     file to be in the same (sub)directory as the target.
 
+  - When compiling C++ files, allow $CCFLAGS settings to show up on the
+    command line even when $CXXFLAGS has been redefined.
+
   From Anatoly Techtonik:
 
   - Have the scons.bat file add the script execution directory to its
