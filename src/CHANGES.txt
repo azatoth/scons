@@ -47,6 +47,9 @@ RELEASE X.XX - XXX
     as first steps towards replacing BoolOption(), EnumOption(),
     ListOption(), PackageOption() and PathOption().
 
+  - When $SWIGFLAGS contains the -python flag, expect the generated .py
+    file to be in the same (sub)directory as the target.
+
   From Anatoly Techtonik:
 
   - Have the scons.bat file add the script execution directory to its
