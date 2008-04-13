@@ -52,7 +52,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 # Know Bug: This should behave like a Set-Type, but does not really,
 # since elements can occur twice.
 
-__all__ = ('ListVariable',)
+__all__ = ['ListVariable',]
 
 import string
 import UserList

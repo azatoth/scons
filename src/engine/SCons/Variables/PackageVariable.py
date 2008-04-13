@@ -52,7 +52,7 @@ Usage example:
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-__all__ = ('PackageVariable')
+__all__ = ['PackageVariable',]
 
 import string
 
