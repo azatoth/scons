@@ -61,7 +61,7 @@ opts.AddVariables(
                map={}, ignorecase=2), # make lowercase
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 Help(opts.GenerateHelpText(env))
 
 print env['debug']

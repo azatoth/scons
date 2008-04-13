@@ -59,7 +59,7 @@ opts.AddVariables(
     PathVariable('qt_libraries', 'where the Qt library is installed', r'%s'),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 Help(opts.GenerateHelpText(env))
 
 print env['qtdir']
@@ -128,7 +128,7 @@ opts.AddVariables(
     PathVariable('X', 'X variable', r'%s', validator=PathVariable.PathAccept),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 
 print env['X']
 
@@ -161,7 +161,7 @@ opts.AddVariables(
     PathVariable('X', 'X variable', r'%s', validator=PathVariable.PathIsFile),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 
 print env['X']
 
@@ -207,7 +207,7 @@ opts.AddVariables(
     PathVariable('X', 'X variable', r'%s', validator=PathVariable.PathIsDir),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 
 print env['X']
 
@@ -255,7 +255,7 @@ opts.AddVariables(
     PathVariable('X', 'X variable', r'%s', validator=PathVariable.PathIsDirCreate),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 
 print env['X']
 

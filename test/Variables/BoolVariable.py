@@ -58,7 +58,7 @@ opts.AddVariables(
     BoolVariable('profile', 'create profiling informations', 0),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 Help(opts.GenerateHelpText(env))
 
 print env['warnings']

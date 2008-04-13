@@ -47,6 +47,10 @@ RELEASE X.XX - XXX
     as first steps towards replacing BoolOption(), EnumOption(),
     ListOption(), PackageOption() and PathOption().
 
+  - Change the options= keyword argument to the Environment() function
+    to variables=, to avoid confusion with SCons command-line options.
+    Continue supporting the options= keyword for backwards compatibility.
+
   - When $SWIGFLAGS contains the -python flag, expect the generated .py
     file to be in the same (sub)directory as the target.
 

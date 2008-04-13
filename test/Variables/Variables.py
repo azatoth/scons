@@ -99,7 +99,7 @@ def test_tool(env):
         env.Append(CCFLAGS = '-g')
 
 
-env = Environment(options=opts, tools=['default', test_tool])
+env = Environment(variables=opts, tools=['default', test_tool])
 
 Help('Variables settable in custom.py or on the command line:\\n' + opts.GenerateHelpText(env))
 
@@ -110,14 +110,14 @@ print string.join(env['CCFLAGS'])
 print env['VALIDATE']
 print env['valid_key']
 
-# unspecified options should not be set:
+# unspecified variables should not be set:
 assert not env.has_key('UNSPECIFIED')
 
-# undeclared options should be ignored:
+# undeclared variables should be ignored:
 assert not env.has_key('UNDECLARED')
 
-# calling Update() should not effect options that
-# are not declared on the options object:
+# calling Update() should not effect variables that
+# are not declared on the variables object:
 r = env['RELEASE_BUILD']
 opts = Variables()
 opts.Update(env)
@@ -203,10 +203,10 @@ UNSPECIFIED: An option with no value
 Use scons -H for help about command-line options.
 """%(cc, ccflags and ccflags + ' -O' or '-O', cc))
 
-# Test saving of options and multi loading
+# Test saving of variables and multi loading
 #
 test.write('SConstruct', """
-opts = Variables(['custom.py', 'options.saved'])
+opts = Variables(['custom.py', 'variables.saved'])
 opts.Add('RELEASE_BUILD',
          'Set to 1 to build a release build',
          0,
@@ -222,12 +222,12 @@ opts.Add('DEBUG_BUILD',
 opts.Add('UNSPECIFIED',
          'An option with no value')
 
-env = Environment(options = opts)
+env = Environment(variables = opts)
 
 print env['RELEASE_BUILD']
 print env['DEBUG_BUILD']
 
-opts.Save('options.saved', env)
+opts.Save('variables.saved', env)
 """)
 
 # Check the save file by executing and comparing against
@@ -238,23 +238,23 @@ def checkSave(file, expected):
     execfile(file, gdict, ldict)
     assert expected == ldict, "%s\n...not equal to...\n%s" % (expected, ldict)
 
-# First test with no command line options
+# First test with no command line variables
 # This should just leave the custom.py settings
 test.run()
 check(['1','0'])
-checkSave('options.saved', { 'RELEASE_BUILD':1, 'DEBUG_BUILD':0})
+checkSave('variables.saved', { 'RELEASE_BUILD':1, 'DEBUG_BUILD':0})
 
 # Override with command line arguments
 test.run(arguments='DEBUG_BUILD=3')
 check(['1','3'])
-checkSave('options.saved', {'RELEASE_BUILD':1, 'DEBUG_BUILD':3})
+checkSave('variables.saved', {'RELEASE_BUILD':1, 'DEBUG_BUILD':3})
 
-# Now make sure that saved options are overridding the custom.py
+# Now make sure that saved variables are overridding the custom.py
 test.run()
 check(['1','3'])
-checkSave('options.saved', {'DEBUG_BUILD':3, 'RELEASE_BUILD':1})
+checkSave('variables.saved', {'DEBUG_BUILD':3, 'RELEASE_BUILD':1})
 
-# Load no options from file(s)
+# Load no variables from file(s)
 # Used to test for correct output in save option file
 test.write('SConstruct', """
 opts = Variables()
@@ -278,29 +278,29 @@ opts.Add('LISTOPTION_TEST',
          'none',
          names = ['a','b','c',])
 
-env = Environment(options = opts)
+env = Environment(variables = opts)
 
 print env['RELEASE_BUILD']
 print env['DEBUG_BUILD']
 print env['LISTOPTION_TEST']
 
-opts.Save('options.saved', env)
+opts.Save('variables.saved', env)
 """)
 
 # First check for empty output file when nothing is passed on command line
 test.run()
 check(['0','1'])
-checkSave('options.saved', {})
+checkSave('variables.saved', {})
 
 # Now specify one option the same as default and make sure it doesn't write out
 test.run(arguments='DEBUG_BUILD=1')
 check(['0','1'])
-checkSave('options.saved', {})
+checkSave('variables.saved', {})
 
 # Now specify same option non-default and make sure only it is written out
 test.run(arguments='DEBUG_BUILD=0 LISTOPTION_TEST=a,b')
 check(['0','0'])
-checkSave('options.saved',{'DEBUG_BUILD':0, 'LISTOPTION_TEST':'a,b'})
+checkSave('variables.saved',{'DEBUG_BUILD':0, 'LISTOPTION_TEST':'a,b'})
 
 test.write('SConstruct', """
 opts = Variables('custom.py')
@@ -322,7 +322,7 @@ opts.Add('CC',
 opts.Add('UNSPECIFIED',
          'An option with no value')
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 
 Help('Variables settable in custom.py or on the command line:\\n' + opts.GenerateHelpText(env,sort=cmp))
 
@@ -355,8 +355,8 @@ Use scons -H for help about command-line options.
 
 test.write('SConstruct', """
 import SCons.Variables
-env1 = Environment(options = Variables())
-env2 = Environment(options = SCons.Variables.Variables())
+env1 = Environment(variables = Variables())
+env2 = Environment(variables = SCons.Variables.Variables())
 """)
 
 test.run()

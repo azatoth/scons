@@ -50,7 +50,7 @@ from SCons.Variables import ListVariable
 
 list_of_libs = Split('x11 gl qt ical')
 
-optsfile = 'scons.options'
+optsfile = 'scons.variables'
 opts = Variables(optsfile, args=ARGUMENTS)
 opts.AddVariables(
     ListVariable('shared',
@@ -60,7 +60,7 @@ opts.AddVariables(
                map = {'GL':'gl', 'QT':'qt'}),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 opts.Save(optsfile, env)
 Help(opts.GenerateHelpText(env))
 
@@ -80,7 +80,7 @@ test.run()
 check(['all', '1', 'gl ical qt x11', 'gl ical qt x11',
        "['gl ical qt x11']"])
 
-test.must_match(test.workpath('scons.options'), "shared = 'all'"+os.linesep)
+test.must_match(test.workpath('scons.variables'), "shared = 'all'"+os.linesep)
 
 check(['all', '1', 'gl ical qt x11', 'gl ical qt x11',
        "['gl ical qt x11']"])
@@ -156,7 +156,7 @@ opts.AddVariables(
                names = ['ENET', 'GPIB', 'LINUX_GPIB', 'NO_GPIB']),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 Help(opts.GenerateHelpText(env))
 
 print env['gpib']

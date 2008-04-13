@@ -87,7 +87,7 @@ opts.AddVariables(
                r'%(libdirvar)s'),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 Help(opts.GenerateHelpText(env))
 
 print env['warnings']

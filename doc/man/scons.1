@@ -7011,7 +7011,7 @@ but is called indirectly by passing the Variables object to
 the Environment() function:
 
 .ES
-env = Environment(options=vars)
+env = Environment(variables=vars)
 .EE
 
 .IP
@@ -7037,25 +7037,25 @@ but for which the Variables object was
 not configured.
 
 .ES
-env = Environment(options=vars)
+env = Environment(variables=vars)
 for key, value in vars.UnknownVariables():
     print "unknown variable:  %s=%s" % (key, value)
 .EE
 
 .TP
 .RI Save( filename ", " env )
-This saves the currently set options into a script file named  
+This saves the currently set variables into a script file named  
 .I filename
 that can be used on the next invocation to automatically load the current
 settings.  This method combined with the Variables method can be used to
-support caching of options between runs.
+support caching of variables between runs.
 
 .ES
 env = Environment()
-vars = Variables(['options.cache', 'custom.py'])
+vars = Variables(['variables.cache', 'custom.py'])
 vars.Add(...)
 vars.Update(env)
-vars.Save('options.cache', env)
+vars.Save('variables.cache', env)
 .EE
 
 .TP
@@ -7311,7 +7311,7 @@ You may supply your own
 function,
 which must take three arguments
 .RI ( key ,
-the name of the options variable to be set;
+the name of the variable to be set;
 .IR val ,
 the specified value being checked;
 and
@@ -7323,7 +7323,7 @@ if the specified value is not acceptable.
 .RE
 These functions make it
 convenient to create a number
-of options with consistent behavior
+of variables with consistent behavior
 in a single call to the
 .B AddVariables
 method:
@@ -9464,7 +9464,7 @@ line or in the file custom.py.
 .ES
 vars = Variables('custom.py')
 vars.Add('CC', 'The C compiler.')
-env = Environment(options=vars)
+env = Environment(variables=vars)
 Help(vars.GenerateHelpText(env))
 .EE
 

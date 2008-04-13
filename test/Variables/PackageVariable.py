@@ -59,7 +59,7 @@ opts.AddVariables(
                   'yes'),
     )
 
-env = Environment(options=opts)
+env = Environment(variables=opts)
 Help(opts.GenerateHelpText(env))
 
 print env['x11']
