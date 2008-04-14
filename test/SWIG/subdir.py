@@ -72,6 +72,12 @@ env = Environment(SWIGFLAGS='-python',
                   LDMODULESUFFIX='%(_dll)s',
                   FRAMEWORKSFLAGS='%(python_frameworks_flags)s',
                   )
+
+import sys
+if sys.version[0] == '1':
+    # SWIG requires the -classic flag on pre-2.0 Python versions.
+    env.Append(SWIGFLAGS = ' -classic')
+
 env.LoadableModule('sub/_foo',
                    ['sub/foo.i', 'sub/foo.c'],
                    LDMODULEPREFIX='')
