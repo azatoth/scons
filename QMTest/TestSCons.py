@@ -1022,6 +1022,20 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
             time.sleep(1.0)
             waited = waited + 1.0
 
+    def get_alt_cpp_suffix(self):
+        """
+        Many CXX tests have this same logic.
+        They all needed to determine if the current os supports
+        files with .C and .c as different files or not
+        in which case they are instructed to use .cpp instead of .C
+        """
+        if not case_sensitive_suffixes('.c','.C'):
+            alt_cpp_suffix = '.cpp'
+        else:
+            alt_cpp_suffix = '.C'
+        return alt_cpp_suffix
+    
+
 # In some environments, $AR will generate a warning message to stderr
 # if the library doesn't previously exist and is being created.  One
 # way to fix this is to tell AR to be quiet (sometimes the 'c' flag),
