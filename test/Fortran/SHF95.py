@@ -121,20 +121,20 @@ os.system(string.join(sys.argv[1:], " "))
 foo = Environment(SHF95 = '%(fc)s')
 shf95 = foo.Dictionary('SHF95')
 bar = foo.Clone(SHF95 = r'%(_python_)s wrapper.py ' + shf95)
-foo.SharedObject(target = 'foo/foo', source = 'foo.f')
-bar.SharedObject(target = 'bar/bar', source = 'bar.f')
+foo.SharedObject(target = 'foo/foo', source = 'foo.f95')
+bar.SharedObject(target = 'bar/bar', source = 'bar.f95')
 """ % locals())
 
-    test.write('foo.f', r"""
+    test.write('foo.f95', r"""
       PROGRAM FOO
-      PRINT *,'foo.f'
+      PRINT *,'foo.f95'
       STOP
       END
 """)
 
-    test.write('bar.f', r"""
+    test.write('bar.f95', r"""
       PROGRAM BAR
-      PRINT *,'bar.f'
+      PRINT *,'bar.f95'
       STOP
       END
 """)

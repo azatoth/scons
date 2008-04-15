@@ -161,23 +161,23 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(F95 = %(fc)s)
+foo = Environment(F95 = '%(fc)s')
 f95 = foo.Dictionary('F95')
 bar = foo.Clone(F95 = r'%(_python_)s wrapper.py ' + f95, F95FLAGS = '-Ix')
-foo.Program(target = 'foo', source = 'foo.f')
-bar.Program(target = 'bar', source = 'bar.f')
+foo.Program(target = 'foo', source = 'foo.f95')
+bar.Program(target = 'bar', source = 'bar.f95')
 """ % locals())
 
-    test.write('foo.f', r"""
+    test.write('foo.f95', r"""
       PROGRAM FOO
-      PRINT *,'foo.f'
+      PRINT *,'foo.f95'
       STOP
       END
 """)
 
-    test.write('bar.f', r"""
+    test.write('bar.f95', r"""
       PROGRAM BAR
-      PRINT *,'bar.f'
+      PRINT *,'bar.f95'
       STOP
       END
 """)
@@ -185,13 +185,13 @@ bar.Program(target = 'bar', source = 'bar.f')
 
     test.run(arguments = 'foo' + _exe, stderr = None)
 
-    test.run(program = test.workpath('foo'), stdout =  " foo.f\n")
+    test.run(program = test.workpath('foo'), stdout =  " foo.f95\n")
 
     test.must_not_exist('wrapper.out')
 
     test.run(arguments = 'bar' + _exe)
 
-    test.run(program = test.workpath('bar'), stdout =  " bar.f\n")
+    test.run(program = test.workpath('bar'), stdout =  " bar.f95\n")
 
     test.must_match('wrapper.out', "wrapper.py\n")
 
