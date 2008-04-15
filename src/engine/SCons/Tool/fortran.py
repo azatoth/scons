@@ -43,7 +43,8 @@ import SCons.Tool
 import SCons.Util
 from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
                                      ComputeFortranSuffixes,\
-                                     CreateDialectGenerator
+                                     CreateDialectGenerator, \
+                                     CreateDialectActions
 
 compilers = ['f95', 'f90', 'f77']
 
@@ -71,10 +72,8 @@ ShFortranComStrGen, ShFortranPPComGen, ShFortranPPComStrGen = \
     CreateDialectGenerator("FORTRAN", "F77", "_FORTRAND")
 
 #
-FortranAction = SCons.Action.Action('$_FORTRANCOMG ', '$_FORTRANCOMSTRG')
-FortranPPAction = SCons.Action.Action('$_FORTRANPPCOMG ', '$_FORTRANPPCOMSTRG')
-ShFortranAction = SCons.Action.Action('$_SHFORTRANCOMG ', '$_SHFORTRANCOMSTRG')
-ShFortranPPAction = SCons.Action.Action('$_SHFORTRANPPCOMG ', '$_SHFORTRANPPCOMSTRG')
+FortranAction, FortranPPAction, ShFortranAction, ShFortranPPAction = \
+        CreateDialectActions("FORTRAN")
 
 def add_to_env(env):
     """Add Builders and construction variables for Fortran to an Environment."""
