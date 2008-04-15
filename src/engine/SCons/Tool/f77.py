@@ -38,72 +38,17 @@ import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
 import fortran
-from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
-                                     ComputeFortranSuffixes,\
-                                     CreateDialectGenerator, \
-                                     CreateDialectActions
+from SCons.Tool.FortranCommon import DialectAddToEnv
 
 compilers = ['f77']
 
 #
 F77Suffixes = ['.f77']
 F77PPSuffixes = []
-ComputeFortranSuffixes(F77Suffixes, F77PPSuffixes)
-
-#
-F77Scan = SCons.Scanner.Fortran.FortranScan("F77PATH")
-
-for suffix in F77Suffixes + F77PPSuffixes:
-    SCons.Tool.SourceFileScanner.add_scanner(suffix, F77Scan)
-del suffix
-
-#
-F77Gen, F77FlagsGen, F77ComGen, F77ComStrGen, F77PPComGen, \
-F77PPComStrGen, ShF77Gen, ShF77FlagsGen, ShF77ComGen, \
-ShF77ComStrGen, ShF77PPComGen, ShF77PPComStrGen = \
-    CreateDialectGenerator("F77", "FORTRAN", "_FORTRAND")
-
-#
-F77Action, F77PPAction, ShF77Action, ShF77PPAction = CreateDialectActions("F77")
 
 def add_to_env(env):
     """Add Builders and construction variables for f77 to an Environment."""
-    env.AppendUnique(FORTRANSUFFIXES = F77Suffixes + F77PPSuffixes)
-
-    static_obj, shared_obj = SCons.Tool.createObjBuilders(env)
-
-    for suffix in F77Suffixes:
-        static_obj.add_action(suffix, F77Action)
-        shared_obj.add_action(suffix, ShF77Action)
-        static_obj.add_emitter(suffix, FortranEmitter)
-        shared_obj.add_emitter(suffix, ShFortranEmitter)
-
-    for suffix in F77PPSuffixes:
-        static_obj.add_action(suffix, F77PPAction)
-        shared_obj.add_action(suffix, ShF77PPAction)
-        static_obj.add_emitter(suffix, FortranEmitter)
-        shared_obj.add_emitter(suffix, ShFortranEmitter)
-
-    env['_F77G']            = F77Gen
-    env['_F77FLAGSG']       = F77FlagsGen
-    env['_F77COMG']         = F77ComGen
-    env['_F77PPCOMG']       = F77PPComGen
-    env['_F77COMSTRG']      = F77ComStrGen
-    env['_F77PPCOMSTRG']    = F77PPComStrGen
-
-    env['_SHF77G']          = ShF77Gen
-    env['_SHF77FLAGSG']     = ShF77FlagsGen
-    env['_SHF77COMG']       = ShF77ComGen
-    env['_SHF77PPCOMG']     = ShF77PPComGen
-    env['_SHF77COMSTRG']    = ShF77ComStrGen
-    env['_SHF77PPCOMSTRG']  = ShF77PPComStrGen
-
-    env['_F77INCFLAGS'] = '$( ${_concat(INCPREFIX, F77PATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)'
-
-    env['_F77COMD']     = '$_F77G -o $TARGET -c $_F77FLAGSG $_F77INCFLAGS $SOURCES'
-    env['_F77PPCOMD']   = '$_F77G -o $TARGET -c $_F77FLAGSG $CPPFLAGS $_CPPDEFFLAGS $_F77INCFLAGS $SOURCES'
-    env['_SHF77COMD']   = '$_SHF77G -o $TARGET -c $_SHF77FLAGSG $_F77INCFLAGS $SOURCES'
-    env['_SHF77PPCOMD'] = '$_SHF77G -o $TARGET -c $_SHF77FLAGSG $CPPFLAGS $_CPPDEFFLAGS $_F77INCFLAGS $SOURCES'
+    DialectAddToEnv(env, "F77", "FORTRAN", "_FORTRAND", F77Suffixes, F77PPSuffixes)
 
 def generate(env):
     fortran.add_to_env(env)
