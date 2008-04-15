@@ -41,12 +41,18 @@ from SCons.Tool.FortranCommon import DialectAddToEnv
 
 compilers = ['f95']
 
-#
-F95Suffixes = ['.f95']
-F95PPSuffixes = []
-
 def add_to_env(env):
     """Add Builders and construction variables for f95 to an Environment."""
+    try:
+        F95Suffixes = env['F95FILESUFFIXES']
+    except KeyError:
+        F95Suffixes = ['.f95']
+
+    try:
+        F95PPSuffixes = env['F95PPFILESUFFIXES']
+    except KeyError:
+        F95PPSuffixes = []
+
     DialectAddToEnv(env, "F95", "FORTRAN", "_F95D", F95Suffixes, F95PPSuffixes,
                     support_module = 1)
 
