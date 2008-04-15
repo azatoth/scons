@@ -41,10 +41,7 @@ import SCons.Defaults
 import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
-from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
-                                     ComputeFortranSuffixes,\
-                                     CreateDialectGenerator, \
-                                     CreateDialectActions
+from SCons.Tool.FortranCommon import DialectAddToEnv
 
 compilers = ['f95', 'f90', 'f77']
 
@@ -56,43 +53,11 @@ compilers = ['f95', 'f90', 'f77']
 #
 FortranSuffixes = [".f", ".for", ".ftn", ]
 FortranPPSuffixes = ['.fpp', '.FPP']
-ComputeFortranSuffixes(FortranSuffixes, FortranPPSuffixes)
-
-#
-FortranScan = SCons.Scanner.Fortran.FortranScan("FORTRANPATH")
-
-for suffix in FortranSuffixes + FortranPPSuffixes:
-    SCons.Tool.SourceFileScanner.add_scanner(suffix, FortranScan)
-del suffix
-
-#
-FortranGen, FortranFlagsGen, FortranComGen, FortranComStrGen, FortranPPComGen, \
-FortranPPComStrGen, ShFortranGen, ShFortranFlagsGen, ShFortranComGen, \
-ShFortranComStrGen, ShFortranPPComGen, ShFortranPPComStrGen = \
-    CreateDialectGenerator("FORTRAN", "F77", "_FORTRAND")
-
-#
-FortranAction, FortranPPAction, ShFortranAction, ShFortranPPAction = \
-        CreateDialectActions("FORTRAN")
 
 def add_to_env(env):
     """Add Builders and construction variables for Fortran to an Environment."""
-
-    env['_FORTRANG']            = FortranGen
-    env['_FORTRANFLAGSG']       = FortranFlagsGen
-    env['_FORTRANCOMG']         = FortranComGen
-    env['_FORTRANCOMSTRG']      = FortranComStrGen
-    env['_FORTRANPPCOMG']       = FortranPPComGen
-    env['_FORTRANPPCOMSTRG']    = FortranPPComStrGen
-
-    env['_SHFORTRANG']          = ShFortranGen
-    env['_SHFORTRANFLAGSG']     = ShFortranFlagsGen
-    env['_SHFORTRANCOMG']       = ShFortranComGen
-    env['_SHFORTRANCOMSTRG']    = ShFortranComStrGen
-    env['_SHFORTRANPPCOMG']     = ShFortranPPComGen
-    env['_SHFORTRANPPCOMSTRG']  = ShFortranPPComStrGen
-
-    env['_FORTRANINCFLAGS'] = '$( ${_concat(INCPREFIX, FORTRANPATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)'
+    DialectAddToEnv(env, "FORTRAN", "F77", "_FORTRAND", FortranSuffixes,
+                    FortranPPSuffixes, support_module = 1)
 
     env['FORTRANMODPREFIX'] = ''     # like $LIBPREFIX
     env['FORTRANMODSUFFIX'] = '.mod' # like $LIBSUFFIX
@@ -101,27 +66,6 @@ def add_to_env(env):
     env['FORTRANMODDIRPREFIX'] = ''    # some prefix to $FORTRANMODDIR - similar to $INCPREFIX
     env['FORTRANMODDIRSUFFIX'] = ''    # some suffix to $FORTRANMODDIR - similar to $INCSUFFIX
     env['_FORTRANMODFLAG'] = '$( ${_concat(FORTRANMODDIRPREFIX, FORTRANMODDIR, FORTRANMODDIRSUFFIX, __env__, RDirs)} $)'
-
-    env.AppendUnique(FORTRANSUFFIXES = FortranSuffixes + FortranPPSuffixes)
-
-    static_obj, shared_obj = SCons.Tool.createObjBuilders(env)
-
-    for suffix in FortranSuffixes:
-        static_obj.add_action(suffix, FortranAction)
-        shared_obj.add_action(suffix, ShFortranAction)
-        static_obj.add_emitter(suffix, FortranEmitter)
-        shared_obj.add_emitter(suffix, ShFortranEmitter)
-
-    for suffix in FortranPPSuffixes:
-        static_obj.add_action(suffix, FortranPPAction)
-        shared_obj.add_action(suffix, ShFortranPPAction)
-        static_obj.add_emitter(suffix, FortranEmitter)
-        shared_obj.add_emitter(suffix, ShFortranEmitter)
-
-    env['_FORTRANCOMD']     = '$_FORTRANG -o $TARGET -c $_FORTRANFLAGSG $_FORTRANINCFLAGS $_FORTRANMODFLAG $SOURCES'
-    env['_FORTRANPPCOMD']   = '$_FORTRANG -o $TARGET -c $_FORTRANFLAGSG $CPPFLAGS $_CPPDEFFLAGS $_FORTRANINCFLAGS $_FORTRANMODFLAG $SOURCES'
-    env['_SHFORTRANCOMD']   = '$_SHFORTRANG -o $TARGET -c $_SHFORTRANFLAGSG $_FORTRANINCFLAGS $_FORTRANMODFLAG $SOURCES'
-    env['_SHFORTRANPPCOMD'] = '$_SHFORTRANG -o $TARGET -c $_SHFORTRANFLAGSG $CPPFLAGS $_CPPDEFFLAGS $_FORTRANINCFLAGS $_FORTRANMODFLAG $SOURCES'
 
 def generate(env):
     import f77
