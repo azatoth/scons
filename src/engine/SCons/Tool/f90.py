@@ -40,7 +40,7 @@ import SCons.Util
 import fortran
 from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
                                      ComputeFortranSuffixes,\
-                                     VariableListGenerator as fVLG
+                                     CreateDialectGenerator
 
 compilers = ['f90']
 
@@ -57,20 +57,10 @@ for suffix in F90Suffixes + F90PPSuffixes:
 del suffix
 
 #
-F90Generator = fVLG('F90', 'FORTRAN', '_FORTRAND')
-F90FlagsGenerator = fVLG('F90FLAGS', 'FORTRANFLAGS')
-F90CommandGenerator = fVLG('F90COM', 'FORTRANCOM', '_F90COMD')
-F90CommandStrGenerator = fVLG('F90COMSTR', 'FORTRANCOMSTR', '_F90COMSTRD')
-F90PPCommandGenerator = fVLG('F90PPCOM', 'FORTRANPPCOM', '_F90PPCOMD')
-F90PPCommandStrGenerator = fVLG('F90PPCOMSTR', 'FORTRANPPCOMSTR', '_F90PPCOMSTRD')
-ShF90Generator = fVLG('SHF90', 'SHFORTRAN', 'F90', 'FORTRAN', '_FORTRAND')
-ShF90FlagsGenerator = fVLG('SHF90FLAGS', 'SHFORTRANFLAGS')
-ShF90CommandGenerator = fVLG('SHF90COM', 'SHFORTRANCOM', '_SHF90COMD')
-ShF90CommandStrGenerator = fVLG('SHF90COMSTR', 'SHFORTRANCOMSTR', '_SHF90COMSTRD')
-ShF90PPCommandGenerator = fVLG('SHF90PPCOM', 'SHFORTRANPPCOM', '_SHF90PPCOMD')
-ShF90PPCommandStrGenerator = fVLG('SHF90PPCOMSTR', 'SHFORTRANPPCOMSTR', '_SHF90PPCOMSTRD')
-
-del fVLG
+F90Gen, F90FlagsGen, F90ComGen, F90ComStrGen, F90PPComGen, \
+F90PPComStrGen, ShF90Gen, ShF90FlagsGen, ShF90ComGen, \
+ShF90ComStrGen, ShF90PPComGen, ShF90PPComStrGen = \
+    CreateDialectGenerator("F90", "FORTRAN", "_F90D")
 
 #
 F90Action = SCons.Action.Action('$_F90COMG ', '$_F90COMSTRG')
@@ -96,19 +86,19 @@ def add_to_env(env):
         static_obj.add_emitter(suffix, FortranEmitter)
         shared_obj.add_emitter(suffix, ShFortranEmitter)
   
-    env['_F90G']            = F90Generator
-    env['_F90FLAGSG']       = F90FlagsGenerator
-    env['_F90COMG']         = F90CommandGenerator
-    env['_F90COMSTRG']      = F90CommandStrGenerator
-    env['_F90PPCOMG']       = F90PPCommandGenerator
-    env['_F90PPCOMSTRG']    = F90PPCommandStrGenerator
+    env['_F90G']            = F90Gen
+    env['_F90FLAGSG']       = F90FlagsGen
+    env['_F90COMG']         = F90ComGen
+    env['_F90COMSTRG']      = F90ComStrGen
+    env['_F90PPCOMG']       = F90PPComGen
+    env['_F90PPCOMSTRG']    = F90PPComStrGen
 
-    env['_SHF90G']          = ShF90Generator
-    env['_SHF90FLAGSG']     = ShF90FlagsGenerator
-    env['_SHF90COMG']       = ShF90CommandGenerator
-    env['_SHF90COMSTRG']    = ShF90CommandStrGenerator
-    env['_SHF90PPCOMG']     = ShF90PPCommandGenerator
-    env['_SHF90PPCOMSTRG']  = ShF90PPCommandStrGenerator
+    env['_SHF90G']          = ShF90Gen
+    env['_SHF90FLAGSG']     = ShF90FlagsGen
+    env['_SHF90COMG']       = ShF90ComGen
+    env['_SHF90COMSTRG']    = ShF90ComStrGen
+    env['_SHF90PPCOMG']     = ShF90PPComGen
+    env['_SHF90PPCOMSTRG']  = ShF90PPComStrGen
 
     env['_F90INCFLAGS'] = '$( ${_concat(INCPREFIX, F90PATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)'
     env['_F90COMD']     = '$_F90G -o $TARGET -c $_F90FLAGSG $_F90INCFLAGS $_FORTRANMODFLAG $SOURCES'

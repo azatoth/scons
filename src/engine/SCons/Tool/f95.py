@@ -39,7 +39,7 @@ import SCons.Util
 import fortran
 from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
                                      ComputeFortranSuffixes,\
-                                     VariableListGenerator as fVLG
+                                     CreateDialectGenerator
 
 compilers = ['f95']
 
@@ -56,20 +56,10 @@ for suffix in F95Suffixes + F95PPSuffixes:
 del suffix
 
 #
-F95Generator = fVLG('F95', 'FORTRAN', '_FORTRAND')
-F95FlagsGenerator = fVLG('F95FLAGS', 'FORTRANFLAGS')
-F95CommandGenerator = fVLG('F95COM', 'FORTRANCOM', '_F95COMD')
-F95CommandStrGenerator = fVLG('F95COMSTR', 'FORTRANCOMSTR', '_F95COMSTRD')
-F95PPCommandGenerator = fVLG('F95PPCOM', 'FORTRANPPCOM', '_F95PPCOMD')
-F95PPCommandStrGenerator = fVLG('F95PPCOMSTR', 'FORTRANPPCOMSTR', '_F95PPCOMSTRD')
-ShF95Generator = fVLG('SHF95', 'SHFORTRAN', 'F95', 'FORTRAN', '_FORTRAND')
-ShF95FlagsGenerator = fVLG('SHF95FLAGS', 'SHFORTRANFLAGS')
-ShF95CommandGenerator = fVLG('SHF95COM', 'SHFORTRANCOM', '_SHF95COMD')
-ShF95CommandStrGenerator = fVLG('SHF95COMSTR', 'SHFORTRANCOMSTR', '_SHF95COMSTRD')
-ShF95PPCommandGenerator = fVLG('SHF95PPCOM', 'SHFORTRANPPCOM', '_SHF95PPCOMD')
-ShF95PPCommandStrGenerator = fVLG('SHF95PPCOMSTR', 'SHFORTRANPPCOMSTR', '_SHF95PPCOMSTRD')
-
-del fVLG
+F95Gen, F95FlagsGen, F95ComGen, F95ComStrGen, F95PPComGen, \
+F95PPComStrGen, ShF95Gen, ShF95FlagsGen, ShF95ComGen, \
+ShF95ComStrGen, ShF95PPComGen, ShF95PPComStrGen = \
+    CreateDialectGenerator("F95", "FORTRAN", "_F95D")
 
 #
 F95Action = SCons.Action.Action('$_F95COMG ', '$_F95COMSTRG')
@@ -95,19 +85,19 @@ def add_to_env(env):
         static_obj.add_emitter(suffix, FortranEmitter)
         shared_obj.add_emitter(suffix, ShFortranEmitter)
 
-    env['_F95G']           = F95Generator
-    env['_F95FLAGSG']      = F95FlagsGenerator
-    env['_F95COMG']        = F95CommandGenerator
-    env['_F95COMSTRG']     = F95CommandStrGenerator
-    env['_F95PPCOMG']      = F95PPCommandGenerator
-    env['_F95PPCOMSTRG']   = F95PPCommandStrGenerator
+    env['_F95G']           = F95Gen
+    env['_F95FLAGSG']      = F95FlagsGen
+    env['_F95COMG']        = F95ComGen
+    env['_F95COMSTRG']     = F95ComStrGen
+    env['_F95PPCOMG']      = F95PPComGen
+    env['_F95PPCOMSTRG']   = F95PPComStrGen
 
-    env['_SHF95G']         = ShF95Generator
-    env['_SHF95FLAGSG']    = ShF95FlagsGenerator
-    env['_SHF95COMG']      = ShF95CommandGenerator
-    env['_SHF95COMSTRG']   = ShF95CommandStrGenerator
-    env['_SHF95PPCOMG']    = ShF95PPCommandGenerator
-    env['_SHF95PPCOMSTRG'] = ShF95PPCommandStrGenerator
+    env['_SHF95G']         = ShF95Gen
+    env['_SHF95FLAGSG']    = ShF95FlagsGen
+    env['_SHF95COMG']      = ShF95ComGen
+    env['_SHF95COMSTRG']   = ShF95ComStrGen
+    env['_SHF95PPCOMG']    = ShF95PPComGen
+    env['_SHF95PPCOMSTRG'] = ShF95PPComStrGen
 
     env['_F95INCFLAGS'] = '$( ${_concat(INCPREFIX, F95PATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)'
 
