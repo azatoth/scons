@@ -103,7 +103,7 @@ test.must_match('test10' + _obj, " -c -x\nThis is a .F77 file.\n")
 
 
 fc = 'f77'
-g77 = test.detect_tool('f77')
+g77 = test.detect_tool(fc)
 
 if g77:
 
