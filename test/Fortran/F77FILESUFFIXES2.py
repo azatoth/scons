@@ -58,8 +58,9 @@ test.write('SConstruct', """
 env = Environment(LINK = r'%(_python_)s mylink.py',
                   LINKFLAGS = [],
                   F77 = r'%(_python_)s myfortran.py g77',
-                  FORTRAN = r'%(_python_)s myfortran.py fortran',
-                  F77FILESUFFIXES = ['.f', '.F'])
+                  F95 = r'%(_python_)s myfortran.py f95',
+                  F77FILESUFFIXES = ['.f', '.F'],
+                  tools = ['default', 'f77'])
 env.Program(target = 'test01', source = 'test01.f')
 env.Program(target = 'test02', source = 'test02.F')
 env.Program(target = 'test05', source = 'test05.f95')
@@ -68,8 +69,8 @@ env.Program(target = 'test06', source = 'test06.F95')
 
 test.write('test01.f',   "This is a .f file.\n#link\n#g77\n")
 test.write('test02.F',   "This is a .F file.\n#link\n#g77\n")
-test.write('test05.f95', "This is a .f95 file.\n#link\n#fortran\n")
-test.write('test06.F95', "This is a .F95 file.\n#link\n#fortran\n")
+test.write('test05.f95', "This is a .f95 file.\n#link\n#f95\n")
+test.write('test06.F95', "This is a .F95 file.\n#link\n#f95\n")
 
 test.run(arguments = '.', stderr = None)
 
