@@ -102,9 +102,8 @@ test.must_match('test09' + _obj, " -c -x\nThis is a .f77 file.\n")
 test.must_match('test10' + _obj, " -c -x\nThis is a .F77 file.\n")
 
 
-
-g77 = test.detect('F77', 'g77')
-FTN_LIB = TestSCons.fortran_lib
+fc = 'f77'
+g77 = test.detect_tool('f77')
 
 if g77:
 
@@ -117,7 +116,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(LIBS = %(FTN_LIB)s)
+foo = Environment(SHF77 = '%(fc)s')
 shf77 = foo.Dictionary('SHF77')
 bar = foo.Clone(SHF77 = r'%(_python_)s wrapper.py ' + shf77, SHF77FLAGS = '-Ix')
 foo.SharedLibrary(target = 'foo/foo', source = 'foo.f')
