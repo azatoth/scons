@@ -39,7 +39,8 @@ import SCons.Util
 import fortran
 from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
                                      ComputeFortranSuffixes,\
-                                     CreateDialectGenerator
+                                     CreateDialectGenerator, \
+                                     CreateDialectActions
 
 compilers = ['f95']
 
@@ -62,10 +63,7 @@ ShF95ComStrGen, ShF95PPComGen, ShF95PPComStrGen = \
     CreateDialectGenerator("F95", "FORTRAN", "_F95D")
 
 #
-F95Action = SCons.Action.Action('$_F95COMG ', '$_F95COMSTRG')
-F95PPAction = SCons.Action.Action('$_F95PPCOMG ', '$_F95PPCOMSTRG')
-ShF95Action = SCons.Action.Action('$_SHF95COMG ', '$_SHF95COMSTRG')
-ShF95PPAction = SCons.Action.Action('$_SHF95PPCOMG ', '$_SHF95PPCOMSTRG')
+F95Action, F95PPAction, ShF95Action, ShF95PPAction = CreateDialectActions("F95")
 
 def add_to_env(env):
     """Add Builders and construction variables for f95 to an Environment."""
