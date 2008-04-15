@@ -60,6 +60,8 @@ def generate(env):
     import fortran
     fortran.add_to_env(env)
 
+    add_to_env(env)
+
     fcomp = env.Detect(compilers) or 'f95'
     env['F77']  = fcomp
     env['SHF77']  = fcomp

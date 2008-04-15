@@ -78,7 +78,7 @@ def add_to_env(env):
 def generate(env):
     add_to_env(env)
 
-    #env['FORTRAN'] = env.Detect(compilers) or 'f77'
+    env['FORTRAN'] = env.Detect(compilers) or 'f77'
 
 def exists(env):
     return env.Detect(compilers)
