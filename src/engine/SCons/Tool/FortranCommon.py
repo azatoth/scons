@@ -87,3 +87,29 @@ class VariableListGenerator:
             except KeyError: pass
         return ''
 
+def CreateDialectGenerator(dialect, fallback, default):
+    """Create the generator variable for a given fortran dialect, fallback and
+    default.
+    
+    All arguments should be upper case strings: F77, FORTRAN, _FORTRAND,
+    etc..."""
+    # This is ugly, but this code should not stay long anyway. It will make
+    # changing fortran tools easier, because everything is in one place.
+    fVLG = VariableListGenerator
+
+    CompGen = fVLG(dialect, fallback, default)
+    FlagsGen = fVLG('%sFLAGS' % dialect, '%sFLAGS' % fallback)
+    ComGen = fVLG('%sCOM' % dialect, '%sCOM' % fallback, '_%sCOMD' % dialect)
+    ComStrGen = fVLG('%sCOMSTR' % dialect, '%sCOMSTR' % fallback, '_%sCOMSTRD' % dialect)
+    PPComGen = fVLG('%sPPCOM' % dialect, '%sPPCOM' % fallback, '_%sPPCOMD' % dialect)
+    PPComStrGen = fVLG('%sPPCOMSTR' % dialect, '%sPPCOMSTR' % fallback, '_%sPPCOMSTRD' % dialect)
+    ShCompGen = fVLG('SH%s' % dialect, 'SH%s' % fallback, '%s' % dialect, '%s' % fallback, '_FORTRAND')
+    ShFlagsGen = fVLG('SH%sFLAGS' % dialect, 'SH%sFLAGS' % fallback)
+    ShComGen = fVLG('SH%sCOM' % dialect, 'SH%sCOM' % fallback, '_SH%sCOMD' % dialect)
+    ShComStrGen = fVLG('SH%sCOMSTR' % dialect, 'SH%sCOMSTR' % fallback, '_SH%sCOMSTRD' % dialect)
+    ShPPComGen = fVLG('SH%sPPCOM' % dialect, 'SH%sPPCOM' % fallback, '_SH%sPPCOMD' % dialect)
+    ShPPComStrGen = fVLG('SH%sPPCOMSTR' % dialect, 'SH%sPPCOMSTR' % fallback, '_SH%sPPCOMSTRD' % dialect)
+
+    return CompGen, FlagsGen, ComGen, ComStrGen, PPComGen, PPComStrGen, \
+           ShCompGen, ShFlagsGen, ShComGen, ShComStrGen, ShPPComGen, \
+           ShPPComStrGen
