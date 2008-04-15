@@ -38,8 +38,9 @@ args = prog + ' ' + subdir_prog + ' ' + variant_prog
 
 test = TestSCons.TestSCons()
 
-if not test.detect('_FORTRANG', 'g77'):
-    test.skip_test('Could not find a $F77 tool; skipping test.\n')
+fc = 'f77'
+if not test.detect_tool('f77'):
+    test.skip_test('Could not find a f77 tool; skipping test.\n')
     
 test.subdir('include',
             'subdir',
@@ -50,7 +51,8 @@ test.subdir('include',
 
 
 test.write('SConstruct', """
-env = Environment(FORTRANPATH = ['$FOO', '${TARGET.dir}', '${SOURCE.dir}'],
+env = Environment(FORTRAN = '%s',
+                  FORTRANPATH = ['$FOO', '${TARGET.dir}', '${SOURCE.dir}'],
                   LIBS = %s, FOO='include')
 obj = env.Object(target='foobar/prog', source='subdir/prog.f')
 env.Program(target='prog', source=obj)
@@ -58,10 +60,11 @@ SConscript('subdir/SConscript', "env")
 
 VariantDir('variant', 'subdir', 0)
 include = Dir('include')
-env = Environment(FORTRANPATH=[include, '#foobar', '#subdir'],
+env = Environment(FORTRAN = '%s',
+                  FORTRANPATH=[include, '#foobar', '#subdir'],
                   LIBS = %s)
 SConscript('variant/SConscript', "env")
-""" % (FTN_LIB, FTN_LIB))
+""" % (fc, FTN_LIB, fc, FTN_LIB))
 
 test.write(['subdir', 'SConscript'],
 """
@@ -236,7 +239,8 @@ test.up_to_date(arguments = args)
 
 # Change FORTRANPATH and make sure we don't rebuild because of it.
 test.write('SConstruct', """
-env = Environment(FORTRANPATH = Split('inc2 include ${TARGET.dir} ${SOURCE.dir}'),
+env = Environment(FORTRAN = '%s',
+                  FORTRANPATH = Split('inc2 include ${TARGET.dir} ${SOURCE.dir}'),
                   LIBS = %s)
 obj = env.Object(target='foobar/prog', source='subdir/prog.f')
 env.Program(target='prog', source=obj)
@@ -244,10 +248,11 @@ SConscript('subdir/SConscript', "env")
 
 VariantDir('variant', 'subdir', 0)
 include = Dir('include')
-env = Environment(FORTRANPATH=['inc2', include, '#foobar', '#subdir'],
+env = Environment(FORTRAN = '%s',
+                  FORTRANPATH=['inc2', include, '#foobar', '#subdir'],
                   LIBS = %s)
 SConscript('variant/SConscript', "env")
-""" % (FTN_LIB, FTN_LIB))
+""" % (fc, FTN_LIB, fc, FTN_LIB))
 
 test.up_to_date(arguments = args)
 

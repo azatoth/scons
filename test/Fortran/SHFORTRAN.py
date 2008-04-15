@@ -104,7 +104,8 @@ test.must_match('test14' + _obj, "This is a .F95 file.\n")
 
 
 
-fortran = test.detect('FORTRAN', 'g77')
+fc = 'f77'
+fortran = test.detect_tool(fc)
 
 if fortran:
 
@@ -117,7 +118,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(LIBS = 'g2c')
+foo = Environment(SHFORTRAN = '%(fc)s')
 shfortran = foo.Dictionary('SHFORTRAN')
 bar = foo.Clone(SHFORTRAN = r'%(_python_)s wrapper.py ' + shfortran)
 foo.SharedObject(target = 'foo/foo', source = 'foo.f')
@@ -141,7 +142,7 @@ bar.SharedObject(target = 'bar/bar', source = 'bar.f')
 
     test.run(arguments = 'foo', stderr = None)
 
-    test.must_exist('wrapper.out')
+    test.must_not_exist('wrapper.out')
 
     test.run(arguments = 'bar')
 
