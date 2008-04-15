@@ -133,9 +133,10 @@ test.must_match('test28' + _obj, "This is a .FPP file.\n")
 
 
 
-g77 = test.detect('F77', 'g77')
+fc  = 'f77'
+f77 = test.detect_tool(fc)
 
-if g77:
+if f77:
 
     test.write("wrapper.py",
 """import os
@@ -146,7 +147,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(LIBS = 'g2c')
+foo = Environment(SHF77 = '%(fc)s')
 shf77 = foo.Dictionary('SHF77')
 bar = foo.Clone(SHF77 = r'%(_python_)s wrapper.py ' + shf77)
 foo.SharedObject(target = 'foo/foo', source = 'foo.f')

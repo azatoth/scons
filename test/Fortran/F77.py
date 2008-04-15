@@ -177,10 +177,10 @@ test.must_match('test30' + _exe, "This is a .F77 file.\n")
 
 
 
-g77 = test.detect('F77', 'g77')
-FTN_LIB = TestSCons.fortran_lib
+fc  = 'f77'
+f77 = test.detect_tool(fc)
 
-if g77:
+if f77:
 
     test.write("wrapper.py",
 """import os
@@ -191,7 +191,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(LIBS = %(FTN_LIB)s)
+foo = Environment(F77 = '%(fc)s')
 f77 = foo.Dictionary('F77')
 bar = foo.Clone(F77 = r'%(_python_)s wrapper.py ' + f77)
 foo.Program(target = 'foo', source = 'foo.f')

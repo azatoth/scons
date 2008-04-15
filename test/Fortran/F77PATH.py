@@ -38,8 +38,9 @@ args = prog + ' ' + variant_prog + ' ' + subdir_prog
 
 test = TestSCons.TestSCons()
 
-if not test.detect('_F77G', 'g77'):
-    test.skip_test('Could not find a $F77 tool; skipping test.\n')
+fc = 'f77'
+if not test.detect_tool(fc):
+    test.skip_test('Could not find a f77 tool; skipping test.\n')
     
 test.subdir('include',
             'subdir',
@@ -50,7 +51,8 @@ test.subdir('include',
 
 
 test.write('SConstruct', """
-env = Environment(F77PATH = ['$FOO', '${TARGET.dir}', '${SOURCE.dir}'],
+env = Environment(F77 = '%s',
+                  F77PATH = ['$FOO', '${TARGET.dir}', '${SOURCE.dir}'],
                   LIBS = %s,
                   FOO='include',
                   F77FLAGS = '-x f77')
@@ -60,11 +62,12 @@ SConscript('subdir/SConscript', "env")
 
 VariantDir('variant', 'subdir', 0)
 include = Dir('include')
-env = Environment(F77PATH=[include, '#foobar', '#subdir'],
+env = Environment(F77 = '%s',
+                  F77PATH=[include, '#foobar', '#subdir'],
                   LIBS = %s,
                   F77FLAGS = '-x f77')
 SConscript('variant/SConscript', "env")
-""" % (FTN_LIB, FTN_LIB))
+""" % (fc, FTN_LIB, fc, FTN_LIB))
 
 test.write(['subdir', 'SConscript'],
 """
@@ -239,7 +242,8 @@ test.up_to_date(arguments = args)
 
 # Change F77PATH and make sure we don't rebuild because of it.
 test.write('SConstruct', """
-env = Environment(F77PATH = Split('inc2 include ${TARGET.dir} ${SOURCE.dir}'),
+env = Environment(F77 = '%s',
+                  F77PATH = Split('inc2 include ${TARGET.dir} ${SOURCE.dir}'),
                   LIBS = %s,
                   F77FLAGS = '-x f77')
 obj = env.Object(target='foobar/prog', source='subdir/prog.f77')
@@ -248,11 +252,12 @@ SConscript('subdir/SConscript', "env")
 
 VariantDir('variant', 'subdir', 0)
 include = Dir('include')
-env = Environment(F77PATH=['inc2', include, '#foobar', '#subdir'],
+env = Environment(F77 = '%s',
+                  F77PATH=['inc2', include, '#foobar', '#subdir'],
                   LIBS = %s,
                   F77FLAGS = '-x f77')
 SConscript('variant/SConscript', "env")
-""" % (FTN_LIB, FTN_LIB))
+""" % (fc, FTN_LIB, fc, FTN_LIB))
 
 test.up_to_date(arguments = args)
 
