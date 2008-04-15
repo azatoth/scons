@@ -29,46 +29,14 @@ import string
 import sys
 import TestSCons
 
+from common import write_fake_link
+
 _python_ = TestSCons._python_
 
 test = TestSCons.TestSCons()
 _exe = TestSCons._exe
 
-if sys.platform == 'win32':
-
-    test.write('mylink.py', r"""
-import string
-import sys
-args = sys.argv[1:]
-while args:
-    a = args[0]
-    if a[0] != '/':
-        break
-    args = args[1:]
-    if string.lower(a[:5]) == '/out:': out = a[5:]
-infile = open(args[0], 'rb')
-outfile = open(out, 'wb')
-for l in infile.readlines():
-    if l[:5] != '#link':
-        outfile.write(l)
-sys.exit(0)
-""")
-
-else:
-
-    test.write('mylink.py', r"""
-import getopt
-import sys
-opts, args = getopt.getopt(sys.argv[1:], 'o:')
-for opt, arg in opts:
-    if opt == '-o': out = arg
-infile = open(args[0], 'rb')
-outfile = open(out, 'wb')
-for l in infile.readlines():
-    if l[:5] != '#link':
-        outfile.write(l)
-sys.exit(0)
-""")
+write_fake_link(test)
 
 test.write('myfortran.py', r"""
 import getopt
