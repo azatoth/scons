@@ -40,7 +40,8 @@ import SCons.Util
 import fortran
 from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
                                      ComputeFortranSuffixes,\
-                                     CreateDialectGenerator
+                                     CreateDialectGenerator, \
+                                     CreateDialectActions
 
 compilers = ['f77']
 
@@ -63,10 +64,7 @@ ShF77ComStrGen, ShF77PPComGen, ShF77PPComStrGen = \
     CreateDialectGenerator("F77", "FORTRAN", "_FORTRAND")
 
 #
-F77Action = SCons.Action.Action('$_F77COMG ', '$_F77COMSTRG')
-F77PPAction = SCons.Action.Action('$_F77PPCOMG ', '$_F77PPCOMSTRG')
-ShF77Action = SCons.Action.Action('$_SHF77COMG ', '$_SHF77COMSTRG')
-ShF77PPAction = SCons.Action.Action('$_SHF77PPCOMG ', '$_SHF77PPCOMSTRG')
+F77Action, F77PPAction, ShF77Action, ShF77PPAction = CreateDialectActions("F77")
 
 def add_to_env(env):
     """Add Builders and construction variables for f77 to an Environment."""
