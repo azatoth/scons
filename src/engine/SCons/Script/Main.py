@@ -208,10 +208,15 @@ class BuildTask(SCons.Taskmaster.Task):
         t = self.targets[0]
         if self.top and not t.has_builder() and not t.side_effect:
             if not t.exists():
-                sys.stderr.write("scons: *** Do not know how to make target `%s'." % t)
+                errstr="Do not know how to make target `%s'." % t
+                sys.stderr.write("scons: *** " + errstr)
                 if not self.options.keep_going:
                     sys.stderr.write("  Stop.")
                 sys.stderr.write("\n")
+                try:
+                    raise SCons.Errors.BuildError(t, errstr)
+                except:
+                    self.exception_set()
                 self.do_failed()
             else:
                 print "scons: Nothing to be done for `%s'." % t
@@ -1129,25 +1134,28 @@ def _build_targets(fs, options, targets, target_top):
     memory_stats.append('before building targets:')
     count_stats.append(('pre-', 'build'))
 
-    try:
-        progress_display("scons: " + opening_message)
-        try:
-            jobs.run()
-        except KeyboardInterrupt:
-            # If we are in interactive mode, a KeyboardInterrupt
-            # interrupts only this current run.  Return 'nodes' normally
-            # so that the outer loop can clean up the nodes and continue.
-            if options.interactive:
-                print "Build interrupted."
-                # Continue and return normally
-    finally:
-        jobs.cleanup()
+    def jobs_postfunc(
+        jobs=jobs,
+        options=options,
+        closing_message=closing_message,
+        failure_message=failure_message
+        ):
+        if jobs.were_interrupted():
+            progress_display("scons: Build interrupted.")
+            global exit_status
+            exit_status = 2
+
         if exit_status:
             progress_display("scons: " + failure_message)
         else:
             progress_display("scons: " + closing_message)
         if not options.no_exec:
+            if jobs.were_interrupted():
+                progress_display("scons: writing .sconsign file.")
             SCons.SConsign.write()
+
+    progress_display("scons: " + opening_message)
+    jobs.run(postfunc = jobs_postfunc)
 
     memory_stats.append('after building targets:')
     count_stats.append(('post-', 'build'))
@@ -1229,7 +1237,7 @@ def main():
         if s:
             exit_status = s
     except KeyboardInterrupt:
-        print "Build interrupted."
+        print("scons: Build interrupted.")
         sys.exit(2)
     except SyntaxError, e:
         _scons_syntax_error(e)

@@ -178,7 +178,17 @@ class DisplayEngine:
 
     def print_it(self, text, append_newline=1):
         if append_newline: text = text + '\n'
-        sys.stdout.write(text)
+        try:
+            sys.stdout.write(text)
+        except IOError:
+            # Stdout might be connected to a pipe that has been closed
+            # by now. The most likely reason for the pipe being closed
+            # is that the user has press ctrl-c. It this is the case,
+            # then SCons is currently shutdown. We therefore ignore
+            # IOError's here so that SCons can continue and shutdown
+            # properly so that the .sconsign is correctly written
+            # before SCons exits.
+            pass
 
     def dont_print(self, text, append_newline=1):
         pass
@@ -1321,8 +1331,18 @@ class Unbuffered:
     def __init__(self, file):
         self.file = file
     def write(self, arg):
-        self.file.write(arg)
-        self.file.flush()
+        try:
+            self.file.write(arg)
+            self.file.flush()
+        except IOError:
+            # Stdout might be connected to a pipe that has been closed
+            # by now. The most likely reason for the pipe being closed
+            # is that the user has press ctrl-c. It this is the case,
+            # then SCons is currently shutdown. We therefore ignore
+            # IOError's here so that SCons can continue and shutdown
+            # properly so that the .sconsign is correctly written
+            # before SCons exits.
+            pass
     def __getattr__(self, attr):
         return getattr(self.file, attr)
 

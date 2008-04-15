@@ -220,8 +220,6 @@ class Task:
                     break
             if not everything_was_cached:
                 self.targets[0].build()
-        except KeyboardInterrupt:
-            raise
         except SystemExit:
             exc_value = sys.exc_info()[1]
             raise SCons.Errors.ExplicitExit(self.targets[0], exc_value.code)
@@ -627,9 +625,6 @@ class Taskmaster:
                 self.ready_exc = (SCons.Errors.ExplicitExit, e)
                 if T: T.write('Taskmaster:        SystemExit\n')
                 return node
-            except KeyboardInterrupt:
-                if T: T.write(' KeyboardInterrupt\n')
-                raise
             except:
                 # We had a problem just trying to figure out the
                 # children (like a child couldn't be linked in to a
@@ -748,8 +743,6 @@ class Taskmaster:
         task = self.tasker(self, tlist, node in self.original_top, node)
         try:
             task.make_ready()
-        except KeyboardInterrupt:
-            raise
         except:
             # We had a problem just trying to get this task ready (like
             # a child couldn't be linked in to a VariantDir when deciding
