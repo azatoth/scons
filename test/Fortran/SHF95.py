@@ -104,9 +104,8 @@ test.must_match('test12' + _obj, "This is a .F90 file.\n")
 test.must_match('test13' + _obj, "This is a .f95 file.\n")
 test.must_match('test14' + _obj, "This is a .F95 file.\n")
 
-
-
-g95 = test.detect('F95', 'g95')
+fc = 'f95'
+g95 = test.detect_tool(fc)
 
 if g95:
 
@@ -119,7 +118,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(LIBS = 'g2c')
+foo = Environment(SHF95 = '%(fc)s')
 shf95 = foo.Dictionary('SHF95')
 bar = foo.Clone(SHF95 = r'%(_python_)s wrapper.py ' + shf95)
 foo.SharedObject(target = 'foo/foo', source = 'foo.f')
