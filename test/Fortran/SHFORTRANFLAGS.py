@@ -113,10 +113,8 @@ test.must_match('test12' + _obj, " -c -x\nThis is a .F90 file.\n")
 test.must_match('test13' + _obj, " -c -x\nThis is a .f95 file.\n")
 test.must_match('test14' + _obj, " -c -x\nThis is a .F95 file.\n")
 
-
-
-fortran = test.detect('FORTRAN', 'g77')
-FTN_LIB = TestSCons.fortran_lib
+fc = 'f77'
+fortran = test.detect_tool(fc)
 
 if fortran:
 
@@ -129,7 +127,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(LIBS = %(FTN_LIB)s)
+foo = Environment(SHFORTRAN = '%(fc)s')
 shfortran = foo.Dictionary('SHFORTRAN')
 bar = foo.Clone(SHFORTRAN = r'%(_python_)s wrapper.py ' + shfortran,
                 SHFORTRANFLAGS = '-Ix')

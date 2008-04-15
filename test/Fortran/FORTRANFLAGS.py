@@ -143,9 +143,8 @@ test.must_match('test13' + _exe, " -c -x\nThis is a .f95 file.\n")
 test.must_match('test14' + _exe, " -c -x\nThis is a .F95 file.\n")
 
 
-
-g77 = test.detect('FORTRAN', 'g77')
-FTN_LIB = TestSCons.fortran_lib
+fc = 'f77'
+g77 = test.detect_tool(fc)
 
 if g77:
 
@@ -158,7 +157,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(LIBS = %(FTN_LIB)s)
+foo = Environment(FORTRAN = '%(fc)s')
 f77 = foo.Dictionary('FORTRAN')
 bar = foo.Clone(FORTRAN = r'%(_python_)s wrapper.py ' + f77, FORTRANFLAGS = '-Ix')
 foo.Program(target = 'foo', source = 'foo.f')
