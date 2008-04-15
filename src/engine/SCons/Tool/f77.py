@@ -42,12 +42,18 @@ from SCons.Tool.FortranCommon import DialectAddToEnv
 
 compilers = ['f77']
 
-#
-F77Suffixes = ['.f77']
-F77PPSuffixes = []
-
 def add_to_env(env):
     """Add Builders and construction variables for f77 to an Environment."""
+    try:
+        F77Suffixes = env['F77FILESUFFIXES']
+    except KeyError:
+        F77Suffixes = ['.f77']
+
+    try:
+        F77PPSuffixes = env['F77PPFILESUFFIXES']
+    except KeyError:
+        F77PPSuffixes = []
+
     DialectAddToEnv(env, "F77", "FORTRAN", "_FORTRAND", F77Suffixes, F77PPSuffixes)
 
 def generate(env):
