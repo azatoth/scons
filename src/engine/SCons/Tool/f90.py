@@ -42,11 +42,18 @@ from SCons.Tool.FortranCommon import DialectAddToEnv
 
 compilers = ['f90']
 
-#
-F90Suffixes = ['.f90']
-F90PPSuffixes = []
 def add_to_env(env):
     """Add Builders and construction variables for f90 to an Environment."""
+    try:
+        F90Suffixes = env['F90FILESUFFIXES']
+    except KeyError:
+        F90Suffixes = ['.f90']
+
+    try:
+        F90PPSuffixes = env['F90PPFILESUFFIXES']
+    except KeyError:
+        F90PPSuffixes = []
+
     DialectAddToEnv(env, "F90", "FORTRAN", "_F90D", F90Suffixes, F90PPSuffixes,
                     support_module = 1)
 
