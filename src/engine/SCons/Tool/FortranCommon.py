@@ -113,3 +113,12 @@ def CreateDialectGenerator(dialect, fallback, default):
     return CompGen, FlagsGen, ComGen, ComStrGen, PPComGen, PPComStrGen, \
            ShCompGen, ShFlagsGen, ShComGen, ShComStrGen, ShPPComGen, \
            ShPPComStrGen
+
+def CreateDialectActions(dialect):
+    """Create dialect specific actions."""
+    CompAction = SCons.Action.Action('$_%sCOMG ' % dialect, '$_%sCOMSTRG' % dialect)
+    CompPPAction = SCons.Action.Action('$_%sPPCOMG ' % dialect, '$_%sPPCOMSTRG' % dialect)
+    ShCompAction = SCons.Action.Action('$_SH%sCOMG ' % dialect, '$_SH%sCOMSTRG' % dialect)
+    ShCompPPAction = SCons.Action.Action('$_SH%sPPCOMG ' % dialect, '$_SH%sPPCOMSTRG' % dialect)
+
+    return CompAction, CompPPAction, ShCompAction, ShCompPPAction
