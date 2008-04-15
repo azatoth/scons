@@ -37,30 +37,13 @@ import SCons.Defaults
 import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
-import fortran
-from SCons.Tool.FortranCommon import DialectAddToEnv
+from SCons.Tool.FortranCommon import add_all_to_env, add_f77_to_env
 
 compilers = ['f77']
 
-def add_to_env(env):
-    """Add Builders and construction variables for f77 to an Environment."""
-    try:
-        F77Suffixes = env['F77FILESUFFIXES']
-    except KeyError:
-        F77Suffixes = ['.f77']
-
-    try:
-        F77PPSuffixes = env['F77PPFILESUFFIXES']
-    except KeyError:
-        F77PPSuffixes = []
-
-    DialectAddToEnv(env, "F77", "FORTRAN", "_FORTRAND", F77Suffixes, F77PPSuffixes)
-
 def generate(env):
-    import fortran
-    fortran.add_to_env(env)
-
-    add_to_env(env)
+    add_all_to_env(env)
+    add_f77_to_env(env)
 
     fcomp = env.Detect(compilers) or 'f77'
     env['F77']  = fcomp

@@ -37,29 +37,13 @@ import SCons.Defaults
 import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
-import fortran
-from SCons.Tool.FortranCommon import DialectAddToEnv
+from SCons.Tool.FortranCommon import add_all_to_env, add_f90_to_env
 
 compilers = ['f90']
 
-def add_to_env(env):
-    """Add Builders and construction variables for f90 to an Environment."""
-    try:
-        F90Suffixes = env['F90FILESUFFIXES']
-    except KeyError:
-        F90Suffixes = ['.f90']
-
-    try:
-        F90PPSuffixes = env['F90PPFILESUFFIXES']
-    except KeyError:
-        F90PPSuffixes = []
-
-    DialectAddToEnv(env, "F90", "FORTRAN", "_F90D", F90Suffixes, F90PPSuffixes,
-                    support_module = 1)
-
 def generate(env):
-    import fortran
-    fortran.add_to_env(env)
+    add_all_to_env(env)
+    add_f90_to_env(env)
 
     env['_FORTRAND']        = env.Detect(compilers) or 'f90'
 

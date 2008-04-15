@@ -41,42 +41,13 @@ import SCons.Defaults
 import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
-from SCons.Tool.FortranCommon import DialectAddToEnv
+from SCons.Tool.FortranCommon import add_all_to_env, add_fortran_to_env
 
 compilers = ['f95', 'f90', 'f77']
 
-#
-#  Not yet sure how to deal with fortran pre-processor functions.
-#  Different compilers do this differently in modern fortran.  Some still
-#  rely on the c pre-processor, some (like cvf, ivf) have their own
-#  pre-processor technology and use intermediary suffixes (.i90)
-#
-
-def add_to_env(env):
-    """Add Builders and construction variables for Fortran to an Environment."""
-    try:
-        FortranSuffixes = env['FORTRANFILESUFFIXES']
-    except KeyError:
-        FortranSuffixes = ['.f', '.for', '.ftn']
-
-    try:
-        FortranPPSuffixes = env['FORTRANPPFILESUFFIXES']
-    except KeyError:
-        FortranPPSuffixes = ['.fpp', '.FPP']
-
-    DialectAddToEnv(env, "FORTRAN", "F77", "_FORTRAND", FortranSuffixes,
-                    FortranPPSuffixes, support_module = 1)
-
-    env['FORTRANMODPREFIX'] = ''     # like $LIBPREFIX
-    env['FORTRANMODSUFFIX'] = '.mod' # like $LIBSUFFIX
-
-    env['FORTRANMODDIR'] = ''          # where the compiler should place .mod files
-    env['FORTRANMODDIRPREFIX'] = ''    # some prefix to $FORTRANMODDIR - similar to $INCPREFIX
-    env['FORTRANMODDIRSUFFIX'] = ''    # some suffix to $FORTRANMODDIR - similar to $INCSUFFIX
-    env['_FORTRANMODFLAG'] = '$( ${_concat(FORTRANMODDIRPREFIX, FORTRANMODDIR, FORTRANMODDIRSUFFIX, __env__, RDirs)} $)'
-
 def generate(env):
-    add_to_env(env)
+    add_all_to_env(env)
+    add_fortran_to_env(env)
 
     env['FORTRAN'] = env.Detect(compilers) or 'f77'
 

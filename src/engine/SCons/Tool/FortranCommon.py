@@ -108,8 +108,7 @@ def CreateDialectActions(dialect):
 
     return CompAction, CompPPAction, ShCompAction, ShCompPPAction
 
-def DialectAddToEnv(env, dialect, fallback, default, suffixes, ppsuffixes,
-                    support_module = 0):
+def DialectAddToEnv(env, dialect, suffixes, ppsuffixes, support_module = 0):
     """Add dialect specific construction variables."""
     ComputeFortranSuffixes(suffixes, ppsuffixes)
 
@@ -155,3 +154,82 @@ def DialectAddToEnv(env, dialect, fallback, default, suffixes, ppsuffixes,
         env['%sPPCOM' % dialect]   = '$%s -o $TARGET -c $%sFLAGS $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
         env['SH%sCOM' % dialect]    = '$SH%s -o $TARGET -c $SH%sFLAGS $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
         env['SH%sPPCOM' % dialect]  = '$SH%s -o $TARGET -c $SH%sFLAGS $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
+
+def add_fortran_to_env(env):
+    """Add Builders and construction variables for Fortran to an Environment."""
+    try:
+        FortranSuffixes = env['FORTRANFILESUFFIXES']
+    except KeyError:
+        FortranSuffixes = ['.f', '.for', '.ftn']
+
+    #print "Adding %s to fortran suffixes" % FortranSuffixes
+    try:
+        FortranPPSuffixes = env['FORTRANPPFILESUFFIXES']
+    except KeyError:
+        FortranPPSuffixes = ['.fpp', '.FPP']
+
+    DialectAddToEnv(env, "FORTRAN", FortranSuffixes,
+                    FortranPPSuffixes, support_module = 1)
+
+    env['FORTRANMODPREFIX'] = ''     # like $LIBPREFIX
+    env['FORTRANMODSUFFIX'] = '.mod' # like $LIBSUFFIX
+
+    env['FORTRANMODDIR'] = ''          # where the compiler should place .mod files
+    env['FORTRANMODDIRPREFIX'] = ''    # some prefix to $FORTRANMODDIR - similar to $INCPREFIX
+    env['FORTRANMODDIRSUFFIX'] = ''    # some suffix to $FORTRANMODDIR - similar to $INCSUFFIX
+    env['_FORTRANMODFLAG'] = '$( ${_concat(FORTRANMODDIRPREFIX, FORTRANMODDIR, FORTRANMODDIRSUFFIX, __env__, RDirs)} $)'
+
+def add_f77_to_env(env):
+    """Add Builders and construction variables for f77 to an Environment."""
+    try:
+        F77Suffixes = env['F77FILESUFFIXES']
+    except KeyError:
+        F77Suffixes = ['.f77']
+
+    #print "Adding %s to f77 suffixes" % F77Suffixes
+    try:
+        F77PPSuffixes = env['F77PPFILESUFFIXES']
+    except KeyError:
+        F77PPSuffixes = []
+
+    DialectAddToEnv(env, "F77", F77Suffixes, F77PPSuffixes)
+
+def add_f90_to_env(env):
+    """Add Builders and construction variables for f90 to an Environment."""
+    try:
+        F90Suffixes = env['F90FILESUFFIXES']
+    except KeyError:
+        F90Suffixes = ['.f90']
+
+    #print "Adding %s to f90 suffixes" % F90Suffixes
+    try:
+        F90PPSuffixes = env['F90PPFILESUFFIXES']
+    except KeyError:
+        F90PPSuffixes = []
+
+    DialectAddToEnv(env, "F90", F90Suffixes, F90PPSuffixes,
+                    support_module = 1)
+
+def add_f95_to_env(env):
+    """Add Builders and construction variables for f95 to an Environment."""
+    try:
+        F95Suffixes = env['F95FILESUFFIXES']
+    except KeyError:
+        F95Suffixes = ['.f95']
+
+    #print "Adding %s to f95 suffixes" % F95Suffixes
+    try:
+        F95PPSuffixes = env['F95PPFILESUFFIXES']
+    except KeyError:
+        F95PPSuffixes = []
+
+    DialectAddToEnv(env, "F95", F95Suffixes, F95PPSuffixes,
+                    support_module = 1)
+
+def add_all_to_env(env):
+    """Add builders and construction variables for all supported fortran
+    dialects."""
+    add_fortran_to_env(env)
+    add_f77_to_env(env)
+    add_f90_to_env(env)
+    add_f95_to_env(env)
