@@ -37,16 +37,16 @@ import SCons.Defaults
 import SCons.Tool
 import SCons.Util
 import fortran
+from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
+                                     ComputeFortranSuffixes,\
+                                     VariableListGenerator as fVLG
 
 compilers = ['f95']
 
 #
 F95Suffixes = ['.f95']
 F95PPSuffixes = []
-if SCons.Util.case_sensitive_suffixes('.f95', '.F95'):
-    F95PPSuffixes.append('.F95')
-else:
-    F95Suffixes.append('.F95')
+ComputeFortranSuffixes(F95Suffixes, F95PPSuffixes)
 
 #
 F95Scan = SCons.Scanner.Fortran.FortranScan("F95PATH")
@@ -56,8 +56,6 @@ for suffix in F95Suffixes + F95PPSuffixes:
 del suffix
 
 #
-fVLG = fortran.VariableListGenerator
-
 F95Generator = fVLG('F95', 'FORTRAN', '_FORTRAND')
 F95FlagsGenerator = fVLG('F95FLAGS', 'FORTRANFLAGS')
 F95CommandGenerator = fVLG('F95COM', 'FORTRANCOM', '_F95COMD')
@@ -88,14 +86,14 @@ def add_to_env(env):
     for suffix in F95Suffixes:
         static_obj.add_action(suffix, F95Action)
         shared_obj.add_action(suffix, ShF95Action)
-        static_obj.add_emitter(suffix, fortran.FortranEmitter)
-        shared_obj.add_emitter(suffix, fortran.ShFortranEmitter)
+        static_obj.add_emitter(suffix, FortranEmitter)
+        shared_obj.add_emitter(suffix, ShFortranEmitter)
 
     for suffix in F95PPSuffixes:
         static_obj.add_action(suffix, F95PPAction)
         shared_obj.add_action(suffix, ShF95PPAction)
-        static_obj.add_emitter(suffix, fortran.FortranEmitter)
-        shared_obj.add_emitter(suffix, fortran.ShFortranEmitter)
+        static_obj.add_emitter(suffix, FortranEmitter)
+        shared_obj.add_emitter(suffix, ShFortranEmitter)
 
     env['_F95G']           = F95Generator
     env['_F95FLAGSG']      = F95FlagsGenerator

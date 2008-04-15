@@ -38,16 +38,16 @@ import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
 import fortran
+from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
+                                     ComputeFortranSuffixes,\
+                                     VariableListGenerator as fVLG
 
 compilers = ['f90']
 
 #
 F90Suffixes = ['.f90']
 F90PPSuffixes = []
-if SCons.Util.case_sensitive_suffixes('.f90', '.F90'):
-    F90PPSuffixes.append('.F90')
-else:
-    F90Suffixes.append('.F90')
+ComputeFortranSuffixes(F90Suffixes, F90PPSuffixes)
 
 #
 F90Scan = SCons.Scanner.Fortran.FortranScan("F90PATH")
@@ -57,8 +57,6 @@ for suffix in F90Suffixes + F90PPSuffixes:
 del suffix
 
 #
-fVLG = fortran.VariableListGenerator
-
 F90Generator = fVLG('F90', 'FORTRAN', '_FORTRAND')
 F90FlagsGenerator = fVLG('F90FLAGS', 'FORTRANFLAGS')
 F90CommandGenerator = fVLG('F90COM', 'FORTRANCOM', '_F90COMD')
@@ -89,14 +87,14 @@ def add_to_env(env):
     for suffix in F90Suffixes:
         static_obj.add_action(suffix, F90Action)
         shared_obj.add_action(suffix, ShF90Action)
-        static_obj.add_emitter(suffix, fortran.FortranEmitter)
-        shared_obj.add_emitter(suffix, fortran.ShFortranEmitter)
+        static_obj.add_emitter(suffix, FortranEmitter)
+        shared_obj.add_emitter(suffix, ShFortranEmitter)
 
     for suffix in F90PPSuffixes:
         static_obj.add_action(suffix, F90PPAction)
         shared_obj.add_action(suffix, ShF90PPAction)
-        static_obj.add_emitter(suffix, fortran.FortranEmitter)
-        shared_obj.add_emitter(suffix, fortran.ShFortranEmitter)
+        static_obj.add_emitter(suffix, FortranEmitter)
+        shared_obj.add_emitter(suffix, ShFortranEmitter)
   
     env['_F90G']            = F90Generator
     env['_F90FLAGSG']       = F90FlagsGenerator

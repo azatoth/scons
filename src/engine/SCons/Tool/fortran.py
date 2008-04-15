@@ -41,6 +41,9 @@ import SCons.Defaults
 import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
+from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
+                                     ComputeFortranSuffixes,\
+                                     VariableListGenerator
 
 compilers = ['f95', 'f90', 'f77']
 
@@ -52,11 +55,7 @@ compilers = ['f95', 'f90', 'f77']
 #
 FortranSuffixes = [".f", ".for", ".ftn", ]
 FortranPPSuffixes = ['.fpp', '.FPP']
-upper_case = [".F", ".FOR", ".FTN"]
-if SCons.Util.case_sensitive_suffixes('.f', '.F'):
-    FortranPPSuffixes.extend(upper_case)
-else:
-    FortranSuffixes.extend(upper_case)
+ComputeFortranSuffixes(FortranSuffixes, FortranPPSuffixes)
 
 #
 FortranScan = SCons.Scanner.Fortran.FortranScan("FORTRANPATH")
@@ -64,43 +63,6 @@ FortranScan = SCons.Scanner.Fortran.FortranScan("FORTRANPATH")
 for suffix in FortranSuffixes + FortranPPSuffixes:
     SCons.Tool.SourceFileScanner.add_scanner(suffix, FortranScan)
 del suffix
-
-#
-def _fortranEmitter(target, source, env):
-    node = source[0].rfile()
-    if not node.exists() and not node.is_derived():
-       print "Could not locate " + str(node.name)
-       return ([], [])
-    mod_regex = """(?i)^\s*MODULE\s+(?!PROCEDURE)(\w+)"""
-    cre = re.compile(mod_regex,re.M)
-    # Retrieve all USE'd module names
-    modules = cre.findall(node.get_contents())
-    # Remove unique items from the list
-    modules = SCons.Util.unique(modules)
-    # Convert module name to a .mod filename
-    suffix = env.subst('$FORTRANMODSUFFIX', target=target, source=source)
-    moddir = env.subst('$FORTRANMODDIR', target=target, source=source)
-    modules = map(lambda x, s=suffix: string.lower(x) + s, modules)
-    for m in modules:
-       target.append(env.fs.File(m, moddir))
-    return (target, source)
-
-def FortranEmitter(target, source, env):
-    target, source = _fortranEmitter(target, source, env)
-    return SCons.Defaults.StaticObjectEmitter(target, source, env)
-
-def ShFortranEmitter(target, source, env):
-    target, source = _fortranEmitter(target, source, env)
-    return SCons.Defaults.SharedObjectEmitter(target, source, env)
-
-class VariableListGenerator:
-    def __init__(self, *variablelist):
-        self.variablelist = variablelist
-    def __call__(self, env, target, source, for_signature=0):
-        for v in self.variablelist:
-            try: return env[v]
-            except KeyError: pass
-        return ''
 
 #
 FortranGenerator = VariableListGenerator('FORTRAN', 'F77', '_FORTRAND')

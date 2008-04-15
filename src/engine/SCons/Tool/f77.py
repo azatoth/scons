@@ -38,16 +38,16 @@ import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
 import fortran
+from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
+                                     ComputeFortranSuffixes,\
+                                     VariableListGenerator as fVLG
 
 compilers = ['f77']
 
 #
 F77Suffixes = ['.f77']
 F77PPSuffixes = []
-if SCons.Util.case_sensitive_suffixes('.f77', '.F77'):
-    F77PPSuffixes.append('.F77')
-else:
-    F77Suffixes.append('.F77')
+ComputeFortranSuffixes(F77Suffixes, F77PPSuffixes)
 
 #
 F77Scan = SCons.Scanner.Fortran.FortranScan("F77PATH")
@@ -57,8 +57,6 @@ for suffix in F77Suffixes + F77PPSuffixes:
 del suffix
 
 #
-fVLG = fortran.VariableListGenerator
-
 F77Generator = fVLG('F77', 'FORTRAN', '_FORTRAND')
 F77FlagsGenerator = fVLG('F77FLAGS', 'FORTRANFLAGS')
 F77CommandGenerator = fVLG('F77COM', 'FORTRANCOM', '_F77COMD')
@@ -89,14 +87,14 @@ def add_to_env(env):
     for suffix in F77Suffixes:
         static_obj.add_action(suffix, F77Action)
         shared_obj.add_action(suffix, ShF77Action)
-        static_obj.add_emitter(suffix, fortran.FortranEmitter)
-        shared_obj.add_emitter(suffix, fortran.ShFortranEmitter)
+        static_obj.add_emitter(suffix, FortranEmitter)
+        shared_obj.add_emitter(suffix, ShFortranEmitter)
 
     for suffix in F77PPSuffixes:
         static_obj.add_action(suffix, F77PPAction)
         shared_obj.add_action(suffix, ShF77PPAction)
-        static_obj.add_emitter(suffix, fortran.FortranEmitter)
-        shared_obj.add_emitter(suffix, fortran.ShFortranEmitter)
+        static_obj.add_emitter(suffix, FortranEmitter)
+        shared_obj.add_emitter(suffix, ShFortranEmitter)
 
     env['_F77G']            = F77Generator
     env['_F77FLAGSG']       = F77FlagsGenerator
