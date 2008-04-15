@@ -45,7 +45,12 @@ def generate(env):
     add_all_to_env(env)
     add_f90_to_env(env)
 
-    env['_FORTRAND']        = env.Detect(compilers) or 'f90'
+    fc = env.Detect(compilers) or 'f90'
+    env['F90']  = fcomp
+    env['SHF90']  = fcomp
+
+    env['FORTRAN']  = fcomp
+    env['SHFORTRAN']  = fcomp
 
 def exists(env):
     return env.Detect(compilers)
