@@ -31,12 +31,33 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import re
 import string
+import os.path
 
 import SCons.Action
 import SCons.Defaults
 import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
+
+def isfortran(env, source):
+    """Return 1 if any of code in source has fortran files in it, 0
+    otherwise."""
+    try:
+        fsuffixes = env['FORTRANSUFFIXES']
+    except KeyError:
+        # If no FORTRANSUFFIXES, no fortran tool, so there is no need to look
+        # for fortran sources.
+        return 0
+
+    if not source:
+        # Source might be None for unusual cases like SConf.
+        return 0
+    for s in source:
+        if s.sources:
+            ext = os.path.splitext(str(s.sources[0]))[1]
+            if ext in fsuffixes:
+                return 1
+    return 0
 
 def _fortranEmitter(target, source, env):
     node = source[0].rfile()
