@@ -38,71 +38,17 @@ import SCons.Scanner.Fortran
 import SCons.Tool
 import SCons.Util
 import fortran
-from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
-                                     ComputeFortranSuffixes,\
-                                     CreateDialectGenerator, \
-                                     CreateDialectActions
+from SCons.Tool.FortranCommon import DialectAddToEnv
 
 compilers = ['f90']
 
 #
 F90Suffixes = ['.f90']
 F90PPSuffixes = []
-ComputeFortranSuffixes(F90Suffixes, F90PPSuffixes)
-
-#
-F90Scan = SCons.Scanner.Fortran.FortranScan("F90PATH")
-
-for suffix in F90Suffixes + F90PPSuffixes:
-    SCons.Tool.SourceFileScanner.add_scanner(suffix, F90Scan)
-del suffix
-
-#
-F90Gen, F90FlagsGen, F90ComGen, F90ComStrGen, F90PPComGen, \
-F90PPComStrGen, ShF90Gen, ShF90FlagsGen, ShF90ComGen, \
-ShF90ComStrGen, ShF90PPComGen, ShF90PPComStrGen = \
-    CreateDialectGenerator("F90", "FORTRAN", "_F90D")
-
-#
-F90Action, F90PPAction, ShF90Action, ShF90PPAction = CreateDialectActions("F90")
-
 def add_to_env(env):
     """Add Builders and construction variables for f90 to an Environment."""
-    env.AppendUnique(FORTRANSUFFIXES = F90Suffixes + F90PPSuffixes)
-
-    static_obj, shared_obj = SCons.Tool.createObjBuilders(env)
-
-    for suffix in F90Suffixes:
-        static_obj.add_action(suffix, F90Action)
-        shared_obj.add_action(suffix, ShF90Action)
-        static_obj.add_emitter(suffix, FortranEmitter)
-        shared_obj.add_emitter(suffix, ShFortranEmitter)
-
-    for suffix in F90PPSuffixes:
-        static_obj.add_action(suffix, F90PPAction)
-        shared_obj.add_action(suffix, ShF90PPAction)
-        static_obj.add_emitter(suffix, FortranEmitter)
-        shared_obj.add_emitter(suffix, ShFortranEmitter)
-  
-    env['_F90G']            = F90Gen
-    env['_F90FLAGSG']       = F90FlagsGen
-    env['_F90COMG']         = F90ComGen
-    env['_F90COMSTRG']      = F90ComStrGen
-    env['_F90PPCOMG']       = F90PPComGen
-    env['_F90PPCOMSTRG']    = F90PPComStrGen
-
-    env['_SHF90G']          = ShF90Gen
-    env['_SHF90FLAGSG']     = ShF90FlagsGen
-    env['_SHF90COMG']       = ShF90ComGen
-    env['_SHF90COMSTRG']    = ShF90ComStrGen
-    env['_SHF90PPCOMG']     = ShF90PPComGen
-    env['_SHF90PPCOMSTRG']  = ShF90PPComStrGen
-
-    env['_F90INCFLAGS'] = '$( ${_concat(INCPREFIX, F90PATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)'
-    env['_F90COMD']     = '$_F90G -o $TARGET -c $_F90FLAGSG $_F90INCFLAGS $_FORTRANMODFLAG $SOURCES'
-    env['_F90PPCOMD']   = '$_F90G -o $TARGET -c $_F90FLAGSG $CPPFLAGS $_CPPDEFFLAGS $_F90INCFLAGS $_FORTRANMODFLAG $SOURCES'
-    env['_SHF90COMD']   = '$_SHF90G -o $TARGET -c $_SHF90FLAGSG $_F90INCFLAGS $_FORTRANMODFLAG $SOURCES'
-    env['_SHF90PPCOMD'] = '$_SHF90G -o $TARGET -c $_SHF90FLAGSG $CPPFLAGS $_CPPDEFFLAGS $_F90INCFLAGS $_FORTRANMODFLAG $SOURCES'
+    DialectAddToEnv(env, "F90", "FORTRAN", "_F90D", F90Suffixes, F90PPSuffixes,
+                    support_module = 1)
 
 def generate(env):
     fortran.add_to_env(env)
