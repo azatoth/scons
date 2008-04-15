@@ -156,7 +156,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(F95 = %(fc)s)
+foo = Environment(F95 = '%(fc)s')
 f95 = foo.Dictionary('F95')
 bar = foo.Clone(F95 = r'%(_python_)s wrapper.py ' + f95)
 foo.Program(target = 'foo', source = 'foo.f')
