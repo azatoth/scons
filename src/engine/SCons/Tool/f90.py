@@ -40,7 +40,8 @@ import SCons.Util
 import fortran
 from SCons.Tool.FortranCommon import FortranEmitter, ShFortranEmitter, \
                                      ComputeFortranSuffixes,\
-                                     CreateDialectGenerator
+                                     CreateDialectGenerator, \
+                                     CreateDialectActions
 
 compilers = ['f90']
 
@@ -63,10 +64,7 @@ ShF90ComStrGen, ShF90PPComGen, ShF90PPComStrGen = \
     CreateDialectGenerator("F90", "FORTRAN", "_F90D")
 
 #
-F90Action = SCons.Action.Action('$_F90COMG ', '$_F90COMSTRG')
-F90PPAction = SCons.Action.Action('$_F90PPCOMG ', '$_F90PPCOMSTRG')
-ShF90Action = SCons.Action.Action('$_SHF90COMG ', '$_SHF90COMSTRG')
-ShF90PPAction = SCons.Action.Action('$_SHF90PPCOMG ', '$_SHF90PPCOMSTRG')
+F90Action, F90PPAction, ShF90Action, ShF90PPAction = CreateDialectActions("F90")
 
 def add_to_env(env):
     """Add Builders and construction variables for f90 to an Environment."""
