@@ -57,17 +57,16 @@ def add_to_env(env):
                     support_module = 1)
 
 def generate(env):
+    import fortran
     fortran.add_to_env(env)
 
-    import f77
-    f77.add_to_env(env)
+    fcomp = env.Detect(compilers) or 'f95'
+    env['F77']  = fcomp
+    env['SHF77']  = fcomp
 
-    import f90
-    f90.add_to_env(env)
+    env['FORTRAN']  = fcomp
+    env['SHFORTRAN']  = fcomp
 
-    add_to_env(env)
-
-    env['_FORTRAND']        = env.Detect(compilers) or 'f95'
 
 def exists(env):
     return env.Detect(compilers)

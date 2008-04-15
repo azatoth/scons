@@ -49,7 +49,7 @@ def smart_link(source, target, env, for_signature):
         raise SCons.Errors.InternalError(
                 "Sorry, scons cannot yet link c++ and fortran code together.")
     elif has_fortran:
-        return '$_FORTRANG'
+        return '$FORTRAN'
     elif has_cplusplus:
         return '$CXX'
     return '$CC'

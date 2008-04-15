@@ -57,16 +57,17 @@ def add_to_env(env):
     DialectAddToEnv(env, "F77", "FORTRAN", "_FORTRAND", F77Suffixes, F77PPSuffixes)
 
 def generate(env):
+    import fortran
     fortran.add_to_env(env)
-
-    import f90
-    import f95
-    f90.add_to_env(env)
-    f95.add_to_env(env)
 
     add_to_env(env)
 
-    env['_FORTRAND']        = env.Detect(compilers) or 'f77'
+    fcomp = env.Detect(compilers) or 'f77'
+    env['F77']  = fcomp
+    env['SHF77']  = fcomp
+
+    env['FORTRAN']  = fcomp
+    env['SHFORTRAN']  = fcomp
 
 def exists(env):
     return env.Detect(compilers)

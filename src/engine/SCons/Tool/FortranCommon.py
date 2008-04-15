@@ -99,48 +99,12 @@ def ComputeFortranSuffixes(suffixes, ppsuffixes):
         for i in suffixes:
             suffixes.append(string.upper(i))
 
-class VariableListGenerator:
-    def __init__(self, *variablelist):
-        self.variablelist = variablelist
-    def __call__(self, env, target, source, for_signature=0):
-        for v in self.variablelist:
-            try: return env[v]
-            except KeyError: pass
-        return ''
-
-def CreateDialectGenerator(dialect, fallback, default):
-    """Create the generator variable for a given fortran dialect, fallback and
-    default.
-    
-    All arguments should be upper case strings: F77, FORTRAN, _FORTRAND,
-    etc..."""
-    # This is ugly, but this code should not stay long anyway. It will make
-    # changing fortran tools easier, because everything is in one place.
-    fVLG = VariableListGenerator
-
-    CompGen = fVLG(dialect, fallback, default)
-    FlagsGen = fVLG('%sFLAGS' % dialect, '%sFLAGS' % fallback)
-    ComGen = fVLG('%sCOM' % dialect, '%sCOM' % fallback, '_%sCOMD' % dialect)
-    ComStrGen = fVLG('%sCOMSTR' % dialect, '%sCOMSTR' % fallback, '_%sCOMSTRD' % dialect)
-    PPComGen = fVLG('%sPPCOM' % dialect, '%sPPCOM' % fallback, '_%sPPCOMD' % dialect)
-    PPComStrGen = fVLG('%sPPCOMSTR' % dialect, '%sPPCOMSTR' % fallback, '_%sPPCOMSTRD' % dialect)
-    ShCompGen = fVLG('SH%s' % dialect, 'SH%s' % fallback, '%s' % dialect, '%s' % fallback, '_FORTRAND')
-    ShFlagsGen = fVLG('SH%sFLAGS' % dialect, 'SH%sFLAGS' % fallback)
-    ShComGen = fVLG('SH%sCOM' % dialect, 'SH%sCOM' % fallback, '_SH%sCOMD' % dialect)
-    ShComStrGen = fVLG('SH%sCOMSTR' % dialect, 'SH%sCOMSTR' % fallback, '_SH%sCOMSTRD' % dialect)
-    ShPPComGen = fVLG('SH%sPPCOM' % dialect, 'SH%sPPCOM' % fallback, '_SH%sPPCOMD' % dialect)
-    ShPPComStrGen = fVLG('SH%sPPCOMSTR' % dialect, 'SH%sPPCOMSTR' % fallback, '_SH%sPPCOMSTRD' % dialect)
-
-    return CompGen, FlagsGen, ComGen, ComStrGen, PPComGen, PPComStrGen, \
-           ShCompGen, ShFlagsGen, ShComGen, ShComStrGen, ShPPComGen, \
-           ShPPComStrGen
-
 def CreateDialectActions(dialect):
     """Create dialect specific actions."""
-    CompAction = SCons.Action.Action('$_%sCOMG ' % dialect, '$_%sCOMSTRG' % dialect)
-    CompPPAction = SCons.Action.Action('$_%sPPCOMG ' % dialect, '$_%sPPCOMSTRG' % dialect)
-    ShCompAction = SCons.Action.Action('$_SH%sCOMG ' % dialect, '$_SH%sCOMSTRG' % dialect)
-    ShCompPPAction = SCons.Action.Action('$_SH%sPPCOMG ' % dialect, '$_SH%sPPCOMSTRG' % dialect)
+    CompAction = SCons.Action.Action('$%sCOM ' % dialect, '$%sCOMSTR' % dialect)
+    CompPPAction = SCons.Action.Action('$%sPPCOM ' % dialect, '$%sPPCOMSTR' % dialect)
+    ShCompAction = SCons.Action.Action('$SH%sCOM ' % dialect, '$SH%sCOMSTR' % dialect)
+    ShCompPPAction = SCons.Action.Action('$SH%sPPCOM ' % dialect, '$SH%sPPCOMSTR' % dialect)
 
     return CompAction, CompPPAction, ShCompAction, ShCompPPAction
 
@@ -173,34 +137,21 @@ def DialectAddToEnv(env, dialect, fallback, default, suffixes, ppsuffixes,
         static_obj.add_emitter(suffix, FortranEmitter)
         shared_obj.add_emitter(suffix, ShFortranEmitter)
 
-    compg, flagsg, comg, comstrg, ppcomg, ppcomstrg, shcompg, shflagsg, \
-    shcomg, shcomstrg, shppcomg, shppcomstrg = CreateDialectGenerator(dialect, 
-                                                                      fallback, 
-                                                                      default)
+    if not env.has_key('%sFLAGS' % dialect):
+        env['%sFLAGS' % dialect] = SCons.Util.CLVar('')
 
-    env['_%sG' % dialect]            = compg
-    env['_%sFLAGSG' % dialect]       = flagsg
-    env['_%sCOMG' % dialect]         = comg
-    env['_%sPPCOMG' % dialect]       = ppcomg
-    env['_%sCOMSTRG' % dialect]      = comstrg
-    env['_%sPPCOMSTRG' % dialect]    = ppcomstrg
-
-    env['_SH%sG' % dialect]          = shcompg
-    env['_SH%sFLAGSG' % dialect]     = shflagsg
-    env['_SH%sCOMG' % dialect]       = shcomg
-    env['_SH%sPPCOMG' % dialect]     = shppcomg
-    env['_SH%sCOMSTRG' % dialect]    = shcomstrg
-    env['_SH%sPPCOMSTRG' % dialect]  = shppcomstrg
+    if not env.has_key('SH%sFLAGS' % dialect):
+        env['SH%sFLAGS' % dialect] = SCons.Util.CLVar('$%sFLAGS' % dialect)
 
     env['_%sINCFLAGS' % dialect] = '$( ${_concat(INCPREFIX, %sPATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)' % dialect
 
     if support_module == 1:
-        env['_%sCOMD' % dialect]     = '$_%sG -o $TARGET -c $_%sFLAGSG $_%sINCFLAGS $_FORTRANMODFLAG $SOURCES' % (dialect, dialect, dialect)
-        env['_%sPPCOMD' % dialect]   = '$_%sG -o $TARGET -c $_%sFLAGSG $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $_FORTRANMODFLAG $SOURCES' % (dialect, dialect, dialect)
-        env['_SH%sCOMD' % dialect]   = '$_SH%sG -o $TARGET -c $_SH%sFLAGSG $_%sINCFLAGS $_FORTRANMODFLAG $SOURCES' % (dialect, dialect, dialect)
-        env['_SH%sPPCOMD' % dialect] = '$_SH%sG -o $TARGET -c $_SH%sFLAGSG $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $_FORTRANMODFLAG $SOURCES' % (dialect, dialect, dialect)
+        env['%sCOM' % dialect]     = '$%s -o $TARGET -c $%sFLAGS $_%sINCFLAGS $_FORTRANMODFLAG $SOURCES' % (dialect, dialect, dialect)
+        env['%sPPCOM' % dialect]   = '$%s -o $TARGET -c $%sFLAGS $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $_FORTRANMODFLAG $SOURCES' % (dialect, dialect, dialect)
+        env['SH%sCOM' % dialect]    = '$SH%s -o $TARGET -c $SH%sFLAGS $_%sINCFLAGS $_FORTRANMODFLAG $SOURCES' % (dialect, dialect, dialect)
+        env['SH%sPPCOM' % dialect]  = '$SH%s -o $TARGET -c $SH%sFLAGS $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $_FORTRANMODFLAG $SOURCES' % (dialect, dialect, dialect)
     else:
-        env['_%sCOMD' % dialect]     = '$_%sG -o $TARGET -c $_%sFLAGSG $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
-        env['_%sPPCOMD' % dialect]   = '$_%sG -o $TARGET -c $_%sFLAGSG $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
-        env['_SH%sCOMD' % dialect]   = '$_SH%sG -o $TARGET -c $_SH%sFLAGSG $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
-        env['_SH%sPPCOMD' % dialect] = '$_SH%sG -o $TARGET -c $_SH%sFLAGSG $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
+        env['%sCOM' % dialect]     = '$%s -o $TARGET -c $%sFLAGS $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
+        env['%sPPCOM' % dialect]   = '$%s -o $TARGET -c $%sFLAGS $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
+        env['SH%sCOM' % dialect]    = '$SH%s -o $TARGET -c $SH%sFLAGS $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)
+        env['SH%sPPCOM' % dialect]  = '$SH%s -o $TARGET -c $SH%sFLAGS $CPPFLAGS $_CPPDEFFLAGS $_%sINCFLAGS $SOURCES' % (dialect, dialect, dialect)

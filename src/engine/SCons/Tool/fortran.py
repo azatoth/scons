@@ -76,16 +76,9 @@ def add_to_env(env):
     env['_FORTRANMODFLAG'] = '$( ${_concat(FORTRANMODDIRPREFIX, FORTRANMODDIR, FORTRANMODDIRSUFFIX, __env__, RDirs)} $)'
 
 def generate(env):
-    import f77
-    import f90
-    import f95
-    f77.add_to_env(env)
-    f90.add_to_env(env)
-    f95.add_to_env(env)
-
     add_to_env(env)
 
-    env['_FORTRAND'] = env.Detect(compilers) or 'f77'
+    #env['FORTRAN'] = env.Detect(compilers) or 'f77'
 
 def exists(env):
     return env.Detect(compilers)
