@@ -75,7 +75,6 @@ sys.exit(0)
 test.write('SConstruct', """\
 env = Environment(FORTRANMODDIRPREFIX = '-M',
                   FORTRANMODDIR = 'modules',
-                  F90 = r'%(_python_)s myfortran.py f90',
                   FORTRAN = r'%(_python_)s myfortran.py fortran',
                   AR = 'myar.py',
                   ARCOM = r'%(_python_)s $AR $TARGET $SOURCES',
@@ -89,13 +88,13 @@ test.write(['subdir', 'SConscript'], """\
 Import('env')
 
 env['FORTRANMODDIR'] = 'build'
-sources = ['src/modfile.f90']
+sources = ['src/modfile.f']
 objs = env.Object(sources)
 Return("objs")
 """)
 
-test.write(['subdir', 'src', 'modfile.f90'], """\
-#f90 comment
+test.write(['subdir', 'src', 'modfile.f'], """\
+#fortran comment
 module somemodule
 
 integer :: nothing

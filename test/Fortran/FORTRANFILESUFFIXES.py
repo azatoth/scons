@@ -57,7 +57,6 @@ sys.exit(0)
 test.write('SConstruct', """
 env = Environment(LINK = r'%(_python_)s mylink.py',
                   LINKFLAGS = [],
-                  F77 = r'%(_python_)s myfortran.py g77',
                   FORTRAN = r'%(_python_)s myfortran.py fortran')
 env.Program(target = 'test01', source = 'test01.f')
 env.Program(target = 'test02', source = 'test02.F')
@@ -67,8 +66,6 @@ env.Program(target = 'test05', source = 'test05.ftn')
 env.Program(target = 'test06', source = 'test06.FTN')
 env.Program(target = 'test07', source = 'test07.fpp')
 env.Program(target = 'test08', source = 'test08.FPP')
-env.Program(target = 'test09', source = 'test09.f77')
-env.Program(target = 'test10', source = 'test10.F77')
 """ % locals())
 
 test.write('test01.f',   "This is a .f file.\n#link\n#fortran\n")
@@ -79,8 +76,6 @@ test.write('test05.ftn', "This is a .ftn file.\n#link\n#fortran\n")
 test.write('test06.FTN', "This is a .FTN file.\n#link\n#fortran\n")
 test.write('test07.fpp', "This is a .fpp file.\n#link\n#fortran\n")
 test.write('test08.FPP', "This is a .FPP file.\n#link\n#fortran\n")
-test.write('test09.f77', "This is a .f77 file.\n#link\n#g77\n")
-test.write('test10.F77', "This is a .F77 file.\n#link\n#g77\n")
 
 test.run(arguments = '.', stderr = None)
 
@@ -92,7 +87,5 @@ test.must_match('test05' + _exe, "This is a .ftn file.\n")
 test.must_match('test06' + _exe, "This is a .FTN file.\n")
 test.must_match('test07' + _exe, "This is a .fpp file.\n")
 test.must_match('test08' + _exe, "This is a .FPP file.\n")
-test.must_match('test09' + _exe, "This is a .f77 file.\n")
-test.must_match('test10' + _exe, "This is a .F77 file.\n")
 
 test.pass_test()
