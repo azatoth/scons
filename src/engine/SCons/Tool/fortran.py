@@ -51,11 +51,19 @@ compilers = ['f95', 'f90', 'f77']
 #  rely on the c pre-processor, some (like cvf, ivf) have their own
 #  pre-processor technology and use intermediary suffixes (.i90)
 #
-FortranSuffixes = [".f", ".for", ".ftn", ]
-FortranPPSuffixes = ['.fpp', '.FPP']
 
 def add_to_env(env):
     """Add Builders and construction variables for Fortran to an Environment."""
+    try:
+        FortranSuffixes = env['FORTRANFILESUFFIXES']
+    except KeyError:
+        FortranSuffixes = ['.f', '.for', '.ftn']
+
+    try:
+        FortranPPSuffixes = env['FORTRANPPFILESUFFIXES']
+    except KeyError:
+        FortranPPSuffixes = ['.fpp', '.FPP']
+
     DialectAddToEnv(env, "FORTRAN", "F77", "_FORTRAND", FortranSuffixes,
                     FortranPPSuffixes, support_module = 1)
 
