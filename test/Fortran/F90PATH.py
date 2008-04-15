@@ -40,24 +40,9 @@ args = prog + ' ' + subdir_prog + ' ' + variant_prog
 
 test = TestSCons.TestSCons()
 
-baselist = [
-    '/opt/intel_fc_80',
-    '/opt/intel/fc/9.0',
-]
-
-F90 = None
-for base in baselist:
-    ifort = os.path.join(base, 'bin', 'ifort')
-    if os.path.exists(ifort):
-        F90 = ifort
-
-if not F90:
-    l = string.join(baselist, '\n\t')
-    test.skip_test('No (hard-coded) F90 compiler under:' + l + '\n')
-
-LIBPATH = os.path.join(base, 'lib')
-LIBS = ['irc']
-os.environ['LD_LIBRARY_PATH'] = LIBPATH
+fc = 'f90'
+if not test.detect_tool(fc):
+    test.skip_test('Could not find a f90 tool; skipping test.\n')
     
 test.subdir('include',
             'subdir',

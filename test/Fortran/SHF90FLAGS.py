@@ -116,10 +116,8 @@ test.must_match('test12' + _obj, " -c -x\nThis is a .F90 file.\n")
 test.must_match('test13' + _obj, " -c -y\nThis is a .f95 file.\n")
 test.must_match('test14' + _obj, " -c -y\nThis is a .F95 file.\n")
 
-
-
-g90 = test.detect('F90', 'g90')
-FTN_LIB = TestSCons.fortran_lib
+fc = 'f90'
+g90 = test.detect_tool(fc)
 
 if g90:
 
@@ -132,7 +130,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(LIBS = %(FTN_LIB)s)
+foo = Environment(SHF90 = %(fc)s)
 shf90 = foo.Dictionary('SHF90')
 bar = foo.Clone(SHF90 = r'%(_python_)s wrapper.py ' + shf90, SHF90FLAGS = '-Ix')
 foo.SharedLibrary(target = 'foo/foo', source = 'foo.f')

@@ -147,8 +147,8 @@ test.must_match('test14' + _exe, " -c -y\nThis is a .F95 file.\n")
 
 
 
-g90 = test.detect('F90', 'g90')
-FTN_LIB = TestSCons.fortran_lib
+fc = 'f90'
+g90 = test.detect_tool(fc)
 
 if g90:
 
@@ -161,7 +161,7 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(LIBS = %(FTN_LIB)s)
+foo = Environment(F90 = %(fc)s)
 f90 = foo.Dictionary('F90')
 bar = foo.Clone(F90 = r'%(_python_)s wrapper.py ' + f90, F90FLAGS = '-Ix')
 foo.Program(target = 'foo', source = 'foo.f')
