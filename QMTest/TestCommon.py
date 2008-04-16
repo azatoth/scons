@@ -142,6 +142,15 @@ elif string.find(sys.platform, 'darwin') != -1:
     lib_suffix   = '.a'
     dll_prefix   = 'lib'
     dll_suffix   = '.dylib'
+elif string.find(sys.platform, 'sunos') != -1:
+    exe_suffix   = ''
+    obj_suffix   = '.o'
+    shobj_suffix = '.os'
+    shobj_prefix = 'so_'
+    lib_prefix   = 'lib'
+    lib_suffix   = '.a'
+    dll_prefix   = 'lib'
+    dll_suffix   = '.dylib'
 else:
     exe_suffix   = ''
     obj_suffix   = '.o'

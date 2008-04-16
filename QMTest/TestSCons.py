@@ -84,6 +84,7 @@ _python_ = '"' + python_executable + '"'
 _exe = exe_suffix
 _obj = obj_suffix
 _shobj = shobj_suffix
+shobj_ = shobj_prefix
 _lib = lib_suffix
 lib_ = lib_prefix
 _dll = dll_suffix
