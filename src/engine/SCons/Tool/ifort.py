@@ -71,9 +71,10 @@ def generate(env):
         # On Windows, the ifort compiler specifies the object on the
         # command line with -object:, not -o.  Massage the necessary
         # command-line construction variables.
-        for var in ['FORTRANCOM', 'FORTRANPPCOM',
-                    'SHFORTRANCOM', 'SHFORTRANPPCOM']:
-            env[var] = string.replace(env[var], '-o $TARGET', '-object:$TARGET')
+        for dialect in ['F77', 'F90', 'FORTRAN', 'F95']:
+            for var in ['%sCOM' % dialect, '%sPPCOM' % dialect,
+                        'SH%sCOM' % dialect, 'SH%sPPCOM' % dialect]:
+                env[var] = string.replace(env[var], '-o $TARGET', '-object:$TARGET')
 
 def exists(env):
     return env.Detect('ifort')
