@@ -303,7 +303,7 @@ test.up_to_date(arguments = args)
 
 # Check that a null-string F77PATH doesn't blow up.
 test.write('SConstruct', """
-env = Environment(F77PATH = '', LIBS = %s, F77FLAGS = '-x f77')
+env = Environment(tools = ['f77'], F77PATH = '', LIBS = %s, F77FLAGS = '-x f77')
 env.Object('foo', source = 'empty.f77')
 """ % FTN_LIB)
 
