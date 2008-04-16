@@ -51,5 +51,7 @@ def generate(env):
         else:
             env['SH%sFLAGS' % dialect] = SCons.Util.CLVar('$%sFLAGS -fPIC' % dialect)
 
+        env['INC%sPREFIX' % dialect] = "-I"
+        env['INC%sSUFFIX' % dialect] = ""
 def exists(env):
     return env.Detect('gfortran')

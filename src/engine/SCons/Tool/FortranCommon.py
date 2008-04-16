@@ -142,7 +142,14 @@ def DialectAddToEnv(env, dialect, suffixes, ppsuffixes, support_module = 0):
     if not env.has_key('SH%sFLAGS' % dialect):
         env['SH%sFLAGS' % dialect] = SCons.Util.CLVar('$%sFLAGS' % dialect)
 
-    env['_%sINCFLAGS' % dialect] = '$( ${_concat(INCPREFIX, %sPATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)' % dialect
+    # If a tool does not define fortran prefix/suffix for include path, use C ones
+    if not env.has_key('INC%sPREFIX' % dialect):
+        env['INC%sPREFIX' % dialect] = '$INCPREFIX'
+
+    if not env.has_key('INC%sSUFFIX' % dialect):
+        env['INC%sSUFFIX' % dialect] = '$INCSUFFIX'
+
+    env['_%sINCFLAGS' % dialect] = '$( ${_concat(INC%sPREFIX, %sPATH, INC%sSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)' % (dialect, dialect, dialect)
 
     if support_module == 1:
         env['%sCOM' % dialect]     = '$%s -o $TARGET -c $%sFLAGS $_%sINCFLAGS $_FORTRANMODFLAG $SOURCES' % (dialect, dialect, dialect)

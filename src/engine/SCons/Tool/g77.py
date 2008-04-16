@@ -57,5 +57,11 @@ def generate(env):
     env['F77'] = fcomp
     env['SHF77'] = fcomp
 
+    env['INCFORTRANPREFIX'] = "-I"
+    env['INCFORTRANSUFFIX'] = ""
+
+    env['INCF77PREFIX'] = "-I"
+    env['INCF77SUFFIX'] = ""
+
 def exists(env):
     return env.Detect(compilers)
