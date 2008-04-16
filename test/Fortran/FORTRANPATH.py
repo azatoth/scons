@@ -114,8 +114,12 @@ r"""
 """)
 
 
-
-test.run(arguments = args)
+import sys
+if sys.platform[:5] == 'sunos':
+    # Sun f77 always put some junk in stderr
+    test.run(arguments = args, stderr = None)
+else:
+    test.run(arguments = args)
 
 test.run(program = test.workpath(prog),
          stdout = """\
@@ -157,7 +161,11 @@ r"""
       INCLUDE 'bar.f'
 """)
 
-test.run(arguments = args)
+if sys.platform[:5] == 'sunos':
+    # Sun f77 always put some junk in stderr
+    test.run(arguments = args, stderr = None)
+else:
+    test.run(arguments = args)
 
 test.run(program = test.workpath(prog),
          stdout = """\
@@ -199,7 +207,12 @@ r"""
       PRINT *, 'include/bar.f 2'
 """)
 
-test.run(arguments = args)
+if sys.platform[:5] == 'sunos':
+    # Sun f77 always put some junk in stderr
+    test.run(arguments = args, stderr = None)
+else:
+    test.run(arguments = args)
+
 
 test.run(program = test.workpath(prog),
          stdout = """\
@@ -238,8 +251,7 @@ test.up_to_date(arguments = args)
 # Change FORTRANPATH and make sure we don't rebuild because of it.
 test.write('SConstruct', """
 env = Environment(FORTRAN = '%s',
-                  FORTRANPATH = Split('inc2 include ${TARGET.dir} ${SOURCE.dir}'),
-                  LIBS = %s)
+                  FORTRANPATH = Split('inc2 include ${TARGET.dir} ${SOURCE.dir}'))
 obj = env.Object(target='foobar/prog', source='subdir/prog.f')
 env.Program(target='prog', source=obj)
 SConscript('subdir/SConscript', "env")
@@ -262,7 +274,12 @@ r"""
       INCLUDE 'bar.f'
 """)
 
-test.run(arguments = args)
+if sys.platform[:5] == 'sunos':
+    # Sun f77 always put some junk in stderr
+    test.run(arguments = args, stderr = None)
+else:
+    test.run(arguments = args)
+
 
 test.run(program = test.workpath(prog),
          stdout = """\
@@ -297,14 +314,16 @@ test.up_to_date(arguments = args)
 
 # Check that a null-string FORTRANPATH doesn't blow up.
 test.write('SConstruct', """
-env = Environment(FORTRANPATH = '', LIBS = %s)
+env = Environment(FORTRANPATH = '')
 env.Object('foo', source = 'empty.f')
-""" % FTN_LIB)
+""")
 
 test.write('empty.f', '')
 
-test.run(arguments = '.')
-
-
+if sys.platform[:5] == 'sunos':
+    # Sun f77 always put some junk in stderr
+    test.run(arguments = '.', stderr = None)
+else:
+    test.run(arguments = '.')
 
 test.pass_test()
