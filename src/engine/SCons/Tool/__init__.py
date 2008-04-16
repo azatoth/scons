@@ -604,7 +604,7 @@ def tool_list(platform, env):
         c_compilers = ['gcc', 'cc']
         cxx_compilers = ['g++', 'c++']
         assemblers = ['as']
-        fortran_compilers = ['f95', 'f90', 'g77']
+        fortran_compilers = ['gfortran', 'f95', 'f90', 'g77']
         ars = ['ar']
     else:
         "prefer GNU tools on all other platforms"
