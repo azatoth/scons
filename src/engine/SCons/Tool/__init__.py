@@ -579,7 +579,8 @@ def tool_list(platform, env):
         c_compilers = ['suncc', 'gcc', 'cc']
         cxx_compilers = ['sunc++', 'g++', 'c++']
         assemblers = ['as', 'gas']
-        fortran_compilers = ['f95', 'f90', 'f77', 'g77', 'fortran']
+        fortran_compilers = ['sunf95', 'sunf90', 'sunf77', 'f95', 'f90', 'f77',
+                             'gfortran', 'g77', 'fortran']
         ars = ['sunar']
     elif str(platform) == 'hpux':
         "prefer aCC tools on HP-UX"
