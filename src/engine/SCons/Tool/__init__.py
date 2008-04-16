@@ -555,7 +555,7 @@ def tool_list(platform, env):
         c_compilers = ['msvc', 'mingw', 'gcc', 'intelc', 'icl', 'icc', 'cc', 'bcc32' ]
         cxx_compilers = ['msvc', 'intelc', 'icc', 'g++', 'c++', 'bcc32' ]
         assemblers = ['masm', 'nasm', 'gas', '386asm' ]
-        fortran_compilers = ['g77', 'ifl', 'cvf', 'f95', 'f90', 'fortran']
+        fortran_compilers = ['gfortran', 'g77', 'ifl', 'cvf', 'f95', 'f90', 'fortran']
         ars = ['mslib', 'ar', 'tlib']
     elif str(platform) == 'os2':
         "prefer IBM tools on OS/2"
