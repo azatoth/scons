@@ -43,20 +43,13 @@ def generate(env):
     Environment."""
     fortran.generate(env)
 
-    # which one is the good one ? ifort uses _FORTRAND, ifl FORTRAN,
-    # aixf77 F77 ...
-    #env['_FORTRAND'] = 'gfortran'
-    env['FORTRAN'] = 'gfortran'
-
-    # XXX does this need to be set too ?
-    #env['SHFORTRAN'] = 'gfortran'
-
-    if env['PLATFORM'] in ['cygwin', 'win32']:
-        env['SHFORTRANFLAGS'] = SCons.Util.CLVar('$FORTRANFLAGS')
-    else:
-        env['SHFORTRANFLAGS'] = SCons.Util.CLVar('$FORTRANFLAGS -fPIC')
-
-    # XXX; Link problems: we need to add -lgfortran somewhere...
+    for dialect in ['F77', 'F90', 'FORTRAN', 'F95']:
+        env['%s' % dialect] = 'gfortran'
+        env['SH%s' % dialect] = 'gfortran'
+        if env['PLATFORM'] in ['cygwin', 'win32']:
+            env['SH%sFLAGS' % dialect] = SCons.Util.CLVar('$%sFLAGS' % dialect)
+        else:
+            env['SH%sFLAGS' % dialect] = SCons.Util.CLVar('$%sFLAGS -fPIC' % dialect)
 
 def exists(env):
     return env.Detect('gfortran')
