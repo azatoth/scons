@@ -40,8 +40,7 @@ from FortranCommon import add_all_to_env
 compilers = ['sunf77']
 
 def generate(env):
-    """Add Builders and construction variables for gfortran to an
-    Environment."""
+    """Add Builders and construction variables for sunf77 to an Environment."""
     add_all_to_env(env)
 
     fcomp = env.Detect(compilers) or 'f77'
