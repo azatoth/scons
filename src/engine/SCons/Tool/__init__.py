@@ -611,7 +611,7 @@ def tool_list(platform, env):
         c_compilers = ['gcc', 'msvc', 'intelc', 'icc', 'cc']
         cxx_compilers = ['g++', 'msvc', 'intelc', 'icc', 'c++']
         assemblers = ['gas', 'nasm', 'masm']
-        fortran_compilers = ['f95', 'f90', 'g77', 'ifort', 'ifl', 'fortran']
+        fortran_compilers = ['gfortran', 'g77', 'ifort', 'ifl', 'f95', 'f90', 'f77']
         ars = ['ar', 'mslib']
 
     c_compiler = FindTool(c_compilers, env) or c_compilers[0]
