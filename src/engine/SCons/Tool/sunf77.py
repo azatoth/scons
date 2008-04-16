@@ -50,8 +50,8 @@ def generate(env):
     env['SHFORTRAN']  = fcomp
     env['SHF77']      = fcomp
 
-    env['SHFORTRANFLAGS'] = SCons.Util.CLVar('$FORTRANFLAGS -fKPIC')
-    env['SHF77FLAGS'] = SCons.Util.CLVar('$F77FLAGS -fKPIC')
+    env['SHFORTRANFLAGS'] = SCons.Util.CLVar('$FORTRANFLAGS -KPIC')
+    env['SHF77FLAGS'] = SCons.Util.CLVar('$F77FLAGS -KPIC')
 
 def exists(env):
     return env.Detect('sunf77') or 'f77'
