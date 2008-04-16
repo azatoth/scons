@@ -59,7 +59,8 @@ env = Environment(LINK = r'%(_python_)s mylink.py',
                   LINKFLAGS = [],
                   F77 = r'%(_python_)s myfortran.py f77',
                   F95 = r'%(_python_)s myfortran.py f95',
-                  F95FILESUFFIXES = ['.f', '.F', '.f95', '.F95'])
+                  F95FILESUFFIXES = ['.f', '.F', '.f95', '.F95'],
+                  tools = ['default', 'f95'])
 env.Program(target = 'test01', source = 'test01.f')
 env.Program(target = 'test02', source = 'test02.F')
 env.Program(target = 'test03', source = 'test03.f95')
