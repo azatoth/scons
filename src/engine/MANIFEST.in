@@ -150,6 +150,9 @@ SCons/Tool/Subversion.py
 SCons/Tool/sunar.py
 SCons/Tool/sunc++.py
 SCons/Tool/suncc.py
+SCons/Tool/sunf77.py
+SCons/Tool/sunf90.py
+SCons/Tool/sunf95.py
 SCons/Tool/sunlink.py
 SCons/Tool/swig.py
 SCons/Tool/tar.py
