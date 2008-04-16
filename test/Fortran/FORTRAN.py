@@ -131,7 +131,11 @@ bar.Program(target = 'bar', source = 'bar.f')
 
     test.must_not_exist('wrapper.out')
 
-    test.run(arguments = 'bar' + _exe)
+    import sys
+    if sys.platform[:5] == 'sunos':
+        test.run(arguments = 'bar' + _exe, stderr = None)
+    else:
+        test.run(arguments = 'bar' + _exe)
 
     test.run(program = test.workpath('bar'), stdout =  " bar.f\n")
 
