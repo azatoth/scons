@@ -57,6 +57,8 @@ RELEASE X.XX - XXX
   - When compiling C++ files, allow $CCFLAGS settings to show up on the
     command line even when $CXXFLAGS has been redefined.
 
+  - Fix --interactive with -u/-U/-D when a VariantDir() is used.
+
   From Anatoly Techtonik:
 
   - Have the scons.bat file add the script execution directory to its
