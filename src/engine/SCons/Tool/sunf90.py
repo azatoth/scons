@@ -37,7 +37,7 @@ import SCons.Util
 
 from FortranCommon import add_all_to_env
 
-compilers = ['sunf90']
+compilers = ['sunf90', 'f90']
 
 def generate(env):
     """Add Builders and construction variables for sun f90 compiler to an
@@ -55,4 +55,4 @@ def generate(env):
     env['SHF90FLAGS'] = SCons.Util.CLVar('$F90FLAGS -KPIC')
 
 def exists(env):
-    return env.Detect('sunf90')
+    return env.Detect(compilers)

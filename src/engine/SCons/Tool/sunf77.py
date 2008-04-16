@@ -37,7 +37,7 @@ import SCons.Util
 
 from FortranCommon import add_all_to_env
 
-compilers = ['sunf77']
+compilers = ['sunf77', 'f77']
 
 def generate(env):
     """Add Builders and construction variables for sunf77 to an Environment."""
@@ -54,4 +54,4 @@ def generate(env):
     env['SHF77FLAGS'] = SCons.Util.CLVar('$F77FLAGS -KPIC')
 
 def exists(env):
-    return env.Detect('sunf77') or 'f77'
+    return env.Detect(compilers)
