@@ -29,7 +29,6 @@ import sys
 import TestSCons
 
 _exe = TestSCons._exe
-FTN_LIB = TestSCons.fortran_lib
 prog = 'prog' + _exe
 subdir_prog = os.path.join('subdir', 'prog' + _exe)
 variant_prog = os.path.join('variant', 'prog' + _exe)
@@ -53,7 +52,7 @@ test.subdir('include',
 test.write('SConstruct', """
 env = Environment(FORTRAN = '%s',
                   FORTRANPATH = ['$FOO', '${TARGET.dir}', '${SOURCE.dir}'],
-                  LIBS = %s, FOO='include')
+                  FOO='include')
 obj = env.Object(target='foobar/prog', source='subdir/prog.f')
 env.Program(target='prog', source=obj)
 SConscript('subdir/SConscript', "env")
@@ -61,10 +60,9 @@ SConscript('subdir/SConscript', "env")
 VariantDir('variant', 'subdir', 0)
 include = Dir('include')
 env = Environment(FORTRAN = '%s',
-                  FORTRANPATH=[include, '#foobar', '#subdir'],
-                  LIBS = %s)
+                  FORTRANPATH=[include, '#foobar', '#subdir'])
 SConscript('variant/SConscript', "env")
-""" % (fc, FTN_LIB, fc, FTN_LIB))
+""" % (fc, fc))
 
 test.write(['subdir', 'SConscript'],
 """
@@ -249,10 +247,9 @@ SConscript('subdir/SConscript', "env")
 VariantDir('variant', 'subdir', 0)
 include = Dir('include')
 env = Environment(FORTRAN = '%s',
-                  FORTRANPATH=['inc2', include, '#foobar', '#subdir'],
-                  LIBS = %s)
+                  FORTRANPATH=['inc2', include, '#foobar', '#subdir'])
 SConscript('variant/SConscript', "env")
-""" % (fc, FTN_LIB, fc, FTN_LIB))
+""" % (fc, fc))
 
 test.up_to_date(arguments = args)
 
