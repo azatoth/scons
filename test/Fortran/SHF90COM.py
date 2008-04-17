@@ -31,6 +31,7 @@ import TestSCons
 
 _python_ = TestSCons._python_
 _obj   = TestSCons._shobj
+obj_   = TestSCons.shobj_
 
 test = TestSCons.TestSCons()
 
@@ -86,16 +87,16 @@ test.write('test22.F90', "This is a .F90 file.\n#f90pp\n")
 
 test.run(arguments = '.', stderr = None)
 
-test.must_match('test01' + _obj, "This is a .f file.\n")
-test.must_match('test02' + _obj, "This is a .F file.\n")
-test.must_match('test03' + _obj, "This is a .for file.\n")
-test.must_match('test04' + _obj, "This is a .FOR file.\n")
-test.must_match('test05' + _obj, "This is a .ftn file.\n")
-test.must_match('test06' + _obj, "This is a .FTN file.\n")
-test.must_match('test07' + _obj, "This is a .fpp file.\n")
-test.must_match('test08' + _obj, "This is a .FPP file.\n")
-test.must_match('test11' + _obj, "This is a .f90 file.\n")
-test.must_match('test12' + _obj, "This is a .F90 file.\n")
+test.must_match(obj_ + 'test01' + _obj, "This is a .f file.\n")
+test.must_match(obj_ + 'test02' + _obj, "This is a .F file.\n")
+test.must_match(obj_ + 'test03' + _obj, "This is a .for file.\n")
+test.must_match(obj_ + 'test04' + _obj, "This is a .FOR file.\n")
+test.must_match(obj_ + 'test05' + _obj, "This is a .ftn file.\n")
+test.must_match(obj_ + 'test06' + _obj, "This is a .FTN file.\n")
+test.must_match(obj_ + 'test07' + _obj, "This is a .fpp file.\n")
+test.must_match(obj_ + 'test08' + _obj, "This is a .FPP file.\n")
+test.must_match(obj_ + 'test11' + _obj, "This is a .f90 file.\n")
+test.must_match(obj_ + 'test12' + _obj, "This is a .F90 file.\n")
 
 test.must_match('test21' + _obj, "This is a .f90 file.\n")
 test.must_match('test22' + _obj, "This is a .F90 file.\n")

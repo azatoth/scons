@@ -31,6 +31,7 @@ import TestSCons
 
 _python_ = TestSCons._python_
 _obj   = TestSCons._shobj
+obj_   = TestSCons.shobj_
 
 test = TestSCons.TestSCons()
 
@@ -68,16 +69,16 @@ env.SharedObject(target = 'test09', source = 'test09.f77')
 env.SharedObject(target = 'test10', source = 'test10.F77')
 """ % locals())
 
-test.write('test01.f',   "This is a .f file.\n#fortran\n")
-test.write('test02.F',   "This is a .F file.\n#fortran\n")
-test.write('test03.for', "This is a .for file.\n#fortran\n")
-test.write('test04.FOR', "This is a .FOR file.\n#fortran\n")
-test.write('test05.ftn', "This is a .ftn file.\n#fortran\n")
-test.write('test06.FTN', "This is a .FTN file.\n#fortran\n")
-test.write('test07.fpp', "This is a .fpp file.\n#fortran\n")
-test.write('test08.FPP', "This is a .FPP file.\n#fortran\n")
-test.write('test09.f77', "This is a .f77 file.\n#g77\n")
-test.write('test10.F77', "This is a .F77 file.\n#g77\n")
+test.write(obj_ + 'test01.f',   "This is a .f file.\n#fortran\n")
+test.write(obj_ + 'test02.F',   "This is a .F file.\n#fortran\n")
+test.write(obj_ + 'test03.for', "This is a .for file.\n#fortran\n")
+test.write(obj_ + 'test04.FOR', "This is a .FOR file.\n#fortran\n")
+test.write(obj_ + 'test05.ftn', "This is a .ftn file.\n#fortran\n")
+test.write(obj_ + 'test06.FTN', "This is a .FTN file.\n#fortran\n")
+test.write(obj_ + 'test07.fpp', "This is a .fpp file.\n#fortran\n")
+test.write(obj_ + 'test08.FPP', "This is a .FPP file.\n#fortran\n")
+test.write(obj_ + 'test09.f77', "This is a .f77 file.\n#g77\n")
+test.write(obj_ + 'test10.F77', "This is a .F77 file.\n#g77\n")
 
 test.run(arguments = '.', stderr = None)
 
