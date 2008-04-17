@@ -52,10 +52,10 @@ def generate(env):
         env['SHF77FLAGS'] = SCons.Util.CLVar('$SHF77FLAGS -fPIC')
 
     env['FORTRAN'] = fcomp
-    env['SHFORTRAN'] = fcomp
+    env['SHFORTRAN'] = '$FORTRAN'
 
     env['F77'] = fcomp
-    env['SHF77'] = fcomp
+    env['SHF77'] = '$F77'
 
     env['INCFORTRANPREFIX'] = "-I"
     env['INCFORTRANSUFFIX'] = ""
