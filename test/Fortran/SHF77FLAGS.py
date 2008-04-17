@@ -31,13 +31,8 @@ import TestSCons
 
 _python_ = TestSCons._python_
 
-if sys.platform == 'win32':
-    _obj = '.obj'
-else:
-    if string.find(sys.platform, 'irix') > -1:
-        _obj = '.o'
-    else:
-        _obj = '.os'
+_obj = TestSCons._shobj
+obj_ = TestSCons.shobj_
 
 test = TestSCons.TestSCons()
 
@@ -74,8 +69,8 @@ test.write('test10.F77', "This is a .F77 file.\n#g77\n")
 
 test.run(arguments = '.', stderr = None)
 
-test.must_match('test09' + _obj, " -c -x\nThis is a .f77 file.\n")
-test.must_match('test10' + _obj, " -c -x\nThis is a .F77 file.\n")
+test.must_match(obj_ + 'test09' + _obj, " -c -x\nThis is a .f77 file.\n")
+test.must_match(obj_ + 'test10' + _obj, " -c -x\nThis is a .F77 file.\n")
 
 
 fc = 'f77'
