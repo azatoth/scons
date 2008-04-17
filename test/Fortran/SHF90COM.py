@@ -98,7 +98,7 @@ test.must_match(obj_ + 'test08' + _obj, "This is a .FPP file.\n")
 test.must_match(obj_ + 'test11' + _obj, "This is a .f90 file.\n")
 test.must_match(obj_ + 'test12' + _obj, "This is a .F90 file.\n")
 
-test.must_match('test21' + _obj, "This is a .f90 file.\n")
-test.must_match('test22' + _obj, "This is a .F90 file.\n")
+test.must_match(obj_ + 'test21' + _obj, "This is a .f90 file.\n")
+test.must_match(obj_ + 'test22' + _obj, "This is a .F90 file.\n")
 
 test.pass_test()

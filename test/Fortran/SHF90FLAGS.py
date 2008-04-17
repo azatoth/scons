@@ -31,13 +31,8 @@ import TestSCons
 
 _python_ = TestSCons._python_
 
-if sys.platform == 'win32':
-    _obj = '.obj'
-else:
-    if string.find(sys.platform, 'irix') > -1:
-        _obj = '.o'
-    else:
-        _obj = '.os'
+_obj = TestSCons._shobj
+obj_ = TestSCons.shobj_
 
 test = TestSCons.TestSCons()
 
@@ -93,16 +88,16 @@ test.write('test12.F90', "This is a .F90 file.\n#g90\n")
 
 test.run(arguments = '.', stderr = None)
 
-test.must_match('test01' + _obj, " -c -y\nThis is a .f file.\n")
-test.must_match('test02' + _obj, " -c -y\nThis is a .F file.\n")
-test.must_match('test03' + _obj, " -c -y\nThis is a .for file.\n")
-test.must_match('test04' + _obj, " -c -y\nThis is a .FOR file.\n")
-test.must_match('test05' + _obj, " -c -y\nThis is a .ftn file.\n")
-test.must_match('test06' + _obj, " -c -y\nThis is a .FTN file.\n")
-test.must_match('test07' + _obj, " -c -y\nThis is a .fpp file.\n")
-test.must_match('test08' + _obj, " -c -y\nThis is a .FPP file.\n")
-test.must_match('test11' + _obj, " -c -x\nThis is a .f90 file.\n")
-test.must_match('test12' + _obj, " -c -x\nThis is a .F90 file.\n")
+test.must_match(obj_ + 'test01' + _obj, " -c -y\nThis is a .f file.\n")
+test.must_match(obj_ + 'test02' + _obj, " -c -y\nThis is a .F file.\n")
+test.must_match(obj_ + 'test03' + _obj, " -c -y\nThis is a .for file.\n")
+test.must_match(obj_ + 'test04' + _obj, " -c -y\nThis is a .FOR file.\n")
+test.must_match(obj_ + 'test05' + _obj, " -c -y\nThis is a .ftn file.\n")
+test.must_match(obj_ + 'test06' + _obj, " -c -y\nThis is a .FTN file.\n")
+test.must_match(obj_ + 'test07' + _obj, " -c -y\nThis is a .fpp file.\n")
+test.must_match(obj_ + 'test08' + _obj, " -c -y\nThis is a .FPP file.\n")
+test.must_match(obj_ + 'test11' + _obj, " -c -x\nThis is a .f90 file.\n")
+test.must_match(obj_ + 'test12' + _obj, " -c -x\nThis is a .F90 file.\n")
 
 fc = 'f90'
 g90 = test.detect_tool(fc)
@@ -118,23 +113,23 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(SHF90 = %(fc)s)
+foo = Environment(SHF90 = '%(fc)s')
 shf90 = foo.Dictionary('SHF90')
 bar = foo.Clone(SHF90 = r'%(_python_)s wrapper.py ' + shf90, SHF90FLAGS = '-Ix')
-foo.SharedLibrary(target = 'foo/foo', source = 'foo.f')
-bar.SharedLibrary(target = 'bar/bar', source = 'bar.f')
+foo.SharedLibrary(target = 'foo/foo', source = 'foo.f90')
+bar.SharedLibrary(target = 'bar/bar', source = 'bar.f90')
 """ % locals())
 
-    test.write('foo.f', r"""
+    test.write('foo.f90', r"""
       PROGRAM FOO
-      PRINT *,'foo.f'
+      PRINT *,'foo.f90'
       STOP
       END
 """)
 
-    test.write('bar.f', r"""
+    test.write('bar.f90', r"""
       PROGRAM BAR
-      PRINT *,'bar.f'
+      PRINT *,'bar.f90'
       STOP
       END
 """)
