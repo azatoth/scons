@@ -41,7 +41,7 @@ test.write('myfortran.py', r"""
 import getopt
 import sys
 comment = '#' + sys.argv[1]
-opts, args = getopt.getopt(sys.argv[2:], 'cf:o:')
+opts, args = getopt.getopt(sys.argv[2:], 'cf:o:K:')
 for opt, arg in opts:
     if opt == '-o': out = arg
 infile = open(args[0], 'rb')
@@ -111,20 +111,20 @@ os.system(string.join(sys.argv[1:], " "))
 foo = Environment(SHF90 = '%(fc)s')
 shf90 = foo.Dictionary('SHF90')
 bar = foo.Clone(SHF90 = r'%(_python_)s wrapper.py ' + shf90)
-foo.SharedObject(target = 'foo/foo', source = 'foo.f')
-bar.SharedObject(target = 'bar/bar', source = 'bar.f')
+foo.SharedObject(target = 'foo/foo', source = 'foo.f90')
+bar.SharedObject(target = 'bar/bar', source = 'bar.f90')
 """ % locals())
 
-    test.write('foo.f', r"""
+    test.write('foo.f90', r"""
       PROGRAM FOO
-      PRINT *,'foo.f'
+      PRINT *,'foo.f90'
       STOP
       END
 """)
 
-    test.write('bar.f', r"""
+    test.write('bar.f90', r"""
       PROGRAM BAR
-      PRINT *,'bar.f'
+      PRINT *,'bar.f90'
       STOP
       END
 """)

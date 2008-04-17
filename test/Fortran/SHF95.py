@@ -41,7 +41,7 @@ test.write('myfortran.py', r"""
 import getopt
 import sys
 comment = '#' + sys.argv[1]
-opts, args = getopt.getopt(sys.argv[2:], 'cf:o:')
+opts, args = getopt.getopt(sys.argv[2:], 'cf:o:K:')
 for opt, arg in opts:
     if opt == '-o': out = arg
 infile = open(args[0], 'rb')
