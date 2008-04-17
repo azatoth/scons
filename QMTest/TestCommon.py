@@ -102,6 +102,7 @@ from TestCmd import __all__
 __all__.extend([ 'TestCommon',
                  'exe_suffix',
                  'obj_suffix',
+                 'shobj_prefix',
                  'shobj_suffix',
                  'lib_prefix',
                  'lib_suffix',
