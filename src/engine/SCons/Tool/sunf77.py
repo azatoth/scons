@@ -47,8 +47,8 @@ def generate(env):
     env['FORTRAN']  = fcomp
     env['F77']      = fcomp
 
-    env['SHFORTRAN']  = fcomp
-    env['SHF77']      = fcomp
+    env['SHFORTRAN']  = '$FORTRAN'
+    env['SHF77']      = '$F77'
 
     env['SHFORTRANFLAGS'] = SCons.Util.CLVar('$FORTRANFLAGS -KPIC')
     env['SHF77FLAGS'] = SCons.Util.CLVar('$F77FLAGS -KPIC')
