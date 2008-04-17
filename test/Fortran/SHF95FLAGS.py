@@ -146,7 +146,11 @@ bar.SharedLibrary(target = 'bar/bar', source = 'bar.f95')
 
     test.must_not_exist('wrapper.out')
 
-    test.run(arguments = 'bar')
+    import sys
+    if sys.platform[:5] == 'sunos':
+        test.run(arguments = 'bar', stderr = None)
+    else:
+        test.run(arguments = 'bar')
 
     test.must_match('wrapper.out', "wrapper.py\n")
 
