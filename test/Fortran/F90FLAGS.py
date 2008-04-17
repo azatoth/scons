@@ -117,51 +117,28 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(F90 = %(fc)s)
+foo = Environment(F90 = '%(fc)s')
 f90 = foo.Dictionary('F90')
-bar = foo.Clone(F90 = r'%(_python_)s wrapper.py ' + f90, F90FLAGS = '-Ix')
-foo.Program(target = 'foo', source = 'foo.f')
-bar.Program(target = 'bar', source = 'bar.f')
+bar = foo.Clone(F90 = r'%(_python_)s wrapper.py ' + f90)
+foo.Program(target = 'foo', source = 'foo.f90')
+bar.Program(target = 'bar', source = 'bar.f90')
 """ % locals())
 
-    test.write('foo.f', r"""
+    test.write('foo.f90', r"""
       PROGRAM FOO
-      USE MOD_BAR
-      PRINT *,'foo.f'
-      CALL P
-      STOP
+      PRINT *,'foo.f90'
       END
-      MODULE MOD_BAR
-         IMPLICIT NONE
-         CONTAINS
-         SUBROUTINE P
-            PRINT *,'mod_bar'
-         END SUBROUTINE P
-      END MODULE MOD_BAR
 """)
 
-    test.write('bar.f', r"""
+    test.write('bar.f90', r"""
       PROGRAM BAR
-      USE MOD_FOO
-      PRINT *,'bar.f'
-      CALL P
-      STOP
+      PRINT *,'bar.f90'
       END
-""")
-
-    test.write('foo_mod.f', r"""
-      MODULE MOD_FOO
-         IMPLICIT NONE
-         CONTAINS
-         SUBROUTINE P
-            PRINT *,'mod_foo'
-         END SUBROUTINE P
-      END MODULE MOD_FOO
 """)
 
     test.run(arguments = 'foo' + _exe, stderr = None)
 
-    test.run(program = test.workpath('foo'), stdout =  " foo.f\n")
+    test.run(program = test.workpath('foo'), stdout =  " foo.f90\n")
 
     test.must_not_exist('wrapper.out')
 
@@ -171,7 +148,7 @@ bar.Program(target = 'bar', source = 'bar.f')
     else:
         test.run(arguments = 'bar' + _exe)
 
-    test.run(program = test.workpath('bar'), stdout =  " bar.f\n")
+    test.run(program = test.workpath('bar'), stdout =  " bar.f90\n")
 
     test.must_match('wrapper.out', "wrapper.py\n")
 

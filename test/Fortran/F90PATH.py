@@ -31,7 +31,6 @@ import sys
 import TestSCons
 
 _exe = TestSCons._exe
-FTN_LIB = TestSCons.fortran_lib
 prog = 'prog' + _exe
 subdir_prog = os.path.join('subdir', 'prog' + _exe)
 variant_prog = os.path.join('variant', 'prog' + _exe)
@@ -56,8 +55,6 @@ test.write('SConstruct', """
 env = Environment(F90 = r'%s',
                   F90PATH = ['$FOO', '${TARGET.dir}', '${SOURCE.dir}'],
                   LINK = '$F90',
-                  LIBPATH = %s,
-                  LIBS = %s,
                   FOO='include')
 obj = env.Object(target='foobar/prog', source='subdir/prog.f90')
 env.Program(target='prog', source=obj)
@@ -67,11 +64,9 @@ VariantDir('variant', 'subdir', 0)
 include = Dir('include')
 env = Environment(F90 = r'%s',
                   F90PATH=[include, '#foobar', '#subdir'],
-                  LINK = '$F90',
-                  LIBPATH = %s,
-                  LIBS = %s)
+                  LINK = '$F90')
 SConscript('variant/SConscript', "env")
-""" % (F90, repr(LIBPATH), LIBS, F90, repr(LIBPATH), LIBS))
+""" % (fc, fc, ))
 
 test.write(['subdir', 'SConscript'],
 """
@@ -248,9 +243,7 @@ test.up_to_date(arguments = args)
 test.write('SConstruct', """
 env = Environment(F90 = r'%s',
                   F90PATH = Split('inc2 include ${TARGET.dir} ${SOURCE.dir}'),
-                  LINK = '$F90',
-                  LIBPATH = %s,
-                  LIBS = %s)
+                  LINK = '$F90')
 obj = env.Object(target='foobar/prog', source='subdir/prog.f90')
 env.Program(target='prog', source=obj)
 SConscript('subdir/SConscript', "env")
@@ -259,11 +252,9 @@ VariantDir('variant', 'subdir', 0)
 include = Dir('include')
 env = Environment(F90 = r'%s',
                   F90PATH=['inc2', include, '#foobar', '#subdir'],
-                  LINK = '$F90',
-                  LIBPATH = %s,
-                  LIBS = %s)
+                  LINK = '$F90')
 SConscript('variant/SConscript', "env")
-""" % (F90, repr(LIBPATH), LIBS, F90, repr(LIBPATH), LIBS))
+""" % (fc, fc))
 
 test.up_to_date(arguments = args)
 

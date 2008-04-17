@@ -29,7 +29,6 @@ import sys
 import TestSCons
 
 _exe = TestSCons._exe
-FTN_LIB = TestSCons.fortran_lib
 prog = 'prog' + _exe
 subdir_prog = os.path.join('subdir', 'prog' + _exe)
 variant_prog = os.path.join('variant', 'prog' + _exe)
@@ -53,7 +52,6 @@ test.subdir('include',
 test.write('SConstruct', """
 env = Environment(F77 = '%s',
                   F77PATH = ['$FOO', '${TARGET.dir}', '${SOURCE.dir}'],
-                  LIBS = %s,
                   FOO='include',
                   F77FLAGS = '-x f77')
 obj = env.Object(target='foobar/prog', source='subdir/prog.f77')
@@ -64,10 +62,9 @@ VariantDir('variant', 'subdir', 0)
 include = Dir('include')
 env = Environment(F77 = '%s',
                   F77PATH=[include, '#foobar', '#subdir'],
-                  LIBS = %s,
                   F77FLAGS = '-x f77')
 SConscript('variant/SConscript', "env")
-""" % (fc, FTN_LIB, fc, FTN_LIB))
+""" % (fc, fc))
 
 test.write(['subdir', 'SConscript'],
 """
@@ -244,7 +241,6 @@ test.up_to_date(arguments = args)
 test.write('SConstruct', """
 env = Environment(F77 = '%s',
                   F77PATH = Split('inc2 include ${TARGET.dir} ${SOURCE.dir}'),
-                  LIBS = %s,
                   F77FLAGS = '-x f77')
 obj = env.Object(target='foobar/prog', source='subdir/prog.f77')
 env.Program(target='prog', source=obj)
@@ -254,10 +250,9 @@ VariantDir('variant', 'subdir', 0)
 include = Dir('include')
 env = Environment(F77 = '%s',
                   F77PATH=['inc2', include, '#foobar', '#subdir'],
-                  LIBS = %s,
                   F77FLAGS = '-x f77')
 SConscript('variant/SConscript', "env")
-""" % (fc, FTN_LIB, fc, FTN_LIB))
+""" % (fc, fc))
 
 test.up_to_date(arguments = args)
 
@@ -303,9 +298,9 @@ test.up_to_date(arguments = args)
 
 # Check that a null-string F77PATH doesn't blow up.
 test.write('SConstruct', """
-env = Environment(tools = ['f77'], F77PATH = '', LIBS = %s, F77FLAGS = '-x f77')
+env = Environment(tools = ['f77'], F77PATH = '', F77FLAGS = '-x f77')
 env.Object('foo', source = 'empty.f77')
-""" % FTN_LIB)
+""")
 
 test.write('empty.f77', '')
 
