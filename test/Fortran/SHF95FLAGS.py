@@ -31,13 +31,8 @@ import TestSCons
 
 _python_ = TestSCons._python_
 
-if sys.platform == 'win32':
-    _obj = '.obj'
-else:
-    if string.find(sys.platform, 'irix') > -1:
-        _obj = '.o'
-    else:
-        _obj = '.os'
+_obj = TestSCons._shobj
+obj_ = TestSCons.shobj_
 
 test = TestSCons.TestSCons()
 
@@ -93,16 +88,16 @@ test.write('test14.F95', "This is a .F95 file.\n#g95\n")
 
 test.run(arguments = '.', stderr = None)
 
-test.must_match('test01' + _obj, " -c -y\nThis is a .f file.\n")
-test.must_match('test02' + _obj, " -c -y\nThis is a .F file.\n")
-test.must_match('test03' + _obj, " -c -y\nThis is a .for file.\n")
-test.must_match('test04' + _obj, " -c -y\nThis is a .FOR file.\n")
-test.must_match('test05' + _obj, " -c -y\nThis is a .ftn file.\n")
-test.must_match('test06' + _obj, " -c -y\nThis is a .FTN file.\n")
-test.must_match('test07' + _obj, " -c -y\nThis is a .fpp file.\n")
-test.must_match('test08' + _obj, " -c -y\nThis is a .FPP file.\n")
-test.must_match('test13' + _obj, " -c -x\nThis is a .f95 file.\n")
-test.must_match('test14' + _obj, " -c -x\nThis is a .F95 file.\n")
+test.must_match(obj_ + 'test01' + _obj, " -c -y\nThis is a .f file.\n")
+test.must_match(obj_ + 'test02' + _obj, " -c -y\nThis is a .F file.\n")
+test.must_match(obj_ + 'test03' + _obj, " -c -y\nThis is a .for file.\n")
+test.must_match(obj_ + 'test04' + _obj, " -c -y\nThis is a .FOR file.\n")
+test.must_match(obj_ + 'test05' + _obj, " -c -y\nThis is a .ftn file.\n")
+test.must_match(obj_ + 'test06' + _obj, " -c -y\nThis is a .FTN file.\n")
+test.must_match(obj_ + 'test07' + _obj, " -c -y\nThis is a .fpp file.\n")
+test.must_match(obj_ + 'test08' + _obj, " -c -y\nThis is a .FPP file.\n")
+test.must_match(obj_ + 'test13' + _obj, " -c -x\nThis is a .f95 file.\n")
+test.must_match(obj_ + 'test14' + _obj, " -c -x\nThis is a .F95 file.\n")
 
 
 
