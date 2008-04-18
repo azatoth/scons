@@ -40,11 +40,11 @@ test = TestSCons.TestSCons()
 test.write('myfortran.py', r"""
 import getopt
 import sys
-opts, args = getopt.getopt(sys.argv[1:], 'co:x')
+opts, args = getopt.getopt(sys.argv[1:], 'cf:o:x')
 optstring = ''
 for opt, arg in opts:
     if opt == '-o': out = arg
-    else: optstring = optstring + ' ' + opt
+    elif opt != '-f': optstring = optstring + ' ' + opt
 infile = open(args[0], 'rb')
 outfile = open(out, 'wb')
 outfile.write(optstring + "\n")
@@ -57,8 +57,8 @@ sys.exit(0)
 
 
 test.write('SConstruct', """
-env = Environment(SHFORTRAN = r'%(_python_)s myfortran.py',
-                  SHFORTRANFLAGS = '-x')
+env = Environment(SHFORTRAN = r'%(_python_)s myfortran.py')
+env.Append(SHFORTRANFLAGS = '-x')
 env.SharedObject(target = 'test01', source = 'test01.f')
 env.SharedObject(target = 'test02', source = 'test02.F')
 env.SharedObject(target = 'test03', source = 'test03.for')
@@ -105,8 +105,8 @@ os.system(string.join(sys.argv[1:], " "))
     test.write('SConstruct', """
 foo = Environment(SHFORTRAN = '%(fc)s')
 shfortran = foo.Dictionary('SHFORTRAN')
-bar = foo.Clone(SHFORTRAN = r'%(_python_)s wrapper.py ' + shfortran,
-                SHFORTRANFLAGS = '-Ix')
+bar = foo.Clone(SHFORTRAN = r'%(_python_)s wrapper.py ' + shfortran)
+bar.Append(SHFORTRANFLAGS = '-Ix')
 foo.SharedLibrary(target = 'foo/foo', source = 'foo.f')
 bar.SharedLibrary(target = 'bar/bar', source = 'bar.f')
 """ % locals())
