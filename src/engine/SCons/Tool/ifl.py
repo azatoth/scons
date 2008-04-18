@@ -42,8 +42,6 @@ def generate(env):
     fscan = FortranScan("FORTRANPATH")
     SCons.Tool.SourceFileScanner.add_scanner('.i', fscan)
     SCons.Tool.SourceFileScanner.add_scanner('.i90', fscan)
-    fortran.FortranSuffixes.extend(['.i90'])
-    fortran.generate(env)
 
     if not env.has_key('FORTRANFILESUFFIXES'):
         env['FORTRANFILESUFFIXES'] = ['.i']
