@@ -335,7 +335,9 @@ class TestSCons(TestCommon):
                 arguments = options + " " + arguments
         kw['arguments'] = arguments
         kw['stdout'] = self.wrap_stdout(read_str = read_str, build_str = s)
-        kw['match'] = self.match_exact
+        kw['stdout'] = string.replace(kw['stdout'],'\n','\\n')
+        kw['stdout'] = string.replace(kw['stdout'],'.','\\.')
+        kw['match'] = self.match_re_dotall
         apply(self.run, [], kw)
 
     def not_up_to_date(self, options = None, arguments = None, **kw):

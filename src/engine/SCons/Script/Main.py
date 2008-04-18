@@ -1214,10 +1214,9 @@ def main():
 
     parts = ["SCons by Steven Knight et al.:\n"]
     try:
+        import __main__
         parts.append(version_string("script", __main__))
-    except KeyboardInterrupt:
-        raise
-    except:
+    except (ImportError, AttributeError):
         # On Windows there is no scons.py, so there is no
         # __main__.__version__, hence there is no script version.
         pass 

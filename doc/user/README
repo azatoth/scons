@@ -1,3 +1,5 @@
+# __COPYRIGHT__
+
 When adding a new file, add it to main.xml and MANIFEST.
 
 To build the .xml files from the .in files:

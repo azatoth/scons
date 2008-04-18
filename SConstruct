@@ -118,7 +118,7 @@ if checkpoint:
         checkpoint = time.strftime('d%Y%m%d', time.localtime(time.time()))
     elif checkpoint == 'r':
         checkpoint = 'r' + revision
-    version = version + checkpoint
+    version = version + '.' + checkpoint
 
 svn_status = None
 svn_status_lines = []
