@@ -42,11 +42,11 @@ test.write('myfortran.py', r"""
 import getopt
 import sys
 comment = '#' + sys.argv[1]
-opts, args = getopt.getopt(sys.argv[2:], 'co:xy')
+opts, args = getopt.getopt(sys.argv[2:], 'cf:o:xy')
 optstring = ''
 for opt, arg in opts:
     if opt == '-o': out = arg
-    else: optstring = optstring + ' ' + opt
+    elif opt != '-f': optstring = optstring + ' ' + opt
 infile = open(args[0], 'rb')
 outfile = open(out, 'wb')
 outfile.write(optstring + "\n")
@@ -60,9 +60,9 @@ sys.exit(0)
 
 test.write('SConstruct', """
 env = Environment(SHF90 = r'%(_python_)s myfortran.py g90',
-                  SHF90FLAGS = '-x',
-                  SHFORTRAN = r'%(_python_)s myfortran.py fortran',
-                  SHFORTRANFLAGS = '-y')
+                  SHFORTRAN = r'%(_python_)s myfortran.py fortran')
+env.Append(SHF90FLAGS = '-x',
+           SHFORTRANFLAGS = '-y')
 env.SharedObject(target = 'test01', source = 'test01.f')
 env.SharedObject(target = 'test02', source = 'test02.F')
 env.SharedObject(target = 'test03', source = 'test03.for')
@@ -115,7 +115,8 @@ os.system(string.join(sys.argv[1:], " "))
     test.write('SConstruct', """
 foo = Environment(SHF90 = '%(fc)s')
 shf90 = foo.Dictionary('SHF90')
-bar = foo.Clone(SHF90 = r'%(_python_)s wrapper.py ' + shf90, SHF90FLAGS = '-Ix')
+bar = foo.Clone(SHF90 = r'%(_python_)s wrapper.py ' + shf90)
+bar.Append(SHF90FLAGS = '-Ix')
 foo.SharedLibrary(target = 'foo/foo', source = 'foo.f90')
 bar.SharedLibrary(target = 'bar/bar', source = 'bar.f90')
 """ % locals())
