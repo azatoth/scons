@@ -46,7 +46,11 @@ default_version = '0.98.0'
 
 copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008'
 
-SConsVersion = '0.98.0'
+# In the checked-in source, the value of SConsVersion in the following
+# line must remain "__ VERSION __" (without the spaces) so the built
+# version in build/QMTest/TestSCons.py contains the actual version
+# string of the packages that have been built.
+SConsVersion = '__VERSION__'
 if SConsVersion == '__' + 'VERSION' + '__':
     SConsVersion = default_version
 
