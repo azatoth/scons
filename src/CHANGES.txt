@@ -8,6 +8,15 @@
 
 
 
+RELEASE XXX - XXX
+
+  From Steven Knight:
+
+  - Fix a regression when a Builder's source_scanner doesn't select
+    a more specific scanner for the suffix of a specified source file.
+
+
+
 RELEASE 0.98.2 - Sun, 20 Apr 2008 23:38:56 -0700
 
   From Steven Knight:
