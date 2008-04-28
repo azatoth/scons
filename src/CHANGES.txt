@@ -19,6 +19,9 @@ RELEASE XXX - XXX
   - Fix a regression when a Builder's source_scanner doesn't select
     a more specific scanner for the suffix of a specified source file.
 
+  - Fix the Options object backwards compatibility so people can still
+    "import SCons.Options.{Bool,Enum,List,Package,Path}Option" submodules.
+
 
 
 RELEASE 0.98.2 - Sun, 20 Apr 2008 23:38:56 -0700

@@ -32,25 +32,4 @@ and will then be removed entirely (some day).
 
 import SCons.Variables
 
-class Options(SCons.Variables.Variables):
-
-    def AddOptions(self, *args, **kw):
-        return apply(SCons.Variables.Variables.AddVariables,
-                     (self,) + args,
-                     kw)
-
-    def UnknownOptions(self, *args, **kw):
-        return apply(SCons.Variables.Variables.UnknownVariables,
-                     (self,) + args,
-                     kw)
-
-    def FormatOptionHelpText(self, *args, **kw):
-        return apply(SCons.Variables.Variables.FormatVariableHelpText,
-                     (self,) + args,
-                     kw)
-
-BoolOption      = SCons.Variables.BoolVariable
-EnumOption      = SCons.Variables.EnumVariable
-ListOption      = SCons.Variables.ListVariable
-PackageOption   = SCons.Variables.PackageVariable
-PathOption      = SCons.Variables.PathVariable
+ListOption = SCons.Variables.ListVariable
