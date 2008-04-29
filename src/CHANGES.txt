@@ -25,6 +25,11 @@ RELEASE XXX - XXX
   - Fix searching for implicit dependencies when an Entry Node shows up
     in the search path list.
 
+  From Stefano:
+
+  - Fix expansion of $FORTRANMODDIR in the default Fortran command line(s)
+    when it's set to something like ${TARGET.dir}.
+
 
 
 RELEASE 0.98.2 - Sun, 20 Apr 2008 23:38:56 -0700
