@@ -277,7 +277,10 @@ def _function_contents(func):
         closure = []
 
     #xxx = [_object_contents(x.cell_contents) for x in closure]
-    xxx = map(lambda x: _object_contents(x.cell_contents), closure)
+    try:
+        xxx = map(lambda x: _object_contents(x.cell_contents), closure)
+    except AttributeError:
+        xxx = []
     contents.append(',(' + string.join(xxx, ',') + ')')
 
     return string.join(contents, '')

@@ -60,7 +60,33 @@ optEnv = Environment(options=options, tools=[])
 
 r = re.compile(optEnv['regexp'])
 
-toto = \
+withClosure = \
+r'''
+def toto(header='%(header)s', trailer='%(trailer)s'):
+    xxx = %(closure_cell_value)s
+    def writeDeps(target, source, env, b=%(b)s, r=r %(extraarg)s ,
+                  header=header, trailer=trailer):
+        """+'"""%(docstring)s"""'+"""
+        def foo(b=b):
+            return %(nestedfuncexp)s
+        f = open(str(target[0]),'wb')
+        f.write(header)
+        for d in env['ENVDEPS']:
+            f.write(d+'%(separator)s')
+        f.write(trailer+'\\n')
+        f.write(str(foo())+'\\n')
+        f.write(r.match('aaaa').group(1)+'\\n')
+        %(extracode)s
+        try:
+           f.write(str(xarg)+'\\n')
+        except NameError:
+           pass
+        f.close()
+
+    return writeDeps
+'''
+
+NoClosure = \
 r'''
 def toto(header='%(header)s', trailer='%(trailer)s'):
     xxx = %(closure_cell_value)s
@@ -86,7 +112,17 @@ def toto(header='%(header)s', trailer='%(trailer)s'):
     return writeDeps
 '''
 
-exec( toto % optEnv )
+try:
+    # Check that lexical closure are supported
+    def a():
+        x = 0
+        def b():
+            return x
+        return b
+    a().func_closure[0].cell_contents
+    exec( withClosure % optEnv )
+except AttributeError:
+    exec( NoClosure % optEnv )
 
 genHeaderBld = SCons.Builder.Builder(
     action = SCons.Action.Action(
