@@ -8,6 +8,13 @@
 
 
 
+RELEASE 0.98.4 - XXX
+
+  From Jonas Olsson:
+
+  - Fix a syntax error in the Intel C compiler support on Windows.
+
+
 RELEASE 0.98.3 - Tue, 29 Apr 2008 22:40:12 -0700
 
   From Greg Noel:
