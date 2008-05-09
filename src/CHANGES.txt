@@ -14,6 +14,14 @@ RELEASE 0.98.4 - XXX
 
   - Fix a syntax error in the Intel C compiler support on Windows.
 
+  From Steven Knight:
+
+  - Change how we represent Python Value Nodes when printing and when
+    stored in .sconsign files (to avoid blowing out memory by storing
+    huge strings in .sconsign files after multiple runs using Configure
+    contexts cause the Value strings to be re-escaped each time).
+
+
 
 RELEASE 0.98.3 - Tue, 29 Apr 2008 22:40:12 -0700
 

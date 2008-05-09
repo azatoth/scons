@@ -812,7 +812,13 @@ class FunctionAction(_ActionAction):
                 return c
         def array(a):
             def quote(s):
-                return '"' + str(s) + '"'
+                try:
+                    str_for_display = s.str_for_display
+                except AttributeError:
+                    s = repr(s)
+                else:
+                    s = str_for_display()
+                return s
             return '[' + string.join(map(quote, a), ", ") + ']'
         try:
             strfunc = self.execfunction.strfunction
