@@ -24,6 +24,9 @@ RELEASE 0.98.4 - XXX
   - Fix a regression in not executing configuration checks after failure
     of any configuration check that used the same compiler or other tool.
 
+  - Handle multiple destinations in Visual Studio 8 settings for the
+    analogues to the INCLUDE, LIBRARY and PATH variables.
+
 
 
 RELEASE 0.98.3 - Tue, 29 Apr 2008 22:40:12 -0700
