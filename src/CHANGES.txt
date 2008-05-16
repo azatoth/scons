@@ -21,6 +21,9 @@ RELEASE 0.98.4 - XXX
     huge strings in .sconsign files after multiple runs using Configure
     contexts cause the Value strings to be re-escaped each time).
 
+  - Fix a regression in not executing configuration checks after failure
+    of any configuration check that used the same compiler or other tool.
+
 
 
 RELEASE 0.98.3 - Tue, 29 Apr 2008 22:40:12 -0700
