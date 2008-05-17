@@ -10,6 +10,15 @@
 
 RELEASE 0.98.4 - XXX
 
+  From Benoit Belley:
+
+  - Fix calculation of signatures for Python function actions with
+    closures in Python versions before 2.5.
+
+  From David Cournapeau:
+
+  - Fix the initialization of $SHF77FLAGS so it includes $F77FLAGS.
+
   From Jonas Olsson:
 
   - Fix a syntax error in the Intel C compiler support on Windows.
