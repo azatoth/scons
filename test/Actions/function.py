@@ -121,7 +121,7 @@ try:
         return b
     a().func_closure[0].cell_contents
     exec( withClosure % optEnv )
-except AttributeError:
+except (AttributeError, TypeError):
     exec( NoClosure % optEnv )
 
 genHeaderBld = SCons.Builder.Builder(
@@ -158,15 +158,25 @@ scons: `.' is up to date.
 scons: done building targets.
 """
 
-def runtest( arguments, expectedOutFile, expectedRebuild=True):
+import sys
+if sys.version[:3] == '2.1':
+    expectedStderr = """\
+%s:79: SyntaxWarning: local name 'x' in 'a' shadows use of 'x' as global in nested scope 'b'
+  def a():
+""" % test.workpath('SConstruct')
+else:
+    expectedStderr = ""
+
+def runtest(arguments, expectedOutFile, expectedRebuild=True, stderr=expectedStderr):
     test.run(arguments=arguments,
-             stdout=expectedRebuild and rebuildstr or nobuildstr)
+             stdout=expectedRebuild and rebuildstr or nobuildstr,
+             stderr=expectedStderr)
     test.must_match('Out.gen.h', expectedOutFile)
 
     # Should not be rebuild when ran a second time with the same
     # arguments.
 
-    test.run(arguments = arguments, stdout=nobuildstr)
+    test.run(arguments = arguments, stdout=nobuildstr, stderr=expectedStderr)
     test.must_match('Out.gen.h', expectedOutFile)
 
 
