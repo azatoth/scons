@@ -20,7 +20,7 @@ more effectively, please sign up for the scons-users mailing list at:
 
 
 
-RELEASE 0.98.4 - Sat, 17 May 2008 22:14:46 -0700
+RELEASE XXX - XXX
 
   This is a release candidate for SCons 1.0.  Please consult the
   CHANGES.txt file for a list of specific changes since last release.
