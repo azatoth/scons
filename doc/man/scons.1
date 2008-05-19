@@ -8434,9 +8434,9 @@ Execute(Mkdir('/tmp/outputdir'))
 
 env.Command('foo.out', 'foo.in',
             [Mkdir('/tmp/builddir',
-             Copy('$SOURCE', '/tmp/builddir')
-             "cd /tmp/builddir && ])
-
+             Copy('$SOURCE', '/tmp/builddir/foo.in')
+             "cd /tmp/builddir && make",
+             Copy('/tmp/builddir/foo.out', '$TARGET')])
 .EE
 
 .TP
