@@ -90,8 +90,6 @@ def createPythonExtensionBuilder(env):
 def set_basic_vars(env):
     # Set construction variables which are independant on whether we are using
     # distutils or not.
-    from distutils import sysconfig
-    env['PYEXTINCPATH'] = sysconfig.get_python_inc()
     env['PYEXTCPPPATH'] = SCons.Util.CLVar('$PYEXTINCPATH')
 
     env['_PYEXTCPPINCFLAGS'] = '$( ${_concat(INCPREFIX, PYEXTCPPPATH, '\
@@ -106,21 +104,46 @@ def set_basic_vars(env):
     # XXX: This won't work with MS tools ...
     env['PYEXTLINKCOM'] = "$PYEXTLINK -o $TARGET $PYEXTLINKFLAGS $SOURCES"
 
-def set_default(env):
-    if not env.has_key('PYEXTCC'):
-        env['PYEXTCC'] = '$CC'
+def set_configuration(env, use_distutils):
+    """Set construction variables which are platform dependants.
 
-    if not env.has_key('PYEXTLINK'):
-        env['PYEXTLINK'] = '$LDMODULE'
+    If use_distutils == True, use distutils configuration. Otherwise, use
+    'sensible' default.
 
-    if not env.has_key('PYEXTLINKFLAGS'):
-        env['PYEXTLINKFLAGS'] = '$LDMODULEFLAGS'
+    Any variable already defined is untouched."""
+
+    def_cfg = {'PYEXTCC' : '$SHCC',
+               'PYEXTCFLAGS' : '$SHCCFLAGS',
+               'PYEXTLINK' : '$LDMODULE',
+               'PYEXTLINKFLAGS' : '$LDMODULEFLAGS',
+               'PYEXTSUFFIX' : '$SHLIBSUFFIX',
+               'PYEXTPREFIX' : ''}
+
+    # We define commands as strings so that we can either execute them using
+    # eval (same python for scons and distutils) or by executing them through
+    # the shell.
+    dist_cfg = {'PYEXTCC': "sysconfig.get_config_var('CC')", 
+                'PYEXTCFLAGS': "sysconfig.get_config_var('CFLAGS')", 
+                'PYEXTCCSHARED': "sysconfig.get_config_var('CCSHARED')", 
+                'PYEXTLINKFLAGS': "sysconfig.get_config_var('LDFLAGS')", 
+                'PYEXTLINK': "sysconfig.get_config_var('LDSHARED')", 
+                'PYEXTINCPATH': "sysconfig.get_python_inc()", 
+                'PYEXTSUFFIX': "sysconfig.get_config_var('SO')"} 
+
+    def ifnotset(name, value):
+        if not env.has_key(name):
+            env[name] = value
+
+    from distutils import sysconfig
+
+    ifnotset('PYEXTINCPATH', sysconfig.get_python_inc())
+
+    if use_distutils:
+        for k, v in dist_cfg.items():
+            ifnotset(k, eval(v))
     else:
-        env['PYEXTLINKFLAGS'] = SCons.Util.CLVar('$PYEXTLINKFLAGS ' \
-                                                 '$LDMODULEFLAGS')
-
-    if not env.has_key('PYEXTSUFFIX'):
-        env['PYEXTSUFFIX'] = '$SHLIBSUFFIX'
+        for k, v in def_cfg.items():
+            ifnotset(k, v)
 
 def generate(env):
     """Add Builders and construction variables for python extensions to an
@@ -131,10 +154,13 @@ def generate(env):
                 "Sorry: building python extensions "\
                 "on windows is not supported yet")
 
+    if not env.has_key('PYEXT_USE_DISTUTILS'):
+        env['PYEXT_USE_DISTUTILS'] = False
+
     # This sets all constructions variables used for pyext builders. 
     set_basic_vars(env)
 
-    set_default(env)
+    set_configuration(env, env['PYEXT_USE_DISTUTILS'])
 
     # Create the PythonObject builder
     pyobj = createPythonObjectBuilder(env)
