@@ -33,6 +33,8 @@ selection method.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import sys
+
 import SCons
 from SCons.Tool import SourceFileScanner, ProgramScanner
 
@@ -86,6 +88,8 @@ def createPythonExtensionBuilder(env):
     return pyext
 
 def set_basic_vars(env):
+    # Set construction variables which are independant on whether we are using
+    # distutils or not.
     from distutils import sysconfig
     env['PYEXTINCPATH'] = sysconfig.get_python_inc()
     env['PYEXTCPPPATH'] = SCons.Util.CLVar('$PYEXTINCPATH')
@@ -101,8 +105,6 @@ def set_basic_vars(env):
 
     # XXX: This won't work with MS tools ...
     env['PYEXTLINKCOM'] = "$PYEXTLINK -o $TARGET $PYEXTLINKFLAGS $SOURCES"
-
-    set_default(env)
 
 def set_default(env):
     if not env.has_key('PYEXTCC'):
@@ -124,9 +126,15 @@ def generate(env):
     """Add Builders and construction variables for python extensions to an
     Environment."""
 
-    # This sets all constructions variables used in actions, like PYEXTCC,
-    # etc...
+    if sys.platform == 'win32':
+        raise NotImplementedError(
+                "Sorry: building python extensions "\
+                "on windows is not supported yet")
+
+    # This sets all constructions variables used for pyext builders. 
     set_basic_vars(env)
+
+    set_default(env)
 
     # Create the PythonObject builder
     pyobj = createPythonObjectBuilder(env)
@@ -139,6 +147,8 @@ def generate(env):
 
 def exists(env):
     try:
+        if sys.platform == 'win32':
+            return False
         from distutils import sysconfig
         return True
     except ImportError:
