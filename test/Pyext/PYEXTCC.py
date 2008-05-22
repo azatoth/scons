@@ -61,7 +61,7 @@ else:
     test.write('mypyextcc.py', r"""
 import getopt
 import sys
-opts, args = getopt.getopt(sys.argv[1:], 'co:I:')
+opts, args = getopt.getopt(sys.argv[1:], 'co:I:f:')
 for opt, arg in opts:
     if opt == '-o': out = arg
 infile = open(args[0], 'rb')
