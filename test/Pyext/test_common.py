@@ -1,3 +1,5 @@
+"""Module to implement useful functionalities for various pyext tests."""
+
 def can_real_pytests(test):
     try:
         from distutils import sysconfig
