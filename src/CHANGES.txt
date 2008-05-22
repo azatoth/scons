@@ -10,6 +10,11 @@
 
 RELEASE XXX - XXX
 
+  From Steven Knight:
+
+  - Update the scons.bat file so that it returns the real exit status
+    from SCons, even though it uses setlocal + endlocal.
+
 
 
 RELEASE 0.98.4 - Sat, 17 May 2008 22:14:46 -0700

@@ -25,6 +25,16 @@ RELEASE XXX - XXX
   This is a release candidate for SCons 1.0.  Please consult the
   CHANGES.txt file for a list of specific changes since last release.
 
+  Please note the following important changes since release 0.98.4:
+
+    --  scons.bat NOW RETURNS THE REAL SCONS EXIT STATUS
+
+        The scons.bat script shipped with SCons used to exit with
+        a status of 1 when it detected any failed (non-zero) exit
+        status from the underlying Python execution of SCons itself.
+        The scons.bat script now exits with the actual status
+        returned by SCons.
+
   Please note the following important changes since release 0.98:
 
     --  SCONS NO LONGER SETS THE GNU TOOLCHAIN -fPIC FLAG IN $SHCXXFLAGS
