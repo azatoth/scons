@@ -141,6 +141,9 @@ def set_configuration(env, use_distutils):
     if use_distutils:
         for k, v in dist_cfg.items():
             ifnotset(k, eval(v))
+        target = sysconfig.get_config_var('MACOSX_DEPLOYMENT_TARGET')
+        if target:
+            env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = target
     else:
         for k, v in def_cfg.items():
             ifnotset(k, v)
