@@ -53,7 +53,7 @@ def get_cppc(env):
     pkginfo = env.subst('$PKGINFO')
     pkgchk = env.subst('$PKGCHK')
 
-    def look_pkg_db():
+    def look_pkg_db(pkginfo=pkginfo, pkgchk=pkgchk):
         version = None
         path = None
         for package in ['SPROcpl']:
