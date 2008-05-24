@@ -379,6 +379,34 @@ def _defines(prefix, defs, suffix, env, c=_concat_ixes):
         l = [str(defs)]
     return c(prefix, env.subst_path(l), suffix, env)
     
+# This dict returns the interpolation rule for each construction variable used
+# in lib with context
+_INTERP_RULE = {
+    "LIBS": "${_concat(LIBLINKPREFIX, %s, LIBLINKSUFFIX, __env__)}",
+    "LIBPATH" : "$( ${_concat(LIBDIRPREFIX, %s, LIBDIRSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)",
+    "RPATH" : "${_concat(RPATHPREFIX, %s, RPATHSUFFIX, __env__)}",
+    "LINKFLAGS" : "%s",
+    "LDMODULEFLAGS" : "%s",
+    "SHLINKFLAGS" : "%s"}
+
+def _expand_libwc(env, flag):
+    """A function to expand LIBWCFLAG to a string which can be interpolated by
+    scons."""
+
+    expanded = []
+
+    for i in flag:
+        if i[0] in ['LIBS', 'LIBPATH', 'RPATH'] and not SCons.Util.is_List(i[1]):
+            expanded.append(_INTERP_RULE[i[0]] % [i[1]])
+        else:
+            if SCons.Util.is_List(i[1]):
+                print i[0]
+                expanded.append(_INTERP_RULE[i[0]] % string.join(i[1], " "))
+            else:
+                expanded.append(_INTERP_RULE[i[0]] % i[1])
+
+    return string.join(expanded, " ")
+
 class NullCmdGenerator:
     """This is a callable class that can be used in place of other
     command generators if you don't want them to do anything.
@@ -438,8 +466,10 @@ ConstructionEnvironment = {
     '_concat'       : _concat,
     '_defines'      : _defines,
     '_stripixes'    : _stripixes,
+    '_expand_libwc' : _expand_libwc,
     '_LIBFLAGS'     : '${_concat(LIBLINKPREFIX, LIBS, LIBLINKSUFFIX, __env__)}',
     '_LIBDIRFLAGS'  : '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
+    '_LINKWCFLAGS'   : '${_expand_libwc(__env__, LINKWCFLAGS)}',
     '_CPPINCFLAGS'  : '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
     '_CPPDEFFLAGS'  : '${_defines(CPPDEFPREFIX, CPPDEFINES, CPPDEFSUFFIX, __env__)}',
     'TEMPFILE'      : NullCmdGenerator,
