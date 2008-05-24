@@ -36,9 +36,17 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import SCons.Defaults
 import SCons.Tool
 import SCons.Util
-import SCons.Errors
+import SCons.Warnings
 
 from SCons.Tool.FortranCommon import isfortran
+
+class LinkWarning(SCons.Warnings.Warning):
+    pass
+
+class FortranCxxMix(LinkWarning):
+    pass
+
+SCons.Warnings.enableWarningClass(LinkWarning)
 
 cplusplus = __import__('c++', globals(), locals(), [])
 
@@ -46,8 +54,12 @@ def smart_link(source, target, env, for_signature):
     has_cplusplus = cplusplus.iscplusplus(source)
     has_fortran = isfortran(env, source)
     if has_cplusplus and has_fortran:
-        raise SCons.Errors.InternalError(
-                "Sorry, scons cannot yet link c++ and fortran code together.")
+        SCons.Warnings.warn(
+                FortranCxxMix,
+                "Using $CXX to link Fortran and C++ code: this is likely to "\
+                "generate buggy binaries, because most c++ compiler do not "\
+                "know how to deal with fortran runtime.")
+        return '$CXX'
     elif has_fortran:
         return '$FORTRAN'
     elif has_cplusplus:
