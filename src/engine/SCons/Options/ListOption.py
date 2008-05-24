@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -22,49 +21,15 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-"""
-This test verifies (on Windows systems) that specifying an
-absolute path name without a drive letter uses the SConstruct
-file's drive as the default.
-"""
-
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import os.path
-import string
-import sys
+__doc__ = """Place-holder for the old SCons.Options module hierarchy
 
-import TestSCons
+This is for backwards compatibility.  The new equivalent is the Variables/
+class hierarchy.  These will have deprecation warnings added (some day),
+and will then be removed entirely (some day).
+"""
 
-test = TestSCons.TestSCons()
+import SCons.Variables
 
-if sys.platform != 'win32':
-    test.pass_test()
-
-test.subdir('src')
-
-test.write(['src', 'SConstruct'], """
-def cat(env, source, target):
-    target = str(target[0])
-    source = map(str, source)
-    f = open(target, "wb")
-    for src in source:
-        f.write(open(src, "rb").read())
-    f.close()
-
-env = Environment(BUILDERS={'Build':Builder(action=cat)})
-env.Build('../build/file.out', 'file.in')
-""")
-
-test.write(['src', 'file.in'], "src/file.in\n")
-
-build_file_out = test.workpath('build', 'file.out')
-
-print os.path.splitdrive(build_file_out)[1]
-test.run(chdir = 'src',
-         arguments = os.path.splitdrive(build_file_out)[1])
-
-test.must_match(['build', 'file.out'], "src/file.in\n")
-
-test.pass_test()
+ListOption = SCons.Variables.ListVariable

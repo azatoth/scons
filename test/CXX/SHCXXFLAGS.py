@@ -24,10 +24,15 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import sys
-import TestSCons
+"""
+Verify that $SHCXXFLAGS settings are used to build shared object files.
+"""
+
 import os
 import string
+import sys
+
+import TestSCons
 
 _obj = TestSCons._obj
 
@@ -39,16 +44,16 @@ if string.find(sys.platform, 'irix') > -1:
 test = TestSCons.TestSCons()
 
 e = test.Environment()
-fooflags = e['SHCXXFLAGS'] + ' -DFOO'
-barflags = e['SHCXXFLAGS'] + ' -DBAR'
 
 test.write('SConstruct', """
-foo = Environment(SHCXXFLAGS = '%s', WINDOWS_INSERT_DEF=1)
-bar = Environment(SHCXXFLAGS = '%s', WINDOWS_INSERT_DEF=1)
-foo.SharedObject(target = 'foo%s', source = 'prog.cpp')
-bar.SharedObject(target = 'bar%s', source = 'prog.cpp')
-foo.SharedLibrary(target = 'foo', source = 'foo%s')
-bar.SharedLibrary(target = 'bar', source = 'bar%s')
+foo = Environment(WINDOWS_INSERT_DEF=1)
+foo.Append(SHCXXFLAGS = '-DFOO') 
+bar = Environment(WINDOWS_INSERT_DEF=1)
+bar.Append(SHCXXFLAGS = '-DBAR') 
+foo_obj = foo.SharedObject(target = 'foo%(_obj)s', source = 'prog.cpp')
+bar_obj = bar.SharedObject(target = 'bar%(_obj)s', source = 'prog.cpp')
+foo.SharedLibrary(target = 'foo', source = foo_obj)
+bar.SharedLibrary(target = 'bar', source = bar_obj)
 
 fooMain = foo.Clone(LIBS='foo', LIBPATH='.')
 foo_obj = fooMain.Object(target='foomain', source='main.c')
@@ -57,7 +62,7 @@ fooMain.Program(target='fooprog', source=foo_obj)
 barMain = bar.Clone(LIBS='bar', LIBPATH='.')
 bar_obj = barMain.Object(target='barmain', source='main.c')
 barMain.Program(target='barprog', source=bar_obj)
-""" % (fooflags, barflags, _obj, _obj, _obj, _obj))
+""" % locals())
 
 test.write('foo.def', r"""
 LIBRARY        "foo"
@@ -108,18 +113,19 @@ test.run(program = test.workpath('fooprog'), stdout = "prog.cpp:  FOO\n")
 test.run(program = test.workpath('barprog'), stdout = "prog.cpp:  BAR\n")
 
 test.write('SConstruct', """
-bar = Environment(SHCXXFLAGS = '%s', WINDOWS_INSERT_DEF=1)
-bar.SharedObject(target = 'foo%s', source = 'prog.cpp')
-bar.SharedObject(target = 'bar%s', source = 'prog.cpp')
-bar.SharedLibrary(target = 'foo', source = 'foo%s')
-bar.SharedLibrary(target = 'bar', source = 'bar%s')
+bar = Environment(WINDOWS_INSERT_DEF=1)
+bar.Append(SHCXXFLAGS = '-DBAR') 
+foo_obj = bar.SharedObject(target = 'foo%(_obj)s', source = 'prog.cpp')
+bar_obj = bar.SharedObject(target = 'bar%(_obj)s', source = 'prog.cpp')
+bar.SharedLibrary(target = 'foo', source = foo_obj)
+bar.SharedLibrary(target = 'bar', source = bar_obj)
 
 barMain = bar.Clone(LIBS='bar', LIBPATH='.')
 foo_obj = barMain.Object(target='foomain', source='main.c')
 bar_obj = barMain.Object(target='barmain', source='main.c')
 barMain.Program(target='barprog', source=foo_obj)
 barMain.Program(target='fooprog', source=bar_obj)
-""" % (barflags, _obj, _obj, _obj, _obj))
+""" % locals())
 
 test.run(arguments = '.')
 

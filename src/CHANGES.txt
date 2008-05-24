@@ -8,7 +8,90 @@
 
 
 
-RELEASE X.XX - XXX
+RELEASE XXX - XXX
+
+  From Steven Knight:
+
+  - Update the scons.bat file so that it returns the real exit status
+    from SCons, even though it uses setlocal + endlocal.
+
+
+
+RELEASE 0.98.4 - Sat, 17 May 2008 22:14:46 -0700
+
+  From Benoit Belley:
+
+  - Fix calculation of signatures for Python function actions with
+    closures in Python versions before 2.5.
+
+  From David Cournapeau:
+
+  - Fix the initialization of $SHF77FLAGS so it includes $F77FLAGS.
+
+  From Jonas Olsson:
+
+  - Fix a syntax error in the Intel C compiler support on Windows.
+
+  From Steven Knight:
+
+  - Change how we represent Python Value Nodes when printing and when
+    stored in .sconsign files (to avoid blowing out memory by storing
+    huge strings in .sconsign files after multiple runs using Configure
+    contexts cause the Value strings to be re-escaped each time).
+
+  - Fix a regression in not executing configuration checks after failure
+    of any configuration check that used the same compiler or other tool.
+
+  - Handle multiple destinations in Visual Studio 8 settings for the
+    analogues to the INCLUDE, LIBRARY and PATH variables.
+
+  From Greg Noel:
+
+  - Update man page text for VariantDir().
+
+
+
+RELEASE 0.98.3 - Tue, 29 Apr 2008 22:40:12 -0700
+
+  From Greg Noel:
+
+  - Fix use of $CXXFLAGS when building C++ shared object files.
+
+  From Steven Knight:
+
+  - Fix a regression when a Builder's source_scanner doesn't select
+    a more specific scanner for the suffix of a specified source file.
+
+  - Fix the Options object backwards compatibility so people can still
+    "import SCons.Options.{Bool,Enum,List,Package,Path}Option" submodules.
+
+  - Fix searching for implicit dependencies when an Entry Node shows up
+    in the search path list.
+
+  From Stefano:
+
+  - Fix expansion of $FORTRANMODDIR in the default Fortran command line(s)
+    when it's set to something like ${TARGET.dir}.
+
+
+
+RELEASE 0.98.2 - Sun, 20 Apr 2008 23:38:56 -0700
+
+  From Steven Knight:
+
+  - Fix a bug in Fortran suffix computation that would cause SCons to
+    run out of memory on Windows systems.
+
+  - Fix being able to specify --interactive mode command lines with
+    \ (backslash) path name separators on Windows.
+
+  From Gary Oberbrunner:
+
+  - Document Glob() in the User's Guide.
+
+
+
+RELEASE 0.98.1 - Fri, 18 Apr 2008 19:11:58 -0700
 
   From Benoit Belley:
 
@@ -25,6 +108,26 @@ RELEASE X.XX - XXX
   From Johan Boul√:
 
   - Fix the ability to use LoadableModule() under MinGW.
+
+  From David Cournapeau:
+
+  - Various missing Fortran-related construction variables have been added.
+
+  - SCons now uses the program specified in the $FORTRAN construction
+    variable to link Fortran object files.
+
+  - Fortran compilers on Linux (Intel, g77 and gfortran) now add the -fPIC
+    option by default when compilling shared objects.
+
+  - New 'sunf77', 'sunf90' and 'sunf95' Tool modules have been added to
+    support Sun Fortran compilers.  On Solaris, the Sun Fortran compilers
+    are used in preference to other compilers by default.
+
+  - Fortran support now uses gfortran in preference to g77.
+
+  - Fortran file suffixes are now configurable through the
+    $F77FILESUFFIXES, $F90FILESUFFIXES, $F95FILESUFFIXES and
+    $FORTRANFILESUFFIXES variables.
 
   From Steven Knight:
 

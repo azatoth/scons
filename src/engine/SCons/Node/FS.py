@@ -544,6 +544,9 @@ class Base(SCons.Node.Node):
         self.cwd = None # will hold the SConscript directory for target nodes
         self.duplicate = directory.duplicate
 
+    def str_for_display(self):
+        return '"' + self.__str__() + '"'
+
     def must_be_same(self, klass):
         """
         This node, which already existed, is being looked up as the
@@ -2873,9 +2876,10 @@ class FileFinder:
             node = p.entries[norm_name]
         except KeyError:
             return p.dir_on_disk(name)
-        # Once we move to Python 2.2 we can do:
-        #if isinstance(node, (Dir, Entry)):
-        if isinstance(node, Dir) or isinstance(node, Entry):
+        if isinstance(node, Dir):
+            return node
+        if isinstance(node, Entry):
+            node.must_be_same(Dir)
             return node
         return None
 
@@ -2944,8 +2948,11 @@ class FileFinder:
             #        node = p.entries[norm_name]
             #    except KeyError:
             #        return p.dir_on_disk(name)
-            #    # Once we move to Python 2.2 we can do:
-            #    #if isinstance(node, (Dir, Entry)):
+            #    if isinstance(node, Dir):
+            #        return node
+            #    if isinstance(node, Entry):
+            #        node.must_be_same(Dir)
+            #        return node
             #    if isinstance(node, Dir) or isinstance(node, Entry):
             #        return node
             #    return None
