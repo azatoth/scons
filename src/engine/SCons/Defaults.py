@@ -395,15 +395,15 @@ def _expand_libwc(env, flag):
 
     expanded = []
 
+    # This is ugly: how does scons do it ?
     for i in flag:
-        if i[0] in ['LIBS', 'LIBPATH', 'RPATH'] and not SCons.Util.is_List(i[1]):
-            expanded.append(_INTERP_RULE[i[0]] % [i[1]])
-        else:
-            if SCons.Util.is_List(i[1]):
-                print i[0]
-                expanded.append(_INTERP_RULE[i[0]] % string.join(i[1], " "))
+        if i[0] in ['LIBS', 'LIBPATH', 'RPATH']:
+            if not SCons.Util.is_List(i[1]):
+                expanded.append(_INTERP_RULE[i[0]] % [i[1]])
             else:
                 expanded.append(_INTERP_RULE[i[0]] % i[1])
+        else:
+            expanded.append(_INTERP_RULE[i[0]] % env.subst(i[1]))
 
     return string.join(expanded, " ")
 
