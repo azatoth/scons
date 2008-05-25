@@ -97,8 +97,7 @@ test.fail_test(test.read('wrapper.out') != "--static -l##foo --shared")
 
 test.write('SConstruct', """
 foo = Environment(%(posix_conv)s, LINKCOM = '%(_python_)s wrapper.py -o $TARGET $_LINKWCFLAGS $SOURCE')
-foo.Append(LINKWCFLAGS = [('LINKFLAGS', ['--static']), ('LIBPATH', ['foobar']), 
-    ('LIBS', ['foo', 'bar']), ('LINKFLAGS', ['--shared'])])
+foo.Append(LINKWCFLAGS = [('LIBPATH', ['foobar']), ('LIBS', ['foo'])])
 foo.Program(target = 'dummy', source = 'dummy.c')
 """ % locals())
 
@@ -107,6 +106,6 @@ test.write('dummy.c', r"""
 
 test.run(arguments = 'dummy' + _exe)
 
-test.fail_test(test.read('wrapper.out') != "--static -l##foo --shared")
+test.fail_test(test.read('wrapper.out') != "-L##foobar -l##foo")
 
 test.pass_test()
