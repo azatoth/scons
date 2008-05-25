@@ -53,9 +53,9 @@ def generate(env):
     env['RPATHSUFFIX'] = ''
     env['_RPATH'] = '${_concat(RPATHPREFIX, RPATH, RPATHSUFFIX, __env__)}'
     
-    if not env.has_key('DYNAMICLINK'):
+    if not env['DYNAMICLINK']:
         env['DYNAMICLINK'] = '-Wl,-Bdynamic'
-    if not env.has_key('STATICLINK'):
+    if not env['STATICLINK']:
         env['STATICLINK'] = '-Wl,-Bstatic'
 
 def exists(env):
