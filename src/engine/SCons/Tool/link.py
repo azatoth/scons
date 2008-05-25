@@ -80,6 +80,11 @@ def generate(env):
     env['LIBLINKPREFIX']='-l'
     env['LIBLINKSUFFIX']=''
 
+    if not env.has_key('DYNAMICLINK'):
+        env['DYNAMICLINK'] = ''
+    if not env.has_key('STATICLINK'):
+        env['STATICLINK'] = ''
+
     if env['PLATFORM'] == 'hpux':
         env['SHLIBSUFFIX'] = '.sl'
     elif env['PLATFORM'] == 'aix':

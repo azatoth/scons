@@ -12,5 +12,7 @@ Sets construction variables for the Sun linker.
 SHLINKFLAGS
 RPATHPREFIX
 RPATHSUFFIX
+DYNAMICLINK
+STATICLINK
 </sets>
 </tool>

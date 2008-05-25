@@ -25,6 +25,8 @@ LDMODULEPREFIX
 LDMODULESUFFIX
 LDMODULEFLAGS
 LDMODULECOM
+DYNAMICLINK
+STATICLINK
 </sets>
 <uses>
 SHLINKCOMSTR
@@ -173,3 +175,18 @@ above,
 for the variable that expands to library search path options.
 </summary>
 </cvar>
+
+<cvar name="DYNAMICLINK">
+<summary>
+Linker option to dynamically link all libraries appearing after this flags.
+
+</summary>
+</cvar>
+
+<cvar name="STATICLINK">
+<summary>
+Linker option to statically link all libraries appearing after this flags.
+
+</summary>
+</cvar>
+

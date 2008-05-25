@@ -12,5 +12,7 @@ Set construction variables for GNU linker/loader.
 SHLINKFLAGS
 RPATHPREFIX
 RPATHSUFFIX
+DYNAMICLINK
+STATICLINK
 </sets>
 </tool>

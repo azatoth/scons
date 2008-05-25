@@ -67,5 +67,10 @@ def generate(env):
     env['RPATHSUFFIX'] = ''
     env['_RPATH'] = '${_concat(RPATHPREFIX, RPATH, RPATHSUFFIX, __env__)}'
 
+    if not env.has_key('DYNAMICLINK'):
+        env['DYNAMICLINK'] = '-Bdynamic'
+    if not env.has_key('STATICLINK'):
+        env['STATICLINK'] = '-Bstatic'
+
 def exists(env):
     return ccLinker
