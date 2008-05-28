@@ -47,25 +47,34 @@ import new
 import SCons.asizeof
 
 # Dictionaries of TrackedObject objects associated with the actual objects that
-# are tracked.
-_tracked_classes = {}
-_tracked_objects = {}
-_footprint = []
+# are tracked. 'tracked_index' uses the class name as the key and associates a
+# list of tracked objects. It contains all TrackedObject instances, including
+# those of dead objects.
+tracked_index = {}
 
-# Keep objects alive by reference. Just for debugging purpose.
+# 'tracked_objects' uses the id (address) as the key and associates the tracked
+# object with it. TrackedObject's referring to dead objects are replaced lazily,
+# i.e. when the id is recycled by another tracked object.
+tracked_objects = {}
+
+# List of (timestamp, size_of_tracked_objects) tuples for each snapshot.
+footprint = []
+
+# Keep objects alive by holding a strong reference.
 _keepalive = [] 
 
+# Overridden constructors of tracked classes (identified by classname).
 _constructors = {}
 
 
-def _inject_constructor(klass, f, resolution_level):
+def _inject_constructor(klass, f, name, resolution_level, keep):
     """
     Modifying Methods in Place - after the recipe 15.7 in the Python
     Cookbook by Ken Seehof. The original constructors may be restored later.
     Therefore, prevent constructor chaining by multiple calls with the same
     class.
     """
-    if klass in _constructors.keys():
+    if _constructors.has_key(klass):
         return
 
     try:
@@ -76,7 +85,7 @@ def _inject_constructor(klass, f, resolution_level):
 
     _constructors[klass] = ki
     klass.__init__ = new.instancemethod(
-        lambda *args, **kwds: f(ki, resolution_level, *args, **kwds), None, klass)
+        lambda *args, **kwds: f(ki, name, resolution_level, keep, *args, **kwds), None, klass)
 
 
 def _restore_constructor(klass):
@@ -84,18 +93,21 @@ def _restore_constructor(klass):
     Restore the original constructor, lose track of class.
     """
     if _constructors.has_key(klass):
-        klass.__init__ = _constructors[klass]
-    else: # class is not tracked: TODO emit error
-        pass
+        klass.__init__ = _constructors.pop(klass)
+
+    else: # class is not tracked
+        raise ValueError
 
 
-def _tracker(__init__, resolution_level, self, *args, **kwds):
+def _tracker(__init__, name, resolution_level, keep, self, *args, **kwds):
     """
     Injected constructor for tracked classes.
     Call the actual constructor of the object and track the object.
+    Attach to the object before calling the constructor to track the object with
+    the parameters of the most specialized class.
     """
+    track_object(self, name=name, resolution_level=resolution_level, keep=keep)
     __init__(self, *args, **kwds)
-    track_object(self, resolution_level=resolution_level)
 
 
 class TrackedObject(object):
@@ -169,56 +181,88 @@ def track_object(instance, name=None, resolution_level=0, keep=0):
     To prevent the object's deletion a (strong) reference can be held with
     'keep'.
     """
-    if resolution_level > 0:
+
+    # Check if object is already tracked. This happens if track_object is called
+    # multiple times for the same object or if an object inherits from multiple
+    # tracked classes. In the latter case, the most specialized class wins.
+    # To detect id recycling, the weak reference is checked. If it is 'None' a
+    # tracked object is dead and another one takes the same 'id'. 
+    if tracked_objects.has_key(id(instance)) and \
+        tracked_objects[id(instance)].ref() is not None:
+        return
+
+    if resolution_level > 0: # TODO
         raise NotImplementedError
 
     if name is None:
         name = instance.__class__.__name__
-    if not _tracked_classes.has_key(name):
-        _tracked_classes[name] = []
+    if not tracked_index.has_key(name):
+        tracked_index[name] = []
 
     to = TrackedObject(instance)
 
-    _tracked_classes[name].append(to)
-    _tracked_objects[id(instance)] = to
+    #print "DEBUG: Track %s as type %s (Keep=%d, Resolution=%d)" % (repr(instance),
+    #    name, keep, resolution_level)
+
+    tracked_index[name].append(to)
+    tracked_objects[id(instance)] = to
 
     if keep:
         _keepalive.append(instance)
 
 
-def track_class(cls, resolution_level=0):
+def track_class(cls, name=None, resolution_level=0, keep=0):
     """
     Track all objects of the class 'cls'. Objects of that type that already
     exist are _not_ tracked.
     A constructor is injected to begin instance tracking on creation
     of the object. The constructor calls 'track_object' internally.
     """
-    if resolution_level > 0:
+    if resolution_level > 0: # TODO
         raise NotImplementedError
 
-    _inject_constructor(cls, _tracker, resolution_level)
+    _inject_constructor(cls, _tracker, name, resolution_level, keep)
 
 
-def lose_track_class(cls):
+def detach_class(klass):
+    """ 
+    Stop tracking class 'klass'. Any new objects of that type are not
+    tracked anymore. Existing objects are still tracked.
     """
-    Stop tracking class 'cls'. Any new objects of that type are not tracked
-    anymore. Existing objects are still tracked.
+    _restore_constructor(klass)
+
+
+def detach_all_classes():
     """
-    _restore_constructor(cls)
-    
+    Detach from all tracked classes.
+    """
+    for klass in _constructors.keys():
+        detach_class(klass) 
+
+
+def detach_all():
+    """
+    Detach from all tracked classes and objects.
+    Restore the original constructors and cleanse the tracking lists.
+    """
+    detach_all_classes()
+    tracked_objects.clear()
+    tracked_index.clear()
+    _keepalive[:] = []
+
 
 def create_snapshot():
     """
     Collect current per instance statistics.
     """
     #sizer = SCons.asizeof.Asizer()
-    #sizer.norecurse(instance_ids=_tracked_objects.keys())
+    #sizer.norecurse(instance_ids=tracked_objects.keys())
     sizer = SCons.asizeof.Asizer()
-    objs = [to.ref() for to in _tracked_objects.values()]
+    objs = [to.ref() for to in tracked_objects.values()]
     sizer.exclude_refs(*objs)
-    for to in _tracked_objects.values():
+    for to in tracked_objects.values():
         to.track_size(sizer)
-    _footprint.append( (time.time(), sizer.total) )
+    footprint.append( (time.time(), sizer.total) )
     # overhead = sizer.asizeof(self) # compute actual profiling overhead
 
 
@@ -234,8 +278,8 @@ def find_garbage():
     gc.collect()
     for x in gc.garbage:
         # print str(x)
-        if _tracked_objects.has_key(id(x)):
-            print "WARNING: Tracked object is marked as garbage: %s" % repr(_tracked_objects[id(x)].ref())
+        if tracked_objects.has_key(id(x)):
+            print "WARNING: Tracked object is marked as garbage: %s" % repr(tracked_objects[id(x)].ref())
 
 
 def print_stats(file=sys.stdout):
@@ -245,7 +289,7 @@ def print_stats(file=sys.stdout):
     print "[ INFO ] Prototype: Do not take the reported values too seriously"
     pattern  = '  %-66s  %9d %s\n'
     pattern2 = '  %-34s %8d Alive  %8d Free    %9d %s\n'
-    classlist = _tracked_classes.keys()
+    classlist = tracked_index.keys()
     classlist.sort()
     summary = []
     for classname in classlist:
@@ -253,7 +297,7 @@ def print_stats(file=sys.stdout):
         sum = 0
         dead = 0
         alive = 0
-        for to in _tracked_classes[classname]:
+        for to in tracked_index[classname]:
             # size = SCons.asizeof.asizeof(obj)
             size = to.get_max_size()
             obj  = to.ref()
@@ -266,7 +310,7 @@ def print_stats(file=sys.stdout):
         #file.write(pattern2 % (classname,alive,dead,sum,'Bytes'))
         summary.append(pattern2 % (classname,alive,dead,sum,'Bytes'))
     try:
-        total = max([s for (t, s) in _footprint])
+        total = max([s for (t, s) in footprint])
     except ValueError:
         total = 0
     file.write('\n')
