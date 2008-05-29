@@ -20,6 +20,9 @@ RELEASE 0.98.5 - XXX
 
   - Fix calling File() as a File object method in some circumstances.
 
+  - Fix setup.py installation on Mac OS X so SCons gets installed
+    under /usr/lcoal by default, not in the Mac OS X Python framework.
+
 
 
 RELEASE 0.98.4 - Sat, 17 May 2008 22:14:46 -0700
