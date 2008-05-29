@@ -2193,6 +2193,8 @@ class File(Base):
         if self.has_builder():
             self.changed_since_last_build = self.decide_target
 
+        self.cwd = self.dir
+
     def scanner_key(self):
         return self.get_suffix()
 

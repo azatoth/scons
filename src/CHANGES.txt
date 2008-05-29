@@ -18,6 +18,8 @@ RELEASE 0.98.5 - XXX
   - Fix the --interactive post-build messages so it doesn't get stuck
     mistakenly reporting failures after any individual build fails.
 
+  - Fix calling File() as a File object method in some circumstances.
+
 
 
 RELEASE 0.98.4 - Sat, 17 May 2008 22:14:46 -0700
