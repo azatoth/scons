@@ -1153,7 +1153,9 @@ def _build_targets(fs, options, targets, target_top):
         if jobs.were_interrupted():
             progress_display("scons: Build interrupted.")
             global exit_status
+            global this_build_status
             exit_status = 2
+            this_build_status = 2
 
         if this_build_status:
             progress_display("scons: " + failure_message)
