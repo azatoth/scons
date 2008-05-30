@@ -97,12 +97,21 @@ def set_basic_vars(env):
     env['PYEXTOBJSUFFIX'] = '$SHOBJSUFFIX'
     env['PYEXTOBJPREFIX'] = '$SHOBJPREFIX'
 
-    # XXX: This won't work with MS tools ...
-    env['PYEXTCCCOM'] = "$PYEXTCC -o $TARGET -c $PYEXTCCSHARED "\
-                        "$PYEXTCFLAGS $_PYEXTCPPINCFLAGS $SOURCES"
+    # XXX: This won't work in all cases (using mingw, for example). To make
+    # this work, we need to know whether PYEXTCC accepts /c and /Fo or -c -o.
+    # This is difficult with the current way tools work in scons.
+    if sys.platform == 'win32':
+        env['PYEXTCCCOM'] = "$PYEXTCC /Fo$TARGET /c $PYEXTCCSHARED "\
+                            "$PYEXTCFLAGS $_PYEXTCPPINCFLAGS $SOURCES"
+    else:
+        env['PYEXTCCCOM'] = "$PYEXTCC -o $TARGET -c $PYEXTCCSHARED "\
+                            "$PYEXTCFLAGS $_PYEXTCPPINCFLAGS $SOURCES"
 
-    # XXX: This won't work with MS tools ...
-    env['PYEXTLINKCOM'] = "$PYEXTLINK -o $TARGET $PYEXTLINKFLAGS $SOURCES"
+    # XXX: cf comment on PYEXTCCCOM
+    if sys.platform == 'win32':
+        env['PYEXTLINKCOM'] = '${TEMPFILE("$PYEXTLINK $PYEXTLINKFLAGS /OUT:$TARGET.windows $SOURCES.windows")}'
+    else:
+        env['PYEXTLINKCOM'] = "$PYEXTLINK -o $TARGET $PYEXTLINKFLAGS $SOURCES"
 
 def set_configuration(env, use_distutils):
     """Set construction variables which are platform dependants.
@@ -143,9 +152,6 @@ def set_configuration(env, use_distutils):
     if use_distutils:
         for k, v in dist_cfg.items():
             ifnotset(k, eval(v))
-        target = sysconfig.get_config_var('MACOSX_DEPLOYMENT_TARGET')
-        if target:
-            env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = target
     else:
         for k, v in def_cfg.items():
             ifnotset(k, v)
