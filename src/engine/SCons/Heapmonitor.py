@@ -45,6 +45,7 @@ import weakref
 import new
 
 import SCons.asizeof
+import SCons.Debug
 
 # Dictionaries of TrackedObject objects associated with the actual objects that
 # are tracked. 'tracked_index' uses the class name as the key and associates a
@@ -83,6 +84,10 @@ def _inject_constructor(klass, f, name, resolution_level, keep):
         def ki(self, *args, **kwds):
             pass
 
+    # Possible name clash between keyword arguments of the tracked class'
+    # constructor and the curried arguments of the injected constructor.
+    # Therefore, the additional arguments have 'magic' names to make it less
+    # likely that an argument name clash occurs.
     _constructors[klass] = ki
     klass.__init__ = new.instancemethod(
         lambda *args, **kwds: f(ki, name, resolution_level, keep, *args, **kwds), None, klass)
@@ -99,14 +104,15 @@ def _restore_constructor(klass):
         raise ValueError
 
 
-def _tracker(__init__, name, resolution_level, keep, self, *args, **kwds):
+def _tracker(__init__, __name__, __resolution_level__, __keep__, self, *args, **kwds):
     """
     Injected constructor for tracked classes.
     Call the actual constructor of the object and track the object.
     Attach to the object before calling the constructor to track the object with
     the parameters of the most specialized class.
     """
-    track_object(self, name=name, resolution_level=resolution_level, keep=keep)
+    track_object(self, name=__name__, resolution_level=__resolution_level__,
+        keep=__keep__)
     __init__(self, *args, **kwds)
 
 
@@ -250,10 +256,15 @@ def detach_all():
     tracked_index.clear()
     _keepalive[:] = []
 
+class Footprint:
+    pass
 
-def create_snapshot():
+def create_snapshot(description=''):
     """
     Collect current per instance statistics.
+    Save total amount of memory consumption reported by asizeof and by the
+    operating system. The overhead of the Heapmonitor structure is also
+    computed.
     """
     #sizer = SCons.asizeof.Asizer()
     #sizer.norecurse(instance_ids=tracked_objects.keys())
@@ -262,7 +273,16 @@ def create_snapshot():
     sizer.exclude_refs(*objs)
     for to in tracked_objects.values():
         to.track_size(sizer)
-    footprint.append( (time.time(), sizer.total) )
+
+    fp = Footprint()
+
+    fp.timestamp = time.time()
+    fp.tracked_total = sizer.total
+    fp.asizeof_total = SCons.asizeof.asizeof(all=True, code=True)
+    fp.system_total = SCons.Debug.memory()
+    fp.desc = description
+
+    footprint.append(fp)
     # overhead = sizer.asizeof(self) # compute actual profiling overhead
 
 
@@ -281,43 +301,105 @@ def find_garbage():
         if tracked_objects.has_key(id(x)):
             print "WARNING: Tracked object is marked as garbage: %s" % repr(tracked_objects[id(x)].ref())
 
+def _pp(i):
+    degree = 0
+    pattern = "%4d     %s"
+    while i > 1024:
+        pattern = "%7.2f %s"
+        i = i / 1024.0
+        degree += 1
+    scales = ['B', 'KB', 'MB', 'GB', 'TB', 'EB']
+    return pattern % (i, scales[degree])
 
-def print_stats(file=sys.stdout):
+def print_stats(file=sys.stdout, full=0):
     """
     Write tracked objects by class to stdout.
     """
-    print "[ INFO ] Prototype: Do not take the reported values too seriously"
-    pattern  = '  %-66s  %9d %s\n'
-    pattern2 = '  %-34s %8d Alive  %8d Free    %9d %s\n'
+
+    pattern  = '  %-66s  %s\n'
+    pattern2 = '%-36s %8d Alive  %8d Free    %s\n'
     classlist = tracked_index.keys()
     classlist.sort()
     summary = []
     for classname in classlist:
-        file.write('\n%s:\n' % classname)
+        if full:
+            file.write('\n%s:\n' % classname)
         sum = 0
         dead = 0
         alive = 0
         for to in tracked_index[classname]:
-            # size = SCons.asizeof.asizeof(obj)
             size = to.get_max_size()
             obj  = to.ref()
             sum += size
             if obj is not None:
-                file.write(pattern % (repr(obj), size, 'Bytes'))
+                if full:
+                    file.write(pattern % (repr(obj), _pp(size)))
                 alive += 1
             else:
                 dead += 1
-        #file.write(pattern2 % (classname,alive,dead,sum,'Bytes'))
-        summary.append(pattern2 % (classname,alive,dead,sum,'Bytes'))
-    try:
-        total = max([s for (t, s) in footprint])
-    except ValueError:
-        total = 0
-    file.write('\n')
+        summary.append(pattern2 % (classname,alive,dead,_pp(sum)))
+
+    file.write('\n---- SUMMARY '+'-'*67+'\n')
     for line in summary:
         file.write(line)
+    file.write('-'*80+'\n')
     file.write('\n')
-    file.write(pattern % ('Total',total,'Bytes'))
 
-    #SCons.asizeof.asizeof(all=True, stats=6)
+def print_snapshots(file=sys.stdout):
+    """
+    Print snapshot stats.
+    """
+    file.write('%-32s %16s (%11s) %16s\n' % ('Snapshot Label', 'Virtual Total',
+        'Sizeable', 'Tracked Total'))
+    for fp in footprint:
+        label = fp.desc
+        if label == '':
+            label = str(fp.timestamp)
+        sample = "%-32s %16s (%11s) %16s\n" % \
+            (label, _pp(fp.system_total), _pp(fp.asizeof_total), 
+            _pp(fp.tracked_total))
+        file.write(sample)
+    file.write('-'*80+'\n')
 
+"""
+#
+# Attach to a set of default classes for debugging purposes.
+# TODO This will move to some other place where it is executed conditionally on
+# SCons startup (e.g. only when --debug=memory is specified).
+#
+if __debug__:
+    # Default classes to track
+    import SCons.Node
+
+    track_class(SCons.Node.FS.Base)
+    track_class(SCons.Node.FS.Dir)
+    track_class(SCons.Node.FS.RootDir)
+    track_class(SCons.Node.FS.File)
+    track_class(SCons.Node.Node)
+
+    import SCons.Executor
+
+    track_class(SCons.Executor.Executor)
+    track_class(SCons.Executor.Null)
+
+    import SCons.Environment
+
+    track_class(SCons.Environment.Base)
+    track_class(SCons.Environment.SubstitutionEnvironment)
+    # track_class(SCons.Environment.EnvironmentClone) # TODO
+    track_class(SCons.Environment.OverrideEnvironment)
+
+    import SCons.Action
+
+    track_class(SCons.Action.CommandAction)
+    track_class(SCons.Action.CommandGeneratorAction)
+    track_class(SCons.Action.LazyAction)
+    track_class(SCons.Action.FunctionAction)
+    track_class(SCons.Action.ListAction)
+
+    import SCons.Builder
+
+    track_class(SCons.Builder.BuilderBase)
+    track_class(SCons.Builder.OverrideWarner)
+    track_class(SCons.Builder.CompositeBuilder)
+"""

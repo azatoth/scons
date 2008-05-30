@@ -56,6 +56,7 @@ import traceback
 
 import SCons.CacheDir
 import SCons.Debug
+import SCons.Heapmonitor
 import SCons.Defaults
 import SCons.Environment
 import SCons.Errors
@@ -514,11 +515,14 @@ count_stats = CountStats()
 class MemStats(Stats):
     def do_append(self, label):
         self.labels.append(label)
-        self.stats.append(SCons.Debug.memory())
+        # self.stats.append(SCons.Debug.memory())
+        SCons.Heapmonitor.create_snapshot(label)
     def do_print(self):
-        fmt = 'Memory %-32s %12d\n'
-        for label, stats in map(None, self.labels, self.stats):
-            self.outfp.write(fmt % (label, stats))
+        SCons.Heapmonitor.print_stats(self.outfp)
+        SCons.Heapmonitor.print_snapshots(self.outfp)
+        #fmt = 'Memory %-32s %12d\n'
+        #for label, stats in map(None, self.labels, self.stats):
+        #    self.outfp.write(fmt % (label, stats))
 
 memory_stats = MemStats()
 
