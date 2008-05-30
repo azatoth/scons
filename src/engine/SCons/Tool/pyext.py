@@ -136,6 +136,8 @@ def set_configuration(env, use_distutils):
 
     from distutils import sysconfig
 
+    # We set the python path even when not using distutils, because we rarely
+    # want to change this, even if not using distutils
     ifnotset('PYEXTINCPATH', sysconfig.get_python_inc())
 
     if use_distutils:
@@ -178,6 +180,8 @@ def exists(env):
     try:
         if sys.platform == 'win32':
             return False
+        # This is not quite right: if someone defines all variables by himself,
+        # it would work without distutils
         from distutils import sysconfig
         return True
     except ImportError:
