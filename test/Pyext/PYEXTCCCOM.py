@@ -27,24 +27,18 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import sys
 import TestSCons
 
+from fakecc import get_fakecmd
+
 _python_ = TestSCons._python_
 _exe   = TestSCons._exe
 
 test = TestSCons.TestSCons()
 
-test.write('mypyextcc.py', r"""
-import sys
-outfile = open(sys.argv[1], 'wb')
-infile = open(sys.argv[2], 'rb')
-cmt = '/*pyextcc*/'
-for l in filter(lambda l: l[:len(cmt)] != cmt, infile.readlines()):
-    outfile.write(l)
-sys.exit(0)
-""")
+test.write('mypyextcc.py', get_fakecmd(nokeep = "/*pyextcc*/"))
 
 test.write('SConstruct', """
 env = Environment(tools = ['default', 'pyext'],
-                  PYEXTCCCOM = r'%(_python_)s mypyextcc.py $TARGET $SOURCE',
+                  PYEXTCCCOM = r'%(_python_)s mypyextcc.py -o $TARGET $SOURCE',
                   SHOBJSUFFIX = '.obj')
 env.PythonObject(target = 'test1', source = 'test1.c')
 """ % locals())
