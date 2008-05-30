@@ -25,50 +25,17 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import sys
+import string
 import TestSCons
+
+from fakecc import fakecmd
 
 _python_ = TestSCons._python_
 _exe   = TestSCons._exe
 
 test = TestSCons.TestSCons()
 
-if sys.platform == 'win32':
-
-    test.write('mypyextcc.py', r"""
-import sys
-args = sys.argv[1:]
-inf = None
-while args:
-    a = args[0]
-    args = args[1:]
-    if a[0] != '/':
-        if not inf:
-            inf = a
-        continue
-    if a[:3] == '/Fo': out = a[3:]
-infile = open(inf, 'rb')
-outfile = open(out, 'wb')
-for l in infile.readlines():
-    if l[:11] != '/*pyextcc*/':
-        outfile.write(l)
-sys.exit(0)
-""")
-
-else:
-
-    test.write('mypyextcc.py', r"""
-import getopt
-import sys
-opts, args = getopt.getopt(sys.argv[1:], 'co:I:f:')
-for opt, arg in opts:
-    if opt == '-o': out = arg
-infile = open(args[0], 'rb')
-outfile = open(out, 'wb')
-for l in infile.readlines():
-    if l[:11] != '/*pyextcc*/':
-        outfile.write(l)
-sys.exit(0)
-""")
+test.write('mypyextcc.py', string.replace(fakecmd , '@NOKEEP@', "'/*pyextcc*/'"))
 
 test.write('SConstruct', """
 env = Environment(tools = ['default', 'pyext'],
