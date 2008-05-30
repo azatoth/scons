@@ -31,6 +31,7 @@ POSIX_OPTFLAG = re.compile('-O(\d*)')
 POSIX_WARNFLAG = re.compile('-W([\w]*)')
 POSIX_PIC = re.compile('-[\w]PIC')
 POSIX_INCLUDE = re.compile('-I[\S]+')
+POSIX_SHARED = re.compile('-shared')
 
 args = sys.argv[1:]
 
@@ -94,7 +95,7 @@ def parse_posix(args):
     return output, input, keptflags
 
 def ignore_flag_posix(flag):
-    for f in [POSIX_OPTFLAG, POSIX_WARNFLAG, POSIX_CFLAG, POSIX_PIC, POSIX_INCLUDE]:
+    for f in [POSIX_OPTFLAG, POSIX_WARNFLAG, POSIX_CFLAG, POSIX_PIC, POSIX_INCLUDE, POSIX_SHARED]:
         if f.match(flag):
             return True
     return False
