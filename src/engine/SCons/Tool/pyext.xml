@@ -1,0 +1,88 @@
+<!--
+__COPYRIGHT__
+
+This file is processed by the bin/SConsDoc.py module.
+See its __doc__ string for a discussion of the format.
+-->
+<tool name="pyext">
+<summary>
+Sets construction variables for a python C extension builder
+</summary>
+<sets>
+PYEXTCC
+PYEXTCCCOM
+PYEXTCCCOMSTR
+PYEXTCFLAGS
+PYEXTCCSHARED
+PYEXTLINK
+PYEXTLINKCOM
+PYEXTLINKFLAGS
+PYEXTSUFFIX
+PYEXTPREFIX
+PYEXTINCPATH
+PYEXTCPPPATH
+PYEXTSUFFIX
+PYEXTOBJSUFFIX
+PYEXTOBJPREFIX
+</sets>
+<uses>
+PYEXT_USE_DISTUTILS
+</uses>
+</tool>
+
+<cvar name="PYEXTCC">
+<summary>
+The C compiler use to compile extensions object from source files.
+</summary>
+</cvar>
+
+<cvar name="PYEXTCCCOM">
+<summary>
+The comand line used to build python object.
+</summary>
+</cvar>
+
+<cvar name="PYEXTCFLAGS">
+<summary>
+General options passed to the C compiler when building python extensions.
+</summary>
+</cvar>
+
+<cvar name="PYEXTCCSHARED">
+<summary>
+Flag to build python extensions intended to be loaded dynamically (e.g. -fPIC
+on gnu, etc...)
+</summary>
+</cvar>
+
+<cvar name="PYEXTLINK">
+<summary>
+Linker used to build python extensions.
+</summary>
+</cvar>
+
+<cvar name="PYEXTLINKCOM">
+<summary>
+Linker command used to build python extensions.
+</summary>
+</cvar>
+
+<cvar name="PYEXTINCPATH">
+<summary>
+Path where to look for the Python.h header file (e.g.
+/usr/include/python2.5 on a standard Linux install for python 2.5)
+</summary>
+</cvar>
+
+<cvar name="PYEXTSUFFIX">
+<summary>
+File extension for python extensions. Same as SHLIBSUFFIX by default if
+distutils is not used.
+</summary>
+</cvar>
+
+<cvar name="PYEXTOBJSUFFIX">
+<summary>
+File extension for compiled python extensions source files. 
+</summary>
+</cvar>
