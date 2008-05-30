@@ -28,14 +28,14 @@ import sys
 import string
 import TestSCons
 
-from fakecc import fakecmd
+from fakecc import get_fakecmd
 
 _python_ = TestSCons._python_
 _exe   = TestSCons._exe
 
 test = TestSCons.TestSCons()
 
-test.write('mypyextcc.py', string.replace(fakecmd , '@NOKEEP@', "'/*pyextcc*/'"))
+test.write('mypyextcc.py', get_fakecmd(nokeep = "/*pyextcc*/"))
 
 test.write('SConstruct', """
 env = Environment(tools = ['default', 'pyext'],
