@@ -2,7 +2,7 @@ fakecmd = r"""
 #! /usr/bin/env python
 
 # Fake compiler : can handle posix style and windows style basic arguments, and
-# filter out everything but line defined in cmt
+# filter out NOKEEP line
 import sys
 import re
 
