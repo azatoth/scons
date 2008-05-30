@@ -109,7 +109,8 @@ def set_basic_vars(env):
 
     # XXX: cf comment on PYEXTCCCOM
     if sys.platform == 'win32':
-        env['PYEXTLINKCOM'] = '${TEMPFILE("$PYEXTLINK $PYEXTLINKFLAGS /OUT:$TARGET.windows $SOURCES.windows")}'
+        env['PYEXTLINKCOM'] = '${TEMPFILE("$PYEXTLINK $PYEXTLINKFLAGS '\
+                              '/OUT:$TARGET.windows $SOURCES.windows")}'
     else:
         env['PYEXTLINKCOM'] = "$PYEXTLINK -o $TARGET $PYEXTLINKFLAGS $SOURCES"
 
