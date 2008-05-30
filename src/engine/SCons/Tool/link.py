@@ -58,7 +58,8 @@ def smart_link(source, target, env, for_signature):
                 FortranCxxMix,
                 "Using $CXX to link Fortran and C++ code: this is likely to "\
                 "generate buggy binaries, because most c++ compiler do not "\
-                "know how to deal with fortran runtime.")
+                "know how to deal with fortran runtime. SCons does not know "\
+                "yet how to do it reliably")
         return '$CXX'
     elif has_fortran:
         return '$FORTRAN'
