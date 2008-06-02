@@ -1,4 +1,5 @@
 SCons/__init__.py
+SCons/asizeof.py
 SCons/Action.py
 SCons/Builder.py
 SCons/compat/__init__.py
@@ -23,6 +24,7 @@ SCons/Errors.py
 SCons/Executor.py
 SCons/Job.py
 SCons/exitfuncs.py
+SCons/Heapmonitor.py
 SCons/Memoize.py
 SCons/Node/__init__.py
 SCons/Node/Alias.py
