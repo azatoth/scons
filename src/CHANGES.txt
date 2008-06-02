@@ -8,12 +8,20 @@
 
 
 
-RELEASE XXX - XXX
+RELEASE 0.98.5 - XXX
 
   From Steven Knight:
 
   - Update the scons.bat file so that it returns the real exit status
     from SCons, even though it uses setlocal + endlocal.
+
+  - Fix the --interactive post-build messages so it doesn't get stuck
+    mistakenly reporting failures after any individual build fails.
+
+  - Fix calling File() as a File object method in some circumstances.
+
+  - Fix setup.py installation on Mac OS X so SCons gets installed
+    under /usr/lcoal by default, not in the Mac OS X Python framework.
 
 
 
