@@ -69,6 +69,24 @@ class TrackObjectTestCase(unittest.TestCase):
         assert tracked_objects[id(foo)].ref() == foo
         assert tracked_objects[id(bar)].ref() == bar
 
+    def test_type_errors(self):
+        """Test intrackable objects.
+        """
+        i = 42
+        j = 'Foobar'
+        k = [i,j]
+        l = {i: j}
+
+        self.assertRaises(TypeError, track_object, i)
+        self.assertRaises(TypeError, track_object, j)
+        self.assertRaises(TypeError, track_object, k)
+        self.assertRaises(TypeError, track_object, l)
+
+        assert id(i) not in tracked_objects
+        assert id(j) not in tracked_objects
+        assert id(k) not in tracked_objects
+        assert id(l) not in tracked_objects
+
     def test_track_by_name(self):
         """Test registering objects by name.
         """
@@ -194,6 +212,7 @@ if __name__ == "__main__":
     tclasses = [ TrackObjectTestCase,
                  TrackClassTestCase
                  # RecursionLevelTestCase,
+                 # SnapshotTestCase,
                ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')

@@ -67,6 +67,9 @@ _keepalive = []
 # Overridden constructors of tracked classes (identified by classname).
 _constructors = {}
 
+# Fixpoint for program start relative time stamp.
+_local_start = time.time()
+
 
 def _inject_constructor(klass, f, name, resolution_level, keep):
     """
@@ -141,6 +144,29 @@ class TrackedObject(object):
         self.footprint = [(self.birth, initial_size)]
 
 
+    def print_text(self, file, full=0):
+        """
+        Print the gathered information in human-readable format to the specified
+        file.
+        """
+        obj  = self.ref()
+        if full:
+            if obj is None:
+                file.write('%-32s (FREE)\n' % str(self.ref))
+            else:
+                file.write('%-32s %39s\n' % (repr(obj), str(obj)))
+            for (ts, size) in self.footprint:
+                file.write('  %-30s %s\n' % (_get_timestamp(ts), _pp(size)))
+            if self.death is not None:
+                file.write('  %-30s finalize\n' % _get_timestamp(ts))
+        else:
+            size = self.get_max_size()
+            if obj is not None:
+                file.write('%-57s %-14s\n' % (repr(obj), _pp(size)))
+            else: # TODO does not make much sense: better print class/lifetime
+                file.write('%-57s %-14s\n' % (repr(self.ref), _pp(size)))       
+        
+
     def track_size(self, sizer):
         """
         Store timestamp and current size for later evaluation.
@@ -167,19 +193,27 @@ class TrackedObject(object):
         Mark the reference as dead and remember the timestamp.
         It would be great if we could measure the pre-destruction size. 
         Unfortunately, the object is gone by the time the weakref callback is called.
-        However, weakref callbacks are useful to be informed when tracked objects die(d)
+        However, weakref callbacks are useful to be informed when tracked objects died
         without the need of destructors.
-        """
-        pass # TODO
 
-        #self.death = gettime()
-        #print self
-        #self.mark_deletion()
+        If the object is destroyed at the end of the program execution, it's not
+        possible to import modules anymore. Hence, the finalize callback just
+        does nothing (self.death stays None).
+        """
+        try:
+            import time
+        except ImportError:
+            pass
+        else:
+            self.death = time.time()
 
 
 def track_object(instance, name=None, resolution_level=0, keep=0):
     """
     Track object 'instance' and sample size and lifetime information.
+    Not all objects can be tracked; trackable objects are class instances and
+    other objects that can be weakly referenced. When an object cannot be
+    tracked, a TypeError is raised.
     The 'resolution_level' is the recursion depth up to which referents are
     sized individually. Resolution level 0 (default) treats the object as an
     opaque entity, 1 sizes all direct referents individually, 2 also sizes the
@@ -200,16 +234,15 @@ def track_object(instance, name=None, resolution_level=0, keep=0):
     if resolution_level > 0: # TODO
         raise NotImplementedError
 
-    if name is None:
-        name = instance.__class__.__name__
-    if not tracked_index.has_key(name):
-        tracked_index[name] = []
-
     to = TrackedObject(instance)
 
     #print "DEBUG: Track %s as type %s (Keep=%d, Resolution=%d)" % (repr(instance),
     #    name, keep, resolution_level)
 
+    if name is None:
+        name = instance.__class__.__name__
+    if not tracked_index.has_key(name):
+        tracked_index[name] = []
     tracked_index[name].append(to)
     tracked_objects[id(instance)] = to
 
@@ -311,6 +344,15 @@ def _pp(i):
     scales = ['B', 'KB', 'MB', 'GB', 'TB', 'EB']
     return pattern % (i, scales[degree])
 
+def _get_timestamp(t):
+    """
+    Get a friendly timestamp (as returned by time.time) represented as a string.
+    """
+    rt = t - _local_start
+    h, m, s = int(rt / 3600), int(rt / 60 % 60), rt % 60
+
+    return "%02d:%02d:%05.2f" % (h, m, s)
+
 def print_stats(file=sys.stdout, full=0):
     """
     Write tracked objects by class to stdout.
@@ -331,9 +373,10 @@ def print_stats(file=sys.stdout, full=0):
             size = to.get_max_size()
             obj  = to.ref()
             sum += size
+            to.print_text(file, full=1)
             if obj is not None:
-                if full:
-                    file.write(pattern % (repr(obj), _pp(size)))
+                #if full:
+                #    file.write(pattern % (repr(obj), _pp(size)))
                 alive += 1
             else:
                 dead += 1
@@ -349,17 +392,17 @@ def print_snapshots(file=sys.stdout):
     """
     Print snapshot stats.
     """
-    file.write('%-32s %16s (%11s) %16s\n' % ('Snapshot Label', 'Virtual Total',
-        'Sizeable', 'Tracked Total'))
+    file.write('%-32s %15s (%11s) %15s\n' % ('SNAPSHOT LABEL', 'VIRTUAL TOTAL',
+        'SIZEABLE', 'TRACKED TOTAL'))
     for fp in footprint:
         label = fp.desc
         if label == '':
-            label = str(fp.timestamp)
-        sample = "%-32s %16s (%11s) %16s\n" % \
+            label = _get_timestamp(fp.timestamp)
+        sample = "%-32s %15s (%11s) %15s\n" % \
             (label, _pp(fp.system_total), _pp(fp.asizeof_total), 
             _pp(fp.tracked_total))
         file.write(sample)
-    file.write('-'*80+'\n')
+    #file.write('-'*80+'\n')
 
 """
 #
