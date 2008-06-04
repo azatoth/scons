@@ -126,6 +126,15 @@ def _set_configuration_nodistutils(env):
     for k, v in def_cfg.items():
         ifnotset(env, k, v)
 
+    if not env.has_key("PYEXT_ALLOW_UNDEFINED"):
+        if sys.platform == 'darwin':
+            from allow_undefined import get_darwin_allow_undefined
+            env['PYEXT_ALLOW_UNDEFINED'] = get_darwin_allow_undefined()
+        else:
+            env["PYEXT_ALLOW_UNDEFINED"] = ''
+
+    env.Append(PYEXTLINKFLAGS = env['PYEXT_ALLOW_UNDEFINED'])
+
 def ifnotset(env, name, value):
     if not env.has_key(name):
         env[name] = value
