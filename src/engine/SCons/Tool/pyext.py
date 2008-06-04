@@ -177,11 +177,6 @@ def generate(env):
     """Add Builders and construction variables for python extensions to an
     Environment."""
 
-    if sys.platform == 'win32':
-        raise NotImplementedError(
-                "Sorry: building python extensions "\
-                "on windows is not supported yet")
-
     if not env.has_key('PYEXT_USE_DISTUTILS'):
         env['PYEXT_USE_DISTUTILS'] = False
 
