@@ -64,13 +64,13 @@ def get_darwin_allow_undefined():
                 deptarget = os.environ['MACOSX_DEPLOYMENT_TARGET']
                 ma, mi = deptarget.split(".")
                 if mi < 3:
-                    flag = ['-Wl,-flat_namespace', '-Wl,-undefined -Wl,suppress']
+                    flag = ['-Wl,-flat_namespace', '-Wl,-undefined', '-Wl,suppress']
                 else:
                     flag = ['-Wl,-undefined', '-Wl,dynamic_lookup']
             except KeyError:
-                flag = ['-Wl,-flat_namespace', '-Wl,-undefined -Wl,suppress']
+                flag = ['-Wl,-flat_namespace', '-Wl,-undefined', '-Wl,suppress']
     else:
-        # Non existing mac os x ? Just set to ''
+        # Non existing mac os x ? Just set to empty list
         flag = []
 
     return flag

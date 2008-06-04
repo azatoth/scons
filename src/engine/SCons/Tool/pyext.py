@@ -131,7 +131,7 @@ def _set_configuration_nodistutils(env):
             from allow_undefined import get_darwin_allow_undefined
             env['PYEXT_ALLOW_UNDEFINED'] = get_darwin_allow_undefined()
         else:
-            env["PYEXT_ALLOW_UNDEFINED"] = ''
+            env["PYEXT_ALLOW_UNDEFINED"] = ['']
 
     env.Append(PYEXTLINKFLAGS = env['PYEXT_ALLOW_UNDEFINED'])
 
