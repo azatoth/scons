@@ -114,6 +114,22 @@ def set_basic_vars(env):
     else:
         env['PYEXTLINKCOM'] = "$PYEXTLINK -o $TARGET $PYEXTLINKFLAGS $SOURCES"
 
+def _set_configuration_nodistutils(env):
+    # Set env variables to sensible values when not using distutils
+    def_cfg = {'PYEXTCC' : '$SHCC',
+               'PYEXTCFLAGS' : '$SHCCFLAGS',
+               'PYEXTLINK' : '$LDMODULE',
+               'PYEXTLINKFLAGS' : '$LDMODULEFLAGS',
+               'PYEXTSUFFIX' : '$SHLIBSUFFIX',
+               'PYEXTPREFIX' : ''}
+
+    for k, v in def_cfg.items():
+        ifnotset(env, k, v)
+
+def ifnotset(env, name, value):
+    if not env.has_key(name):
+        env[name] = value
+
 def set_configuration(env, use_distutils):
     """Set construction variables which are platform dependants.
 
@@ -121,13 +137,6 @@ def set_configuration(env, use_distutils):
     'sensible' default.
 
     Any variable already defined is untouched."""
-
-    def_cfg = {'PYEXTCC' : '$SHCC',
-               'PYEXTCFLAGS' : '$SHCCFLAGS',
-               'PYEXTLINK' : '$LDMODULE',
-               'PYEXTLINKFLAGS' : '$LDMODULEFLAGS',
-               'PYEXTSUFFIX' : '$SHLIBSUFFIX',
-               'PYEXTPREFIX' : ''}
 
     # We define commands as strings so that we can either execute them using
     # eval (same python for scons and distutils) or by executing them through
@@ -140,22 +149,17 @@ def set_configuration(env, use_distutils):
                 'PYEXTINCPATH': "sysconfig.get_python_inc()", 
                 'PYEXTSUFFIX': "sysconfig.get_config_var('SO')"} 
 
-    def ifnotset(name, value):
-        if not env.has_key(name):
-            env[name] = value
-
     from distutils import sysconfig
 
     # We set the python path even when not using distutils, because we rarely
     # want to change this, even if not using distutils
-    ifnotset('PYEXTINCPATH', sysconfig.get_python_inc())
+    ifnotset(env, 'PYEXTINCPATH', sysconfig.get_python_inc())
 
     if use_distutils:
         for k, v in dist_cfg.items():
-            ifnotset(k, eval(v))
+            ifnotset(env, k, eval(v))
     else:
-        for k, v in def_cfg.items():
-            ifnotset(k, v)
+        _set_configuration_nodistutils(env)
 
 def generate(env):
     """Add Builders and construction variables for python extensions to an
