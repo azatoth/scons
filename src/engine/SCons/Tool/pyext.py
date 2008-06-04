@@ -120,8 +120,11 @@ def _set_configuration_nodistutils(env):
                'PYEXTCFLAGS' : '$SHCCFLAGS',
                'PYEXTLINK' : '$LDMODULE',
                'PYEXTLINKFLAGS' : '$LDMODULEFLAGS',
-               'PYEXTSUFFIX' : '$SHLIBSUFFIX',
+               'PYEXTSUFFIX' : '$LDMODULESUFFIX',
                'PYEXTPREFIX' : ''}
+
+    if sys.platform == 'darwin':
+        def_cfg['PYEXTSUFFIX'] = '.so'
 
     for k, v in def_cfg.items():
         ifnotset(env, k, v)
