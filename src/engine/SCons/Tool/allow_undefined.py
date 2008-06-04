@@ -63,7 +63,7 @@ def get_darwin_allow_undefined():
             try:
                 deptarget = os.environ['MACOSX_DEPLOYMENT_TARGET']
                 ma, mi = deptarget.split(".")
-                if mi < 3:
+                if int(mi) < 3:
                     flag = ['-Wl,-flat_namespace', '-Wl,-undefined', '-Wl,suppress']
                 else:
                     flag = ['-Wl,-undefined', '-Wl,dynamic_lookup']
