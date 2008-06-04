@@ -118,6 +118,18 @@ def _tracker(__init__, __name__, __resolution_level__, __keep__, self, *args, **
         keep=__keep__)
     __init__(self, *args, **kwds)
 
+def _trunc(s, max, left=0):
+    #if isinstance(s, list):
+    #    s = s[0]
+    s = str(s)
+    #s.replace('\n', ' ')
+    if len(s) > max:
+        if left:
+            return '...'+s[len(s)-max+3:]
+        else:
+            return s[:(max-3)]+'...'
+    else:
+        return s
 
 class TrackedObject(object):
     """
@@ -133,6 +145,7 @@ class TrackedObject(object):
         (timestamp, size) tuples.
         """
         self.ref = weakref.ref(instance, self.finalize)
+        self.name = instance.__class__
         self.birth = time.time()
         self.death = None
 
@@ -152,9 +165,14 @@ class TrackedObject(object):
         obj  = self.ref()
         if full:
             if obj is None:
-                file.write('%-32s (FREE)\n' % str(self.ref))
+                file.write('%-32s (FREE)\n' % _trunc(self.name, 32, left=1))
             else:
-                file.write('%-32s %39s\n' % (repr(obj), str(obj)))
+                repr = str(obj)
+                if repr == self.name:
+                    repr = 'at %08h' % (id(obj))
+                # FIXME ListAction repr spans two lines in the output
+                file.write('%-32s %-46s\n' % (_trunc(self.name, 32, left=1),
+                    _trunc(repr, 46)))
             for (ts, size) in self.footprint:
                 file.write('  %-30s %s\n' % (_get_timestamp(ts), _pp(size)))
             if self.death is not None:
@@ -162,9 +180,9 @@ class TrackedObject(object):
         else:
             size = self.get_max_size()
             if obj is not None:
-                file.write('%-57s %-14s\n' % (repr(obj), _pp(size)))
-            else: # TODO does not make much sense: better print class/lifetime
-                file.write('%-57s %-14s\n' % (repr(self.ref), _pp(size)))       
+                file.write('%-64s %-14s\n' % (_trunc(repr(obj), 64), _pp(size)))
+            else:
+                file.write('%-64s %-14s\n' % (_trunc(self.name, 64), _pp(size)))       
         
 
     def track_size(self, sizer):
@@ -404,14 +422,10 @@ def print_snapshots(file=sys.stdout):
         file.write(sample)
     #file.write('-'*80+'\n')
 
-"""
-#
-# Attach to a set of default classes for debugging purposes.
-# TODO This will move to some other place where it is executed conditionally on
-# SCons startup (e.g. only when --debug=memory is specified).
-#
-if __debug__:
-    # Default classes to track
+def attach_default():
+    """
+    Attach to a set of default classes.
+    """
     import SCons.Node
 
     track_class(SCons.Node.FS.Base)
@@ -445,4 +459,3 @@ if __debug__:
     track_class(SCons.Builder.BuilderBase)
     track_class(SCons.Builder.OverrideWarner)
     track_class(SCons.Builder.CompositeBuilder)
-"""

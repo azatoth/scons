@@ -514,17 +514,25 @@ count_stats = CountStats()
 
 class MemStats(Stats):
     def do_append(self, label):
-        self.labels.append(label)
+        #self.labels.append(label)
         # self.stats.append(SCons.Debug.memory())
         SCons.Heapmonitor.create_snapshot(label)
     def do_print(self):
-        SCons.Heapmonitor.print_stats(self.outfp)
+        #SCons.Heapmonitor.print_stats(self.outfp)
         SCons.Heapmonitor.print_snapshots(self.outfp)
         #fmt = 'Memory %-32s %12d\n'
         #for label, stats in map(None, self.labels, self.stats):
         #    self.outfp.write(fmt % (label, stats))
 
 memory_stats = MemStats()
+
+class HeapmonitorStats(Stats):
+    def do_append(self, label):
+        pass
+    def do_print(self):
+        SCons.Heapmonitor.print_stats(self.outfp)
+
+heapmonitor_stats = HeapmonitorStats()
 
 # utility functions
 
@@ -651,6 +659,9 @@ def _set_debug_values(options):
         print_time = 1
     if "tree" in debug_values:
         options.tree_printers.append(TreePrinter())
+    if "heapmonitor" in debug_values:
+        heapmonitor_stats.enable(sys.stdout)
+        SCons.Heapmonitor.attach_default()
 
 def _create_path(plist):
     path = '.'
@@ -1260,6 +1271,7 @@ def main():
 
     memory_stats.print_stats()
     count_stats.print_stats()
+    heapmonitor_stats.print_stats()
 
     if print_objects:
         SCons.Debug.listLoggedInstances('*')

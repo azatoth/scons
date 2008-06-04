@@ -600,7 +600,7 @@ def Parser(version):
     debug_options = ["count", "explain", "findlibs",
                      "includes", "memoizer", "memory", "objects",
                      "pdb", "presub", "stacktrace",
-                     "time"] + deprecated_debug_options.keys()
+                     "time", "heapmonitor"] + deprecated_debug_options.keys()
 
     def opt_debug(option, opt, value, parser,
                   debug_options=debug_options,
