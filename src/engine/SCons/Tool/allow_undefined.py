@@ -70,7 +70,7 @@ def get_darwin_allow_undefined():
             except KeyError:
                 flag = ['-Wl,-flat_namespace', '-Wl,-undefined', '-Wl,suppress']
     else:
-        # Non existing mac os x ? Just set to empty list
+        # Unknown version of mac os x ? Just set to empty list
         flag = []
 
     return flag
