@@ -33,6 +33,8 @@ POSIX_PIC = re.compile('-[\w]PIC')
 POSIX_INCLUDE = re.compile('-I[\S]+')
 POSIX_SHARED = re.compile('-shared')
 
+DARWIN_BUNDLE_FLAG = re.compile("-bundle")
+
 args = sys.argv[1:]
 
 NOKEEP = "%(_NOKEEP_)s"
@@ -95,7 +97,7 @@ def parse_posix(args):
     return output, input, keptflags
 
 def ignore_flag_posix(flag):
-    for f in [POSIX_OPTFLAG, POSIX_WARNFLAG, POSIX_CFLAG, POSIX_PIC, POSIX_INCLUDE, POSIX_SHARED]:
+    for f in [POSIX_OPTFLAG, POSIX_WARNFLAG, POSIX_CFLAG, POSIX_PIC, POSIX_INCLUDE, POSIX_SHARED, DARWIN_BUNDLE_FLAG]:
         if f.match(flag):
             return True
     return False
