@@ -28,6 +28,8 @@ This is NOT a tool.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import os
+
 from subprocess import Popen, PIPE
 
 def get_darwin_version():
