@@ -52,25 +52,25 @@ def get_darwin_version():
 		raise ValueError("Could not parse version string %s" % verstring)
 
 def get_darwin_allow_undefined():
-    """Return the flag to allow undefined symbols in a shared library.
+    """Return the list of flags to allow undefined symbols in a shared library.
 
     On MAC OS X, takes MACOSX_DEPLOYMENT_TARGET into account."""
     major, minor, micro = get_darwin_version()
     if major == 10:
         if minor < 3:
-            flag = "-Wl,-undefined -Wl,suppress"
+            flag = ["-Wl,-undefined", "-Wl,suppress"]
         else:
             try:
                 deptarget = os.environ['MACOSX_DEPLOYMENT_TARGET']
                 ma, mi = deptarget.split(".")
                 if mi < 3:
-                    flag = '-Wl,-flat_namespace -Wl,-undefined -Wl,suppress'
+                    flag = ['-Wl,-flat_namespace', '-Wl,-undefined -Wl,suppress']
                 else:
-                    flag = '-Wl,-undefined -Wl,dynamic_lookup'
+                    flag = ['-Wl,-undefined', '-Wl,dynamic_lookup']
             except KeyError:
-                flag = '-Wl,-flat_namespace -Wl,-undefined -Wl,suppress'
+                flag = ['-Wl,-flat_namespace', '-Wl,-undefined -Wl,suppress']
     else:
         # Non existing mac os x ? Just set to ''
-        flag = ''
+        flag = []
 
     return flag
