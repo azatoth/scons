@@ -201,8 +201,6 @@ def generate(env):
 
 def exists(env):
     try:
-        if sys.platform == 'win32':
-            return False
         # This is not quite right: if someone defines all variables by himself,
         # it would work without distutils
         from distutils import sysconfig
