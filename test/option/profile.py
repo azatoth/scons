@@ -95,7 +95,7 @@ test.run(arguments = "--profile %s --debug=memory -h" % scons_prof)
 test.fail_test(string.find(test.stdout(), 'usage: scons [OPTION]') == -1)
 test.fail_test(string.find(test.stdout(), 'Options:') == -1)
 
-expect = 'Memory before reading SConscript files'
+expect = 'before reading SConscript files'
 lines = string.split(test.stdout(), '\n')
 memory_lines = filter(lambda l, e=expect: string.find(l, e) != -1, lines)
 

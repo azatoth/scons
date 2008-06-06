@@ -36,18 +36,6 @@ import time
 
 test = TestSCons.TestSCons()
 
-try:
-    import resource
-except ImportError:
-    try:
-        import win32process
-        import win32api
-    except ImportError:
-        x = "Python version has no 'resource' or 'win32api/win32process' module; skipping tests.\n"
-        test.skip_test(x)
-
-
-
 test.write('SConstruct', """
 def cat(target, source, env):
     open(str(target[0]), 'wb').write(open(str(source[0]), 'rb').read())
@@ -57,24 +45,50 @@ env.Cat('file.out', 'file.in')
 
 test.write('file.in', "file.in\n")
 
-test.run(arguments = '--debug=memory')
+test.run(arguments = '--debug=heapmonitor')
 
 lines = string.split(test.stdout(), '\n')
 
 resz = r' *\d+[.]?\d* +(B|KB|MB|GB|TB) *'
 
-test.fail_test(re.match(r'SNAPSHOT LABEL +VIRTUAL TOTAL +[(] *SIZEABLE[)] +TRACKED TOTAL', lines[-6]) is None)
-test.fail_test(re.match(r'before reading SConscript files: %s[(]%s[)]%s' % (resz,resz,resz), lines[-5]) is None)
-test.fail_test(re.match(r'after reading SConscript files: %s[(]%s[)]%s' % (resz,resz,resz), lines[-4]) is None)
-test.fail_test(re.match(r'before building targets: %s[(]%s[)]%s' % (resz,resz,resz), lines[-3]) is None)
-test.fail_test(re.match(r'after building targets: %s[(]%s[)]%s' % (resz,resz,resz), lines[-2]) is None)
+pendbuild = re.compile(r'scons: done building targets.')
+pstartsum = re.compile(r'-* SUMMARY -*')
+pendsum = re.compile(r'-{70,79}')
 
-test.run(arguments = '-h --debug=memory')
+pinst = re.compile(r'[\w,.]{1,32} ')
+pts = re.compile(r'  \d\d:\d\d:\d\d[.]\d\d +(%s|finalize)' % resz)
+psum = re.compile(r'[\w,.]* +\d+ Alive +\d+ Free +%s' % resz)
 
-lines = string.split(test.stdout(), '\n')
+numclasses = 0
+numts = 1
+numinst = 0
+phase = 0
+phase_inst = 1
+phase_sum = 2
 
-test.fail_test(re.match(r'SNAPSHOT LABEL +VIRTUAL TOTAL +[(] *SIZEABLE[)] +TRACKED TOTAL', lines[-4]) is None)
-test.fail_test(re.match(r'before reading SConscript files: %s[(]%s[)]%s' % (resz,resz,resz), lines[-3]) is None)
-test.fail_test(re.match(r'after reading SConscript files: %s[(]%s[)]%s' % (resz,resz,resz), lines[-2]) is None)
+for l in lines:
+    if phase == 0:
+        if pendbuild.match(l) is not None:
+            phase = phase_inst
+    elif phase == phase_inst:
+        if pstartsum.match(l) is not None:
+            phase = phase_sum
+        elif pinst.match(l) is not None:
+            if numts == 0:
+                test.fail_test('Instance without size information')
+            numts = 0
+            numinst += 1
+        elif pts.match(l) is not None:
+            numts += 1
+        else:
+            test.fail_test('Unexpected output')
+    elif phase == phase_sum:
+        if pendsum.match(l) is not None:
+            break
+        test.fail_test(psum.match(l) is None)
+        numclasses += 1
+
+test.fail_test(numinst == 0)
+test.fail_test(numclasses == 0)
 
 test.pass_test()

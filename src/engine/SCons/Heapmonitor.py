@@ -119,10 +119,13 @@ def _tracker(__init__, __name__, __resolution_level__, __keep__, self, *args, **
     __init__(self, *args, **kwds)
 
 def _trunc(s, max, left=0):
-    #if isinstance(s, list):
-    #    s = s[0]
+    """
+    Convert 's' to string, eliminate newlines and truncate the string to 'max'
+    characters. If there are more characters in the string add '...' to the
+    string. With 'left=1', the string can be truncated at the beginning.
+    """
     s = str(s)
-    #s.replace('\n', ' ')
+    s = s.replace('\n', '|')
     if len(s) > max:
         if left:
             return '...'+s[len(s)-max+3:]
@@ -168,9 +171,6 @@ class TrackedObject(object):
                 file.write('%-32s (FREE)\n' % _trunc(self.name, 32, left=1))
             else:
                 repr = str(obj)
-                if repr == self.name:
-                    repr = 'at %08h' % (id(obj))
-                # FIXME ListAction repr spans two lines in the output
                 file.write('%-32s %-46s\n' % (_trunc(self.name, 32, left=1),
                     _trunc(repr, 46)))
             for (ts, size) in self.footprint:
@@ -376,8 +376,7 @@ def print_stats(file=sys.stdout, full=0):
     Write tracked objects by class to stdout.
     """
 
-    pattern  = '  %-66s  %s\n'
-    pattern2 = '%-36s %8d Alive  %8d Free    %s\n'
+    pat = '%-35s %8d Alive  %8d Free    %s\n'
     classlist = tracked_index.keys()
     classlist.sort()
     summary = []
@@ -389,21 +388,18 @@ def print_stats(file=sys.stdout, full=0):
         alive = 0
         for to in tracked_index[classname]:
             size = to.get_max_size()
-            obj  = to.ref()
             sum += size
             to.print_text(file, full=1)
-            if obj is not None:
-                #if full:
-                #    file.write(pattern % (repr(obj), _pp(size)))
+            if to.ref() is not None:
                 alive += 1
             else:
                 dead += 1
-        summary.append(pattern2 % (classname,alive,dead,_pp(sum)))
+        summary.append(pat % (_trunc(classname,35),alive,dead,_pp(sum)))
 
-    file.write('\n---- SUMMARY '+'-'*67+'\n')
+    file.write('---- SUMMARY '+'-'*66+'\n')
     for line in summary:
         file.write(line)
-    file.write('-'*80+'\n')
+    file.write('-'*79+'\n')
     file.write('\n')
 
 def print_snapshots(file=sys.stdout):
