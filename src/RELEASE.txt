@@ -35,6 +35,24 @@ RELEASE XXX - XXX
         The scons.bat script now exits with the actual status
         returned by SCons.
 
+    --  SCONS NOW WARNS WHEN TRYING TO LINK C++ AND FORTRAN OBJECT FILES
+
+        Some C++ toolchains do not understand Fortran runtimes and create
+        unpredictable executables when linking C++ and Fortran object
+        files together.  SCons now issues a warning if you try to link
+        C++ and Fortran object files into the same executable:
+
+            scons: warning: Using $CXX to link Fortran and C++ code together.
+                    This may generate a buggy executable if the '/usr/bin/gcc'
+                    compiler does not know how to deal with Fortran runtimes.
+
+        The warning may be suppressed with either the --warning=no-link
+        or --warning=no-fortran-cxx-mix command line options, or by
+        adding either of the following lines to a SConscript file:
+
+            SetOption('warn', 'no-link')
+            SetOption('warn', 'no-fortran-cxx-mix')
+
   Please note the following important changes since release 0.98:
 
     --  SCONS NO LONGER SETS THE GNU TOOLCHAIN -fPIC FLAG IN $SHCXXFLAGS

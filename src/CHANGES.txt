@@ -10,6 +10,11 @@
 
 RELEASE 0.98.5 - XXX
 
+  From David Cournapeau:
+
+  - Issue a (suppressable) warning, not an error, when trying to link
+    C++ and Fortran object files into the same executable.
+
   From Steven Knight:
 
   - Update the scons.bat file so that it returns the real exit status
