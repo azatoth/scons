@@ -1359,6 +1359,16 @@ method.
 Enables or disables warnings about missing SConscript files.
 
 .TP
+--warn=fortran-cxx-mix, --warn=no-fortran-cxx-mix
+Enables or disables the specific warning about linking
+Fortran and C++ object files in a single executable,
+which can yield unpredictable behavior with some compilers.
+
+.TP
+--warn=link, --warn=no-link
+Enables or disables warnings about link steps.
+
+.TP
 --warn=misleading-keywords, --warn=no-misleading-keywords
 Enables or disables warnings about use of the misspelled keywords
 .B targets

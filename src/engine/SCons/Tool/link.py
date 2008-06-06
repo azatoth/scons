@@ -40,14 +40,6 @@ import SCons.Warnings
 
 from SCons.Tool.FortranCommon import isfortran
 
-class LinkWarning(SCons.Warnings.Warning):
-    pass
-
-class FortranCxxMix(LinkWarning):
-    pass
-
-SCons.Warnings.enableWarningClass(LinkWarning)
-
 cplusplus = __import__('c++', globals(), locals(), [])
 
 issued_mixed_link_warning = False
@@ -56,11 +48,13 @@ def smart_link(source, target, env, for_signature):
     has_cplusplus = cplusplus.iscplusplus(source)
     has_fortran = isfortran(env, source)
     if has_cplusplus and has_fortran:
+        global issued_mixed_link_warning
         if not issued_mixed_link_warning:
-            msg = "Using $CXX to link Fortran and C++ code together.  " + \
-                  "This may generate a binary with buggy behavior if your " + \
-                  "C++ compiler does not know how to deal with Fortran runtimes."
-            SCons.Warnings.warn(FortranCxxMix, msg)
+            msg = "Using $CXX to link Fortran and C++ code together.\n\t" + \
+              "This may generate a buggy executable if the %s\n\t" + \
+              "compiler does not know how to deal with Fortran runtimes."
+            SCons.Warnings.warn(SCons.Warnings.FortranCxxMixWarning,
+                                msg % repr(env.subst('$CXX')))
             issued_mixed_link_warning = True
         return '$CXX'
     elif has_fortran:
