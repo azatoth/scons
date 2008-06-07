@@ -10,6 +10,10 @@
 
 RELEASE 0.98.5 - XXX
 
+  From Benoit Belley:
+
+  - Fix the Intel C++ compiler ABI specification for EMT64 processors.
+
   From David Cournapeau:
 
   - Issue a (suppressable) warning, not an error, when trying to link
