@@ -45,7 +45,7 @@ import sys
 import tempfile
 
 project = 'scons'
-default_version = '0.98.4'
+default_version = '0.98.5'
 copyright = "Copyright (c) %s The SCons Foundation" % copyright_years
 
 SConsignFile()
