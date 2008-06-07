@@ -76,9 +76,11 @@ env = Environment(CXX = r'%(_python_)s test_linker.py',
 env.Program('prog1.exe', ['f1.cpp', 'f2.f'])
 env.Program('prog2.exe', ['f1.cpp', 'f2.f'])
 if ARGUMENTS.get('NO_LINK'):
-    SetOption('warn', 'no-link')
+    # Can remove no-deprecated when we drop Python1.5
+    SetOption('warn', ['no-link', 'no-deprecated'])
 if ARGUMENTS.get('NO_MIX'):
-    SetOption('warn', 'no-fortran-cxx-mix')
+    # Can remove no-deprecated when we drop Python1.5
+    SetOption('warn', ['no-fortran-cxx-mix', 'no-deprecated'])
 """ % locals())
 
 test.write('f1.cpp', "f1.cpp\n")
