@@ -9,7 +9,7 @@
 copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008'
 
 # This gets inserted into the man pages to reflect the month of release.
-month_year = 'May 2008'
+month_year = 'June 2008'
 
 #
 # __COPYRIGHT__
