@@ -288,17 +288,25 @@ def _printf(fmt, *args, **print3opts):
     else:
         print(fmt)
 
+
+class Referent():
+    def __init__(self, name, ref):
+        self.name = name
+        self.ref = ref
+
 def _refs(obj, *ats, **kwds):
     '''Return specific attribute objects of an object.
     '''
     for a in ats:  # cf. inspect.getmembers()
         if hasattr(obj, a):
             #tmp = (a, getattr(obj, a))
-            yield getattr(obj,a)
+            #yield getattr(obj,a)
+            yield Referent(a, getattr(obj, a))
     if kwds:  # kwds are _dir() args
         for a in _dir(obj, **kwds):
             #tmp = (a, getattr(obj, a))
-            yield getattr(obj,a)
+            #yield getattr(obj,a)
+            yield Referent(a, getattr(obj, a))
 
 def _repr(obj, clip=80):
     '''Clip long repr() string.
@@ -335,7 +343,7 @@ def _SI2(size, **kwds):
 def _class_refs(obj):
     '''Return specific referents of a class object.
     '''
-    return _refs(obj, '__class_', '__dict__', '__doc__', '__mro__', '__name__', '__slots__', '__weakref__')
+    return _refs(obj, '__class__', '__dict__', '__doc__', '__mro__', '__name__', '__slots__', '__weakref__')
 
 def _co_refs(obj):
     '''Return specific referents of a code object.
@@ -347,8 +355,11 @@ def _dict_refs(obj):
     '''
      # dict.iteritems removed in Python 3.0
     for k, v in _items(obj):
-        yield k
-        yield v
+        yield Referent('[K] %s' % str(k), k)
+        yield Referent('[V] %s' % str(k), v)
+        #yield KeyValueRef(key=k, value=v)
+        #yield k
+        #yield v
 
 def _enum_refs(obj):
     '''Return specific referents of an enumerate object.
@@ -1078,18 +1089,15 @@ class Asizer(object):
                          # add sizes of referents
                         r, d = v.refs, deep + 1
                         for o in r(obj):  # no sum(<generator_expression>) in Python 2.2
-                            #label = o
-                            #if isinstance(o, tuple):
-                            #    label = o[0]
-                            #    o = o[1]
-                            #else:
-                            #    label = o
+                            label = ''
+                            if isinstance(o, Referent):
+                                label = o.name
+                                o = o.ref
+                            else:
+                                label = repr(o)
                             if deep < self._detail:
-                                # TODO Associate member variable name, rather
-                                # than content. Find some way to make _ref
-                                # functions return the ref name, too.                                                                
                                 so = self._recursive_sizer(o,d)
-                                so = so + (o,)
+                                so = so + (label,)
                                 chld.append(so)
                                 s += so[0]
                             else:
@@ -1138,7 +1146,10 @@ class Asizer(object):
                          # add sizes of referents
                         r, z, d = v.refs, self._sizer, deep + 1
                         for o in r(obj):  # no sum(<generator_expression>) in Python 2.2
-                            s += z(o, d)
+                            if isinstance(o, Referent):
+                                s += z(o.ref, d)
+                            else:
+                                s += z(o, d)
                          # recursion depth
                         if self._depth < d:
                            self._depth = d

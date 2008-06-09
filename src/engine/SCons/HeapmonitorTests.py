@@ -115,15 +115,23 @@ class TrackObjectTestCase(unittest.TestCase):
         assert tracked_objects[idfoo].ref() is not None
         assert tracked_objects[idbar].ref() is None
 
-    def future_test_recurse(self):
+    def test_recurse(self):
         """Test recursive sizing and saving of referents.
         """
         foo = Foo()
         bar = Bar()
 
-        track_object(foo, recurse=1)
+        track_object(foo, resolution_level=1)
+        create_snapshot()
 
-        # TODO
+        fp = tracked_objects[id(foo)].footprint[-1]
+        refs = fp[1][2]
+        dict = [r for r in refs if r[3] == '__dict__']
+        assert len(dict) == 1
+        dict = dict[0]
+        assert dict[0] > 0
+        assert dict[1] > 0
+        assert dict[2] == []
         
 
 class TrackClassTestCase(unittest.TestCase):
