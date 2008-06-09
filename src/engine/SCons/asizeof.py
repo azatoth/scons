@@ -293,10 +293,12 @@ def _refs(obj, *ats, **kwds):
     '''
     for a in ats:  # cf. inspect.getmembers()
         if hasattr(obj, a):
-            yield getattr(obj, a)
+            #tmp = (a, getattr(obj, a))
+            yield getattr(obj,a)
     if kwds:  # kwds are _dir() args
         for a in _dir(obj, **kwds):
-            yield getattr(obj, a)
+            #tmp = (a, getattr(obj, a))
+            yield getattr(obj,a)
 
 def _repr(obj, clip=80):
     '''Clip long repr() string.
@@ -1036,6 +1038,69 @@ class Asizer(object):
         '''
         return _repr(obj, clip=self._clip_)
 
+    def _recursive_sizer(self, obj, deep):
+        '''Size an object, recursively.
+        '''
+        s, i = 0, id(obj)
+        base = 0
+        chld = []
+         # skip obj if seen before
+         # or if ref of a given obj
+        if i in self._seen:
+            self._seen[i] += 1
+            if deep:
+                return (s, base, chld)
+        else:
+            self._seen[i]  = 1
+        try:
+            k = _objkey(obj)
+            if k in self._excl_d:
+                self._excl_d[k] += 1
+            else:
+                v = _typedefs.get(k, None)
+                if not v:  # new type
+                    v = self._typedef(obj)
+                    if k in _typedefs:  # and _typedefs[k] != v:  # double check
+                        raise KeyError('asizeof %r conflict: %r vs %r' % (t, _typedefs[k], v))
+                    _typedefs[k] = v
+                  ##_printf('new typedefs [%r] %r', k, v)
+                if v.both or self._code_:
+                    s = v.base  # basic size
+                    if v.leng and v.item > 0:  # include items
+                        s += v.item * v.leng(obj)
+                    if self._mask:  # aligned size
+                        s = (s + self._mask) & ~self._mask
+                    if self._profile:  # profile type
+                        self._prof(k).update(obj, s)
+                    base = s
+                     # recurse, but not for nested modules
+                    if v.refs and deep < self._limit_ and not (deep and ismodule(obj)):
+                         # add sizes of referents
+                        r, d = v.refs, deep + 1
+                        for o in r(obj):  # no sum(<generator_expression>) in Python 2.2
+                            #label = o
+                            #if isinstance(o, tuple):
+                            #    label = o[0]
+                            #    o = o[1]
+                            #else:
+                            #    label = o
+                            if deep < self._detail:
+                                # TODO Associate member variable name, rather
+                                # than content. Find some way to make _ref
+                                # functions return the ref name, too.                                                                
+                                so = self._recursive_sizer(o,d)
+                                so = so + (o,)
+                                chld.append(so)
+                                s += so[0]
+                            else:
+                                s += self._sizer(o,d)
+                         # recursion depth
+                        if self._depth < d:
+                           self._depth = d
+        except RuntimeError:  # XXX RecursionLimitExceeded:
+            pass
+        return (s, base, chld)
+
     def _sizer(self, obj, deep):
         '''Size an object, recursively.
         '''
@@ -1164,6 +1229,15 @@ class Asizer(object):
             s += z(o, 0)
         self._total += s  # accumulate
         return s
+
+    def asizeof_rec(self, obj, detail=0, **opts):
+        self.set(**opts)
+        self.exclude_refs(obj)
+        self._detail = detail
+        z = self._recursive_sizer
+        s = z(obj,0)
+        self._total += s[0]
+        return s            
 
     def asizesof(self, *objs, **opts):
         '''Return the individual object sizes (with modified options).

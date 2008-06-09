@@ -140,7 +140,7 @@ class TrackedObject(object):
     attached to monitor the object without preventing its deletion.
     """
 
-    def __init__(self, instance):
+    def __init__(self, instance, resolution_level=0):
         """
         Create a weak reference for 'instance' to observe an object but which
         won't prevent its deletion (which is monitored by the finalize
@@ -151,14 +151,23 @@ class TrackedObject(object):
         self.name = instance.__class__
         self.birth = time.time()
         self.death = None
+        self._resolution_level = resolution_level
 
         #initial_size = SCons.asizeof.basicsize(instance)
-        initial_size = SCons.asizeof.basicsize(instance)
-        if initial_size is None:
-            initial_size = SCons.asizeof.asizeof(instance) # FIXME unbound size computation in the middle of creation
+        initial_size = SCons.asizeof.basicsize(instance) or 0
+        self.footprint = [(self.birth, (initial_size, initial_size, []))]
 
-        self.footprint = [(self.birth, initial_size)]
+    def _print_refs(self, file, refs, total, prefix='    ', level=1):
+        """
+        Print individual referents recursively.
 
+        """
+        lcmp = lambda i, j: (i[0] > j[0]) and -1 or (i[0] < j[0]) and 1 or 0
+        refs.sort(lcmp)
+        for r in refs:
+            file.write('%-50s %-14s %3d%% [%d]\n' % (_trunc(prefix+str(r[3]),50),
+                _pp(r[0]),int(r[0]*100.0/total), level))
+            self._print_refs(file, r[2], r[0], prefix=prefix+'  ', level=level+1)
 
     def print_text(self, file, full=0):
         """
@@ -171,13 +180,15 @@ class TrackedObject(object):
                 file.write('%-32s (FREE)\n' % _trunc(self.name, 32, left=1))
             else:
                 repr = str(obj)
-                file.write('%-32s %-46s\n' % (_trunc(self.name, 32, left=1),
-                    _trunc(repr, 46)))
+                file.write('%-32s 0x%08x %-35s\n' % (
+                    _trunc(self.name, 32, left=1), id(obj), _trunc(repr, 35)))
             for (ts, size) in self.footprint:
-                file.write('  %-30s %s\n' % (_get_timestamp(ts), _pp(size)))
+                file.write('  %-30s %s\n' % (_get_timestamp(ts), _pp(size[0])))
+                self._print_refs(file, size[2], size[0])                    
             if self.death is not None:
                 file.write('  %-30s finalize\n' % _get_timestamp(ts))
         else:
+            # TODO Print size for largest snapshot (get_size_at_time)
             size = self.get_max_size()
             if obj is not None:
                 file.write('%-64s %-14s\n' % (_trunc(repr(obj), 64), _pp(size)))
@@ -185,14 +196,18 @@ class TrackedObject(object):
                 file.write('%-64s %-14s\n' % (_trunc(self.name, 64), _pp(size)))       
         
 
-    def track_size(self, sizer):
+    def track_size(self, ts, sizer):
         """
         Store timestamp and current size for later evaluation.
         The 'sizer' is a stateful sizing facility that excludes other tracked
         objects.
         """
         obj = self.ref()
-        self.footprint.append( (time.time(), sizer.asizeof(obj)) ) 
+        self.footprint.append( (ts, sizer.asizeof_rec(obj,
+            detail=self._resolution_level)) )
+
+        #s = sizer.asizeof(obj) # XXX
+        #self.footprint.append( (time.time(), (s, s, [])) ) # XXX
 
 
     def get_max_size(self):
@@ -201,10 +216,27 @@ class TrackedObject(object):
         recorded.
         """
         try:
-            return max([s for (t, s) in self.footprint])
+            return max([s[0] for (t, s) in self.footprint])
         except ValueError:
             return 0
 
+    def get_size_at_time(self, ts):
+        """
+        Get the size of the object at a specific time (snapshot).
+        If the object was not alive/sized at that instant, return 0.
+        """
+        for (t, s) in self.footprint:
+            if t == ts:
+                return s[0]
+        return 0
+
+    def set_resolution_level(self, resolution_level):
+        """
+        Set resolution level to a new value. The next size estimation will
+        respect the new value. This is useful to set different levels for
+        different instances of tracked classes.
+        """
+        self._resolution_level = resolution_level
     
     def finalize(self, ref):
         """
@@ -224,6 +256,15 @@ class TrackedObject(object):
             pass
         else:
             self.death = time.time()
+
+
+def track_change(instance, resolution_level=0):
+    """
+    Change tracking options for the already tracked object 'instance'.
+    If instance is not tracked, a KeyError will be raised.
+    """
+    to = tracked_objects[id(instance)]
+    to.set_resolution_level(resolution_level)
 
 
 def track_object(instance, name=None, resolution_level=0, keep=0):
@@ -249,13 +290,7 @@ def track_object(instance, name=None, resolution_level=0, keep=0):
         tracked_objects[id(instance)].ref() is not None:
         return
 
-    if resolution_level > 0: # TODO
-        raise NotImplementedError
-
-    to = TrackedObject(instance)
-
-    #print "DEBUG: Track %s as type %s (Keep=%d, Resolution=%d)" % (repr(instance),
-    #    name, keep, resolution_level)
+    to = TrackedObject(instance, resolution_level=resolution_level)
 
     if name is None:
         name = instance.__class__.__name__
@@ -263,6 +298,8 @@ def track_object(instance, name=None, resolution_level=0, keep=0):
         tracked_index[name] = []
     tracked_index[name].append(to)
     tracked_objects[id(instance)] = to
+
+    #print "DEBUG: Track %s (Keep=%d, Resolution=%d)" % (name, keep, resolution_level)
 
     if keep:
         _keepalive.append(instance)
@@ -275,9 +312,6 @@ def track_class(cls, name=None, resolution_level=0, keep=0):
     A constructor is injected to begin instance tracking on creation
     of the object. The constructor calls 'track_object' internally.
     """
-    if resolution_level > 0: # TODO
-        raise NotImplementedError
-
     _inject_constructor(cls, _tracker, name, resolution_level, keep)
 
 
@@ -317,24 +351,34 @@ def create_snapshot(description=''):
     operating system. The overhead of the Heapmonitor structure is also
     computed.
     """
-    #sizer = SCons.asizeof.Asizer()
-    #sizer.norecurse(instance_ids=tracked_objects.keys())
+
+    ts = time.time()
+
     sizer = SCons.asizeof.Asizer()
     objs = [to.ref() for to in tracked_objects.values()]
     sizer.exclude_refs(*objs)
-    for to in tracked_objects.values():
-        to.track_size(sizer)
+
+    # The objects need to be sized in a deterministic order. Sort the
+    # objects by its creation date which should at least work for non-parallel
+    # execution. The "proper" fix would be to handle shared data separately.
+    sorttime = lambda i, j: (i.birth < j.birth) and -1 or (i.birth > j.birth) and 1 or 0
+    tos = tracked_objects.values()
+    tos.sort(sorttime)
+    for to in tos:
+        to.track_size(ts, sizer)
 
     fp = Footprint()
 
-    fp.timestamp = time.time()
+    fp.timestamp = ts
     fp.tracked_total = sizer.total
     fp.asizeof_total = SCons.asizeof.asizeof(all=True, code=True)
     fp.system_total = SCons.Debug.memory()
     fp.desc = description
 
-    footprint.append(fp)
+    # TODO Compute overhead of all structures, exclude tracked objects(!)
     # overhead = sizer.asizeof(self) # compute actual profiling overhead
+
+    footprint.append(fp)
 
 
 def find_garbage():
@@ -377,6 +421,14 @@ def print_stats(file=sys.stdout, full=0):
     """
 
     pat = '%-35s %8d Alive  %8d Free    %s\n'
+
+    # Identify the snapshot that tracked the largest amount of memory.
+    tmax = None
+    maxsize = 0
+    for fp in footprint:
+        if fp.tracked_total > maxsize:
+            tmax = fp.timestamp
+
     classlist = tracked_index.keys()
     classlist.sort()
     summary = []
@@ -387,8 +439,7 @@ def print_stats(file=sys.stdout, full=0):
         dead = 0
         alive = 0
         for to in tracked_index[classname]:
-            size = to.get_max_size()
-            sum += size
+            sum += to.get_size_at_time(tmax)
             to.print_text(file, full=1)
             if to.ref() is not None:
                 alive += 1
@@ -396,6 +447,11 @@ def print_stats(file=sys.stdout, full=0):
                 dead += 1
         summary.append(pat % (_trunc(classname,35),alive,dead,_pp(sum)))
 
+
+    # TODO The summary is a bit misleading. The summed size for each type is
+    # computed for the largest snapshot. The alive and free counts correspond to
+    # the time this routine is called. Better would be to emit per-snapshot
+    # instance statistics.
     file.write('---- SUMMARY '+'-'*66+'\n')
     for line in summary:
         file.write(line)
