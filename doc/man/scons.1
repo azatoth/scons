@@ -21,17 +21,19 @@
 .\"
 .\" __FILE__ __REVISION__ __DATE__ __DEVELOPER__
 .\"
+.TH SCONS 1 "__MONTH_YEAR__"
 .\" ES - Example Start - indents and turns off line fill
+.rm ES
 .de ES
 .RS
 .nf
 ..
 .\" EE - Example End - ends indent and turns line fill back on
+.rm EE
 .de EE
 .fi
 .RE
 ..
-.TH SCONS 1 "__MONTH_YEAR__"
 .SH NAME
 scons \- a software construction tool
 .SH SYNOPSIS
@@ -671,7 +673,7 @@ Output looks something like this:
 $ scons --debug=presub
 Building myprog.o with action(s):
   $SHCC $SHCFLAGS $SHCCFLAGS $CPPFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES
-...
+\&...
 .EE
 
 .TP
@@ -3391,7 +3393,7 @@ print env.Dump('CCCOM')
 .IP
 will print:
 .ES
-'$CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES'
+\&'$CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES'
 .EE
 
 .ES
@@ -9451,7 +9453,7 @@ Specifying only 'a' and 'b' for the library names
 allows SCons to append the appropriate library
 prefix and suffix for the current platform
 (for example, 'liba.a' on POSIX systems,
-'a.lib' on Windows).
+\&'a.lib' on Windows).
 
 .SS Customizing construction variables from the command line.
 
