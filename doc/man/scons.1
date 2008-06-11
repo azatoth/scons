@@ -5069,14 +5069,27 @@ function below for the details and restrictions.
 is interpreted relative to the directory
 of the calling SConscript file.
 
-Normally, the source for the variant build is the directory containing
-.IR script .
-If the sources are not in
-.IR script 's
-directory, the optional
+By default, the sources (files or directories or both)
+for the variant build are in the directory containing
+.IR script -- that
+is, the 
+.B SConscript
+directory.
+When a
+.I variant_dir
+is specified,
+the optional
 .I src_dir
-argument provides the location of the sources.
+argument can specify a different
+directory containing the source files.
+This can be useful if the
+source directory is not writable
+or can not have a
+.B SConscript
+file added to it for other reasons.
+The
 .I src_dir
+argument itself
 is interpreted relative to the directory
 of the calling SConscript file.
 
