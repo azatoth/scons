@@ -25,85 +25,568 @@
 
   <para>
 
-  &SCons; provides a number of ways that
-  allow the writer of the &SConscript; files
-  to give users a great deal of control over how to run the builds.
+  &SCons; provides a number of ways
+  for the writer of the &SConscript; files
+  to give the users who will run &SCons;
+  a great deal of control over the build execution.
 
   </para>
 
   <section>
-  <title>Not Having to Specify Command-Line Options Each Time:  the &SCONSFLAGS; Environment Variable</title>
+  <title>Controlling &SCons; Command-Line Options</title>
 
     <para>
 
-    Users may find themselves supplying
-    the same command-line options every time
-    they run &SCons;.
-    For example, a user might find that it saves time
-    to specify a value of <literal>-j 2</literal>
-    to run the builds in parallel.
-    To avoid having to type <literal>-j 2</literal> by hand
-    every time,
-    you can set the external environment variable
-    &SCONSFLAGS; to a string containing
-    command-line options that you want &SCons; to use.
+    &SCons; has many <emphasis>command-line options</emphasis>
+    that control its behavior.
+    A &SCons; <emphasis>command-line option</emphasis>
+    always begins with one or two <literal>-</literal> (hyphen)
+    characters.
 
     </para>
 
-    <para>
+    <section>
+    <title>Not Having to Specify Command-Line Options Each Time:  the &SCONSFLAGS; Environment Variable</title>
 
-    If, for example,
-    you're using a POSIX shell that's
-    compatible with the Bourne shell,
-    and you always want &SCons; to use the
-    <literal>-Q</literal> option,
-    you can set the &SCONSFLAGS;
-    environment as follows:
+      <para>
 
-    </para>
+      Users may find themselves supplying
+      the same command-line options every time
+      they run &SCons;.
+      For example, you might find it saves time
+      to specify a value of <literal>-j 2</literal>
+      to have &SCons; run up to two build commands in parallel.
+      To avoid having to type <literal>-j 2</literal> by hand
+      every time,
+      you can set the external environment variable
+      &SCONSFLAGS; to a string containing
+      command-line options that you want &SCons; to use.
 
-    
+      </para>
 
-    <screen>
-      % <userinput>scons</userinput>
-      scons: Reading SConscript files ...
-      scons: done reading SConscript files.
-      scons: Building targets ...
-          ... [build output] ...
-      scons: done building targets.
-      % <userinput>export SCONSFLAGS="-Q"</userinput>
-      % <userinput>scons</userinput>
-          ... [build output] ...
-    </screen>
+      <para>
 
-    <para>
+      If, for example,
+      you're using a POSIX shell that's
+      compatible with the Bourne shell,
+      and you always want &SCons; to use the
+      <literal>-Q</literal> option,
+      you can set the &SCONSFLAGS;
+      environment as follows:
 
-    Users of &csh;-style shells on POSIX systems
-    can set the &SCONSFLAGS; environment as follows:
+      </para>
 
-    </para>
+      
 
-    <screen>
-      $ <userinput>setenv SCONSFLAGS "-Q"</userinput>
-    </screen>
+      <screen>
+        % <userinput>scons</userinput>
+        scons: Reading SConscript files ...
+        scons: done reading SConscript files.
+        scons: Building targets ...
+            ... [build output] ...
+        scons: done building targets.
+        % <userinput>export SCONSFLAGS="-Q"</userinput>
+        % <userinput>scons</userinput>
+            ... [build output] ...
+      </screen>
 
-    <para>
+      <para>
 
-    Windows users may typically want to set the
-    &SCONSFLAGS; in the appropriate tab of the
-    <literal>System Properties</literal> window.
+      Users of &csh;-style shells on POSIX systems
+      can set the &SCONSFLAGS; environment as follows:
 
-    </para>
+      </para>
+
+      <screen>
+        $ <userinput>setenv SCONSFLAGS "-Q"</userinput>
+      </screen>
+
+      <para>
+
+      Windows users may typically want to set the
+      &SCONSFLAGS; in the appropriate tab of the
+      <literal>System Properties</literal> window.
+
+      </para>
+
+    </section>
+
+    <section>
+    <title>Getting Values Set by Command-Line Options:  the &GetOption; Function</title>
+
+      <para>
+
+      &SCons; provides the &GetOption; function
+      to get the values set by the various command-line options.
+      One common use of this is to check whether or not
+      the <literal>-h</literal> or <literal>--help</literal> option
+      has been specified.
+      Normally, &SCons; does not print its help text
+      until after it has read all of the &SConscript; files,
+      because it's possible that help text has been added
+      by some subsidiary &SConscript; file deep in the
+      source tree hierarchy.
+      Of course, reading all of the &SConscript; files
+      takes extra time.
+
+      </para>
+
+      <para>
+
+      If you know that your configuration does not define
+      any additional help text in subsidiary &SConscript; files,
+      you can speed up the command-line help available to users
+      by using the &GetOption; function to load the
+      subsidiary &SConscript; files only if the
+      the user has <emphasis>not</emphasis> specified
+      the <literal>-h</literal> or <literal>--help</literal> option,
+      like so:
+
+      </para>
+
+      <programlisting></programlisting>
+
+      <para>
+
+      In general, the string that you pass to the
+      &GetOption; function to fetch the value of a command-line
+      option setting is the same as the "most common" long option name
+      (beginning with two hyphen characters),
+      although there are some exceptions.
+      The list of &SCons; command-line options
+      and the &GetOption; strings for fetching them,
+      are available in the
+      <xref linkend="sect-command-line-options"></xref> section,
+      below.
+
+      </para>
+
+    </section>
+
+    <section>
+    <title>Setting Values of Command-Line Options:  the &SetOption; Function</title>
+
+      <para>
+
+      You can also set the values of &SCons;
+      command-line options from within the &SConscript; files
+      by using the &SetOption; function.
+      The strings that you use to set the values of &SCons;
+      command-line options are available in the
+      <xref linkend="sect-command-line-options"></xref> section,
+      below.
+
+      </para>
+
+      <para>
+
+      One use of the &SetOption; function is to
+      specify a value for the <literal>-j</literal>
+      or <literal>--jobs</literal> option,
+      so that users get the improved performance
+      of a parallel build without having to specify the option by hand.
+      A complicating factor is that a good value
+      for the <literal>-j</literal> option is
+      somewhat system-dependent.
+      One rough guideline is that the more processors
+      your system has,
+      the higher you want to set the
+      <literal>-j</literal> value,
+      in order to take advantage of the number of CPUs.
+
+      </para>
+
+      <para>
+
+      For example, suppose the administrators
+      of your development systems
+      have standardized on setting a
+      <varname>NUM_CPU</varname> environment variable
+      to the number of processors on each system.
+      A little bit of Python code
+      to access the environment variable
+      and the &SetOption; function
+      provide the right level of flexibility:
+
+      </para>
+
+      <programlisting>
+        import os
+        num_cpu = int(os.environ.get('NUM_CPU', 2))
+        SetOption('num_jobs', num_cpu)
+        print "running with -j", GetOption('num_jobs')
+      </programlisting>
+
+      <para>
+
+      The above snippet of code
+      sets the value of the <literal>--jobs</literal> option
+      to the value specified in the
+      <varname>$NUM_CPU</varname> environment variable.
+      (This is one of the exception cases
+      where the string is spelled differently from
+      the from command-line option.
+      The string for fetching or setting the <literal>--jobs</literal>
+      value is <literal>num_jobs</literal>
+      for historical reasons.)
+      The code in this example prints the <literal>num_jobs</literal>
+      value for illustrative purposes.
+      It uses a default value of <literal>2</literal>
+      to provide some minimal parallelism even on
+      single-processor systems:
+
+      </para>
+
+      <screen>
+        % <userinput>scons -Q</userinput>
+        running with -j 2
+        scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      But if the <varname>$NUM_CPU</varname>
+      environment variable is set,
+      then we use that for the default number of jobs:
+
+      </para>
+
+      <screen>
+        % <userinput>export NUM_CPU="4"</userinput>
+        % <userinput>scons -Q</userinput>
+        running with -j 4
+        scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      But any explicit
+      <literal>-j</literal> or <literal>--jobs</literal>
+      value the user specifies an the command line is used first,
+      regardless of whether or not
+      the <varname>$NUM_CPU</varname> environment
+      variable is set:
+
+      </para>
+
+      <screen>
+        % <userinput>scons -Q -j 7</userinput>
+        running with -j 7
+        scons: `.' is up to date.
+        % <userinput>export NUM_CPU="4"</userinput>
+        % <userinput>scons -Q -j 3</userinput>
+        running with -j 3
+        scons: `.' is up to date.
+      </screen>
+
+    </section>
+
+    <section id="sect-command-line-options">
+    <title>Strings for Getting or Setting Values of &SCons; Command-Line Options</title>
+
+      <para>
+
+      The strings that you can pass to the &GetOption;
+      and &SetOption; functions usually correspond to the
+      first long-form option name
+      (beginning with two hyphen characters:  <literal>--</literal>),
+      after replacing any remaining hyphen characters
+      with underscores.
+
+      </para>
+
+      <para>
+
+      The full list of strings and the variables they
+      correspond to is as follows:
+
+      </para>
+
+      <informaltable>
+      <tgroup cols="2" align="left">
+
+      <thead>
+
+      <row>
+      <entry>String for &GetOption; and &SetOption;</entry>
+      <entry>Command-Line Option(s)</entry>
+      </row>
+
+      </thead>
+
+      <tbody>
+
+      <row>
+      <entry><literal>cache_debug</literal></entry>
+      <entry><option>--cache-debug</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>cache_disable</literal></entry>
+      <entry><option>--cache-disable</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>cache_force</literal></entry>
+      <entry><option>--cache-force</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>cache_show</literal></entry>
+      <entry><option>--cache-show</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>clean</literal></entry>
+      <entry><option>-c</option>,
+           <option>--clean</option>,
+           <option>--remove</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>config</literal></entry>
+      <entry><option>--config</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>directory</literal></entry>
+      <entry><option>-C</option>,
+             <option>--directory</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>diskcheck</literal></entry>
+      <entry><option>--diskcheck</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>duplicate</literal></entry>
+      <entry><option>--duplicate</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>file</literal></entry>
+      <entry><option>-f</option>,
+             <option>--file</option>,
+             <option>--makefile </option>,
+             <option>--sconstruct</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>help</literal></entry>
+      <entry><option>-h</option>,
+             <option>--help</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>ignore_errors</literal></entry>
+      <entry><option>--ignore-errors</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>implicit_cache</literal></entry>
+      <entry><option>--implicit-cache</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>implicit_deps_changed</literal></entry>
+      <entry><option>--implicit-deps-changed</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>implicit_deps_unchanged</literal></entry>
+      <entry><option>--implicit-deps-unchanged</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>interactive</literal></entry>
+      <entry><option>--interact</option>,
+             <option>--interactive</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>keep_going</literal></entry>
+      <entry><option>-k</option>,
+             <option>--keep-going</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>max_drift</literal></entry>
+      <entry><option>--max-drift</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>no_exec</literal></entry>
+      <entry><option>-n</option>,
+             <option>--no-exec</option>,
+             <option>--just-print</option>,
+             <option>--dry-run</option>,
+             <option>--recon</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>no_site_dir</literal></entry>
+      <entry><option>--no-site-dir</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>num_jobs</literal></entry>
+      <entry><option>-j</option>,
+             <option>--jobs</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>profile_file</literal></entry>
+      <entry><option>--profile</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>question</literal></entry>
+      <entry><option>-q</option>,
+             <option>--question</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>random</literal></entry>
+      <entry><option>--random</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>repository</literal></entry>
+      <entry><option>-Y</option>,
+             <option>--repository</option>,
+             <option>--srcdir</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>silent</literal></entry>
+      <entry><option>-s</option>,
+             <option>--silent</option>,
+             <option>--quiet</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>site_dir</literal></entry>
+      <entry><option>--site-dir</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>stack_size</literal></entry>
+      <entry><option>--stack-size</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>taskmastertrace_file</literal></entry>
+      <entry><option>--taskmastertrace</option></entry>
+      </row>
+
+      <row>
+      <entry><literal>warn</literal></entry>
+      <entry><option>--warn</option> <option>--warning</option></entry>
+      </row>
+
+      </tbody>
+
+      </tgroup>
+      </informaltable>
+
+    </section>
+
+    <section>
+    <title>Adding Custom Command-Line Options:  the &AddOption; Function</title>
+
+      <para>
+
+      &SCons; also allows you to define your own
+      command-line options with the &AddOption; function.
+      The &AddOption; function takes the same arguments
+      as the <function>optparse.add_option</function> function
+      from the standard Python library.
+      <footnote>
+      <para>
+      The &AddOption; function is,
+      in fact, implemented using a subclass
+      of the <classname>optparse.OptionParser</classname>.
+      </para>
+      </footnote>
+      Once you have added a custom command-line option
+      with the &AddOption; function,
+      the value of the option (if any) is immediately available
+      using the standard &GetOption; function.
+      (The value can also be set using &SetOption;,
+      although that's not very useful in practice
+      because a default value can be specified in
+      directly in the &AddOption; call.)
+
+      </para>
+
+      <para>
+
+      One useful example of using this functionality
+      is to provide a <option>--prefix</option> for users:
+
+      </para>
+
+      <programlisting>
+        AddOption('--prefix',
+                  dest='prefix',
+                  type='string',
+                  nargs=1,
+                  action='store',
+                  metavar='DIR',
+                  help='installation prefix')
+
+        env = Environment(PREFIX = GetOption('prefix'))
+
+        installed_foo = env.Install('$PREFIX/usr/bin', 'foo.in')
+        Default(installed_foo)
+      </programlisting>
+
+      <para>
+
+      The above code uses the &GetOption; function
+      to set the <varname>$PREFIX</varname>
+      construction variable to any
+      value that the user specifies with a command-line
+      option of <literal>--prefix</literal>.
+      Because <varname>$PREFIX</varname>
+      will expand to a null string if it's not initialized,
+      running &SCons; without the
+      option of <literal>--prefix</literal>
+      will install the file in the
+      <filename>/usr/bin/</filename> directory:
+
+      </para>
+
+      <screen>
+        % <userinput>scons -Q -n</userinput>
+        Install file: "foo.in" as "/usr/bin/foo.in"
+      </screen>
+
+      <para>
+
+      But specifying <literal>--prefix=/tmp/install</literal>
+      on the command line causes the file to be installed in the
+      <filename>/tmp/install/usr/bin/</filename> directory:
+
+      </para>
+
+      <screen>
+        % <userinput>scons -Q -n --prefix=/tmp/install</userinput>
+        Install file: "foo.in" as "/tmp/install/usr/bin/foo.in"
+      </screen>
+
+    </section>
 
   </section>
 
   <section>
-  <title>Getting at Command-Line Targets</title>
+  <title>Fetching Command-Line Targets: the &COMMAND_LINE_TARGETS; Variable</title>
 
     <para>
 
     &SCons; supports a &COMMAND_LINE_TARGETS; variable
-    that lets you get at the list of targets that the
+    that lets you fetch the list of targets that the
     user specified on the command line.
     You can use the targets to manipulate the
     build in any way you wish.
@@ -342,7 +825,7 @@
     </screen>
 
     <section>
-    <title>Getting at the List of Default Targets</title>
+    <title>Fetching the List of Default Targets: the &DEFAULT_TARGETS; Variable</title>
 
       <para>
 
@@ -371,7 +854,7 @@
       (Keep in mind that all of the manipulation of the
       &DEFAULT_TARGETS; list takes place during the
       first phase when &SCons; is reading up the &SConscript; files,
-      which is obvious if 
+      which is obvious if
       we leave off the <literal>-Q</literal> flag when we run &SCons;:)
 
       </para>
@@ -442,7 +925,7 @@
   </section>
 
   <section>
-  <title>Getting at the List of Build Targets, Regardless of Origin</title>
+  <title>Fetching the List of Build Targets, Regardless of Origin: the &BUILD_TARGETS; Variable</title>
 
     <para>
 
@@ -840,7 +1323,7 @@
   </section>
 
   <section>
-  <title>Canned Build Options</title>
+  <title>Pre-Defined Build Options</title>
 
     <para>
 
@@ -1454,7 +1937,7 @@
     Each build option is specified
     as either a tuple of arguments,
     just like you'd pass to the &Add; method itself,
-    or as a call to one of the canned
+    or as a call to one of the pre-defined
     functions for pre-packaged command-line build options.
     in any order:
 

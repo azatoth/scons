@@ -18,6 +18,10 @@ From Steven Knight:
 
   - Clarify the man page description of the SConscript(src_dir) argument.
 
+  - User's Guide updates:  document the BUILD_TARGETS, COMMAND_LINE_TARGETS
+    and DEFAULT_TARGETS variables; document the AddOption(), GetOption()
+    and SetOption() functions.
+
 
 
 RELEASE 0.98.5 - Sat, 07 Jun 2008 08:20:35 -0700

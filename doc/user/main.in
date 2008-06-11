@@ -114,18 +114,9 @@
   XXX SideEffect()
   XXX Tools()
 
-  XXX GetOption('clean')
-  XXX SetOption('clean')
-
   XXX GetOption('duplicate')
   XXX SetOption('duplicate')
   XXX - - duplicate=
-
-  XXX GetOption('help')
-  XXX SetOption('help')
-
-  XXX GetOption('num_jobs')
-  XXX SetOption('num_jobs')
 
   XXX Options.UnknownOption()
 
@@ -143,9 +134,6 @@
 
   XXX ARGLIST
   XXX ARGUMENTS
-  XXX BUILD_TARGETS
-  XXX COMMAND_LINE_TARGETS
-  XXX DEFAULT_TARGETS
 
   -->
 
