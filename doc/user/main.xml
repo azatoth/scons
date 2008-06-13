@@ -63,6 +63,7 @@
     <!ENTITY factories SYSTEM "factories.xml">
     <!ENTITY file-removal SYSTEM "file-removal.xml">
     <!ENTITY help SYSTEM "help.xml">
+    <!ENTITY get-build-failures SYSTEM "get-build-failures.xml">
     <!ENTITY hierarchy SYSTEM "hierarchy.xml">
     <!ENTITY java SYSTEM "java.xml">
     <!ENTITY install SYSTEM "install.xml">
@@ -225,6 +226,11 @@
   <chapter id="chap-help">
     <title>Providing Build Help:  the &Help; Function</title>
     &help;
+  </chapter>
+
+  <chapter id="build-failures">
+    <title>Printing Detailed Build Status:  the &GetBuildFailures; Function</title>
+    &get-build-failures;
   </chapter>
 
   <chapter id="chap-install">

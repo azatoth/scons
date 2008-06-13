@@ -18,6 +18,7 @@ errors.xml
 example.xml
 factories.xml
 file-removal.xml
+get-build-failures.xml
 help.xml
 hierarchy.xml
 install.xml
