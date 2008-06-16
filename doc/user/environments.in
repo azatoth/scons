@@ -1016,8 +1016,8 @@ environment undisturbed.
 
      <scons_example name="ex8">
        <file name="SConstruct" printme="1">
-        env = Environment(CCFLAGS = '-DMY_VALUE')
-        env.Append(CCFLAGS = ' -DLAST')
+        env = Environment(CCFLAGS = ['-DMY_VALUE'])
+        env.Append(CCFLAGS = ['-DLAST'])
         env.Program('foo.c')
        </file>
        <file name="foo.c">
@@ -1061,6 +1061,19 @@ environment undisturbed.
         <scons_output_command>scons -Q</scons_output_command>
      </scons_output>
 
+     <para>
+
+     Note that the &Append; function tries to be "smart"
+     about how the new value is appended to the old value.
+     If both are strings, the previous and new strings
+     are simply concatenated.
+     Similarly, if both are lists,
+     the lists are concatenated.
+     If, however, one is a string and the other is a list,
+     the string is added as a new element to the list.
+
+     </para>
+
      <!--
 
      XXX AppendUnique()
@@ -1082,8 +1095,8 @@ environment undisturbed.
 
      <scons_example name="ex9">
        <file name="SConstruct" printme="1">
-        env = Environment(CCFLAGS = '-DMY_VALUE')
-        env.Prepend(CCFLAGS = '-DFIRST ')
+        env = Environment(CCFLAGS = ['-DMY_VALUE'])
+        env.Prepend(CCFLAGS = ['-DFIRST'])
         env.Program('foo.c')
        </file>
        <file name="foo.c">
@@ -1126,6 +1139,20 @@ environment undisturbed.
      <scons_output example="Prepend-nonexistent">
         <scons_output_command>scons -Q</scons_output_command>
      </scons_output>
+
+     <para>
+
+     Like the &Append; function,
+     the &Prepend; function tries to be "smart"
+     about how the new value is appended to the old value.
+     If both are strings, the previous and new strings
+     are simply concatenated.
+     Similarly, if both are lists,
+     the lists are concatenated.
+     If, however, one is a string and the other is a list,
+     the string is added as a new element to the list.
+
+     </para>
 
      <!--
 

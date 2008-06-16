@@ -1011,8 +1011,8 @@ environment undisturbed.
      </para>
 
      <programlisting>
-        env = Environment(CCFLAGS = '-DMY_VALUE')
-        env.Append(CCFLAGS = ' -DLAST')
+        env = Environment(CCFLAGS = ['-DMY_VALUE'])
+        env.Append(CCFLAGS = ['-DLAST'])
         env.Program('foo.c')
      </programlisting>
 
@@ -1054,6 +1054,19 @@ environment undisturbed.
         scons: `.' is up to date.
      </screen>
 
+     <para>
+
+     Note that the &Append; function tries to be "smart"
+     about how the new value is appended to the old value.
+     If both are strings, the previous and new strings
+     are simply concatenated.
+     Similarly, if both are lists,
+     the lists are concatenated.
+     If, however, one is a string and the other is a list,
+     the string is added as a new element to the list.
+
+     </para>
+
      <!--
 
      XXX AppendUnique()
@@ -1074,8 +1087,8 @@ environment undisturbed.
      </para>
 
      <programlisting>
-        env = Environment(CCFLAGS = '-DMY_VALUE')
-        env.Prepend(CCFLAGS = '-DFIRST ')
+        env = Environment(CCFLAGS = ['-DMY_VALUE'])
+        env.Prepend(CCFLAGS = ['-DFIRST'])
         env.Program('foo.c')
      </programlisting>
 
@@ -1116,6 +1129,20 @@ environment undisturbed.
         NEW_VARIABLE = added
         scons: `.' is up to date.
      </screen>
+
+     <para>
+
+     Like the &Append; function,
+     the &Prepend; function tries to be "smart"
+     about how the new value is appended to the old value.
+     If both are strings, the previous and new strings
+     are simply concatenated.
+     Similarly, if both are lists,
+     the lists are concatenated.
+     If, however, one is a string and the other is a list,
+     the string is added as a new element to the list.
+
+     </para>
 
      <!--
 

@@ -388,8 +388,8 @@
     </para>
 
     <programlisting>
-       list = Split('main.c file1.c file2.c')
-       Program('program', list)
+       src_files = Split('main.c file1.c file2.c')
+       Program('program', src_files)
     </programlisting>
 
     <para>
@@ -404,10 +404,10 @@
     </para>
 
     <programlisting>
-       list = Split("""main.c
-                       file1.c
-                       file2.c""")
-       Program('program', list)
+       src_files = Split("""main.c
+                            file1.c
+                            file2.c""")
+       Program('program', src_files)
     </programlisting>
 
     <para>
@@ -440,8 +440,8 @@
     </para>
 
     <programlisting>
-       list = Split('main.c file1.c file2.c')
-       Program(target = 'program', source = list)
+       src_files = Split('main.c file1.c file2.c')
+       Program(target = 'program', source = src_files)
     </programlisting>
 
     <para>
@@ -453,8 +453,8 @@
     </para>
 
     <programlisting>
-       list = Split('main.c file1.c file2.c')
-       Program(source = list, target = 'program')
+       src_files = Split('main.c file1.c file2.c')
+       Program(source = src_files, target = 'program')
     </programlisting>
 
     <para>

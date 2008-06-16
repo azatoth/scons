@@ -145,6 +145,7 @@
 -->
 
 <!ENTITY Add "<function>Add</function>">
+<!ENTITY AddMethod "<function>AddMethod</function>">
 <!ENTITY AddPostAction "<function>AddPostAction</function>">
 <!ENTITY AddPreAction "<function>AddPreAction</function>">
 <!ENTITY AddOption "<function>AddOption</function>">

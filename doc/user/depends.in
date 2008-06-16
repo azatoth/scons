@@ -391,6 +391,13 @@
 
       </para>
 
+      <!--
+
+      We want to generate the output as follows,
+      but our "surrogate" system for generating the
+      output seems to get this wrong.
+      Just in-line the output for now.
+
       <scons_output example="MD5-timestamp" os="posix">
          <scons_output_command>scons -Q hello</scons_output_command>
          <scons_output_command>touch hello.c</scons_output_command>
@@ -398,6 +405,22 @@
        <scons_output_command output="    [CHANGE THE CONTENTS OF hello.c]">edit hello.c</scons_output_command>
          <scons_output_command>scons -Q hello</scons_output_command>
       </scons_output>
+
+      -->
+
+      <screen>
+         % <userinput>scons -Q hello</userinput>
+         cc -o hello.o -c hello.c
+         cc -o hello hello.o
+         % <userinput>touch hello.c</userinput>
+         % <userinput>scons -Q hello</userinput>
+         scons: `hello' is up to date.
+         % <userinput>edit hello.c</userinput>
+             [CHANGE THE CONTENTS OF hello.c]
+         % <userinput>scons -Q hello</userinput>
+         cc -o hello.o -c hello.c
+         cc -o hello hello.o
+      </screen>
 
       <para>
 
@@ -489,20 +512,74 @@
       <para>
 
       Note that in the function definition,
-      the <literal>dependency</literal>
+      the <varname>dependency</varname>
       (input file) is the first argument,
-      and then the <literal>target</literal>.
+      and then the &target;.
       Both of these are passed to the functions as
       SCons &Node; objects,
       which we convert to strings using the Python
       <function>str()</function>.
-      The third argument, <literal>prev_ni</literal>,
+
+      </para>
+
+      <para>
+
+      The third argument, <varname>prev_ni</varname>,
       is an object that holds the
       signature or timestamp information
       that was recorded about the dependency
       the last time the target was built.
+      A <varname>prev_ni</varname> object can hold
+      different information,
+      depending on the type of thing that the
+      <varname>dependency</varname> argument represents.
+      For normal files,
+      the <varname>prev_ni</varname> object
+      has the following attributes:
 
       </para>
+
+      <variablelist>
+
+        <varlistentry>
+        <term>.csig</term>
+
+        <listitem>
+        <para>
+        The <emphasis>content signature</emphasis>,
+        or MD5 checksum, of the contents of the
+        <varname>dependency</varname>
+        file the list time the &target; was built.
+        </para>
+        </listitem>
+
+        </varlistentry>
+
+        <varlistentry>
+        <term>.size</term>
+
+        <listitem>
+        <para>
+        The size in bytes of the <varname>dependency</varname>
+        file the list time the target was built.
+        </para>
+        </listitem>
+
+        </varlistentry>
+
+        <varlistentry>
+        <term>.timestamp</term>
+
+        <listitem>
+        <para>
+        The modification time of the <varname>dependency</varname>
+        file the list time the &target; was built.
+        </para>
+        </listitem>
+
+        </varlistentry>
+
+      </variablelist>
 
       <para>
 
@@ -1187,7 +1264,7 @@
       </file>
     </scons_example>
 
-    <!-- XXX mention that you can use arrays for target and source? -->
+    <!-- XXX mention that you can use lists for target and source? -->
 
     <!--
     <scons_output example="ignore">
@@ -1233,7 +1310,7 @@
     </para>
 
     <programlisting>
-       hello = Program('hello.c')
+       hello = Program('hello.c', CPPPATH=['/usr/include'])
        Ignore(hello, '/usr/include/stdio.h')
     </programlisting>
 
