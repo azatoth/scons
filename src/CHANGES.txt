@@ -20,7 +20,7 @@ From Steven Knight:
 
   - User's Guide updates:  document the BUILD_TARGETS, COMMAND_LINE_TARGETS
     and DEFAULT_TARGETS variables; document the AddOption(), GetOption()
-    and SetOption() functions.
+    and SetOption() functions; document the Requires() function.
 
 
 

@@ -225,6 +225,7 @@
 <!ENTITY PrependUnique "<function>PrependUnique</function>">
 <!ENTITY Replace "<function>Replace</function>">
 <!ENTITY Repository "<function>Repository</function>">
+<!ENTITY Requires "<function>Requires</function>">
 <!ENTITY Return "<function>Return</function>">
 <!ENTITY RuleSet "<function>RuleSet</function>">
 <!ENTITY Salt "<function>Salt</function>">
