@@ -5312,11 +5312,13 @@ Both
 and
 .I target
 can be a list, a file name, or a node.
-A side effect is a target that is created
+A side effect is a target file that is created or update
 as a side effect of building other targets.
 For example, a Windows PDB
 file is created as a side effect of building the .obj
-files for a static library.
+files for a static library,
+and various log files are created updated
+as side effects of various TeX commands.
 If a target is a side effect of multiple build commands,
 .B scons
 will ensure that only one set of commands
@@ -5324,6 +5326,34 @@ is executed at a time.
 Consequently, you only need to use this method
 for side-effect targets that are built as a result of
 multiple build commands.
+
+Because multiple build commands may update
+the same side effect file,
+by default the
+.I side_effect
+target is
+.I not
+automatically removed
+when the
+.I target
+is removed by the
+.B -c
+option.
+(Note, however, that the
+.I side_effect
+might be removed as part of
+cleaning the directory in which it lives.)
+If you want to make sure the
+.I side_effect
+is cleaned whenever a specific
+.I target
+is cleaned,
+you must specify this explicitly
+with the 
+.BR Clean ()
+or
+.BR env.Clean ()
+function.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
