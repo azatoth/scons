@@ -28,9 +28,9 @@
   The &AddMethod; function is used to add a method
   to an environment.  It's typically used to add a "pseudo-builder,"
   a function that looks like a &Builder; but
-  wraps up calls to multiple other Builders;,
+  wraps up calls to multiple other &Builder;s
   or otherwise processes its arguments
-  before calling one or more &Builders;.
+  before calling one or more &Builder;s.
   In the following example,
   we want to install the program into the standard
   <filename>/usr/bin</filename> directory hierarchy,
