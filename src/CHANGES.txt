@@ -18,9 +18,12 @@ From Steven Knight:
 
   - Clarify the man page description of the SConscript(src_dir) argument.
 
-  - User's Guide updates:  document the BUILD_TARGETS, COMMAND_LINE_TARGETS
-    and DEFAULT_TARGETS variables; document the AddOption(), GetOption()
-    and SetOption() functions; document the Requires() function.
+  - User's Guide updates:  document the BUILD_TARGETS,
+    COMMAND_LINE_TARGETS and DEFAULT_TARGETS variables; document the
+    AddOption(), GetOption() and SetOption() functions; document
+    the Requires() function; convert to the Variables object and
+    its associated BoolVariable(), EnumVariable(), ListVariable(),
+    PackageVariable() and PathVariable() functions.
 
   - Document suggested use of the Viual C/C++ /FC option to fix the
     ability to double-click on file names in compilation error messages.

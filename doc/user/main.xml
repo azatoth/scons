@@ -84,7 +84,7 @@
     <!ENTITY tasks SYSTEM "tasks.xml">
     <!ENTITY tools SYSTEM "tools.xml">
     <!ENTITY troubleshoot SYSTEM "troubleshoot.xml">
-    <!ENTITY variables SYSTEM "variables.xml">
+    <!ENTITY variables-xml SYSTEM "variables.xml">
     <!ENTITY variants SYSTEM "variants.xml">
 
     <!ENTITY builders-gen SYSTEM "builders.gen">
@@ -355,7 +355,7 @@
 
   <appendix id="app-variables">
     <title>Construction Variables</title>
-    &variables;
+    &variables-xml;
   </appendix>
 
   <appendix id="app-builders">

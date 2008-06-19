@@ -1009,7 +1009,7 @@
   </section>
 
   <section>
-  <title>Command-Line <varname>variable</varname>=<varname>value</varname> Build Options</title>
+  <title>Command-Line <varname>variable</varname>=<varname>value</varname> Build Variables</title>
 
     <para>
 
@@ -1039,7 +1039,7 @@
     to specifications on the command line.
     (Note that unless you want to require
     that users <emphasis>always</emphasis>
-    specify an option,
+    specify a variable,
     you probably want to use
     the Python
     <literal>ARGUMENTS.get()</literal> function,
@@ -1101,21 +1101,22 @@
   </section>
 
   <section>
-  <title>Controlling Command-Line Build Options</title>
+  <title>Controlling Command-Line Build Variables</title>
 
     <para>
 
-    Being able to use a command-line build option like
+    Being able to use a command-line build variable like
     <literal>debug=1</literal> is handy,
     but it can be a chore to write specific Python code
-    to recognize each such option
+    to recognize each such variable,
+    check for errors and provide appropriate messages,
     and apply the values to a construction variable.
     To help with this,
     &SCons; supports a class to
-    define such build options easily,
+    define such build variables easily,
     and a mechanism to apply the
-    build options to a construction environment.
-    This allows you to control how the build options affect
+    build variables to a construction environment.
+    This allows you to control how the build variables affect
     construction environments.
 
     </para>
@@ -1138,22 +1139,21 @@
     </para>
 
     <programlisting>
-         opts = Options()
-         opts.Add('RELEASE', 'Set to 1 to build for release', 0)
-         env = Environment(options = opts,
+         vars = Variables()
+         vars.Add('RELEASE', 'Set to 1 to build for release', 0)
+         env = Environment(variables = vars,
                            CPPDEFINES={'RELEASE_BUILD' : '${RELEASE}'})
          env.Program(['foo.c', 'bar.c'])
     </programlisting>
 
     <para>
 
-    This &SConstruct; file first creates an
-    &Options; object
-    (the <literal>opts = Options()</literal> call),
+    This &SConstruct; file first creates a &Variables; object
+    (the <literal>vars = Variables()</literal> call),
     and then uses the object's &Add;
     method to indicate that the &RELEASE;
-    option can be set on the command line,
-    and that it's default value will be <literal>0</literal>
+    variable can be set on the command line,
+    and that its default value will be <literal>0</literal>
     (the third argument to the &Add; method).
     The second argument is a line of help text;
     we'll learn how to use it in the next section.
@@ -1162,12 +1162,12 @@
 
     <para>
 
-    We then pass the created &Options;
-    object as an &options; keyword argument
+    We then pass the created &Variables;
+    object as a &variables; keyword argument
     to the &Environment; call
     used to create the construction environment.
     This then allows a user to set the
-    &RELEASE; build option on the command line
+    &RELEASE; build variable on the command line
     and have the variable show up in
     the command line used to build each object from
     a C source file:
@@ -1181,25 +1181,42 @@
       cc -o foo foo.o bar.o
     </screen>
 
+    <para>
+
+    NOTE:  Before &SCons; release 0.98.1, these build variables
+    were known as "command-line build options."
+    The class was actually named the &Options; class,
+    and in the sections below,
+    the various functions were named
+    &BoolOption;, &EnumOption;, &ListOption;,
+    &PathOption;, &PackageOption; and &AddOptions;.
+    These older names still work,
+    and you may encounter them in older
+    &SConscript; fles,
+    but their use is discouraged
+    and will be officially deprecated some day.
+
+    </para>
+
   </section>
 
   <section>
-  <title>Providing Help for Command-Line Build Options</title>
+  <title>Providing Help for Command-Line Build Variables</title>
 
     <para>
 
-    To make command-line build options most useful,
+    To make command-line build variables most useful,
     you ideally want to provide
     some help text that will describe
-    the available options
+    the available variables
     when the user runs <literal>scons -h</literal>.
     You could write this text by hand,
     but &SCons; provides an easier way.
-    &Options; objects support a
+    &Variables; objects support a
     &GenerateHelpText; method
-    that will, as its name indicates,
+    that will, as its name suggests,
     generate text that describes
-    the various options that
+    the various variables that
     have been added to it.
     You then pass the output from this method to
     the &Help; function:
@@ -1207,10 +1224,10 @@
     </para>
 
     <programlisting>
-         opts = Options('custom.py')
-         opts.Add('RELEASE', 'Set to 1 to build for release', 0)
-         env = Environment(options = opts)
-         Help(opts.GenerateHelpText(env))
+         vars = Variables('custom.py')
+         vars.Add('RELEASE', 'Set to 1 to build for release', 0)
+         env = Environment(variables = vars)
+         Help(vars.GenerateHelpText(env))
     </programlisting>
 
     <para>
@@ -1233,46 +1250,42 @@
     <para>
 
     Notice that the help output shows the default value,
-    and the current actual value of the build option.
+    and the current actual value of the build variable.
 
     </para>
 
   </section>
 
   <section>
-  <title>Reading Build Options From a File</title>
+  <title>Reading Build Variables From a File</title>
 
     <para>
 
-    Being able to use a command-line build option like
-    <literal>debug=1</literal> is handy,
-    but it can be a chore to write specific Python code
-    to recognize each such option
-    and apply the values to a construction variable.
-    To help with this,
-    &SCons; supports a class to
-    define such build options easily
-    and to read build option values from a file.
-    This allows you to control how the build options affect
-    construction environments.
-    The way you do this is by specifying
-    a file name when you call &Options;,
-    like &custom_py; in the following example:
+    Giving the user a way to specify the
+    value of a build variable on the command line
+    is useful,
+    but can still be tedious
+    if users must specify the variable
+    every time they run &SCons;.
+    We can let users provide customized build variable settings
+    in a local file by providing a
+    file name when we create the
+    &Variables; object:
 
     </para>
 
     <programlisting>
-         opts = Options('custom.py')
-         opts.Add('RELEASE', 'Set to 1 to build for release', 0)
-         env = Environment(options = opts,
+         vars = Variables('custom.py')
+         vars.Add('RELEASE', 'Set to 1 to build for release', 0)
+         env = Environment(variables = vars,
                            CPPDEFINES={'RELEASE_BUILD' : '${RELEASE}'})
          env.Program(['foo.c', 'bar.c'])
-         Help(opts.GenerateHelpText(env))
+         Help(vars.GenerateHelpText(env))
     </programlisting>
 
     <para>
 
-    This then allows us to control the &RELEASE;
+    This then allows the user to control the &RELEASE;
     variable by setting it in the &custom_py; file:
 
     </para>
@@ -1309,7 +1322,7 @@
     <para>
 
     The object files are rebuilt appropriately
-    with the new option:
+    with the new variable:
 
     </para>
 
@@ -1323,56 +1336,56 @@
   </section>
 
   <section>
-  <title>Pre-Defined Build Options</title>
+  <title>Pre-Defined Build Variable Functions</title>
 
     <para>
 
     &SCons; provides a number of functions
     that provide ready-made behaviors
-    for various types of command-line build options.
+    for various types of command-line build variables.
 
     </para>
 
     <section>
-    <title>True/False Values:  the &BoolOption; Build Option</title>
+    <title>True/False Values:  the &BoolVariable; Build Variable Function</title>
 
       <para>
 
-      It's often handy to be able to specify an
-      option that controls a simple Boolean variable
+      It's often handy to be able to specify a
+      variable that controls a simple Boolean variable
       with a &true; or &false; value.
       It would be even more handy to accomodate
       users who have different preferences for how to represent
       &true; or &false; values.
-      The &BoolOption; function
-      makes it easy to accomodate a variety of
-      common values that represent
+      The &BoolVariable; function
+      makes it easy to accomodate these
+      common representations of
       &true; or &false;.
 
       </para>
 
       <para>
 
-      The &BoolOption; function takes three arguments:
-      the name of the build option,
-      the default value of the build option,
-      and the help string for the option.
+      The &BoolVariable; function takes three arguments:
+      the name of the build variable,
+      the default value of the build variable,
+      and the help string for the variable.
       It then returns appropriate information for
-      passing to the &Add; method of an &Options; object, like so:
+      passing to the &Add; method of a &Variables; object, like so:
 
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(BoolOption('RELEASE', 'Set to build for release', 0))
-           env = Environment(options = opts,
+           vars = Variables('custom.py')
+           vars.Add(BoolVariable('RELEASE', 'Set to build for release', 0))
+           env = Environment(variables = vars,
                              CPPDEFINES={'RELEASE_BUILD' : '${RELEASE}'})
            env.Program('foo.c')
       </programlisting>
 
       <para>
 
-      With this build option,
+      With this build variable,
       the &RELEASE; variable can now be enabled by
       setting it to the value <literal>yes</literal>
       or <literal>t</literal>:
@@ -1450,18 +1463,18 @@
     </section>
 
     <section>
-    <title>Single Value From a List:  the &EnumOption; Build Option</title>
+    <title>Single Value From a List:  the &EnumVariable; Build Variable Function</title>
 
       <para>
 
       Suppose that we want a user to be able to
-      set a &COLOR; option
+      set a &COLOR; variable
       that selects a background color to be
       displayed by an application,
       but that we want to restrict the
       choices to a specific set of allowed colors.
       This can be set up quite easily
-      using the &EnumOption;,
+      using the &EnumVariable;,
       which takes a list of &allowed_values
       in addition to the variable name,
       default value,
@@ -1470,17 +1483,17 @@
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(EnumOption('COLOR', 'Set background color', 'red',
+           vars = Variables('custom.py')
+           vars.Add(EnumVariable('COLOR', 'Set background color', 'red',
                                allowed_values=('red', 'green', 'blue')))
-           env = Environment(options = opts,
+           env = Environment(variables = vars,
                              CPPDEFINES={'COLOR' : '"${COLOR}"'})
            env.Program('foo.c')
       </programlisting>
 
       <para>
 
-      The user can now explicity set the &COLOR; build option
+      The user can now explicity set the &COLOR; build variable
       to any of the specified allowed values:
 
       </para>
@@ -1512,7 +1525,7 @@
 
       <para>
 
-      The &EnumOption; function also supports a way
+      The &EnumVariable; function also supports a way
       to map alternate names to allowed values.
       Suppose, for example,
       that we want to allow the user
@@ -1525,11 +1538,11 @@
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(EnumOption('COLOR', 'Set background color', 'red',
+           vars = Variables('custom.py')
+           vars.Add(EnumVariable('COLOR', 'Set background color', 'red',
                                allowed_values=('red', 'green', 'blue'),
                                map={'navy':'blue'}))
-           env = Environment(options = opts,
+           env = Environment(variables = vars,
                              CPPDEFINES={'COLOR' : '"${COLOR}"'})
            env.Program('foo.c')
       </programlisting>
@@ -1540,7 +1553,7 @@
       <literal>navy</literal> on the command line,
       and &SCons; will translate it into <literal>blue</literal>
       when it comes time to use the &COLOR;
-      option to build a target:
+      variable to build a target:
 
       </para>
 
@@ -1551,7 +1564,7 @@
 
       <para>
 
-      By default, when using the &EnumOption; function,
+      By default, when using the &EnumVariable; function,
       arguments that differ
       from the legal values
       only in case
@@ -1576,7 +1589,7 @@
 
       <para>
 
-      The &EnumOption; function can take an additional
+      The &EnumVariable; function can take an additional
       &ignorecase; keyword argument that,
       when set to <literal>1</literal>,
       tells &SCons; to allow case differences
@@ -1585,12 +1598,12 @@
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(EnumOption('COLOR', 'Set background color', 'red',
+           vars = Variables('custom.py')
+           vars.Add(EnumVariable('COLOR', 'Set background color', 'red',
                                allowed_values=('red', 'green', 'blue'),
                                map={'navy':'blue'},
                                ignorecase=1))
-           env = Environment(options = opts,
+           env = Environment(variables = vars,
                              CPPDEFINES={'COLOR' : '"${COLOR}"'})
            env.Program('foo.c')
       </programlisting>
@@ -1624,12 +1637,12 @@
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(EnumOption('COLOR', 'Set background color', 'red',
+           vars = Variables('custom.py')
+           vars.Add(EnumVariable('COLOR', 'Set background color', 'red',
                                allowed_values=('red', 'green', 'blue'),
                                map={'navy':'blue'},
                                ignorecase=2))
-           env = Environment(options = opts,
+           env = Environment(variables = vars,
                              CPPDEFINES={'COLOR' : '"${COLOR}"'})
            env.Program('foo.c')
       </programlisting>
@@ -1657,24 +1670,24 @@
     </section>
 
     <section>
-    <title>Multiple Values From a List:  the &ListOption; Build Option</title>
+    <title>Multiple Values From a List:  the &ListVariable; Build Variable Function</title>
 
       <para>
 
       Another way in which you might want to allow users
-      to control build option is to
+      to control a build variable is to
       specify a list of one or more legal values.
-      &SCons; supports this through the &ListOption; function.
+      &SCons; supports this through the &ListVariable; function.
       If, for example, we want a user to be able to set a
-      &COLORS; option to one or more of the legal list of values:
+      &COLORS; variable to one or more of the legal list of values:
 
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(ListOption('COLORS', 'List of colors', 0,
+           vars = Variables('custom.py')
+           vars.Add(ListVariable('COLORS', 'List of colors', 0,
                                ['red', 'green', 'blue']))
-           env = Environment(options = opts,
+           env = Environment(variables = vars,
                              CPPDEFINES={'COLORS' : '"${COLORS}"'})
            env.Program('foo.c')
       </programlisting>
@@ -1697,7 +1710,7 @@
 
       <para>
 
-      In addition, the &ListOption; function
+      In addition, the &ListVariable; function
       allows the user to specify explicit keywords of
       &all; or &none;
       to select all of the legal values,
@@ -1730,12 +1743,12 @@
     </section>
 
     <section>
-    <title>Path Names:  the &PathOption; Build Option</title>
+    <title>Path Names:  the &PathVariable; Build Variable Function</title>
 
       <para>
 
-      &SCons; supports a &PathOption; function
-      to make it easy to create a build option
+      &SCons; supports a &PathVariable; function
+      to make it easy to create a build variable
       to control an expected path name.
       If, for example, you need to
       define a variable in the preprocessor
@@ -1745,11 +1758,11 @@
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(PathOption('CONFIG',
+           vars = Variables('custom.py')
+           vars.Add(PathVariable('CONFIG',
                                'Path to configuration file',
                                '/etc/my_config'))
-           env = Environment(options = opts,
+           env = Environment(variables = vars,
                              CPPDEFINES={'CONFIG_FILE' : '"$CONFIG"'})
            env.Program('foo.c')
       </programlisting>
@@ -1757,7 +1770,7 @@
       <para>
 
       This then allows the user to
-      override the &CONFIG; build option
+      override the &CONFIG; build variable
       on the command line as necessary:
 
       </para>
@@ -1771,7 +1784,7 @@
 
       <para>
 
-      By default, &PathOption; checks to make sure
+      By default, &PathVariable; checks to make sure
       that the specified path exists and generates an error if it
       doesn't:
 
@@ -1786,21 +1799,21 @@
 
       <para>
 
-      &PathOption; provides a number of methods
+      &PathVariable; provides a number of methods
       that you can use to change this behavior.
       If you want to ensure that any specified paths are,
       in fact, files and not directories,
-      use the &PathOption_PathIsFile; method:
+      use the &PathVariable_PathIsFile; method:
 
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(PathOption('CONFIG',
+           vars = Variables('custom.py')
+           vars.Add(PathVariable('CONFIG',
                                'Path to configuration file',
                                '/etc/my_config',
-                               PathOption.PathIsFile))
-           env = Environment(options = opts,
+                               PathVariable.PathIsFile))
+           env = Environment(variables = vars,
                              CPPDEFINES={'CONFIG_FILE' : '"$CONFIG"'})
            env.Program('foo.c')
       </programlisting>
@@ -1809,17 +1822,17 @@
 
       Conversely, to ensure that any specified paths are
       directories and not files,
-      use the &PathOption_PathIsDir; method:
+      use the &PathVariable_PathIsDir; method:
 
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(PathOption('DBDIR',
+           vars = Variables('custom.py')
+           vars.Add(PathVariable('DBDIR',
                                'Path to database directory',
                                '/var/my_dbdir',
-                               PathOption.PathIsDir))
-           env = Environment(options = opts,
+                               PathVariable.PathIsDir))
+           env = Environment(variables = vars,
                              CPPDEFINES={'DBDIR' : '"$DBDIR"'})
            env.Program('foo.c')
       </programlisting>
@@ -1830,17 +1843,17 @@
       are directories,
       and you would like the directory created
       if it doesn't already exist,
-      use the &PathOption_PathIsDirCreate; method:
+      use the &PathVariable_PathIsDirCreate; method:
 
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(PathOption('DBDIR',
+           vars = Variables('custom.py')
+           vars.Add(PathVariable('DBDIR',
                                'Path to database directory',
                                '/var/my_dbdir',
-                               PathOption.PathIsDirCreate))
-           env = Environment(options = opts,
+                               PathVariable.PathIsDirCreate))
+           env = Environment(variables = vars,
                              CPPDEFINES={'DBDIR' : '"$DBDIR"'})
            env.Program('foo.c')
       </programlisting>
@@ -1849,18 +1862,18 @@
 
       Lastly, if you don't care whether the path exists,
       is a file, or a directory,
-      use the &PathOption_PathAccept; method
+      use the &PathVariable_PathAccept; method
       to accept any path that the user supplies:
 
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(PathOption('OUTPUT',
+           vars = Variables('custom.py')
+           vars.Add(PathVariable('OUTPUT',
                                'Path to output file or directory',
                                None,
-                               PathOption.PathAccept))
-           env = Environment(options = opts,
+                               PathVariable.PathAccept))
+           env = Environment(variables = vars,
                              CPPDEFINES={'OUTPUT' : '"$OUTPUT"'})
            env.Program('foo.c')
       </programlisting>
@@ -1868,7 +1881,7 @@
     </section>
 
     <section>
-    <title>Enabled/Disabled Path Names: the &PackageOption; Build Option</title>
+    <title>Enabled/Disabled Path Names: the &PackageVariable; Build Variable Function</title>
 
       <para>
 
@@ -1879,24 +1892,24 @@
       by using <literal>yes</literal> or <literal>no</literal> keywords,
       in addition to allow them
       to supply an explicit path name.
-      &SCons; supports the &PackageOption;
+      &SCons; supports the &PackageVariable;
       function to support this:
 
       </para>
 
       <programlisting>
-           opts = Options('custom.py')
-           opts.Add(PackageOption('PACKAGE',
+           vars = Variables('custom.py')
+           vars.Add(PackageVariable('PACKAGE',
                                   'Location package',
                                   '/opt/location'))
-           env = Environment(options = opts,
+           env = Environment(variables = vars,
                              CPPDEFINES={'PACKAGE' : '"$PACKAGE"'})
            env.Program('foo.c')
       </programlisting>
 
       <para>
 
-      When the &SConscript; file uses the &PackageOption; funciton,
+      When the &SConscript; file uses the &PackageVariable; funciton,
       user can now still use the default
       or supply an overriding path name,
       but can now explicitly set the
@@ -1923,43 +1936,43 @@
   </section>
 
   <section>
-  <title>Adding Multiple Command-Line Build Options at Once</title>
+  <title>Adding Multiple Command-Line Build Variables at Once</title>
 
     <para>
 
     Lastly, &SCons; provides a way to add
-    multiple build options to an &Options; object at once.
+    multiple build variables to a &Variables; object at once.
     Instead of having to call the &Add; method
     multiple times,
-    you can call the &AddOptions;
-    method with a list of build options
+    you can call the &AddVariables;
+    method with a list of build variables
     to be added to the object.
-    Each build option is specified
+    Each build variable is specified
     as either a tuple of arguments,
     just like you'd pass to the &Add; method itself,
     or as a call to one of the pre-defined
-    functions for pre-packaged command-line build options.
+    functions for pre-packaged command-line build variables.
     in any order:
 
     </para>
 
     <programlisting>
-        opts = Options()
-        opts.AddOptions(
+        vars = Variables()
+        vars.AddVariables(
             ('RELEASE', 'Set to 1 to build for release', 0),
             ('CONFIG', 'Configuration file', '/etc/my_config'),
-            BoolOption('warnings', 'compilation with -Wall and similiar', 1),
-            EnumOption('debug', 'debug output and symbols', 'no',
+            BoolVariable('warnings', 'compilation with -Wall and similiar', 1),
+            EnumVariable('debug', 'debug output and symbols', 'no',
                        allowed_values=('yes', 'no', 'full'),
                        map={}, ignorecase=0),  # case sensitive
-            ListOption('shared',
+            ListVariable('shared',
                        'libraries to build as shared libraries',
                        'all',
                        names = list_of_libs),
-            PackageOption('x11',
+            PackageVariable('x11',
                           'use X11 installed here (yes = search some places)',
                           'yes'),
-            PathOption('qtdir', 'where the root of Qt is installed', qtdir),
+            PathVariable('qtdir', 'where the root of Qt is installed', qtdir),
         )
     </programlisting>
 
@@ -1967,6 +1980,15 @@
     </para>
 
   </section>
+
+  <!--
+
+    <section>
+    <title>Handling Unknown Command-Line Build Variables:  the &UnknownVariables; Function</title>
+
+    </section>
+
+  -->
 
   <!--
 

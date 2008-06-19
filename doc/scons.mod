@@ -240,6 +240,8 @@
 <!ENTITY TargetSignatures "<function>TargetSignatures</function>">
 <!ENTITY Task "<function>Task</function>">
 <!ENTITY Touch "<function>Touch</function>">
+<!ENTITY UnknownOptions "<functions>UnknownOptions</functions>">
+<!ENTITY UnknownVariables "<functions>UnknownVariables</functions>">
 
 <!-- Environment methods -->
 <!ENTITY subst "<function>subst</function>">
@@ -327,6 +329,7 @@
 <!ENTITY exports "<varname>exports</varname>">
 <!ENTITY source "<varname>source</varname>">
 <!ENTITY target "<varname>target</varname>">
+<!ENTITY variables "<varname>variables</varname>">
 <!ENTITY variant_dir "<varname>variant_dir</varname>">
 
 
