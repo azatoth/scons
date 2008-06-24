@@ -144,13 +144,19 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
     for i in keep:
         rdk[i] = re.compile('%s=(.*)' % _ENV_TO_T[i])
 
+    def add_env(rmatch, key):
+        plist = rmatch.group(1).split(os.pathsep)
+        for p in plist:
+            # Do not add empty paths (when a var ends with ;)
+            if p:
+                dkeep[key].append(p)
+
     for line in output.splitlines():
         for k,v in rdk.items():
             m = v.match(line)
             if m:
-                plist = m.group(1).split(os.pathsep)
-                for p in plist:
-                    dkeep[k].append(p)
+                add_env(m, k)
+
 
     return dkeep
 
