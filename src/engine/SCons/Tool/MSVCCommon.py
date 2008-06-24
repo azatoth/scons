@@ -131,25 +131,26 @@ def get_output(vcbat, args = None, keep = ("include", "lib", "libpath", "path"))
     output = stdout.decode("mbcs")
     return output
 
-_ENV_TO_T = {"include": "INCLUDE", "path": "Path",
-             "lib": "LIB", "libpath": "LIBPATH"}
+# You gotta love this: they had to set Path instead of PATH...
+_ENV_TO_T = {"INCLUDE": "INCLUDE", "PATH": "Path",
+             "LIB": "LIB", "LIBPATH": "LIBPATH"}
 
-def parse_output(output, keep = ("include", "lib", "libpath", "path")):
+def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
+    # dkeep is a dict associating key: path_list, where key is one item from
+    # keep, and pat_list the associated list of paths
     dkeep = dict([(i, []) for i in keep])
-    dk = []
+    # rdk will  keep the regex to match the .bat file output line starts
+    rdk = []
     for i in keep:
-        dk.append(re.compile('%s=(.*)' % _ENV_TO_T[i]))
+        rdk.append(re.compile('%s=(.*)' % _ENV_TO_T[i]))
 
     for i in output.splitlines():
-        for j in range(len(dk)):
-            m = dk[j].match(i)
+        for j in range(len(rdk)):
+            m = rdk[j].match(i)
             if m:
                 dkeep[keep[j]].extend(m.group(1).split(os.pathsep))
 
-    ret = {}
-    for k in dkeep.keys():
-        ret[k.lower()] = dkeep[k]
-    return ret
+    return dkeep
 
 def get_new(l1, l2):
     """Given two list l1 and l2, return the items in l2 which are not in l1.
@@ -174,14 +175,14 @@ def generate(env):
                 file = find_bat(v, flavor)
                 out = get_output(file)
                 parsed = parse_output(out)
-                for k,v in parsed.items():
-                    print k, ': ', v
 
                 import os
-                if os.environ.has_key('PATH'):
-                    p = os.environ['PATH'].split(os.pathsep)
-                    #print ':::::: ', p, parsed['path']
-                    print 'new paths: ', get_new(p, parsed['path'])
+                for k in parsed.keys():
+                    if os.environ.has_key(k):
+                       p = os.environ[k].split(os.pathsep)
+                       print 'For %s, should PREPEND: %s' % (k, get_new(p, parsed[k]))
+                    else:
+                       print 'For %s, should CREATE: %s' % (k, get_new(p, parsed[k]))
 
             except IOError:
                 pass
