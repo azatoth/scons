@@ -131,6 +131,26 @@ def get_output(vcbat, args = None, keep = ("include", "lib", "libpath", "path"))
     output = stdout.decode("mbcs")
     return output
 
+_ENV_TO_T = {"include": "INCLUDE", "path": "Path",
+             "lib": "LIB", "libpath": "LIBPATH"}
+
+def parse_output(output, keep = ("include", "lib", "libpath", "path")):
+    dkeep = dict([(i, []) for i in keep])
+    dk = []
+    for i in keep:
+        dk.append(re.compile('%s=([\S\s]*)' % _ENV_TO_T[i]))
+
+    for i in output.split('\n'):
+        for j in range(len(dk)):
+            m = dk[j].match(i)
+            if m:
+                dkeep[keep[j]].append(m.groups(0))
+
+    ret = {}
+    for k in dkeep.keys():
+        ret[k.lower()] = dkeep[k]
+    return ret
+
 def generate(env):
     from logging import basicConfig, DEBUG
     basicConfig(level = DEBUG)
@@ -140,6 +160,7 @@ def generate(env):
             try:
                 file = find_bat(v, flavor)
                 out = get_output(file)
+                print parse_output(out)
             except IOError:
                 pass
 
