@@ -81,6 +81,56 @@ def find_vcbat_dir(version, flavor = 'std'):
 
     return p
 
+def find_vsvars32(version, flavor = 'std'):
+    pdir = find_vcbat_dir(version, flavor)
+
+    vsvars32 = os.path.join(pdir, "vsvars32.bat")
+    if os.path.isfile(vsvars32):
+        return vsvars32
+    else:
+        debug("%s file not on file system" % vsvars32)
+        return None
+
+def find_vcvarsall(version, flavor = 'std'):
+    pdir = find_vcbat_dir(version, flavor)
+
+    vcvarsall = os.path.join(pdir, "vcvarsall.bat")
+    if os.path.isfile(vcvarsall):
+        return vcvarsall
+    else:
+        debug("%s file not on file system" % vcvarsall)
+        return None
+
+def find_bat(version, flavor = 'std'):
+    if version < 8:
+        return find_vsvars32(version, flavor)
+    else:
+        return find_vcvarsall(version, flavor)
+
+def get_output(vcbat, args = None, keep = ("include", "lib", "libpath", "path")):
+    """Parse the output of given bat file, with given args. Only
+    take given vars in the argument keep."""
+    skeep = set(keep)
+    result = {}
+
+    if args:
+        debug("Calling '%s %s'" % (vcbat, args))
+        popen = subprocess.Popen('"%s" %s & set' % (vcbat, args),
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+    else:
+        debug("Calling '%s'" % vcbat)
+        popen = subprocess.Popen('"%s" & set' % vcbat,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+
+    stdout, stderr = popen.communicate()
+    if popen.wait() != 0:
+        raise IOError(stderr.decode("mbcs"))
+
+    output = stdout.decode("mbcs")
+    return output
+
 def generate(env):
     from logging import basicConfig, DEBUG
     basicConfig(level = DEBUG)
@@ -88,7 +138,8 @@ def generate(env):
     for flavor in ['std', 'express']:
         for v in [9.]:
             try:
-                find_vcbat_dir(v, flavor)
+                file = find_bat(v, flavor)
+                out = get_output(file)
             except IOError:
                 pass
 
