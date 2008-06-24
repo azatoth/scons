@@ -165,6 +165,31 @@ def get_new(l1, l2):
 
     return new
 
+def varbat_variables(version, flavor = 'std', arch = 'x86'):
+    """Return a dictionary where the keys are the env variables and the values
+    the list of paths. 
+    
+    Note: only return the paths which were added by the .bat file, to avoid
+    polluting the env with all the content of PATH."""
+    file = find_bat(version, flavor)
+    # XXX version < 8 does not handle cross compilation ?
+    if version < 8:
+        out = get_output(file)
+        parsed = parse_output(out, keep = ['INCLUDE', 'PATH', 'LIB'])
+    else:
+        out = get_output(file, args = arch)
+        parsed = parse_output(out, keep = ['INCLUDE', 'PATH', 'LIB', 'LIBPATH'])
+
+    ret = {}
+    for k in parsed.keys():
+        if os.environ.has_key(k):
+           p = os.environ[k].split(os.pathsep)
+           ret[k] = get_new(p, parsed[k])
+        else:
+           ret[k] = parsed[k]
+
+    return ret
+
 def generate(env):
     from logging import basicConfig, DEBUG
     basicConfig(level = DEBUG)
@@ -172,18 +197,9 @@ def generate(env):
     for flavor in ['std', 'express']:
         for v in [9.]:
             try:
-                file = find_bat(v, flavor)
-                out = get_output(file)
-                parsed = parse_output(out)
-
-                import os
-                for k in parsed.keys():
-                    if os.environ.has_key(k):
-                       p = os.environ[k].split(os.pathsep)
-                       print 'For %s, should PREPEND: %s' % (k, get_new(p, parsed[k]))
-                    else:
-                       print 'For %s, should CREATE: %s' % (k, get_new(p, parsed[k]))
-
+                vars = varbat_variables(v, flavor)
+                for k, v in vars.items():
+                    print k, v
             except IOError:
                 pass
 
