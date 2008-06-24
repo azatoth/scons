@@ -144,7 +144,7 @@ def parse_output(output, keep = ("include", "lib", "libpath", "path")):
         for j in range(len(dk)):
             m = dk[j].match(i)
             if m:
-                dkeep[keep[j]].append(m.groups(0))
+                dkeep[keep[j]].extend(m.group(1).split(os.pathsep))
 
     ret = {}
     for k in dkeep.keys():
@@ -160,7 +160,10 @@ def generate(env):
             try:
                 file = find_bat(v, flavor)
                 out = get_output(file)
-                print parse_output(out)
+                parsed = parse_output(out)
+                for k,v in parsed.items():
+                    print k, ': ', v
+
             except IOError:
                 pass
 
