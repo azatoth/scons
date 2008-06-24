@@ -151,6 +151,19 @@ def parse_output(output, keep = ("include", "lib", "libpath", "path")):
         ret[k.lower()] = dkeep[k]
     return ret
 
+def get_new(l1, l2):
+    """Given two list l1 and l2, return the items in l2 which are not in l1.
+    Order is maintained."""
+
+    # We don't try to be smart: lists are small, and this is not the bottleneck
+    # is any case
+    new = []
+    for i in l2:
+        if i not in l1:
+            new.append(i)
+
+    return new
+
 def generate(env):
     from logging import basicConfig, DEBUG
     basicConfig(level = DEBUG)
@@ -163,6 +176,12 @@ def generate(env):
                 parsed = parse_output(out)
                 for k,v in parsed.items():
                     print k, ': ', v
+
+                import os
+                if os.environ.has_key('PATH'):
+                    p = os.environ['PATH'].split(os.pathsep)
+                    #print ':::::: ', p, parsed['path']
+                    print 'new paths: ', get_new(p, parsed['path'])
 
             except IOError:
                 pass
