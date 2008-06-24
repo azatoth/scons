@@ -140,15 +140,17 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
     # keep, and pat_list the associated list of paths
     dkeep = dict([(i, []) for i in keep])
     # rdk will  keep the regex to match the .bat file output line starts
-    rdk = []
+    rdk = {}
     for i in keep:
-        rdk.append(re.compile('%s=(.*)' % _ENV_TO_T[i]))
+        rdk[i] = re.compile('%s=(.*)' % _ENV_TO_T[i])
 
-    for i in output.splitlines():
-        for j in range(len(rdk)):
-            m = rdk[j].match(i)
+    for line in output.splitlines():
+        for k,v in rdk.items():
+            m = v.match(line)
             if m:
-                dkeep[keep[j]].extend(m.group(1).split(os.pathsep))
+                plist = m.group(1).split(os.pathsep)
+                for p in plist:
+                    dkeep[k].append(p)
 
     return dkeep
 
