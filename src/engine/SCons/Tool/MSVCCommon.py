@@ -138,9 +138,9 @@ def parse_output(output, keep = ("include", "lib", "libpath", "path")):
     dkeep = dict([(i, []) for i in keep])
     dk = []
     for i in keep:
-        dk.append(re.compile('%s=([\S\s]*)' % _ENV_TO_T[i]))
+        dk.append(re.compile('%s=(.*)' % _ENV_TO_T[i]))
 
-    for i in output.split('\n'):
+    for i in output.splitlines():
         for j in range(len(dk)):
             m = dk[j].match(i)
             if m:
