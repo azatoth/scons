@@ -1358,7 +1358,10 @@ method.
 
 .TP
 --warn=duplicate-environment, --warn=no-duplicate-environment
-Enables or disables warnings about missing SConscript files.
+Enables or disables warnings about attempts to specify a build
+of a target with two different construction environments
+that use the same action.
+These warnings are enabled by default.
 
 .TP
 --warn=fortran-cxx-mix, --warn=no-fortran-cxx-mix
@@ -1387,9 +1390,7 @@ These warnings are enabled by default.
 
 .TP
 --warn=missing-sconscript, --warn=no-missing-sconscript
-Enables or disables warnings about attempts to specify a build
-of a target with two different construction environments
-that use the same action.
+Enables or disables warnings about missing SConscript files.
 These warnings are enabled by default.
 
 .TP

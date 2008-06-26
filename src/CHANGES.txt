@@ -32,6 +32,11 @@ From Steven Knight:
   - Document the need to use Clean() for any SideEffect() files that
     must be explicitly removed when their targets are removed.
 
+From Alexey Zezukin:
+
+  - Fix incorrectly swapped man page descriptions of the --warn= options
+    for duplicate-environment and missing-sconscript.
+
 
 RELEASE 0.98.5 - Sat, 07 Jun 2008 08:20:35 -0700
 
