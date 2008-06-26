@@ -179,6 +179,7 @@
 <!ENTITY EnumVariable "<function>EnumVariable</function>">
 <!ENTITY Environment "<function>Environment</function>">
 <!ENTITY Execute "<function>Execute</function>">
+<!ENTITY Exit "<function>Exit</function>">
 <!ENTITY Export "<function>Export</function>">
 <!ENTITY File "<function>File</function>">
 <!ENTITY FindFile "<function>FindFile</function>">
@@ -241,8 +242,8 @@
 <!ENTITY TargetSignatures "<function>TargetSignatures</function>">
 <!ENTITY Task "<function>Task</function>">
 <!ENTITY Touch "<function>Touch</function>">
-<!ENTITY UnknownOptions "<functions>UnknownOptions</functions>">
-<!ENTITY UnknownVariables "<functions>UnknownVariables</functions>">
+<!ENTITY UnknownOptions "<function>UnknownOptions</function>">
+<!ENTITY UnknownVariables "<function>UnknownVariables</function>">
 
 <!-- Environment methods -->
 <!ENTITY subst "<function>subst</function>">

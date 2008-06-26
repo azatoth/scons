@@ -21,10 +21,10 @@ From Steven Knight:
   - User's Guide updates:  document the BUILD_TARGETS,
     COMMAND_LINE_TARGETS and DEFAULT_TARGETS variables; document the
     AddOption(), GetOption() and SetOption() functions; document
-    the Requires() function; convert to the Variables object and
-    its associated BoolVariable(), EnumVariable(), ListVariable(),
-    PackageVariable() and PathVariable() functions.  Reorganize
-    the command-line arguments chapter.
+    the Requires() function; convert to the Variables object,
+    its UnknownOPtions() method, and its associated BoolVariable(),
+    EnumVariable(), ListVariable(), PackageVariable() and PathVariable()
+    functions.  Reorganize the command-line arguments chapter.
 
   - Document suggested use of the Visual C/C++ /FC option to fix the
     ability to double-click on file names in compilation error messages.

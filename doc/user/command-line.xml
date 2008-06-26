@@ -1621,14 +1621,99 @@
 
     </section>
 
-    <!--
+    <section>
+    <title>Handling Unknown Command-Line Build Variables:  the &UnknownVariables; Function</title>
 
-      <section>
-      <title>Handling Unknown Command-Line Build Variables:  the &UnknownVariables; Function</title>
+      <para>
 
-      </section>
+      Users may, of course,
+      occasionally misspell variable names in their command-line settings.
+      &SCons; does not generate an error or warning
+      for any unknown variables the users specifies on the command line.
+      (This is in no small part because you may be
+      processing the arguments directly using the &ARGUMENTS; dictionary,
+      and therefore &SCons; can't know in the general case
+      whether a given "misspelled" variable is
+      really unknown and a potential problem,
+      or something that your &SConscript; file
+      will handle directly with some Python code.)
 
-    -->
+      </para>
+
+      <para>
+
+      If, however, you're using a &Variables; object to
+      define a specific set of command-line build variables
+      that you expect users to be able to set,
+      you may want to provide an error
+      message or warning of your own
+      if the user supplies a variable setting
+      that is <emphasis>not</emphasis> among
+      the defined list of variable names known to the &Variables; object.
+      You can do this by calling the &UnknownVariables;
+      method of the &Variables; object:
+
+      </para>
+
+      <programlisting>
+           vars = Variables(None)
+           vars.Add('RELEASE', 'Set to 1 to build for release', 0)
+           env = Environment(variables = vars,
+                             CPPDEFINES={'RELEASE_BUILD' : '${RELEASE}'})
+           unknown = vars.UnknownVariables()
+           if unknown:
+               print "Unknown variables:", unknown.keys()
+               Exit(1)
+           env.Program('foo.c')
+      </programlisting>
+
+      <para>
+
+      The &UnknownVariables; method returns a dictionary
+      containing the keywords and values
+      of any variables the user specified on the command line
+      that are <emphasis>not</emphasis>
+      among the variables known to the &Variables; object
+      (from having been specified using
+      the &Variables; object's&Add; method).
+      In the examble above,
+      we check for whether the dictionary
+      returned by the &UnknownVariables; is non-empty,
+      and if so print the Python list
+      containing the names of the unknwown variables
+      and then call the &Exit; function
+      to terminate &SCons;:
+
+      </para>
+
+      <screen>
+        % <userinput>scons -Q NOT_KNOWN=foo</userinput>
+        Unknown variables: ['NOT_KNOWN']
+      </screen>
+
+      <para>
+
+      Of course, you can process the items in the
+      dictionary returned by the &UnknownVariables; function
+      in any way appropriate to your bulid configuration,
+      including just printing a warning message
+      but not exiting,
+      logging an error somewhere,
+      etc.
+
+      </para>
+
+      <para>
+
+      Note that you must delay the call of &UnknownVariables;
+      until after you have applied the &Variables; object
+      to a construction environment
+      with the <literal>variables=</literal>
+      keyword argument of an &Environment; call.
+
+      </para>
+
+    </section>
 
   </section>
 
