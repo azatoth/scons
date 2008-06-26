@@ -23,9 +23,10 @@ From Steven Knight:
     AddOption(), GetOption() and SetOption() functions; document
     the Requires() function; convert to the Variables object and
     its associated BoolVariable(), EnumVariable(), ListVariable(),
-    PackageVariable() and PathVariable() functions.
+    PackageVariable() and PathVariable() functions.  Reorganize
+    the command-line arguments chapter.
 
-  - Document suggested use of the Viual C/C++ /FC option to fix the
+  - Document suggested use of the Visual C/C++ /FC option to fix the
     ability to double-click on file names in compilation error messages.
 
   - Document the need to use Clean() for any SideEffect() files that
