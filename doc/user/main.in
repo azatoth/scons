@@ -119,12 +119,6 @@
   XXX SetOption('duplicate')
   XXX - - duplicate=
 
-  XXX Options.UnknownOption()
-
-  XXX GetBuildFailures()
-
-  XXX Requires()
-
   XXX CheckTypeSize()
 
   XXX Progress()
@@ -134,7 +128,6 @@
   XXX - - warn=
 
   XXX ARGLIST
-  XXX ARGUMENTS
 
   -->
 
