@@ -187,6 +187,7 @@
 <!ENTITY GenerateHelpText "<function>GenerateHelpText</function>">
 <!ENTITY GetBuildFailures "<function>GetBuildFailures</function>">
 <!ENTITY GetOption "<function>GetOption</function>">
+<!ENTITY Glob "<function>Glob</function>">
 <!ENTITY Help "<function>Help</function>">
 <!ENTITY Ignore "<function>Ignore</function>">
 <!ENTITY Import "<function>Import</function>">
