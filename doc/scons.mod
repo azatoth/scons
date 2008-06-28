@@ -225,6 +225,7 @@
 <!ENTITY Prepend "<function>Prepend</function>">
 <!ENTITY PrependENVPath "<function>PrependENVPath</function>">
 <!ENTITY PrependUnique "<function>PrependUnique</function>">
+<!ENTITY Progress "<function>Progress</function>">
 <!ENTITY Replace "<function>Replace</function>">
 <!ENTITY Repository "<function>Repository</function>">
 <!ENTITY Requires "<function>Requires</function>">

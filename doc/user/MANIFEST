@@ -18,8 +18,6 @@ errors.xml
 example.xml
 factories.xml
 file-removal.xml
-get-build-failures.xml
-help.xml
 hierarchy.xml
 install.xml
 java.xml
@@ -28,6 +26,7 @@ less-simple.xml
 main.xml
 make.xml
 nodes.xml
+output.xml
 parseconfig.xml
 preface.xml
 python.xml

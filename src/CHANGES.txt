@@ -19,12 +19,14 @@ From Steven Knight:
   - Clarify the man page description of the SConscript(src_dir) argument.
 
   - User's Guide updates:  document the BUILD_TARGETS,
-    COMMAND_LINE_TARGETS and DEFAULT_TARGETS variables; document the
-    AddOption(), GetOption() and SetOption() functions; document
+    COMMAND_LINE_TARGETS and DEFAULT_TARGETS variables.  Document the
+    AddOption(), GetOption() and SetOption() functions.  Document
     the Requires() function; convert to the Variables object,
-    its UnknownOPtions() method, and its associated BoolVariable(),
+    its UnknownOptions() method, and its associated BoolVariable(),
     EnumVariable(), ListVariable(), PackageVariable() and PathVariable()
-    functions.  Reorganize the command-line arguments chapter.
+    functions.  Document the Progress() function.  Reorganize the
+    command-line arguments chapter.  Collect some miscellaneous sections
+    into a chapter about configuring build output.
 
   - Document suggested use of the Visual C/C++ /FC option to fix the
     ability to double-click on file names in compilation error messages.
@@ -32,10 +34,15 @@ From Steven Knight:
   - Document the need to use Clean() for any SideEffect() files that
     must be explicitly removed when their targets are removed.
 
+From Gary Oberbrunner:
+
+  - Document use of the GetBuildFailures() function in the User's Guide.
+
 From Alexey Zezukin:
 
   - Fix incorrectly swapped man page descriptions of the --warn= options
     for duplicate-environment and missing-sconscript.
+
 
 
 RELEASE 0.98.5 - Sat, 07 Jun 2008 08:20:35 -0700
