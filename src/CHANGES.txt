@@ -34,6 +34,8 @@ From Steven Knight:
   - Document the need to use Clean() for any SideEffect() files that
     must be explicitly removed when their targets are removed.
 
+  - Explicitly document use of Node lists as input to Dependency().
+
 From Gary Oberbrunner:
 
   - Document use of the GetBuildFailures() function in the User's Guide.

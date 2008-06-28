@@ -3320,8 +3320,21 @@ from source code management systems.
 .TP
 .RI env.Depends( target ", " dependency )
 Specifies an explicit dependency;
-the target file(s) will be rebuilt
-whenever the dependency file(s) has changed.
+the
+.I target
+will be rebuilt
+whenever the
+.I dependency
+has changed.
+Both the specified
+.I target
+and
+.I dependency
+can be a string
+(usually the path name of a file or directory)
+or Node objects,
+or a list of strings or Node objects
+(such as returned by a Builder call).
 This should only be necessary
 for cases where the dependency
 is not caught by a Scanner
@@ -3331,6 +3344,18 @@ Example:
 
 .ES
 env.Depends('foo', 'other-input-file-for-foo')
+
+mylib = env.Library('mylib.c')
+installed_lib = env.Install('lib', mylib)
+bar = env.Program('bar.c')
+
+# Arrange for the library to be copied into the installation
+# directory before trying to build the "bar" program.
+# (Note that this is for example only.  A "real" library
+# dependency would normally be configured through the $LIBS
+# and $LIBPATH variables, not using an env.Depends() call.)
+
+env.Depends(bar, installed_lib)
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
