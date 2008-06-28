@@ -1,25 +1,25 @@
 <!--
 
-  __COPYRIGHT__
+     __COPYRIGHT__
 
-  Permission is hereby granted, free of charge, to any person obtaining
-  a copy of this software and associated documentation files (the
-  "Software"), to deal in the Software without restriction, including
-  without limitation the rights to use, copy, modify, merge, publish,
-  distribute, sublicense, and/or sell copies of the Software, and to
-  permit persons to whom the Software is furnished to do so, subject to
-  the following conditions:
+     Permission is hereby granted, free of charge, to any person obtaining
+     a copy of this software and associated documentation files (the
+     "Software"), to deal in the Software without restriction, including
+     without limitation the rights to use, copy, modify, merge, publish,
+     distribute, sublicense, and/or sell copies of the Software, and to
+     permit persons to whom the Software is furnished to do so, subject to
+     the following conditions:
 
-  The above copyright notice and this permission notice shall be included
-  in all copies or substantial portions of the Software.
+     The above copyright notice and this permission notice shall be included
+     in all copies or substantial portions of the Software.
 
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
-  KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+     KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+     WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+     LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 -->
 
@@ -38,120 +38,120 @@ build behavior.
 Construction variables from a construction environment are expanded
 by preceding the keyword with a C<%> (percent sign):
 
-  Construction variables:
+     Construction variables:
 	XYZZY => 'abracadabra',
 
-  The string:  "The magic word is:  %XYZZY!"
-  expands to:  "The magic word is:  abracadabra!"
+     The string:  "The magic word is:  %XYZZY!"
+     expands to:  "The magic word is:  abracadabra!"
 
 A construction variable name may be surrounded by C<{> and C<}> (curly
 braces), which are stripped as part of the expansion.  This can
 sometimes be necessary to separate a variable expansion from trailing
 alphanumeric characters:
 
-  Construction variables:
+     Construction variables:
 	OPT    => 'value1',
 	OPTION => 'value2',
 
-  The string:  "%OPT %{OPT}ION %OPTION %{OPTION}"
-  expands to:  "value1 value1ION value2 value2"
+     The string:  "%OPT %{OPT}ION %OPTION %{OPTION}"
+     expands to:  "value1 value1ION value2 value2"
 
 Construction variable expansion is recursive, that is, a string
 containing C<%->expansions after substitution will be re-expanded until
 no further substitutions can be made:
 
-  Construction variables:
+     Construction variables:
 	STRING => 'The result is:  %FOO',
 	FOO    => '%BAR',
 	BAR    => 'final value',
 
-  The string:  "The string says:  %STRING"
-  expands to:  "The string says:  The result is:  final value"
+     The string:  "The string says:  %STRING"
+     expands to:  "The string says:  The result is:  final value"
 
 If a construction variable is not defined in an environment, then the
 null string is substituted:
 
-  Construction variables:
+     Construction variables:
 	FOO => 'value1',
 	BAR => 'value2',
 
-  The string:  "%FOO <%NO_VARIABLE> %BAR"
-  expands to:  "value1 <> value2"
+     The string:  "%FOO <%NO_VARIABLE> %BAR"
+     expands to:  "value1 <> value2"
 
 A doubled C<%%> will be replaced by a single C<%>:
 
-  The string:  "Here is a percent sign:  %%"
-  expands to:  "Here is a percent sign: %"
+     The string:  "Here is a percent sign:  %%"
+     expands to:  "Here is a percent sign: %"
 
 =head2 Default construction variables
 
 When you specify no arguments when creating a new construction
 environment:
 
-  $env = new cons();
+     $env = new cons();
 
 Cons creates a reference to a new, default construction
 environment. This contains a number of construction variables and some
 methods. At the present writing, the default construction variables on a
 UNIX system are:
 
-  CC            => 'cc',
-  CFLAGS        => '',
-  CCCOM         => '%CC %CFLAGS %_IFLAGS -c %< -o %>',
-  CXX           => '%CC',
-  CXXFLAGS      => '%CFLAGS',
-  CXXCOM        => '%CXX %CXXFLAGS %_IFLAGS -c %< -o %>',
-  INCDIRPREFIX  => '-I',
-  INCDIRSUFFIX  => '',
-  LINK          => '%CXX',
-  LINKCOM       => '%LINK %LDFLAGS -o %> %< %_LDIRS %LIBS',
-  LINKMODULECOM => '%LD -r -o %> %<',
-  LIBDIRPREFIX  => '-L',
-  LIBDIRSUFFIX  => '',
-  AR		=> 'ar',
-  ARFLAGS	=> 'r',
-  ARCOM		=> ['%AR %ARFLAGS %> %<', '%RANLIB %>'],
-  RANLIB	=> 'ranlib',
-  AS		=> 'as',
-  ASFLAGS	=> '',
-  ASCOM		=> '%AS %ASFLAGS %< -o %>',
-  LD		=> 'ld',
-  LDFLAGS	=> '',
-  PREFLIB	=> 'lib',
-  SUFLIB	=> '.a',
-  SUFLIBS	=> '.so:.a',
-  SUFOBJ	=> '.o',
-  SIGNATURE     => [ '*' => 'build' ],
-  ENV		=> { 'PATH' => '/bin:/usr/bin' },
+     CC            => 'cc',
+     CFLAGS        => '',
+     CCCOM         => '%CC %CFLAGS %_IFLAGS -c %< -o %>',
+     CXX           => '%CC',
+     CXXFLAGS      => '%CFLAGS',
+     CXXCOM        => '%CXX %CXXFLAGS %_IFLAGS -c %< -o %>',
+     INCDIRPREFIX  => '-I',
+     INCDIRSUFFIX  => '',
+     LINK          => '%CXX',
+     LINKCOM       => '%LINK %LDFLAGS -o %> %< %_LDIRS %LIBS',
+     LINKMODULECOM => '%LD -r -o %> %<',
+     LIBDIRPREFIX  => '-L',
+     LIBDIRSUFFIX  => '',
+     AR		=> 'ar',
+     ARFLAGS	=> 'r',
+     ARCOM		=> ['%AR %ARFLAGS %> %<', '%RANLIB %>'],
+     RANLIB	=> 'ranlib',
+     AS		=> 'as',
+     ASFLAGS	=> '',
+     ASCOM		=> '%AS %ASFLAGS %< -o %>',
+     LD		=> 'ld',
+     LDFLAGS	=> '',
+     PREFLIB	=> 'lib',
+     SUFLIB	=> '.a',
+     SUFLIBS	=> '.so:.a',
+     SUFOBJ	=> '.o',
+     SIGNATURE     => [ '*' => 'build' ],
+     ENV		=> { 'PATH' => '/bin:/usr/bin' },
 
 
 And on a Windows system (Windows NT), the default construction variables
 are (unless the default rule style is set using the B<DefaultRules>
 method):
 
-  CC		=> 'cl',
-  CFLAGS	=> '/nologo',
-  CCCOM		=> '%CC %CFLAGS %_IFLAGS /c %< /Fo%>',
-  CXXCOM        => '%CXX %CXXFLAGS %_IFLAGS /c %< /Fo%>',
-  INCDIRPREFIX  => '/I',
-  INCDIRSUFFIX  => '',
-  LINK          => 'link',
-  LINKCOM       => '%LINK %LDFLAGS /out:%> %< %_LDIRS %LIBS',
-  LINKMODULECOM => '%LD /r /o %> %<',
-  LIBDIRPREFIX  => '/LIBPATH:',
-  LIBDIRSUFFIX  => '',
-  AR            => 'lib',
-  ARFLAGS       => '/nologo ',
-  ARCOM         => "%AR %ARFLAGS /out:%> %<",
-  RANLIB        => '',
-  LD            => 'link',
-  LDFLAGS       => '/nologo ',
-  PREFLIB       => '',
-  SUFEXE	=> '.exe',
-  SUFLIB	=> '.lib',
-  SUFLIBS	=> '.dll:.lib',
-  SUFOBJ	=> '.obj',
-  SIGNATURE     => [ '*' => 'build' ],
+     CC		=> 'cl',
+     CFLAGS	=> '/nologo',
+     CCCOM		=> '%CC %CFLAGS %_IFLAGS /c %< /Fo%>',
+     CXXCOM        => '%CXX %CXXFLAGS %_IFLAGS /c %< /Fo%>',
+     INCDIRPREFIX  => '/I',
+     INCDIRSUFFIX  => '',
+     LINK          => 'link',
+     LINKCOM       => '%LINK %LDFLAGS /out:%> %< %_LDIRS %LIBS',
+     LINKMODULECOM => '%LD /r /o %> %<',
+     LIBDIRPREFIX  => '/LIBPATH:',
+     LIBDIRSUFFIX  => '',
+     AR            => 'lib',
+     ARFLAGS       => '/nologo ',
+     ARCOM         => "%AR %ARFLAGS /out:%> %<",
+     RANLIB        => '',
+     LD            => 'link',
+     LDFLAGS       => '/nologo ',
+     PREFLIB       => '',
+     SUFEXE	=> '.exe',
+     SUFLIB	=> '.lib',
+     SUFLIBS	=> '.dll:.lib',
+     SUFOBJ	=> '.obj',
+     SIGNATURE     => [ '*' => 'build' ],
 
 These variables are used by the various methods associated with the
 environment. In particular, any method that ultimately invokes an external
@@ -160,7 +160,7 @@ appropriate. For example, the C<Objects> method takes a number of source
 files and arranges to derive, if necessary, the corresponding object
 files:
 
-  Objects $env 'foo.c', 'bar.c';
+     Objects $env 'foo.c', 'bar.c';
 
 This will arrange to produce, if necessary, F<foo.o> and F<bar.o>. The
 command invoked is simply C<%CCCOM>, which expands, through substitution,
@@ -234,32 +234,32 @@ anywhere else in the current command line (via C<%1>, C<%2>, etc.), then
 those will be deleted from the list provided by C<%E<lt>>. Consider the
 following command found in a F<Conscript> file in the F<test> directory:
 
-  Command $env 'tgt', qw(foo bar baz), qq(
+     Command $env 'tgt', qw(foo bar baz), qq(
 	echo %< -i %1 > %>
 	echo %< -i %2 >> %>
 	echo %< -i %3 >> %>
-  );
+     );
 
 If F<tgt> needed to be updated, then this would result in the execution of
 the following commands, assuming that no remapping has been established for
 the F<test> directory:
 
-  echo test/bar test/baz -i test/foo > test/tgt
-  echo test/foo test/baz -i test/bar >> test/tgt
-  echo test/foo test/bar -i test/baz >> test/tgt
+     echo test/bar test/baz -i test/foo > test/tgt
+     echo test/foo test/baz -i test/bar >> test/tgt
+     echo test/foo test/bar -i test/baz >> test/tgt
 
 =back
 
 Any of the above pseudo-variables may be followed immediately by one of
 the following suffixes to select a portion of the expanded path name:
 
-  :a    the absolute path to the file name
-  :b    the directory plus the file name stripped of any suffix
-  :d    the directory
-  :f    the file name
-  :s    the file name suffix
-  :F    the file name stripped of any suffix
-  :S    the absolute path path to a Linked source file
+     :a    the absolute path to the file name
+     :b    the directory plus the file name stripped of any suffix
+     :d    the directory
+     :f    the file name
+     :s    the file name suffix
+     :F    the file name stripped of any suffix
+     :S    the absolute path path to a Linked source file
 
 Continuing with the above example, C<%E<lt>:f> would expand to C<foo bar baz>,
 and C<%E<gt>:d> would expand to C<test>.
@@ -277,17 +277,17 @@ as a Perl code reference; the results of this call will be used to
 replace the contents of the brackets in the command line.  For example,
 given an existing input file named F<tgt.in>:
 
-  @keywords = qw(foo bar baz);
-  $env = new cons(X_COMMA => sub { join(",", @_) });
-  Command $env 'tgt', 'tgt.in', qq(
+     @keywords = qw(foo bar baz);
+     $env = new cons(X_COMMA => sub { join(",", @_) });
+     Command $env 'tgt', 'tgt.in', qq(
 	echo '# Keywords: %[X_COMMA @keywords %]' > %>
 	cat %< >> %>
-  );
+     );
 
 This will execute:
 
-  echo '# Keywords: foo,bar,baz' > tgt
-  cat tgt.in >> tgt
+     echo '# Keywords: foo,bar,baz' > tgt
+     cat tgt.in >> tgt
 
 =item %( %)
 
@@ -313,860 +313,801 @@ Cons expands construction variables in the source and target file names
 passed to the various construction methods according to the expansion
 rules described above:
 
-  $env = new cons(
+     $env = new cons(
 	DESTDIR	=>	'programs',
 	SRCDIR	=>	'src',
-  );
-  Program $env '%DESTDIR/hello', '%SRCDIR/hello.c';
+     );
+     Program $env '%DESTDIR/hello', '%SRCDIR/hello.c';
 
 This allows for flexible configuration, through the construction
 environment, of directory names, suffixes, etc.
 
-=head1 Default construction methods
-
-The list of default construction methods includes the following:
-
-
-=head2 The C<new> constructor
-
-The C<new> method is a Perl object constructor. That is, it is not invoked
-via a reference to an existing construction environment B<reference>, but,
-rather statically, using the name of the Perl B<package> where the
-constructor is defined. The method is invoked like this:
-
-  $env = new cons(<overrides>);
-
-The environment you get back is blessed into the package C<cons>, which
-means that it will have associated with it the default methods described
-below. Individual construction variables can be overridden by providing
-name/value pairs in an override list. Note that to override any command
-environment variable (i.e. anything under C<ENV>), you will have to override
-all of them. You can get around this difficulty by using the C<copy> method
-on an existing construction environment.
-
-
-=head2 The C<clone> method
-
-The C<clone> method creates a clone of an existing construction environment,
-and can be called as in the following example:
-
-  $env2 = $env1->clone(<overrides>);
-
-You can provide overrides in the usual manner to create a different
-environment from the original. If you just want a new name for the same
-environment (which may be helpful when exporting environments to existing
-components), you can just use simple assignment.
-
-
-=head2 The C<copy> method
-
-The C<copy> method extracts the externally defined construction variables
-from an environment and returns them as a list of name/value
-pairs. Overrides can also be provided, in which case, the overridden values
-will be returned, as appropriate. The returned list can be assigned to a
-hash, as shown in the prototype, below, but it can also be manipulated in
-other ways:
-
-  %env = $env1->copy(<overrides>);
-
-The value of C<ENV>, which is itself a hash, is also copied to a new hash,
-so this may be changed without fear of affecting the original
-environment. So, for example, if you really want to override just the
-C<PATH> variable in the default environment, you could do the following:
-
-  %cons = new cons()->copy();
-  $cons{ENV}{PATH} = "<your path here>";
-  $cons = new cons(%cons);
-
-This will leave anything else that might be in the default execution
-environment undisturbed.
-
 -->
 
- <para>
-
-   It is rare that all of the software in a large,
-   complicated system needs to be built the same way.
-   For example, different source files may need different options
-   enabled on the command line,
-   or different executable programs need to be linked
-   with different libraries.
-   &SCons; accommodates these different build
-   requirements by allowing you to create and
-   configure multiple &consenvs;
-   that control how the software is built.
-   Technically, a &consenv; is an object
-   that has a number of associated
-   &consvars;, each with a name and a value.
-   (A construction environment also has an attached
-   set of &Builder; methods,
-   about which we'll learn more later.)
-
- </para>
-
- <para>
-
-   A &consenv; is created by the &Environment; method:
-
- </para>
-
-  <programlisting>
-    env = Environment()
-  </programlisting>
-
- <para>
-
-   By default, &SCons; initializes every
-   new construction environment
-   with a set of &consvars;
-   based on the tools that it finds on your system,
-   plus the default set of builder methods
-   necessary for using those tools.
-   The construction variables
-   are initialized with values describing
-   the C compiler,
-   the Fortran compiler,
-   the linker,
-   etc.,
-   as well as the command lines to invoke them.
-
- </para>
-
- <para>
-
-   When you initialize a construction environment
-   you can set the values of the
-   environment's &consvars;
-   to control how a program is built.
-   For example:
-
- </para>
-
-  <programlisting>
-    env = Environment(CC = 'gcc',
-                      CCFLAGS = '-O2')
-
-    env.Program('foo.c')
-  </programlisting>
-
- <para>
-
-   The construction environment in this example
-   is still initialized with the same default
-   construction variable values,
-   except that the user has explicitly specified use of the
-   GNU C compiler &gcc;,
-   and further specifies that the <literal>-O2</literal>
-   (optimization level two)
-   flag should be used when compiling the object file.
-   In other words, the explicit initializations of
-   &cv-link-CC; and &cv-link-CCFLAGS;
-   override the default values in the newly-created
-   construction environment.
-   So a run from this example would look like:
-
- </para>
-
- <screen>
-    % <userinput>scons -Q</userinput>
-    gcc -o foo.o -c -O2 foo.c
-    gcc -o foo foo.o
- </screen>
-
- <section>
- <title>Multiple &ConsEnvs;</title>
-
-   <para>
-
-   The real advantage of construction environments
-   is that you can create as many different construction
-   environments as you need,
-   each tailored to a different way to build
-   some piece of software or other file.
-   If, for example, we need to build
-   one program with the <literal>-O2</literal> flag
-   and another with the <literal>-g</literal> (debug) flag,
-   we would do this like so:
-
-   </para>
-
-   <programlisting>
-      opt = Environment(CCFLAGS = '-O2')
-      dbg = Environment(CCFLAGS = '-g')
-
-      opt.Program('foo', 'foo.c')
-
-      dbg.Program('bar', 'bar.c')
-   </programlisting>
-
-   <screen>
-      % <userinput>scons -Q</userinput>
-      cc -o bar.o -c -g bar.c
-      cc -o bar bar.o
-      cc -o foo.o -c -O2 foo.c
-      cc -o foo foo.o
-   </screen>
-
-   <para>
-
-   We can even use multiple construction environments to build
-   multiple versions of a single program.
-   If you do this by simply trying to use the
-   &b-link-Program; builder with both environments, though,
-   like this:
-
-   </para>
-
-   <programlisting>
-      opt = Environment(CCFLAGS = '-O2')
-      dbg = Environment(CCFLAGS = '-g')
-
-      opt.Program('foo', 'foo.c')
-
-      dbg.Program('foo', 'foo.c')
-   </programlisting>
-
-   <para>
-
-   Then &SCons; generates the following error:
-
-   </para>
-
-   <screen>
-      % <userinput>scons -Q</userinput>
-      
-      scons: *** Two environments with different actions were specified for the same target: foo.o
-      File "/home/my/project/SConstruct", line 6, in &lt;module&gt;
-   </screen>
-
-   <para>
-
-   This is because the two &b-Program; calls have
-   each implicitly told &SCons; to generate an object file named
-   <filename>foo.o</filename>,
-   one with a &cv-link-CCFLAGS; value of
-   <literal>-O2</literal>
-   and one with a &cv-link-CCFLAGS; value of
-   <literal>-g</literal>.
-   &SCons; can't just decide that one of them
-   should take precedence over the other,
-   so it generates the error.
-   To avoid this problem,
-   we must explicitly specify
-   that each environment compile
-   <filename>foo.c</filename>
-   to a separately-named object file
-   using the &b-link-Object; builder, like so:
-
-   </para>
-
-   <programlisting>
-      opt = Environment(CCFLAGS = '-O2')
-      dbg = Environment(CCFLAGS = '-g')
-
-      o = opt.Object('foo-opt', 'foo.c')
-      opt.Program(o)
-
-      d = dbg.Object('foo-dbg', 'foo.c')
-      dbg.Program(d)
-   </programlisting>
-
-   <para>
-
-   Notice that each call to the &b-Object; builder
-   returns a value,
-   an internal &SCons; object that
-   represents the object file that will be built.
-   We then use that object
-   as input to the &b-Program; builder.
-   This avoids having to specify explicitly
-   the object file name in multiple places,
-   and makes for a compact, readable
-   &SConstruct; file.
-   Our &SCons; output then looks like:
-
-   </para>
-
-   <screen>
-      % <userinput>scons -Q</userinput>
-      cc -o foo-dbg.o -c -g foo.c
-      cc -o foo-dbg foo-dbg.o
-      cc -o foo-opt.o -c -O2 foo.c
-      cc -o foo-opt foo-opt.o
-   </screen>
-
- </section>
-
- <section>
- <title>Copying &ConsEnvs;</title>
-
-   <para>
-
-   Sometimes you want more than one construction environment
-   to share the same values for one or more variables.
-   Rather than always having to repeat all of the common
-   variables when you create each construction environment,
-   you can use the &Clone; method
-   to create a copy of a construction environment.
-
-   </para>
-
-   <para>
-
-   Like the &Environment; call that creates a construction environment,
-   the &Clone; method takes &consvar; assignments,
-   which will override the values in the copied construction environment.
-   For example, suppose we want to use &gcc;
-   to create three versions of a program,
-   one optimized, one debug, and one with neither.
-   We could do this by creating a "base" construction environment
-   that sets &cv-link-CC; to &gcc;,
-   and then creating two copies,
-   one which sets &cv-link-CCFLAGS; for optimization
-   and the other which sets &cv-CCFLAGS; for debugging:
-
-   </para>
-
-   <programlisting>
-      env = Environment(CC = 'gcc')
-      opt = env.Clone(CCFLAGS = '-O2')
-      dbg = env.Clone(CCFLAGS = '-g')
-
-      env.Program('foo', 'foo.c')
-
-      o = opt.Object('foo-opt', 'foo.c')
-      opt.Program(o)
-
-      d = dbg.Object('foo-dbg', 'foo.c')
-      dbg.Program(d)
-   </programlisting>
-
-   <para>
-
-   Then our output would look like:
-
-   </para>
-
-   <screen>
-      % <userinput>scons -Q</userinput>
-      gcc -o foo.o -c foo.c
-      gcc -o foo foo.o
-      gcc -o foo-dbg.o -c -g foo.c
-      gcc -o foo-dbg foo-dbg.o
-      gcc -o foo-opt.o -c -O2 foo.c
-      gcc -o foo-opt foo-opt.o
-   </screen>
-
- </section>
-
- <section>
- <title>Fetching Values From a &ConsEnv;</title>
-
-   <para>
-
-   You can fetch individual construction variables
-   using the normal syntax
-   for accessing individual named items in a Python dictionary:
-
-   </para>
-
-   <programlisting>
-      env = Environment()
-      print "CC is:", env['CC']
-   </programlisting>
-
-   <para>
-
-   This example &SConstruct; file doesn't build anything,
-   but because it's actually a Python script,
-   it will print the value of &cv-link-CC; for us:
-
-   </para>
-
-   <screen>
-      % <userinput>scons -Q</userinput>
-      CC is: cc
-      scons: `.' is up to date.
-   </screen>
-
-   <para>
-
-   A construction environment, however,
-   is actually an object with associated methods, etc.
-   If you want to have direct access to only the
-   dictionary of construction variables,
-   you can fetch this using the &Dictionary; method:
-
-   </para>
-
-   <programlisting>
-      env = Environment(FOO = 'foo', BAR = 'bar')
-      dict = env.Dictionary()
-      for key in ['OBJSUFFIX', 'LIBSUFFIX', 'PROGSUFFIX']:
-          print "key = %s, value = %s" % (key, dict[key])
-   </programlisting>
-
-   <para>
-
-   This &SConstruct; file
-   will print the specified dictionary items for us on POSIX
-   systems as follows:
-
-   </para>
-
-   <screen>
-      % <userinput>scons -Q</userinput>
-      key = OBJSUFFIX, value = .o
-      key = LIBSUFFIX, value = .a
-      key = PROGSUFFIX, value = 
-      scons: `.' is up to date.
-   </screen>
-
-   <para>
-
-   And on Windows:
-
-   </para>
-
-   <screen>
-      C:\><userinput>scons -Q</userinput>
-      key = OBJSUFFIX, value = .obj
-      key = LIBSUFFIX, value = .lib
-      key = PROGSUFFIX, value = .exe
-      scons: `.' is up to date.
-   </screen>
-
-   <para>
-
-   If you want to loop through and print the values of
-   all of the construction variables in a construction environment,
-   the Python code to do that in sorted order might look something like:
-
-   </para>
-
-   <programlisting>
-      env = Environment()
-      dict = env.Dictionary()
-      keys = dict.keys()
-      keys.sort()
-      for key in keys:
-          print "construction variable = '%s', value = '%s'" % (key, dict[key])
-   </programlisting>
-
- </section>
-
- <section>
- <title>Expanding Values From a &ConsEnv;</title>
-
-   <para>
-
-   Another way to get information from
-   a construction environment.
-   is to use the &subst; method
-   on a string containing $-expansions
-   of construction variable names.
-   As a simple example,
-   the example from the previous
-   section that used
-   <literal>env['CC']</literal>
-   to fetch the value of &cv-link-CC;
-   could also be written as:
-
-   </para>
-
-   <programlisting>
-     env = Environment()
-     print "CC is:", env.subst('$CC')
-   </programlisting>
-
-   <para>
-
-   The real advantage of using
-   &subst; to expand strings is
-   that construction variables
-   in the result get
-   re-expanded until
-   there are no expansions left in the string.
-   So a simple fetch of a value like
-   &cv-link-CCCOM;:
-
-   </para>
-
-   <programlisting>
-     env = Environment(CCFLAGS = '-DFOO')
-     print "CCCOM is:", env['CCCOM']
-   </programlisting>
-
-   <para>
-
-   Will print the unexpanded value of &cv-CCCOM;,
-   showing us the construction
-   variables that still need to be expanded:
-
-   </para>
-
-   <screen>
-     % <userinput>scons -Q</userinput>
-     CCCOM is: $CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES
-     scons: `.' is up to date.
-   </screen>
-
-   <para>
-
-   Calling the &subst; method on <varname>$CCOM</varname>,
-   however:
-
-   </para>
-
-   <programlisting>
-     env = Environment(CCFLAGS = '-DFOO')
-     print "CCCOM is:", env.subst('$CCCOM')
-   </programlisting>
-
-   <para>
-
-   Will recursively expand all of
-   the $-prefixed construction variables,
-   showing us the final output:
-
-   </para>
-
-   <screen>
-     % <userinput>scons -Q</userinput>
-     CCCOM is: gcc -DFOO -c -o
-     scons: `.' is up to date.
-   </screen>
-
-   <para>
-
-   (Note that because we're not expanding this
-   in the context of building something
-   there are no target or source files
-   for &cv-link-TARGET; and &cv-link-SOURCES; to expand.)
-
-   </para>
-
- </section>
-
- <section>
- <title>Modifying a &ConsEnv;</title>
-
-   <para>
-
-   &SCons; provides various methods that
-   support modifying existing values in a construction environment.
-
-   </para>
-
-   <section>
-   <title>Replacing Values in a &ConsEnv;</title>
-
-     <para>
-
-     You can replace existing construction variable values
-     using the &Replace; method:
-
-     </para>
+    <para>
+
+      It is rare that all of the software in a large,
+      complicated system needs to be built the same way.
+      For example, different source files may need different options
+      enabled on the command line,
+      or different executable programs need to be linked
+      with different libraries.
+      &SCons; accommodates these different build
+      requirements by allowing you to create and
+      configure multiple &consenvs;
+      that control how the software is built.
+      Technically, a &consenv; is an object
+      that has a number of associated
+      &consvars;, each with a name and a value.
+      (A construction environment also has an attached
+      set of &Builder; methods,
+      about which we'll learn more later.)
+
+    </para>
+
+    <para>
+
+      A &consenv; is created by the &Environment; method:
+
+    </para>
 
      <programlisting>
-        env = Environment(CCFLAGS = '-DDEFINE1')
-        env.Replace(CCFLAGS = '-DDEFINE2')
-        env.Program('foo.c')
+       env = Environment()
      </programlisting>
 
-     <para>
+    <para>
 
-     The replacing value
-     (<literal>-DDEFINE2</literal> in the above example)
-     completely replaces the value in the
-     construction environment:
+      By default, &SCons; initializes every
+      new construction environment
+      with a set of &consvars;
+      based on the tools that it finds on your system,
+      plus the default set of builder methods
+      necessary for using those tools.
+      The construction variables
+      are initialized with values describing
+      the C compiler,
+      the Fortran compiler,
+      the linker,
+      etc.,
+      as well as the command lines to invoke them.
 
-     </para>
+    </para>
 
-     <screen>
-        % <userinput>scons -Q</userinput>
-        cc -o foo.o -c -DDEFINE2 foo.c
-        cc -o foo foo.o
-     </screen>
+    <para>
 
-     <para>
+      When you initialize a construction environment
+      you can set the values of the
+      environment's &consvars;
+      to control how a program is built.
+      For example:
 
-     You can safely call &Replace;
-     for construction variables that
-     don't exist in the construction environment:
-
-     </para>
+    </para>
 
      <programlisting>
+       env = Environment(CC = 'gcc',
+                         CCFLAGS = '-O2')
+
+       env.Program('foo.c')
+     </programlisting>
+
+    <para>
+
+      The construction environment in this example
+      is still initialized with the same default
+      construction variable values,
+      except that the user has explicitly specified use of the
+      GNU C compiler &gcc;,
+      and further specifies that the <literal>-O2</literal>
+      (optimization level two)
+      flag should be used when compiling the object file.
+      In other words, the explicit initializations of
+      &cv-link-CC; and &cv-link-CCFLAGS;
+      override the default values in the newly-created
+      construction environment.
+      So a run from this example would look like:
+
+    </para>
+
+    <screen>
+       % <userinput>scons -Q</userinput>
+       gcc -o foo.o -c -O2 foo.c
+       gcc -o foo foo.o
+    </screen>
+
+    <section>
+    <title>Multiple &ConsEnvs;</title>
+
+      <para>
+
+      The real advantage of construction environments
+      is that you can create as many different construction
+      environments as you need,
+      each tailored to a different way to build
+      some piece of software or other file.
+      If, for example, we need to build
+      one program with the <literal>-O2</literal> flag
+      and another with the <literal>-g</literal> (debug) flag,
+      we would do this like so:
+
+      </para>
+
+      <programlisting>
+         opt = Environment(CCFLAGS = '-O2')
+         dbg = Environment(CCFLAGS = '-g')
+
+         opt.Program('foo', 'foo.c')
+
+         dbg.Program('bar', 'bar.c')
+      </programlisting>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         cc -o bar.o -c -g bar.c
+         cc -o bar bar.o
+         cc -o foo.o -c -O2 foo.c
+         cc -o foo foo.o
+      </screen>
+
+      <para>
+
+      We can even use multiple construction environments to build
+      multiple versions of a single program.
+      If you do this by simply trying to use the
+      &b-link-Program; builder with both environments, though,
+      like this:
+
+      </para>
+
+      <programlisting>
+         opt = Environment(CCFLAGS = '-O2')
+         dbg = Environment(CCFLAGS = '-g')
+
+         opt.Program('foo', 'foo.c')
+
+         dbg.Program('foo', 'foo.c')
+      </programlisting>
+
+      <para>
+
+      Then &SCons; generates the following error:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         
+         scons: *** Two environments with different actions were specified for the same target: foo.o
+         File "/home/my/project/SConstruct", line 6, in &lt;module&gt;
+      </screen>
+
+      <para>
+
+      This is because the two &b-Program; calls have
+      each implicitly told &SCons; to generate an object file named
+      <filename>foo.o</filename>,
+      one with a &cv-link-CCFLAGS; value of
+      <literal>-O2</literal>
+      and one with a &cv-link-CCFLAGS; value of
+      <literal>-g</literal>.
+      &SCons; can't just decide that one of them
+      should take precedence over the other,
+      so it generates the error.
+      To avoid this problem,
+      we must explicitly specify
+      that each environment compile
+      <filename>foo.c</filename>
+      to a separately-named object file
+      using the &b-link-Object; builder, like so:
+
+      </para>
+
+      <programlisting>
+         opt = Environment(CCFLAGS = '-O2')
+         dbg = Environment(CCFLAGS = '-g')
+
+         o = opt.Object('foo-opt', 'foo.c')
+         opt.Program(o)
+
+         d = dbg.Object('foo-dbg', 'foo.c')
+         dbg.Program(d)
+      </programlisting>
+
+      <para>
+
+      Notice that each call to the &b-Object; builder
+      returns a value,
+      an internal &SCons; object that
+      represents the object file that will be built.
+      We then use that object
+      as input to the &b-Program; builder.
+      This avoids having to specify explicitly
+      the object file name in multiple places,
+      and makes for a compact, readable
+      &SConstruct; file.
+      Our &SCons; output then looks like:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         cc -o foo-dbg.o -c -g foo.c
+         cc -o foo-dbg foo-dbg.o
+         cc -o foo-opt.o -c -O2 foo.c
+         cc -o foo-opt foo-opt.o
+      </screen>
+
+    </section>
+
+    <section>
+    <title>Copying &ConsEnvs;</title>
+
+      <para>
+
+      Sometimes you want more than one construction environment
+      to share the same values for one or more variables.
+      Rather than always having to repeat all of the common
+      variables when you create each construction environment,
+      you can use the &Clone; method
+      to create a copy of a construction environment.
+
+      </para>
+
+      <para>
+
+      Like the &Environment; call that creates a construction environment,
+      the &Clone; method takes &consvar; assignments,
+      which will override the values in the copied construction environment.
+      For example, suppose we want to use &gcc;
+      to create three versions of a program,
+      one optimized, one debug, and one with neither.
+      We could do this by creating a "base" construction environment
+      that sets &cv-link-CC; to &gcc;,
+      and then creating two copies,
+      one which sets &cv-link-CCFLAGS; for optimization
+      and the other which sets &cv-CCFLAGS; for debugging:
+
+      </para>
+
+      <programlisting>
+         env = Environment(CC = 'gcc')
+         opt = env.Clone(CCFLAGS = '-O2')
+         dbg = env.Clone(CCFLAGS = '-g')
+
+         env.Program('foo', 'foo.c')
+
+         o = opt.Object('foo-opt', 'foo.c')
+         opt.Program(o)
+
+         d = dbg.Object('foo-dbg', 'foo.c')
+         dbg.Program(d)
+      </programlisting>
+
+      <para>
+
+      Then our output would look like:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         gcc -o foo.o -c foo.c
+         gcc -o foo foo.o
+         gcc -o foo-dbg.o -c -g foo.c
+         gcc -o foo-dbg foo-dbg.o
+         gcc -o foo-opt.o -c -O2 foo.c
+         gcc -o foo-opt foo-opt.o
+      </screen>
+
+    </section>
+
+    <section>
+    <title>Fetching Values From a &ConsEnv;</title>
+
+      <para>
+
+      You can fetch individual construction variables
+      using the normal syntax
+      for accessing individual named items in a Python dictionary:
+
+      </para>
+
+      <programlisting>
+         env = Environment()
+         print "CC is:", env['CC']
+      </programlisting>
+
+      <para>
+
+      This example &SConstruct; file doesn't build anything,
+      but because it's actually a Python script,
+      it will print the value of &cv-link-CC; for us:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         CC is: cc
+         scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      A construction environment, however,
+      is actually an object with associated methods, etc.
+      If you want to have direct access to only the
+      dictionary of construction variables,
+      you can fetch this using the &Dictionary; method:
+
+      </para>
+
+      <programlisting>
+         env = Environment(FOO = 'foo', BAR = 'bar')
+         dict = env.Dictionary()
+         for key in ['OBJSUFFIX', 'LIBSUFFIX', 'PROGSUFFIX']:
+             print "key = %s, value = %s" % (key, dict[key])
+      </programlisting>
+
+      <para>
+
+      This &SConstruct; file
+      will print the specified dictionary items for us on POSIX
+      systems as follows:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         key = OBJSUFFIX, value = .o
+         key = LIBSUFFIX, value = .a
+         key = PROGSUFFIX, value = 
+         scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      And on Windows:
+
+      </para>
+
+      <screen>
+         C:\><userinput>scons -Q</userinput>
+         key = OBJSUFFIX, value = .obj
+         key = LIBSUFFIX, value = .lib
+         key = PROGSUFFIX, value = .exe
+         scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      If you want to loop through and print the values of
+      all of the construction variables in a construction environment,
+      the Python code to do that in sorted order might look something like:
+
+      </para>
+
+      <programlisting>
+         env = Environment()
+         dict = env.Dictionary()
+         keys = dict.keys()
+         keys.sort()
+         for key in keys:
+             print "construction variable = '%s', value = '%s'" % (key, dict[key])
+      </programlisting>
+
+    </section>
+
+    <section>
+    <title>Expanding Values From a &ConsEnv;</title>
+
+      <para>
+
+      Another way to get information from
+      a construction environment.
+      is to use the &subst; method
+      on a string containing $-expansions
+      of construction variable names.
+      As a simple example,
+      the example from the previous
+      section that used
+      <literal>env['CC']</literal>
+      to fetch the value of &cv-link-CC;
+      could also be written as:
+
+      </para>
+
+      <programlisting>
         env = Environment()
-        env.Replace(NEW_VARIABLE = 'xyzzy')
-        print "NEW_VARIABLE =", env['NEW_VARIABLE']
-     </programlisting>
+        print "CC is:", env.subst('$CC')
+      </programlisting>
 
-     <para>
+      <para>
 
-     In this case,
-     the construction variable simply
-     gets added to the construction environment:
+      The real advantage of using
+      &subst; to expand strings is
+      that construction variables
+      in the result get
+      re-expanded until
+      there are no expansions left in the string.
+      So a simple fetch of a value like
+      &cv-link-CCCOM;:
 
-     </para>
+      </para>
 
-     <screen>
+      <programlisting>
+        env = Environment(CCFLAGS = '-DFOO')
+        print "CCCOM is:", env['CCCOM']
+      </programlisting>
+
+      <para>
+
+      Will print the unexpanded value of &cv-CCCOM;,
+      showing us the construction
+      variables that still need to be expanded:
+
+      </para>
+
+      <screen>
         % <userinput>scons -Q</userinput>
-        NEW_VARIABLE = xyzzy
+        CCCOM is: $CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES
         scons: `.' is up to date.
-     </screen>
+      </screen>
 
-     <para>
+      <para>
 
-     Because the variables
-     aren't expanded until the construction environment
-     is actually used to build the targets,
-     and because &SCons; function and method calls
-     are order-independent,
-     the last replacement "wins"
-     and is used to build all targets,
-     regardless of the order in which
-     the calls to Replace() are
-     interspersed with calls to
-     builder methods:
+      Calling the &subst; method on <varname>$CCOM</varname>,
+      however:
 
-     </para>
+      </para>
 
-     <programlisting>
-        env = Environment(CCFLAGS = '-DDEFINE1')
-        print "CCFLAGS =", env['CCFLAGS']
-        env.Program('foo.c')
+      <programlisting>
+        env = Environment(CCFLAGS = '-DFOO')
+        print "CCCOM is:", env.subst('$CCCOM')
+      </programlisting>
 
-        env.Replace(CCFLAGS = '-DDEFINE2')
-        print "CCFLAGS =", env['CCFLAGS']
-        env.Program('bar.c')
-     </programlisting>
+      <para>
 
-     <para>
+      Will recursively expand all of
+      the $-prefixed construction variables,
+      showing us the final output:
 
-     The timing of when the replacement
-     actually occurs relative
-     to when the targets get built
-     becomes apparent
-     if we run &scons; without the <literal>-Q</literal>
-     option:
+      </para>
 
-     </para>
-
-     <screen>
-        % <userinput>scons</userinput>
-        scons: Reading SConscript files ...
-        CCFLAGS = -DDEFINE1
-        CCFLAGS = -DDEFINE2
-        scons: done reading SConscript files.
-        scons: Building targets ...
-        cc -o bar.o -c -DDEFINE2 bar.c
-        cc -o bar bar.o
-        cc -o foo.o -c -DDEFINE2 foo.c
-        cc -o foo foo.o
-        scons: done building targets.
-     </screen>
-
-     <para>
-
-     Because the replacement occurs while
-     the &SConscript; files are being read,
-     the &cv-link-CCFLAGS;
-     variable has already been set to
-     <literal>-DDEFINE2</literal>
-     by the time the &foo_o; target is built,
-     even though the call to the &Replace;
-     method does not occur until later in
-     the &SConscript; file.
-
-     </para>
-
-   </section>
-
-   <!--
-
-   <section>
-   <title>Setting Values Only If They're Not Already Defined</title>
-
-     <para>
-
-     XXX SetDefault()
-
-     </para>
-
-   </section>
-
-   -->
-
-   <section>
-   <title>Appending to the End of Values in a &ConsEnv;</title>
-
-     <para>
-
-     You can append a value to
-     an existing construction variable
-     using the &Append; method:
-
-     </para>
-
-     <programlisting>
-        env = Environment(CCFLAGS = ['-DMY_VALUE'])
-        env.Append(CCFLAGS = ['-DLAST'])
-        env.Program('foo.c')
-     </programlisting>
-
-     <para>
-
-     &SCons; then supplies both the <literal>-DMY_VALUE</literal> and
-     <literal>-DLAST</literal> flags when compiling the object file:
-
-     </para>
-
-     <screen>
+      <screen>
         % <userinput>scons -Q</userinput>
-        cc -o foo.o -c -DMY_VALUE -DLAST foo.c
-        cc -o foo foo.o
-     </screen>
-
-     <para>
-
-     If the construction variable doesn't already exist,
-     the &Append; method will create it:
-
-     </para>
-
-     <programlisting>
-        env = Environment()
-        env.Append(NEW_VARIABLE = 'added')
-        print "NEW_VARIABLE =", env['NEW_VARIABLE']
-     </programlisting>
-
-     <para>
-
-     Which yields:
-
-     </para>
-
-     <screen>
-        % <userinput>scons -Q</userinput>
-        NEW_VARIABLE = added
+        CCCOM is: gcc -DFOO -c -o
         scons: `.' is up to date.
-     </screen>
+      </screen>
 
-     <para>
+      <para>
 
-     Note that the &Append; function tries to be "smart"
-     about how the new value is appended to the old value.
-     If both are strings, the previous and new strings
-     are simply concatenated.
-     Similarly, if both are lists,
-     the lists are concatenated.
-     If, however, one is a string and the other is a list,
-     the string is added as a new element to the list.
+      (Note that because we're not expanding this
+      in the context of building something
+      there are no target or source files
+      for &cv-link-TARGET; and &cv-link-SOURCES; to expand.)
 
-     </para>
+      </para>
 
-     <!--
+    </section>
 
-     XXX AppendUnique()
+    <section>
+    <title>Modifying a &ConsEnv;</title>
 
-     -->
+      <para>
 
-   </section>
+      &SCons; provides various methods that
+      support modifying existing values in a construction environment.
 
-   <section>
-   <title>Appending to the Beginning of Values in a &ConsEnv;</title>
+      </para>
 
-     <para>
+      <section>
+      <title>Replacing Values in a &ConsEnv;</title>
 
-     You can append a value to the beginning of
-     an existing construction variable
-     using the &Prepend; method:
+        <para>
 
-     </para>
+        You can replace existing construction variable values
+        using the &Replace; method:
 
-     <programlisting>
-        env = Environment(CCFLAGS = ['-DMY_VALUE'])
-        env.Prepend(CCFLAGS = ['-DFIRST'])
-        env.Program('foo.c')
-     </programlisting>
+        </para>
 
-     <para>
+        <programlisting>
+           env = Environment(CCFLAGS = '-DDEFINE1')
+           env.Replace(CCFLAGS = '-DDEFINE2')
+           env.Program('foo.c')
+        </programlisting>
 
-     &SCons; then supplies both the <literal>-DFIRST</literal> and
-     <literal>-DMY_VALUE</literal> flags when compiling the object file:
+        <para>
 
-     </para>
+        The replacing value
+        (<literal>-DDEFINE2</literal> in the above example)
+        completely replaces the value in the
+        construction environment:
 
-     <screen>
-        % <userinput>scons -Q</userinput>
-        cc -o foo.o -c -DFIRST -DMY_VALUE foo.c
-        cc -o foo foo.o
-     </screen>
+        </para>
 
-     <para>
+        <screen>
+           % <userinput>scons -Q</userinput>
+           cc -o foo.o -c -DDEFINE2 foo.c
+           cc -o foo foo.o
+        </screen>
 
-     If the construction variable doesn't already exist,
-     the &Prepend; method will create it:
+        <para>
 
-     </para>
+        You can safely call &Replace;
+        for construction variables that
+        don't exist in the construction environment:
 
-     <programlisting>
-        env = Environment()
-        env.Prepend(NEW_VARIABLE = 'added')
-        print "NEW_VARIABLE =", env['NEW_VARIABLE']
-     </programlisting>
+        </para>
 
-     <para>
+        <programlisting>
+           env = Environment()
+           env.Replace(NEW_VARIABLE = 'xyzzy')
+           print "NEW_VARIABLE =", env['NEW_VARIABLE']
+        </programlisting>
 
-     Which yields:
+        <para>
 
-     </para>
+        In this case,
+        the construction variable simply
+        gets added to the construction environment:
 
-     <screen>
-        % <userinput>scons -Q</userinput>
-        NEW_VARIABLE = added
-        scons: `.' is up to date.
-     </screen>
+        </para>
 
-     <para>
+        <screen>
+           % <userinput>scons -Q</userinput>
+           NEW_VARIABLE = xyzzy
+           scons: `.' is up to date.
+        </screen>
 
-     Like the &Append; function,
-     the &Prepend; function tries to be "smart"
-     about how the new value is appended to the old value.
-     If both are strings, the previous and new strings
-     are simply concatenated.
-     Similarly, if both are lists,
-     the lists are concatenated.
-     If, however, one is a string and the other is a list,
-     the string is added as a new element to the list.
+        <para>
 
-     </para>
+        Because the variables
+        aren't expanded until the construction environment
+        is actually used to build the targets,
+        and because &SCons; function and method calls
+        are order-independent,
+        the last replacement "wins"
+        and is used to build all targets,
+        regardless of the order in which
+        the calls to Replace() are
+        interspersed with calls to
+        builder methods:
 
-     <!--
+        </para>
 
-     XXX PrependUnique()
+        <programlisting>
+           env = Environment(CCFLAGS = '-DDEFINE1')
+           print "CCFLAGS =", env['CCFLAGS']
+           env.Program('foo.c')
 
-     -->
+           env.Replace(CCFLAGS = '-DDEFINE2')
+           print "CCFLAGS =", env['CCFLAGS']
+           env.Program('bar.c')
+        </programlisting>
 
-   </section>
+        <para>
 
-   <!--
+        The timing of when the replacement
+        actually occurs relative
+        to when the targets get built
+        becomes apparent
+        if we run &scons; without the <literal>-Q</literal>
+        option:
 
-   <section>
-   <title>Adding to Values in the Execution Environment</title>
+        </para>
 
-     <para>
+        <screen>
+           % <userinput>scons</userinput>
+           scons: Reading SConscript files ...
+           CCFLAGS = -DDEFINE1
+           CCFLAGS = -DDEFINE2
+           scons: done reading SConscript files.
+           scons: Building targets ...
+           cc -o bar.o -c -DDEFINE2 bar.c
+           cc -o bar bar.o
+           cc -o foo.o -c -DDEFINE2 foo.c
+           cc -o foo foo.o
+           scons: done building targets.
+        </screen>
 
-     XXX AppendENVPath()
+        <para>
 
-     XXX PrependENVPath()
+        Because the replacement occurs while
+        the &SConscript; files are being read,
+        the &cv-link-CCFLAGS;
+        variable has already been set to
+        <literal>-DDEFINE2</literal>
+        by the time the &foo_o; target is built,
+        even though the call to the &Replace;
+        method does not occur until later in
+        the &SConscript; file.
 
-     </para>
+        </para>
 
-   </section>
+      </section>
 
-   -->
+      <!--
 
- </section>
+      <section>
+      <title>Setting Values Only If They're Not Already Defined</title>
+
+        <para>
+
+        XXX SetDefault()
+
+        </para>
+
+      </section>
+
+      -->
+
+      <section>
+      <title>Appending to the End of Values in a &ConsEnv;</title>
+
+        <para>
+
+        You can append a value to
+        an existing construction variable
+        using the &Append; method:
+
+        </para>
+
+        <programlisting>
+           env = Environment(CCFLAGS = ['-DMY_VALUE'])
+           env.Append(CCFLAGS = ['-DLAST'])
+           env.Program('foo.c')
+        </programlisting>
+
+        <para>
+
+        &SCons; then supplies both the <literal>-DMY_VALUE</literal> and
+        <literal>-DLAST</literal> flags when compiling the object file:
+
+        </para>
+
+        <screen>
+           % <userinput>scons -Q</userinput>
+           cc -o foo.o -c -DMY_VALUE -DLAST foo.c
+           cc -o foo foo.o
+        </screen>
+
+        <para>
+
+        If the construction variable doesn't already exist,
+        the &Append; method will create it:
+
+        </para>
+
+        <programlisting>
+           env = Environment()
+           env.Append(NEW_VARIABLE = 'added')
+           print "NEW_VARIABLE =", env['NEW_VARIABLE']
+        </programlisting>
+
+        <para>
+
+        Which yields:
+
+        </para>
+
+        <screen>
+           % <userinput>scons -Q</userinput>
+           NEW_VARIABLE = added
+           scons: `.' is up to date.
+        </screen>
+
+        <para>
+
+        Note that the &Append; function tries to be "smart"
+        about how the new value is appended to the old value.
+        If both are strings, the previous and new strings
+        are simply concatenated.
+        Similarly, if both are lists,
+        the lists are concatenated.
+        If, however, one is a string and the other is a list,
+        the string is added as a new element to the list.
+
+        </para>
+
+        <!--
+
+        XXX AppendUnique()
+
+        -->
+
+      </section>
+
+      <section>
+      <title>Appending to the Beginning of Values in a &ConsEnv;</title>
+
+        <para>
+
+        You can append a value to the beginning of
+        an existing construction variable
+        using the &Prepend; method:
+
+        </para>
+
+        <programlisting>
+           env = Environment(CCFLAGS = ['-DMY_VALUE'])
+           env.Prepend(CCFLAGS = ['-DFIRST'])
+           env.Program('foo.c')
+        </programlisting>
+
+        <para>
+
+        &SCons; then supplies both the <literal>-DFIRST</literal> and
+        <literal>-DMY_VALUE</literal> flags when compiling the object file:
+
+        </para>
+
+        <screen>
+           % <userinput>scons -Q</userinput>
+           cc -o foo.o -c -DFIRST -DMY_VALUE foo.c
+           cc -o foo foo.o
+        </screen>
+
+        <para>
+
+        If the construction variable doesn't already exist,
+        the &Prepend; method will create it:
+
+        </para>
+
+        <programlisting>
+           env = Environment()
+           env.Prepend(NEW_VARIABLE = 'added')
+           print "NEW_VARIABLE =", env['NEW_VARIABLE']
+        </programlisting>
+
+        <para>
+
+        Which yields:
+
+        </para>
+
+        <screen>
+           % <userinput>scons -Q</userinput>
+           NEW_VARIABLE = added
+           scons: `.' is up to date.
+        </screen>
+
+        <para>
+
+        Like the &Append; function,
+        the &Prepend; function tries to be "smart"
+        about how the new value is appended to the old value.
+        If both are strings, the previous and new strings
+        are simply concatenated.
+        Similarly, if both are lists,
+        the lists are concatenated.
+        If, however, one is a string and the other is a list,
+        the string is added as a new element to the list.
+
+        </para>
+
+        <!--
+
+        XXX PrependUnique()
+
+        -->
+
+      </section>
+
+      <!--
+
+      <section>
+      <title>Adding to Values in the Execution Environment</title>
+
+        <para>
+
+        XXX AppendENVPath()
+
+        XXX PrependENVPath()
+
+        </para>
+
+      </section>
+
+      -->
+
+    </section>
