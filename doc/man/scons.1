@@ -2443,17 +2443,19 @@ the option value may be accessed using
 .BR GetOption ()
 or
 .BR env.GetOption ().
-The value may also be set, using
-.BR SetOption ()
-or
-.BR env.SetOption (),
-if conditions in a
-.B SConscript
-require overriding any default value.
-Note, however, that a
-value specified on the command line will
-.I always
-override a value set by any SConscript file.
+\" NOTE: in SCons 1.x or 2.0, user options will be settable, but not yet.
+\" Uncomment this when that works.  See tigris issue 2105.
+\" The value may also be set, using
+\" .BR SetOption ()
+\" or
+\" .BR env.SetOption (),
+\" if conditions in a
+\" .B SConscript
+\" require overriding any default value.
+\" Note, however, that a
+\" value specified on the command line will
+\" .I always
+\" override a value set by any SConscript file.
 
 Any specified
 .B help=
