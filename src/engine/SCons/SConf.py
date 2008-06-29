@@ -397,6 +397,7 @@ class SConfBase:
         self.logstream = None
         self.output = None
         self.lastTarget = None
+        self.outTarget = None
         self.depth = _depth
         self.cached = 0 # will be set, if all test results are cached
 
@@ -576,6 +577,7 @@ class SConfBase:
             self.lastTarget = nodes[0]
         else:
             self.lastTarget = None
+        self.outTarget = output
 
         return result
 
@@ -817,6 +819,8 @@ class CheckContext:
             return self.sconf.env
         elif( attr == 'lastTarget' ):
             return self.sconf.lastTarget
+        elif( attr == 'outTarget' ):
+            return self.sconf.outTarget
         else:
             raise AttributeError, "CheckContext instance has no attribute '%s'" % attr
 
