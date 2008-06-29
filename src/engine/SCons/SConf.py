@@ -541,7 +541,7 @@ class SConfBase:
         target = self.confdir.File(pref + f + suff)
 
         # Set output of the builder
-        output = self.confdir.File(pref + f + '.out')
+        output = self.confdir.File(pref + f + suff + '.bld_out')
         self.output = open(str(output), 'w')
 
         try:
