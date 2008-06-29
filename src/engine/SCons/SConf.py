@@ -396,7 +396,7 @@ class SConfBase:
         self.logfile = log_file
         self.logstream = None
         self.output = None
-        self.lastTarget = None
+        self.outputTarget = None
         self.depth = _depth
         self.cached = 0 # will be set, if all test results are cached
 
@@ -563,12 +563,12 @@ class SConfBase:
                 nodes = [nodes]
             nodesToBeBuilt.extend(nodes)
             result = self.BuildNodes(nodesToBeBuilt)
-            self.output.close()
 
+        finally:
+            self.output.close()
             # Append output of the builder into the logstream
             self.logstream.writelines(open(str(output), 'r').readlines())
 
-        finally:
             self.env['SPAWN'] = save_spawn
 
         _ac_build_counter = _ac_build_counter + 1
