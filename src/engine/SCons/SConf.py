@@ -395,6 +395,7 @@ class SConfBase:
             log_file = SConfFS.File(env.subst(log_file))
         self.logfile = log_file
         self.logstream = None
+        self.output = None
         self.lastTarget = None
         self.depth = _depth
         self.cached = 0 # will be set, if all test results are cached
@@ -511,7 +512,7 @@ class SConfBase:
         environment as the SPAWN variable so Action.py doesn't have to
         know or care whether it's spawning a piped command or not.
         """
-        return self.pspawn(sh, escape, cmd, args, env, self.logstream, self.logstream)
+        return self.pspawn(sh, escape, cmd, args, env, self.output, self.output)
 
 
     def TryBuild(self, builder, text = None, extension = ""):
@@ -538,6 +539,10 @@ class SConfBase:
         suff = self.env.subst( builder.builder.suffix )
         target = self.confdir.File(pref + f + suff)
 
+        # Set output of the builder
+        output = self.confdir.File(pref + f + '.out')
+        self.output = open(str(output), 'w')
+
         try:
             # Slide our wrapper into the construction environment as
             # the SPAWN function.
@@ -558,6 +563,10 @@ class SConfBase:
                 nodes = [nodes]
             nodesToBeBuilt.extend(nodes)
             result = self.BuildNodes(nodesToBeBuilt)
+            self.output.close()
+
+            # Append output of the builder into the logstream
+            self.logstream.writelines(open(str(output), 'r').readlines())
 
         finally:
             self.env['SPAWN'] = save_spawn
