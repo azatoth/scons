@@ -625,6 +625,7 @@ class SConfBase:
             output = SConfFS.File(pname+'.out')
             node = self.env.Command(output, prog, [ [ pname, ">", "${TARGET}"] ])
             ok = self.BuildNodes(node)
+            self.outTarget = output
             if ok:
                 outputStr = output.get_contents()
                 return( 1, outputStr)
