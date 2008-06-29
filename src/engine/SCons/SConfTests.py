@@ -582,6 +582,29 @@ int main() {
         finally:
             sconf.Finish()
 
+    def test_TryGrepOutput(self):
+        """Test SConf.TryGrepOutput
+        """
+        self._resetSConfState()
+        sconf = self.SConf.SConf(self.scons_env,
+                                 conf_dir=self.test.workpath('config.tests'),
+                                 log_file=self.test.workpath('config.log'))
+        try:
+            # Check it works with TryRun
+            prog = """
+#include <stdio.h>
+
+int main() {
+  printf( "Hello" );
+  return 0;
+}
+"""
+            sconf.TryRun(prog, '.c')
+            r = sconf.TryGrepOutput('Hello')
+            assert r, 'Could not grep Hello in hello program'
+        finally:
+            sconf.Finish()
+
     def test_CheckDeclaration(self):
         """Test SConf.CheckDeclaration()
         """
