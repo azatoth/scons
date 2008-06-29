@@ -631,6 +631,26 @@ class SConfBase:
                 return( 1, outputStr)
         return (0, "")
 
+    def TryGrepOutput(self, pattern, flags=0):
+        """Tries to grep in the output of a Try* function with the given
+        pattern and the given flags for the regex engine.
+
+        The search's behaviour can be modified by specifying a flags
+        value (see Module 're' for details).
+
+        Returns the corresponding re.MatchObject on success, None if not found,
+        and zero (0) if no output target is found, which means that the
+        preceeding Try* failed.
+        """
+        if self.outTarget:
+            # XXX: I am not sure '\n' is always the right endline for all
+            # platform...
+            out = open(str(self.outTarget), 'r')
+            outputStr = ''.join(out.readlines())
+            return re.search(pattern, outputStr, flags)
+        else:
+            return 0
+
     class TestWrapper:
         """A wrapper around Tests (to ensure sanity)"""
         def __init__(self, test, sconf):
@@ -814,6 +834,9 @@ class CheckContext:
 
     def TryRun(self, *args, **kw):
         return apply(self.sconf.TryRun, args, kw)
+
+    def TryGrepOutput(self, *args, **kw):
+        return apply(self.sconf.TryGrepOutput, args, kw)
 
     def __getattr__( self, attr ):
         if( attr == 'env' ):
