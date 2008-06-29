@@ -396,7 +396,7 @@ class SConfBase:
         self.logfile = log_file
         self.logstream = None
         self.output = None
-        self.outputTarget = None
+        self.lastTarget = None
         self.depth = _depth
         self.cached = 0 # will be set, if all test results are cached
 
