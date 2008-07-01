@@ -679,6 +679,14 @@ class SConfBase:
         else:
             return 0
 
+    def Output(self):
+        try:
+            fid = open(str(self.outTarget), 'r')
+	    return fid.readlines()
+        except IOError:
+	    print "Error getting output %s" % selg.outTarget
+            return None
+
     class TestWrapper:
         """A wrapper around Tests (to ensure sanity)"""
         def __init__(self, test, sconf):
@@ -865,6 +873,9 @@ class CheckContext:
 
     def TryGrepOutput(self, *args, **kw):
         return apply(self.sconf.TryGrepOutput, args, kw)
+
+    def Output(self, *args, **kw):
+        return apply(self.sconf.Output, args, kw)
 
     def __getattr__( self, attr ):
         if( attr == 'env' ):
