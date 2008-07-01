@@ -541,8 +541,8 @@ class SConfBase:
         target = self.confdir.File(pref + f + suff)
 
         # Set output of the builder
-        output = self.confdir.File(pref + f + suff + '.bld_out')
-        self.output = open(str(output), 'w')
+        outFile = self.confdir.File(pref + f + suff + '.tmp_out')
+        self.output = open(str(outFile), 'w')
 
         try:
             # Slide our wrapper into the construction environment as
@@ -562,14 +562,35 @@ class SConfBase:
             nodes = builder(target = target, source = source)
             if not SCons.Util.is_List(nodes):
                 nodes = [nodes]
+
             nodesToBeBuilt.extend(nodes)
+
+            def output_log(target, source, env):
+                self.output.close()
+                cnt = open(str(source[0]), 'r').readlines()
+                file = self.confdir.File(str(target[0]))
+                a = open(str(file), 'w')
+                a.writelines(cnt)
+                a.close()
+
+                return 0
+
+            OutputLogAction = SCons.Action.Action(output_log, None)
+            OutputLogBuilder = SCons.Builder.Builder(action=OutputLogAction)
+            self.env.Append( BUILDERS = {'SConfOutputLogBuilder' : OutputLogBuilder} )
+            builder = self.env.SConfOutputLogBuilder
+            lognodes = builder(target = pref + f + suff + '.bld_out', source = outFile)
+
+            if not SCons.Util.is_List(lognodes):
+                lognodes = [lognodes]
+
+            nodesToBeBuilt.extend(lognodes)
+
             result = self.BuildNodes(nodesToBeBuilt)
 
-        finally:
-            self.output.close()
-            # Append output of the builder into the logstream
-            self.logstream.writelines(open(str(output), 'r').readlines())
+            del self.env['BUILDERS']['SConfOutputLogBuilder']
 
+        finally:
             self.env['SPAWN'] = save_spawn
 
         _ac_build_counter = _ac_build_counter + 1
@@ -577,7 +598,14 @@ class SConfBase:
             self.lastTarget = nodes[0]
         else:
             self.lastTarget = None
-        self.outTarget = output
+
+        self.outTarget = os.path.join(str(self.confdir), pref + f + suff + '.bld_out')
+        # Append output of the builder into the logstream
+        try:
+            fid = open(str(self.outTarget), 'r')
+            self.logstream.writelines(fid.readlines())
+        except IOError:
+            pass
 
         return result
 
