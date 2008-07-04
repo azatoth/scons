@@ -682,9 +682,9 @@ class SConfBase:
     def Output(self):
         try:
             fid = open(str(self.outTarget), 'r')
-	    return fid.readlines()
+            return fid.readlines()
         except IOError:
-	    print "Error getting output %s" % selg.outTarget
+            print "Error getting output %s" % selg.outTarget
             return None
 
     class TestWrapper:
