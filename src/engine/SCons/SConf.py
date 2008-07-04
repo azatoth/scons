@@ -543,7 +543,8 @@ class SConfBase:
         # Set output file of the builder: the whole output of the builer will
         # be written into this file
         outFile = self.confdir.File(pref + f + suff + '.tmp_out')
-        self.output = open(str(outFile), 'w')
+        if self.logstream:
+            self.output = open(str(outFile), 'w')
 
         try:
             # Slide our wrapper into the construction environment as
@@ -566,18 +567,21 @@ class SConfBase:
 
             nodesToBeBuilt.extend(nodes)
 
-            # XXX: ugly hack: to set a dependency  on the output of the
-            # builder, we build a secondary output file which depends on the
-            # .tmp_out content. I did not find a way to do without two files
-            # because Popen wants a file, a StringIO is not acceptable, and
-            # files cannot be read/written at the same time portably.
-            builder = self.env.SConfOutputLogBuilder
-            lognodes = builder(target = pref + f + suff + '.bld_out', source = outFile)
+            if self.logstream:
+                # XXX: ugly hack: to set a dependency  on the output of the
+                # builder, we build a secondary output file which depends on
+                # the .tmp_out content. I did not find a way to do without two
+                # files because Popen wants a file, a StringIO is not
+                # acceptable, and files cannot be read/written at the same time
+                # portably.
+                builder = self.env.SConfOutputLogBuilder
+                lognodes = builder(target = pref + f + suff + '.bld_out', 
+                                   source = outFile)
 
-            if not SCons.Util.is_List(lognodes):
-                lognodes = [lognodes]
+                if not SCons.Util.is_List(lognodes):
+                    lognodes = [lognodes]
 
-            nodesToBeBuilt.extend(lognodes)
+                nodesToBeBuilt.extend(lognodes)
 
             result = self.BuildNodes(nodesToBeBuilt)
 
@@ -590,9 +594,11 @@ class SConfBase:
         else:
             self.lastTarget = None
 
-        self.outTarget = os.path.join(str(self.confdir), pref + f + suff + '.tmp_out')
-        fid = open(str(self.outTarget), 'r')
-        self.logstream.writelines(fid.readlines())
+        if self.logstream:
+            self.outTarget = os.path.join(str(self.confdir), 
+                                          pref + f + suff + '.tmp_out')
+            fid = open(str(self.outTarget), 'r')
+            self.logstream.writelines(fid.readlines())
         
         return result
 
