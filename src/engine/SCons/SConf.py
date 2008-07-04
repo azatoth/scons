@@ -540,7 +540,8 @@ class SConfBase:
         suff = self.env.subst( builder.builder.suffix )
         target = self.confdir.File(pref + f + suff)
 
-        # Set output of the builder
+        # Set output file of the builder: the whole output of the builer will
+        # be written into this file
         outFile = self.confdir.File(pref + f + suff + '.tmp_out')
         self.output = open(str(outFile), 'w')
 
@@ -565,19 +566,11 @@ class SConfBase:
 
             nodesToBeBuilt.extend(nodes)
 
-            def output_log(target, source, env):
-                self.output.close()
-                cnt = open(str(source[0]), 'r').readlines()
-                file = self.confdir.File(str(target[0]))
-                a = open(str(file), 'w')
-                a.writelines(cnt)
-                a.close()
-
-                return 0
-
-            OutputLogAction = SCons.Action.Action(output_log, None)
-            OutputLogBuilder = SCons.Builder.Builder(action=OutputLogAction)
-            self.env.Append( BUILDERS = {'SConfOutputLogBuilder' : OutputLogBuilder} )
+            # XXX: ugly hack: to set a dependency  on the output of the
+            # builder, we build a secondary output file which depends on the
+            # .tmp_out content. I did not find a way to do without two files
+            # because Popen wants a file, a StringIO is not acceptable, and
+            # files cannot be read/written at the same time portably.
             builder = self.env.SConfOutputLogBuilder
             lognodes = builder(target = pref + f + suff + '.bld_out', source = outFile)
 
@@ -588,8 +581,6 @@ class SConfBase:
 
             result = self.BuildNodes(nodesToBeBuilt)
 
-            del self.env['BUILDERS']['SConfOutputLogBuilder']
-
         finally:
             self.env['SPAWN'] = save_spawn
 
@@ -599,14 +590,10 @@ class SConfBase:
         else:
             self.lastTarget = None
 
-        self.outTarget = os.path.join(str(self.confdir), pref + f + suff + '.bld_out')
-        # Append output of the builder into the logstream
-        try:
-            fid = open(str(self.outTarget), 'r')
-            self.logstream.writelines(fid.readlines())
-        except IOError:
-            pass
-
+        self.outTarget = os.path.join(str(self.confdir), pref + f + suff + '.tmp_out')
+        fid = open(str(self.outTarget), 'r')
+        self.logstream.writelines(fid.readlines())
+        
         return result
 
     def TryAction(self, action, text = None, extension = ""):
@@ -671,8 +658,6 @@ class SConfBase:
         preceeding Try* failed.
         """
         if self.outTarget:
-            # XXX: I am not sure '\n' is always the right endline for all
-            # platform...
             out = open(str(self.outTarget), 'r')
             outputStr = ''.join(out.readlines())
             return re.search(pattern, outputStr, flags)
@@ -725,6 +710,21 @@ class SConfBase:
                 os.makedirs( dirName )
                 node._exists = 1
 
+    def _set_log_builder(self):
+        def output_log(target, source, env):
+            self.output.close()
+            cnt = open(str(source[0]), 'r').readlines()
+            file = self.confdir.File(str(target[0]))
+            a = open(str(file), 'w')
+            a.writelines(cnt)
+            a.close()
+
+            return 0
+
+        OutputLogAction = SCons.Action.Action(output_log, None)
+        OutputLogBuilder = SCons.Builder.Builder(action=OutputLogAction)
+        self.env.Append( BUILDERS = {'SConfOutputLogBuilder' : OutputLogBuilder} )
+
     def _startup(self):
         """Private method. Set up logstream, and set the environment
         variables necessary for a piped build
@@ -771,6 +771,8 @@ class SConfBase:
         # only one SConf instance should be active at a time ...
         sconf_global = self
 
+        self._set_log_builder()
+
     def _shutdown(self):
         """Private method. Reset to non-piped spawn"""
         global sconf_global, _ac_config_hs
@@ -790,6 +792,8 @@ class SConfBase:
         if not self.config_h is None:
             _ac_config_hs[self.config_h] = self.config_h_text
         self.env.fs = self.lastEnvFs
+
+        del self.env['BUILDERS']['SConfOutputLogBuilder']
 
 class CheckContext:
     """Provides a context for configure tests. Defines how a test writes to the
