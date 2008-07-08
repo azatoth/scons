@@ -56,7 +56,6 @@
     <!ENTITY command-line SYSTEM "command-line.xml">
     <!ENTITY copyright SYSTEM "copyright.xml">
     <!ENTITY depends SYSTEM "depends.xml">
-    <!ENTITY ENV_file SYSTEM "ENV.xml">
     <!ENTITY environments SYSTEM "environments.xml">
     <!ENTITY errors SYSTEM "errors.xml">
     <!ENTITY example SYSTEM "example.xml">
@@ -192,7 +191,7 @@
   </chapter>
 
   <chapter id="chap-environments">
-    <title>Construction Environments</title>
+    <title>Environments</title>
     &environments;
   </chapter>
 
@@ -204,11 +203,6 @@
   </chapter>
 
   -->
-
-  <chapter id="chap-ENV">
-    <title>Controlling the External Environment Used to Execute Build Commands</title>
-    &ENV_file;
-  </chapter>
 
   <chapter id="chap-output">
     <title>Controlling Build Output</title>

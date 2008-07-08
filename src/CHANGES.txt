@@ -18,23 +18,40 @@ From Steven Knight:
 
   - Clarify the man page description of the SConscript(src_dir) argument.
 
-  - User's Guide updates:  document the BUILD_TARGETS,
-    COMMAND_LINE_TARGETS and DEFAULT_TARGETS variables.  Document the
-    AddOption(), GetOption() and SetOption() functions.  Document
-    the Requires() function; convert to the Variables object,
-    its UnknownOptions() method, and its associated BoolVariable(),
-    EnumVariable(), ListVariable(), PackageVariable() and PathVariable()
-    functions.  Document the Progress() function.  Reorganize the
-    command-line arguments chapter.  Collect some miscellaneous sections
-    into a chapter about configuring build output.
+  - User's Guide updates:
 
-  - Document suggested use of the Visual C/C++ /FC option to fix the
-    ability to double-click on file names in compilation error messages.
+     -  Document the BUILD_TARGETS, COMMAND_LINE_TARGETS and
+        DEFAULT_TARGETS variables.
 
-  - Document the need to use Clean() for any SideEffect() files that
-    must be explicitly removed when their targets are removed.
+     -  Document the AddOption(), GetOption() and SetOption() functions.
 
-  - Explicitly document use of Node lists as input to Dependency().
+     -  Document the Requires() function; convert to the Variables
+        object, its UnknownOptions() method, and its associated
+        BoolVariable(), EnumVariable(), ListVariable(), PackageVariable()
+        and PathVariable() functions.
+        
+     -  Document the Progress() function.
+
+     -  Reorganize the chapter and sections describing the different
+        types of environments and how they interact.  Document the
+        SetDefault() method.  Document the PrependENVPath() and
+        AppendENVPath() functions.
+
+     -  Reorganize the command-line arguments chapter.
+
+     -  Collect some miscellaneous sections into a chapter about
+        configuring build output.
+
+  - Man page updates:
+
+     -  Document suggested use of the Visual C/C++ /FC option to fix
+        the ability to double-click on file names in compilation error
+        messages.
+
+     -  Document the need to use Clean() for any SideEffect() files that
+        must be explicitly removed when their targets are removed.
+
+     -  Explicitly document use of Node lists as input to Dependency().
 
 From Gary Oberbrunner:
 

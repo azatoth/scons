@@ -324,6 +324,170 @@ environment, of directory names, suffixes, etc.
 
 -->
 
+  <para>
+
+  An <literal>environment</literal>
+  is a collection of values that
+  can affect how a program executes.
+  &SCons; distinguishes between three
+  different types of environments
+  that can affect the behavior of &SCons; itself
+  (subject to the configuration in the &SConscript; files),
+  as well as the compilers and other tools it executes:
+
+  </para>
+
+  <variablelist>
+
+    <varlistentry>
+    <term>External Environment</term>
+
+    <listitem>
+    <para>
+
+    The <literal>external environment</literal>
+    is the set of variables in the user's environment
+    at the time the user runs &SCons;.
+    These variables are available within the &SConscript; files
+    through the Python <literal>os.environ</literal> dictionary.
+    See <xref linkend="sect-external-environments"></xref>, below.
+
+    </para>
+    </listitem>
+    </varlistentry>
+
+    <varlistentry>
+    <term>&ConsEnv;</term>
+
+    <listitem>
+    <para>
+
+    A &consenv;
+    is a distinct object creating within
+    a &SConscript; file and
+    and which contains values that
+    affect how &SCons; decides
+    what action to use to build a target,
+    and even to define which targets
+    should be built from which sources.
+    One of the most powerful features of &SCons;
+    is the ability to create multiple &consenvs;,
+    including the ability to clone a new, customized
+    &consenv; from an existing &consenv;.
+    See <xref linkend="sect-construction-environments"></xref>, below.
+
+    </para>
+    </listitem>
+    </varlistentry>
+
+    <varlistentry>
+    <term>Execution Environment</term>
+
+    <listitem>
+    <para>
+
+    An <literal>execution environment</literal>
+    is the values that &SCons; sets
+    when executing an external
+    command (such as a compiler or linker)
+    to build one or more targets.
+    Note that this is not the same as
+    the <literal>external environment</literal>
+    (see above).
+    See <xref linkend="sect-execution-environments"></xref>, below.
+
+    </para>
+    </listitem>
+    </varlistentry>
+
+  </variablelist>
+
+  <para>
+
+  Unlike &Make;,  &SCons; does not automatically
+  copy or import values between different environments
+  (with the exception of explicit clones of &consenvs;,
+  which inherit values from their parent).
+  This is a deliberate design choice
+  to make sure that builds are,
+  by default, repeatable regardless of
+  the values in the user's external environment.
+  This avoids a whole class of problems with builds
+  where a developer's local build works
+  because a custom variable setting
+  causes a different comiler or build option to be used,
+  but the checked-in change breaks the official build
+  because it uses different environment variable settings.
+
+  </para>
+
+  <para>
+
+  Note that the &SConscript; writer can
+  easily arrange for variables to be
+  copied or imported between environments,
+  and this is often very useful
+  (or even downright necessary)
+  to make it easy for developers
+  to customize the build in appropriate ways.
+  The point is <emphasis>not</emphasis>
+  that copying variables between different environments
+  is evil and must always be avoided.
+  Instead, it should be up to the
+  implementer of the build system
+  to make conscious choices
+  about how and when to import
+  a variable from one environment to another,
+  making informed decisions about
+  striking the right balance
+  between making the build
+  repeatable on the one hand
+  and convenient to use on the other.
+
+  </para>
+
+  <section id="sect-external-environments">
+  <title>Using Values From the External Environment</title>
+
+  <para>
+
+  The <literal>external environment</literal>
+  variable settings that
+  the user has in force
+  when executing &SCons;
+  are available through the normal Python
+  <envar>os.environ</envar>
+  dictionary.
+  This means that you must add an
+  <literal>import os</literal> statuement
+  to any &SConscript; file
+  in which you want to use
+  values from the user's external environment.
+
+  </para>
+
+   <programlisting>
+     import os
+   </programlisting>
+
+  <para>
+
+  More usefully, you can use the
+  <envar>os.environ</envar>
+  dictionary in your &SConscript;
+  files to initialize &consenvs;
+  with values from the user's external environment.
+  See the next section,
+  <xref linkend="sect-construction-environments"></xref>,
+  for information on how to do this.
+
+  </para>
+
+  </section>
+
+  <section id="sect-construction-environments">
+  <title>Construction Environments</title>
+
     <para>
 
       It is rare that all of the software in a large,
@@ -336,7 +500,7 @@ environment, of directory names, suffixes, etc.
       requirements by allowing you to create and
       configure multiple &consenvs;
       that control how the software is built.
-      Technically, a &consenv; is an object
+      A &consenv; is an object
       that has a number of associated
       &consvars;, each with a name and a value.
       (A construction environment also has an attached
@@ -384,6 +548,8 @@ environment, of directory names, suffixes, etc.
     </para>
 
      <programlisting>
+     import os
+
        env = Environment(CC = 'gcc',
                          CCFLAGS = '-O2')
 
@@ -413,6 +579,121 @@ environment, of directory names, suffixes, etc.
        gcc -o foo.o -c -O2 foo.c
        gcc -o foo foo.o
     </screen>
+
+    <section>
+    <title>Controlling the Default &ConsEnv;:  the &DefaultEnvironment; Function</title>
+
+      <para>
+
+      All of the &Builder; functions that we've introduced so far,
+      like &Program; and &Library;,
+      actually use a default &consenv;
+      that contains settings
+      for the various compilers
+      and other tools that
+      &SCons; configures by default,
+      or otherwise knows about
+      and has discovered on your system.
+      The goal of the default construction environment
+      is to make many configurations to "just work"
+      to build software using
+      readily available tools
+      with a minimum of configuration changes.
+
+      </para>
+
+      <para>
+
+      You can, however, control the settings
+      in the default contstruction environment
+      by using the &DefaultEnvironment; function
+      to initialize various settings:
+
+      </para>
+
+      <programlisting>
+
+      DefaultEnvironment(CC = '/usr/local/bin/gcc')
+
+      </programlisting>
+
+      <para>
+
+      When configured as above,
+      all calls to the &Program;
+      or &Object; Builder
+      will build object files with the
+      <filename>/usr/local/bin/gcc</filename>
+      compiler.
+
+      </para>
+
+      <para>
+
+      Note that the &DefaultEnvironment; function
+      returns the initialized
+      default construction environment object,
+      which can then be manipulated like any
+      other construction environment.
+      So the following
+      would be equivalent to the
+      previous example,
+      setting the &cv-CC;
+      variable to <filename>/usr/local/bin/gcc</filename>
+      but as a separate step after
+      the default construction environment has been initialized:
+
+      </para>
+
+      <programlisting>
+
+      env = DefaultEnvironment()
+      env['CC'] = '/usr/local/bin/gcc'
+
+      </programlisting>
+
+      <para>
+
+      One very common use of the &DefaultEnvironment; function
+      is to speed up &SCons; initialization.
+      As part of trying to make most default
+      configurations "just work,"
+      &SCons; will actually
+      search the local system for installed
+      compilers and other utilities.
+      This search can take time,
+      especially on systems with
+      slow or networked file systems.
+      If you know which compiler(s) and/or
+      other utilities you want to configure,
+      you can control the search
+      that &SCons; performs
+      by specifying some specific
+      tool modules with which to
+      initialize the default construction environment:
+
+      </para>
+
+      <programlisting>
+
+      env = DefaultEnvironment(tools = ['gcc', 'gnulink'],
+                               CC = '/usr/local/bin/gcc')
+
+      </programlisting>
+
+      <para>
+
+      So the above example would tell &SCons;
+      to explicitly configure the default environment
+      to use its normal GNU Compiler and GNU Linker settings
+      (without having to search for them,
+      or any other utilities for that matter),
+      and specifically to use the compiler found at
+      <filename>/usr/local/bin/gcc</filename>.
+
+      </para>
+
+    </section>
 
     <section>
     <title>Multiple &ConsEnvs;</title>
@@ -539,7 +820,7 @@ environment, of directory names, suffixes, etc.
     </section>
 
     <section>
-    <title>Copying &ConsEnvs;</title>
+    <title>Making Copies of &ConsEnvs;:  the &Clone; Method</title>
 
       <para>
 
@@ -697,7 +978,7 @@ environment, of directory names, suffixes, etc.
     </section>
 
     <section>
-    <title>Expanding Values From a &ConsEnv;</title>
+    <title>Expanding Values From a &ConsEnv;:  the &subst; Method</title>
 
       <para>
 
@@ -790,324 +1071,590 @@ environment, of directory names, suffixes, etc.
     </section>
 
     <section>
-    <title>Modifying a &ConsEnv;</title>
+    <title>Replacing Values:  the &Replace; Method</title>
 
       <para>
 
-      &SCons; provides various methods that
-      support modifying existing values in a construction environment.
+      You can replace existing construction variable values
+      using the &Replace; method:
 
       </para>
 
-      <section>
-      <title>Replacing Values in a &ConsEnv;</title>
-
-        <para>
-
-        You can replace existing construction variable values
-        using the &Replace; method:
-
-        </para>
-
-        <programlisting>
-           env = Environment(CCFLAGS = '-DDEFINE1')
-           env.Replace(CCFLAGS = '-DDEFINE2')
-           env.Program('foo.c')
-        </programlisting>
-
-        <para>
-
-        The replacing value
-        (<literal>-DDEFINE2</literal> in the above example)
-        completely replaces the value in the
-        construction environment:
-
-        </para>
-
-        <screen>
-           % <userinput>scons -Q</userinput>
-           cc -o foo.o -c -DDEFINE2 foo.c
-           cc -o foo foo.o
-        </screen>
-
-        <para>
-
-        You can safely call &Replace;
-        for construction variables that
-        don't exist in the construction environment:
-
-        </para>
-
-        <programlisting>
-           env = Environment()
-           env.Replace(NEW_VARIABLE = 'xyzzy')
-           print "NEW_VARIABLE =", env['NEW_VARIABLE']
-        </programlisting>
-
-        <para>
-
-        In this case,
-        the construction variable simply
-        gets added to the construction environment:
-
-        </para>
-
-        <screen>
-           % <userinput>scons -Q</userinput>
-           NEW_VARIABLE = xyzzy
-           scons: `.' is up to date.
-        </screen>
-
-        <para>
-
-        Because the variables
-        aren't expanded until the construction environment
-        is actually used to build the targets,
-        and because &SCons; function and method calls
-        are order-independent,
-        the last replacement "wins"
-        and is used to build all targets,
-        regardless of the order in which
-        the calls to Replace() are
-        interspersed with calls to
-        builder methods:
-
-        </para>
-
-        <programlisting>
-           env = Environment(CCFLAGS = '-DDEFINE1')
-           print "CCFLAGS =", env['CCFLAGS']
-           env.Program('foo.c')
-
-           env.Replace(CCFLAGS = '-DDEFINE2')
-           print "CCFLAGS =", env['CCFLAGS']
-           env.Program('bar.c')
-        </programlisting>
-
-        <para>
-
-        The timing of when the replacement
-        actually occurs relative
-        to when the targets get built
-        becomes apparent
-        if we run &scons; without the <literal>-Q</literal>
-        option:
-
-        </para>
-
-        <screen>
-           % <userinput>scons</userinput>
-           scons: Reading SConscript files ...
-           CCFLAGS = -DDEFINE1
-           CCFLAGS = -DDEFINE2
-           scons: done reading SConscript files.
-           scons: Building targets ...
-           cc -o bar.o -c -DDEFINE2 bar.c
-           cc -o bar bar.o
-           cc -o foo.o -c -DDEFINE2 foo.c
-           cc -o foo foo.o
-           scons: done building targets.
-        </screen>
-
-        <para>
-
-        Because the replacement occurs while
-        the &SConscript; files are being read,
-        the &cv-link-CCFLAGS;
-        variable has already been set to
-        <literal>-DDEFINE2</literal>
-        by the time the &foo_o; target is built,
-        even though the call to the &Replace;
-        method does not occur until later in
-        the &SConscript; file.
-
-        </para>
-
-      </section>
-
-      <!--
-
-      <section>
-      <title>Setting Values Only If They're Not Already Defined</title>
-
-        <para>
-
-        XXX SetDefault()
-
-        </para>
-
-      </section>
-
-      -->
-
-      <section>
-      <title>Appending to the End of Values in a &ConsEnv;</title>
-
-        <para>
-
-        You can append a value to
-        an existing construction variable
-        using the &Append; method:
-
-        </para>
-
-        <programlisting>
-           env = Environment(CCFLAGS = ['-DMY_VALUE'])
-           env.Append(CCFLAGS = ['-DLAST'])
-           env.Program('foo.c')
-        </programlisting>
-
-        <para>
-
-        &SCons; then supplies both the <literal>-DMY_VALUE</literal> and
-        <literal>-DLAST</literal> flags when compiling the object file:
-
-        </para>
-
-        <screen>
-           % <userinput>scons -Q</userinput>
-           cc -o foo.o -c -DMY_VALUE -DLAST foo.c
-           cc -o foo foo.o
-        </screen>
-
-        <para>
-
-        If the construction variable doesn't already exist,
-        the &Append; method will create it:
-
-        </para>
-
-        <programlisting>
-           env = Environment()
-           env.Append(NEW_VARIABLE = 'added')
-           print "NEW_VARIABLE =", env['NEW_VARIABLE']
-        </programlisting>
-
-        <para>
-
-        Which yields:
-
-        </para>
-
-        <screen>
-           % <userinput>scons -Q</userinput>
-           NEW_VARIABLE = added
-           scons: `.' is up to date.
-        </screen>
-
-        <para>
-
-        Note that the &Append; function tries to be "smart"
-        about how the new value is appended to the old value.
-        If both are strings, the previous and new strings
-        are simply concatenated.
-        Similarly, if both are lists,
-        the lists are concatenated.
-        If, however, one is a string and the other is a list,
-        the string is added as a new element to the list.
-
-        </para>
-
-        <!--
-
-        XXX AppendUnique()
-
-        -->
-
-      </section>
-
-      <section>
-      <title>Appending to the Beginning of Values in a &ConsEnv;</title>
-
-        <para>
-
-        You can append a value to the beginning of
-        an existing construction variable
-        using the &Prepend; method:
-
-        </para>
-
-        <programlisting>
-           env = Environment(CCFLAGS = ['-DMY_VALUE'])
-           env.Prepend(CCFLAGS = ['-DFIRST'])
-           env.Program('foo.c')
-        </programlisting>
-
-        <para>
-
-        &SCons; then supplies both the <literal>-DFIRST</literal> and
-        <literal>-DMY_VALUE</literal> flags when compiling the object file:
-
-        </para>
-
-        <screen>
-           % <userinput>scons -Q</userinput>
-           cc -o foo.o -c -DFIRST -DMY_VALUE foo.c
-           cc -o foo foo.o
-        </screen>
-
-        <para>
-
-        If the construction variable doesn't already exist,
-        the &Prepend; method will create it:
-
-        </para>
-
-        <programlisting>
-           env = Environment()
-           env.Prepend(NEW_VARIABLE = 'added')
-           print "NEW_VARIABLE =", env['NEW_VARIABLE']
-        </programlisting>
-
-        <para>
-
-        Which yields:
-
-        </para>
-
-        <screen>
-           % <userinput>scons -Q</userinput>
-           NEW_VARIABLE = added
-           scons: `.' is up to date.
-        </screen>
-
-        <para>
-
-        Like the &Append; function,
-        the &Prepend; function tries to be "smart"
-        about how the new value is appended to the old value.
-        If both are strings, the previous and new strings
-        are simply concatenated.
-        Similarly, if both are lists,
-        the lists are concatenated.
-        If, however, one is a string and the other is a list,
-        the string is added as a new element to the list.
-
-        </para>
-
-        <!--
-
-        XXX PrependUnique()
-
-        -->
-
-      </section>
-
-      <!--
-
-      <section>
-      <title>Adding to Values in the Execution Environment</title>
-
-        <para>
-
-        XXX AppendENVPath()
-
-        XXX PrependENVPath()
-
-        </para>
-
-      </section>
-
-      -->
+      <programlisting>
+         env = Environment(CCFLAGS = '-DDEFINE1')
+         env.Replace(CCFLAGS = '-DDEFINE2')
+         env.Program('foo.c')
+      </programlisting>
+
+      <para>
+
+      The replacing value
+      (<literal>-DDEFINE2</literal> in the above example)
+      completely replaces the value in the
+      construction environment:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         cc -o foo.o -c -DDEFINE2 foo.c
+         cc -o foo foo.o
+      </screen>
+
+      <para>
+
+      You can safely call &Replace;
+      for construction variables that
+      don't exist in the construction environment:
+
+      </para>
+
+      <programlisting>
+         env = Environment()
+         env.Replace(NEW_VARIABLE = 'xyzzy')
+         print "NEW_VARIABLE =", env['NEW_VARIABLE']
+      </programlisting>
+
+      <para>
+
+      In this case,
+      the construction variable simply
+      gets added to the construction environment:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         NEW_VARIABLE = xyzzy
+         scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      Because the variables
+      aren't expanded until the construction environment
+      is actually used to build the targets,
+      and because &SCons; function and method calls
+      are order-independent,
+      the last replacement "wins"
+      and is used to build all targets,
+      regardless of the order in which
+      the calls to Replace() are
+      interspersed with calls to
+      builder methods:
+
+      </para>
+
+      <programlisting>
+         env = Environment(CCFLAGS = '-DDEFINE1')
+         print "CCFLAGS =", env['CCFLAGS']
+         env.Program('foo.c')
+
+         env.Replace(CCFLAGS = '-DDEFINE2')
+         print "CCFLAGS =", env['CCFLAGS']
+         env.Program('bar.c')
+      </programlisting>
+
+      <para>
+
+      The timing of when the replacement
+      actually occurs relative
+      to when the targets get built
+      becomes apparent
+      if we run &scons; without the <literal>-Q</literal>
+      option:
+
+      </para>
+
+      <screen>
+         % <userinput>scons</userinput>
+         scons: Reading SConscript files ...
+         CCFLAGS = -DDEFINE1
+         CCFLAGS = -DDEFINE2
+         scons: done reading SConscript files.
+         scons: Building targets ...
+         cc -o bar.o -c -DDEFINE2 bar.c
+         cc -o bar bar.o
+         cc -o foo.o -c -DDEFINE2 foo.c
+         cc -o foo foo.o
+         scons: done building targets.
+      </screen>
+
+      <para>
+
+      Because the replacement occurs while
+      the &SConscript; files are being read,
+      the &cv-link-CCFLAGS;
+      variable has already been set to
+      <literal>-DDEFINE2</literal>
+      by the time the &foo_o; target is built,
+      even though the call to the &Replace;
+      method does not occur until later in
+      the &SConscript; file.
+
+      </para>
 
     </section>
+
+    <section>
+    <title>Setting Values Only If They're Not Already Defined:  the &SetDefault; Method</title>
+
+      <para>
+
+      Sometimes it's useful to be able to specify
+      that a construction variable should be
+      set to a value only if the construction environment
+      does not already have that variable defined
+      You can do this with the &SetDefault; method,
+      which behaves similarly to the <function>set_default</function>
+      method of Python dictionary objects:
+
+      </para>
+
+      <programlisting>
+      env.SetDefault(SPECIAL_FLAG = '-extra-option')
+      </programlisting>
+
+      <para>
+
+      This is especially useful
+      when writing your own <literal>Tool</literal> modules
+      to apply variables to construction environments.
+      <!--
+      See <xref linkend="chap-tool-modules"></xref>
+      for more information about writing
+      Tool modules.
+      -->
+
+      </para>
+
+    </section>
+
+    <section>
+    <title>Appending to the End of Values:  the &Append; Method</title>
+
+      <para>
+
+      You can append a value to
+      an existing construction variable
+      using the &Append; method:
+
+      </para>
+
+      <programlisting>
+         env = Environment(CCFLAGS = ['-DMY_VALUE'])
+         env.Append(CCFLAGS = ['-DLAST'])
+         env.Program('foo.c')
+      </programlisting>
+
+      <para>
+
+      &SCons; then supplies both the <literal>-DMY_VALUE</literal> and
+      <literal>-DLAST</literal> flags when compiling the object file:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         cc -o foo.o -c -DMY_VALUE -DLAST foo.c
+         cc -o foo foo.o
+      </screen>
+
+      <para>
+
+      If the construction variable doesn't already exist,
+      the &Append; method will create it:
+
+      </para>
+
+      <programlisting>
+         env = Environment()
+         env.Append(NEW_VARIABLE = 'added')
+         print "NEW_VARIABLE =", env['NEW_VARIABLE']
+      </programlisting>
+
+      <para>
+
+      Which yields:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         NEW_VARIABLE = added
+         scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      Note that the &Append; function tries to be "smart"
+      about how the new value is appended to the old value.
+      If both are strings, the previous and new strings
+      are simply concatenated.
+      Similarly, if both are lists,
+      the lists are concatenated.
+      If, however, one is a string and the other is a list,
+      the string is added as a new element to the list.
+
+      </para>
+
+    </section>
+
+    <section>
+    <title>Appending Unique Values:  the &AppendUnique; Method</title>
+
+      <para>
+
+      Some times it's useful to add a new value
+      only if the existing construction variable
+      doesn't already contain the value.
+      This can be done using the &AppendUnique; method:
+
+      </para>
+
+      <programlisting>
+      env.AppendUnique(CCFLAGS=['-g'])
+      </programlisting>
+
+      <para>
+
+      In the above example,
+      the <literal>-g</literal> would be added
+      only if the &cv-CCFLAGS; variable
+      does not already contain a <literal>-g</literal> value.
+
+      </para>
+
+    </section>
+
+    <section>
+    <title>Appending to the Beginning of Values:  the &Prepend; Method</title>
+
+      <para>
+
+      You can append a value to the beginning of
+      an existing construction variable
+      using the &Prepend; method:
+
+      </para>
+
+      <programlisting>
+         env = Environment(CCFLAGS = ['-DMY_VALUE'])
+         env.Prepend(CCFLAGS = ['-DFIRST'])
+         env.Program('foo.c')
+      </programlisting>
+
+      <para>
+
+      &SCons; then supplies both the <literal>-DFIRST</literal> and
+      <literal>-DMY_VALUE</literal> flags when compiling the object file:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         cc -o foo.o -c -DFIRST -DMY_VALUE foo.c
+         cc -o foo foo.o
+      </screen>
+
+      <para>
+
+      If the construction variable doesn't already exist,
+      the &Prepend; method will create it:
+
+      </para>
+
+      <programlisting>
+         env = Environment()
+         env.Prepend(NEW_VARIABLE = 'added')
+         print "NEW_VARIABLE =", env['NEW_VARIABLE']
+      </programlisting>
+
+      <para>
+
+      Which yields:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         NEW_VARIABLE = added
+         scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      Like the &Append; function,
+      the &Prepend; function tries to be "smart"
+      about how the new value is appended to the old value.
+      If both are strings, the previous and new strings
+      are simply concatenated.
+      Similarly, if both are lists,
+      the lists are concatenated.
+      If, however, one is a string and the other is a list,
+      the string is added as a new element to the list.
+
+      </para>
+
+    </section>
+
+    <section>
+    <title>Prepending Unique Values:  the &PrependUnique; Method</title>
+
+      <para>
+
+      Some times it's useful to add a new value
+      to the beginning of a construction variable
+      only if the existing value
+      doesn't already contain the to-be-added value.
+      This can be done using the &PrependUnique; method:
+
+      </para>
+
+      <programlisting>
+      env.PrependUnique(CCFLAGS=['-g'])
+      </programlisting>
+
+      <para>
+
+      In the above example,
+      the <literal>-g</literal> would be added
+      only if the &cv-CCFLAGS; variable
+      does not already contain a <literal>-g</literal> value.
+
+      </para>
+
+    </section>
+
+  </section>
+
+  <section id="sect-execution-environments">
+  <title>Controlling the Execution Environment for Issued Commands</title>
+
+    <para>
+
+      When &SCons; builds a target file,
+      it does not execute the commands with
+      the same external environment
+      that you used to execute &SCons;.
+      Instead, it uses the dictionary
+      stored in the &cv-link-ENV; construction variable
+      as the external environment
+      for executing commands.
+
+    </para>
+
+    <para>
+
+      The most important ramification of this behavior
+      is that the &PATH; environment variable,
+      which controls where the operating system
+      will look for commands and utilities,
+      is not the same as in the external environment
+      from which you called &SCons;.
+      This means that &SCons; will not, by default,
+      necessarily find all of the tools
+      that you can execute from the command line.
+
+    </para>
+
+    <para>
+
+      The default value of the &PATH; environment variable
+      on a POSIX system
+      is <literal>/usr/local/bin:/bin:/usr/bin</literal>.
+      The default value of the &PATH; environment variable
+      on a Windows system comes from the Windows registry
+      value for the command interpreter.
+      If you want to execute any commands--compilers, linkers, etc.--that
+      are not in these default locations,
+      you need to set the &PATH; value
+      in the &cv-ENV; dictionary
+      in your construction environment.
+
+    </para>
+
+    <para>
+
+      The simplest way to do this is to initialize explicitly
+      the value when you create the construction environment;
+      this is one way to do that:
+
+    </para>
+
+    <programlisting>
+      path = ['/usr/local/bin', '/bin', '/usr/bin']
+      env = Environment(ENV = {'PATH' : path})
+    </programlisting>
+
+    <para>
+
+    Assign a dictionary to the &cv-ENV;
+    construction variable in this way
+    completely resets the external environment
+    so that the only variable that will be
+    set when external commands are executed
+    will be the &PATH; value.
+    If you want to use the rest of
+    the values in &cv-ENV; and only
+    set the value of &PATH;,
+    the most straightforward way is probably:
+
+    </para>
+
+    <programlisting>
+      env['ENV']['PATH'] = ['/usr/local/bin', '/bin', '/usr/bin']
+    </programlisting>
+
+    <para>
+
+    Note that &SCons; does allow you to define
+    the directories in the &PATH; in a string,
+    separated by the pathname-separator character
+    for your system (':' on POSIX systems, ';' on Windows):
+
+    </para>
+
+    <programlisting>
+      env['ENV']['PATH'] = '/usr/local/bin:/bin:/usr/bin'
+    </programlisting>
+
+    <para>
+
+    But doing so makes your &SConscript; file less portable,
+    (although in this case that may not be a huge concern
+    since the directories you list are likley system-specific, anyway).
+
+    </para>
+
+    <!--
+
+    <scons_example name="ex1">
+      <file name="SConstruct" printme="1">
+      env = Environment()
+      env.Command('foo', [], '__ROOT__/usr/bin/printenv.py')
+      </file>
+      <file name="__ROOT__/usr/bin/printenv.py" chmod="0755">
+      #!/usr/bin/env python
+      import os
+      import sys
+      if len(sys.argv) > 1:
+          keys = sys.argv[1:]
+      else:
+          keys = os.environ.keys()
+          keys.sort()
+      for key in keys:
+          print "    " + key + "=" + os.environ[key]
+      </file>
+    </scons_example>
+
+    <para>
+
+    </para>
+
+    <scons_output example="ex1">
+      <scons_output_command>scons -Q</scons_output_command>
+    </scons_output>
+
+    -->
+
+    <section>
+    <title>Propagating &PATH; From the External Environment</title>
+
+      <para>
+
+      You may want to propagate the external &PATH;
+      to the execution environment for commands.
+      You do this by initializing the &PATH;
+      variable with the &PATH; value from
+      the <literal>os.environ</literal>
+      dictionary,
+      which is Python's way of letting you
+      get at the external environment:
+
+      </para>
+
+      <programlisting>
+        import os
+        env = Environment(ENV = {'PATH' : os.environ['PATH']})
+      </programlisting>
+
+      <para>
+
+      Alternatively, you may find it easier
+      to just propagate the entire external
+      environment to the execution environment
+      for commands.
+      This is simpler to code than explicity
+      selecting the &PATH; value:
+
+      </para>
+
+      <programlisting>
+        import os
+        env = Environment(ENV = os.environ)
+      </programlisting>
+
+      <para>
+
+      Either of these will guarantee that
+      &SCons; will be able to execute
+      any command that you can execute from the command line.
+      The drawback is that the build can behave
+      differently if it's run by people with
+      different &PATH; values in their environment--for example,
+      if both the <literal>/bin</literal> and
+      <literal>/usr/local/bin</literal> directories
+      have different &cc; commands,
+      then which one will be used to compile programs
+      will depend on which directory is listed
+      first in the user's &PATH; variable.
+
+      </para>
+
+    </section>
+
+    <section>
+    <title>Adding to <varname>PATH</varname> Values in the Execution Environment</title>
+
+      <para>
+
+      One of the most common requirements
+      for manipulating a variable in the execution environment
+      is to add one or more custom directories to a search
+      like the <envar>$PATH</envar> variable on Linux or POSIX systems,
+      or the <envar>%PATH%</envar> variable on Windows,
+      so that a locally-installed compiler or other utility
+      can be found when &SCons; tries to execute it to update a target.
+      &SCons; provides &PrependENVPath; and &AppendENVPath; functions
+      to make adding things to execution variables convenient.
+      You call these functions by specifying the variable
+      to which you want the value added,
+      and then value itself.
+      So to add some <filename>/usr/local</filename> directories
+      to the <envar>$PATH</envar> and <envar>$LIB</envar> variables,
+      you might:
+
+      </para>
+
+      <programlisting>
+        env = Environment(ENV = os.environ)
+        env.PrependENVPath('PATH', '/usr/local/bin')
+        env.AppendENVPath('LIB', '/usr/local/lib')
+      </programlisting>
+
+      <para>
+
+      Note that the added values are strings,
+      and if you want to add multiple directories to
+      a variable like <envar>$PATH</envar>,
+      you must include the path separate character
+      (<literal>:</literal> on Linux or POSIX,
+      <literal>;</literal> on Windows)
+      in the string.
+
+      </para>
+
+    </section>
+
+  </section>

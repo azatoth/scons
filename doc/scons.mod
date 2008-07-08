@@ -169,6 +169,7 @@
 <!ENTITY Copy "<function>Copy</function>">
 <!ENTITY Decider "<function>Decider</function>">
 <!ENTITY Default "<function>Default</function>">
+<!ENTITY DefaultEnvironment "<function>DefaultEnvironment</function>">
 <!ENTITY DefaultRules "<function>DefaultRules</function>">
 <!ENTITY Delete "<function>Delete</function>">
 <!ENTITY Depends "<function>Depends</function>">
@@ -234,6 +235,7 @@
 <!ENTITY Salt "<function>Salt</function>">
 <!ENTITY SetBuildSignatureType "<function>SetBuildSignatureType</function>">
 <!ENTITY SetContentSignatureType "<function>SetContentSignatureType</function>">
+<!ENTITY SetDefault "<function>SetDefault</function>">
 <!ENTITY SetOption "<function>SetOption</function>">
 <!ENTITY SideEffect "<function>SideEffect</function>">
 <!ENTITY SourceSignature "<function>SourceSignature</function>">

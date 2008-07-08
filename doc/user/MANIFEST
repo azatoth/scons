@@ -12,7 +12,6 @@ command-line.xml
 cons.pl
 copyright.xml
 depends.xml
-ENV.xml
 environments.xml
 errors.xml
 example.xml
