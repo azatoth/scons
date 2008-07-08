@@ -749,6 +749,102 @@
 
     </para>
 
+    <para>
+
+    The &ARGUMENTS; dictionary has two minor drawbacks.
+    First, because it is a dictionary,
+    it can only store one value for each specified keyword,
+    and thus only "remembers" the last setting
+    for each keyword on the command line.
+    This makes the &ARGUMENTS; dictionary
+    inappropriate if users should be able to
+    specify multiple values
+    on the command line for a given keyword.
+    Second, it does not preserve
+    the order in which the variable settings
+    were specified,
+    which is a problem if
+    you want the configuration to
+    behave differently in response
+    to the order in which the build
+    variable settings were specified on the command line.
+
+    </para>
+
+    <para>
+
+    To accomodate these requirements,
+    &SCons; provides an &ARGLIST; variable
+    that gives you direct access to
+    <varname>variable</varname>=<varname>value</varname>
+    settings on the command line,
+    in the exact order they were specified,
+    and without removing any duplicate settings.
+    Each element in the &ARGLIST; variable
+    is itself a two-element list
+    containing the keyword and the value
+    of the setting,
+    and you must loop through,
+    or otherwise select from,
+    the elements of &ARGLIST; to
+    process the specific settings you want
+    in whatever way is appropriate for your configuration.
+    For example,
+    the following code to let the user
+    add to the &CPPDEFINES; construction variable
+    by specifying multiple
+    <varname>define=</varname>
+    settings on the command line:
+
+    </para>
+
+    <scons_example name="ARGLIST">
+       <file name="SConstruct" printme="1">
+       cppdefines = []
+       for key, value in ARGLIST:
+           if key == 'define':
+               cppdefines.append(value)
+       env = Environment(CPPDEFINES = cppdefines)
+       env.Object('prog.c')
+       </file>
+       <file name="prog.c">
+       prog.c
+       </file>
+    </scons_example>
+
+    <para>
+
+    Yields the followig output:
+
+    </para>
+
+    <scons_output example="ARGLIST">
+       <scons_output_command>scons -Q define=FOO</scons_output_command>
+       <scons_output_command>scons -Q define=FOO define=BAR</scons_output_command>
+    </scons_output>
+
+    <para>
+
+    Note that the &ARGLIST; and &ARGUMENTS;
+    variables do not interfere with each other,
+    but merely provide slightly different views
+    into how the user specified
+    <varname>variable</varname>=<varname>value</varname>
+    settings on the command line.
+    You can use both variables in the same
+    &SCons; configuration.
+    In general, the &ARGUMENTS; dictionary
+    is more convenient to use,
+    (since you can just fetch variable
+    settings through a dictionary access),
+    and the &ARGLIST; list
+    is more flexible
+    (since you can examine the
+    specific order in which
+    the user's command-line variabe settings).
+
+    </para>
+
     <section>
     <title>Controlling Command-Line Build Variables</title>
 

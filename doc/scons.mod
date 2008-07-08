@@ -283,6 +283,7 @@
 
 -->
 
+<!ENTITY ARGLIST "<varname>ARGLIST</varname>">
 <!ENTITY ARGUMENTS "<varname>ARGUMENTS</varname>">
 <!ENTITY BUILD_TARGETS "<varname>BUILD_TARGETS</varname>">
 <!ENTITY COMMAND_LINE_TARGETS "<varname>COMMAND_LINE_TARGETS</varname>">
@@ -300,6 +301,7 @@
 <!ENTITY COLOR "<varname>COLOR</varname>">
 <!ENTITY COLORS "<varname>COLORS</varname>">
 <!ENTITY CONFIG "<varname>CONFIG</varname>">
+<!ENTITY CPPDEFINES "<varname>CPPDEFINES</varname>">
 <!ENTITY RELEASE "<varname>RELEASE</varname>">
 <!ENTITY RELEASE_BUILD "<varname>RELEASE_BUILD</varname>">
 <!ENTITY SCANNERMAP "<varname>SCANNERMAP</varname>">

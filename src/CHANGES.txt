@@ -37,7 +37,8 @@ From Steven Knight:
         SetDefault() method.  Document the PrependENVPath() and
         AppendENVPath() functions.
 
-     -  Reorganize the command-line arguments chapter.
+     -  Reorganize the command-line arguments chapter.  Document the
+        ARGLIST variable.
 
      -  Collect some miscellaneous sections into a chapter about
         configuring build output.
