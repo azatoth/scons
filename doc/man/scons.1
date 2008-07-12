@@ -5077,63 +5077,34 @@ must use the
 .BR Import ()
 function to import the variables.
 
-In effect, the optional
+If the optional
 .I variant_dir
-argument causes the files (and subdirectories) in the directory where
-.I script
-resides to be copied to
+argument is present, it causes an effect equivalent to
+.BR VariantDir (
+.IR variant_dir ,
+.IR src_dir ,
+.IR duplicate )
+to be executed prior to reading the
+.IR script (s).
+(If
 .I variant_dir
-and the build performed in
-.IR variant_dir .
-Thus, all of the targets (for example, object files and executables)
-that would normally be built in (or underneath) the directory containing
-.I script
-would actually be built in (or underneath)
-.IR variant_dir .
+is not present, the
+.I src_dir
+and
+.I duplicate
+arguments are ignored.)
+The
+.I variant_dir
+and
+.I src_dir
+arguments are interpreted relative to the directory
+of the calling SConscript file.
+If
+.I src_dir
+is not specified, the directory of the calling SConscript file is assumed.
 See the description of the
 .BR VariantDir ()
-function below for the details and restrictions.
-.I variant_dir
-is interpreted relative to the directory
-of the calling SConscript file.
-
-By default, the sources (files or directories or both)
-for the variant build are in the directory containing
-.IR script -- that
-is, the
-.B SConscript
-directory.
-When a
-.I variant_dir
-is specified,
-the optional
-.I src_dir
-argument can specify a different
-directory containing the source files.
-This can be useful if the
-source directory is not writable
-or can not have a
-.B SConscript
-file added to it for other reasons.
-The
-.I src_dir
-argument itself
-is interpreted relative to the directory
-of the calling SConscript file.
-
-By default,
-.B scons
-will link or copy (depending on the platform)
-all the source files into the variant directory tree.
-This behavior may be disabled by setting the optional
-.I duplicate
-argument to 0 (it is set to 1 by default), in which case
-.B scons
-will refer directly to the source files in their source directory
-when building target files.
-See the description for
-.BR VariantDir ()
-below for the details and restrictions.
+function below for additional details and restrictions.
 
 Any variables returned by
 .I script
@@ -5148,11 +5119,20 @@ Examples:
 SConscript('subdir/SConscript')
 foo = SConscript('sub/SConscript', exports='env')
 SConscript('dir/SConscript', exports=['env', 'variable'])
-SConscript('src/SConscript', variant_dir='build', duplicate=0)
-SConscript('bld/SConscript', src_dir='src', exports='env variable')
+SConscript('dir/SConscript', exports='env variable')
 SConscript(dirs=['sub1', 'sub2'])
 SConscript(dirs=['sub3', 'sub4'], name='MySConscript')
 .EE
+
+.ES
+SConscript('bld/SConscript', variant_dir='bld', duplicate=0)
+.EE
+which is equivalent to
+.ES
+VariantDir('bld', '.', duplicate=0)
+SConscript('bld/SConscript')
+.EE
+'\"TODO: SConscript('bld/SConscript', src_dir='src', exports='env variable')
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
@@ -5974,31 +5954,42 @@ env.UpdateValue(target = Value(output), source = Value(input))
 .RI VariantDir( variant_dir ", " src_dir ", [" duplicate ])
 .TP
 .RI env.VariantDir( variant_dir ", " src_dir ", [" duplicate ])
-In effect, the
-.I src_dir
-directory tree is copied to
-.I variant_dir
-so a build can be performed there.
+Use the
+.BR VariantDir ()
+function to create a copy of your sources in another location:
+if a name under
+.IR variant_dir
+is not found but exists under
+.IR src_dir ,
+the file or directory is copied to
+.IR variant_dir .
+Target files can be built in a different directory than the original sources
+by simply refering to the sources (and targets) within the variant tree.
+
 .BR VariantDir ()
 can be called multiple times with the same
 .I  src_dir
 to set up multiple builds with different options
 .RI ( variants ).
+The
 .I src_dir
-must be in or underneath the SConstruct file's directory, and
+location must be in or underneath the SConstruct file's directory, and
 .I variant_dir
-may not be underneath the
-.I src_dir .
+may not be underneath
+.IR src_dir .
+'\"TODO: Can the above restrictions be clarified or relaxed?
+'\"TODO: The latter restriction is clearly not completely right;
+'\"TODO: src_dir = '.' works fine with a build dir under it.
 
 The default behavior is for
 .B scons
-to duplicate the source files in the variant tree
-and then build the derived files within the variant tree.
-This guarantees correct builds regardless of
-whether intermediate source files are generated during the build,
-whether preprocessors or other scanners search for included files
+to physically duplicate the source files in the variant tree.
+Thus, a build performed in the variant tree is guaranteed to be identical
+to a build performed in the source tree even if
+intermediate source files are generated during the build,
+or preprocessors or other scanners search for included files
 relative to the source file,
-or whether individual compilers or other invoked tools are hard-coded
+or individual compilers or other invoked tools are hard-coded
 to put derived files in the same directory as source files.
 
 If possible on the platform,
@@ -6010,9 +6001,9 @@ Moreover, only the files needed for the build are duplicated;
 files and directories that are not used are not present in
 .IR variant_dir .
 
-Duplicating the source tree may be disabled by setting
+Duplicating the source tree may be disabled by setting the
 .I duplicate
-to 0.
+argument to 0.
 This will cause
 .B scons
 to invoke Builders using the path names of source files in
@@ -6034,14 +6025,14 @@ regardless of the value of
 .IR duplicate .
 This is how you tell
 .B scons
-which variant of a source tree to build.
-For example:
+which variant of a source tree to build:
 
 .ES
-VariantDir('build-variant1', 'src')
-SConscript('build-variant1/SConscript')
-VariantDir('build-variant2', 'src')
-SConscript('build-variant2/SConscript')
+# run src/SConscript in two variant directories
+VariantDir('build/variant1', 'src')
+SConscript('build/variant1/SConscript')
+VariantDir('build/variant2', 'src')
+SConscript('build/variant2/SConscript')
 .EE
 
 .IP
@@ -6050,6 +6041,40 @@ See also the
 function, described above,
 for another way to specify a variant directory
 in conjunction with calling a subsidiary SConscript file.
+
+Examples:
+
+.ES
+# use names in the build directory, not the source directory
+VariantDir('build', 'src', duplicate=0)
+Program('build/prog', 'build/source.c')
+.EE
+
+.ES
+# this variant builds both the source and docs
+VariantDir('build', '.', duplicate=0)
+SConscript(dirs=['build/src','build/doc'])
+.EE
+Or, equivalently:
+.ES
+SConscript(dirs=['build/src','build/doc'],
+        variant_dir = 'build', duplicate = 0)
+.EE
+
+.ES
+SConscript('build/SConscript', variant_dir = 'build', duplicate = 0)
+.EE
+Note that in the last example, the
+.I src_dir
+is not given, so the current directory is assumed, and the
+.B SConstruct
+and the
+.B SConscript
+are actually in the same directory, even though the
+.B SConscript
+is treated as if it were in the
+.B build
+subdirectory.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
