@@ -58,6 +58,11 @@ From Gary Oberbrunner:
 
   - Document use of the GetBuildFailures() function in the User's Guide.
 
+From Adam Simpkins:
+
+  - Add man page text clarifying the behavior of AddPreAction() and
+    AddPostAction() when called with multiple targets.
+
 From Alexey Zezukin:
 
   - Fix incorrectly swapped man page descriptions of the --warn= options

@@ -2506,6 +2506,11 @@ an Action object, or anything that
 can be converted into an Action object
 (see below).
 
+When multiple targets are supplied,
+the action may be called multiple times,
+once after each action that generates
+one or more targets in the list.
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI AddPreAction( target ", " action )
@@ -2521,6 +2526,36 @@ The specified action(s) may be
 an Action object, or anything that
 can be converted into an Action object
 (see below).
+
+When multiple targets are specified,
+the action(s) may be called multiple times,
+once before each action that generates
+one or more targets in the list.
+
+Note that if any of the targets are built in multiple steps,
+the action will be invoked just
+before the "final" action that specifically
+generates the specified target(s).
+For example, when building an executable program
+from a specified source
+.B .c
+file via an intermediate object file:
+
+.ES
+foo = Program('foo.c')
+AddPreAction(foo, 'pre_action')
+.EE
+
+The specified
+.B pre_action
+would be executed before
+.B scons
+calls the link command that actually
+generates the executable program binary
+.BR foo ,
+not before compiling the
+.B foo.c
+file into an object file.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
