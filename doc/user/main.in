@@ -138,10 +138,10 @@
 
     <edition>Revision &buildrevision; (&builddate;)</edition>
 
-    <pubdate>2004, 2005, 2006, 2007</pubdate>
+    <pubdate>2004, 2005, 2006, 2007, 2008</pubdate>
 
     <copyright>
-      <year>2004, 2005, 2006, 2007</year>
+      <year>2004, 2005, 2006, 2007, 2008</year>
       <holder>Steven Knight</holder>
     </copyright>
 
