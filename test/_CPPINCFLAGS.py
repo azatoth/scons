@@ -44,10 +44,11 @@ print env.subst('$_CPPINCFLAGS', target=d, source=f)
 print env.subst('$_CPPINCFLAGS', target=f, source=d)
 """)
 
+# Note: extra space at the end of each line in the following "expect" string.
 expect = """\
--Itmp
--Itmp
--Itmp
+ -Itmp 
+ -Itmp 
+ -Itmp 
 """
 
 test.run(arguments = '-Q -q', stdout = expect)

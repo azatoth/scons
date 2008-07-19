@@ -365,50 +365,50 @@ class SubstTestCase(unittest.TestCase):
         subst_cases = [
             "test $xxx",
                 "test ",
-                "test",
-                "test",
+                "test ",
+                "test ",
 
             "test $($xxx$)",
                 "test $($)",
-                "test",
-                "test",
+                "test ",
+                "test ",
 
             "test $( $xxx $)",
                 "test $(  $)",
-                "test",
-                "test",
+                "test   ",
+                "test ",
 
             "$AAA ${AAA}A $BBBB $BBB",
                 "a aA  b",
-                "a aA b",
-                "a aA b",
+                "a aA  b",
+                "a aA  b",
 
             "$RECURSE",
                "foo  bar",
-               "foo bar",
-               "foo bar",
+               "foo  bar",
+               "foo  bar",
 
             "$RRR",
                "foo  bar",
-               "foo bar",
-               "foo bar",
+               "foo  bar",
+               "foo  bar",
 
             # Verify what happens with no target or source nodes.
             "$TARGET $SOURCES",
                 " ",
-                "",
-                "",
+                " ",
+                " ",
 
             "$TARGETS $SOURCE",
                 " ",
-                "",
-                "",
+                " ",
+                " ",
 
             # Various tests refactored from ActionTests.py.
             "${LIST}",
                "This is $(  $) test",
-               "This is test",
-               "This is test",
+               "This is    test",
+               "This is  test",
 
             ["|", "$(", "$AAA", "|", "$BBB", "$)", "|", "$CCC", 1],
                 ["|", "$(", "a", "|", "b", "$)", "|", "c", "1"],

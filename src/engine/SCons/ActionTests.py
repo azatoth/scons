@@ -1195,7 +1195,7 @@ class CommandActionTestCase(unittest.TestCase):
         c = a.get_contents(target=[], source=[],
                            env=Environment(foo = 'FFF', bar = 'BBB',
                                            baz = CmdGen))
-        assert c == "| | FFF BBB 1", c
+        assert c == "|  | FFF BBB 1", repr(c)
 
         # Make sure that CommandActions use an Environment's
         # subst_target_source() method for substitution.
@@ -1364,7 +1364,7 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
                           ignore = 'foo', test=test)
         a = SCons.Action.CommandGeneratorAction(f)
         c = a.get_contents(target=[], source=[], env=env)
-        assert c == "guux FFF BBB test", c
+        assert c == "guux FFF  BBB test", repr(c)
 
 
 class FunctionActionTestCase(unittest.TestCase):
