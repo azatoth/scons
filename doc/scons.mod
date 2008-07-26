@@ -186,6 +186,7 @@
 <!ENTITY FindFile "<function>FindFile</function>">
 <!ENTITY FindInstalledFiles "<function>FindInstalledFiles</function>">
 <!ENTITY Finish "<function>Finish</function>">
+<!ENTITY Flatten "<function>Flatten</function>">
 <!ENTITY GenerateHelpText "<function>GenerateHelpText</function>">
 <!ENTITY GetBuildFailures "<function>GetBuildFailures</function>">
 <!ENTITY GetOption "<function>GetOption</function>">

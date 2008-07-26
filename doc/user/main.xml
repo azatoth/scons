@@ -68,6 +68,7 @@
     <!ENTITY libraries SYSTEM "libraries.xml">
     <!ENTITY make SYSTEM "make.xml">
     <!ENTITY mergeflags SYSTEM "mergeflags.xml">
+    <!ENTITY misc SYSTEM "misc.xml">
     <!ENTITY nodes SYSTEM "nodes.xml">
     <!ENTITY output SYSTEM "output.xml">
     <!ENTITY parseconfig SYSTEM "parseconfig.xml">
@@ -326,6 +327,11 @@
   </chapter>
 
   -->
+
+  <chapter id="chap-misc">
+    <title>Miscellaneous Functionality</title>
+    &misc;
+  </chapter>
 
   <chapter id="chap-troubleshooting">
     <title>Troubleshooting</title>

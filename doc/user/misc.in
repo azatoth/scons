@@ -1,0 +1,229 @@
+<!--
+
+  __COPYRIGHT__
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+  KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+-->
+
+  <para>
+
+  &SCons; supports a lot of additional functionality
+  that doesn't readily fit into the other chapters.
+
+  </para>
+
+  <section>
+  <title>Explicitly Terminating &SCons; While Reading &SConscript; Files:  the &Exit; Function</title>
+
+    <para>
+
+    &SCons; supports an &Exit; function
+    which can be used to terminate &SCons;
+    while reading the &SConscript; files,
+    usually because you've detected a condition
+    under which it doesn't make sense to proceed:
+
+    </para>
+
+    <scons_example name="Exit">
+      <file name="SConstruct" printme="1">
+      if ARGUMENTS.get('FUTURE'):
+          print "The FUTURE option is not supported yet!"
+          Exit(2)
+      env = Environment()
+      env.Program('hello.c')
+      </file>
+      <file name="hello.c">
+      hello.c
+      </file>
+    </scons_example>
+
+    <scons_output example="Exit">
+      <scons_output_command>scons -Q FUTURE=1</scons_output_command>
+      <scons_output_command>scons -Q</scons_output_command>
+    </scons_output>
+
+    <para>
+
+    The &Exit; function takes as an argument
+    the (numeric) exit status that you want &SCons; to exit with.
+    If you don't specify a value,
+    the default is to exit with <literal>0</literal>,
+    which indicates successful execution.
+
+    </para>
+
+    <para>
+
+    Note that the &Exit; function
+    is equivalent to calling the Python
+    <function>sys.exit</function> function
+    (which the it actually calls),
+    but because &Exit; is a &SCons; function,
+    you don't have to import the Python
+    <literal>sys</literal> module to use it.
+
+    </para>
+
+  </section>
+
+  <section>
+  <title>Handling Nested Lists:  the &Flatten; Function</title>
+
+    <para>
+
+    &SCons; supports a &Flatten; function
+    which takes an input Python sequence
+    (list or tuple)
+    and returns a flattened list
+    containing just the individual elements of
+    the sequence.
+    This can be handy when trying to examine
+    a list composed of the lists
+    returned by calls to various Builders.
+    For example, you might collect
+    object files built in different ways
+    into one call to the &Program; Builder
+    by just enclosing them in a list, as follows:
+
+    </para>
+
+    <scons_example name="Flatten1">
+      <file name="SConstruct" printme="1">
+      objects = [
+          Object('prog1.c'),
+          Object('prog2.c', CCFLAGS='-DFOO'),
+      ]
+      Program(objects)
+      </file>
+      <file name="prog1.c">
+      prog1.c
+      </file>
+      <file name="prog2.c">
+      prog2.c
+      </file>
+    </scons_example>
+
+    <para>
+
+    Because the Builder calls in &SCons;
+    flatten their input lists,
+    this works just fine to build the program:
+
+    </para>
+
+    <scons_output example="Flatten1">
+      <scons_output_command>scons -Q</scons_output_command>
+    </scons_output>
+
+    <para>
+
+    But if you were debugging your build
+    and wanted to print the absolute path
+    of each object file in the
+    <varname>objects</varname> list,
+    you might try the following simple approach,
+    trying to print each Node's
+    <literal>abspath</literal>
+    attribute:
+
+    </para>
+
+    <scons_example name="Flatten2">
+      <file name="SConstruct" printme="1">
+      objects = [
+          Object('prog1.c'),
+          Object('prog2.c', CCFLAGS='-DFOO'),
+      ]
+      Program(objects)
+
+      for object_file in objects:
+          print object_file.abspath
+      </file>
+      <file name="prog1.c">
+      prog1.c
+      </file>
+      <file name="prog2.c">
+      prog2.c
+      </file>
+    </scons_example>
+
+    <para>
+
+    This does not work as expected
+    because each call to <function>str</function>
+    is operating an embedded list returned by
+    each &Object; call,
+    not on the underlying Nodes within those lists:
+
+    </para>
+
+    <scons_output example="Flatten2">
+      <scons_output_command>scons -Q</scons_output_command>
+    </scons_output>
+
+    <para>
+
+    The solution is to use the &Flatten; function
+    so that you can pass each Node to
+    the <function>str</function> separately:
+
+    </para>
+
+    <scons_example name="Flatten3">
+      <file name="SConstruct" printme="1">
+      objects = [
+          Object('prog1.c'),
+          Object('prog2.c', CCFLAGS='-DFOO'),
+      ]
+      Program(objects)
+
+      for object_file in Flatten(objects):
+          print object_file.abspath
+      </file>
+      <file name="prog1.c">
+      prog1.c
+      </file>
+      <file name="prog2.c">
+      prog2.c
+      </file>
+    </scons_example>
+
+    <!--
+
+    TODO:  can't use this now because it displays the temporary path name
+
+    <scons_output example="Flatten3">
+      <scons_output_command>scons -Q</scons_output_command>
+    </scons_output>
+
+    -->
+
+    <screen>
+      % <userinput>scons -Q</userinput>
+      /home/me/project/prog1.o
+      /home/me/project/prog2.o
+      cc -o prog1.o -c prog1.c
+      cc -o prog2.o -c -DFOO prog2.c
+      cc -o prog1 prog1.o prog2.o
+    </screen>
+
+  </section>
