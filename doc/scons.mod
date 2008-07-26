@@ -199,6 +199,7 @@
 <!ENTITY ListOption "<function>ListOption</function>">
 <!ENTITY ListVariable "<function>ListVariable</function>">
 <!ENTITY Local "<function>Local</function>">
+<!ENTITY MergeFlags "<function>MergeFlags</function>">
 <!ENTITY Mkdir "<function>Mkdir</function>">
 <!ENTITY Module "<function>Module</function>">
 <!ENTITY Move "<function>Move</function>">
@@ -210,6 +211,7 @@
 <!ENTITY PackageOption "<function>PackageOption</function>">
 <!ENTITY PackageVariable "<function>PackageVariable</function>">
 <!ENTITY ParseConfig "<function>ParseConfig</function>">
+<!ENTITY ParseFlags "<function>ParseFlags</function>">
 <!ENTITY PathOption "<function>PathOption</function>">
 <!ENTITY PathOption_PathAccept "<function>PathOption.PathAccept</function>">
 <!ENTITY PathOption_PathExists "<function>PathOption.PathExists</function>">

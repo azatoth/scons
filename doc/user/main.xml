@@ -67,9 +67,11 @@
     <!ENTITY less-simple SYSTEM "less-simple.xml">
     <!ENTITY libraries SYSTEM "libraries.xml">
     <!ENTITY make SYSTEM "make.xml">
+    <!ENTITY mergeflags SYSTEM "mergeflags.xml">
     <!ENTITY nodes SYSTEM "nodes.xml">
     <!ENTITY output SYSTEM "output.xml">
     <!ENTITY parseconfig SYSTEM "parseconfig.xml">
+    <!ENTITY parseflags SYSTEM "parseflags.xml">
     <!ENTITY preface SYSTEM "preface.xml">
     <!ENTITY python SYSTEM "python.xml">
     <!ENTITY repositories SYSTEM "repositories.xml">
@@ -102,10 +104,6 @@
   XXX Flatten()
   XXX GetBuildPath()
   XXX GetLaunchDir()
-
-  XXX ParseConfig()
-  XXX MergeFlags()
-  XXX ParseFlags()
 
   XXX ParseDepends()
   XXX Platform()

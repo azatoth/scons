@@ -54,6 +54,11 @@ From Steven Knight:
 
      -  Explicitly document use of Node lists as input to Dependency().
 
+From Greg Noel:
+
+  - Document MergeFlags(), ParseConfig() and ParseFlags() in the
+    User's Guide.
+
 From Gary Oberbrunner:
 
   - Document use of the GetBuildFailures() function in the User's Guide.
