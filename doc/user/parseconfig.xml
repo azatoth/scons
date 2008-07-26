@@ -52,7 +52,7 @@
 
  &SCons; construction environments have a &ParseConfig; method
  that executes a <filename>*config</filename> utility
- (either <filenamepkg-config></filename> or a
+ (either <filename>pkg-config></filename> or a
  more specific utility)
  and configures the appropriate construction variables
  in the environment

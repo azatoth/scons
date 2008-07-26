@@ -93,7 +93,7 @@
  <para>
 
  Since the assumption is that the flags are used for the GCC toolchain,
- unrecognized flags are placed in &cv-link-CCFLAGS</varname>;
+ unrecognized flags are placed in &cv-link-CCFLAGS;
  so they will be used for both C and C++ compiles:
 
  </para>
