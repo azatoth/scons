@@ -193,14 +193,19 @@
     &environments;
   </chapter>
 
-  <!--
-
+  <!-- These next three sections should be combined into one chapter -->
+  <chapter id="chap-mergeflags">
+    <title>Merging Options into the Environment: the &MergeFlags; Function</title>
+    &mergeflags;
+  </chapter>
+  <chapter id="chap-parseflags">
+    <title>Separating Compile Arguments into their Variables:  the &ParseFlags; Function</title>
+    &parseflags;
+  </chapter>
   <chapter id="chap-parseconfig">
     <title>Finding Installed Library Information:  the &ParseConfig; Function</title>
     &parseconfig;
   </chapter>
-
-  -->
 
   <chapter id="chap-output">
     <title>Controlling Build Output</title>
