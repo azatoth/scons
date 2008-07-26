@@ -27,21 +27,26 @@
 
  &SCons; construction environments have a &MergeFlags; method
  that merges a dictionary of values into the construction environment.
- &MergeFlags; treats the values as a list of options
- and will not duplicate the option
+ &MergeFlags; treats each value in the dictionary
+ as a list of options such as one might pass to a command
+ (such as a compiler or linker).
+ &MergeFlags; will not duplicate an option
  if it already exists in the construction environment variable.
 
  </para>
 
  <para>
 
- &MergeFlags; tries to be intellegent about merging options.
- If the variable name ents in <varname>PATH</varname>,
- the leftmost occurence of the option is kept,
- otherwise, the rightmost occurence is kept.
- This corresponds to the semantics of most option lists:
- in a list of directory paths, the first occurence "wins"
- while in a list of command-line flags, the last occurence "wins."
+ &MergeFlags; tries to be intelligent about merging options.
+ When merging options to any variable
+ whose name ends in <varname>PATH</varname>,
+ it keeps the leftmost occurrence of the option,
+ because in typical lists of directory paths,
+ for example, the first occurrence "wins."
+ When merging options to any other variable name,
+ &MergeFlags; keeps the rightmost occurrence of the option,
+ because in a list of typical command-line options,
+ the last occurrence "wins."
 
  </para>
 
@@ -61,8 +66,14 @@
 
  <para>
 
- Note that since <varname>CCFLAGS</varname> is a <varname>CLVar</varname>,
- the options are automatically converted into a list.
+ Note that the default value for &cv-link-CCFLAGS;
+ <!--
+ [TODO: for when we make CLVar public]
+ is a <varname>CLVar</varname>,
+ -->
+ is an internal &SCons; object
+ which automatically converts
+ the options we specified as a string into a list.
 
  </para>
 
@@ -82,15 +93,21 @@
 
  <para>
 
- Note that <varname>CPPPATH</varname> is not a <varname>CLVar</varname>,
- it must be initialized as a list.
+ Note that the default value for &cv-link-CPPPATH;
+ <!--
+ [TODO: for when we make CLVar public]
+ is a Python list, not a <varname>CLVar</varname>,
+ -->
+ is a normal Python list,
+ so we must specify its values as a list
+ in the dictionary we pass to the &MergeFlags; function.
 
  </para>
 
  <para>
 
  If &MergeFlags; is passed anything other than a dictionary,
- it calls &ParseFlags; to convert it into a dictionary.
+ it calls the &ParseFlags; function to convert it into a dictionary.
 
  </para>
 
@@ -114,6 +131,7 @@
  In the combined example above,
  &ParseFlags; has sorted the options into their corresponding variables
  and returned a dictionary for &MergeFlags; to apply
- to the <varname>Environment</varname>.
+ to the construction variables
+ in the specified construction environment.
 
  </para>

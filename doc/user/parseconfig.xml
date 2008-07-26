@@ -27,21 +27,22 @@
 
  Configuring the right options to build programs to work with
  libraries--especially shared libraries--that are available
- for on POSIX systems can be very complicated.
+ on POSIX systems can be very complicated.
  To help this situation,
  various utilies with names that end in <filename>config</filename>
  return the command-line options for the GNU Compiler Collection (GCC)
  that are needed to use these libraries;
- the command-line options to use a library named <filename>lib</filename>
- would be found via a utility function named <filename>lib-config</filename>.
+ for example, the command-line options
+ to use a library named <filename>lib</filename>
+ would be found by calling a utility named <filename>lib-config</filename>.
 
  </para>
 
  <para>
 
  A more recent convention is that these options
- are available from the <filename>pkg-config</filename> program,
- which has the common framework, error handling, and the like,
+ are available from the generic <filename>pkg-config</filename> program,
+ which has common framework, error handling, and the like,
  so that all the package creator has to do is provide the set of strings
  for his particular package.
 
@@ -50,8 +51,10 @@
  <para>
 
  &SCons; construction environments have a &ParseConfig; method
- that executes a utility and configures
- the appropriate construction variables
+ that executes a <filename>*config</filename> utility
+ (either <filenamepkg-config></filename> or a
+ more specific utility)
+ and configures the appropriate construction variables
  in the environment
  based on the command-line options
  returned by the specified command.
@@ -91,7 +94,8 @@
 
  <para>
 
- Note that the options are merged with existing options using &MergeFlags;
+ Note that the options are merged with existing options using
+ the &MergeFlags; method,
  so that each option only occurs once in the construction variable:
 
  </para>

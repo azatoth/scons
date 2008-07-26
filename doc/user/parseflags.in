@@ -35,7 +35,7 @@
  <para>
 
  &SCons; construction environments have a &ParseFlags; method
- that takes a set of options
+ that takes a set of typical command-line options
  and distrbutes them into the appropriate construction variables.
  Historically, it was created to support the &ParseConfig; method,
  so it focuses on options used by the GNU Compiler Collection (GCC)
@@ -48,7 +48,7 @@
  &ParseFlags; returns a dictionary containing the options
  distributed into their respective construction variables.
  Normally, this dictionary would be passed to &MergeFlags;
- to merge the options into a construction environment,
+ to merge the options into a &consenv;,
  but the dictionary can be edited if desired to provide
  additional functionality.
  (Note that if the flags are not going to be edited,
@@ -92,9 +92,9 @@
 
  <para>
 
- Since the assumtion is that the flags are used for the GCC toolchain,
- unrecognized flags are place in <varname>CCFLAGS</varname> so they will
- be used for both C and C++ compiles:
+ Since the assumption is that the flags are used for the GCC toolchain,
+ unrecognized flags are placed in &cv-link-CCFLAGS</varname>;
+ so they will be used for both C and C++ compiles:
 
  </para>
 
