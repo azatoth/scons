@@ -56,8 +56,8 @@ From Steven Knight:
 
 From Greg Noel:
 
-  - Document MergeFlags(), ParseConfig() and ParseFlags() in the
-    User's Guide.
+  - Document MergeFlags(), ParseConfig(), ParseFlags() and SideEffect()
+    in the User's Guide.
 
 From Gary Oberbrunner:
 
