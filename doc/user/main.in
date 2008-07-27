@@ -96,8 +96,6 @@
 
   <!--
 
-  XXX EnsurePythonVersion()
-  XXX EnsureSConsVersion()
   XXX FindFile()
   XXX FindPathDirs()
   XXX GetBuildPath()
@@ -106,7 +104,6 @@
   XXX ParseDepends()
   XXX Platform()
   XXX SConsignFile()
-  XXX SideEffect()
   XXX Tools()
 
   XXX GetOption('duplicate')

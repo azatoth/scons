@@ -178,6 +178,8 @@
 <!ENTITY Entry "<function>Entry</function>">
 <!ENTITY EnumOption "<function>EnumOption</function>">
 <!ENTITY EnumVariable "<function>EnumVariable</function>">
+<!ENTITY EnsurePythonVersion "<function>EnsurePythonVersion</function>">
+<!ENTITY EnsureSConsVersion "<function>EnsureSConsVersion</function>">
 <!ENTITY Environment "<function>Environment</function>">
 <!ENTITY Execute "<function>Execute</function>">
 <!ENTITY Exit "<function>Exit</function>">

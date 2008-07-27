@@ -96,12 +96,8 @@
 
   <!--
 
-  XXX EnsurePythonVersion()
-  XXX EnsureSConsVersion()
-  XXX Exit()
   XXX FindFile()
   XXX FindPathDirs()
-  XXX Flatten()
   XXX GetBuildPath()
   XXX GetLaunchDir()
 

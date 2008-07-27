@@ -31,6 +31,152 @@
   </para>
 
   <section>
+  <title>Verifying the Python Version:  the &EnsurePythonVersion; Function</title>
+
+    <para>
+
+    Although the &SCons; code itself will run 
+    on any Python version 1.5.2 or later,
+    you are perfectly free to make use of
+    Python syntax and modules from more modern versions
+    (for example, Python 2.4 or 2.5)
+    when writing your &SConscript; files
+    or your own local modules.
+    If you do this, it's usually helpful to
+    configure &SCons; to exit gracefully with an error message
+    if it's being run with a version of Python
+    that simply won't work with your code.
+    This is especially true if you're going to use &SCons;
+    to build source code that you plan to distribute publicly,
+    where you can't be sure of the Python version
+    that an anonymous remote user might use
+    to try to build your software.
+
+    </para>
+
+    <para>
+
+    &SCons; provides an &EnsurePythonVersion; function for this.
+    You simply pass it the major and minor versions
+    numbers of the version of Python you require:
+
+    </para>
+
+    <!--
+
+    TODO:  Figure out how to generate the error message
+    regardless of executing Python version by faking out
+    the infrastructure in some way.
+
+    <scons_example name="EnsurePythonVersion">
+      <file name="SConstruct" printme="1">
+      EnsurePythonVersion(2, 5)
+      </file>
+    </scons_example>
+
+    -->
+
+    <programlisting>
+      EnsurePythonVersion(2, 5)
+    </programlisting>
+
+    <para>
+
+    And then &SCons; will exit with the following error
+    message when a user runs it with an unsupported
+    earlier version of Python:
+
+    </para>
+
+    <!--
+
+    TODO:  Figure out how to generate the error message
+    regardless of executing Python version by faking out
+    the infrastructure in some way.
+
+    <scons_output example="EnsurePythonVersion">
+      <scons_output_command>scons -Q</scons_output_command>
+    </scons_output>
+
+    -->
+
+    <screen>
+      % <userinput>scons -Q</userinput>
+      Python 2.5 or greater required, but you have Python 2.3.6
+    </screen>
+
+  </section>
+
+  <section>
+  <title>Verifying the SCons Version:  the &EnsureSConsVersion; Function</title>
+
+    <para>
+
+    You may, of course, write your &SConscript; files
+    to use features that were only added in
+    recent versions of &SCons;.
+    When you publicly distribute software that is built using &SCons;,
+    it's helpful to have &SCons;
+    verify the version being used and
+    exit gracefully with an error message
+    if the user's version of &SCons; won't work
+    with your &SConscript; files.
+    &SCons; provides an &EnsureSConsVersion; function
+    that verifies the version of &SCons;
+    in the same
+    the &EnsurePythonVersion; function
+    verifies the version of Python,
+    by passing in the major and minor versions
+    numbers of the version of SCons you require:
+
+    </para>
+
+    <!--
+
+    TODO:  Figure out how to generate the error message
+    regardless of executing SCons version by faking out
+    the infrastructure in some way.
+
+    <scons_example name="EnsureSConsVersion">
+      <file name="SConstruct" printme="1">
+      EnsureSConsVersion(1, 0)
+      </file>
+    </scons_example>
+
+    -->
+
+    <programlisting>
+      EnsureSConsVersion(1, 0)
+    </programlisting>
+
+    <para>
+
+    And then &SCons; will exit with the following error
+    message when a user runs it with an unsupported
+    earlier version of &SCons;:
+
+    </para>
+
+    <!--
+
+    TODO:  Figure out how to generate the error message
+    regardless of executing SCons version by faking out
+    the infrastructure in some way.
+
+    <scons_output example="EnsureSConsVersion">
+      <scons_output_command>scons -Q</scons_output_command>
+    </scons_output>
+
+    -->
+
+    <screen>
+      % <userinput>scons -Q</userinput>
+      SCons 1.0 or greater required, but you have SCons 0.98.5
+    </screen>
+
+  </section>
+
+  <section>
   <title>Explicitly Terminating &SCons; While Reading &SConscript; Files:  the &Exit; Function</title>
 
     <para>
