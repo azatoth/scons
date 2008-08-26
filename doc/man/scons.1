@@ -3545,6 +3545,33 @@ The exit value of the command
 or return value of the Python function
 will be returned.
 
+Note that
+.B scons
+will print an error message if the executed
+.I action
+fails--that is,
+exits with or returns a non-zero value.
+.B scons
+will
+.I not ,
+however,
+automatically terminate the build
+if the specified
+.I action
+fails.
+If you want the build to stop in response to a failed
+.BR Execute ()
+call,
+you must explicitly check for a non-zero return value:
+
+.ES
+Execute(Copy('file.out', 'file.in'))
+
+if Execute("mkdir sub/dir/ectory"):
+    # The mkdir failed, don't try to build.
+    Exit(1)
+.EE
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI Exit([ value ])
@@ -4211,11 +4238,25 @@ The specified dependency file(s)
 will be ignored when deciding if
 the target file(s) need to be rebuilt.
 
+You can also use
+.BR Ignore()
+to remove a target from the default build.
+In order to do this you must specify the directory the target will
+be built in as the target, and the file you want to skip building
+as the dependency.
+
+Note that this will only remove the dependencies listed from 
+the files built by default.  It will still be built if that 
+dependency is needed by another object being built. 
+See the third and forth examples below.
+
 Examples:
 
 .ES
 env.Ignore('foo', 'foo.c')
 env.Ignore('bar', ['bar1.h', 'bar2.h'])
+env.Ignore('.','foobar.obj')
+env.Ignore('bar','bar/foobar.obj')
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -5085,7 +5126,8 @@ Examples:
 .ES
 SConscript('SConscript')      # run SConscript in the current directory
 SConscript('src/SConscript')  # run SConscript in the src directory
-SConscript(['src/SConscript', 'sub/SConscript'])
+SConscript(['src/SConscript', 'doc/SConscript'])
+config = SConscript('MyConfig.py')
 .EE
 
 The second way you can call
@@ -5110,9 +5152,8 @@ as the first three examples above:
 .ES
 SConscript(dirs='.')      # run SConscript in the current directory
 SConscript(dirs='src')    # run SConscript in the src directory
-SConscript(dirs=['src', 'sub'])
-SConscript(dirs=['sub1', 'sub2'])
-SConscript(dirs=['sub3', 'sub4'], name='MySConscript')
+SConscript(dirs=['src', 'doc'])
+SConscript(dirs=['sub1', 'sub2'], name='MySConscript')
 .EE
 
 The optional
@@ -5135,7 +5176,7 @@ Examples:
 .ES
 foo = SConscript('sub/SConscript', exports='env')
 SConscript('dir/SConscript', exports=['env', 'variable'])
-SConscript(dirs='dir', exports='env variable')
+SConscript(dirs='subdir', exports='env variable')
 SConscript(dirs=['one', 'two', 'three'], exports='shared_info')
 .EE
 
@@ -5163,11 +5204,11 @@ See the description of the
 function below for additional details and restrictions.
 
 If
-'\" .IR variant_dir "is present, but"
-'\" .IR src_dir "is not,"
-.IR variant_dir "is present,"
+'\" .IR variant_dir " is present, but"
+'\" .IR src_dir " is not,"
+.IR variant_dir " is present,"
 the source directory is relative to the called
-.BR SConscript file.
+.BR SConscript " file."
 .ES
 SConscript('src/SConscript', variant_dir = 'build')
 .EE
@@ -5189,8 +5230,8 @@ SConscript('build/SConscript')
 .EE
 
 '\" If
-'\" .IR variant_dir and
-'\" .IR src_dir "are both present,"
+'\" .IR variant_dir " and"
+'\" .IR src_dir " are both present,"
 '\" xxxxx everything is in a state of confusion.
 '\" .ES
 '\" SConscript(dirs = 'src', variant_dir = 'build', src_dir = '.')
@@ -5211,13 +5252,13 @@ SConscript('build/SConscript')
 '\" and what about this alternative?
 '\"TODO??? SConscript('build/SConscript', src_dir='src')
 
-Composite examples:
+Here are some composite examples:
 
 .ES
 # collect the configuration information and use it to build src and doc
-shared_info = SConscript('SConfigure')
-SConscript('src/SConscript', export='shared_info')
-SConscript('doc/SConscript', export='shared_info')
+shared_info = SConscript('MyConfig.py')
+SConscript('src/SConscript', exports='shared_info')
+SConscript('doc/SConscript', exports='shared_info')
 .EE
 
 .ES
@@ -5231,9 +5272,9 @@ SConscript('SConscript', variant_dir='prod', duplicate=0)
 # build debugging and production versions.  SConscript
 # is passed flags to use.
 opts = { 'CPPDEFINES' : ['DEBUG'], 'CCFLAGS' : '-pgdb' }
-SConscript('SConscript', variant_dir='debug', duplicate=0, export=opts)
+SConscript('SConscript', variant_dir='debug', duplicate=0, exports=opts)
 opts = { 'CPPDEFINES' : ['NODEBUG'], 'CCFLAGS' : '-O' }
-SConscript('SConscript', variant_dir='prod', duplicate=0, export=opts)
+SConscript('SConscript', variant_dir='prod', duplicate=0, exports=opts)
 .EE
 
 .ES

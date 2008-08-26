@@ -20,6 +20,21 @@ RELEASE 1.0.0 - XXX
 
     - Document the ParseDepends() function in the User's Guide.
 
+  From khomenko:
+
+    - Create a separate description and long_description for RPM packages.
+
+  From Steven Knight:
+
+    - Document the GetLaunchDir() function in the User's Guide.
+
+    - Have the env.Execute() method print an error message if the
+      executed command fails.
+
+    - Add a script for creating a standard SCons development system on
+      Ubuntu Hardy.  Rewrite subsidiary scripts for install Python and
+      SCons versions in Python (from shell).
+
   From Greg Noel:
 
     - Handle yacc/bison on newer Mac OS X versions creating file.hpp,
@@ -34,6 +49,8 @@ RELEASE 1.0.0 - XXX
     - Fix documentation of SConf.CheckLibWithHeader and other SConf methods.
 
     - Update documentation of SConscript(variant_dir) usage.
+
+    - Fix SWIG tests for (some versions of) Mac OS X.
 
   From Jonas Olsson:
 
