@@ -8,7 +8,7 @@
 
 
 
-RELEASE 1.0.0 - XXX
+RELEASE 1.0.0.d20080826 - Tue, 26 Aug 2008 09:12:40 -0700
 
   From Jared Grubb:
 
