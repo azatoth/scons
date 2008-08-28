@@ -724,12 +724,12 @@ def generate(env):
         if version_num == 8.0:
             suite = SCons.Tool.msvs.get_default_visualstudio8_suite(env)
 
-	    from MSVCCommon import varbat_variables
-	    vars = varbat_variables(version_num, 'std')
+        from MSVCCommon import varbat_variables
+        vars = varbat_variables(version_num, 'std')
 
         # since other tools can set these, we just make sure that the
         # relevant stuff from MSVS is in there somewhere.
-	    for k,v in vars.items():
+        for k,v in vars.items():
             env.PrependENVPath(k, v)
     except (SCons.Util.RegError, SCons.Errors.InternalError):
         pass
