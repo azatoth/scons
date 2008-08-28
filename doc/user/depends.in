@@ -1234,6 +1234,36 @@
        cc -o hello hello.o
     </screen>
 
+    <para>
+
+    Note that the dependency
+    (the second argument to &Depends;)
+    may also be a list of Node objects
+    (for example, as returned by a call to a Builder):
+
+    </para>
+
+    <programlisting>
+       hello = Program('hello.c')
+       goodbye = Program('goodbye.c')
+       Depends(hello, goodbye)
+    </programlisting>
+
+    <para>
+
+    in which case the dependency or dependencies
+    will be built before the target(s):
+
+    </para>
+
+    <screen>
+       % <userinput>scons -Q hello</userinput>
+       cc -c goodbye.c -o goodbye.o
+       cc -o goodbye goodbye.o
+       cc -c hello.c -o hello.o
+       cc -o hello hello.o
+    </screen>
+
   </section>
 
   <section>

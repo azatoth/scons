@@ -209,15 +209,19 @@
   </section>
 
   <section>
-  <title>Making a list of files with Glob()</title>
+  <title>Making a list of files with &Glob;</title>
 
     <para>
 
-    You can also use the Glob() function to find all files matching a
-    certain template, using standard the shell pattern matching
-    characters *, ?, and [abc] to match any of a, b, or c.  [!abc] is
-    also supported, to match any character <emphasis>except</emphasis>
-    a, b, or c.  This makes many multi-source-file builds quite easy:
+    You can also use the &Glob; function to find all files matching a
+    certain template, using the standard shell pattern matching
+    characters <literal>*</literal>, <literal>?</literal>
+    and <literal>[abc]</literal> to match any of
+    <literal>a</literal>, <literal>b</literal> or <literal>c</literal>.
+    <literal>[!abc]</literal> is also supported,
+    to match any character <emphasis>except</emphasis>
+    <literal>a</literal>, <literal>b</literal> or <literal>c</literal>.
+    This makes many multi-source-file builds quite easy:
 
     </para>
 
@@ -227,8 +231,8 @@
 
     <para>
 
-    The SCons man page has more details on using Glob() with Variant
-    dirs and Repositories and returning strings rather than Nodes.
+    The SCons man page has more details on using &Glob; with Variant
+    directories and Repositories, and returning strings rather than Nodes.
 
     </para>
 
