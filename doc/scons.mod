@@ -191,6 +191,7 @@
 <!ENTITY Flatten "<function>Flatten</function>">
 <!ENTITY GenerateHelpText "<function>GenerateHelpText</function>">
 <!ENTITY GetBuildFailures "<function>GetBuildFailures</function>">
+<!ENTITY GetLaunchDir "<function>GetLaunchDir</function>">
 <!ENTITY GetOption "<function>GetOption</function>">
 <!ENTITY Glob "<function>Glob</function>">
 <!ENTITY Help "<function>Help</function>">
@@ -214,6 +215,7 @@
 <!ENTITY PackageOption "<function>PackageOption</function>">
 <!ENTITY PackageVariable "<function>PackageVariable</function>">
 <!ENTITY ParseConfig "<function>ParseConfig</function>">
+<!ENTITY ParseDepends "<function>ParseDepends</function>">
 <!ENTITY ParseFlags "<function>ParseFlags</function>">
 <!ENTITY PathOption "<function>PathOption</function>">
 <!ENTITY PathOption_PathAccept "<function>PathOption.PathAccept</function>">
