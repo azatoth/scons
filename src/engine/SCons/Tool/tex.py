@@ -122,7 +122,9 @@ def InternalLaTeXAuxAction(XXXLaTeXAction, target = None, source= None, env=None
         tocContents = open(tocfilename, "rb").read()
 
     # Run LaTeX once to generate a new aux file and log file.
-    XXXLaTeXAction(target, source, env)
+    result = XXXLaTeXAction(target, source, env)
+    if result != 0:
+        return result
 
     # Decide if various things need to be run, or run again.  We check
     # for the existence of files before opening them--even ones like the
@@ -143,7 +145,9 @@ def InternalLaTeXAuxAction(XXXLaTeXAction, target = None, source= None, env=None
             content = open(target_aux, "rb").read()
             if string.find(content, "bibdata") != -1:
                 bibfile = env.fs.File(targetbase)
-                BibTeXAction(bibfile, bibfile, env)
+                result = BibTeXAction(bibfile, bibfile, env)
+                if result != 0:
+                    return result
                 break
 
     must_rerun_latex = 0
@@ -159,11 +163,15 @@ def InternalLaTeXAuxAction(XXXLaTeXAction, target = None, source= None, env=None
     if os.path.exists(idxfilename) and idxContents != open(idxfilename, "rb").read():
         # We must run makeindex
         idxfile = env.fs.File(targetbase)
-        MakeIndexAction(idxfile, idxfile, env)
+        result = MakeIndexAction(idxfile, idxfile, env)
+        if result != 0:
+            return result
         must_rerun_latex = 1
 
     if must_rerun_latex == 1:
-        XXXLaTeXAction(target, source, env)
+        result = XXXLaTeXAction(target, source, env)
+        if result != 0:
+            return result
 
     # Now decide if latex needs to be run yet again to resolve warnings.
     logfilename = targetbase + '.log'
@@ -175,7 +183,9 @@ def InternalLaTeXAuxAction(XXXLaTeXAction, target = None, source= None, env=None
            not rerun_citations_re.search(content) and \
            not undefined_references_re.search(content):
             break
-        XXXLaTeXAction(target, source, env)
+        result = XXXLaTeXAction(target, source, env)
+        if result != 0:
+            return result
 
     env['ENV']['TEXINPUTS'] = texinputs_save
     env['ENV']['BIBINPUTS'] = bibinputs_save
@@ -185,10 +195,11 @@ def InternalLaTeXAuxAction(XXXLaTeXAction, target = None, source= None, env=None
     # later on Mac OSX so leave it,
     # env['ENV']['TEXPICTS']  = texpicts_save
 
-    return 0
+    return result
 
 def LaTeXAuxAction(target = None, source= None, env=None):
-    InternalLaTeXAuxAction( LaTeXAction, target, source, env )
+    result = InternalLaTeXAuxAction( LaTeXAction, target, source, env )
+    return result
 
 LaTeX_re = re.compile("\\\\document(style|class)")
 
@@ -205,10 +216,23 @@ def TeXLaTeXFunction(target = None, source= None, env=None):
     decide the "flavor" of the source and then executes the appropriate
     program."""
     if is_LaTeX(source):
-        LaTeXAuxAction(target,source,env)
+        result = LaTeXAuxAction(target,source,env)
     else:
-        TeXAction(target,source,env)
-    return 0
+        result = TeXAction(target,source,env)
+    return result
+
+def TeXLaTeXStrFunction(target = None, source= None, env=None):
+    """A strfunction for TeX and LaTeX that scans the source file to
+    decide the "flavor" of the source and then returns the appropriate
+    command string."""
+    if env.GetOption("no_exec"):
+        if is_LaTeX(source):
+            result = env.subst('$LATEXCOM',0,target,source)+" ..."
+        else:
+            result = env.subst("$TEXCOM",0,target,source)+" ..."
+    else:
+        result = ''
+    return result
 
 def tex_emitter(target, source, env):
     base = SCons.Util.splitext(str(source[0]))[0]
@@ -275,7 +299,8 @@ def generate(env):
 
     global TeXLaTeXAction
     if TeXLaTeXAction is None:
-        TeXLaTeXAction = SCons.Action.Action(TeXLaTeXFunction, strfunction=None)
+        TeXLaTeXAction = SCons.Action.Action(TeXLaTeXFunction,
+                              strfunction=TeXLaTeXStrFunction)
 
     import dvi
     dvi.generate(env)
@@ -285,12 +310,12 @@ def generate(env):
     bld.add_emitter('.tex', tex_emitter)
 
     env['TEX']      = 'tex'
-    env['TEXFLAGS'] = SCons.Util.CLVar('')
+    env['TEXFLAGS'] = SCons.Util.CLVar('-interaction=nonstopmode')
     env['TEXCOM']   = 'cd ${TARGET.dir} && $TEX $TEXFLAGS ${SOURCE.file}'
 
     # Duplicate from latex.py.  If latex.py goes away, then this is still OK.
     env['LATEX']        = 'latex'
-    env['LATEXFLAGS']   = SCons.Util.CLVar('')
+    env['LATEXFLAGS']   = SCons.Util.CLVar('-interaction=nonstopmode')
     env['LATEXCOM']     = 'cd ${TARGET.dir} && $LATEX $LATEXFLAGS ${SOURCE.file}'
     env['LATEXRETRIES'] = 3
 
