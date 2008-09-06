@@ -8,7 +8,7 @@
 
 
 
-RELEASE 1.0.1 - Sat, 06 Sep 2008 04:03:22 -0700
+RELEASE 1.0.1 - Sat, 06 Sep 2008 07:29:34 -0700
 
   From Greg Noel:
 
@@ -17,6 +17,9 @@ RELEASE 1.0.1 - Sat, 06 Sep 2008 04:03:22 -0700
     - Fix the FindFile() documentation in the man page.
 
     - Fix formatting errors in the Package() description in the man page.
+
+    - Escape parentheses that appear within variable names when spawning
+      command lines using os.system().
 
 
 
