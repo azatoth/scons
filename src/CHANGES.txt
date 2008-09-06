@@ -8,6 +8,18 @@
 
 
 
+RELEASE 1.0.1 - Sat, 06 Sep 2008 04:03:22 -0700
+
+  From Greg Noel:
+
+    - Add a FindFile() section to the User's Guide.
+
+    - Fix the FindFile() documentation in the man page.
+
+    - Fix formatting errors in the Package() description in the man page.
+
+
+
 RELEASE 1.0.0.d20080826 - Tue, 26 Aug 2008 09:12:40 -0700
 
   From Jared Grubb:
