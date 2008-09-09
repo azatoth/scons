@@ -1411,7 +1411,7 @@ class Dir(Base):
 
     def get_all_rdirs(self):
         try:
-            return self._memo['get_all_rdirs']
+            return list(self._memo['get_all_rdirs'])
         except KeyError:
             pass
 
@@ -1427,7 +1427,7 @@ class Dir(Base):
                 fname = dir.name + os.sep + fname
             dir = dir.up()
 
-        self._memo['get_all_rdirs'] = result
+        self._memo['get_all_rdirs'] = list(result)
 
         return result
 
@@ -1593,9 +1593,24 @@ class Dir(Base):
         return None
 
     def get_contents(self):
-        """Return aggregate contents of all our children."""
-        contents = map(lambda n: n.get_contents(), self.children())
-        return  string.join(contents, '')
+        """Return content signatures and names of all our children
+        separated by new-lines. Ensure that the nodes are sorted."""
+        contents = []
+        name_cmp = lambda a, b: cmp(a.name, b.name)
+        sorted_children = self.children()[:]
+        sorted_children.sort(name_cmp)        
+        for node in sorted_children:
+            contents.append('%s %s\n' % (node.get_csig(), node.name))
+        return string.join(contents, '')
+
+    def get_csig(self):
+        """Compute the content signature for Directory nodes. In
+        general, this is not needed and the content signature is not
+        stored in the DirNodeInfo. However, if get_contents on a Dir
+        node is called which has a child directory, the child
+        directory should return the hash of its contents."""
+        contents = self.get_contents()
+        return SCons.Util.MD5signature(contents)
 
     def do_duplicate(self, src):
         pass
@@ -1850,6 +1865,7 @@ class Dir(Base):
             if strings:
                 r = map(lambda x, d=str(dir): os.path.join(d, x), r)
             result.extend(r)
+        result.sort(lambda a, b: cmp(str(a), str(b)))
         return result
 
     def _glob1(self, pattern, ondisk=True, source=False, strings=False):
@@ -2978,3 +2994,46 @@ class FileFinder:
         return result
 
 find_file = FileFinder().find_file
+
+
+def invalidate_node_memos(targets):
+    """
+    Invalidate the memoized values of all Nodes (files or directories)
+    that are associated with the given entries. Has been added to
+    clear the cache of nodes affected by a direct execution of an
+    action (e.g.  Delete/Copy/Chmod). Existing Node caches become
+    inconsistent if the action is run through Execute().  The argument
+    `targets` can be a single Node object or filename, or a sequence
+    of Nodes/filenames.
+    """
+    from traceback import extract_stack
+
+    # First check if the cache really needs to be flushed. Only
+    # actions run in the SConscript with Execute() seem to be
+    # affected. XXX The way to check if Execute() is in the stacktrace
+    # is a very dirty hack and should be replaced by a more sensible
+    # solution.
+    must_invalidate = 0
+    tb = extract_stack()
+    for f in tb:
+        if f[2] == 'Execute' and f[0][-14:] == 'Environment.py':
+            must_invalidate = 1
+    if not must_invalidate:
+        return
+
+    if not SCons.Util.is_List(targets):
+        targets = [targets]
+    
+    for entry in targets:
+        # If the target is a Node object, clear the cache. If it is a
+        # filename, look up potentially existing Node object first.
+        try:
+            entry.clear_memoized_values()
+        except AttributeError:
+            # Not a Node object, try to look up Node by filename.  XXX
+            # This creates Node objects even for those filenames which
+            # do not correspond to an existing Node object.
+            node = get_default_fs().Entry(entry)
+            if node:
+                node.clear_memoized_values()                        
+
