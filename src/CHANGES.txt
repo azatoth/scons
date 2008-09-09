@@ -25,6 +25,18 @@ RELEASE 1.0.1 - Sat, 06 Sep 2008 07:29:34 -0700
 
 RELEASE 1.0.0.d20080826 - Tue, 26 Aug 2008 09:12:40 -0700
 
+  From Gary Oberbrunner:
+
+    - Make Glob() sort the returned list of Files or Nodes
+      to prevent spurious rebuilds.
+
+  From Ian P. Cardenas:
+
+    - Fix Glob() polluting LIBPATH by returning copy of list
+
+
+RELEASE 1.0.0 - XXX
+
   From Jared Grubb:
 
     - Clear the Node state when turning a generic Entry into a Dir.

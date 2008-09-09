@@ -616,28 +616,32 @@ sys.exit(0)
 import sys
 sys.exit(1)
 """)
+        test.write('echo.py', """\
+import os, sys
+sys.stdout.write(os.environ['ECHO'] + '\\n')
+sys.exit(0)
+""")
 
         save_stderr = sys.stderr
 
         python = '"' + sys.executable + '"'
 
         try:
+            sys.stderr = StringIO.StringIO()
             cmd = '%s %s' % (python, test.workpath('stdout.py'))
             output = env.backtick(cmd)
-
+            errout = sys.stderr.getvalue()
             assert output == 'this came from stdout.py\n', output
+            assert errout == '', errout
 
             sys.stderr = StringIO.StringIO()
-
             cmd = '%s %s' % (python, test.workpath('stderr.py'))
             output = env.backtick(cmd)
             errout = sys.stderr.getvalue()
-
             assert output == '', output
             assert errout == 'this came from stderr.py\n', errout
 
             sys.stderr = StringIO.StringIO()
-
             cmd = '%s %s' % (python, test.workpath('fail.py'))
             try:
                 env.backtick(cmd)
@@ -645,6 +649,15 @@ sys.exit(1)
                 assert str(e) == "'%s' exited 1" % cmd, str(e)
             else:
                 self.fail("did not catch expected OSError")
+
+            sys.stderr = StringIO.StringIO()
+            cmd = '%s %s' % (python, test.workpath('echo.py'))
+            env['ENV'] = os.environ.copy()
+            env['ENV']['ECHO'] = 'this came from ECHO'
+            output = env.backtick(cmd)
+            errout = sys.stderr.getvalue()
+            assert output == 'this came from ECHO\n', output
+            assert errout == '', errout
 
         finally:
             sys.stderr = save_stderr
@@ -903,7 +916,28 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
         assert called_it['target'] == None, called_it
         assert called_it['source'] == None, called_it
 
+    def test_BuilderWrapper_attributes(self):
+        """Test getting and setting of BuilderWrapper attributes
+        """
+        b1 = Builder()
+        b2 = Builder()
+        e1 = Environment()
+        e2 = Environment()
 
+        e1.Replace(BUILDERS = {'b' : b1})
+        bw = e1.b
+
+        assert bw.env is e1
+        bw.env = e2
+        assert bw.env is e2
+
+        assert bw.builder is b1
+        bw.builder = b2
+        assert bw.builder is b2
+
+        self.assertRaises(AttributeError, getattr, bw, 'foobar')
+        bw.foobar = 42
+        assert bw.foobar is 42
 
     # This unit test is currently disabled because we don't think the
     # underlying method it tests (Environment.BuilderWrapper.execute())

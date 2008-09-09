@@ -1689,6 +1689,33 @@ class DirTestCase(_tempdirTestCase):
                         os.path.join('ddd', 'f2'),
                         os.path.join('ddd', 'f3')], kids
 
+    def test_get_contents(self):
+        """Test getting the contents for a directory.
+        """
+        test = self.test
+
+        test.subdir('d')
+        test.write(['d', 'g'], "67890\n")
+        test.write(['d', 'f'], "12345\n")
+        test.subdir(['d','sub'])
+        test.write(['d', 'sub','h'], "abcdef\n")
+        test.subdir(['d','empty'])
+
+        d = self.fs.Dir('d')
+        g = self.fs.File(os.path.join('d', 'g'))
+        f = self.fs.File(os.path.join('d', 'f'))
+        h = self.fs.File(os.path.join('d', 'sub', 'h'))
+        e = self.fs.Dir(os.path.join('d', 'empty'))
+        s = self.fs.Dir(os.path.join('d', 'sub'))
+
+        files = d.get_contents().split('\n')
+
+        assert e.get_contents() == '', e.get_contents()
+        assert e.get_csig()+" empty" == files[0], files
+        assert f.get_csig()+" f" == files[1], files
+        assert g.get_csig()+" g" == files[2], files
+        assert s.get_csig()+" sub" == files[3], files
+
     def test_implicit_re_scans(self):
         """Test that adding entries causes a directory to be re-scanned
         """
@@ -2135,17 +2162,17 @@ class GlobTestCase(_tempdirTestCase):
         self.hhh = fs.File('hhh')
         self.iii = fs.File('iii')
         self.subdir1 = fs.Dir('subdir1')
+        self.subdir1_lll = self.subdir1.File('lll')
         self.subdir1_jjj = self.subdir1.File('jjj')
         self.subdir1_kkk = self.subdir1.File('kkk')
-        self.subdir1_lll = self.subdir1.File('lll')
         self.subdir2 = fs.Dir('subdir2')
-        self.subdir2_jjj = self.subdir2.File('jjj')
-        self.subdir2_kkk = self.subdir2.File('kkk')
         self.subdir2_lll = self.subdir2.File('lll')
+        self.subdir2_kkk = self.subdir2.File('kkk')
+        self.subdir2_jjj = self.subdir2.File('jjj')
         self.sub = fs.Dir('sub')
         self.sub_dir3 = self.sub.Dir('dir3')
-        self.sub_dir3_jjj = self.sub_dir3.File('jjj')
         self.sub_dir3_kkk = self.sub_dir3.File('kkk')
+        self.sub_dir3_jjj = self.sub_dir3.File('jjj')
         self.sub_dir3_lll = self.sub_dir3.File('lll')
 
 
@@ -2369,6 +2396,13 @@ class GlobTestCase(_tempdirTestCase):
 
         self.do_cases(cases)
 
+    def test_sort(self):
+        """Test whether globbing sorts"""
+        join = os.path.join
+        # At least sometimes this should return out-of-order items
+        # if Glob doesn't sort.
+        g = self.fs.Glob('disk-sub/*', strings=True)
+        assert g == ['disk-sub/disk-ddd', 'disk-sub/disk-eee', 'disk-sub/disk-fff'], str(g) + " is not sorted, but should be!"
 
 
 class RepositoryTestCase(_tempdirTestCase):
