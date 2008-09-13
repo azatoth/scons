@@ -1,4 +1,5 @@
 import os
+from os.path import exists as pexists
 import subprocess
 import re
 
@@ -219,7 +220,30 @@ def FindMSVSBatFile(version=None, flavor=None, arch="x86"):
     if not arch in ["x86"]:
         raise ValueError("Arch different than x86 not supported yet.")
 
-    return = find_bat(version, flavor)
+    return find_bat(version, flavor)
+
+def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
+    """Returns a dict of var/value pairs by running the batch file
+    and looking at the resulting environment variables.
+
+    Argument
+    --------
+        path: str
+            full path of the .bat file to set up VS environment (vsvarsall.bat,
+            etc...)
+        vars: seq
+            list of variables to look for
+        args: seq or None
+            list of arguments to pass to the .bat file through the cmd.exe
+            shell"""
+    if not pexists(path):
+        raise ValueError("File %s not found !" % path)
+
+    # XXX: fix args handling here. Do not use a string but a sequence to avoid
+    # escaping problems, and letting Popen taking care of it for us.
+    output = get_output(path, args, vars)
+
+    return parse_output(output, vars)
 
 def generate(env):
     from logging import basicConfig, DEBUG
