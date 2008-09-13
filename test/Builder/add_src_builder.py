@@ -1,9 +1,4 @@
-"""SCons
-
-The main package for the SCons software construction utility.
-
-"""
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -29,15 +24,42 @@ The main package for the SCons software construction utility.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-__version__ = "__VERSION__"
+"""
+Verify that we can call add_src_builder() to add a builder to
+another on the fly.
 
-__build__ = "__BUILD__"
+This used to trigger infinite recursion (issue 1681) because the
+same src_builder list object was being re-used between all Builder
+objects that weren't initialized with a separate src_builder.
+"""
 
-__buildsys__ = "__BUILDSYS__"
+import TestSCons
 
-__date__ = "__DATE__"
+test = TestSCons.TestSCons()
 
-__developer__ = "__DEVELOPER__"
+test.write('SConstruct', """\
+copy_out = Builder(action = Copy('$TARGET', '$SOURCE'),
+                                 suffix = '.out',
+                                 src_suffix = '.mid')
 
-# make sure compatibility is always in place
-import SCons.compat
+copy_mid = Builder(action = Copy('$TARGET', '$SOURCE'),
+                                 suffix = '.mid', \
+                                 src_suffix = '.in')
+
+env = Environment()
+env['BUILDERS']['CopyOut'] = copy_out
+env['BUILDERS']['CopyMid'] = copy_mid
+
+copy_out.add_src_builder(copy_mid)
+
+env.CopyOut('file1.out', 'file1.in')
+""")
+
+test.write('file1.in', "file1.in\n")
+
+test.run()
+
+test.must_match('file1.mid', "file1.in\n")
+test.must_match('file1.out', "file1.in\n")
+
+test.pass_test()

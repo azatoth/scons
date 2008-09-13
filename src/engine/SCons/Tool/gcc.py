@@ -33,11 +33,12 @@ selection method.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Util
-
 import cc
 import os
 import re
+import subprocess
+
+import SCons.Util
 
 compilers = ['gcc', 'cc']
 
@@ -52,7 +53,16 @@ def generate(env):
         env['SHCCFLAGS'] = SCons.Util.CLVar('$CCFLAGS -fPIC')
     # determine compiler version
     if env['CC']:
-        line = os.popen(env['CC'] + ' --version').readline()
+        pipe = SCons.Action._subproc(env, [env['CC'], '--version'],
+                                     stderr = subprocess.PIPE,
+                                     stdout = subprocess.PIPE)
+        # -dumpversion was added in GCC 3.0.  As long as we're supporting
+        # GCC versions older than that, we should use --version and a
+        # regular expression.
+        #line = pipe.stdout.read().strip()
+        #if line:
+        #    env['CCVERSION'] = line
+        line = pipe.stdout.readline()
         match = re.search(r'[0-9]+(\.[0-9]+)+', line)
         if match:
             env['CCVERSION'] = match.group(0)

@@ -31,11 +31,10 @@ stop, and wait on jobs.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import os
 import signal
 
+import SCons.Errors
 
 # The default stack size (in kilobytes) of the threads used to execute
 # jobs in parallel.
@@ -45,6 +44,7 @@ import signal
 # parallelized the build. For example, the default stack size on linux
 # is 8 MBytes.
 
+explicit_stack_size = None
 default_stack_size = 256
 
 interrupt_msg = 'Build interrupted.'
@@ -82,9 +82,8 @@ class Jobs:
 
         self.job = None
         if num > 1:
-            try:
-                stack_size = SCons.Job.stack_size
-            except AttributeError:
+            stack_size = explicit_stack_size
+            if stack_size is None:
                 stack_size = default_stack_size
                 
             try:
