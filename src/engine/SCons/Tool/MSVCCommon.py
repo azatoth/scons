@@ -198,6 +198,29 @@ def varbat_variables(version, flavor = 'std', arch = 'x86'):
 
     return ret
 
+
+def FindMSVSBatFile(version=None, flavor=None, arch="x86"):
+    """Returns the location of the MSVS bat file used to set up
+    Visual Studio.  Returns None if it is not found.
+
+    arguments:
+        - version: str
+            the supported version are 7.0, 7.1 (VS 2003), 8.0 (VS 2005) and 9.0
+            (VS 2008)
+        - flavor: str
+            flavor of VS: "std" and "express" are supported.
+        - arch: str
+            only "x86" is supported.
+
+    The bat file is search in the following order:
+        - first look into the registry
+        - if not found, then look into the environment variable
+          VS*COMMNTOOLS"""
+    if not arch in ["x86"]:
+        raise ValueError("Arch different than x86 not supported yet.")
+
+    return = find_bat(version, flavor)
+
 def generate(env):
     from logging import basicConfig, DEBUG
     basicConfig(level = DEBUG)
