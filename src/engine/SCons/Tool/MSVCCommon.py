@@ -271,13 +271,12 @@ def MergeMSVSBatFile(env, version, batfilename=None,
             raise IOError("batfile for version %s not found" % version)
 
     vars = ParseBatFile(batfilename, vars)
-    print vars
     return env.MergeFlags(vars)
 
 def generate(env):
     from logging import basicConfig, DEBUG
     basicConfig(level = DEBUG)
- 
+
     for flavor in ['std', 'express']:
         for v in [9.]:
             try:
