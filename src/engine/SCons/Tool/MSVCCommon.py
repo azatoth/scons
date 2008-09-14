@@ -13,6 +13,9 @@ import SCons.Util
 _VS_STANDARD_HKEY_ROOT = r"Software\Microsoft\VisualStudio\%0.1f"
 _VS_EXPRESS_HKEY_ROOT = r"Software\Microsoft\VCExpress\%0.1f"
 
+# Default value of VS to use
+DEFVERSION = 9.0
+
 try:
     from logging import debug
 except ImportError:
@@ -261,7 +264,7 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
 
     return ret
 
-def MergeMSVSBatFile(env, version, batfilename=None,
+def MergeMSVSBatFile(env, version=None, batfilename=None,
                      vars=["INCLUDE", "LIB", "LIBPATH", "PATH"]):
     """Find MSVC/MSVS bat file for given version, run it and parse the result
     to update the environment.
@@ -284,6 +287,8 @@ def MergeMSVSBatFile(env, version, batfilename=None,
         MergeMSVSBatFile(env, 9.0) # Put the necessary variables from VS 2009
     """
     if not batfilename:
+        if version is None:
+            version = DEFVERSION
         batfilename = FindMSVSBatFile(version)
         if not batfilename:
             raise IOError("batfile for version %s not found" % version)
