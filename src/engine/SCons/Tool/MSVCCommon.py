@@ -260,6 +260,20 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
 
     return ret
 
+def MergeMSVSBatFile(env, version, batfilename=None, 
+                     vars=["INCLUDE", "LIB", "LIBPATH", "PATH"]):
+    """Find MSVC/MSVS bat file for given version (but use batfilename instead
+    if provided), then run that bat file, parse the result for new variables,
+    and update the env with those variables."""
+    if not batfilename:
+        batfilename = FindMSVSBatFile(version)
+        if not batfilename:
+            raise IOError("batfile for version %s not found" % version)
+
+    vars = ParseBatFile(batfilename, vars)
+    print vars
+    return env.MergeFlags(vars)
+
 def generate(env):
     from logging import basicConfig, DEBUG
     basicConfig(level = DEBUG)
