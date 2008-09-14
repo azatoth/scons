@@ -213,7 +213,7 @@ def FindMSVSBatFile(version, flavor='std', arch="x86"):
 
     Arguments
     ---------
-        - version: str
+        - version: float
             the supported version are 7.0, 7.1 (VS 2003), 8.0 (VS 2005) and 9.0
             (VS 2008)
         - flavor: str
@@ -284,7 +284,12 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
 
     Examples
     --------
-        MergeMSVSBatFile(env, 9.0) # Put the necessary variables from VS 2009
+        # Put the necessary variables from default value of VS
+        MergeMSVSBatFile(env)
+        # Put the necessary variables from VS 2008
+        MergeMSVSBatFile(env, 9.0)
+        # Put the necessary variables from the file vcbatfile.bat
+        MergeMSVSBatFile(env, batfilename='vcbatfile.bat')
     """
     if not batfilename:
         if version is None:
