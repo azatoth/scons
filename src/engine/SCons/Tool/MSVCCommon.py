@@ -200,7 +200,7 @@ def varbat_variables(version, flavor = 'std', arch = 'x86'):
     return ret
 
 
-def FindMSVSBatFile(version=None, flavor=None, arch="x86"):
+def FindMSVSBatFile(version, flavor='std', arch="x86"):
     """Returns the location of the MSVS bat file used to set up
     Visual Studio.  Returns None if it is not found.
 
