@@ -277,14 +277,21 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
     ---------
         env: Environment
             the scons Environment instance to update
-        version: float
-            version of MSVS to use.
+        version: float or None
+            version of MSVS to use. If None, a list of versions will be looked
+            for, and the first found will be used.
         batfilename: str
             .bat file to use.
 
+    Note
+    ----
+        When version is None, the following versions are looked for, in that
+        order: 9.0, 8.0, 7.1, 7.0.
+
     Examples
     --------
-        # Put the necessary variables from default value of VS
+        # Put the necessary variables from VS studio: the first version found
+        # will be used
         MergeMSVSBatFile(env)
         # Put the necessary variables from VS 2008
         MergeMSVSBatFile(env, 9.0)
