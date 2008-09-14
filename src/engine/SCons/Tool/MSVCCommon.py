@@ -77,13 +77,13 @@ def find_vcbat_dir(version, flavor = 'std'):
     p = pdir_from_reg(version, flavor)
     if not p:
         p = pdir_from_env(version)
-        if not p:
-            raise IOError("No productdir found")
 
     return p
 
 def find_vsvars32(version, flavor = 'std'):
     pdir = find_vcbat_dir(version, flavor)
+    if pdir is None:
+        return None
 
     vsvars32 = os.path.join(pdir, "vsvars32.bat")
     if os.path.isfile(vsvars32):
@@ -94,6 +94,8 @@ def find_vsvars32(version, flavor = 'std'):
 
 def find_vcvarsall(version, flavor = 'std'):
     pdir = find_vcbat_dir(version, flavor)
+    if pdir is None:
+        return None
 
     vcvarsall = os.path.join(pdir, "vcvarsall.bat")
     if os.path.isfile(vcvarsall):
@@ -181,6 +183,10 @@ def varbat_variables(version, flavor = 'std', arch = 'x86'):
     Note: only return the paths which were added by the .bat file, to avoid
     polluting the env with all the content of PATH."""
     file = find_bat(version, flavor)
+    if file is None:
+        raise IOError("bar file for version %s, flavor %s not found" \
+                      % (version, flavor))
+
     # XXX version < 8 does not handle cross compilation ?
     if version < 8:
         out = get_output(file)
