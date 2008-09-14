@@ -20,7 +20,7 @@ except ImportError:
 
 def read_reg(value):
     return RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)[0]
-    
+
 def pdir_from_reg(version, flavor = 'std'):
     """Try to find the  product directory from the registry.
 
@@ -178,8 +178,8 @@ def get_new(l1, l2):
 
 def varbat_variables(version, flavor = 'std', arch = 'x86'):
     """Return a dictionary where the keys are the env variables and the values
-    the list of paths. 
-    
+    the list of paths.
+
     Note: only return the paths which were added by the .bat file, to avoid
     polluting the env with all the content of PATH."""
     file = find_bat(version, flavor)
@@ -260,7 +260,7 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
 
     return ret
 
-def MergeMSVSBatFile(env, version, batfilename=None, 
+def MergeMSVSBatFile(env, version, batfilename=None,
                      vars=["INCLUDE", "LIB", "LIBPATH", "PATH"]):
     """Find MSVC/MSVS bat file for given version (but use batfilename instead
     if provided), then run that bat file, parse the result for new variables,
@@ -277,7 +277,7 @@ def MergeMSVSBatFile(env, version, batfilename=None,
 def generate(env):
     from logging import basicConfig, DEBUG
     basicConfig(level = DEBUG)
-    
+ 
     for flavor in ['std', 'express']:
         for v in [9.]:
             try:
