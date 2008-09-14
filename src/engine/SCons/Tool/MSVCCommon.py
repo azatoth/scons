@@ -249,7 +249,16 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
     # escaping problems, and letting Popen taking care of it for us.
     output = get_output(path, args, vars)
 
-    return parse_output(output, vars)
+    parsed = parse_output(output, vars)
+    ret = {}
+    for k in parsed.keys():
+        if os.environ.has_key(k):
+           p = os.environ[k].split(os.pathsep)
+           ret[k] = get_new(p, parsed[k])
+        else:
+           ret[k] = parsed[k]
+
+    return ret
 
 def generate(env):
     from logging import basicConfig, DEBUG
