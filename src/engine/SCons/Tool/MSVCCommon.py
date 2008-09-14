@@ -293,10 +293,16 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
     """
     if not batfilename:
         if version is None:
-            version = DEFVERSION
-        batfilename = FindMSVSBatFile(version)
-        if not batfilename:
-            raise IOError("batfile for version %s not found" % version)
+            for v in [9.0, 8.0, 7.1, 7.0]:
+                batfilename = FindMSVSBatFile(v)
+                if batfilename is not None:
+                    break
+            if batfilename is None:
+                raise IOError("No batfile for default version was found")
+        else:
+            batfilename = FindMSVSBatFile(version)
+            if batfilename is None:
+                raise IOError("batfile for version %s not found" % version)
 
     vars = ParseBatFile(batfilename, vars)
     return env.MergeFlags(vars)
