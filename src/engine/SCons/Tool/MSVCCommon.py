@@ -160,7 +160,6 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
             if m:
                 add_env(m, k)
 
-
     return dkeep
 
 def get_new(l1, l2):
@@ -205,12 +204,12 @@ def varbat_variables(version, flavor = 'std', arch = 'x86'):
 
     return ret
 
-
 def FindMSVSBatFile(version, flavor='std', arch="x86"):
     """Returns the location of the MSVS bat file used to set up
     Visual Studio.  Returns None if it is not found.
 
-    arguments:
+    Arguments
+    ---------
         - version: str
             the supported version are 7.0, 7.1 (VS 2003), 8.0 (VS 2005) and 9.0
             (VS 2008)
@@ -219,6 +218,8 @@ def FindMSVSBatFile(version, flavor='std', arch="x86"):
         - arch: str
             only "x86" is supported.
 
+    Note
+    ----
     The bat file is search in the following order:
         - first look into the registry
         - if not found, then look into the environment variable
@@ -232,8 +233,8 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
     """Returns a dict of var/value pairs by running the batch file
     and looking at the resulting environment variables.
 
-    Argument
-    --------
+    Arguments
+    ---------
         path: str
             full path of the .bat file to set up VS environment (vsvarsall.bat,
             etc...)
@@ -243,7 +244,7 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
             list of arguments to pass to the .bat file through the cmd.exe
             shell"""
     if not pexists(path):
-        raise ValueError("File %s not found !" % path)
+        raise ValueError("File %s does not exist on the filesystem!" % path)
 
     # XXX: fix args handling here. Do not use a string but a sequence to avoid
     # escaping problems, and letting Popen taking care of it for us.
@@ -262,9 +263,26 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
 
 def MergeMSVSBatFile(env, version, batfilename=None,
                      vars=["INCLUDE", "LIB", "LIBPATH", "PATH"]):
-    """Find MSVC/MSVS bat file for given version (but use batfilename instead
-    if provided), then run that bat file, parse the result for new variables,
-    and update the env with those variables."""
+    """Find MSVC/MSVS bat file for given version, run it and parse the result
+    to update the environment.
+
+    If batfilename is given, it will be used. If not give, the .bat file
+    corresponding to the given version will be used. If the batfile does not
+    exists or is not found, an exception will be raised.
+
+    Arguments
+    ---------
+        env: Environment
+            the scons Environment instance to update
+        version: float
+            version of MSVS to use.
+        batfilename: str
+            .bat file to use.
+
+    Examples
+    --------
+        MergeMSVSBatFile(env, 9.0) # Put the necessary variables from VS 2009
+    """
     if not batfilename:
         batfilename = FindMSVSBatFile(version)
         if not batfilename:
