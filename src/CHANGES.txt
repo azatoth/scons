@@ -8,7 +8,7 @@
 
 
 
-RELEASE 1.X - XXX
+RELEASE 1.0.1.d20080915 - Mon, 15 Sep 2008 08:34:55 -0700
 
   From Ian P. Cardenas:
 
