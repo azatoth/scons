@@ -1,0 +1,25 @@
+The Visual Studio support has been totally revamped. Instead of using registry
+magic, we use the .bat files available for each version of visual studio. This
+is simpler (does not depend on the version of the compiler), more reliable, and
+just plain better.
+
+UI
+==
+
+For the user, there should not be any difference.  By default, the most recent
+version of Visual Studio will be used, and the version can be tweaked by using
+the MSVS_VERSION. A scons script can use different version of VS at the same
+time.
+
+Internals
+=========
+
+The code can be found in the MSVCCommon tool. At this point, no function should
+be public, the exact API is not good yet. There are three parts:
+        - finding the .bat file: this depends on the version, and the
+          architecture. First, the registry is used, then the environment
+          variable MS*COMMON. A default location could be looked for, too, but
+          this is not done at the moment.
+        - Parsing the .bat file: the .bat file is executed, and its output
+          parsed. By Default, only LIB, LIBPATH, INCLUDE and PATH are taken.
+        - Merge the found variables into env['ENV'].
