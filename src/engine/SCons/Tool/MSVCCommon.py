@@ -312,7 +312,8 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
                 raise IOError("batfile for version %s not found" % version)
 
     vars = ParseBatFile(batfilename, vars)
-    return env.MergeFlags(vars)
+    for k, v in vars.items():
+        env.PrependENVPath(k, v, delete_existing=1)
 
 def generate(env):
     from logging import basicConfig, DEBUG
