@@ -213,13 +213,13 @@ def FindMSVSBatFile(version, flavor='std', arch="x86"):
 
     Arguments
     ---------
-        - version: float
-            the supported version are 7.0, 7.1 (VS 2003), 8.0 (VS 2005) and 9.0
-            (VS 2008)
-        - flavor: str
-            flavor of VS: "std" and "express" are supported.
-        - arch: str
-            only "x86" is supported.
+    version: float
+        the supported version are 7.0, 7.1 (VS 2003), 8.0 (VS 2005) and 9.0
+        (VS 2008)
+    flavor: str
+        flavor of VS: "std" and "express" are supported.
+    arch: str
+        only "x86" is supported.
 
     Note
     ----
@@ -238,14 +238,14 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
 
     Arguments
     ---------
-        path: str
-            full path of the .bat file to set up VS environment (vsvarsall.bat,
-            etc...)
-        vars: seq
-            list of variables to look for
-        args: seq or None
-            list of arguments to pass to the .bat file through the cmd.exe
-            shell"""
+    path: str
+        full path of the .bat file to set up VS environment (vsvarsall.bat,
+        etc...)
+    vars: seq
+        list of variables to look for
+    args: seq or None
+        list of arguments to pass to the .bat file through the cmd.exe
+        shell"""
     if not pexists(path):
         raise ValueError("File %s does not exist on the filesystem!" % path)
 
@@ -275,28 +275,28 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
 
     Arguments
     ---------
-        env: Environment
-            the scons Environment instance to update
-        version: float or None
-            version of MSVS to use. If None, a list of versions will be looked
-            for, and the first found will be used.
-        batfilename: str
-            .bat file to use.
+    env: Environment
+        the scons Environment instance to update
+    version: float or None
+        version of MSVS to use. If None, a list of versions will be looked
+        for, and the first found will be used.
+    batfilename: str
+        .bat file to use.
 
     Note
     ----
-        When version is None, the following versions are looked for, in that
-        order: 9.0, 8.0, 7.1, 7.0.
+    When version is None, the following versions are looked for, in that order:
+    9.0, 8.0, 7.1, 7.0.
 
     Examples
     --------
-        # Put the necessary variables from VS studio: the first version found
-        # will be used
-        MergeMSVSBatFile(env)
-        # Put the necessary variables from VS 2008
-        MergeMSVSBatFile(env, 9.0)
-        # Put the necessary variables from the file vcbatfile.bat
-        MergeMSVSBatFile(env, batfilename='vcbatfile.bat')
+    # Put the necessary variables from VS studio: the first version found
+    # will be used
+    MergeMSVSBatFile(env)
+    # Put the necessary variables from VS 2008
+    MergeMSVSBatFile(env, 9.0)
+    # Put the necessary variables from the file vcbatfile.bat
+    MergeMSVSBatFile(env, batfilename='vcbatfile.bat')
     """
     if not batfilename:
         if version is None:
