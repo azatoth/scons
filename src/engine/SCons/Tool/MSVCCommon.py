@@ -28,7 +28,6 @@ Common functions for Microsoft Visual Studio and Visual C/C++.
 """
 
 import os
-from os.path import exists as pexists
 import re
 import subprocess
 
@@ -170,7 +169,11 @@ _ENV_TO_T = {"INCLUDE": "INCLUDE", "PATH": "Path",
 def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
     # dkeep is a dict associating key: path_list, where key is one item from
     # keep, and pat_list the associated list of paths
-    dkeep = dict([(i, []) for i in keep])
+
+    # TODO(1.5):  replace with the following list comprehension:
+    #dkeep = dict([(i, []) for i in keep])
+    dkeep = dict(map(lambda i: (i, []), keep))
+
     # rdk will  keep the regex to match the .bat file output line starts
     rdk = {}
     for i in keep:
@@ -272,7 +275,7 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
     args: seq or None
         list of arguments to pass to the .bat file through the cmd.exe
         shell"""
-    if not pexists(path):
+    if not os.path.exists(path):
         raise ValueError("File %s does not exist on the filesystem!" % path)
 
     # XXX: fix args handling here. Do not use a string but a sequence to avoid
