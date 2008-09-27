@@ -36,6 +36,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import os.path
 import re
 import string
+import sys
 
 import SCons.Action
 import SCons.Builder
@@ -56,7 +57,7 @@ def _parse_msvc7_overrides(version,platform):
 
     # First, we get the shell folder for this user:
     if not SCons.Util.can_read_reg:
-        raise SCons.Errors.InternalError, "No Windows registry module was found"
+        raise SCons.Errors.MSVCError, "No Windows registry module was found"
 
     comps = ""
     try:
@@ -64,7 +65,7 @@ def _parse_msvc7_overrides(version,platform):
                                             r'Software\Microsoft\Windows\CurrentVersion' +\
                                             r'\Explorer\Shell Folders\Local AppData')
     except SCons.Util.RegError:
-        raise SCons.Errors.InternalError, \
+        raise SCons.Errors.MSVCError, \
               "The Local AppData directory was not found in the registry."
 
     comps = comps + '\\Microsoft\\VisualStudio\\' + version + '\\VCComponents.dat'
@@ -126,7 +127,7 @@ def _parse_msvc7_overrides(version,platform):
                     break
         except SCons.Util.RegError:
             # if we got here, then we didn't find the registry entries:
-            raise SCons.Errors.InternalError, "Unable to find MSVC paths in the registry."
+            raise SCons.Errors.MSVCError, "Unable to find MSVC paths in the registry."
     return dirs
 
 def _parse_msvc8_overrides(version,platform,suite):
@@ -137,7 +138,7 @@ def _parse_msvc8_overrides(version,platform,suite):
     # contains the include, lib and binary paths. Try to get the location
     # from registry
     if not SCons.Util.can_read_reg:
-        raise SCons.Errors.InternalError, "No Windows registry module was found"
+        raise SCons.Errors.MSVCError, "No Windows registry module was found"
 
     # XXX This code assumes anything that isn't EXPRESS uses the default
     # registry key string.  Is this really true for all VS suites?
@@ -153,7 +154,7 @@ def _parse_msvc8_overrides(version,platform,suite):
                                                     r'\Profile\AutoSaveFile')
         settings_path = settings_path.upper()
     except SCons.Util.RegError:
-        raise SCons.Errors.InternalError, \
+        raise SCons.Errors.MSVCError, \
               "The VS8 settings file location was not found in the registry."
 
     # Look for potential environment variables in the settings path
@@ -166,7 +167,7 @@ def _parse_msvc8_overrides(version,platform,suite):
                                                 r'\VisualStudioLocation')
             settings_path = settings_path.replace('%VSSPV_VISUALSTUDIO_DIR%', value)
         except SCons.Util.RegError:
-            raise SCons.Errors.InternalError, "The VS8 settings file location was not found in the registry."
+            raise SCons.Errors.MSVCError, "The VS8 settings file location was not found in the registry."
 
     if settings_path.find('%') >= 0:
         # Collect global environment variables
@@ -238,7 +239,7 @@ def _parse_msvc8_overrides(version,platform,suite):
                                             break
     else:
         # There are no default directories in the registry for VS8 Express :(
-        raise SCons.Errors.InternalError, "Unable to find MSVC paths in the registry."
+        raise SCons.Errors.MSVCError, "Unable to find MSVC paths in the registry."
     return dirs
 
 def _get_msvc7_path(path, version, platform):
@@ -254,7 +255,7 @@ def _get_msvc7_path(path, version, platform):
     if dirs.has_key(path):
         p = dirs[path]
     else:
-        raise SCons.Errors.InternalError, \
+        raise SCons.Errors.MSVCError, \
               "Unable to retrieve the %s path from MS VC++."%path
 
     # collect some useful information for later expansions...
@@ -299,7 +300,7 @@ def _get_msvc8_path(path, version, platform, suite):
     if dirs.has_key(path):
         p = dirs[path]
     else:
-        raise SCons.Errors.InternalError, \
+        raise SCons.Errors.MSVCError, \
               "Unable to retrieve the %s path from MS VC++."%path
 
     # collect some useful information for later expansions...
@@ -335,7 +336,7 @@ def get_msvc_path(env, path, version):
     """
 
     if not SCons.Util.can_read_reg:
-        raise SCons.Errors.InternalError, "No Windows registry module was found"
+        raise SCons.Errors.MSVCError, "No Windows registry module was found"
 
     # normalize the case for comparisons (since the registry is case
     # insensitive)
@@ -377,7 +378,7 @@ def get_msvc_path(env, path, version):
             pass
 
     # if we got here, then we didn't find the registry entries:
-    raise SCons.Errors.InternalError, "The %s path was not found in the registry."%path
+    raise SCons.Errors.MSVCError, "The %s path was not found in the registry."%path
 
 def _get_msvc6_default_paths(version, use_mfc_dirs):
     """Return a 3-tuple of (INCLUDE, LIB, PATH) as the values of those
@@ -392,7 +393,7 @@ def _get_msvc6_default_paths(version, use_mfc_dirs):
     try:
         paths = SCons.Tool.msvs.get_msvs_install_dirs(version)
         MVSdir = paths['VSINSTALLDIR']
-    except (SCons.Util.RegError, SCons.Errors.InternalError, KeyError):
+    except (SCons.Util.RegError, SCons.Errors.MSVCError, KeyError):
         if os.environ.has_key('MSDEVDIR'):
             MVSdir = os.path.normpath(os.path.join(os.environ['MSDEVDIR'],'..','..'))
         else:
@@ -435,7 +436,7 @@ def _get_msvc7_default_paths(env, version, use_mfc_dirs):
     try:
         paths = SCons.Tool.msvs.get_msvs_install_dirs(version)
         MVSdir = paths['VSINSTALLDIR']
-    except (KeyError, SCons.Util.RegError, SCons.Errors.InternalError):
+    except (KeyError, SCons.Errors.MSVCError):
         if os.environ.has_key('VSCOMNTOOLS'):
             MVSdir = os.path.normpath(os.path.join(os.environ['VSCOMNTOOLS'],'..','..'))
         else:
@@ -483,7 +484,7 @@ def _get_msvc8_default_paths(env, version, suite, use_mfc_dirs):
     try:
         paths = SCons.Tool.msvs.get_msvs_install_dirs(version, suite)
         MVSdir = paths['VSINSTALLDIR']
-    except (KeyError, SCons.Util.RegError, SCons.Errors.InternalError):
+    except (KeyError, SCons.Errors.MSVCError):
         if os.environ.has_key('VSCOMNTOOLS'):
             MVSdir = os.path.normpath(os.path.join(os.environ['VSCOMNTOOLS'],'..','..'))
         else:
@@ -564,17 +565,17 @@ def get_msvc_paths(env, version=None, use_mfc_dirs=0):
 
     try:
         include_path = get_msvc_path(env, "include", version)
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
+    except SCons.Errors.MSVCError:
         include_path = defpaths[0]
 
     try:
         lib_path = get_msvc_path(env, "lib", version)
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
+    except SCons.Errors.MSVCError:
         lib_path = defpaths[1]
 
     try:
         exe_path = get_msvc_path(env, "path", version)
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
+    except SCons.Errors.MSVCError:
         exe_path = defpaths[2]
 
     return (include_path, lib_path, exe_path)
@@ -732,8 +733,9 @@ def generate(env):
         #    suite = SCons.Tool.msvs.get_default_visualstudio8_suite(env)
 
         MergeMSVSBatFile(env, version_num)
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
-        pass
+    except SCons.Errors.MSVCError:
+        if sys.platform in ('win32', 'cygwin'):
+            raise
 
     env['CFILESUFFIX'] = '.c'
     env['CXXFILESUFFIX'] = '.cc'
