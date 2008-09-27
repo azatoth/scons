@@ -1,13 +1,39 @@
+#
+# __COPYRIGHT__
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+# KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+__doc__ = """
+Common functions for Microsoft Visual Studio and Visual C/C++.
+"""
+
 import os
 from os.path import exists as pexists
-import subprocess
 import re
+import subprocess
 
-import SCons.Platform.win32
 import SCons.Errors
-
-from SCons.Util import can_read_reg
-from SCons.Util import RegGetValue, RegError
+import SCons.Platform.win32
 import SCons.Util
 
 _VS_STANDARD_HKEY_ROOT = r"Software\Microsoft\VisualStudio\%0.1f"
@@ -22,13 +48,13 @@ except ImportError:
     debug = lambda x : None
 
 def read_reg(value):
-    return RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)[0]
+    return SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)[0]
 
 def pdir_from_reg(version, flavor = 'std'):
     """Try to find the  product directory from the registry.
 
     Return None if failed or the directory does not exist"""
-    if not can_read_reg:
+    if not SCons.Util.can_read_reg:
         debug('SCons cannot read registry')
         return None
 
@@ -305,11 +331,13 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
                 if batfilename is not None:
                     break
             if batfilename is None:
-                raise IOError("No batfile for default version was found")
+                msg = "No batfile for default version was found"
+                raise SCons.Errors.MSVCError(msg)
         else:
             batfilename = FindMSVSBatFile(version)
             if batfilename is None:
-                raise IOError("batfile for version %s not found" % version)
+                msg = "batfile for version %s not found" % version
+                raise SCons.Errors.MSVCError(msg)
 
     vars = ParseBatFile(batfilename, vars)
     for k, v in vars.items():
