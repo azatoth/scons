@@ -310,6 +310,19 @@ def FindMSVSBatFile(version, flavor='std', arch="x86"):
 
     return find_bat(version, flavor)
 
+def FindDefaultMSVSBatFile(flavor='std', arch='x86'):
+    """Return default version of .bat file, with given flavor and arch."""
+    for v in [9.0, 8.0, 7.1, 7.0]:
+        batfilename = FindMSVSBatFile(v)
+        if batfilename is not None:
+            break
+
+    if batfilename is None:
+        msg = "No batfile for default version was found"
+        raise SCons.Errors.MSVCError(msg)
+
+    return batfilename
+
 def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
     """Returns a dict of var/value pairs by running the batch file
     and looking at the resulting environment variables.
@@ -382,13 +395,7 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
     """
     if not batfilename:
         if version is None:
-            for v in [9.0, 8.0, 7.1, 7.0]:
-                batfilename = FindMSVSBatFile(v)
-                if batfilename is not None:
-                    break
-            if batfilename is None:
-                msg = "No batfile for default version was found"
-                raise SCons.Errors.MSVCError(msg)
+            batfilename = FindDefaultMSVSBatFile()
         else:
             batfilename = FindMSVSBatFile(version)
             if batfilename is None:
