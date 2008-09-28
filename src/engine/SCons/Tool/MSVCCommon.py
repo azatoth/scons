@@ -371,19 +371,3 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
     vars = ParseBatFile(batfilename, vars)
     for k, v in vars.items():
         env.PrependENVPath(k, v, delete_existing=1)
-
-def generate(env):
-    from logging import basicConfig, DEBUG
-    basicConfig(level = DEBUG)
-
-    for flavor in ['std', 'express']:
-        for v in [9.]:
-            try:
-                vars = varbat_variables(v, flavor)
-                for k, v in vars.items():
-                    print k, v
-            except IOError:
-                pass
-
-def exists(env):
-    return 1
