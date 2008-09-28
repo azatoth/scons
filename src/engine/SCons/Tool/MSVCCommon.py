@@ -159,6 +159,10 @@ def find_vcvarsall(version, flavor = 'std'):
         return None
 
 def find_bat(version, flavor = 'std'):
+    # On version < 8, there is not compilation to anything but x86, so use
+    # vars32.bat. On higher versions, cross compilation is possible, so use the
+    # varsall.bat. AFAIK, those support any cross-compilation depending on the
+    # argument given.
     if version < 8:
         return find_vsvars32(version, flavor)
     else:
