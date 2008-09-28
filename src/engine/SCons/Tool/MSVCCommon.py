@@ -90,7 +90,8 @@ def pdir_from_reg(version, flavor = 'std'):
         comps = read_reg(vsbase + '\Setup\VC\productdir')
         debug('Found product dir in registry: %s' % comps)
     except WindowsError, e:
-        debug('Did not find product dir key %s in registry' % (vsbase + '\Setup\VC\productdir'))
+        debug('Did not find product dir key %s in registry' % \
+              (vsbase + '\Setup\VC\productdir'))
         return None
 
     # XXX: it this necessary for VS .net only, or because std vs
@@ -113,9 +114,7 @@ def pdir_from_env(version):
 
     def get_pdir():
         ret = None
-        if 7 <= version < 8:
-            ret = os.path.join(d, os.pardir, "Common7", "Tools")
-        elif version >= 8:
+        if version >= 8:
             ret = os.path.join(d, os.pardir, os.pardir, "VC")
         return ret
 
