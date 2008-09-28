@@ -342,6 +342,10 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
 
     return ret
 
+def get_required_version(env):
+    if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
+        return None
+
 def MergeMSVSBatFile(env, version=None, batfilename=None,
                      vars=["INCLUDE", "LIB", "LIBPATH", "PATH"]):
     """Find MSVC/MSVS bat file for given version, run it and parse the result

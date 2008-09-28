@@ -726,13 +726,14 @@ def generate(env):
     env['SHOBJSUFFIX']    = '$OBJSUFFIX'
 
     try:
-        from MSVCCommon import MergeMSVSBatFile
-        version = SCons.Tool.msvs.get_default_visualstudio_version(env)
-        version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
-        #if version_num == 8.0:
-        #    suite = SCons.Tool.msvs.get_default_visualstudio8_suite(env)
+        from MSVCCommon import MergeMSVSBatFile, get_required_version
+        version = get_required_version()
+        if version is not None:
+            version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
+            MergeMSVSBatFile(env, version_num)
+        else:
+            MergeMSVSBatFile(env)
 
-        MergeMSVSBatFile(env, version_num)
     except SCons.Errors.MSVCError:
         if sys.platform in ('win32', 'cygwin'):
             raise
@@ -750,12 +751,15 @@ def generate(env):
         env['ENV']['SystemRoot'] = SCons.Platform.win32.get_system_root()
 
 def exists(env):
-    from MSVCCommon import FindMSVSBatFile
+    from MSVCCommon import MergeMSVSBatFile, get_required_version
+    version = get_required_version()
+    if version is not None:
+        version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
+        bat = FindMSVSBatFile(env, version_num)
+    else:
+        bat = FindMSVSBatFile(env, version_num)
 
-    version = SCons.Tool.msvs.get_default_visualstudio_version(env)
-    version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
-
-    if FindMSVSBatFile(version_num):
+    if bat is not None:
         return 1
     else:
         return 0
