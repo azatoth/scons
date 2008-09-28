@@ -757,7 +757,7 @@ def exists(env):
         version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
         bat = FindMSVSBatFile(env, version_num)
     else:
-        bat = FindMSVSBatFile(env, version_num)
+        bat = FindMSVSBatFile(env)
 
     if bat is not None:
         return 1
