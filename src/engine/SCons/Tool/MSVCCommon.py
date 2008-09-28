@@ -36,21 +36,27 @@ import SCons.Platform.win32
 import SCons.Util
 
 # How to look for .bat file ?
-#  - VS 2008 Express:
+#  - VS 2008 Express (x86):
 #     * from registry key productdir, gives the full path to vsvarsall.bat. In
 #     HKEY_LOCAL_MACHINE):
 #         Software\Microsoft\VCEpress\9.0\Setup\VC\productdir
 #     * from environmnent variable VS90COMNTOOLS: the path is then ..\..\VC
 #     relatively to the path given by the variable.
 #
-#  - VS 2005 Express:
+#  - VS 2008 Express (WoW6432: 32 bits on windows x64):
+#         Software\Wow6432Node\Microsoft\VCEpress\9.0\Setup\VC\productdir
+#
+#  - VS 2005 Express (x86):
 #     * from registry key productdir, gives the full path to vsvarsall.bat. In
 #     HKEY_LOCAL_MACHINE):
 #         Software\Microsoft\VCEpress\8.0\Setup\VC\productdir
 #     * from environmnent variable VS80COMNTOOLS: the path is then ..\..\VC
 #     relatively to the path given by the variable.
 #
-#  - VS 2003 .Net (pro edition ?):
+#  - VS 2005 Express (WoW6432: 32 bits on windows x64): does not seem to have a
+#  productdir ?
+#
+#  - VS 2003 .Net (pro edition ? x86):
 #     * from registry key productdir. The path is then ..\Common7\Tools\
 #     relatively to the key. The key is in HKEY_LOCAL_MACHINE):
 #         Software\Microsoft\VisualStudio\7.1\Setup\VC\productdir
