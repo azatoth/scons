@@ -727,7 +727,7 @@ def generate(env):
 
     try:
         from MSVCCommon import MergeMSVSBatFile, get_required_version
-        version = get_required_version()
+        version = get_required_version(env)
         if version is not None:
             version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
             MergeMSVSBatFile(env, version_num)
@@ -752,7 +752,7 @@ def generate(env):
 
 def exists(env):
     from MSVCCommon import MergeMSVSBatFile, get_required_version
-    version = get_required_version()
+    version = get_required_version(env)
     if version is not None:
         version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
         bat = FindMSVSBatFile(env, version_num)
