@@ -356,7 +356,7 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
     return ret
 
 def get_required_version(env):
-    if not env.has_key('MSVS_VERSION')
+    if not env.has_key('MSVS_VERSION'):
         return None
     else:
         return env['MSVS_VERSION']
