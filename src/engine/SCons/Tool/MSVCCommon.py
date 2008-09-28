@@ -71,6 +71,11 @@ def pdir_from_reg(version, flavor = 'std'):
         debug('Did not find product dir key %s in registry' % (vsbase + '\Setup\VC\productdir'))
         return None
 
+    # XXX: it this necessary for VS .net only, or because std vs
+    # express ?
+    if 7 <= version < 8:
+        comps = os.path.join(comps, os.pardir, "Common7", "Tools")
+
     if not os.path.exists(comps):
         debug('%s is not found on the filesystem' % comps)
         return None
