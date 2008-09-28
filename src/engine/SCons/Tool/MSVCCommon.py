@@ -84,7 +84,7 @@ def pdir_from_reg(version, flavor = 'std'):
     elif flavor == 'express':
         vsbase = _VS_EXPRESS_HKEY_ROOT % version
     else:
-        return ValueError("Flavor %s not understood" % flavor)
+        raise ValueError("Flavor %s not understood" % flavor)
 
     try:
         comps = read_reg(vsbase + '\Setup\VC\productdir')
