@@ -750,9 +750,12 @@ def generate(env):
         env['ENV']['SystemRoot'] = SCons.Platform.win32.get_system_root()
 
 def exists(env):
-    if SCons.Tool.msvs.is_msvs_installed():
-        # there's at least one version of MSVS installed.
+    from MSVCCommon import FindMSVSBatFile
+
+    version = SCons.Tool.msvs.get_default_visualstudio_version(env)
+    version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
+
+    if FindMSVSBatFile(version_num):
         return 1
     else:
-        return env.Detect('cl')
-
+        return 0
