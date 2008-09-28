@@ -751,7 +751,7 @@ def generate(env):
         env['ENV']['SystemRoot'] = SCons.Platform.win32.get_system_root()
 
 def exists(env):
-    from MSVCCommon import MergeMSVSBatFile, get_required_version
+    from MSVCCommon import FindMSVSBatFile, get_required_version
     version = get_required_version(env)
     if version is not None:
         version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
