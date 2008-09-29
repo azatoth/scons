@@ -285,6 +285,19 @@ def varbat_variables(version, flavor = 'std', arch = 'x86'):
 
     return ret
 
+def query_versions():
+    """Query the system to get available versions of VS. A version is
+    considered when a batfile is found."""
+    versions = []
+    # We put in decreasing order: versions itself should be in drecreasing
+    # order
+    for v in [9.0, 8.0, 7.1, 7.0, 6.0]:
+        bat = find_bat(v)
+        if bat is not None:
+            versions.append(v)
+
+    return versions
+
 def FindMSVSBatFile(version, flavor='std', arch="x86"):
     """Returns the location of the MSVS bat file used to set up
     Visual Studio.  Returns None if it is not found.
