@@ -298,6 +298,29 @@ def query_versions():
 
     return versions
 
+def default_version(env):
+    """Return the default version to use for MSVS.
+    
+    if no version was requested by the user through the MSVS environment
+    variable, query all the available the visual studios through
+    query_versions, and take the highest one."""
+    versions = [DEFVERSION]
+
+    if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
+        v = query_versions()
+        if v:
+            versions = v
+        env['MSVS'] = {'VERSIONS' : versions}
+    else:
+        versions = env['MSVS'].get('VERSIONS', versions)
+
+    if not env.has_key('MSVS_VERSION'):
+        env['MSVS_VERSION'] = versions[0] #use highest version by default
+
+    env['MSVS']['VERSION'] = env['MSVS_VERSION']
+
+    return env['MSVS_VERSION']
+
 def FindMSVSBatFile(version, flavor='std', arch="x86"):
     """Returns the location of the MSVS bat file used to set up
     Visual Studio.  Returns None if it is not found.
@@ -367,12 +390,6 @@ def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
            ret[k] = parsed[k]
 
     return ret
-
-def get_required_version(env):
-    if not env.has_key('MSVS_VERSION'):
-        return None
-    else:
-        return env['MSVS_VERSION']
 
 def MergeMSVSBatFile(env, version=None, batfilename=None,
                      vars=["INCLUDE", "LIB", "LIBPATH", "PATH"]):
