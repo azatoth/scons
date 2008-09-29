@@ -726,8 +726,8 @@ def generate(env):
     env['SHOBJSUFFIX']    = '$OBJSUFFIX'
 
     try:
-        from MSVCCommon import MergeMSVSBatFile, get_required_version
-        version = get_required_version(env)
+        from MSVCCommon import MergeMSVSBatFile, default_version
+        version = default_version(env)
         if version is not None:
             version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
             MergeMSVSBatFile(env, version_num)
@@ -751,16 +751,9 @@ def generate(env):
         env['ENV']['SystemRoot'] = SCons.Platform.win32.get_system_root()
 
 def exists(env):
-    from MSVCCommon import FindMSVSBatFile, get_required_version, \
-                           FindDefaultMSVSBatFile
-    version = get_required_version(env)
-    if version is not None:
-        version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
-        bat = FindMSVSBatFile(version_num)
-    else:
-        bat = FindDefaultMSVSBatFile()
-
-    if bat is not None:
+    from MSVCCommon import query_versions
+    version = query_versions()
+    if len(version) > 0:
         return 1
     else:
         return 0
