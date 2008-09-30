@@ -735,8 +735,10 @@ def generate(env):
             MergeMSVSBatFile(env)
 
     except SCons.Errors.MSVCError:
-        if sys.platform in ('win32', 'cygwin'):
-            raise
+        # We should always succeed in generate, because it is run on Linux too
+        pass
+        #if sys.platform in ('win32', 'cygwin'):
+        #    raise
 
     env['CFILESUFFIX'] = '.c'
     env['CXXFILESUFFIX'] = '.cc'
