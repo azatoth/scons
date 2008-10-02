@@ -212,7 +212,8 @@ def get_output(vcbat, args = None, keep = ("include", "lib", "libpath", "path"))
     return output
 
 # You gotta love this: they had to set Path instead of PATH...
-_ENV_TO_T = {"INCLUDE": "INCLUDE", "PATH": "Path",
+# (also below we search case-insensitively because VC9 uses uppercase PATH)
+_ENV_TO_T = {"INCLUDE": "INCLUDE", "PATH": "PATH",
              "LIB": "LIB", "LIBPATH": "LIBPATH"}
 
 def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
@@ -226,7 +227,7 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
     # rdk will  keep the regex to match the .bat file output line starts
     rdk = {}
     for i in keep:
-        rdk[i] = re.compile('%s=(.*)' % _ENV_TO_T[i])
+        rdk[i] = re.compile('%s=(.*)' % _ENV_TO_T[i], re.I)
 
     def add_env(rmatch, key):
         plist = rmatch.group(1).split(os.pathsep)
