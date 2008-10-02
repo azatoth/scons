@@ -1,9 +1,4 @@
-"""SCons.Tool.pdf
-
-Common PDF Builder definition for various other Tool modules that use it.
-
-"""
-
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -29,29 +24,23 @@ Common PDF Builder definition for various other Tool modules that use it.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Builder
-import SCons.Tool
+"""
+Verify that the ensure_suffix argument to causes us to add the suffix
+configured for the Builder even if it looks like the target already has
+a different suffix.
+"""
 
-PDFBuilder = None
+import TestSCons
 
-def generate(env):
-    try:
-        env['BUILDERS']['PDF']
-    except KeyError:
-        global PDFBuilder
-        if PDFBuilder is None:
-            PDFBuilder = SCons.Builder.Builder(action = {},
-                                               source_scanner = SCons.Tool.PDFLaTeXScanner,
-                                               prefix = '$PDFPREFIX',
-                                               suffix = '$PDFSUFFIX',
-                                               emitter = {},
-                                               source_ext_match = None)
-        env['BUILDERS']['PDF'] = PDFBuilder
+test = TestSCons.TestSCons()
 
-    env['PDFPREFIX'] = ''
-    env['PDFSUFFIX'] = '.pdf'
+test.write('SConstruct', """\
+env = Environment()
+builder = Builder(action=Copy('$TARGET', '$SOURCE'))
+tgt = builder(env, target="${SOURCE}.out", source="infile")
+""")
 
-def exists(env):
-    # This only puts a skeleton Builder in place, so if someone
-    # references this Tool directly, it's always "available."
-    return 1
+test.write('infile', "infile\n")
+test.run(arguments = '.')
+test.must_match('infile.out', "infile\n")
+test.pass_test()

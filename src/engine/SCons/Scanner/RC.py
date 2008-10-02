@@ -1,6 +1,7 @@
-"""SCons.Tool.pdf
+"""SCons.Scanner.RC
 
-Common PDF Builder definition for various other Tool modules that use it.
+This module implements the depenency scanner for RC (Interface
+Definition Language) files.
 
 """
 
@@ -29,29 +30,20 @@ Common PDF Builder definition for various other Tool modules that use it.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Builder
-import SCons.Tool
+import SCons.Node.FS
+import SCons.Scanner
+import re
 
-PDFBuilder = None
-
-def generate(env):
-    try:
-        env['BUILDERS']['PDF']
-    except KeyError:
-        global PDFBuilder
-        if PDFBuilder is None:
-            PDFBuilder = SCons.Builder.Builder(action = {},
-                                               source_scanner = SCons.Tool.PDFLaTeXScanner,
-                                               prefix = '$PDFPREFIX',
-                                               suffix = '$PDFSUFFIX',
-                                               emitter = {},
-                                               source_ext_match = None)
-        env['BUILDERS']['PDF'] = PDFBuilder
-
-    env['PDFPREFIX'] = ''
-    env['PDFSUFFIX'] = '.pdf'
-
-def exists(env):
-    # This only puts a skeleton Builder in place, so if someone
-    # references this Tool directly, it's always "available."
-    return 1
+def RCScan():
+    """Return a prototype Scanner instance for scanning RC source files"""
+ 
+    res_re= r'^(?:\s*#\s*(?:include)|' \
+            '.*?\s+(?:ICON|BITMAP|CURSOR|HTML|FONT|MESSAGETABLE|TYPELIB|REGISTRY|D3DFX)' \
+            '\s*.*?)' \
+            '\s*(<|"| )([^>"\s]+)(?:[>" ])*$'
+    resScanner = SCons.Scanner.ClassicCPP( "ResourceScanner",
+                                           "$RCSUFFIXES",
+                                           "CPPPATH",
+                                           res_re )
+    
+    return resScanner

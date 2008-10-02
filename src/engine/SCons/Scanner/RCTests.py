@@ -23,72 +23,75 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os.path
-import string
-import sys
-import types
-import unittest
-import UserDict
-
 import TestCmd
+import SCons.Scanner.RC
+import unittest
+import sys
+import os
+import os.path
 import SCons.Node.FS
-import SCons.Scanner.LaTeX
+import SCons.Warnings
+import UserDict
 
 test = TestCmd.TestCmd(workdir = '')
 
-test.write('test1.latex',"""
-\include{inc1}
-\input{inc2}
-include{incNO}
-%\include{incNO}
-xyzzy \include{inc6}
+os.chdir(test.workpath(''))
+
+# create some source files and headers:
+
+test.write('t1.rc','''
+#include "t1.h"
+''')
+
+test.write('t2.rc',"""
+#include "t1.h"
+ICO_TEST               ICON    DISCARDABLE     "abc.ico"
+BMP_TEST               BITMAP  DISCARDABLE     "def.bmp"
+cursor1 CURSOR "bullseye.cur"
+ID_RESPONSE_ERROR_PAGE  HTML  "responseerrorpage.htm"
+5 FONT  "cmroman.fnt"
+1  MESSAGETABLE "MSG00409.bin"
+1  MESSAGETABLE MSG00410.bin
+1 TYPELIB "testtypelib.tlb"
+TEST_REGIS   REGISTRY MOVEABLE PURE  "testregis.rgs"
+TEST_D3DFX   D3DFX DISCARDABLE "testEffect.fx"
+
 """)
 
-test.write('test2.latex',"""
-\include{inc1}
-\include{inc3}
-""")
 
-test.write('test3.latex',"""
-\includegraphics{inc4.eps}
-\includegraphics[width=60mm]{inc5.xyz}
-""")
+# Create dummy include files
+headers = ['t1.h',
+           'abc.ico','def.bmp','bullseye.cur','responseerrorpage.htm','cmroman.fnt',
+           'testEffect.fx',
+           'MSG00409.bin','MSG00410.bin','testtypelib.tlb','testregis.rgs']
 
-test.subdir('subdir')
+for h in headers:
+    test.write(h, " ")
 
-test.write('inc1.tex',"\n")
-test.write('inc2.tex',"\n")
-test.write(['subdir', 'inc3.tex'], "\n")
-test.write(['subdir', 'inc4.eps'], "\n")
-test.write('inc5.xyz', "\n")
-test.write('inc6.tex', "\n")
-test.write('incNO.tex', "\n")
 
 # define some helpers:
-#   copied from CTest.py
+
 class DummyEnvironment(UserDict.UserDict):
-    def __init__(self, **kw):
+    def __init__(self,**kw):
         UserDict.UserDict.__init__(self)
         self.data.update(kw)
         self.fs = SCons.Node.FS.FS(test.workpath(''))
-
+        
     def Dictionary(self, *args):
         return self.data
 
-    def subst(self, strSubst, target=None, source=None, conv=None):
+    def subst(self, arg, target=None, source=None, conv=None):
         if strSubst[0] == '$':
             return self.data[strSubst[1:]]
         return strSubst
-
-    def subst_list(self, strSubst, target=None, source=None, conv=None):
-        if strSubst[0] == '$':
-            return [self.data[strSubst[1:]]]
-        return [[strSubst]]
 
     def subst_path(self, path, target=None, source=None, conv=None):
         if type(path) != type([]):
             path = [path]
         return map(self.subst, path)
+
+    def has_key(self, key):
+        return self.Dictionary().has_key(key)
 
     def get_calculator(self):
         return None
@@ -102,51 +105,54 @@ class DummyEnvironment(UserDict.UserDict):
     def File(self, filename):
         return self.fs.File(filename)
 
+global my_normpath
+my_normpath = os.path.normpath
+
 if os.path.normcase('foo') == os.path.normcase('FOO'):
     my_normpath = os.path.normcase
-else:
-    my_normpath = os.path.normpath
 
 def deps_match(self, deps, headers):
-    global my_normpath
     scanned = map(my_normpath, map(str, deps))
     expect = map(my_normpath, headers)
+    scanned.sort()
+    expect.sort()
     self.failUnless(scanned == expect, "expect %s != scanned %s" % (expect, scanned))
 
+# define some tests:
 
-class LaTeXScannerTestCase1(unittest.TestCase):
+class RCScannerTestCase1(unittest.TestCase):
     def runTest(self):
-        env = DummyEnvironment(LATEXSUFFIXES = [".tex", ".ltx", ".latex"])
-        s = SCons.Scanner.LaTeX.LaTeXScanner()
-        path = s.path(env)
-        deps = s(env.File('test1.latex'), env, path)
-        headers = ['inc1.tex', 'inc2.tex', 'inc6.tex']
+        path = []
+        env = DummyEnvironment(RCSUFFIXES=['.rc','.rc2'],
+                               CPPPATH=path)
+        s = SCons.Scanner.RC.RCScan()
+        deps = s(env.File('t1.rc'), env, path)
+        headers = ['t1.h']
         deps_match(self, deps, headers)
 
-class LaTeXScannerTestCase2(unittest.TestCase):
-     def runTest(self):
-         env = DummyEnvironment(TEXINPUTS=[test.workpath("subdir")],LATEXSUFFIXES = [".tex", ".ltx", ".latex"])
-         s = SCons.Scanner.LaTeX.LaTeXScanner()
-         path = s.path(env)
-         deps = s(env.File('test2.latex'), env, path)
-         headers = ['inc1.tex', 'subdir/inc3.tex']
-         deps_match(self, deps, headers)
+class RCScannerTestCase2(unittest.TestCase):
+    def runTest(self):
+        path = []
+        env = DummyEnvironment(RCSUFFIXES=['.rc','.rc2'],
+                               CPPPATH=path)
+        s = SCons.Scanner.RC.RCScan()
+        deps = s(env.File('t2.rc'), env, path)
+        headers = ['MSG00410.bin',
+                   'abc.ico','bullseye.cur',
+                   'cmroman.fnt','def.bmp',
+                   'MSG00409.bin',
+                   'responseerrorpage.htm',
+                   't1.h',
+                   'testEffect.fx',
+                   'testregis.rgs','testtypelib.tlb']
+        deps_match(self, deps, headers)
 
-class LaTeXScannerTestCase3(unittest.TestCase):
-     def runTest(self):
-         env = DummyEnvironment(TEXINPUTS=[test.workpath("subdir")],LATEXSUFFIXES = [".tex", ".ltx", ".latex"])
-         s = SCons.Scanner.LaTeX.LaTeXScanner()
-         path = s.path(env)
-         deps = s(env.File('test3.latex'), env, path)
-         files = ['inc5.xyz', 'subdir/inc4.eps']
-         deps_match(self, deps, files)
-
+        
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(LaTeXScannerTestCase1())
-    suite.addTest(LaTeXScannerTestCase2())
-    suite.addTest(LaTeXScannerTestCase3())
+    suite.addTest(RCScannerTestCase1())
+    suite.addTest(RCScannerTestCase2())
     return suite
 
 if __name__ == "__main__":

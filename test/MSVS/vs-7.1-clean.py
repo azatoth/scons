@@ -25,40 +25,60 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that we can generate Visual Studio 8.0 project (.vcproj) and
-solution (.sln) files that look correct.
+Verify the -c option's ability to clean generated Visual Studio 7.1
+project (.vcproj) and solution (.sln) files.
 """
-
-import os
 
 import TestSConsMSVS
 
 test = TestSConsMSVS.TestSConsMSVS()
 
 # Make the test infrastructure think we have this version of MSVS installed.
-test._msvs_versions = ['8.0']
+test._msvs_versions = ['7.1']
 
 
 
-expected_slnfile = TestSConsMSVS.expected_slnfile_8_0
-expected_vcprojfile = TestSConsMSVS.expected_vcprojfile_8_0
-SConscript_contents = TestSConsMSVS.SConscript_contents_8_0
+expected_slnfile = TestSConsMSVS.expected_slnfile_7_1
+expected_vcprojfile = TestSConsMSVS.expected_vcprojfile_7_1
 
 
 
-test.write('SConstruct', SConscript_contents)
+test.write('SConstruct', """\
+env=Environment(platform='win32', tools=['msvs'], MSVS_VERSION='7.1')
 
-test.run(arguments="Test.vcproj")
+testsrc = ['test1.cpp', 'test2.cpp']
+testincs = ['sdk.h']
+testlocalincs = ['test.h']
+testresources = ['test.rc']
+testmisc = ['readme.txt']
+
+p = env.MSVSProject(target = 'Test.vcproj',
+                    srcs = testsrc,
+                    incs = testincs,
+                    localincs = testlocalincs,
+                    resources = testresources,
+                    misc = testmisc,
+                    buildtarget = 'Test.exe',
+                    variant = 'Release',
+                    auto_build_solution = 0)
+
+env.MSVSSolution(target = 'Test.sln',
+                 slnguid = '{SLNGUID}',
+                 projects = [p],
+                 variant = 'Release')
+""")
+
+test.run(arguments=".")
 
 test.must_exist(test.workpath('Test.vcproj'))
 vcproj = test.read('Test.vcproj', 'r')
-expect = test.msvs_substitute(expected_vcprojfile, '8.0', None, 'SConstruct')
+expect = test.msvs_substitute(expected_vcprojfile, '7.1', None, 'SConstruct')
 # don't compare the pickled data
 assert vcproj[:len(expect)] == expect, test.diff_substr(expect, vcproj)
 
 test.must_exist(test.workpath('Test.sln'))
 sln = test.read('Test.sln', 'r')
-expect = test.msvs_substitute(expected_slnfile, '8.0', None, 'SConstruct')
+expect = test.msvs_substitute(expected_slnfile, '7.1', None, 'SConstruct')
 # don't compare the pickled data
 assert sln[:len(expect)] == expect, test.diff_substr(expect, sln)
 
@@ -67,31 +87,19 @@ test.run(arguments='-c .')
 test.must_not_exist(test.workpath('Test.vcproj'))
 test.must_not_exist(test.workpath('Test.sln'))
 
-test.run(arguments='Test.vcproj')
+test.run(arguments='.')
 
 test.must_exist(test.workpath('Test.vcproj'))
 test.must_exist(test.workpath('Test.sln'))
 
 test.run(arguments='-c Test.sln')
 
-test.must_not_exist(test.workpath('Test.vcproj'))
+test.must_exist(test.workpath('Test.vcproj'))
 test.must_not_exist(test.workpath('Test.sln'))
 
+test.run(arguments='-c Test.vcproj')
 
-
-# Test that running SCons with $PYTHON_ROOT in the environment
-# changes the .vcproj output as expected.
-os.environ['PYTHON_ROOT'] = 'xyzzy'
-python = os.path.join('$(PYTHON_ROOT)', os.path.split(TestSConsMSVS.python)[1])
-
-test.run(arguments='Test.vcproj')
-
-test.must_exist(test.workpath('Test.vcproj'))
-vcproj = test.read('Test.vcproj', 'r')
-expect = test.msvs_substitute(expected_vcprojfile, '8.0', None, 'SConstruct',
-                              python=python)
-# don't compare the pickled data
-assert vcproj[:len(expect)] == expect, test.diff_substr(expect, vcproj)
+test.must_not_exist(test.workpath('Test.vcproj'))
 
 
 

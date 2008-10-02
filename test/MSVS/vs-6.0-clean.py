@@ -25,8 +25,8 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test that we can generate Visual Studio 6 project (.dsp) and solution
-(.dsw) files that look correct.
+Verify the -c option's ability to clean generated Visual Studio 6
+project (.dsp) and solution (.dsw) files.
 """
 
 import TestSConsMSVS
@@ -40,13 +40,35 @@ test._msvs_versions = ['6.0']
 
 expected_dspfile = TestSConsMSVS.expected_dspfile_6_0
 expected_dswfile = TestSConsMSVS.expected_dswfile_6_0
-SConscript_contents = TestSConsMSVS.SConscript_contents_6_0
 
 
 
-test.write('SConstruct', SConscript_contents)
+test.write('SConstruct', """\
+env=Environment(platform='win32', tools=['msvs'], MSVS_VERSION='6.0')
 
-test.run(arguments="Test.dsp")
+testsrc = ['test.c']
+testincs = ['sdk.h']
+testlocalincs = ['test.h']
+testresources = ['test.rc']
+testmisc = ['readme.txt']
+
+p = env.MSVSProject(target = 'Test.dsp',
+                    srcs = testsrc,
+                    incs = testincs,
+                    localincs = testlocalincs,
+                    resources = testresources,
+                    misc = testmisc,
+                    buildtarget = 'Test.exe',
+                    variant = 'Release',
+                    auto_build_solution = 0)
+
+env.MSVSSolution(target = 'Test.dsw',
+                 slnguid = '{SLNGUID}',
+                 projects = [p],
+                 variant = 'Release')
+""")
+
+test.run(arguments=".")
 
 test.must_exist(test.workpath('Test.dsp'))
 dsp = test.read('Test.dsp', 'r')
@@ -64,15 +86,19 @@ test.run(arguments='-c .')
 test.must_not_exist(test.workpath('Test.dsp'))
 test.must_not_exist(test.workpath('Test.dsw'))
 
-test.run(arguments='Test.dsp')
+test.run(arguments='.')
 
 test.must_exist(test.workpath('Test.dsp'))
 test.must_exist(test.workpath('Test.dsw'))
 
 test.run(arguments='-c Test.dsw')
 
-test.must_not_exist(test.workpath('Test.dsp'))
+test.must_exist(test.workpath('Test.dsp'))
 test.must_not_exist(test.workpath('Test.dsw'))
+
+test.run(arguments='-c Test.dsp')
+
+test.must_not_exist(test.workpath('Test.dsp'))
 
 
 
