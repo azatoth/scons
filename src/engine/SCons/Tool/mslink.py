@@ -44,7 +44,7 @@ import SCons.Tool.msvc
 import SCons.Tool.msvs
 import SCons.Util
 
-from MSVCCommon import MergeMSVSBatFile, get_default_version, query_versions
+from MSVCCommon import MergeMSVSBatFile, get_default_version, detect_msvs
 
 def pdbGenerator(env, target, source, for_signature):
     try:
@@ -233,8 +233,4 @@ def generate(env):
     env['LDMODULECOM'] = compositeLinkAction
 
 def exists(env):
-    version = query_versions()
-    if len(version) > 0:
-        return 1
-    else:
-        return 0
+    return detect_msvs()

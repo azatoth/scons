@@ -438,3 +438,10 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
     vars = ParseBatFile(batfilename, vars)
     for k, v in vars.items():
         env.PrependENVPath(k, v, delete_existing=1)
+
+def detect_msvs():
+    version = query_versions()
+    if len(version) > 0:
+        return 1
+    else:
+        return 0

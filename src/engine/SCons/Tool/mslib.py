@@ -39,6 +39,8 @@ import SCons.Tool.msvs
 import SCons.Tool.msvc
 import SCons.Util
 
+from MSVCCommon import detect_msvs
+
 def generate(env):
     """Add Builders and construction variables for lib to an Environment."""
     SCons.Tool.createStaticLibBuilder(env)
@@ -64,13 +66,4 @@ def generate(env):
     env['LIBSUFFIX']   = '.lib'
 
 def exists(env):
-    try:
-        v = SCons.Tool.msvs.get_visualstudio_versions()
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
-        pass
-
-    if not v:
-        return env.Detect('lib')
-    else:
-        # there's at least one version of MSVS installed.
-        return 1
+    return detect_msvs()

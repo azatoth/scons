@@ -48,7 +48,7 @@ import SCons.Util
 import SCons.Warnings
 import SCons.Scanner.RC
 
-from MSVCCommon import MergeMSVSBatFile, get_default_version
+from MSVCCommon import MergeMSVSBatFile, get_default_version, detect_msvs
 
 CSuffixes = ['.c', '.C']
 CXXSuffixes = ['.cc', '.cpp', '.cxx', '.c++', '.C++']
@@ -751,9 +751,4 @@ def generate(env):
         env['ENV']['SystemRoot'] = SCons.Platform.win32.get_system_root()
 
 def exists(env):
-    from MSVCCommon import query_versions
-    version = query_versions()
-    if len(version) > 0:
-        return 1
-    else:
-        return 0
+    return detect_msvs()

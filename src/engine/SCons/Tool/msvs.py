@@ -48,6 +48,8 @@ import SCons.Script.SConscript
 import SCons.Util
 import SCons.Warnings
 
+from MSVCCommon import detect_msvs
+
 ##############################################################################
 # Below here are the classes and functions for generation of
 # DSP/DSW/SLN/VCPROJ files.
@@ -1788,26 +1790,4 @@ def generate(env):
     env['SCONS_HOME'] = os.environ.get('SCONS_HOME')
 
 def exists(env):
-    if not env['PLATFORM'] in ('win32', 'cygwin'):
-        return 0
-
-    try:
-        v = SCons.Tool.msvs.get_visualstudio_versions()
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
-        pass
-
-    if not v:
-        version_num = 6.0
-        if env.has_key('MSVS_VERSION'):
-            version_num, suite = msvs_parse_version(env['MSVS_VERSION'])
-        if version_num >= 7.0:
-            # The executable is 'devenv' in Visual Studio Pro,
-            # Team System and others.  Express Editions have different
-            # executable names.  Right now we're only going to worry
-            # about Visual C++ 2005 Express Edition.
-            return env.Detect('devenv') or env.Detect('vcexpress')
-        else:
-            return env.Detect('msdev')
-    else:
-        # there's at least one version of MSVS installed.
-        return 1
+    return detect_msvs()
