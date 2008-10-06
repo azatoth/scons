@@ -365,12 +365,15 @@ def FindDefaultMSVSBatFile(flavor='std', arch='x86'):
 
     return batfilename
 
-def ParseBatFile(path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
+def ParseBatFile(env, path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=None):
     """Returns a dict of var/value pairs by running the batch file
     and looking at the resulting environment variables.
 
     Arguments
     ---------
+    env: Environment
+        scons environment instance. Is used to provide an environment to
+        execute the bat file during parsing.
     path: str
         full path of the .bat file to set up VS environment (vsvarsall.bat,
         etc...)
@@ -440,7 +443,7 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
                 msg = "batfile for version %s not found" % version
                 raise SCons.Errors.MSVCError(msg)
 
-    vars = ParseBatFile(batfilename, vars)
+    vars = ParseBatFile(env, batfilename, vars)
     for k, v in vars.items():
         env.PrependENVPath(k, v, delete_existing=1)
 
