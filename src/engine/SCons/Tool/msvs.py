@@ -48,7 +48,7 @@ import SCons.Script.SConscript
 import SCons.Util
 import SCons.Warnings
 
-from MSVCCommon import detect_msvs
+from MSVCCommon import detect_msvs, merge_default_version
 
 ##############################################################################
 # Below here are the classes and functions for generation of
@@ -1763,17 +1763,8 @@ def generate(env):
     env['MSVSCLEANCOM'] = '$MSVSSCONSCOM -c "$MSVSBUILDTARGET"'
     env['MSVSENCODING'] = 'Windows-1252'
 
-    try:
-        version = get_default_visualstudio_version(env)
-        # keep a record of some of the MSVS info so the user can use it.
-        dirs = get_msvs_install_dirs(version)
-        env['MSVS'].update(dirs)
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
-        # we don't care if we can't do this -- if we can't, it's
-        # because we don't have access to the registry, or because the
-        # tools aren't installed.  In either case, the user will have to
-        # find them on their own.
-        pass
+    # Set-up ms tools paths for default version
+    merge_default_version(env)
 
     version_num, suite = msvs_parse_version(env['MSVS_VERSION'])
     if (version_num < 7.0):
