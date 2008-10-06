@@ -726,8 +726,8 @@ def generate(env):
     env['SHOBJSUFFIX']    = '$OBJSUFFIX'
 
     try:
-        from MSVCCommon import MergeMSVSBatFile, default_version
-        version = default_version(env)
+        from MSVCCommon import MergeMSVSBatFile, get_default_version
+        version = get_default_version(env)
         if version is not None:
             version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
             MergeMSVSBatFile(env, version_num)

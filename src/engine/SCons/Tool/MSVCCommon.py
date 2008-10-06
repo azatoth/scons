@@ -299,7 +299,7 @@ def query_versions():
 
     return versions
 
-def default_version(env):
+def get_default_version(env):
     """Return the default version to use for MSVS.
     
     if no version was requested by the user through the MSVS environment
