@@ -44,7 +44,7 @@ import SCons.Tool.msvc
 import SCons.Tool.msvs
 import SCons.Util
 
-from MSVCCommon import MergeMSVSBatFile, get_default_version, detect_msvs
+from MSVCCommon import merge_default_version, detect_msvs
 
 def pdbGenerator(env, target, source, for_signature):
     try:
@@ -207,16 +207,8 @@ def generate(env):
     env['REGSVRFLAGS'] = '/s '
     env['REGSVRCOM'] = '$REGSVR $REGSVRFLAGS ${TARGET.windows}'
 
-    try:
-        version = get_default_version(env)
-        if version is not None:
-            version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
-            MergeMSVSBatFile(env, version_num)
-        else:
-            MergeMSVSBatFile(env)
-
-    except SCons.Errors.MSVCError:
-        pass
+    # Set-up ms tools paths for default version
+    merge_default_version(env)
 
     # For most platforms, a loadable module is the same as a shared
     # library.  Platforms which are different can override these, but

@@ -48,7 +48,7 @@ import SCons.Util
 import SCons.Warnings
 import SCons.Scanner.RC
 
-from MSVCCommon import MergeMSVSBatFile, get_default_version, detect_msvs
+from MSVCCommon import merge_default_version, detect_msvs
 
 CSuffixes = ['.c', '.C']
 CXXSuffixes = ['.cc', '.cpp', '.cxx', '.c++', '.C++']
@@ -727,16 +727,8 @@ def generate(env):
     env['SHOBJPREFIX']    = '$OBJPREFIX'
     env['SHOBJSUFFIX']    = '$OBJSUFFIX'
 
-    try:
-        version = get_default_version(env)
-        if version is not None:
-            version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
-            MergeMSVSBatFile(env, version_num)
-        else:
-            MergeMSVSBatFile(env)
-
-    except SCons.Errors.MSVCError:
-        pass
+    # Set-up ms tools paths for default version
+    merge_default_version(env)
 
     env['CFILESUFFIX'] = '.c'
     env['CXXFILESUFFIX'] = '.cc'

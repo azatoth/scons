@@ -439,6 +439,19 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
     for k, v in vars.items():
         env.PrependENVPath(k, v, delete_existing=1)
 
+def merge_default_version(env):
+    try:
+        version = get_default_version(env)
+        if version is not None:
+            version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
+            MergeMSVSBatFile(env, version_num)
+        else:
+            MergeMSVSBatFile(env)
+
+    except SCons.Errors.MSVCError:
+        pass
+
+
 def detect_msvs():
     version = query_versions()
     if len(version) > 0:
