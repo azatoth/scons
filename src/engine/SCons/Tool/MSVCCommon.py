@@ -187,7 +187,8 @@ def find_bat(version, flavor = 'std'):
     else:
         return find_vcvarsall(version, flavor)
 
-def get_output(vcbat, args = None, keep = ("include", "lib", "libpath", "path")):
+def get_output(vcbat, args = None, keep = ("include", "lib", "libpath", "path"),
+               env = None):
     """Parse the output of given bat file, with given args. Only
     take given vars in the argument keep."""
     skeep = set(keep)
@@ -197,12 +198,14 @@ def get_output(vcbat, args = None, keep = ("include", "lib", "libpath", "path"))
         debug("Calling '%s %s'" % (vcbat, args))
         popen = subprocess.Popen('"%s" %s & set' % (vcbat, args),
                                  stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+                                 stderr=subprocess.PIPE,
+                                 env=env)
     else:
         debug("Calling '%s'" % vcbat)
         popen = subprocess.Popen('"%s" & set' % vcbat,
                                  stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+                                 stderr=subprocess.PIPE,
+                                 env=env)
 
     stdout, stderr = popen.communicate()
     if popen.wait() != 0:
@@ -387,7 +390,7 @@ def ParseBatFile(env, path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=Non
 
     # XXX: fix args handling here. Do not use a string but a sequence to avoid
     # escaping problems, and letting Popen taking care of it for us.
-    output = get_output(path, args, vars)
+    output = get_output(path, args, vars, env=env['ENV'])
 
     parsed = parse_output(output, vars)
     ret = {}
