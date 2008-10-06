@@ -48,6 +48,8 @@ import SCons.Util
 import SCons.Warnings
 import SCons.Scanner.RC
 
+from MSVCCommon import MergeMSVSBatFile, get_default_version
+
 CSuffixes = ['.c', '.C']
 CXXSuffixes = ['.cc', '.cpp', '.cxx', '.c++', '.C++']
 
@@ -726,7 +728,6 @@ def generate(env):
     env['SHOBJSUFFIX']    = '$OBJSUFFIX'
 
     try:
-        from MSVCCommon import MergeMSVSBatFile, get_default_version
         version = get_default_version(env)
         if version is not None:
             version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
@@ -735,10 +736,7 @@ def generate(env):
             MergeMSVSBatFile(env)
 
     except SCons.Errors.MSVCError:
-        # We should always succeed in generate, because it is run on Linux too
         pass
-        #if sys.platform in ('win32', 'cygwin'):
-        #    raise
 
     env['CFILESUFFIX'] = '.c'
     env['CXXFILESUFFIX'] = '.cc'
