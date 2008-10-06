@@ -67,7 +67,7 @@ _VS_STANDARD_HKEY_ROOT = r"Software\Microsoft\VisualStudio\%0.1f"
 _VS_EXPRESS_HKEY_ROOT = r"Software\Microsoft\VCExpress\%0.1f"
 
 # Default value of VS to use
-DEFVERSION = 9.0
+DEFVERSION = "9.0"
 
 try:
     from logging import debug
@@ -300,15 +300,20 @@ def query_versions():
     return versions
 
 def get_default_version(env):
-    """Return the default version to use for MSVS.
+    """Return the default version to use for MSVS
     
     if no version was requested by the user through the MSVS environment
     variable, query all the available the visual studios through
-    query_versions, and take the highest one."""
+    query_versions, and take the highest one.
+
+    Return
+    ------
+    version: str
+        the default version."""
     versions = [DEFVERSION]
 
     if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
-        v = query_versions()
+        v = [str(i) for i in query_versions()]
         if v:
             versions = v
         env['MSVS'] = {'VERSIONS' : versions}
