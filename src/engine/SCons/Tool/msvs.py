@@ -1151,16 +1151,6 @@ def GenerateDSW(dswfile, source, env):
 # DSP/DSW/SLN/VCPROJ files.
 ##############################################################################
 
-def is_msvs_installed():
-    """
-    Check the registry for an installed visual studio.
-    """
-    try:
-        v = SCons.Tool.msvs.get_visualstudio_versions()
-        return v
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
-        return 0
-
 def GetMSVSProjectSuffix(target, source, env, for_signature):
      return env['MSVS']['PROJECTSUFFIX']
 
