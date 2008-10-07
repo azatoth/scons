@@ -391,16 +391,17 @@ def ParseBatFile(env, path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=Non
     nenv = normalize_env(env['ENV'], _VSCOMNTOOL_VARNAME.values() + ['COMSPEC'])
     output = get_output(path, args, vars, env=nenv)
 
-    parsed = parse_output(output, vars)
-    ret = {}
-    for k in parsed.keys():
-        if os.environ.has_key(k):
-           p = os.environ[k].split(os.pathsep)
-           ret[k] = get_new(p, parsed[k])
-        else:
-           ret[k] = parsed[k]
+    return parse_output(output, vars)
+    #parsed = parse_output(output, vars)
+    #ret = {}
+    #for k in parsed.keys():
+    #    if os.environ.has_key(k):
+    #       p = os.environ[k].split(os.pathsep)
+    #       ret[k] = get_new(p, parsed[k])
+    #    else:
+    #       ret[k] = parsed[k]
 
-    return ret
+    #return ret
 
 def MergeMSVSBatFile(env, version=None, batfilename=None,
                      vars=["INCLUDE", "LIB", "LIBPATH", "PATH"]):
