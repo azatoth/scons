@@ -70,6 +70,12 @@ _VS_EXPRESS_HKEY_ROOT = r"Software\Microsoft\VCExpress\%0.1f"
 DEFVERSIONSTR = "9.0"
 DEFVERSION = float(DEFVERSIONSTR)
 
+_SUPPORTED_VERSIONS = [9.0, 8.0, 7.1, 7.0, 6.0]
+_SUPPORTED_VERSIONSSTR = [str(i) for i in _SUPPORTED_VERSIONS]
+
+_VSCOMNTOOL_VARNAME = dict(['VS%0.f0COMNTOOLS' % v] 
+                           for v in _SUPPORTED_VERSIONS])
+
 try:
     from logging import debug
 except ImportError:
@@ -129,8 +135,7 @@ def pdir_from_env(version):
     """Try to find the  product directory from the environment.
 
     Return None if failed or the directory does not exist"""
-    key = "VS%0.f0COMNTOOLS" % version
-    d = os.environ.get(key, None)
+    d = os.environ.get(_VSCOMNTOOL_VARNAME[version], None)
 
     def get_pdir():
         ret = None
@@ -267,7 +272,7 @@ def query_versions():
     versions = []
     # We put in decreasing order: versions itself should be in drecreasing
     # order
-    for v in [9.0, 8.0, 7.1, 7.0, 6.0]:
+    for v in _SUPPORTED_VERSIONS:
         bat = find_bat(v)
         if bat is not None:
             versions.append(v)
