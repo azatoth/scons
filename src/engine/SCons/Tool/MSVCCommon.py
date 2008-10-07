@@ -67,7 +67,8 @@ _VS_STANDARD_HKEY_ROOT = r"Software\Microsoft\VisualStudio\%0.1f"
 _VS_EXPRESS_HKEY_ROOT = r"Software\Microsoft\VCExpress\%0.1f"
 
 # Default value of VS to use
-DEFVERSION = "9.0"
+DEFVERSIONSTR = "9.0"
+DEFVERSION = float(DEFVERSIONSTR)
 
 try:
     from logging import debug
