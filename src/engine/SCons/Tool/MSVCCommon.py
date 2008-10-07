@@ -260,35 +260,6 @@ def get_new(l1, l2):
 
     return new
 
-def varbat_variables(version, flavor = 'std', arch = 'x86'):
-    """Return a dictionary where the keys are the env variables and the values
-    the list of paths.
-
-    Note: only return the paths which were added by the .bat file, to avoid
-    polluting the env with all the content of PATH."""
-    file = find_bat(version, flavor)
-    if file is None:
-        raise IOError("bar file for version %s, flavor %s not found" \
-                      % (version, flavor))
-
-    # XXX version < 8 does not handle cross compilation ?
-    if version < 8:
-        out = get_output(file)
-        parsed = parse_output(out, keep = ['INCLUDE', 'PATH', 'LIB'])
-    else:
-        out = get_output(file, args = arch)
-        parsed = parse_output(out, keep = ['INCLUDE', 'PATH', 'LIB', 'LIBPATH'])
-
-    ret = {}
-    for k in parsed.keys():
-        if os.environ.has_key(k):
-           p = os.environ[k].split(os.pathsep)
-           ret[k] = get_new(p, parsed[k])
-        else:
-           ret[k] = parsed[k]
-
-    return ret
-
 def query_versions():
     """Query the system to get available versions of VS. A version is
     considered when a batfile is found."""
