@@ -77,6 +77,10 @@ _SUPPORTED_VERSIONSSTR = [str(i) for i in _SUPPORTED_VERSIONS]
 _VSCOMNTOOL_VARNAME = dict([(v, 'VS%dCOMNTOOLS' % round(v * 10))
                             for v in _SUPPORTED_VERSIONS])
 
+# Location of the SDK:
+_SUPPORTED_SDK_VERSIONS = [6.1, 6.0]
+_SDK_HKEY_ROOT = r"Software\Microsoft\Microsoft SDKs\Windows\%0.1f"
+
 try:
     from logging import debug
 except ImportError:
