@@ -154,11 +154,11 @@ def sdir_from_reg(version):
               (sdkbase + '\InstallationFolder'))
         return None
 
-    if not os.path.exists(basedirs):
-        debug('%s is not found on the filesystem' % basedirs)
+    if not os.path.exists(basedir):
+        debug('%s is not found on the filesystem' % basedir)
         return None
 
-    return comps
+    return basedir
 
 def pdir_from_env(version):
     """Try to find the  product directory from the environment.
