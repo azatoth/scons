@@ -199,12 +199,18 @@ def normalize_env(env, keys):
     """Given a dictionary representing a shell environment, add the variables
     from os.environ needed for the processing of .bat files; the keys are
     controlled by the keys argument.
+
+    It also makes sure the environment values are correctly encoded.
     
     Note: the environment is copied"""
-    normenv = copy.deepcopy(env)
-    for k in keys:
-        if os.environ.has_key(k):
-            normenv[k] = os.environ[k]
+    normenv = {}
+    if env:
+        for k in env.keys():
+            normenv[k] = copy.deepcopy(env[k]).encode('mbcs')
+
+        for k in keys:
+            if os.environ.has_key(k):
+                normenv[k] = os.environ[k].encode('mbcs')
 
     return normenv
 
