@@ -242,13 +242,8 @@ def normalize_env(env, keys):
 
     return normenv
 
-def get_output(vcbat, args = None, keep = ("include", "lib", "libpath", "path"),
-               env = None):
-    """Parse the output of given bat file, with given args. Only
-    take given vars in the argument keep."""
-    skeep = set(keep)
-    result = {}
-
+def get_output(vcbat, args = None, env = None):
+    """Parse the output of given bat file, with given args."""
     if args:
         debug("Calling '%s %s'" % (vcbat, args))
         popen = subprocess.Popen('"%s" %s & set' % (vcbat, args),
@@ -417,7 +412,7 @@ def ParseBatFile(env, path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=Non
     # XXX: fix args handling here. Do not use a string but a sequence to avoid
     # escaping problems, and letting Popen taking care of it for us.
     nenv = normalize_env(env['ENV'], _VSCOMNTOOL_VARNAME.values() + ['COMSPEC'])
-    output = get_output(path, args, vars, env=nenv)
+    output = get_output(path, args, env=nenv)
 
     return parse_output(output, vars)
     #parsed = parse_output(output, vars)
