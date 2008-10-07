@@ -280,7 +280,12 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
     # rdk will  keep the regex to match the .bat file output line starts
     rdk = {}
     for i in keep:
-        rdk[i] = re.compile('%s=(.*)' % _ENV_TO_T[i], re.I)
+        # XXX: the _ENV_TO_T indirection may not be necessary anymore. Check
+        # this
+        if _ENV_TO_T.has_key(i):
+            rdk[i] = re.compile('%s=(.*)' % _ENV_TO_T[i], re.I)
+        else:
+            rdk[i] = re.compile('%s=(.*)' % i, re.I)
 
     def add_env(rmatch, key):
         plist = rmatch.group(1).split(os.pathsep)
