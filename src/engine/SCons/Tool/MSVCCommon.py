@@ -73,7 +73,7 @@ DEFVERSION = float(DEFVERSIONSTR)
 _SUPPORTED_VERSIONS = [9.0, 8.0, 7.1, 7.0, 6.0]
 _SUPPORTED_VERSIONSSTR = [str(i) for i in _SUPPORTED_VERSIONS]
 
-_VSCOMNTOOL_VARNAME = dict(['VS%0.f0COMNTOOLS' % v] 
+_VSCOMNTOOL_VARNAME = dict(['VS%0.f0COMNTOOLS' % v]
                            for v in _SUPPORTED_VERSIONS])
 
 try:
@@ -281,7 +281,7 @@ def query_versions():
 
 def get_default_version(env):
     """Return the default version to use for MSVS
-    
+
     if no version was requested by the user through the MSVS environment
     variable, query all the available the visual studios through
     query_versions, and take the highest one.
