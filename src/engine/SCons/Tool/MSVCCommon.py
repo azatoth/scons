@@ -74,8 +74,8 @@ DEFVERSION = float(DEFVERSIONSTR)
 _SUPPORTED_VERSIONS = [9.0, 8.0, 7.1, 7.0, 6.0]
 _SUPPORTED_VERSIONSSTR = [str(i) for i in _SUPPORTED_VERSIONS]
 
-_VSCOMNTOOL_VARNAME = dict(['VS%0.f0COMNTOOLS' % v
-                           for v in _SUPPORTED_VERSIONS])
+_VSCOMNTOOL_VARNAME = dict([(v, 'VS%dCOMNTOOLS' % round(v * 10))
+                            for v in _SUPPORTED_VERSIONS])
 
 try:
     from logging import debug
