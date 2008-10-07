@@ -382,7 +382,7 @@ def ParseBatFile(env, path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=Non
 
     # XXX: fix args handling here. Do not use a string but a sequence to avoid
     # escaping problems, and letting Popen taking care of it for us.
-    nenv = normalize_env(env['ENV'], _VSCOMNTOOL_VARNAME.keys() + ['COMSPEC'])
+    nenv = normalize_env(env['ENV'], _VSCOMNTOOL_VARNAME.values() + ['COMSPEC'])
     output = get_output(path, args, vars, env=nenv)
 
     parsed = parse_output(output, vars)
