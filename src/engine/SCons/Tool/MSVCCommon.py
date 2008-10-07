@@ -136,6 +136,30 @@ def pdir_from_reg(version, flavor = 'std'):
 
     return comps
 
+def sdir_from_reg(version):
+    """Try to find the MS SDK from the registry.
+
+    Return None if failed or the directory does not exist"""
+    if not SCons.Util.can_read_reg:
+        debug('SCons cannot read registry')
+        return None
+
+    sdkbase = _SDK_HKEY_ROOT % version
+
+    try:
+        basedir = read_reg(sdkbase + '\InstallationFolder')
+        debug('Found sdk dir in registry: %s' % basedir)
+    except WindowsError, e:
+        debug('Did not find sdk dir key %s in registry' % \
+              (sdkbase + '\InstallationFolder'))
+        return None
+
+    if not os.path.exists(basedirs):
+        debug('%s is not found on the filesystem' % basedirs)
+        return None
+
+    return comps
+
 def pdir_from_env(version):
     """Try to find the  product directory from the environment.
 
