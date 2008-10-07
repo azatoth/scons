@@ -136,7 +136,8 @@ def pdir_from_env(version):
     """Try to find the  product directory from the environment.
 
     Return None if failed or the directory does not exist"""
-    d = os.environ.get(_VSCOMNTOOL_VARNAME[version], None)
+    key = _VSCOMNTOOL_VARNAME[version]
+    d = os.environ.get(key, None)
 
     def get_pdir():
         ret = None
