@@ -30,6 +30,7 @@ Common functions for Microsoft Visual Studio and Visual C/C++.
 import os
 import re
 import subprocess
+import copy
 
 import SCons.Errors
 import SCons.Platform.win32
@@ -192,6 +193,19 @@ def find_bat(version, flavor = 'std'):
         return find_vsvars32(version, flavor)
     else:
         return find_vcvarsall(version, flavor)
+
+def normalize_env(env, keys):
+    """Given a dictionary representing a shell environment, add the variables
+    from os.environ needed for the processing of .bat files; the keys are
+    controlled by the keys argument.
+    
+    Note: the environment is copied"""
+    normenv = copy.deepcopy(env)
+    for k in keys:
+        if os.environ.has_key(k):
+            normenv[k] = os.environ[k]
+
+    return normenv
 
 def get_output(vcbat, args = None, keep = ("include", "lib", "libpath", "path"),
                env = None):
