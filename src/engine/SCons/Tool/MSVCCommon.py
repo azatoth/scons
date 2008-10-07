@@ -79,7 +79,7 @@ _VSCOMNTOOL_VARNAME = dict([(v, 'VS%dCOMNTOOLS' % round(v * 10))
 
 # Location of the SDK (checked for 6.1 only)
 _SUPPORTED_SDK_VERSIONS = [6.1, 6.0]
-_SDK_HKEY_ROOT = r"Software\Microsoft\Microsoft SDKs\Windows\%0.1f"
+_SDK_HKEY_ROOT = r"Software\Microsoft\Microsoft SDKs\Windows\v%0.1f"
 
 try:
     from logging import debug
