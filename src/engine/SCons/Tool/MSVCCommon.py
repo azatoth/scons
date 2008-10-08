@@ -302,6 +302,18 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
 
     return dkeep
 
+def output_to_dict(output):
+    """Given an output string, parse it to find env variables.
+    
+    Return a dict where keys are variables names, and values their content"""
+    envlinem = re.compile(r'^([a-zA-z0-9]+)=([\S\s]*)$')
+    parsedenv = {}
+    for line in output.splitlines():
+        m = envlinem.match(line)
+        if m:
+            parsedenv[m.group(1)] = m.group(2)
+    return parsedenv
+
 def get_new(l1, l2):
     """Given two list l1 and l2, return the items in l2 which are not in l1.
     Order is maintained."""
