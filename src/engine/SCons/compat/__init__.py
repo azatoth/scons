@@ -29,11 +29,7 @@ implementations of various things that we'd like to use in SCons but which
 only show up in later versions of Python than the early, old version(s)
 we still support.
 
-This package will be imported by other code:
-
-    import SCons.compat
-
-But other code will not generally reference things in this package through
+Other code will not generally reference things in this package through
 the SCons.compat namespace.  The modules included here add things to
 the __builtin__ namespace or the global module list so that the rest
 of our code can use the objects and names imported here regardless of
@@ -171,6 +167,46 @@ except AttributeError:
     # minor modifications for older Python versions.
     del shlex
     import_as('_scons_shlex', 'shlex')
+
+
+import shutil
+try:
+    shutil.move
+except AttributeError:
+    # Pre-2.3 Python has no shutil.move() function.
+    #
+    # Cribbed from Python 2.5.
+    import os
+
+    def move(src, dst):
+        """Recursively move a file or directory to another location.
+
+        If the destination is on our current filesystem, then simply use
+        rename.  Otherwise, copy src to the dst and then remove src.
+        A lot more could be done here...  A look at a mv.c shows a lot of
+        the issues this implementation glosses over.
+
+        """
+        try:
+            os.rename(src, dst)
+        except OSError:
+            if os.path.isdir(src):
+                if shutil.destinsrc(src, dst):
+                    raise Error, "Cannot move a directory '%s' into itself '%s'." % (src, dst)
+                shutil.copytree(src, dst, symlinks=True)
+                shutil.rmtree(src)
+            else:
+                shutil.copy2(src,dst)
+                os.unlink(src)
+    shutil.move = move
+    del move
+
+    def destinsrc(src, dst):
+        src = os.path.abspath(src)
+        return os.path.abspath(dst)[:len(src)] == src
+    shutil.destinsrc = destinsrc
+    del destinsrc
+
 
 try:
     import subprocess

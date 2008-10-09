@@ -100,8 +100,6 @@ There are the following methods for internal use within this module:
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import UserDict
 import UserList
 
@@ -363,7 +361,7 @@ class BuilderBase:
                         name = None,
                         chdir = _null,
                         is_explicit = 1,
-                        src_builder = [],
+                        src_builder = None,
                         ensure_suffix = False,
                         **overrides):
         if __debug__: logInstanceCreation(self, 'Builder.BuilderBase')
@@ -410,7 +408,9 @@ class BuilderBase:
             self.executor_kw['chdir'] = chdir
         self.is_explicit = is_explicit
 
-        if not SCons.Util.is_List(src_builder):
+        if src_builder is None:
+            src_builder = []
+        elif not SCons.Util.is_List(src_builder):
             src_builder = [ src_builder ]
         self.src_builder = src_builder
 
@@ -505,7 +505,7 @@ class BuilderBase:
                 tlist = [ t_from_s(pre, suf, splitext) ]
         else:
             target = self._adjustixes(target, pre, suf, self.ensure_suffix)
-            tlist = env.arg2nodes(target, target_factory)
+            tlist = env.arg2nodes(target, target_factory, target=target, source=source)
 
         if self.emitter:
             # The emitter is going to do str(node), but because we're

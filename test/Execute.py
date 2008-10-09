@@ -82,7 +82,25 @@ test.write('k.in', "k.in\n")
 test.write('l.in', "l.in\n")
 test.write('m.in', "m.in\n")
 
-expect = """\
+import sys
+if sys.platform == 'win32':
+    expect = """\
+scons: *** Error 1
+scons: *** Error 2
+scons: *** nonexistent.in/*.*: The system cannot find the path specified
+"""
+else:
+    # TODO(1.5):  the underlying shutil.copytree() call doesn't
+    # add the nonexistent file name to the exception it throws.
+    # This goes away soon, so just accomodate the difference.
+    if sys.version[:3] == '1.5':
+        expect = """\
+scons: *** Error 1
+scons: *** Error 2
+scons: *** No such file or directory
+"""
+    else:
+        expect = """\
 scons: *** Error 1
 scons: *** Error 2
 scons: *** nonexistent.in: No such file or directory

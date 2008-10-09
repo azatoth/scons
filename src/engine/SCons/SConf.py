@@ -28,8 +28,6 @@ Autoconf-like configuration support.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import os
 import re
 import string
@@ -235,7 +233,9 @@ class SConfBuildTask(SCons.Taskmaster.Task):
             raise
         elif issubclass(exc_type, SCons.Errors.BuildError):
             # we ignore Build Errors (occurs, when a test doesn't pass)
-            pass
+            # Clear the exception to prevent the contained traceback
+            # to build a reference cycle.
+            self.exc_clear()
         else:
             self.display('Caught exception while building "%s":\n' %
                          self.targets[0])

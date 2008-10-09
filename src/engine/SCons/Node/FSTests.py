@@ -1708,7 +1708,8 @@ class DirTestCase(_tempdirTestCase):
         e = self.fs.Dir(os.path.join('d', 'empty'))
         s = self.fs.Dir(os.path.join('d', 'sub'))
 
-        files = d.get_contents().split('\n')
+        #TODO(1.5) files = d.get_contents().split('\n')
+        files = string.split(d.get_contents(), '\n')
 
         assert e.get_contents() == '', e.get_contents()
         assert e.get_csig()+" empty" == files[0], files
@@ -2402,7 +2403,12 @@ class GlobTestCase(_tempdirTestCase):
         # At least sometimes this should return out-of-order items
         # if Glob doesn't sort.
         g = self.fs.Glob('disk-sub/*', strings=True)
-        assert g == ['disk-sub/disk-ddd', 'disk-sub/disk-eee', 'disk-sub/disk-fff'], str(g) + " is not sorted, but should be!"
+        expect = [
+            os.path.join('disk-sub', 'disk-ddd'),
+            os.path.join('disk-sub', 'disk-eee'),
+            os.path.join('disk-sub', 'disk-fff'),
+        ]
+        assert g == expect, str(g) + " is not sorted, but should be!"
 
 
 class RepositoryTestCase(_tempdirTestCase):

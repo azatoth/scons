@@ -45,6 +45,7 @@ import SCons.Tool
 import SCons.Tool.msvs
 import SCons.Util
 import SCons.Warnings
+import SCons.Scanner.RC
 
 CSuffixes = ['.c', '.C']
 CXXSuffixes = ['.cc', '.cpp', '.cxx', '.c++', '.C++']
@@ -660,13 +661,17 @@ pch_action = SCons.Action.Action('$PCHCOM', '$PCHCOMSTR')
 pch_builder = SCons.Builder.Builder(action=pch_action, suffix='.pch',
                                     emitter=pch_emitter,
                                     source_scanner=SCons.Tool.SourceFileScanner)
-res_action = SCons.Action.Action('$RCCOM', '$RCCOMSTR')
+
+
+# Logic to build .rc files into .res files (resource files)
+res_scanner = SCons.Scanner.RC.RCScan()
+res_action  = SCons.Action.Action('$RCCOM', '$RCCOMSTR')
 res_builder = SCons.Builder.Builder(action=res_action,
                                     src_suffix='.rc',
                                     suffix='.res',
                                     src_builder=[],
-                                    source_scanner=SCons.Tool.SourceFileScanner)
-SCons.Tool.SourceFileScanner.add_scanner('.rc', SCons.Defaults.CScan)
+                                    source_scanner=res_scanner)
+
 
 def generate(env):
     """Add Builders and construction variables for MSVC++ to an Environment."""
@@ -697,10 +702,10 @@ def generate(env):
     env['SHCCCOM']    = '$SHCC /Fo$TARGET /c $SOURCES $SHCFLAGS $SHCCFLAGS $_CCCOMCOM'
     env['CXX']        = '$CC'
     env['CXXFLAGS']   = SCons.Util.CLVar('$CCFLAGS $( /TP $)')
-    env['CXXCOM']     = '$CXX /Fo:$TARGET /c $SOURCES $CXXFLAGS $CCFLAGS $_CCCOMCOM'
+    env['CXXCOM']     = '$CXX /Fo$TARGET /c $SOURCES $CXXFLAGS $CCFLAGS $_CCCOMCOM'
     env['SHCXX']      = '$CXX'
     env['SHCXXFLAGS'] = SCons.Util.CLVar('$CXXFLAGS')
-    env['SHCXXCOM']   = '$SHCXX /Fo:$TARGET /c $SOURCES $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM'
+    env['SHCXXCOM']   = '$SHCXX /Fo$TARGET /c $SOURCES $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM'
     env['CPPDEFPREFIX']  = '/D'
     env['CPPDEFSUFFIX']  = ''
     env['INCPREFIX']  = '/I'
@@ -711,6 +716,7 @@ def generate(env):
 
     env['RC'] = 'rc'
     env['RCFLAGS'] = SCons.Util.CLVar('')
+    env['RCSUFFIXES']=['.rc','.rc2']
     env['RCCOM'] = '$RC $_CPPDEFFLAGS $_CPPINCFLAGS $RCFLAGS /fo$TARGET $SOURCES'
     env['BUILDERS']['RES'] = res_builder
     env['OBJPREFIX']      = ''

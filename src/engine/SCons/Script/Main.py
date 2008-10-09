@@ -36,8 +36,6 @@ it goes here.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import os
 import os.path
 import string
@@ -965,8 +963,11 @@ def _main(parser):
     SCons.Node.implicit_cache = options.implicit_cache
     SCons.Node.FS.set_duplicate(options.duplicate)
     fs.set_max_drift(options.max_drift)
-    if not options.stack_size is None:
-        SCons.Job.stack_size = options.stack_size
+
+    SCons.Job.explicit_stack_size = options.stack_size
+
+    if options.md5_chunksize:
+        SCons.Node.FS.File.md5_chunksize = options.md5_chunksize
 
     platform = SCons.Platform.platform_module()
 
@@ -990,6 +991,7 @@ def _build_targets(fs, options, targets, target_top):
     display.set_mode(not options.silent)
     SCons.Action.print_actions          = not options.silent
     SCons.Action.execute_actions        = not options.no_exec
+    SCons.Node.FS.do_store_info         = not options.no_exec
     SCons.SConf.dryrun                  = options.no_exec
 
     if options.diskcheck:
@@ -1186,7 +1188,10 @@ def _exec_main(parser, values):
         import pdb
         pdb.Pdb().runcall(_main, parser)
     elif options.profile_file:
-        from profile import Profile
+        try:
+            from cProfile import Profile
+        except ImportError, e:
+            from profile import Profile
 
         # Some versions of Python 2.4 shipped a profiler that had the
         # wrong 'c_exception' entry in its dispatch table.  Make sure

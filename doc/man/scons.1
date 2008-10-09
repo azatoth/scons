@@ -98,17 +98,20 @@ Before reading the
 .I SConstruct
 file,
 .B scons
-adds looks for a dir named
+looks for a directory named
 .I site_scons
-in the dir containing the
+in the directory containing the
 .I SConstruct
-file; it adds that
+file; if it exists,
 .I site_scons
-to sys.path, reads the file
+is added to sys.path,
+the file
 .IR site_scons/site_init.py ,
-and adds the directory
+is evaluated if it exists,
+and the directory
 .I site_scons/site_tools
-to the default toolpath, if those exist.  See the
+is added to the default toolpath if it exist.
+See the
 .I --no-site-dir
 and
 .I --site-dir
@@ -1068,6 +1071,19 @@ of 0 means to always use the cached signature,
 no matter how old the file is.
 
 .TP
+.RI --md5-chunksize= KILOBYTES
+Set the block size used to compute MD5 signatures to
+.IR KILOBYTES . 
+This value determines the size of the chunks which are read in at once when
+computing MD5 signatures.  Files below that size are fully stored in memory
+before performing the signature computation while bigger files are read in
+block-by-block. A huge block-size leads to high memory consumption while a very
+small block-size slows down the build considerably.
+
+The default value is to use a chunk size of 64 kilobytes, which should
+be appropriate for most uses.
+
+.TP
 -n, --just-print, --dry-run, --recon
 No execute.  Print the commands that would be executed to build
 any out-of-date target files, but do not execute the commands.
@@ -1949,7 +1965,7 @@ env = Program('hello', 'hello.c', parse_flags = '-Iinclude -DEBUG -lm')
 
 This example adds 'include' to
 .BR CPPPATH ,
-\'EBUG' to
+\&'EBUG' to
 .BR CPPDEFINES ,
 and 'm' to
 .BR LIBS .
@@ -2679,7 +2695,7 @@ env.Append(CCFLAGS = ' -g', FOO = ['foo.yyy'])
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI env.AppendENVPath( name ", " newpath ", [" envname ", " sep ])
+.RI env.AppendENVPath( name ", " newpath ", [" envname ", " sep ", " delete_existing ])
 This appends new path elements to the given path in the
 specified external environment
 .RB ( ENV
@@ -2696,6 +2712,11 @@ This can also handle the
 case where the given old path variable is a list instead of a
 string, in which case a list will be returned instead of a string.
 
+If 
+.I delete_existing
+is 0, then adding a path that already exists
+will not move it to the end; it will stay where it is in the list.
+
 Example:
 
 .ES
@@ -2711,7 +2732,7 @@ after: /biz:/foo/bar:/foo
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI env.AppendUnique( key = val ", [...])"
+.RI env.AppendUnique( key = val ", [...], delete_existing=0)"
 Appends the specified keyword arguments
 to the end of construction variables in the environment.
 If the Environment does not have
@@ -2722,6 +2743,9 @@ then any value(s) that already exist in the
 construction variable will
 .I not
 be added again to the list.
+However, if delete_existing is 1, 
+existing matching values are removed first, so
+existing values in the arg list move to the end of the list.
 
 Example:
 
@@ -4318,11 +4342,50 @@ exists in a repository.
 Returns a list of the target Node or Nodes.
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+\" .TP
+\" .RI env.MergeShellPaths( arg ", [" prepend ])
+\" Merges the elements of the specified
+\" .IR arg ,
+\" which must be a dictionary, to the construction
+\" environment's copy of the shell environment
+\" in env['ENV'].
+\" (This is the environment which is passed
+\" to subshells spawned by SCons.)
+\" Note that
+\" .I arg
+\" must be a single value,
+\" so multiple strings must
+\" be passed in as a list,
+\" not as separate arguments to
+\" .BR env.MergeShellPaths ().
+
+\" New values are prepended to the environment variable by default,
+\" unless prepend=0 is specified.  
+\" Duplicate values are always eliminated, 
+\" since this function calls
+\" .B AppendENVPath
+\" or
+\" .B PrependENVPath
+\" depending on the
+\" .I prepend
+\" argument.  See those functions for more details.
+
+\" Examples:
+
+\" .ES
+\" # Prepend a path to the shell PATH.
+\" env.MergeShellPaths({'PATH':'/usr/local/bin'} )
+\" # Append two dirs to the shell INCLUDE.
+\" env.MergeShellPaths({'INCLUDE':['c:/inc1', 'c:/inc2']}, prepend=0 )
+
+.EE
+
+'\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI env.MergeFlags( arg ", [" unique ])
 Merges the specified
 .I arg
-values to the construction envrionment's construction variables.
+values to the construction environment's construction variables.
 If the
 .I arg
 argument is not a dictionary,
@@ -4839,7 +4902,7 @@ env.Prepend(CCFLAGS = '-g ', FOO = ['foo.yyy'])
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI env.PrependENVPath( name ", " newpath ", [" envname ", " sep ])
+.RI env.PrependENVPath( name ", " newpath ", [" envname ", " sep ", " delete_existing ])
 This appends new path elements to the given path in the
 specified external environment
 .RB ( ENV
@@ -4855,6 +4918,12 @@ and
 This can also handle the
 case where the given old path variable is a list instead of a
 string, in which case a list will be returned instead of a string.
+
+If
+.I delete_existing
+is 0, then adding a path that already exists
+will not move it to the beginning;
+it will stay where it is in the list.
 
 Example:
 
@@ -4874,7 +4943,7 @@ after: /foo/bar:/foo:/biz
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
-.RI env.PrependUnique( key = val ", [...])"
+.RI env.PrependUnique( key = val ", delete_existing=0, [...])"
 Appends the specified keyword arguments
 to the beginning of construction variables in the environment.
 If the Environment does not have
@@ -4885,6 +4954,9 @@ then any value(s) that already exist in the
 construction variable will
 .I not
 be added again to the list.
+However, if delete_existing is 1, 
+existing matching values are removed first, so
+existing values in the arg list move to the front of the list.
 
 Example:
 
