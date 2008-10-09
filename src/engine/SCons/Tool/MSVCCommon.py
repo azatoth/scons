@@ -351,7 +351,7 @@ def get_default_version(env):
     ------
     version: str
         the default version."""
-    versions = [DEFVERSION]
+    versions = [DEFVERSIONSTR]
 
     if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
         v = [str(i) for i in query_versions()]
