@@ -81,7 +81,8 @@ _VSCOMNTOOL_VARNAME = dict([(v, 'VS%dCOMNTOOLS' % round(v * 10))
 
 # Location of the SDK (checked for 6.1 only)
 _SUPPORTED_SDK_VERSIONS = [6.1, 6.0]
-_SDK_HKEY_ROOT = r"Software\Microsoft\Microsoft SDKs\Windows\v%0.1f"
+_VERSIONED_SDK_HKEY_ROOT = \
+		r"Software\Microsoft\Microsoft SDKs\Windows\v%0.1f"
 
 try:
     from logging import debug
@@ -146,7 +147,7 @@ def sdir_from_reg(version):
         debug('SCons cannot read registry')
         return None
 
-    sdkbase = _SDK_HKEY_ROOT % version
+    sdkbase = _VERSIONED_SDK_HKEY_ROOT % version
 
     try:
         basedir = read_reg(sdkbase + '\InstallationFolder')
