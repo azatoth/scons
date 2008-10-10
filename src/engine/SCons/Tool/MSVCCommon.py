@@ -29,7 +29,7 @@ Common functions for Microsoft Visual Studio and Visual C/C++.
 
 import os
 from os.path import join as pjoin, dirname as pdirname, \
-                    normpath as pnormpath
+                    normpath as pnormpath, exists as pexists
 import re
 import subprocess
 import copy
@@ -82,7 +82,9 @@ _VSCOMNTOOL_VARNAME = dict([(v, 'VS%dCOMNTOOLS' % round(v * 10))
 # Location of the SDK (checked for 6.1 only)
 _SUPPORTED_SDK_VERSIONS = [6.1, 6.0]
 _VERSIONED_SDK_HKEY_ROOT = \
-		r"Software\Microsoft\Microsoft SDKs\Windows\v%0.1f"
+        r"Software\Microsoft\Microsoft SDKs\Windows\v%0.1f"
+_CURINSTALLED_SDK_HKEY_ROOT = \
+        r"Software\Microsoft\Microsoft SDKs\Windows\CurrentInstallFolder"
 
 try:
     from logging import debug
@@ -104,6 +106,27 @@ def is_win64():
 
 def read_reg(value):
     return SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)[0]
+
+def get_cur_sdk_dir_from_reg():
+    """Try to find the platform sdk directory from the registry.
+
+    Return None if failed or the directory does not exist"""
+    if not SCons.Util.can_read_reg:
+        debug('SCons cannot read registry')
+        return None
+
+    try:
+        val = read_reg(_CURINSTALLED_SDK_HKEY_ROOT)
+        debug("Found current sdk dir in registry: %s" % val)
+    except WindowsError, e:
+        debug("Did not find current sdk in registry")
+        return None
+
+    if not pexists(val):
+        debug("Current sdk dir %s not on fs" % val)
+        return None
+
+    return val
 
 def pdir_from_reg(version, flavor = 'std'):
     """Try to find the  product directory from the registry.
@@ -534,19 +557,29 @@ def get_def_env(version, flavor, vsinstalldir, arch="x86"):
             if arch == "x86":
                 vcinstalldir = r"%s\VC" % vsinstalldir
                 devenvdir = r"%s\Common7\IDE" % vsinstalldir
+                sdkdir = get_cur_sdk_dir_from_reg()
 
-                paths = [devenvdir]
+                if sdkdir:
+                    paths = [pjoin(sdkdir, 'bin')]
+                    lib = [pjoin(sdkdir, 'lib')]
+                    include = [pjoin(sdkdir, 'include')]
+                else:
+                    paths = []
+                    lib = []
+                    include = []
+
+                paths.append(devenvdir)
                 paths.append(r"%s\BIN" % vcinstalldir)
                 paths.append(r"%s\Common7\Tools" % vsinstalldir)
                 # XXX Handle FRAMEWORKDIR and co
                 paths.append(r"%s\VCPackages" % vcinstalldir)
                 defenv['PATH'] = os.pathsep.join(paths)
 
-                incpath = [r'%s\ATLMFC\INCLUDE' % vcinstalldir]
-                incpath.append(r'%s\INCLUDE' % vcinstalldir)
-                defenv['INCLUDE'] = os.pathsep.join(incpath)
+                include.append(r'%s\ATLMFC\INCLUDE' % vcinstalldir)
+                include.append(r'%s\INCLUDE' % vcinstalldir)
+                defenv['INCLUDE'] = os.pathsep.join(include)
 
-                lib = [r'%s\ATLMFC\LIB' % vcinstalldir]
+                lib.append(r'%s\ATLMFC\LIB' % vcinstalldir)
                 lib.append(r'%s\LIB' % vcinstalldir)
                 defenv['LIB'] = os.pathsep.join(lib)
 
