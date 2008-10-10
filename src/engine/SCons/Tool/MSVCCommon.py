@@ -28,6 +28,8 @@ Common functions for Microsoft Visual Studio and Visual C/C++.
 """
 
 import os
+from os.path import join as pjoin, dirname as pdirname, \
+                    normpath as pnormpath
 import re
 import subprocess
 import copy
@@ -487,6 +489,7 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
                 raise SCons.Errors.MSVCError(msg)
 
     vars = ParseBatFile(env, batfilename, vars)
+
     for k, v in vars.items():
         env.PrependENVPath(k, v, delete_existing=1)
 
@@ -495,7 +498,17 @@ def merge_default_version(env):
         version = get_default_version(env)
         if version is not None:
             version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
-            MergeMSVSBatFile(env, version_num)
+            if env.has_key('MSVS_USE_DEFAULT_PATHS') and \
+               env['MSVS_USE_DEFAULT_PATHS']:
+                use_def_env(env, version_num, 'std')
+                try:
+                    use_def_env(env, version_num, 'std')
+                except ValueError, e:
+                    print "Could not get defaultpaths: %s" % e
+                    MergeMSVSBatFile(env, version_num)
+
+            else:
+                MergeMSVSBatFile(env, version_num)
         else:
             MergeMSVSBatFile(env)
 
@@ -509,3 +522,53 @@ def detect_msvs():
         return 1
     else:
         return 0
+
+def get_def_env(version, flavor, vsinstalldir, arch="x86"):
+    # raise a ValueError for unsuported version/flavor/arch
+
+    # XXX: handle Windows SDK dir
+    defenv = {}
+    if version == 9.0:
+        if flavor == 'express' or flavor == 'std':
+            if arch == "x86":
+                vcinstalldir = r"%s\VC" % vsinstalldir
+                devenvdir = r"%s\Common7\IDE" % vsinstalldir
+
+                paths = [devenvdir]
+                paths.append(r"%s\BIN" % vcinstalldir)
+                paths.append(r"%s\Common7\Tools" % vsinstalldir)
+                # XXX Handle FRAMEWORKDIR and co
+                paths.append(r"%s\VCPackages" % vcinstalldir)
+                defenv['PATH'] = os.pathsep.join(paths)
+
+                incpath = [r'%s\ATLMFC\INCLUDE' % vcinstalldir]
+                incpath.append(r'%s\INCLUDE' % vcinstalldir)
+                defenv['INCLUDE'] = os.pathsep.join(incpath)
+
+                lib = [r'%s\ATLMFC\LIB' % vcinstalldir]
+                lib.append(r'%s\LIB' % vcinstalldir)
+                defenv['LIB'] = os.pathsep.join(lib)
+
+                libpath = [r'%s\ATLMFC\LIB' % vcinstalldir]
+                libpath.append(r'%s\LIB' % vcinstalldir)
+                defenv['LIBPATH'] = os.pathsep.join(libpath)
+            else:
+                raise ValueError("arch %s not supported" % arch)
+        else:
+            raise ValueError("flavor %s for version %s not "\
+                             "understood" % (flavor, version))
+    else:
+        raise ValueError("version %s not supported" % version)
+
+    return defenv
+
+def use_def_env(env, version, flavor, arch="x86"):
+    pdir = find_bat(version, flavor)
+    if not pdir:
+        raise ValueError("bat file not found")
+    else:
+        pdir = pdirname(pdir)
+        pdir = pnormpath(pjoin(pdir, os.pardir))
+        d = get_def_env(version, flavor, pdir)
+        for k, v in d.items():
+            env.PrependENVPath(k, v, delete_existing=1)
