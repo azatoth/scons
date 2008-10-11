@@ -1,3 +1,12 @@
+import os
+
+import SCons.Errors
+
+from SCons.Tool.MSVCCommon.common import  VSCOMNTOOL_VARNAME
+from SCons.Tool.MSVCCommon.version import get_default_version
+from SCons.Tool.MSVCCommon.findloc import find_bat
+from SCons.Tool.MSVCCommon.envhelpers import normalize_env, get_output, parse_output
+
 def FindMSVSBatFile(version, flavor='std', arch="x86"):
     """Returns the location of the MSVS bat file used to set up
     Visual Studio.  Returns None if it is not found.
@@ -58,7 +67,7 @@ def ParseBatFile(env, path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=Non
 
     # XXX: fix args handling here. Do not use a string but a sequence to avoid
     # escaping problems, and letting Popen taking care of it for us.
-    nenv = normalize_env(env['ENV'], _VSCOMNTOOL_VARNAME.values() + ['COMSPEC'])
+    nenv = normalize_env(env['ENV'], VSCOMNTOOL_VARNAME.values() + ['COMSPEC'])
     output = get_output(path, args, env=nenv)
 
     return parse_output(output, vars)

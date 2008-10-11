@@ -2,6 +2,7 @@
 import copy
 import os
 import subprocess
+import re
 
 from SCons.Tool.MSVCCommon.common import debug
 

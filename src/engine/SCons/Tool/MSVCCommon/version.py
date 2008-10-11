@@ -1,16 +1,11 @@
 import SCons.Util
 
+from SCons.Tool.MSVCCommon.common import SUPPORTED_VERSIONS
 from SCons.Tool.MSVCCommon.findloc import find_bat
 
 # Default value of VS to use
 DEFVERSIONSTR = "9.0"
 DEFVERSION = float(DEFVERSIONSTR)
-
-_SUPPORTED_VERSIONS = [9.0, 8.0, 7.1, 7.0, 6.0]
-_SUPPORTED_VERSIONSSTR = [str(i) for i in _SUPPORTED_VERSIONS]
-
-_VSCOMNTOOL_VARNAME = dict([(v, 'VS%dCOMNTOOLS' % round(v * 10))
-                            for v in _SUPPORTED_VERSIONS])
 
 def query_versions():
     """Query the system to get available versions of VS. A version is
@@ -18,7 +13,7 @@ def query_versions():
     versions = []
     # We put in decreasing order: versions itself should be in drecreasing
     # order
-    for v in _SUPPORTED_VERSIONS:
+    for v in SUPPORTED_VERSIONS:
         bat = find_bat(v)
         if bat is not None:
             versions.append(v)

@@ -30,7 +30,8 @@ import os
 
 import SCons.Util
 
-from SCons.Tool.MSVCCommon.common import  read_reg
+from SCons.Tool.MSVCCommon.common import  read_reg, debug
+from SCons.Tool.MSVCCommon.common import  SUPPORTED_VERSIONS, VSCOMNTOOL_VARNAME
 
 # How to look for .bat file ?
 #  - VS 2008 Express (x86):
@@ -100,7 +101,7 @@ def pdir_from_env(version):
     """Try to find the  product directory from the environment.
 
     Return None if failed or the directory does not exist"""
-    key = _VSCOMNTOOL_VARNAME[version]
+    key = VSCOMNTOOL_VARNAME[version]
     d = os.environ.get(key, None)
 
     def get_pdir():
