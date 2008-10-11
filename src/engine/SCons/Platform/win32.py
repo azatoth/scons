@@ -307,7 +307,7 @@ def generate(env):
         if v:
             env['ENV']['COMSPEC'] = v
 
-    env['ENV']['PATH'] = env['ENV']['SYSTEMROOT'] + '\System32'
+    env.AppendENVPath('PATH', env['ENV']['SYSTEMROOT'] + '\System32')
 
     env['ENV']['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'
     env['OBJPREFIX']      = ''
