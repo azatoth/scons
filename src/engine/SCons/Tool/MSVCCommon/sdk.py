@@ -1,7 +1,7 @@
 import os
 
 import SCons.Util
-from SCons.Tool.MSVCCommon.common import debug
+from SCons.Tool.MSVCCommon.common import debug, read_reg
 
 # Location of the SDK (checked for 6.1 only)
 _SUPPORTED_SDK_VERSIONS = [6.1, 6.0]

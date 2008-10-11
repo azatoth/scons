@@ -6,6 +6,7 @@ from SCons.Tool.MSVCCommon.common import  VSCOMNTOOL_VARNAME
 from SCons.Tool.MSVCCommon.version import get_default_version
 from SCons.Tool.MSVCCommon.findloc import find_bat
 from SCons.Tool.MSVCCommon.envhelpers import normalize_env, get_output, parse_output
+from SCons.Tool.MSVCCommon.defaults import use_def_env
 
 def FindMSVSBatFile(version, flavor='std', arch="x86"):
     """Returns the location of the MSVS bat file used to set up

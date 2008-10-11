@@ -16,9 +16,9 @@ def get_def_env(version, flavor, vsinstalldir, arch="x86"):
                 sdkdir = get_cur_sdk_dir_from_reg()
 
                 if sdkdir:
-                    paths = [pjoin(sdkdir, 'bin')]
-                    lib = [pjoin(sdkdir, 'lib')]
-                    include = [pjoin(sdkdir, 'include')]
+                    paths = [os.path.join(sdkdir, 'bin')]
+                    lib = [os.path.join(sdkdir, 'lib')]
+                    include = [os.path.join(sdkdir, 'include')]
                 else:
                     paths = []
                     lib = []
