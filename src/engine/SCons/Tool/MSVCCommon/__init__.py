@@ -40,6 +40,7 @@ import SCons.Util
 
 from SCons.Tool.MSVCCommon.findloc import find_bat
 from SCons.Tool.MSVCCommon.common import debug
+from SCons.Tool.MSVCCommon.envhelpers import normalize_env, get_output, parse_output
 
 # Default value of VS to use
 DEFVERSIONSTR = "9.0"
@@ -50,110 +51,6 @@ _SUPPORTED_VERSIONSSTR = [str(i) for i in _SUPPORTED_VERSIONS]
 
 _VSCOMNTOOL_VARNAME = dict([(v, 'VS%dCOMNTOOLS' % round(v * 10))
                             for v in _SUPPORTED_VERSIONS])
-
-def normalize_env(env, keys):
-    """Given a dictionary representing a shell environment, add the variables
-    from os.environ needed for the processing of .bat files; the keys are
-    controlled by the keys argument.
-
-    It also makes sure the environment values are correctly encoded.
-    
-    Note: the environment is copied"""
-    normenv = {}
-    if env:
-        for k in env.keys():
-            normenv[k] = copy.deepcopy(env[k]).encode('mbcs')
-
-        for k in keys:
-            if os.environ.has_key(k):
-                normenv[k] = os.environ[k].encode('mbcs')
-
-    return normenv
-
-def get_output(vcbat, args = None, env = None):
-    """Parse the output of given bat file, with given args."""
-    if args:
-        debug("Calling '%s %s'" % (vcbat, args))
-        popen = subprocess.Popen('"%s" %s & set' % (vcbat, args),
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 env=env)
-    else:
-        debug("Calling '%s'" % vcbat)
-        popen = subprocess.Popen('"%s" & set' % vcbat,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 env=env)
-
-    stdout, stderr = popen.communicate()
-    if popen.wait() != 0:
-        raise IOError(stderr.decode("mbcs"))
-
-    output = stdout.decode("mbcs")
-    return output
-
-# You gotta love this: they had to set Path instead of PATH...
-# (also below we search case-insensitively because VC9 uses uppercase PATH)
-_ENV_TO_T = {"INCLUDE": "INCLUDE", "PATH": "PATH",
-             "LIB": "LIB", "LIBPATH": "LIBPATH"}
-
-def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
-    # dkeep is a dict associating key: path_list, where key is one item from
-    # keep, and pat_list the associated list of paths
-
-    # TODO(1.5):  replace with the following list comprehension:
-    #dkeep = dict([(i, []) for i in keep])
-    dkeep = dict(map(lambda i: (i, []), keep))
-
-    # rdk will  keep the regex to match the .bat file output line starts
-    rdk = {}
-    for i in keep:
-        # XXX: the _ENV_TO_T indirection may not be necessary anymore. Check
-        # this
-        if _ENV_TO_T.has_key(i):
-            rdk[i] = re.compile('%s=(.*)' % _ENV_TO_T[i], re.I)
-        else:
-            rdk[i] = re.compile('%s=(.*)' % i, re.I)
-
-    def add_env(rmatch, key):
-        plist = rmatch.group(1).split(os.pathsep)
-        for p in plist:
-            # Do not add empty paths (when a var ends with ;)
-            if p:
-                dkeep[key].append(p)
-
-    for line in output.splitlines():
-        for k,v in rdk.items():
-            m = v.match(line)
-            if m:
-                add_env(m, k)
-
-    return dkeep
-
-def output_to_dict(output):
-    """Given an output string, parse it to find env variables.
-    
-    Return a dict where keys are variables names, and values their content"""
-    envlinem = re.compile(r'^([a-zA-z0-9]+)=([\S\s]*)$')
-    parsedenv = {}
-    for line in output.splitlines():
-        m = envlinem.match(line)
-        if m:
-            parsedenv[m.group(1)] = m.group(2)
-    return parsedenv
-
-def get_new(l1, l2):
-    """Given two list l1 and l2, return the items in l2 which are not in l1.
-    Order is maintained."""
-
-    # We don't try to be smart: lists are small, and this is not the bottleneck
-    # is any case
-    new = []
-    for i in l2:
-        if i not in l1:
-            new.append(i)
-
-    return new
 
 def query_versions():
     """Query the system to get available versions of VS. A version is
@@ -348,63 +245,3 @@ def detect_msvs():
         return 1
     else:
         return 0
-
-def get_def_env(version, flavor, vsinstalldir, arch="x86"):
-    # raise a ValueError for unsuported version/flavor/arch
-
-    # XXX: handle Windows SDK dir
-    defenv = {}
-    if version == 9.0:
-        if flavor == 'express' or flavor == 'std':
-            if arch == "x86":
-                vcinstalldir = r"%s\VC" % vsinstalldir
-                devenvdir = r"%s\Common7\IDE" % vsinstalldir
-                sdkdir = get_cur_sdk_dir_from_reg()
-
-                if sdkdir:
-                    paths = [pjoin(sdkdir, 'bin')]
-                    lib = [pjoin(sdkdir, 'lib')]
-                    include = [pjoin(sdkdir, 'include')]
-                else:
-                    paths = []
-                    lib = []
-                    include = []
-
-                paths.append(devenvdir)
-                paths.append(r"%s\BIN" % vcinstalldir)
-                paths.append(r"%s\Common7\Tools" % vsinstalldir)
-                # XXX Handle FRAMEWORKDIR and co
-                paths.append(r"%s\VCPackages" % vcinstalldir)
-                defenv['PATH'] = os.pathsep.join(paths)
-
-                include.append(r'%s\ATLMFC\INCLUDE' % vcinstalldir)
-                include.append(r'%s\INCLUDE' % vcinstalldir)
-                defenv['INCLUDE'] = os.pathsep.join(include)
-
-                lib.append(r'%s\ATLMFC\LIB' % vcinstalldir)
-                lib.append(r'%s\LIB' % vcinstalldir)
-                defenv['LIB'] = os.pathsep.join(lib)
-
-                libpath = [r'%s\ATLMFC\LIB' % vcinstalldir]
-                libpath.append(r'%s\LIB' % vcinstalldir)
-                defenv['LIBPATH'] = os.pathsep.join(libpath)
-            else:
-                raise ValueError("arch %s not supported" % arch)
-        else:
-            raise ValueError("flavor %s for version %s not "\
-                             "understood" % (flavor, version))
-    else:
-        raise ValueError("version %s not supported" % version)
-
-    return defenv
-
-def use_def_env(env, version, flavor, arch="x86"):
-    pdir = find_bat(version, flavor)
-    if not pdir:
-        raise ValueError("bat file not found")
-    else:
-        pdir = pdirname(pdir)
-        pdir = pnormpath(pjoin(pdir, os.pardir))
-        d = get_def_env(version, flavor, pdir)
-        for k, v in d.items():
-            env.PrependENVPath(k, v, delete_existing=1)
