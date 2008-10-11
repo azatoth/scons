@@ -38,36 +38,8 @@ import SCons.Errors
 import SCons.Platform.win32
 import SCons.Util
 
-# How to look for .bat file ?
-#  - VS 2008 Express (x86):
-#     * from registry key productdir, gives the full path to vsvarsall.bat. In
-#     HKEY_LOCAL_MACHINE):
-#         Software\Microsoft\VCEpress\9.0\Setup\VC\productdir
-#     * from environmnent variable VS90COMNTOOLS: the path is then ..\..\VC
-#     relatively to the path given by the variable.
-#
-#  - VS 2008 Express (WoW6432: 32 bits on windows x64):
-#         Software\Wow6432Node\Microsoft\VCEpress\9.0\Setup\VC\productdir
-#
-#  - VS 2005 Express (x86):
-#     * from registry key productdir, gives the full path to vsvarsall.bat. In
-#     HKEY_LOCAL_MACHINE):
-#         Software\Microsoft\VCEpress\8.0\Setup\VC\productdir
-#     * from environmnent variable VS80COMNTOOLS: the path is then ..\..\VC
-#     relatively to the path given by the variable.
-#
-#  - VS 2005 Express (WoW6432: 32 bits on windows x64): does not seem to have a
-#  productdir ?
-#
-#  - VS 2003 .Net (pro edition ? x86):
-#     * from registry key productdir. The path is then ..\Common7\Tools\
-#     relatively to the key. The key is in HKEY_LOCAL_MACHINE):
-#         Software\Microsoft\VisualStudio\7.1\Setup\VC\productdir
-#     * from environmnent variable VS71COMNTOOLS: the path is the full path to
-#     vsvars32.bat
-
-_VS_STANDARD_HKEY_ROOT = r"Software\Microsoft\VisualStudio\%0.1f"
-_VS_EXPRESS_HKEY_ROOT = r"Software\Microsoft\VCExpress\%0.1f"
+from SCons.Tool.MSVCCommon.findloc import find_bat
+from SCons.Tool.MSVCCommon.common import debug
 
 # Default value of VS to use
 DEFVERSIONSTR = "9.0"
@@ -85,27 +57,6 @@ _VERSIONED_SDK_HKEY_ROOT = \
         r"Software\Microsoft\Microsoft SDKs\Windows\v%0.1f"
 _CURINSTALLED_SDK_HKEY_ROOT = \
         r"Software\Microsoft\Microsoft SDKs\Windows\CurrentInstallFolder"
-
-try:
-    from logging import debug
-except ImportError:
-    debug = lambda x : None
-
-def is_win64():
-    """Return true if running on windows 64 bits."""
-    # Unfortunately, python does not seem to have anything useful: neither
-    # sys.platform nor os.name gives something different on windows running on
-    # 32 bits or 64 bits. Note that we don't care about whether python itself
-    # is 32 or 64 bits here
-    value = "Software\Wow6432Node"
-    yo = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)[0]
-    if yo is None:
-        return 0
-    else:
-        return 1
-
-def read_reg(value):
-    return SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)[0]
 
 def get_cur_sdk_dir_from_reg():
     """Try to find the platform sdk directory from the registry.
@@ -127,40 +78,6 @@ def get_cur_sdk_dir_from_reg():
         return None
 
     return val
-
-def pdir_from_reg(version, flavor = 'std'):
-    """Try to find the  product directory from the registry.
-
-    Return None if failed or the directory does not exist"""
-    if not SCons.Util.can_read_reg:
-        debug('SCons cannot read registry')
-        return None
-
-    if flavor == 'std':
-        vsbase = _VS_STANDARD_HKEY_ROOT % version
-    elif flavor == 'express':
-        vsbase = _VS_EXPRESS_HKEY_ROOT % version
-    else:
-        raise ValueError("Flavor %s not understood" % flavor)
-
-    try:
-        comps = read_reg(vsbase + '\Setup\VC\productdir')
-        debug('Found product dir in registry: %s' % comps)
-    except WindowsError, e:
-        debug('Did not find product dir key %s in registry' % \
-              (vsbase + '\Setup\VC\productdir'))
-        return None
-
-    # XXX: it this necessary for VS .net only, or because std vs
-    # express ?
-    if 7 <= version < 8:
-        comps = os.path.join(comps, os.pardir, "Common7", "Tools")
-
-    if not os.path.exists(comps):
-        debug('%s is not found on the filesystem' % comps)
-        return None
-
-    return comps
 
 def sdir_from_reg(version):
     """Try to find the MS SDK from the registry.
@@ -185,69 +102,6 @@ def sdir_from_reg(version):
         return None
 
     return basedir
-
-def pdir_from_env(version):
-    """Try to find the  product directory from the environment.
-
-    Return None if failed or the directory does not exist"""
-    key = _VSCOMNTOOL_VARNAME[version]
-    d = os.environ.get(key, None)
-
-    def get_pdir():
-        ret = None
-        if version >= 8:
-            ret = os.path.join(d, os.pardir, os.pardir, "VC")
-        return ret
-
-    pdir = None
-    if d and os.path.isdir(d):
-        debug('%s found from %s' % (d, key))
-        pdir = get_pdir()
-
-    return pdir
-
-
-def find_vcbat_dir(version, flavor = 'std'):
-    debug("Looking for productdir %s, flavor %s" % (version, flavor))
-    p = pdir_from_reg(version, flavor)
-    if not p:
-        p = pdir_from_env(version)
-
-    return p
-
-def find_vsvars32(version, flavor = 'std'):
-    pdir = find_vcbat_dir(version, flavor)
-    if pdir is None:
-        return None
-
-    vsvars32 = os.path.join(pdir, "vsvars32.bat")
-    if os.path.isfile(vsvars32):
-        return vsvars32
-    else:
-        debug("%s file not on file system" % vsvars32)
-        return None
-
-def find_vcvarsall(version, flavor = 'std'):
-    pdir = find_vcbat_dir(version, flavor)
-    if pdir is None:
-        return None
-
-    vcvarsall = os.path.join(pdir, "vcvarsall.bat")
-    if os.path.isfile(vcvarsall):
-        return vcvarsall
-    else:
-        debug("%s file not on file system" % vcvarsall)
-        return None
-
-def find_bat(version, flavor = 'std'):
-    # On version < 8, there is not compilation to anything but x86, so use
-    # vars32.bat. On higher versions, cross compilation is possible, so use the
-    # varsall.bat. AFAIK, those support any cross-compilation depending on the
-    # argument given.
-    if version < 8:
-        return find_vsvars32(version, flavor)
-    else:
-        return find_vcvarsall(version, flavor)
 
 def normalize_env(env, keys):
     """Given a dictionary representing a shell environment, add the variables
