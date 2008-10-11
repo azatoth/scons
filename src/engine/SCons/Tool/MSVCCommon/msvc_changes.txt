@@ -3,6 +3,28 @@ magic, we use the .bat files available for each version of visual studio. This
 is simpler (does not depend on the version of the compiler), more reliable, and
 just plain better.
 
+Specification
+=============
+
+Tested versions
+---------------
+
+The following versions have been succesfully tested:
+	- VS 2008 (express) with SDK 6.0A, 32 bits
+	- VS 2005 (express), 32 bits
+	- VS 2003 (.Net, pro), 32 bits
+
+All tools related to the ms toolchain are detected through the same method:
+	- detect the .bat configuration file (vsvarsall.bat/vsvars32.bat
+	  depending on the version) from the registry
+	- if registry does not return anything useful, use the VS*COMNTOOLS env
+	  variable.
+
+A version is detected only when the .bat file actually exists on the
+filesystem.  Once the .bat file is found, it is executed through a clean
+environment, and its output is parsed to get the variables
+PATH/LIB/LIBPATH/INCLUDE. Those variables are then added to env['ENV']
+
 Fundamental changes
 ===================
 
@@ -21,12 +43,15 @@ time.
 Internals
 =========
 
-The code can be found in the MSVCCommon tool. At this point, no function should
-be public, the exact API is not good yet. There are three parts:
-        - finding the .bat file: this depends on the version, and the
-          architecture. First, the registry is used, then the environment
-          variable MS*COMMON. A default location could be looked for, too, but
-          this is not done at the moment.
-        - Parsing the .bat file: the .bat file is executed, and its output
-          parsed. By Default, only LIB, LIBPATH, INCLUDE and PATH are taken.
-        - Merge the found variables into env['ENV'].
+The code can be found in the MSVCCommon submodule: 
+	- findloc: find the product dir from the registry or the shell environment
+	- versions: query the system for available versions on the system
+	- misc: high level functions, candidate for the public API.
+	- sdk: specifs to the SDK detection.
+	- defaults: default values to use for the paths, to use instead of the
+	  whole env parsing which can be quite slow, but less reliable. Still
+	  experimental
+	- envhelpers: functions to execute a VS .bat file, parse its output,
+	  and get the variables with modified values.
+
+At this point, no function should be public, the exact API is not good yet.
