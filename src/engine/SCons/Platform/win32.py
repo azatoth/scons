@@ -302,6 +302,13 @@ def generate(env):
         if v:
             env['ENV'][var] = v
 
+    if not env['ENV'].has_key('COMSPEC'):
+        v = os.environ.get("COMSPEC")
+        if v:
+            env['ENV']['COMSPEC'] = v
+
+    env['ENV']['PATH'] = env['ENV']['SYSTEMROOT'] + '\System32'
+
     env['ENV']['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'
     env['OBJPREFIX']      = ''
     env['OBJSUFFIX']      = '.obj'
