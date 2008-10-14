@@ -55,3 +55,14 @@ The code can be found in the MSVCCommon submodule:
 	  and get the variables with modified values.
 
 At this point, no function should be public, the exact API is not good yet.
+
+SDKs
+====
+
+The SDK situation is an incredible mess. Before, there were two separate sdks:
+	- the platform sdk (win32 and co): under HKLM\Microsoft\MicrosoftSDKS
+	- the .Net sdk
+
+Then came the Windows SDK, which merge the two. The corresponding registry keys
+are under HKLM\Software\Microsoft\Microsoft SDKs\Windows (notice the space as a
+difference compared to the platform sdk).
