@@ -3,6 +3,16 @@ import os
 import SCons.Util
 from SCons.Tool.MSVCCommon.common import debug, read_reg
 
+# SDK Checks. This is of course a mess as everything else on MS platforms. Here
+# is what we do to detect the SDK:
+#
+# For Windows SDK >= 6.0: just look into the registry entries:
+#	HKLM\Software\Microsoft\Microsoft SDKs\Windows
+# All the keys in there are the available versions.
+#
+# For Platform SDK before (2003 server R1 and R2, etc...), there does not seem
+# to have any sane registry key, so the precise location is hardcoded (yeah).
+
 # Location of the SDK (checked for 6.1 only)
 _SUPPORTED_SDK_VERSIONS_STR = ["6.1", "6.0A", "6.0"]
 _VERSIONED_SDK_HKEY_ROOT = \
