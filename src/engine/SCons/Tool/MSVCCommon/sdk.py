@@ -13,12 +13,25 @@ from SCons.Tool.MSVCCommon.common import debug, read_reg
 # For Platform SDK before (2003 server R1 and R2, etc...), there does not seem
 # to have any sane registry key, so the precise location is hardcoded (yeah).
 
+# 2003* sdk:
+_SDK2003_HKEY_ROOT = r"Software\Microsoft\MicrosoftSDK\InstalledSDKS"
+_SDK2003_UUID = {"2003R2": "D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1"}
+
 # Location of the SDK (checked for 6.1 only)
-_SUPPORTED_SDK_VERSIONS_STR = ["6.1", "6.0A", "6.0"]
+_SUPPORTED_SDK_VERSIONS_STR = ["6.1", "6.0A", "6.0", "2003R2", "2003R1"]
 _VERSIONED_SDK_HKEY_ROOT = \
         r"Software\Microsoft\Microsoft SDKs\Windows\v%s"
 _CURINSTALLED_SDK_HKEY_ROOT = \
         r"Software\Microsoft\Microsoft SDKs\Windows\CurrentInstallFolder"
+
+# For the given version string, we check that the given file does exist
+# relatively to the mssdk path, to be sure we don't deal with a stale entry in
+# the registry.
+_SANITY_CHECK_FILE = {"6.0" : r"bin\gacutil.exe", 
+			"6.0A" : r"bin\gacutil.exe",
+			"6.1" : r"bin\gacutil.exe",
+			"2003R2" : r"SetEnv.Cmd",
+			"2003R1" : r"SetEnv.Cmd"}
 
 def get_cur_sdk_dir_from_reg():
     """Try to find the platform sdk directory from the registry.
@@ -74,10 +87,49 @@ def parse_version(versionstr):
 
     return float(m.group(1)), m.group(2)
 
+def find_mssdk_2003(versionstr):
+	debug("Looking for %s sdk" % versionstr)
+	sdkbase = _SDK2003_HKEY_ROOT
+
+	if not _SDK2003_UUID.has_key(versionstr):
+		debug("UUID for %s not known" % versionstr)
+		return None
+	else:
+		key = sdkbase + r'\\' + _SDK2003_UUID[versionstr] + r'\Install Dir'
+		try:
+			mssdk = read_reg(key)
+			debug("Found registry key %s" % key)
+		except WindowsError:
+			debug("Could not find registry key %s" % key)
+			return None
+
+	if not os.path.exists(mssdk):
+		debug("path %s not found" % mssdk)
+		return None
+
+	return mssdk
+
+def find_mssdk(versionstr):
+	"""Return the MSSSDK given the version string."""
+	if versionstr.startswith('2003'):
+		mssdk = find_mssdk_2003(versionstr)
+	else:
+		mssdk = sdir_from_reg(versionstr)
+
+	if mssdk is not None:
+		ftc = os.path.join(mssdk, _SANITY_CHECK_FILE[versionstr])
+		if not os.path.exists(ftc):
+			debug("File %s used for sanity check not found" % ftc)
+			return None
+	else:
+		return None
+
+	return mssdk
+
 def query_versions():
     versions = []
     for v in _SUPPORTED_SDK_VERSIONS_STR:
-        if sdir_from_reg(v):
+        if find_mssdk(v):
             versions.append(v)
 
     return versions
