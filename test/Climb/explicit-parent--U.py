@@ -25,66 +25,42 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that we execute TeX in a subdirectory (if that's where the document
-resides) by checking that all the auxiliary files get created there and
-not in the top-level directory.
-
-Also check that we find files
-
-Test case courtesy Joel B. Mohler.
+Make sure explicit targets beginning with ../ get built correctly.
+by the -U option.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-latex = test.where_is('latex')
-if not latex:
-    test.skip_test("Could not find 'latex'; skipping test.\n")
-
-pdflatex = test.where_is('pdflatex')
-if not pdflatex:
-    test.skip_test("Could not find 'pdflatex'; skipping test.\n")
-
-test.subdir('sub')
+test.subdir('subdir')
 
 test.write('SConstruct', """\
-import os
-env = Environment(TOOLS = ['tex', 'pdftex'], ENV = {'PATH' : os.environ['PATH']})
-env.PDF( 'sub/x.tex' )
-env.DVI( 'sub/x.tex' )
+def cat(env, source, target):
+    target = str(target[0])
+    source = map(str, source)
+    f = open(target, "wb")
+    for src in source:
+        f.write(open(src, "rb").read())
+    f.close()
+env = Environment(BUILDERS={'Cat':Builder(action=cat)})
+env.Cat('foo.out', 'foo.in')
+SConscript('subdir/SConscript', "env")
 """)
 
-test.write(['sub', 'x.tex'],
-r"""\documentclass{article}
-\begin{document}
-Hi there.
-\input{y}
-\end{document}
+test.write('foo.in', "foo.in\n")
+
+test.write(['subdir', 'SConscript'], """\
+Import("env")
+bar = env.Cat('bar.out', 'bar.in')
+Default(bar)
 """)
 
-test.write(['sub', 'y.tex'], """\
-Sub-document 1
-""")
+test.write(['subdir', 'bar.in'], "subdir/bar.in\n")
 
-test.run(arguments = '.')
+test.run(chdir = 'subdir', arguments = '-U ../foo.out')
 
-test.must_exist(['sub', 'x.aux'])
-test.must_exist(['sub', 'x.dvi'])
-test.must_exist(['sub', 'x.log'])
-test.must_exist(['sub', 'x.pdf'])
-
-test.must_not_exist('x.aux')
-test.must_not_exist('x.dvi')
-test.must_not_exist('x.log')
-test.must_not_exist('x.pdf')
-
-test.up_to_date(arguments = '.')
-
-test.write(['sub', 'y.tex'], """\
-Sub-document 2
-""")
-
-test.not_up_to_date(arguments = '.')
+test.must_exist(test.workpath('foo.out'))
+test.must_not_exist(test.workpath('subdir', 'bar.out'))
 
 test.pass_test()

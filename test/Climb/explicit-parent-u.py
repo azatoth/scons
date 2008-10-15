@@ -25,66 +25,48 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that we execute TeX in a subdirectory (if that's where the document
-resides) by checking that all the auxiliary files get created there and
-not in the top-level directory.
-
-Also check that we find files
-
-Test case courtesy Joel B. Mohler.
+Test that the -u option only builds targets at or below
+the current directory.
 """
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-latex = test.where_is('latex')
-if not latex:
-    test.skip_test("Could not find 'latex'; skipping test.\n")
-
-pdflatex = test.where_is('pdflatex')
-if not pdflatex:
-    test.skip_test("Could not find 'pdflatex'; skipping test.\n")
-
-test.subdir('sub')
+# Make sure explicit targets beginning with ../ get built.
+test.subdir('subdir')
 
 test.write('SConstruct', """\
-import os
-env = Environment(TOOLS = ['tex', 'pdftex'], ENV = {'PATH' : os.environ['PATH']})
-env.PDF( 'sub/x.tex' )
-env.DVI( 'sub/x.tex' )
+def cat(env, source, target):
+    target = str(target[0])
+    source = map(str, source)
+    f = open(target, "wb")
+    for src in source:
+        f.write(open(src, "rb").read())
+    f.close()
+env = Environment(BUILDERS={'Cat':Builder(action=cat)})
+env.Cat('f1.out', 'f1.in')
+env.Cat('f2.out', 'f2.in')
+SConscript('subdir/SConscript', "env")
 """)
 
-test.write(['sub', 'x.tex'],
-r"""\documentclass{article}
-\begin{document}
-Hi there.
-\input{y}
-\end{document}
+test.write('f1.in', "f1.in\n")
+test.write('f2.in', "f2.in\n")
+
+test.write(['subdir', 'SConscript'], """\
+Import("env")
+env.Cat('f3.out', 'f3.in')
+env.Cat('f4.out', 'f4.in')
 """)
 
-test.write(['sub', 'y.tex'], """\
-Sub-document 1
-""")
+test.write(['subdir', 'f3.in'], "subdir/f3.in\n")
+test.write(['subdir', 'f4.in'], "subdir/f4.in\n")
 
-test.run(arguments = '.')
+test.run(chdir = 'subdir', arguments = '-u ../f2.out')
 
-test.must_exist(['sub', 'x.aux'])
-test.must_exist(['sub', 'x.dvi'])
-test.must_exist(['sub', 'x.log'])
-test.must_exist(['sub', 'x.pdf'])
-
-test.must_not_exist('x.aux')
-test.must_not_exist('x.dvi')
-test.must_not_exist('x.log')
-test.must_not_exist('x.pdf')
-
-test.up_to_date(arguments = '.')
-
-test.write(['sub', 'y.tex'], """\
-Sub-document 2
-""")
-
-test.not_up_to_date(arguments = '.')
+test.must_not_exist(test.workpath('f1.out'))
+test.must_exist(test.workpath('f2.out'))
+test.must_not_exist(test.workpath('dir', 'f3.out'))
+test.must_not_exist(test.workpath('dir', 'f4.out'))
 
 test.pass_test()
