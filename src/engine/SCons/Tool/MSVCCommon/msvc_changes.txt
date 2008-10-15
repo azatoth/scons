@@ -10,9 +10,12 @@ Tested versions
 ---------------
 
 The following versions have been succesfully tested:
-	- VS 2008 (express) with SDK 6.0A, 32 bits
+	- VS 2008 (express), 32 bits
 	- VS 2005 (express), 32 bits
 	- VS 2003 (.Net, pro), 32 bits
+
+Detection
+---------
 
 All tools related to the ms toolchain are detected through the same method:
 	- detect the .bat configuration file (vsvarsall.bat/vsvars32.bat
@@ -25,6 +28,31 @@ filesystem.  Once the .bat file is found, it is executed through a clean
 environment, and its output is parsed to get the variables
 PATH/LIB/LIBPATH/INCLUDE. Those variables are then added to env['ENV']
 
+By default, the most recent detected version is set, and can be queried in
+env['MSVS_VERSION'] *after* the tool initialization. The version can be forced
+by setting the MSVS_VERSION variable *before* initializing the tool.
+
+SDK
+---
+
+Separate SDKs are only supported for the following versions:
+        - Platform SDK 2003 R1 and R2
+        - Windows SDK. I tried the following versions: 6.0, 6.0A (SDK delivered
+          with VS 2008 express) and 6.1 (Windows SDK 2008).
+
+Previous SDKs are not available anymore on MS website, so I could not test
+them. I believe VS 6 has its own SDK included, as well as VS 2003 .Net. The SDK
+is set *after* the msvs tool.
+
+The version of the SDK is controled by the scons variable MSSDK:
+        - Not set (default): the system is queried for an available SDK, and
+          the most recent is picked up, except if the MSVS_VERSION is lower or
+          equal to 7.1 (VS 2003 .Net and former versions), in which case the
+          behavior is the same as setting it to None.
+        - set to None: no SDK is queried, assumed to be set correctly by the
+          compiler
+        - set to a path: if the path points to a valid SDK, this SDK is used.
+
 Fundamental changes
 ===================
 
@@ -32,37 +60,20 @@ env["ENV"] has been expanded a bit on windows:
 	- add %SYSTEMROOT%\system32 in the path for windows
 	- add COMSPEC (needed by the .bat file execution)
 
-UI
-==
-
-For the user, there should not be any difference.  By default, the most recent
-version of Visual Studio will be used, and the version can be tweaked by using
-the MSVS_VERSION. A scons script can use different version of VS at the same
-time.
-
 Internals
 =========
 
-The code can be found in the MSVCCommon submodule: 
+The code can be found in the MSVCCommon submodule:
 	- findloc: find the product dir from the registry or the shell environment
-	- versions: query the system for available versions on the system
-	- misc: high level functions, candidate for the public API.
-	- sdk: specifs to the SDK detection.
-	- defaults: default values to use for the paths, to use instead of the
-	  whole env parsing which can be quite slow, but less reliable. Still
-	  experimental
+        - versions: query the system for available versions of the VS suite on
+          the system
+        - misc: high level functions, *candidates* for the public API.
+        - sdk: specifics to the SDK detection.
+        - defaults: default values to use for the paths, to use instead of the
+          whole env parsing which can be quite slow, but less reliable. Still
+          experimental, may be removed
 	- envhelpers: functions to execute a VS .bat file, parse its output,
 	  and get the variables with modified values.
 
-At this point, no function should be public, the exact API is not good yet.
-
-SDKs
-====
-
-The SDK situation is an incredible mess. Before, there were two separate sdks:
-	- the platform sdk (win32 and co): under HKLM\Microsoft\MicrosoftSDKS
-	- the .Net sdk
-
-Then came the Windows SDK, which merge the two. The corresponding registry keys
-are under HKLM\Software\Microsoft\Microsoft SDKs\Windows (notice the space as a
-difference compared to the platform sdk).
+At this point, no function should be considered public, the exact API is not
+good yet.
