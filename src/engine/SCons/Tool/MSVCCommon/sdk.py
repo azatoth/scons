@@ -1,3 +1,5 @@
+"""Module to detect the Platform/Windows SDK (starting with PSDK 2003 R1)."""
+
 import os
 
 import SCons.Util
@@ -12,6 +14,9 @@ from SCons.Tool.MSVCCommon.common import debug, read_reg
 #
 # For Platform SDK before (2003 server R1 and R2, etc...), there does not seem
 # to have any sane registry key, so the precise location is hardcoded (yeah).
+#
+# For versions below 2003R1, it seems the PSDK is included with Visual Studio ?
+
 
 # 2003* sdk:
 _SDK2003_HKEY_ROOT = r"Software\Microsoft\MicrosoftSDK\InstalledSDKS"
