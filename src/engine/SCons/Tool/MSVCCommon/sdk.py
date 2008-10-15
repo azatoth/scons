@@ -15,7 +15,8 @@ from SCons.Tool.MSVCCommon.common import debug, read_reg
 
 # 2003* sdk:
 _SDK2003_HKEY_ROOT = r"Software\Microsoft\MicrosoftSDK\InstalledSDKS"
-_SDK2003_UUID = {"2003R2": "D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1"}
+_SDK2003_UUID = {"2003R2": "D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1",
+                 "2003R1": "8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"}
 
 # Location of the SDK (checked for 6.1 only)
 _SUPPORTED_SDK_VERSIONS_STR = ["6.1", "6.0A", "6.0", "2003R2", "2003R1"]
