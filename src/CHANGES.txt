@@ -8,7 +8,7 @@
 
 
 
-RELEASE 1.1.0 - Thu, 09 Oct 2008 08:33:47 -0700
+RELEASE 1.X - XXX
 
   From Steven Knight:
 
@@ -18,9 +18,18 @@ RELEASE 1.1.0 - Thu, 09 Oct 2008 08:33:47 -0700
     - Fix env.Append() and env.Prepend()'s ability to add a string to
       list-like variables like $CCFLAGS under Python 2.6.
 
+    - Support using the -f option to search for a different top-level
+      file name when walking up with the -D, -U or -u options.
+
+    - Fix use of VariantDir when the -n option is used and doesn't,
+      therefore, actually create the variant directory.
+
+    - Fix a stack trace from the --debug=includes option when passed a
+      static or shared library as an argument.
 
 
-RELEASE 1.X - XXX
+
+RELEASE 1.1.0 - Thu, 09 Oct 2008 08:33:47 -0700
 
   From Chris AtLee
 
