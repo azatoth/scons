@@ -75,6 +75,11 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
         for p in plist:
             # Do not add empty paths (when a var ends with ;)
             if p:
+                p = p.encode('mbcs')
+                # XXX: For some reason, VC98 .bat file adds "" around the PATH
+                # values, and it screws up the environment later, so we strip
+                # it. 
+                p = p.strip('"')
                 dkeep[key].append(p)
 
     for line in output.splitlines():
@@ -109,4 +114,3 @@ def get_new(l1, l2):
             new.append(i)
 
     return new
-
