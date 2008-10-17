@@ -1,6 +1,5 @@
 import os
 
-from SCons.Tool.MSVCCommon.sdk import get_cur_sdk_dir_from_reg
 from SCons.Tool.MSVCCommon.findloc import find_bat
 
 def get_def_env(version, flavor, vsinstalldir, arch="x86"):
@@ -13,16 +12,10 @@ def get_def_env(version, flavor, vsinstalldir, arch="x86"):
             if arch == "x86":
                 vcinstalldir = r"%s\VC" % vsinstalldir
                 devenvdir = r"%s\Common7\IDE" % vsinstalldir
-                sdkdir = get_cur_sdk_dir_from_reg()
 
-                if sdkdir:
-                    paths = [os.path.join(sdkdir, 'bin')]
-                    lib = [os.path.join(sdkdir, 'lib')]
-                    include = [os.path.join(sdkdir, 'include')]
-                else:
-                    paths = []
-                    lib = []
-                    include = []
+                paths = []
+                lib = []
+                include = []
 
                 paths.append(devenvdir)
                 paths.append(r"%s\BIN" % vcinstalldir)
