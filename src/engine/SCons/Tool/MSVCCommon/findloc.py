@@ -135,29 +135,26 @@ def find_vcbat_dir(version, flavor = 'std'):
 
     return p
 
-def find_vsvars32(version, flavor = 'std'):
+def find_varbat(version, flavor = 'std', batname = 'vcvarsall.bat'):
     pdir = find_vcbat_dir(version, flavor)
     if pdir is None:
         return None
 
-    vsvars32 = os.path.join(pdir, "vsvars32.bat")
-    if os.path.isfile(vsvars32):
-        return vsvars32
+    batfile = os.path.join(pdir, batname)
+    if os.path.isfile(batfile):
+        return batfile
     else:
-        debug("%s file not on file system" % vsvars32)
+        debug("%s file not on file system" % batfile)
         return None
+
+def find_vcvars32(version, flavor = 'std'):
+    return find_varbat(version, flavor, 'vcvars32.bat')
+
+def find_vsvars32(version, flavor = 'std'):
+    return find_varbat(version, flavor, 'vsvars32.bat')
 
 def find_vcvarsall(version, flavor = 'std'):
-    pdir = find_vcbat_dir(version, flavor)
-    if pdir is None:
-        return None
-
-    vcvarsall = os.path.join(pdir, "vcvarsall.bat")
-    if os.path.isfile(vcvarsall):
-        return vcvarsall
-    else:
-        debug("%s file not on file system" % vcvarsall)
-        return None
+    return find_varbat(version, flavor, 'vsvarsall.bat')
 
 def find_bat(version, flavor = 'std'):
     # On version < 8, there is not compilation to anything but x86, so use
