@@ -49,6 +49,7 @@ def get_default_version(env):
     return env['MSVS_VERSION']
 
 def detect_msvs():
+	"""Return 1 if at least one version of MS toolchain is detected."""
     version = query_versions()
     if len(version) > 0:
         return 1
