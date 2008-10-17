@@ -12,7 +12,7 @@ def normalize_env(env, keys):
     controlled by the keys argument.
 
     It also makes sure the environment values are correctly encoded.
-    
+
     Note: the environment is copied"""
     normenv = {}
     if env:
@@ -87,7 +87,7 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
 
 def output_to_dict(output):
     """Given an output string, parse it to find env variables.
-    
+
     Return a dict where keys are variables names, and values their content"""
     envlinem = re.compile(r'^([a-zA-z0-9]+)=([\S\s]*)$')
     parsedenv = {}
