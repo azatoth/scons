@@ -161,7 +161,9 @@ def find_bat(version, flavor = 'std'):
     # vars32.bat. On higher versions, cross compilation is possible, so use the
     # varsall.bat. AFAIK, those support any cross-compilation depending on the
     # argument given.
-    if version < 8:
+    if version < 7:
+        return find_vcvars32(version, flavor)
+    elif version < 8:
         return find_vsvars32(version, flavor)
     else:
         return find_vcvarsall(version, flavor)
