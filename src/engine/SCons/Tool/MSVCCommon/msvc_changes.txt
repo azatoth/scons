@@ -53,6 +53,11 @@ The version of the SDK is controled by the scons variable MSSDK:
           compiler
         - set to a path: if the path points to a valid SDK, this SDK is used.
 
+Architecture
+------------
+
+Not supported yet.
+
 Fundamental changes
 ===================
 
