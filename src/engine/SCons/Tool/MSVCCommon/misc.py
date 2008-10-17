@@ -72,16 +72,6 @@ def ParseBatFile(env, path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=Non
     output = get_output(path, args, env=nenv)
 
     return parse_output(output, vars)
-    #parsed = parse_output(output, vars)
-    #ret = {}
-    #for k in parsed.keys():
-    #    if os.environ.has_key(k):
-    #       p = os.environ[k].split(os.pathsep)
-    #       ret[k] = get_new(p, parsed[k])
-    #    else:
-    #       ret[k] = parsed[k]
-
-    #return ret
 
 def MergeMSVSBatFile(env, version=None, batfilename=None,
                      vars=["INCLUDE", "LIB", "LIBPATH", "PATH"]):
