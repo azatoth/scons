@@ -154,7 +154,7 @@ def find_vsvars32(version, flavor = 'std'):
     return find_varbat(version, flavor, 'vsvars32.bat')
 
 def find_vcvarsall(version, flavor = 'std'):
-    return find_varbat(version, flavor, 'vsvarsall.bat')
+    return find_varbat(version, flavor, 'vcvarsall.bat')
 
 def find_bat(version, flavor = 'std'):
     # On version < 8, there is not compilation to anything but x86, so use
