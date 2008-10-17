@@ -34,8 +34,8 @@ _CURINSTALLED_SDK_HKEY_ROOT = \
 # relatively to the mssdk path, to be sure we don't deal with a stale entry in
 # the registry.
 _SANITY_CHECK_FILE = {"6.0" : r"bin\gacutil.exe",
-    "6.0A" : r"bin\gacutil.exe",
-    "6.1" : r"bin\gacutil.exe",
+    "6.0A" : r"include\windows.h",
+    "6.1" : r"include\windows.h",
     "2003R2" : r"SetEnv.Cmd",
     "2003R1" : r"SetEnv.Cmd"}
 
