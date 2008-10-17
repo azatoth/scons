@@ -60,6 +60,12 @@ from SCons.Tool.MSVCCommon.common import  SUPPORTED_VERSIONS, VSCOMNTOOL_VARNAME
 #         Software\Microsoft\VisualStudio\7.1\Setup\VC\productdir
 #     * from environmnent variable VS71COMNTOOLS: the path is the full path to
 #     vsvars32.bat
+#
+#  - VS 98 (VS 6):
+#     * from registry key productdir. The path is then Bin
+#     relatively to the key. The key is in HKEY_LOCAL_MACHINE):
+#         Software\Microsoft\VisualStudio\6.0\Setup\VC98\productdir
+
 _VS_STANDARD_HKEY_ROOT = r"Software\Microsoft\VisualStudio\%0.1f"
 _VS_EXPRESS_HKEY_ROOT = r"Software\Microsoft\VCExpress\%0.1f"
 
@@ -79,17 +85,20 @@ def pdir_from_reg(version, flavor = 'std'):
         raise ValueError("Flavor %s not understood" % flavor)
 
     try:
-        comps = read_reg(vsbase + '\Setup\VC\productdir')
+        if version >= 7:
+            comps = read_reg(vsbase + '\Setup\VC\productdir')
+        else:
+            comps = read_reg(vsbase + '\Setup\Microsoft Visual C++\productdir')
         debug('Found product dir in registry: %s' % comps)
     except WindowsError, e:
         debug('Did not find product dir key %s in registry' % \
               (vsbase + '\Setup\VC\productdir'))
         return None
 
-    # XXX: it this necessary for VS .net only, or because std vs
-    # express ?
     if 7 <= version < 8:
         comps = os.path.join(comps, os.pardir, "Common7", "Tools")
+    elif version < 7:
+        comps = os.path.join(comps, "Bin")
 
     if not os.path.exists(comps):
         debug('%s is not found on the filesystem' % comps)
