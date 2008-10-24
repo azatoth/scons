@@ -155,9 +155,9 @@ def find_bat(version, flavor = 'std'):
     if version < 7:
         return find_varbat(version, flavor, 'vcvars32.bat')
     elif version < 8:
-        return find_vsvars32(version, flavor, 'vsvars32.bat')
+        return find_varbat(version, flavor, 'vsvars32.bat')
     else:
-        return find_vcvarsall(version, flavor, 'vcvarsall.bat')
+        return find_varbat(version, flavor, 'vcvarsall.bat')
 
 def find_msvs_path(version, flavor):
     paths = {}
