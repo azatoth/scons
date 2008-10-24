@@ -167,4 +167,4 @@ def find_msvs_paths(version, flavor):
         paths['VCINSTALLDIR'] = pdir
         paths['VSINSTALLDIR'] = os.path.join(os.pardir, pdir)
 
-    return pdir
+    return paths
