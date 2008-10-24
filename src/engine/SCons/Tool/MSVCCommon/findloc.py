@@ -168,3 +168,12 @@ def find_bat(version, flavor = 'std'):
     else:
         return find_vcvarsall(version, flavor)
 
+def find_msvs_path(version, flavor):
+    paths = {}
+
+    pdir = find_vcbat_dir(version, flavor)
+    if pdir:
+        paths['VCINSTALLDIR'] = pdir
+        paths['VSINSTALLDIR'] = os.path.join(os.pardir, pdir)
+
+    return pdir
