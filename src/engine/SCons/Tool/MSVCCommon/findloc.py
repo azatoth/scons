@@ -159,7 +159,7 @@ def find_bat(version, flavor = 'std'):
     else:
         return find_varbat(version, flavor, 'vcvarsall.bat')
 
-def find_msvs_path(version, flavor):
+def find_msvs_paths(version, flavor):
     paths = {}
 
     pdir = find_vcbat_dir(version, flavor)
