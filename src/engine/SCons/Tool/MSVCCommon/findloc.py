@@ -147,26 +147,17 @@ def find_varbat(version, flavor = 'std', batname = 'vcvarsall.bat'):
         debug("%s file not on file system" % batfile)
         return None
 
-def find_vcvars32(version, flavor = 'std'):
-    return find_varbat(version, flavor, 'vcvars32.bat')
-
-def find_vsvars32(version, flavor = 'std'):
-    return find_varbat(version, flavor, 'vsvars32.bat')
-
-def find_vcvarsall(version, flavor = 'std'):
-    return find_varbat(version, flavor, 'vcvarsall.bat')
-
 def find_bat(version, flavor = 'std'):
     # On version < 8, there is not compilation to anything but x86, so use
     # vars32.bat. On higher versions, cross compilation is possible, so use the
     # varsall.bat. AFAIK, those support any cross-compilation depending on the
     # argument given.
     if version < 7:
-        return find_vcvars32(version, flavor)
+        return find_varbat(version, flavor, 'vcvars32.bat')
     elif version < 8:
-        return find_vsvars32(version, flavor)
+        return find_vsvars32(version, flavor, 'vsvars32.bat')
     else:
-        return find_vcvarsall(version, flavor)
+        return find_vcvarsall(version, flavor, 'vcvarsall.bat')
 
 def find_msvs_path(version, flavor):
     paths = {}
