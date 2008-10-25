@@ -140,7 +140,7 @@ def merge_default_version(env):
     version = get_default_version(env)
     version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
 
-    batfilename = FindMSVSBatFile(version)
+    batfilename = FindMSVSBatFile(version_num)
     # XXX: I think this is broken. This will silently set a bogus tool instead
     # of failing, but there is no other way with the current scons tool
     # framework
