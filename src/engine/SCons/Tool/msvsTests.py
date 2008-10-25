@@ -624,7 +624,7 @@ class msvsEmptyTestCase(msvsTestCase):
     highest_version = None
     number_of_versions = 0
     install_locs = {
-        '6.0' : {'VSINSTALLDIR': 'C:\\Program Files\\Microsoft Visual Studio'},
+        '6.0' : {},
         '7.0' : {},
         '7.1' : {},
         '8.0' : {},
