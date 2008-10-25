@@ -23,7 +23,7 @@ def find_framework_root():
 def query_versions():
     froot = find_framework_root()
     if froot:
-        os.listdir(froot)
+        contents = os.listdir(froot)
 
         l = re.compile('v[0-9]+.*')
         versions = filter(lambda e, l=l: l.match(e), contents)
