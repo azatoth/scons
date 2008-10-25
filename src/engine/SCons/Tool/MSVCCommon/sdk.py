@@ -161,4 +161,4 @@ def set_default_sdk(env, msver):
         if len(versstr) > 0:
             mssdk = find_mssdk(versstr[0])
             if mssdk:
-                set_sdk(env, msddk)
+                set_sdk(env, mssdk)
