@@ -1,5 +1,6 @@
 import os
 import re
+import string
 
 from common import read_reg, debug
 
