@@ -13,7 +13,7 @@ def find_framework_root():
         debug("Could not read reg key %s" % _FRAMEWORKDIR_HKEY_ROOT)
         return None
 
-    if not os.path.exists(froot)
+    if not os.path.exists(froot):
         debug("%s not found on fs" % froot)
         return None
 
