@@ -295,6 +295,27 @@ def get_default_visualstudio_version(env):
     from SCons.Tool.MSVCCommon.version import get_default_version
     return get_default_version(env)
 
+def get_msvs_install_dirs(key=None):
+    from SCons.Tool.MSVCCommon.findloc import find_msvs_paths
+    from SCons.Tool.MSVCCommon.version import query_versions
+    if not key:
+        vers = query_versions()
+        if len(vers) > 0:
+            ver = vers[0]
+        else:
+            ver = 9.0
+        flav = 'std'
+    else:
+        verstr, flav = msvs_parse_version(key)
+        ver = float(verstr)
+        if not flav:
+            flav = 'std'
+        else:
+            if flav == 'Exp':
+                flav = 'express'
+
+    return find_msvs_paths(ver, flav)
+
 regdata_none = []
 
 class DummyEnv:
