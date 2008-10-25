@@ -122,25 +122,37 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
         env.PrependENVPath(k, v, delete_existing=1)
 
 def merge_default_version(env):
-    try:
-        version = get_default_version(env)
-        if version is not None:
-            version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
-            if env.has_key('MSVS_USE_DEFAULT_PATHS') and \
-               env['MSVS_USE_DEFAULT_PATHS']:
-                use_def_env(env, version_num, 'std')
-                try:
-                    use_def_env(env, version_num, 'std')
-                except ValueError, e:
-                    print "Could not get defaultpaths: %s" % e
-                    MergeMSVSBatFile(env, version_num)
+    version = get_default_version(env)
+    version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
 
-            else:
-                MergeMSVSBatFile(env, version_num)
-        else:
-            MergeMSVSBatFile(env)
+    batfilename = FindMSVSBatFile(version)
+    # XXX: I think this is broken. This will silently set a bogus tool instead
+    # of failing, but there is no other way with the current scons tool
+    # framework
+    if batfilename is not None:
+        vars = ('LIB', 'LIBPATH', 'PATH', 'INCLUDE')
+        vars = ParseBatFile(env, batfilename, vars)
 
-    except SCons.Errors.MSVCError:
-        pass
+        for k, v in vars.items():
+            env.PrependENVPath(k, v, delete_existing=1)
 
+    #try:
+    #    version = get_default_version(env)
+    #    if version is not None:
+    #        version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
+    #        if env.has_key('MSVS_USE_DEFAULT_PATHS') and \
+    #           env['MSVS_USE_DEFAULT_PATHS']:
+    #            use_def_env(env, version_num, 'std')
+    #            try:
+    #                use_def_env(env, version_num, 'std')
+    #            except ValueError, e:
+    #                print "Could not get defaultpaths: %s" % e
+    #                MergeMSVSBatFile(env, version_num)
 
+    #        else:
+    #            MergeMSVSBatFile(env, version_num)
+    #    else:
+    #        MergeMSVSBatFile(env)
+
+    #except SCons.Errors.MSVCError:
+    #    pass
