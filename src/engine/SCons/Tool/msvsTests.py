@@ -286,6 +286,14 @@ regdata_cv = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\Cur
 "MediaPath"="C:\WINDOWS\Media"
 ''','\n')
 
+def get_visualstudio_versions():
+    from SCons.Tool.MSVCCommon.version import query_versions
+    return query_versions()
+
+def get_default_visualstudio_version(env):
+    from SCons.Tool.MSVCCommon.version import get_default_version
+    return get_default_version(env)
+
 regdata_none = []
 
 class DummyEnv:
@@ -590,7 +598,7 @@ class msvs8ExpTestCase(msvsTestCase):
 class msvsEmptyTestCase(msvsTestCase):
     """Test Empty Registry"""
     registry = DummyRegistry(regdata_none)
-    default_version = '6.0'
+    default_version = '9.0'
     highest_version = None
     number_of_versions = 0
     install_locs = {
@@ -600,6 +608,11 @@ class msvsEmptyTestCase(msvsTestCase):
         '8.0' : {},
         '8.0Exp' : {},
     }
+    # XXX: overriding the os.environ is bad, but doing it correctly is
+    # too complicated for now. Those tests should be fixed
+    for k in ['VS71COMNTOOLS', 'VS80COMNTOOLS', 'VS90COMNTOOLS']:
+        if os.environ.has_key(k):
+            del os.environ[k]
     default_install_loc = install_locs['8.0Exp']
 
 if __name__ == "__main__":
