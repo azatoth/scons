@@ -127,12 +127,12 @@ def set_psdk(env):
     if not env.has_key("MSSDK"):
         if env.has_key('MSVS_VERSION'):
             msver = env['MSVS_VERSION']
-            set_default_sdk(msver)
+            set_default_sdk(env, msver)
         else:
             print "No MSVS_VERSION: this is likely to be a bug"
 
     elif env['MSSDK'] is not None:
-        set_sdk(env['MSSDK'])
+        set_sdk(env, env['MSSDK'])
     else:
         pass
 
