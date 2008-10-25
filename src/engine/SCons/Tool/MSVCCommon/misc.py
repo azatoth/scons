@@ -151,7 +151,6 @@ def merge_default_version(env):
         for k, v in vars.items():
             env.PrependENVPath(k, v, delete_existing=1)
 
-        set_psdk(env)
     #try:
     #    version = get_default_version(env)
     #    if version is not None:

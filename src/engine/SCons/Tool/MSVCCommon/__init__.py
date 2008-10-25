@@ -39,5 +39,5 @@ import SCons.Platform.win32
 import SCons.Util
 
 from SCons.Tool.MSVCCommon.version import query_versions, get_default_version, detect_msvs
-from SCons.Tool.MSVCCommon.misc import merge_default_version
+from SCons.Tool.MSVCCommon.misc import merge_default_version, set_psdk
 
