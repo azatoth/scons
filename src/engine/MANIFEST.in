@@ -116,7 +116,15 @@ SCons/Tool/latex.py
 SCons/Tool/lex.py
 SCons/Tool/link.py
 SCons/Tool/linkloc.py
-SCons/Tool/MSVCCommon.py
+SCons/Tool/MSVCCommon/__init__.py
+SCons/Tool/MSVCCommon/common.py
+SCons/Tool/MSVCCommon/defaults.py
+SCons/Tool/MSVCCommon/envhelpers.py
+SCons/Tool/MSVCCommon/findloc.py
+SCons/Tool/MSVCCommon/misc.py
+SCons/Tool/MSVCCommon/netframework.py
+SCons/Tool/MSVCCommon/sdk.py
+SCons/Tool/MSVCCommon/version.py
 SCons/Tool/m4.py
 SCons/Tool/masm.py
 SCons/Tool/midl.py
