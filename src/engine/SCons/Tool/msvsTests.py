@@ -28,6 +28,7 @@ import string
 import sys
 import TestCmd
 import unittest
+import copy
 
 from SCons.Tool.msvs import *
 import SCons.Util
@@ -608,11 +609,6 @@ class msvsEmptyTestCase(msvsTestCase):
         '8.0' : {},
         '8.0Exp' : {},
     }
-    # XXX: overriding the os.environ is bad, but doing it correctly is
-    # too complicated for now. Those tests should be fixed
-    for k in ['VS71COMNTOOLS', 'VS80COMNTOOLS', 'VS90COMNTOOLS']:
-        if os.environ.has_key(k):
-            del os.environ[k]
     default_install_loc = install_locs['8.0Exp']
 
 if __name__ == "__main__":
@@ -642,8 +638,20 @@ if __name__ == "__main__":
 
     for test_class in test_classes:
         print test_class.__doc__
-        suite = unittest.makeSuite(test_class, 'test_')
-        if not unittest.TextTestRunner().run(suite).wasSuccessful():
-            exit_val = 1
+        back_osenv = copy.deepcopy(os.environ)
+        try:
+            # XXX: overriding the os.environ is bad, but doing it
+            # correctly is too complicated for now. Those tests should
+            # be fixed
+            for k in ['VS71COMNTOOLS', 'VS80COMNTOOLS',
+                      'VS90COMNTOOLS']:
+                if os.environ.has_key(k):
+                    del os.environ[k]
+
+            suite = unittest.makeSuite(test_class, 'test_')
+            if not unittest.TextTestRunner().run(suite).wasSuccessful():
+                exit_val = 1
+        finally:
+            os.env = back_osenv
 
     sys.exit(exit_val)
