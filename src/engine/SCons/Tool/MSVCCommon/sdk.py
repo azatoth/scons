@@ -156,7 +156,7 @@ def set_sdk(env, mssdk):
 def set_default_sdk(env, msver):
     """Set up the default Platform/Windows SDK."""
     # For MSVS < 8, use integrated windows sdk by default
-    if msver > 8:
+    if msver >= 8:
         versstr = query_versions()
         if len(versstr) > 0:
             mssdk = find_mssdk(versstr[0])
