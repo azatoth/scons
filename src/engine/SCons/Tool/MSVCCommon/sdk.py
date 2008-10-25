@@ -146,3 +146,18 @@ def detect_mssdk():
         return 1
     else:
         return 0
+
+def set_sdk(env, mssdk):
+    """Set the Platform sdk given the MS SDK path."""
+    env.PrependENVPath("INCLUDE", os.path.join(mssdk, "include"))
+    env.PrependENVPath("LIB", os.path.join(mssdk, "lib"))
+    env.PrependENVPath("LIBPATH", os.path.join(mssdk, "lib"))
+
+def set_default_sdk(env, msver):
+    # For MSVS < 8, use integrated windows sdk by default
+    if msver > 8:
+        versstr = query_versions()
+        if len(versstr) > 0:
+            mssdk = find_mssdk(verstr)
+            if mssdk:
+                set_sdk(env, msddk)
