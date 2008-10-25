@@ -139,3 +139,10 @@ def query_versions():
             versions.append(v)
 
     return versions
+
+def detect_mssdk():
+    versions = query_versions()
+    if len(versions) > 0:
+        return 1
+    else:
+        return 0
