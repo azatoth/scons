@@ -346,62 +346,7 @@ class Template:
         raise ValueError('Invalid placeholder in string %s: line %d, col %d' %
                          (repr(mo.group('invalid')), lineno, colno))
 
-    def substitute(self, gdict, ldict, env=None, mode=None, target=None, source=None):
-        # Helper function for .sub()
-        def convert(mo, gdict=gdict, ldict=ldict):
-            # Check the most common path first.
-            groups = mo.groupdict()
-            named = groups['named'] or groups['braced']
-            if named is not None:
-                try:
-                    val = ldict[named]
-                except KeyError:
-                    try:
-                        val = gdict[named]
-                    except KeyError:
-                        if NameError in AllowableExceptions:
-                            return ''
-                        s = groups['named'] or ('{%s}' % groups['braced'])
-                        raise_exception(e, 'self.target', '$' + s)
-            elif groups['expression'] is not None:
-                expression = groups['expression']
-                try:
-                    val = eval(expression, gdict, ldict)
-                except KeyboardInterrupt:
-                    raise
-                except Exception, e:
-                    if e.__class__ in AllowableExceptions:
-                        return ''
-                    raise_exception(e, 'self.target', '${%s}' % expression)
-            elif groups['escaped'] is not None:
-                return self.delimiter
-            else:
-                raise ValueError('Unrecognized named group in pattern',
-                                 self.pattern)
-            #
-            if val is None:
-                return ''
-            elif is_Sequence(val):
-                return ' '.join(map(str, val))
-            elif callable(val):
-                try:
-                    val = val(target=target,
-                              source=source,
-                              env=env,
-                              for_signature=(mode != SUBST_CMD))
-                except TypeError:
-                    # This probably indicates that it's a callable
-                    # object that doesn't match our calling arguments
-                    # (like an Action).
-                    if mode == SUBST_RAW:
-                        return val
-                    #val = self.conv(val)
-            if named:
-                ldict = ldict.copy()
-                ldict[named] = ''
-            # We use % instead of str() because str() can fail if val
-            # is a Unicode string containing non-ASCII characters.
-            return Template('%s' % (val,)).substitute(gdict, ldict, env, mode, target, source)
+    def substitute(self, convert):
         return self.pattern.sub(convert, self.template)
 
 
@@ -486,126 +431,83 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
         source with two methods (substitute() and expand()) that handle
         the expansion.
         """
-        def __init__(self, env, mode, target, source, conv, gvars):
+        def __init__(self, env, mode, target, source, conv, gvars, lvars):
             self.env = env
             self.mode = mode
             self.target = target
             self.source = source
             self.conv = conv
             self.gvars = gvars
+            self.lvars = lvars
 
-        def expand(self, s, lvars):
-            """Expand a single "token" as necessary, returning an
-            appropriate string containing the expansion.
-
-            This handles expanding different types of things (strings,
-            lists, callables) appropriately.  It calls the wrapper
-            substitute() method to re-expand things as necessary, so that
-            the results of expansions of side-by-side strings still get
-            re-evaluated separately, not smushed together.
-            """
-            if is_String(s):
+        # Helper function for .sub()
+        def convert(self, mo):
+            # Check the most common path first.
+            groups = mo.groupdict()
+            named = groups['named'] or groups['braced']
+            if named is not None:
                 try:
-                    s0, s1 = s[:2]
-                except (IndexError, ValueError):
-                    return s
-                if s0 != '$':
-                    return s
-                if s1 == '$':
-                    return '$'
-                elif s1 in '()':
-                    return s
-                else:
-                    key = s[1:]
-                    if key[0] == '{' or string.find(key, '.') >= 0:
-                        if key[0] == '{':
-                            key = key[1:-1]
-                        try:
-                            s = eval(key, self.gvars, lvars)
-                        except KeyboardInterrupt:
-                            raise
-                        except Exception, e:
-                            if e.__class__ in AllowableExceptions:
-                                return ''
-                            raise_exception(e, self.target, s)
-                    else:
-                        if lvars.has_key(key):
-                            s = lvars[key]
-                        elif self.gvars.has_key(key):
-                            s = self.gvars[key]
-                        elif not NameError in AllowableExceptions:
-                            raise_exception(NameError(key), self.target, s)
-                        else:
+                    val = self.lvars[named]
+                except KeyError:
+                    try:
+                        val = self.gvars[named]
+                    except KeyError:
+                        if NameError in AllowableExceptions:
                             return ''
-    
-                    # Before re-expanding the result, handle
-                    # recursive expansion by copying the local
-                    # variable dictionary and overwriting a null
-                    # string for the value of the variable name
-                    # we just expanded.
-                    #
-                    # This could potentially be optimized by only
-                    # copying lvars when s contains more expansions,
-                    # but lvars is usually supposed to be pretty
-                    # small, and deeply nested variable expansions
-                    # are probably more the exception than the norm,
-                    # so it should be tolerable for now.
-                    lv = lvars.copy()
-                    var = string.split(key, '.')[0]
-                    lv[var] = ''
-                    return self.substitute(s, lv)
-            elif is_Sequence(s):
-                def func(l, conv=self.conv, substitute=self.substitute, lvars=lvars):
-                    return conv(substitute(l, lvars))
-                return map(func, s)
-            elif callable(s):
+                        s = groups['named'] or ('{%s}' % groups['braced'])
+                        raise_exception(e, 'self.target', '$' + s)
+            elif groups['expression'] is not None:
+                expression = groups['expression']
                 try:
-                    s = s(target=self.target,
-                         source=self.source,
-                         env=self.env,
-                         for_signature=(self.mode != SUBST_CMD))
+                    val = eval(expression, self.gvars, self.lvars)
+                except KeyboardInterrupt:
+                    raise
+                except Exception, e:
+                    if e.__class__ in AllowableExceptions:
+                        return ''
+                    raise_exception(e, 'self.target', '${%s}' % expression)
+            elif groups['escaped'] is not None:
+                return Template.delimiter
+            else:
+                raise ValueError('Unrecognized named group in pattern',
+                                 self.pattern)
+            #
+            if val is None:
+                return ''
+            elif is_Sequence(val):
+                return ' '.join(map(str, val))
+            elif callable(val):
+                try:
+                    val = val(target=self.target,
+                              source=self.source,
+                              env=self.env,
+                              for_signature=(self.mode != SUBST_CMD))
                 except TypeError:
                     # This probably indicates that it's a callable
                     # object that doesn't match our calling arguments
                     # (like an Action).
                     if self.mode == SUBST_RAW:
-                        return s
-                    s = self.conv(s)
-                return self.substitute(s, lvars)
-            elif s is None:
-                return ''
+                        return val
+                    val = self.conv(val)
+            if named:
+                ldict = self.lvars
+                self.lvars = ldict.copy()
+                self.lvars[named] = ''
             else:
-                return s
+                ldict = self.lvars
+            # We use % instead of str() because str() can fail if val
+            # is a Unicode string containing non-ASCII characters.
+            result = Template('%s' % (val,)).substitute(self.convert)
+            self.lvars = ldict
+            return result
 
-        def substitute(self, args, lvars):
+        def substitute(self, args):
             """Substitute expansions in an argument or list of arguments.
 
             This serves as a wrapper for splitting up a string into
             separate tokens.
             """
-            if is_String(args) and not isinstance(args, CmdStringHolder):
-                args = str(args)        # In case it's a UserString.
-                try:
-                    def sub_match(match, conv=self.conv, expand=self.expand, lvars=lvars):
-                        return conv(expand(match.group(1), lvars))
-                    result = _dollar_exps.sub(sub_match, args)
-                except TypeError:
-                    # If the internal conversion routine doesn't return
-                    # strings (it could be overridden to return Nodes, for
-                    # example), then the 1.5.2 re module will throw this
-                    # exception.  Back off to a slower, general-purpose
-                    # algorithm that works for all data types.
-                    args = _separate_args.findall(args)
-                    result = []
-                    for a in args:
-                        result.append(self.conv(self.expand(a, lvars)))
-                    if len(result) == 1:
-                        result = result[0]
-                    else:
-                        result = string.join(map(str, result), '')
-                return result
-            else:
-                return self.expand(args, lvars)
+            return Template(args).substitute(self.convert)
 
     if conv is None:
         conv = _strconv[mode]
@@ -632,12 +534,8 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
     # for expansion.
     gvars['__builtins__'] = __builtins__
 
-    #ss = StringSubber(env, mode, target, source, conv, gvars)
-    #result = ss.substitute(strSubst, lvars)
-    #n = 1
-    #while n:
-    #    result, n = Template(result).substitute(gvars, lvars)
-    result = Template(str(strSubst)).substitute(gvars, lvars, env, mode, target, source)
+    ss = StringSubber(env, mode, target, source, conv, gvars, lvars)
+    result = ss.substitute(str(strSubst))
 
     try:
         del gvars['__builtins__']
