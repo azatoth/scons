@@ -242,12 +242,18 @@ class SubstTestCase(unittest.TestCase):
             "test foo/bar.exe[0]",
 
             "test $TARGETS.foo",
+            "test foo/bar.exe /bar/baz.obj ../foo/baz.obj.foo",
+
+            "test ${TARGETS.foo}",
             "test 1 1 1",
 
             "test ${SOURCES[0:2].foo}",
             "test 1 1",
 
             "test $SOURCE.foo",
+            "test foo/blah.cpp.foo",
+
+            "test ${SOURCE.foo}",
             "test 1",
 
             "test ${TARGET.get_stuff('blah')}",
@@ -349,10 +355,11 @@ class SubstTestCase(unittest.TestCase):
             except Exception, e:
                 print "    input %s generated %s %s" % (repr(input), e.__class__.__name__, str(e))
                 failed = failed + 1
-            if result != expect:
-                if failed == 0: print
-                print "    input %s => %s did not match %s" % (repr(input), repr(result), repr(expect))
-                failed = failed + 1
+            else:
+                if result != expect:
+                    if failed == 0: print
+                    print "    input %s => %s did not match %s" % (repr(input), repr(result), repr(expect))
+                    failed = failed + 1
             del cases[:2]
         assert failed == 0, "%d subst() cases failed" % failed
 

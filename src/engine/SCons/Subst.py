@@ -297,6 +297,117 @@ def subst_dict(target, source):
 
     return dict
 
+####################################################################
+import re as _re
+
+class _TemplateMetaclass(type):
+    pattern = r"""
+    %(delim)s(?:
+      (?P<escaped>%(delim)s) |   # Escape sequence of two delimiters
+      (?P<named>%(id)s)      |   # delimiter and a Python identifier
+      {(?P<braced>%(id)s)}   |   # delimiter and a braced identifier
+      {(?P<expression>[^}]*)}    # delimiter and a braced expression
+    )
+    """
+
+    def __init__(cls, name, bases, dct):
+        super(_TemplateMetaclass, cls).__init__(name, bases, dct)
+        if 'pattern' in dct:
+            pattern = cls.pattern
+        else:
+            pattern = _TemplateMetaclass.pattern % {
+                'delim' : _re.escape(cls.delimiter),
+                'id'    : cls.idpattern,
+                }
+        cls.pattern = _re.compile(pattern, _re.IGNORECASE | _re.VERBOSE)
+
+
+class Template:
+    """A string class for supporting $-substitutions."""
+    __metaclass__ = _TemplateMetaclass
+
+    delimiter = '$'
+    idpattern = r'[_a-z][_a-z0-9]*'
+
+    def __init__(self, template):
+        self.template = template
+
+    # Search for $$, $identifier, ${identifier}, and any bare $'s
+
+    def _invalid(self, mo):
+        i = mo.start('invalid')
+        lines = self.template[:i].splitlines(True)
+        if not lines:
+            colno = 1
+            lineno = 1
+        else:
+            colno = i - len(''.join(lines[:-1]))
+            lineno = len(lines)
+        raise ValueError('Invalid placeholder in string %s: line %d, col %d' %
+                         (repr(mo.group('invalid')), lineno, colno))
+
+    def substitute(self, gdict, ldict, env=None, mode=None, target=None, source=None):
+        # Helper function for .sub()
+        def convert(mo, gdict=gdict, ldict=ldict):
+            # Check the most common path first.
+            groups = mo.groupdict()
+            named = groups['named'] or groups['braced']
+            if named is not None:
+                try:
+                    val = ldict[named]
+                except KeyError:
+                    try:
+                        val = gdict[named]
+                    except KeyError:
+                        if NameError in AllowableExceptions:
+                            return ''
+                        s = groups['named'] or ('{%s}' % groups['braced'])
+                        raise_exception(e, 'self.target', '$' + s)
+            elif groups['expression'] is not None:
+                expression = groups['expression']
+                try:
+                    val = eval(expression, gdict, ldict)
+                except KeyboardInterrupt:
+                    raise
+                except Exception, e:
+                    if e.__class__ in AllowableExceptions:
+                        return ''
+                    raise_exception(e, 'self.target', '${%s}' % expression)
+            elif groups['escaped'] is not None:
+                return self.delimiter
+            else:
+                raise ValueError('Unrecognized named group in pattern',
+                                 self.pattern)
+            #
+            if val is None:
+                return ''
+            elif is_Sequence(val):
+                return ' '.join(map(str, val))
+            elif callable(val):
+                try:
+                    val = val(target=target,
+                              source=source,
+                              env=env,
+                              for_signature=(mode != SUBST_CMD))
+                except TypeError:
+                    # This probably indicates that it's a callable
+                    # object that doesn't match our calling arguments
+                    # (like an Action).
+                    if mode == SUBST_RAW:
+                        return val
+                    #val = self.conv(val)
+            if named:
+                ldict = ldict.copy()
+                ldict[named] = ''
+            # We use % instead of str() because str() can fail if val
+            # is a Unicode string containing non-ASCII characters.
+            return Template('%s' % (val,)).substitute(gdict, ldict, env, mode, target, source)
+        return self.pattern.sub(convert, self.template)
+
+
+
+####################################################################
+
 # Constants for the "mode" parameter to scons_subst_list() and
 # scons_subst().  SUBST_RAW gives the raw command line.  SUBST_CMD
 # gives a command line suitable for passing to a shell.  SUBST_SIG
@@ -521,8 +632,12 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
     # for expansion.
     gvars['__builtins__'] = __builtins__
 
-    ss = StringSubber(env, mode, target, source, conv, gvars)
-    result = ss.substitute(strSubst, lvars)
+    #ss = StringSubber(env, mode, target, source, conv, gvars)
+    #result = ss.substitute(strSubst, lvars)
+    #n = 1
+    #while n:
+    #    result, n = Template(result).substitute(gvars, lvars)
+    result = Template(str(strSubst)).substitute(gvars, lvars, env, mode, target, source)
 
     try:
         del gvars['__builtins__']
