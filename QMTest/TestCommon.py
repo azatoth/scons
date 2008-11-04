@@ -84,8 +84,8 @@ The TestCommon module also provides the following variables
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCommon.py 0.31.D001 2008/01/01 09:05:59 knight"
-__version__ = "0.31"
+__revision__ = "TestCommon.py 0.32.D001 2008/10/30 23:00:04 knight"
+__version__ = "0.32"
 
 import copy
 import os
@@ -220,12 +220,7 @@ if os.name == 'posix':
             return None
         return _status(self) != status
     def _status(self):
-        if os.WIFEXITED(self.status):
-            return os.WEXITSTATUS(self.status)
-        elif os.WIFSIGNALED(self.status):
-            return os.WTERMSIG(self.status)
-        else:
-            return None
+        return self.status
 elif os.name == 'nt':
     def _failed(self, status = 0):
         return not (self.status is None or status is None) and \
