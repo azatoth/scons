@@ -231,6 +231,31 @@ class SubstTestCase(unittest.TestCase):
         'DEFS'      : [ ('Q1', '"q1"'), ('Q2', '"$AAA"') ],
     }
 
+    def basic_comparisons(self, function, convert):
+        env = DummyEnv(self.loc)
+        cases = self.basic_cases[:]
+        kwargs = {'target' : self.target, 'source' : self.source,
+                  'gvars' : env.Dictionary()}
+
+        failed = 0
+        while cases:
+            input, expect = cases[:2]
+            expect = convert(expect)
+            try:
+                result = apply(function, (input, env), kwargs)
+            except Exception, e:
+                fmt = "    input %s generated %s (%s)"
+                print fmt % (repr(input), e.__class__.__name__, repr(e))
+                failed = failed + 1
+            else:
+                if result != expect:
+                    if failed == 0: print
+                    print "    input %s => %s did not match %s" % (repr(input), repr(result), repr(expect))
+                    failed = failed + 1
+            del cases[:2]
+        fmt = "%d %s() cases failed"
+        assert failed == 0, fmt % (failed, function.__name__)
+
 class scons_subst_TestCase(SubstTestCase):
 
     # Basic tests of substitution functionality.
@@ -359,6 +384,10 @@ class scons_subst_TestCase(SubstTestCase):
         'aaa "bbb ccc" ddd',    'aaa "bbb ccc" ddd',
     ]
 
+    def test_scons_subst(self):
+        """Test scons_subst():  basic substitution"""
+        return self.basic_comparisons(scons_subst, cvt)
+
     subst_cases = [
         "test $xxx",
             "test ",
@@ -412,30 +441,6 @@ class scons_subst_TestCase(SubstTestCase):
             ["|", "a", "|", "b", "|", "c", "1"],
             ["|", "|", "c", "1"],
     ]
-
-    def test_scons_subst(self):
-        """Test scons_subst():  basic substitution"""
-        env = DummyEnv(self.loc)
-        cases = self.basic_cases[:]
-
-        kwargs = {'target' : self.target, 'source' : self.source,
-                  'gvars' : env.Dictionary()}
-
-        failed = 0
-        while cases:
-            input, expect = cases[:2]
-            expect = cvt(expect)
-            try:
-                result = apply(scons_subst, (input, env), kwargs)
-            except Exception, e:
-                print "    input %s generated %s %s" % (repr(input), e.__class__.__name__, str(e))
-                failed = failed + 1
-            if result != expect:
-                if failed == 0: print
-                print "    input %s => %s did not match %s" % (repr(input), repr(result), repr(expect))
-                failed = failed + 1
-            del cases[:2]
-        assert failed == 0, "%d subst() cases failed" % failed
 
     def test_subst_env(self):
         """Test scons_subst():  expansion dictionary"""
@@ -792,24 +797,63 @@ class scons_subst_list_TestCase(SubstTestCase):
 
     def test_scons_subst_list(self):
         """Test scons_subst_list():  basic substitution"""
-        env = DummyEnv(self.loc)
-        gvars = env.Dictionary()
-        cases = self.basic_cases[:]
+        def convert_lists(expect):
+            return map(lambda l: map(cvt, l), expect)
+        return self.basic_comparisons(scons_subst_list, convert_lists)
 
-        kwargs = {'target' : self.target, 'source' : self.source,
-                  'gvars' : gvars}
+    subst_list_cases = [
+        "test $xxx",
+            [["test"]],
+            [["test"]],
+            [["test"]],
 
-        failed = 0
-        while cases:
-            input, expect = cases[:2]
-            expect = map(lambda l: map(cvt, l), expect)
-            result = apply(scons_subst_list, (input, env), kwargs)
-            if result != expect:
-                if failed == 0: print
-                print "    input %s => %s did not match %s" % (repr(input), result, repr(expect))
-                failed = failed + 1
-            del cases[:2]
-        assert failed == 0, "%d subst_list() cases failed" % failed
+        "test $($xxx$)",
+            [["test", "$($)"]],
+            [["test"]],
+            [["test"]],
+
+        "test $( $xxx $)",
+            [["test", "$(", "$)"]],
+            [["test"]],
+            [["test"]],
+
+        "$AAA ${AAA}A $BBBB $BBB",
+            [["a", "aA", "b"]],
+            [["a", "aA", "b"]],
+            [["a", "aA", "b"]],
+
+        "$RECURSE",
+            [["foo", "bar"]],
+            [["foo", "bar"]],
+            [["foo", "bar"]],
+
+        "$RRR",
+            [["foo", "bar"]],
+            [["foo", "bar"]],
+            [["foo", "bar"]],
+
+        # Verify what happens with no target or source nodes.
+        "$TARGET $SOURCES",
+            [[]],
+            [[]],
+            [[]],
+
+        "$TARGETS $SOURCE",
+            [[]],
+            [[]],
+            [[]],
+
+        # Various test refactored from ActionTests.py
+        "${LIST}",
+            [['This', 'is', '$(', '$)', 'test']],
+            [['This', 'is', 'test']],
+            [['This', 'is', 'test']],
+
+        ["|", "$(", "$AAA", "|", "$BBB", "$)", "|", "$CCC", 1],
+            [["|", "$(", "a", "|", "b", "$)", "|", "c", "1"]],
+            [["|", "a", "|", "b", "|", "c", "1"]],
+            [["|", "|", "c", "1"]],
+    ]
 
     def test_subst_env(self):
         """Test scons_subst_list():  expansion dictionary"""
@@ -892,60 +936,7 @@ class scons_subst_list_TestCase(SubstTestCase):
     def test_subst_SUBST_modes(self):
         """Test scons_subst_list():  SUBST_* modes"""
         env = DummyEnv(self.loc)
-        subst_list_cases = [
-            "test $xxx",
-                [["test"]],
-                [["test"]],
-                [["test"]],
-
-            "test $($xxx$)",
-                [["test", "$($)"]],
-                [["test"]],
-                [["test"]],
-
-            "test $( $xxx $)",
-                [["test", "$(", "$)"]],
-                [["test"]],
-                [["test"]],
-
-            "$AAA ${AAA}A $BBBB $BBB",
-                [["a", "aA", "b"]],
-                [["a", "aA", "b"]],
-                [["a", "aA", "b"]],
-
-            "$RECURSE",
-                [["foo", "bar"]],
-                [["foo", "bar"]],
-                [["foo", "bar"]],
-
-            "$RRR",
-                [["foo", "bar"]],
-                [["foo", "bar"]],
-                [["foo", "bar"]],
-
-            # Verify what happens with no target or source nodes.
-            "$TARGET $SOURCES",
-                [[]],
-                [[]],
-                [[]],
-
-            "$TARGETS $SOURCE",
-                [[]],
-                [[]],
-                [[]],
-
-            # Various test refactored from ActionTests.py
-            "${LIST}",
-                [['This', 'is', '$(', '$)', 'test']],
-                [['This', 'is', 'test']],
-                [['This', 'is', 'test']],
-
-            ["|", "$(", "$AAA", "|", "$BBB", "$)", "|", "$CCC", 1],
-                [["|", "$(", "a", "|", "b", "$)", "|", "c", "1"]],
-                [["|", "a", "|", "b", "|", "c", "1"]],
-                [["|", "|", "c", "1"]],
-        ]
-
+        subst_list_cases = self.subst_list_cases[:]
         gvars = env.Dictionary()
 
         r = scons_subst_list("$TARGET $SOURCES", env, mode=SUBST_RAW, gvars=gvars)
