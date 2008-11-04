@@ -104,6 +104,9 @@ else:
         return string.replace(str, '/', os.sep)
 
 class SubstTestCase(unittest.TestCase):
+    pass
+
+class scons_subst_TestCase(SubstTestCase):
     def test_subst(self):
         """Test the subst() function"""
         class MyNode(DummyNode):
@@ -565,6 +568,7 @@ class SubstTestCase(unittest.TestCase):
         result = scons_subst('$XXX', env, gvars={'XXX' : 'yyy'})
         assert result == 'yyy', result
 
+class CLVar_TestCase(unittest.TestCase):
     def test_CLVar(self):
         """Test scons_subst() and scons_subst_list() with CLVar objects"""
 
@@ -587,6 +591,7 @@ class SubstTestCase(unittest.TestCase):
         assert cmd_list[0][3] == "call", cmd_list[0][3]
         assert cmd_list[0][4] == "test", cmd_list[0][4]
 
+class scons_subst_list_TestCase(SubstTestCase):
     def test_subst_list(self):
         """Testing the scons_subst_list() method..."""
         class MyNode(DummyNode):
@@ -1053,6 +1058,7 @@ class SubstTestCase(unittest.TestCase):
         result = scons_subst_list('$XXX', env, gvars={'XXX' : 'yyy'})
         assert result == [['yyy']], result
 
+class scons_subst_once_TestCase(unittest.TestCase):
     def test_subst_once(self):
         """Testing the scons_subst_once() method"""
 
@@ -1118,6 +1124,7 @@ class SubstTestCase(unittest.TestCase):
             del cases[:3]
         assert failed == 0, "%d subst() cases failed" % failed
 
+class quote_spaces_TestCase(unittest.TestCase):
     def test_quote_spaces(self):
         """Testing the quote_spaces() method..."""
         q = quote_spaces('x')
@@ -1152,6 +1159,7 @@ class SubstTestCase(unittest.TestCase):
         def current(self):
             return 1
 
+class LiteralTestCase(unittest.TestCase):
     def test_Literal(self):
         """Test the Literal() function."""
         input_list = [ '$FOO', Literal('$BAR') ]
@@ -1164,6 +1172,7 @@ class SubstTestCase(unittest.TestCase):
         cmd_list = escape_list(cmd_list[0], escape_func)
         assert cmd_list == ['BAZ', '**$BAR**'], cmd_list
 
+class SpecialAttrWrapperTestCase(unittest.TestCase):
     def test_SpecialAttrWrapper(self):
         """Test the SpecialAttrWrapper() function."""
         input_list = [ '$FOO', SpecialAttrWrapper('$BAR', 'BLEH') ]
@@ -1180,6 +1189,7 @@ class SubstTestCase(unittest.TestCase):
         cmd_list = escape_list(cmd_list[0], escape_func)
         assert cmd_list == ['BAZ', '**BLEH**'], cmd_list
 
+class subst_dict_TestCase(unittest.TestCase):
     def test_subst_dict(self):
         """Test substituting dictionary values in an Action
         """
@@ -1233,6 +1243,19 @@ class SubstTestCase(unittest.TestCase):
         assert SOURCES == ['s3', 'v-rstr-s4', 'v-s5'], SOURCES
 
 if __name__ == "__main__":
-    suite = unittest.makeSuite(SubstTestCase, 'test_')
+    suite = unittest.TestSuite()
+    tclasses = [
+        CLVar_TestCase,
+        LiteralTestCase,
+        SpecialAttrWrapperTestCase,
+        quote_spaces_TestCase,
+        scons_subst_TestCase,
+        scons_subst_list_TestCase,
+        scons_subst_once_TestCase,
+        subst_dict_TestCase,
+    ]
+    for tclass in tclasses:
+        names = unittest.getTestCaseNames(tclass, 'test_')
+        suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
