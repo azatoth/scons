@@ -104,115 +104,137 @@ else:
         return string.replace(str, '/', os.sep)
 
 class SubstTestCase(unittest.TestCase):
-    pass
+    class MyNode(DummyNode):
+        """Simple node work-alike with some extra stuff for testing."""
+        def __init__(self, name):
+            DummyNode.__init__(self, name)
+            class Attribute:
+                pass
+            self.attribute = Attribute()
+            self.attribute.attr1 = 'attr$1-' + os.path.basename(name)
+            self.attribute.attr2 = 'attr$2-' + os.path.basename(name)
+        def get_stuff(self, extra):
+            return self.name + extra
+        foo = 1
+
+    class TestLiteral:
+        def __init__(self, literal):
+            self.literal = literal
+        def __str__(self):
+            return self.literal
+        def is_literal(self):
+            return 1
+
+    class TestCallable:
+        def __init__(self, value):
+            self.value = value
+        def __call__(self):
+            pass
+        def __str__(self):
+            return self.value
+
+    def function_foo(arg):
+        pass
+
+    target = [ MyNode("./foo/bar.exe"),
+               MyNode("/bar/baz with spaces.obj"),
+               MyNode("../foo/baz.obj") ]
+    source = [ MyNode("./foo/blah with spaces.cpp"),
+               MyNode("/bar/ack.cpp"),
+               MyNode("../foo/ack.c") ]
+
+    callable_object_1 = TestCallable('callable-1')
+    callable_object_2 = TestCallable('callable-2')
+
+    def _defines(defs):
+        l = []
+        for d in defs:
+            if SCons.Util.is_List(d) or type(d) is types.TupleType:
+                l.append(str(d[0]) + '=' + str(d[1]))
+            else:
+                l.append(str(d))
+        return l
+
+    loc = {
+        'xxx'       : None,
+        'NEWLINE'   : 'before\nafter',
+
+        'null'      : '',
+        'zero'      : 0,
+        'one'       : 1,
+        'BAZ'       : 'baz',
+        'ONE'       : '$TWO',
+        'TWO'       : '$THREE',
+        'THREE'     : 'four',
+
+        'AAA'       : 'a',
+        'BBB'       : 'b',
+        'CCC'       : 'c',
+
+        'DO'        : DummyNode('do something'),
+        'FOO'       : DummyNode('foo.in'),
+        'BAR'       : DummyNode('bar with spaces.out'),
+        'CRAZY'     : DummyNode('crazy\nfile.in'),
+
+        # $XXX$HHH should expand to GGGIII, not BADNEWS.
+        'XXX'       : '$FFF',
+        'FFF'       : 'GGG',
+        'HHH'       : 'III',
+        'FFFIII'    : 'BADNEWS',
+
+        'LITERAL'   : TestLiteral("$XXX"),
+
+        # Test that we can expand to and return a function.
+        #'FUNCTION'  : function_foo,
+
+        'CMDGEN1'   : CmdGen1,
+        'CMDGEN2'   : CmdGen2,
+
+        'LITERALS'  : [ Literal('foo\nwith\nnewlines'),
+                        Literal('bar\nwith\nnewlines') ],
+
+        'NOTHING'   : "",
+        'NONE'      : None,
+
+        # Test various combinations of strings, lists and functions.
+        'N'         : None,
+        'X'         : 'x',
+        'Y'         : '$X',
+        'R'         : '$R',
+        'S'         : 'x y',
+        'LS'        : ['x y'],
+        'L'         : ['x', 'y'],
+        'TS'        : ('x y'),
+        'T'         : ('x', 'y'),
+        'CS'        : cs,
+        'CL'        : cl,
+        'US'        : UserString.UserString('us'),
+
+        # Test function calls within ${}.
+        'FUNCCALL'  : '${FUNC1("$AAA $FUNC2 $BBB")}',
+        'FUNC1'     : lambda x: x,
+        'FUNC2'     : lambda target, source, env, for_signature: ['x$CCC'],
+
+        # Various tests refactored from ActionTests.py.
+        'LIST'      : [["This", "is", "$(", "$a", "$)", "test"]],
+
+        # Test recursion.
+        'RECURSE'   : 'foo $RECURSE bar',
+        'RRR'       : 'foo $SSS bar',
+        'SSS'       : '$RRR',
+
+        # Test callables that don't match the calling arguments.
+        'CALLABLE1' : callable_object_1,
+        'CALLABLE2' : callable_object_2,
+
+        '_defines'  : _defines,
+        'DEFS'      : [ ('Q1', '"q1"'), ('Q2', '"$AAA"') ],
+    }
 
 class scons_subst_TestCase(SubstTestCase):
     def test_subst(self):
         """Test the subst() function"""
-        class MyNode(DummyNode):
-            """Simple node work-alike with some extra stuff for testing."""
-            def __init__(self, name):
-                DummyNode.__init__(self, name)
-                class Attribute:
-                    pass
-                self.attribute = Attribute()
-                self.attribute.attr1 = 'attr$1-' + os.path.basename(name)
-                self.attribute.attr2 = 'attr$2-' + os.path.basename(name)
-            def get_stuff(self, extra):
-                return self.name + extra
-            foo = 1
-
-        class TestLiteral:
-            def __init__(self, literal):
-                self.literal = literal
-            def __str__(self):
-                return self.literal
-            def is_literal(self):
-                return 1
-
-        class TestCallable:
-            def __init__(self, value):
-                self.value = value
-            def __call__(self):
-                pass
-            def __str__(self):
-                return self.value
-
-        def function_foo(arg):
-            pass
-
-        target = [ MyNode("./foo/bar.exe"),
-                   MyNode("/bar/baz.obj"),
-                   MyNode("../foo/baz.obj") ]
-        source = [ MyNode("./foo/blah.cpp"),
-                   MyNode("/bar/ack.cpp"),
-                   MyNode("../foo/ack.c") ]
-
-        callable_object = TestCallable('callable-1')
-
-        loc = {
-            'xxx'       : None,
-            'null'      : '',
-            'zero'      : 0,
-            'one'       : 1,
-            'BAR'       : 'baz',
-            'ONE'       : '$TWO',
-            'TWO'       : '$THREE',
-            'THREE'     : 'four',
-
-            'AAA'       : 'a',
-            'BBB'       : 'b',
-            'CCC'       : 'c',
-
-            # $XXX$HHH should expand to GGGIII, not BADNEWS.
-            'XXX'       : '$FFF',
-            'FFF'       : 'GGG',
-            'HHH'       : 'III',
-            'FFFIII'    : 'BADNEWS',
-
-            'LITERAL'   : TestLiteral("$XXX"),
-
-            # Test that we can expand to and return a function.
-            #'FUNCTION'  : function_foo,
-
-            'CMDGEN1'   : CmdGen1,
-            'CMDGEN2'   : CmdGen2,
-
-            'NOTHING'   : "",
-            'NONE'      : None,
-
-            # Test various combinations of strings, lists and functions.
-            'N'         : None,
-            'X'         : 'x',
-            'Y'         : '$X',
-            'R'         : '$R',
-            'S'         : 'x y',
-            'LS'        : ['x y'],
-            'L'         : ['x', 'y'],
-            'TS'        : ('x y'),
-            'T'         : ('x', 'y'),
-            'CS'        : cs,
-            'CL'        : cl,
-            'US'        : UserString.UserString('us'),
-
-            # Test function calls within ${}.
-            'FUNCCALL'  : '${FUNC1("$AAA $FUNC2 $BBB")}',
-            'FUNC1'     : lambda x: x,
-            'FUNC2'     : lambda target, source, env, for_signature: ['x$CCC'],
-
-            # Various tests refactored from ActionTests.py.
-            'LIST'      : [["This", "is", "$(", "$a", "$)", "test"]],
-
-            # Test recursion.
-            'RECURSE'   : 'foo $RECURSE bar',
-            'RRR'       : 'foo $SSS bar',
-            'SSS'       : '$RRR',
-
-            # Test callables that don't match the calling arguments.
-            'CALLABLE'  : callable_object,
-        }
-
-        env = DummyEnv(loc)
+        env = DummyEnv(self.loc)
 
         # Basic tests of substitution functionality.
         cases = [
@@ -230,18 +252,18 @@ class scons_subst_TestCase(SubstTestCase):
 
             # Test a whole bunch of $TARGET[S] and $SOURCE[S] expansions.
             "test $TARGETS $SOURCES",
-            "test foo/bar.exe /bar/baz.obj ../foo/baz.obj foo/blah.cpp /bar/ack.cpp ../foo/ack.c",
+            "test foo/bar.exe /bar/baz with spaces.obj ../foo/baz.obj foo/blah with spaces.cpp /bar/ack.cpp ../foo/ack.c",
 
             "test ${TARGETS[:]} ${SOURCES[0]}",
-            "test foo/bar.exe /bar/baz.obj ../foo/baz.obj foo/blah.cpp",
+            "test foo/bar.exe /bar/baz with spaces.obj ../foo/baz.obj foo/blah with spaces.cpp",
 
             "test ${TARGETS[1:]}v",
-            "test /bar/baz.obj ../foo/baz.objv",
+            "test /bar/baz with spaces.obj ../foo/baz.objv",
 
             "test $TARGET",
             "test foo/bar.exe",
 
-            "test $TARGET$FOO[0]",
+            "test $TARGET$NO_SUCH_VAR[0]",
             "test foo/bar.exe[0]",
 
             "test $TARGETS.foo",
@@ -257,25 +279,25 @@ class scons_subst_TestCase(SubstTestCase):
             "test foo/bar.exeblah",
 
             "test ${SOURCES.get_stuff('blah')}",
-            "test foo/blah.cppblah /bar/ack.cppblah ../foo/ack.cblah",
+            "test foo/blah with spaces.cppblah /bar/ack.cppblah ../foo/ack.cblah",
 
             "test ${SOURCES[0:2].get_stuff('blah')}",
-            "test foo/blah.cppblah /bar/ack.cppblah",
+            "test foo/blah with spaces.cppblah /bar/ack.cppblah",
 
             "test ${SOURCES[0:2].get_stuff('blah')}",
-            "test foo/blah.cppblah /bar/ack.cppblah",
+            "test foo/blah with spaces.cppblah /bar/ack.cppblah",
 
             "test ${SOURCES.attribute.attr1}",
-            "test attr$1-blah.cpp attr$1-ack.cpp attr$1-ack.c",
+            "test attr$1-blah with spaces.cpp attr$1-ack.cpp attr$1-ack.c",
 
             "test ${SOURCES.attribute.attr2}",
-            "test attr$2-blah.cpp attr$2-ack.cpp attr$2-ack.c",
+            "test attr$2-blah with spaces.cpp attr$2-ack.cpp attr$2-ack.c",
 
             # Test adjacent expansions.
-            "foo$BAR",
+            "foo$BAZ",
             "foobaz",
 
-            "foo${BAR}",
+            "foo${BAZ}",
             "foobaz",
 
             # Test that adjacent expansions don't get re-interpreted
@@ -334,13 +356,13 @@ class scons_subst_TestCase(SubstTestCase):
             cvt('$xxx/bin'),        '/bin',
 
             # Tests callables that don't match our calling arguments.
-            '$CALLABLE',            'callable-1',
+            '$CALLABLE1',            'callable-1',
 
             # Test handling of quotes.
             'aaa "bbb ccc" ddd',    'aaa "bbb ccc" ddd',
         ]
 
-        kwargs = {'target' : target, 'source' : source,
+        kwargs = {'target' : self.target, 'source' : self.source,
                   'gvars' : env.Dictionary()}
 
         failed = 0
@@ -442,10 +464,10 @@ class scons_subst_TestCase(SubstTestCase):
             del subst_cases[:4]
         assert failed == 0, "%d subst() mode cases failed" % failed
 
-        t1 = MyNode('t1')
-        t2 = MyNode('t2')
-        s1 = MyNode('s1')
-        s2 = MyNode('s2')
+        t1 = self.MyNode('t1')
+        t2 = self.MyNode('t2')
+        s1 = self.MyNode('s1')
+        s2 = self.MyNode('s2')
         result = scons_subst("$TARGET $SOURCES", env,
                                   target=[t1, t2],
                                   source=[s1, s2])
@@ -462,10 +484,10 @@ class scons_subst_TestCase(SubstTestCase):
         assert result == " ", result
 
         # Test interpolating a callable.
-        newcom = scons_subst("test $CMDGEN1 $SOURCES $TARGETS",
-                             env, target=MyNode('t'), source=MyNode('s'),
+        newcom = scons_subst("test $CMDGEN1 $SOURCES $TARGETS", env,
+                             target=self.MyNode('t'), source=self.MyNode('s'),
                              gvars=gvars)
-        assert newcom == "test foo baz s t", newcom
+        assert newcom == "test foo bar with spaces.out s t", newcom
 
         # Test that we handle attribute errors during expansion as expected.
         try:
@@ -532,16 +554,16 @@ class scons_subst_TestCase(SubstTestCase):
         # dictionary.  CommandAction uses this to allow delayed evaluation
         # of $SPAWN variables.
         x = lambda x: x
-        r = scons_subst("$CALLABLE", env, mode=SUBST_RAW, conv=x, gvars=gvars)
-        assert r is callable_object, repr(r)
-        r = scons_subst("$CALLABLE", env, mode=SUBST_RAW, gvars=gvars)
+        r = scons_subst("$CALLABLE1", env, mode=SUBST_RAW, conv=x, gvars=gvars)
+        assert r is self.callable_object_1, repr(r)
+        r = scons_subst("$CALLABLE1", env, mode=SUBST_RAW, gvars=gvars)
         assert r == 'callable-1', repr(r)
 
         # Test how we handle overriding the internal conversion routines.
         def s(obj):
             return obj
 
-        n1 = MyNode('n1')
+        n1 = self.MyNode('n1')
         env = DummyEnv({'NODE' : n1})
         gvars = env.Dictionary()
         node = scons_subst("$NODE", env, mode=SUBST_RAW, conv=s, gvars=gvars)
@@ -594,100 +616,7 @@ class CLVar_TestCase(unittest.TestCase):
 class scons_subst_list_TestCase(SubstTestCase):
     def test_subst_list(self):
         """Testing the scons_subst_list() method..."""
-        class MyNode(DummyNode):
-            """Simple node work-alike with some extra stuff for testing."""
-            def __init__(self, name):
-                DummyNode.__init__(self, name)
-                class Attribute:
-                    pass
-                self.attribute = Attribute()
-                self.attribute.attr1 = 'attr$1-' + os.path.basename(name)
-                self.attribute.attr2 = 'attr$2-' + os.path.basename(name)
-
-        class TestCallable:
-            def __init__(self, value):
-                self.value = value
-            def __call__(self):
-                pass
-            def __str__(self):
-                return self.value
-
-        target = [ MyNode("./foo/bar.exe"),
-                   MyNode("/bar/baz with spaces.obj"),
-                   MyNode("../foo/baz.obj") ]
-        source = [ MyNode("./foo/blah with spaces.cpp"),
-                   MyNode("/bar/ack.cpp"),
-                   MyNode("../foo/ack.c") ]
-
-        callable_object = TestCallable('callable-2')
-
-        def _defines(defs):
-            l = []
-            for d in defs:
-                if SCons.Util.is_List(d) or type(d) is types.TupleType:
-                    l.append(str(d[0]) + '=' + str(d[1]))
-                else:
-                    l.append(str(d))
-            return l
-
-        loc = {
-            'xxx'       : None,
-            'NEWLINE'   : 'before\nafter',
-
-            'AAA'       : 'a',
-            'BBB'       : 'b',
-            'CCC'       : 'c',
-
-            'DO'        : DummyNode('do something'),
-            'FOO'       : DummyNode('foo.in'),
-            'BAR'       : DummyNode('bar with spaces.out'),
-            'CRAZY'     : DummyNode('crazy\nfile.in'),
-
-            # $XXX$HHH should expand to GGGIII, not BADNEWS.
-            'XXX'       : '$FFF',
-            'FFF'       : 'GGG',
-            'HHH'       : 'III',
-            'FFFIII'    : 'BADNEWS',
-
-            'CMDGEN1'   : CmdGen1,
-            'CMDGEN2'   : CmdGen2,
-
-            'LITERALS'  : [ Literal('foo\nwith\nnewlines'),
-                            Literal('bar\nwith\nnewlines') ],
-
-            # Test various combinations of strings, lists and functions.
-            'N'         : None,
-            'X'         : 'x',
-            'Y'         : '$X',
-            'R'         : '$R',
-            'S'         : 'x y',
-            'LS'        : ['x y'],
-            'L'         : ['x', 'y'],
-            'CS'        : cs,
-            'CL'        : cl,
-            'US'        : UserString.UserString('us'),
-
-            # Test function calls within ${}.
-            'FUNCCALL'  : '${FUNC1("$AAA $FUNC2 $BBB")}',
-            'FUNC1'     : lambda x: x,
-            'FUNC2'     : lambda target, source, env, for_signature: ['x$CCC'],
-
-            # Various tests refactored from ActionTests.py.
-            'LIST'      : [["This", "is", "$(", "$a", "$)", "test"]],
-
-            # Test recursion.
-            'RECURSE'   : 'foo $RECURSE bar',
-            'RRR'       : 'foo $SSS bar',
-            'SSS'       : '$RRR',
-
-            # Test callable objects that don't match our calling arguments.
-            'CALLABLE'  : callable_object,
-
-            '_defines'  : _defines,
-            'DEFS'      : [ ('Q1', '"q1"'), ('Q2', '"$AAA"') ],
-        }
-
-        env = DummyEnv(loc)
+        env = DummyEnv(self.loc)
 
         cases = [
             "$TARGETS",
@@ -828,7 +757,7 @@ class scons_subst_list_TestCase(SubstTestCase):
             '|$AAA',                [['|', 'a']],
 
             # Test callables that don't match our calling arguments.
-            '$CALLABLE',            [['callable-2']],
+            '$CALLABLE2',            [['callable-2']],
 
             # Test handling of quotes.
             # XXX Find a way to handle this in the future.
@@ -839,7 +768,8 @@ class scons_subst_list_TestCase(SubstTestCase):
 
         gvars = env.Dictionary()
 
-        kwargs = {'target' : target, 'source' : source, 'gvars' : gvars}
+        kwargs = {'target' : self.target, 'source' : self.source,
+                  'gvars' : gvars}
 
         failed = 0
         while cases:
@@ -858,10 +788,10 @@ class scons_subst_list_TestCase(SubstTestCase):
         s = scons_subst_list('$AAA', env)
         assert s == [[]], s
 
-        t1 = MyNode('t1')
-        t2 = MyNode('t2')
-        s1 = MyNode('s1')
-        s2 = MyNode('s2')
+        t1 = self.MyNode('t1')
+        t2 = self.MyNode('t2')
+        s1 = self.MyNode('s1')
+        s2 = self.MyNode('s2')
         result = scons_subst_list("$TARGET $SOURCES", env,
                                   target=[t1, t2],
                                   source=[s1, s2],
@@ -1032,16 +962,16 @@ class scons_subst_list_TestCase(SubstTestCase):
         # conversion routine allows us to fetch a function through the
         # dictionary.
         x = lambda x: x
-        r = scons_subst_list("$CALLABLE", env, mode=SUBST_RAW, conv=x, gvars=gvars)
-        assert r == [[callable_object]], repr(r)
-        r = scons_subst_list("$CALLABLE", env, mode=SUBST_RAW, gvars=gvars)
+        r = scons_subst_list("$CALLABLE2", env, mode=SUBST_RAW, conv=x, gvars=gvars)
+        assert r == [[self.callable_object_2]], repr(r)
+        r = scons_subst_list("$CALLABLE2", env, mode=SUBST_RAW, gvars=gvars)
         assert r == [['callable-2']], repr(r)
 
         # Test we handle overriding the internal conversion routines.
         def s(obj):
             return obj
 
-        n1 = MyNode('n1')
+        n1 = self.MyNode('n1')
         env = DummyEnv({'NODE' : n1})
         gvars=env.Dictionary()
         node = scons_subst_list("$NODE", env, mode=SUBST_RAW, conv=s, gvars=gvars)
