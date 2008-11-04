@@ -467,6 +467,10 @@ _dollar_exps_str = r'\$[\$\(\)]|\$[_a-zA-Z][\.\w]*|\${[^}]*}'
 _dollar_exps = re.compile(r'(%s)' % _dollar_exps_str)
 _separate_args = re.compile(r'(%s|\s+|[^\s\$]+|\$)' % _dollar_exps_str)
 
+# This regular expression is used to replace strings of multiple white
+# space characters in the string result from the scons_subst() function.
+_space_sep = re.compile(r'[\t ]+(?![^{]*})')
+
 def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={}, lvars={}, conv=None):
     """Expand a string or list containing construction variable
     substitutions.
@@ -632,12 +636,8 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
     # for expansion.
     gvars['__builtins__'] = __builtins__
 
-    #ss = StringSubber(env, mode, target, source, conv, gvars)
-    #result = ss.substitute(strSubst, lvars)
-    #n = 1
-    #while n:
-    #    result, n = Template(result).substitute(gvars, lvars)
-    result = Template(str(strSubst)).substitute(gvars, lvars, env, mode, target, source)
+    ss = StringSubber(env, mode, target, source, conv, gvars)
+    result = ss.substitute(strSubst, lvars)
 
     try:
         del gvars['__builtins__']
@@ -650,6 +650,10 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
         remove = _regex_remove[mode]
         if remove:
             result = remove.sub('', result)
+        if mode != SUBST_RAW:
+            # Compress strings of white space characters into
+            # a single space.
+            result = string.strip(_space_sep.sub(' ', result))
     elif is_Sequence(result):
         remove = _list_remove[mode]
         if remove:

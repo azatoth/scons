@@ -242,18 +242,12 @@ class SubstTestCase(unittest.TestCase):
             "test foo/bar.exe[0]",
 
             "test $TARGETS.foo",
-            "test foo/bar.exe /bar/baz.obj ../foo/baz.obj.foo",
-
-            "test ${TARGETS.foo}",
             "test 1 1 1",
 
             "test ${SOURCES[0:2].foo}",
             "test 1 1",
 
             "test $SOURCE.foo",
-            "test foo/blah.cpp.foo",
-
-            "test ${SOURCE.foo}",
             "test 1",
 
             "test ${TARGET.get_stuff('blah')}",
@@ -355,11 +349,10 @@ class SubstTestCase(unittest.TestCase):
             except Exception, e:
                 print "    input %s generated %s %s" % (repr(input), e.__class__.__name__, str(e))
                 failed = failed + 1
-            else:
-                if result != expect:
-                    if failed == 0: print
-                    print "    input %s => %s did not match %s" % (repr(input), repr(result), repr(expect))
-                    failed = failed + 1
+            if result != expect:
+                if failed == 0: print
+                print "    input %s => %s did not match %s" % (repr(input), repr(result), repr(expect))
+                failed = failed + 1
             del cases[:2]
         assert failed == 0, "%d subst() cases failed" % failed
 
@@ -372,50 +365,50 @@ class SubstTestCase(unittest.TestCase):
         subst_cases = [
             "test $xxx",
                 "test ",
-                "test ",
-                "test ",
+                "test",
+                "test",
 
             "test $($xxx$)",
                 "test $($)",
-                "test ",
-                "test ",
+                "test",
+                "test",
 
             "test $( $xxx $)",
                 "test $(  $)",
-                "test   ",
-                "test ",
+                "test",
+                "test",
 
             "$AAA ${AAA}A $BBBB $BBB",
                 "a aA  b",
-                "a aA  b",
-                "a aA  b",
+                "a aA b",
+                "a aA b",
 
             "$RECURSE",
                "foo  bar",
-               "foo  bar",
-               "foo  bar",
+               "foo bar",
+               "foo bar",
 
             "$RRR",
                "foo  bar",
-               "foo  bar",
-               "foo  bar",
+               "foo bar",
+               "foo bar",
 
             # Verify what happens with no target or source nodes.
             "$TARGET $SOURCES",
                 " ",
-                " ",
-                " ",
+                "",
+                "",
 
             "$TARGETS $SOURCE",
                 " ",
-                " ",
-                " ",
+                "",
+                "",
 
             # Various tests refactored from ActionTests.py.
             "${LIST}",
                "This is $(  $) test",
-               "This is    test",
-               "This is  test",
+               "This is test",
+               "This is test",
 
             ["|", "$(", "$AAA", "|", "$BBB", "$)", "|", "$CCC", 1],
                 ["|", "$(", "a", "|", "b", "$)", "|", "c", "1"],
