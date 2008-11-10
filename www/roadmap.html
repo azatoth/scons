@@ -13,51 +13,112 @@
 <h2>Current Releases</h2>
 
 <p>
-The current stable release is 0.98.5, released 9 June 2008.
+The current stable release is 1.0.1, released 7 September 2008.
 </p>
 
 <p>
-The latest release is 0.98.5, released 9 June 2008.
+The latest release is 1.0.1.d20081001, released 2 OCtober 2008.
 </p>
 
 <h2>Upcoming Releases</h2>
 
-SCons is putting in place a new release team of interested developers.
-Expect this section to be updated once
-that team has hammered out a release schedule.
+<p>
+Our goal is to meet the dates
+for release candidates and the releases themselves;
+the beta checkpoint dates are our best guess as this was published,
+but they may be adjusted without notice.
+</p>
 
-<table>
-<tr>
-<th>Release</th>
-<th>Est. Date?</th>
-<th>
-Goals
-</th>
-</tr>
-<tr>
-<td>1.0</td>
-<td>???</td>
-<td>
-First official, stable release.
-No 1.x release will (knowingly) break compatibility
-or cause a rebuild on upgrade.
-The following features have been suggested as prerequisites
-for a fully-feature 1.0 release:
-  <ul>
-  <li>
-  C/C++ dependency scanning that acts like a real C preprocessor
-  (computed file names, <tt>#ifdef</tt> analysis, <tt>#include_next</tt> support)
-  </li>
-  </ul>
-</td>
-</tr>
-<tr>
-<td>2.0</td>
-<td>???</td>
-<td>
-First release that will break backwards compatibility with Python 1.5.2.
-</td>
-</tr>
+<!--
+
+DO NOT EDIT THE FOLLOWING TABLE DIRECTLY.
+
+Edit the "schedule" file and replace it with the output from
+running "gen_sched_table.py".
+
+-->
+
+<table width="100%">
+  <tr>
+    <th>Estimated&nbsp;date</th>
+    <th>Type</th>
+    <th>Comments</th>
+  </tr>
+  <tr>
+    <td>13-Oct-2008</td>
+    <td>Ckpt</td>
+    <td>Beta for testing new features.</td>
+  </tr>
+  <tr>
+    <td>27-Oct-2008</td>
+    <td>Ckpt</td>
+    <td>Beta for testing new features.</td>
+  </tr>
+  <tr>
+    <td>10-Nov-2008</td>
+    <td>Ckpt</td>
+    <td>Beta for testing new features.</td>
+  </tr>
+  <tr>
+    <td>17-Nov-2008</td>
+    <td>RC</td>
+    <td>Release candidate for 1.2.</td>
+  </tr>
+  <tr>
+    <td>24-Nov-2008</td>
+    <td>1.2</td>
+    <td>Second minor release of 1.0.</td>
+  </tr>
+  <tr>
+    <td>1-Dec-2008</td>
+    <td>Ckpt</td>
+    <td>Beta for testing new features.</td>
+  </tr>
+  <tr>
+    <td>15-Dec-2008</td>
+    <td>Ckpt</td>
+    <td>Beta for testing new features.</td>
+  </tr>
+  <tr>
+    <td>29-Dec-2008</td>
+    <td>Ckpt</td>
+    <td>Beta for testing new features.</td>
+  </tr>
+  <tr>
+    <td>5-Jan-2009</td>
+    <td>RC</td>
+    <td>Release candidate for 1.3.</td>
+  </tr>
+  <tr>
+    <td>12-Jan-2009</td>
+    <td>1.3</td>
+    <td>Third minor release of 1.0.</td>
+  </tr>
+  <tr>
+    <td>19-Jan-2009</td>
+    <td>Ckpt</td>
+    <td>Beta for testing new features; breaks backward compatibility with Python 1.5.2.</td>
+  </tr>
+  <tr>
+    <td>26-Jan-2009</td>
+    <td>Ckpt</td>
+    <td>Beta for testing new features.</td>
+  </tr>
+  <tr>
+    <td>2-Feb-2009</td>
+    <td>RC</td>
+    <td>Release candidate for 2.0.</td>
+  </tr>
+  <tr>
+    <td>9-Feb-2009</td>
+    <td>RC</td>
+    <td>Release candidate for 2.0, if needed.</td>
+  </tr>
+  <tr>
+    <td>16-Feb-2009</td>
+    <td>2.0</td>
+    <td>Public release that breaks backward compatibility and drops deprecated features</td>
+  </tr>
 </table>
 
 <!--
@@ -67,19 +128,6 @@ First release that will break backwards compatibility with Python 1.5.2.
 -->
 
 <h2>Release Planning</h2>
-
-<h3>Why has 1.0 still not been released?</h3>
-
-<p>
-As seems so common these days,
-SCons has had an extremely lengthy "beta" period.
-The primary goal has been to arrive at something by 1.0
-that we feel is absolutely rock-solid-stable
-and which people can download and use without fear of
-broken builds or unnecessary rebuilds.
-To get some idea of how we do this, see our
-<a href="testing.html">testing philosophy</a> page.
-</p>
 
 <h3>Release numbering</h3>
 
@@ -92,53 +140,68 @@ Our release numbers are of the form <i>major</i>.<i>minor</i>.<i>revision</i>.
 <strong>Major release (1.0, 2.0, 3.0, etc.)</strong>
 <p>
 The major number increments when one of two things happens:
+</p>
   <ul>
   <li>The release knowingly breaks backwards compatibility in some way.
   <li>The release knowingly causes a rebuild when you upgrade.
   </ul>
+<p>
 Our goal is that as a user of SCons,
 you should always be able to upgrade to a later
-revision of the same major number
+release of the same major version
 with complete confidence that your build will not break.
+We expect that our major releases will be long-lived platforms
+with many minor releases to add functionality and fix bugs.
 </p>
 </li>
 <li>
 <strong>Minor release (1.1, 1.2, 1.3, etc.)</strong>
 <p>
-Minor numbers increment for release that
-adds new functionality and/or bug fixes
-to an existing major release branch.
-All new functionality will be added so as to never
-knowingly break backwards compatibility with any
-previous minor releases from the same branch.
-We expect that our major release branches will be long-lived
-platforms for delivering many minor releases to
-add functionality and fix bugs.
+Minor numbers increment for releases
+that add new functionality and/or bug fixes
+to an existing major release.
+Any new functionality will never knowingly break backwards compatibility
+with any previous minor releases from the same major release.
 </p>
 </li>
 <li>
-<strong>Bug-fix revisions (1.1.1, 1.1.2, 1.1.3, etc.)</strong>
+<strong>Bug-fix revisions (1.0.1, 1.1.1, 1.2.1, etc.)</strong>
 <p>
 Revision numbers are appended and/or incremented
 whenever a critical bug fix is necessary
 for a major or minor release.
-Bedause most new functionality and bug fixes
+Because most new functionality and bug fixes
 will be delivered in minor releases,
-we expect that there will be few of these--at most
+we expect that there will be few of these&mdash;at most
 one per minor release.
 </p>
 </li>
 <li>
-<strong>Testing pre-release (1.1.90, 1.1.91, 1.1.92, etc.)</strong>
+<strong>Release candidates (x.y.z.dyyyymmdd )</strong>
 <p>
-A revision number of 90 or greater
-indicates the release is intended for
-testing a set of new features intended for
-wider distribution in the next major or minor release.
-There may be many of these
-leading up to a release
-with a lot of significant internal changes
-(<i>*cough*</i> 0.97 <i>*cough*</i>...).
+A release candidates is a special form of checkpoint
+(see below)
+that is expected to be the next major or minor release.
+If blocking issues show up in the candidate,
+another candidate will normally be issued
+(potentially delaying the release date),
+otherwise the candidate will be repackaged as the major or minor release.
+</p>
+</li>
+<li>
+<strong>Checkpoints (x.y.z.dyyyymmdd )</strong>
+<p>
+A checkpoint has a 'd<i>yyymmdd</i>' suffix
+and is made every couple of weeks between major or minor releases.
+It is intended for beta testing new features
+and for ensuring that bug fixes work as intended.
+Although existing features from the previous release will not change,
+compatibility of features under test is not guaranteed between checkpoints
+(<i>i.e.</i>, the implementation of the feature may change).
+Checkpoints are intended not only to allow for wider testing,
+but also to make new features available to users
+(who may urgently need one of them)
+in advance of them being published in the next major or minor release.
 </p>
 </li>
 </ul>

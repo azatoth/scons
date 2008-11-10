@@ -28,8 +28,6 @@ Autoconf-like configuration support.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import os
 import re
 import string
@@ -235,7 +233,9 @@ class SConfBuildTask(SCons.Taskmaster.Task):
             raise
         elif issubclass(exc_type, SCons.Errors.BuildError):
             # we ignore Build Errors (occurs, when a test doesn't pass)
-            pass
+            # Clear the exception to prevent the contained traceback
+            # to build a reference cycle.
+            self.exc_clear()
         else:
             self.display('Caught exception while building "%s":\n' %
                          self.targets[0])
@@ -401,6 +401,10 @@ class SConfBase:
 
         # add default tests
         default_tests = {
+                 'CheckCC'            : CheckCC,
+                 'CheckCXX'           : CheckCXX,
+                 'CheckSHCC'          : CheckSHCC,
+                 'CheckSHCXX'         : CheckSHCXX,
                  'CheckFunc'          : CheckFunc,
                  'CheckType'          : CheckType,
                  'CheckTypeSize'      : CheckTypeSize,
@@ -823,6 +827,11 @@ class CheckContext:
         # TODO: should use self.vardict for $CC, $CPPFLAGS, etc.
         return not self.TryBuild(self.env.Object, text, ext)
 
+    def CompileSharedObject(self, text, ext):
+        self.sconf.cached = 1
+        # TODO: should use self.vardict for $SHCC, $CPPFLAGS, etc.
+        return not self.TryBuild(self.env.SharedObject, text, ext)
+
     def RunProg(self, text, ext):
         self.sconf.cached = 1
         # TODO: should use self.vardict for $CC, $CPPFLAGS, etc.
@@ -920,6 +929,22 @@ def CheckHeader(context, header, include_quotes = '<>', language = None):
                                      language = language,
                                      include_quotes = include_quotes)
     context.did_show_result = 1
+    return not res
+
+def CheckCC(context):
+    res = SCons.Conftest.CheckCC(context)
+    return not res
+
+def CheckCXX(context):
+    res = SCons.Conftest.CheckCXX(context)
+    return not res
+
+def CheckSHCC(context):
+    res = SCons.Conftest.CheckSHCC(context)
+    return not res
+
+def CheckSHCXX(context):
+    res = SCons.Conftest.CheckSHCXX(context)
     return not res
 
 # Bram: Make this function obsolete?  CheckHeader() is more generic.

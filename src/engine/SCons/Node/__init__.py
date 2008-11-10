@@ -44,8 +44,6 @@ be able to depend on any other type of "thing."
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import copy
 from itertools import chain, izip
 import string
@@ -1106,7 +1104,10 @@ class Node:
             env = self.get_build_env()
             for s in self.sources:
                 scanner = self.get_source_scanner(s)
-                path = self.get_build_scanner_path(scanner)
+                if scanner:
+                    path = self.get_build_scanner_path(scanner)
+                else:
+                    path = None
                 def f(node, env=env, scanner=scanner, path=path):
                     return node.get_found_includes(env, scanner, path)
                 return SCons.Util.render_tree(s, f, 1)

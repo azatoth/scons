@@ -35,9 +35,24 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import SCons.Action
 import SCons.Builder
+import SCons.Tool.dvipdf
 import SCons.Util
 
+def DviPsFunction(target = None, source= None, env=None):
+    result = SCons.Tool.dvipdf.DviPdfPsFunction(PSAction,target,source,env)
+    return result
+
+def DviPsStrFunction(target = None, source= None, env=None):
+    """A strfunction for dvipdf that returns the appropriate
+    command string for the no_exec options."""
+    if env.GetOption("no_exec"):
+        result = env.subst('$PSCOM',0,target,source)
+    else:
+        result = ''
+    return result
+
 PSAction = None
+DVIPSAction = None
 PSBuilder = None
 
 def generate(env):
@@ -46,13 +61,18 @@ def generate(env):
     if PSAction is None:
         PSAction = SCons.Action.Action('$PSCOM', '$PSCOMSTR')
 
+    global DVIPSAction
+    if DVIPSAction is None:
+        DVIPSAction = SCons.Action.Action(DviPsFunction, strfunction = DviPsStrFunction)
+
     global PSBuilder
     if PSBuilder is None:
         PSBuilder = SCons.Builder.Builder(action = PSAction,
                                           prefix = '$PSPREFIX',
                                           suffix = '$PSSUFFIX',
                                           src_suffix = '.dvi',
-                                          src_builder = 'DVI')
+                                          src_builder = 'DVI',
+                                          single_source=True)
 
     env['BUILDERS']['PostScript'] = PSBuilder
     

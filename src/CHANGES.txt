@@ -8,65 +8,347 @@
 
 
 
-RELEASE XXX - XXX
+RELEASE 1.X - XXX
 
-From Luca Falavigna:
+  From Benoit Belley:
 
-  - Fix SCons man page indentation under Debian's man page macros.
+    - Improve the robustness of GetBuildFailures() by refactoring
+      SCons exception handling (especially BuildError exceptions).
 
-From Steven Knight:
+  From David Cournapeau:
 
-  - Clarify the man page description of the SConscript(src_dir) argument.
+    - Fix $FORTRANMODDIRPREFIX for the ifort (Intel Fortran) tool.
 
-  - User's Guide updates:
+  From Ludwig Hähne:
 
-     -  Document the BUILD_TARGETS, COMMAND_LINE_TARGETS and
-        DEFAULT_TARGETS variables.
+    - Handle Java inner classes declared within a method.
 
-     -  Document the AddOption(), GetOption() and SetOption() functions.
+  From Steven Knight:
 
-     -  Document the Requires() function; convert to the Variables
-        object, its UnknownOptions() method, and its associated
-        BoolVariable(), EnumVariable(), ListVariable(), PackageVariable()
-        and PathVariable() functions.
-        
-     -  Document the Progress() function.
+    - Fix label placement by the "scons-time.py func" subcommand
+      when a profile value was close to (or equal to) 0.0.
 
-     -  Reorganize the chapter and sections describing the different
-        types of environments and how they interact.  Document the
-        SetDefault() method.  Document the PrependENVPath() and
-        AppendENVPath() functions.
+    - Fix env.Append() and env.Prepend()'s ability to add a string to
+      list-like variables like $CCFLAGS under Python 2.6.
 
-     -  Reorganize the command-line arguments chapter.  Document the
-        ARGLIST variable.
+    - Other Python2.6 portability:  don't use "as" (a Python 2.6 keyword).
+      Don't use the deprecated Exception.message attribute.
 
-     -  Collect some miscellaneous sections into a chapter about
-        configuring build output.
+    - Support using the -f option to search for a different top-level
+      file name when walking up with the -D, -U or -u options.
 
-  - Man page updates:
+    - Fix use of VariantDir when the -n option is used and doesn't,
+      therefore, actually create the variant directory.
 
-     -  Document suggested use of the Visual C/C++ /FC option to fix
-        the ability to double-click on file names in compilation error
-        messages.
+    - Fix a stack trace from the --debug=includes option when passed a
+      static or shared library as an argument.
 
-     -  Document the need to use Clean() for any SideEffect() files that
-        must be explicitly removed when their targets are removed.
+    - Speed up the internal find_file() function (used for searching
+      CPPPATH, LIBPATH, etc.).
 
-     -  Explicitly document use of Node lists as input to Dependency().
+    - Add support for using the Python "in" keyword on construction
+      environments (for example, if "CPPPATH" in env: ...).
 
-From Gary Oberbrunner:
+  From Rob Managan:
 
-  - Document use of the GetBuildFailures() function in the User's Guide.
+    - Scan for TeX files in the paths specified in the $TEXINPUTS
+      construction variable and the $TEXINPUTS environment variable.
 
-From Adam Simpkins:
+    - Configure the PDF() and PostScript() Builders as single_source so
+      they know each source file generates a separate target file.
 
-  - Add man page text clarifying the behavior of AddPreAction() and
-    AddPostAction() when called with multiple targets.
+    - Add $EPSTOPDF, $EPSTOPDFFLAGS and $EPSTOPDFCOM
 
-From Alexey Zezukin:
+    - Add .tex as a valid extension for the PDF() builder.
 
-  - Fix incorrectly swapped man page descriptions of the --warn= options
-    for duplicate-environment and missing-sconscript.
+    - Add regular expressions to find \input, \include and
+      \includegraphics.
+
+    - Support generating a .pdf file from a .eps source.
+
+    - Recursive scan included input TeX files.
+
+  From Greg Noel:
+
+    - Make the Action() function handle positional parameters consistently.
+
+  From Randall Spangler:
+
+    - Fix Glob() so an on-disk file or directory beginning with '#'
+      doesn't throw an exception.
+
+
+
+RELEASE 1.1.0 - Thu, 09 Oct 2008 08:33:47 -0700
+
+  From Chris AtLee
+
+    - Use the specified environment when checking for the GCC compiler
+      version.
+
+  From Ian P. Cardenas:
+
+    - Fix Glob() polluting LIBPATH by returning copy of list
+
+  From David Cournapeau:
+
+    - Add CheckCC, CheckCXX, CheckSHCC and CheckSHCXX tests to
+      configuration contexts.
+
+    - Have the --profile= argument use the much faster cProfile module 
+      (if it's available in the running Python version).
+
+    - Reorder MSVC compilation arguments so the /Fo is first.
+
+  From Bill Deegan:
+
+    - Add scanning Windows resource (.rc) files for implicit dependencies.
+
+  From John Gozde:
+
+    - When scanning for a #include file, don't use a directory that
+      has the same name as the file.
+
+  From Ralf W. Grosse-Kunstleve
+
+    - Suppress error output when checking for the GCC compiler version.
+
+  From Jared Grubb:
+
+    - Fix VariantDir duplication of #included files in subdirectories.
+
+  From Ludwig Hähne:
+
+    - Reduce memory usage when a directory is used as a dependency of
+      another Node (such as an Alias) by returning a concatenation
+      of the children's signatures + names, not the children's contents,
+      as the directory contents.
+
+    - Raise AttributeError, not KeyError, when a Builder can't be found.
+
+    - Invalidate cached Node information (such as the contenst returned
+      by the get_contents() method) when calling actions with Execute().
+
+    - Avoid object reference cycles from frame objects.
+
+    - Reduce memory usage from Null Executor objects.
+
+    - Compute MD5 checksums of large files without reading the entire
+      file contents into memory.  Add a new --md5-chunksize option to
+      control the size of each chunk read into memory.
+
+  From Steven Knight:
+
+    - Fix the ability of the add_src_builder() method to add a new
+      source builder to any other builder.
+
+    - Avoid an infinite loop on non-Windows systems trying to find the
+      SCons library directory if the Python library directory does not
+      begin with the string "python".
+
+    - Search for the SCons library directory in "scons-local" (with
+      no version number) after "scons-local-{VERSION}".
+
+  From Rob Managan:
+
+    - Fix the user's ability to interrupt the TeX build chain.
+
+    - Fix the TeX builder's allowing the user to specify the target name,
+      instead of always using its default output name based on the source.
+
+    - Iterate building TeX output files until all warning are gone
+      and the auxiliary files stop changing, or until we reach the
+      (configurable) maximum number of retries.
+
+    - Add TeX scanner support for:  glossaries, nomenclatures, lists of
+      figures, lists of tables, hyperref and beamer.
+
+    - Use the $BIBINPUTS, $BSTINPUTS, $TEXINPUTS and $TEXPICTS construction
+      variables as search paths for the relevant types of input file.
+
+    - Fix building TeX with VariantDir(duplicate=0) in effect.
+
+    - Fix the LaTeX scanner to search for graphics on the TEXINPUTS path.
+
+    - Have the PDFLaTeX scanner search for .gif files as well.
+
+  From Greg Noel:
+
+    - Fix typos and format bugs in the man page.
+
+    - Add a first draft of a wrapper module for Python's subprocess
+      module.
+
+    - Refactor use of the SCons.compat module so other modules don't
+      have to import it individually.
+
+    - Add .sx as a suffix for assembly language files that use the
+      C preprocessor.
+
+  From Gary Oberbrunner:
+
+    - Make Glob() sort the returned list of Files or Nodes
+      to prevent spurious rebuilds.
+
+    - Add a delete_existing keyword argument to the AppendENVPath()
+      and PrependENVPath() Environment methods.
+
+    - Add ability to use "$SOURCE" when specifying a target to a builder
+
+  From Damyan Pepper:
+
+    - Add a test case to verify that SConsignFile() files can be
+      created in previously non-existent subdirectories.
+
+  From Jim Randall:
+
+    - Make the subdirectory in which the SConsignFile() file will
+      live, if the subdirectory doesn't already exist.
+
+  From Ali Tofigh:
+
+    - Add a test to verify duplication of files in VariantDir subdirectories.
+
+
+
+RELEASE 1.0.1 - Sat, 06 Sep 2008 07:29:34 -0700
+
+  From Greg Noel:
+
+    - Add a FindFile() section to the User's Guide.
+
+    - Fix the FindFile() documentation in the man page.
+
+    - Fix formatting errors in the Package() description in the man page.
+
+    - Escape parentheses that appear within variable names when spawning
+      command lines using os.system().
+
+
+
+RELEASE 1.0.0 - XXX
+
+  From Jared Grubb:
+
+    - Clear the Node state when turning a generic Entry into a Dir.
+
+  From Ludwig Hähne:
+
+    - Fix sporadic output-order failures in test/GetBuildFailures/parallel.py.
+
+    - Document the ParseDepends() function in the User's Guide.
+
+  From khomenko:
+
+    - Create a separate description and long_description for RPM packages.
+
+  From Steven Knight:
+
+    - Document the GetLaunchDir() function in the User's Guide.
+
+    - Have the env.Execute() method print an error message if the
+      executed command fails.
+
+    - Add a script for creating a standard SCons development system on
+      Ubuntu Hardy.  Rewrite subsidiary scripts for install Python and
+      SCons versions in Python (from shell).
+
+  From Greg Noel:
+
+    - Handle yacc/bison on newer Mac OS X versions creating file.hpp,
+      not file.cpp.h.
+
+    - In RPCGEN tests, ignore stderr messages from older versions of
+      rpcgen on some versions of Mac OS X.
+   
+    - Fix typos in man page descriptions of Tag() and Package(), and in
+      the scons-time man page.
+
+    - Fix documentation of SConf.CheckLibWithHeader and other SConf methods.
+
+    - Update documentation of SConscript(variant_dir) usage.
+
+    - Fix SWIG tests for (some versions of) Mac OS X.
+
+  From Jonas Olsson:
+
+    - Print the warning about -j on Windows being potentially unreliable if
+      the pywin32 extensions are unavailable or lack file handle operations.
+
+  From Jim Randall:
+
+    - Fix the env.WhereIs() method to expand construction variables.
+
+  From Rogier Schouten:
+
+    - Enable building of shared libraries with the Bordand ilink32 linker.
+
+
+
+RELEASE 1.0.0 - Sat, 09 Aug 2008 12:19:44 -0700
+
+  From Luca Falavigna:
+
+    - Fix SCons man page indentation under Debian's man page macros.
+
+  From Steven Knight:
+
+    - Clarify the man page description of the SConscript(src_dir) argument.
+
+    - User's Guide updates:
+
+       -  Document the BUILD_TARGETS, COMMAND_LINE_TARGETS and
+          DEFAULT_TARGETS variables.
+
+       -  Document the AddOption(), GetOption() and SetOption() functions.
+
+       -  Document the Requires() function; convert to the Variables
+          object, its UnknownOptions() method, and its associated
+          BoolVariable(), EnumVariable(), ListVariable(), PackageVariable()
+          and PathVariable() functions.
+          
+       -  Document the Progress() function.
+
+       -  Reorganize the chapter and sections describing the different
+          types of environments and how they interact.  Document the
+          SetDefault() method.  Document the PrependENVPath() and
+          AppendENVPath() functions.
+
+       -  Reorganize the command-line arguments chapter.  Document the
+          ARGLIST variable.
+
+       -  Collect some miscellaneous sections into a chapter about
+          configuring build output.
+
+    - Man page updates:
+
+       -  Document suggested use of the Visual C/C++ /FC option to fix
+          the ability to double-click on file names in compilation error
+          messages.
+
+       -  Document the need to use Clean() for any SideEffect() files that
+          must be explicitly removed when their targets are removed.
+
+       -  Explicitly document use of Node lists as input to Dependency().
+
+  From Greg Noel:
+
+    - Document MergeFlags(), ParseConfig(), ParseFlags() and SideEffect()
+      in the User's Guide.
+
+  From Gary Oberbrunner:
+
+    - Document use of the GetBuildFailures() function in the User's Guide.
+
+  From Adam Simpkins:
+
+    - Add man page text clarifying the behavior of AddPreAction() and
+      AddPostAction() when called with multiple targets.
+
+  From Alexey Zezukin:
+
+    - Fix incorrectly swapped man page descriptions of the --warn= options
+      for duplicate-environment and missing-sconscript.
 
 
 

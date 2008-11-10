@@ -24,9 +24,12 @@ libraries.xml
 less-simple.xml
 main.xml
 make.xml
+mergeflags.xml
+misc.xml
 nodes.xml
 output.xml
 parseconfig.xml
+parseflags.xml
 preface.xml
 python.xml
 repositories.xml

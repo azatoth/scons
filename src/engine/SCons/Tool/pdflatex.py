@@ -41,7 +41,8 @@ import SCons.Tool.tex
 PDFLaTeXAction = None
 
 def PDFLaTeXAuxFunction(target = None, source= None, env=None):
-    SCons.Tool.tex.InternalLaTeXAuxAction( PDFLaTeXAction, target, source, env )
+    result = SCons.Tool.tex.InternalLaTeXAuxAction( PDFLaTeXAction, target, source, env )
+    return result
 
 PDFLaTeXAuxAction = None
 
@@ -54,7 +55,7 @@ def generate(env):
     global PDFLaTeXAuxAction
     if PDFLaTeXAuxAction is None:
         PDFLaTeXAuxAction = SCons.Action.Action(PDFLaTeXAuxFunction,
-                                                strfunction=None)
+                              strfunction=SCons.Tool.tex.TeXLaTeXStrFunction)
 
     import pdf
     pdf.generate(env)
@@ -62,11 +63,11 @@ def generate(env):
     bld = env['BUILDERS']['PDF']
     bld.add_action('.ltx', PDFLaTeXAuxAction)
     bld.add_action('.latex', PDFLaTeXAuxAction)
-    bld.add_emitter('.ltx', SCons.Tool.tex.tex_emitter)
-    bld.add_emitter('.latex', SCons.Tool.tex.tex_emitter)
+    bld.add_emitter('.ltx', SCons.Tool.tex.tex_pdf_emitter)
+    bld.add_emitter('.latex', SCons.Tool.tex.tex_pdf_emitter)
 
     env['PDFLATEX']      = 'pdflatex'
-    env['PDFLATEXFLAGS'] = SCons.Util.CLVar('')
+    env['PDFLATEXFLAGS'] = SCons.Util.CLVar('-interaction=nonstopmode')
     env['PDFLATEXCOM']   = 'cd ${TARGET.dir} && $PDFLATEX $PDFLATEXFLAGS ${SOURCE.file}'
     env['LATEXRETRIES']  = 3
 

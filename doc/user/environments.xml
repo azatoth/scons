@@ -509,76 +509,270 @@ environment, of directory names, suffixes, etc.
 
     </para>
 
-    <para>
+    <section>
+    <title>Creating a &ConsEnv;:  the &Environment; Function</title>
 
-      A &consenv; is created by the &Environment; method:
+      <para>
 
-    </para>
+        A &consenv; is created by the &Environment; method:
 
-     <programlisting>
-       env = Environment()
-     </programlisting>
+      </para>
 
-    <para>
+       <programlisting>
+         env = Environment()
+       </programlisting>
 
-      By default, &SCons; initializes every
-      new construction environment
-      with a set of &consvars;
-      based on the tools that it finds on your system,
-      plus the default set of builder methods
-      necessary for using those tools.
-      The construction variables
-      are initialized with values describing
-      the C compiler,
-      the Fortran compiler,
-      the linker,
-      etc.,
-      as well as the command lines to invoke them.
+      <para>
 
-    </para>
+        By default, &SCons; initializes every
+        new construction environment
+        with a set of &consvars;
+        based on the tools that it finds on your system,
+        plus the default set of builder methods
+        necessary for using those tools.
+        The construction variables
+        are initialized with values describing
+        the C compiler,
+        the Fortran compiler,
+        the linker,
+        etc.,
+        as well as the command lines to invoke them.
 
-    <para>
+      </para>
 
-      When you initialize a construction environment
-      you can set the values of the
-      environment's &consvars;
-      to control how a program is built.
-      For example:
+      <para>
 
-    </para>
+        When you initialize a construction environment
+        you can set the values of the
+        environment's &consvars;
+        to control how a program is built.
+        For example:
 
-     <programlisting>
+      </para>
+
+       <programlisting>
      import os
 
-       env = Environment(CC = 'gcc',
-                         CCFLAGS = '-O2')
+         env = Environment(CC = 'gcc',
+                           CCFLAGS = '-O2')
 
-       env.Program('foo.c')
-     </programlisting>
+         env.Program('foo.c')
+       </programlisting>
 
-    <para>
+      <para>
 
-      The construction environment in this example
-      is still initialized with the same default
-      construction variable values,
-      except that the user has explicitly specified use of the
-      GNU C compiler &gcc;,
-      and further specifies that the <literal>-O2</literal>
-      (optimization level two)
-      flag should be used when compiling the object file.
-      In other words, the explicit initializations of
-      &cv-link-CC; and &cv-link-CCFLAGS;
-      override the default values in the newly-created
-      construction environment.
-      So a run from this example would look like:
+        The construction environment in this example
+        is still initialized with the same default
+        construction variable values,
+        except that the user has explicitly specified use of the
+        GNU C compiler &gcc;,
+        and further specifies that the <literal>-O2</literal>
+        (optimization level two)
+        flag should be used when compiling the object file.
+        In other words, the explicit initializations of
+        &cv-link-CC; and &cv-link-CCFLAGS;
+        override the default values in the newly-created
+        construction environment.
+        So a run from this example would look like:
 
-    </para>
+      </para>
 
-    <screen>
-       % <userinput>scons -Q</userinput>
-       gcc -o foo.o -c -O2 foo.c
-       gcc -o foo foo.o
-    </screen>
+      <screen>
+         % <userinput>scons -Q</userinput>
+         gcc -o foo.o -c -O2 foo.c
+         gcc -o foo foo.o
+      </screen>
+
+    </section>
+
+    <section>
+    <title>Fetching Values From a &ConsEnv;</title>
+
+      <para>
+
+      You can fetch individual construction variables
+      using the normal syntax
+      for accessing individual named items in a Python dictionary:
+
+      </para>
+
+      <programlisting>
+         env = Environment()
+         print "CC is:", env['CC']
+      </programlisting>
+
+      <para>
+
+      This example &SConstruct; file doesn't build anything,
+      but because it's actually a Python script,
+      it will print the value of &cv-link-CC; for us:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         CC is: cc
+         scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      A construction environment, however,
+      is actually an object with associated methods, etc.
+      If you want to have direct access to only the
+      dictionary of construction variables,
+      you can fetch this using the &Dictionary; method:
+
+      </para>
+
+      <programlisting>
+         env = Environment(FOO = 'foo', BAR = 'bar')
+         dict = env.Dictionary()
+         for key in ['OBJSUFFIX', 'LIBSUFFIX', 'PROGSUFFIX']:
+             print "key = %s, value = %s" % (key, dict[key])
+      </programlisting>
+
+      <para>
+
+      This &SConstruct; file
+      will print the specified dictionary items for us on POSIX
+      systems as follows:
+
+      </para>
+
+      <screen>
+         % <userinput>scons -Q</userinput>
+         key = OBJSUFFIX, value = .o
+         key = LIBSUFFIX, value = .a
+         key = PROGSUFFIX, value = 
+         scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      And on Windows:
+
+      </para>
+
+      <screen>
+         C:\><userinput>scons -Q</userinput>
+         key = OBJSUFFIX, value = .obj
+         key = LIBSUFFIX, value = .lib
+         key = PROGSUFFIX, value = .exe
+         scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      If you want to loop and print the values of
+      all of the construction variables in a construction environment,
+      the Python code to do that in sorted order might look something like:
+
+      </para>
+
+      <programlisting>
+         env = Environment()
+         dict = env.Dictionary()
+         keys = dict.keys()
+         keys.sort()
+         for key in keys:
+             print "construction variable = '%s', value = '%s'" % (key, dict[key])
+      </programlisting>
+
+    </section>
+
+    <section>
+    <title>Expanding Values From a &ConsEnv;:  the &subst; Method</title>
+
+      <para>
+
+      Another way to get information from
+      a construction environment.
+      is to use the &subst; method
+      on a string containing <literal>$</literal> expansions
+      of construction variable names.
+      As a simple example,
+      the example from the previous
+      section that used
+      <literal>env['CC']</literal>
+      to fetch the value of &cv-link-CC;
+      could also be written as:
+
+      </para>
+
+      <programlisting>
+        env = Environment()
+        print "CC is:", env.subst('$CC')
+      </programlisting>
+
+      <para>
+
+      One advantage of using
+      &subst; to expand strings is
+      that construction variables
+      in the result get re-expanded until
+      there are no expansions left in the string.
+      So a simple fetch of a value like
+      &cv-link-CCCOM;:
+
+      </para>
+
+      <programlisting>
+        env = Environment(CCFLAGS = '-DFOO')
+        print "CCCOM is:", env['CCCOM']
+      </programlisting>
+
+      <para>
+
+      Will print the unexpanded value of &cv-CCCOM;,
+      showing us the construction
+      variables that still need to be expanded:
+
+      </para>
+
+      <screen>
+        % <userinput>scons -Q</userinput>
+        CCCOM is: $CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES
+        scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      Calling the &subst; method on <varname>$CCOM</varname>,
+      however:
+
+      </para>
+
+      <programlisting>
+        env = Environment(CCFLAGS = '-DFOO')
+        print "CCCOM is:", env.subst('$CCCOM')
+      </programlisting>
+
+      <para>
+
+      Will recursively expand all of
+      the construction variables prefixed
+      with <literal>$</literal> (dollar signs),
+      showing us the final output:
+
+      </para>
+
+      <screen>
+        % <userinput>scons -Q</userinput>
+        CCCOM is: gcc -DFOO -c -o
+        scons: `.' is up to date.
+      </screen>
+
+      <para>
+
+      Note that because we're not expanding this
+      in the context of building something
+      there are no target or source files
+      for &cv-link-TARGET; and &cv-link-SOURCES; to expand.
+
+      </para>
+
+    </section>
 
     <section>
     <title>Controlling the Default &ConsEnv;:  the &DefaultEnvironment; Function</title>
@@ -878,195 +1072,6 @@ environment, of directory names, suffixes, etc.
          gcc -o foo-opt.o -c -O2 foo.c
          gcc -o foo-opt foo-opt.o
       </screen>
-
-    </section>
-
-    <section>
-    <title>Fetching Values From a &ConsEnv;</title>
-
-      <para>
-
-      You can fetch individual construction variables
-      using the normal syntax
-      for accessing individual named items in a Python dictionary:
-
-      </para>
-
-      <programlisting>
-         env = Environment()
-         print "CC is:", env['CC']
-      </programlisting>
-
-      <para>
-
-      This example &SConstruct; file doesn't build anything,
-      but because it's actually a Python script,
-      it will print the value of &cv-link-CC; for us:
-
-      </para>
-
-      <screen>
-         % <userinput>scons -Q</userinput>
-         CC is: cc
-         scons: `.' is up to date.
-      </screen>
-
-      <para>
-
-      A construction environment, however,
-      is actually an object with associated methods, etc.
-      If you want to have direct access to only the
-      dictionary of construction variables,
-      you can fetch this using the &Dictionary; method:
-
-      </para>
-
-      <programlisting>
-         env = Environment(FOO = 'foo', BAR = 'bar')
-         dict = env.Dictionary()
-         for key in ['OBJSUFFIX', 'LIBSUFFIX', 'PROGSUFFIX']:
-             print "key = %s, value = %s" % (key, dict[key])
-      </programlisting>
-
-      <para>
-
-      This &SConstruct; file
-      will print the specified dictionary items for us on POSIX
-      systems as follows:
-
-      </para>
-
-      <screen>
-         % <userinput>scons -Q</userinput>
-         key = OBJSUFFIX, value = .o
-         key = LIBSUFFIX, value = .a
-         key = PROGSUFFIX, value = 
-         scons: `.' is up to date.
-      </screen>
-
-      <para>
-
-      And on Windows:
-
-      </para>
-
-      <screen>
-         C:\><userinput>scons -Q</userinput>
-         key = OBJSUFFIX, value = .obj
-         key = LIBSUFFIX, value = .lib
-         key = PROGSUFFIX, value = .exe
-         scons: `.' is up to date.
-      </screen>
-
-      <para>
-
-      If you want to loop through and print the values of
-      all of the construction variables in a construction environment,
-      the Python code to do that in sorted order might look something like:
-
-      </para>
-
-      <programlisting>
-         env = Environment()
-         dict = env.Dictionary()
-         keys = dict.keys()
-         keys.sort()
-         for key in keys:
-             print "construction variable = '%s', value = '%s'" % (key, dict[key])
-      </programlisting>
-
-    </section>
-
-    <section>
-    <title>Expanding Values From a &ConsEnv;:  the &subst; Method</title>
-
-      <para>
-
-      Another way to get information from
-      a construction environment.
-      is to use the &subst; method
-      on a string containing $-expansions
-      of construction variable names.
-      As a simple example,
-      the example from the previous
-      section that used
-      <literal>env['CC']</literal>
-      to fetch the value of &cv-link-CC;
-      could also be written as:
-
-      </para>
-
-      <programlisting>
-        env = Environment()
-        print "CC is:", env.subst('$CC')
-      </programlisting>
-
-      <para>
-
-      The real advantage of using
-      &subst; to expand strings is
-      that construction variables
-      in the result get
-      re-expanded until
-      there are no expansions left in the string.
-      So a simple fetch of a value like
-      &cv-link-CCCOM;:
-
-      </para>
-
-      <programlisting>
-        env = Environment(CCFLAGS = '-DFOO')
-        print "CCCOM is:", env['CCCOM']
-      </programlisting>
-
-      <para>
-
-      Will print the unexpanded value of &cv-CCCOM;,
-      showing us the construction
-      variables that still need to be expanded:
-
-      </para>
-
-      <screen>
-        % <userinput>scons -Q</userinput>
-        CCCOM is: $CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES
-        scons: `.' is up to date.
-      </screen>
-
-      <para>
-
-      Calling the &subst; method on <varname>$CCOM</varname>,
-      however:
-
-      </para>
-
-      <programlisting>
-        env = Environment(CCFLAGS = '-DFOO')
-        print "CCCOM is:", env.subst('$CCCOM')
-      </programlisting>
-
-      <para>
-
-      Will recursively expand all of
-      the $-prefixed construction variables,
-      showing us the final output:
-
-      </para>
-
-      <screen>
-        % <userinput>scons -Q</userinput>
-        CCCOM is: gcc -DFOO -c -o
-        scons: `.' is up to date.
-      </screen>
-
-      <para>
-
-      (Note that because we're not expanding this
-      in the context of building something
-      there are no target or source files
-      for &cv-link-TARGET; and &cv-link-SOURCES; to expand.)
-
-      </para>
 
     </section>
 

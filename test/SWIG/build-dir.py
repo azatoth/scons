@@ -66,11 +66,12 @@ test.write(['SConstruct'], """\
 #
 env = Environment(CPPPATH = [".", r'%(python_include_dir)s'],
                   CPPDEFINES = "NDEBUG",
+                  SWIG =r'%(swig)s',
                   SWIGFLAGS = ["-python", "-c++"],
                   SWIGCXXFILESUFFIX = "_wrap.cpp",
                   LDMODULEPREFIX='_',
                   LDMODULESUFFIX='%(_dll)s',
-                  FRAMEWORKSFLAGS='%(python_frameworks_flags)s')
+                  FRAMEWORKS='%(python_frameworks_flags)s')
 
 import sys
 if sys.version[0] == '1':

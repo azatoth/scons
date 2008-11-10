@@ -178,6 +178,8 @@
 <!ENTITY Entry "<function>Entry</function>">
 <!ENTITY EnumOption "<function>EnumOption</function>">
 <!ENTITY EnumVariable "<function>EnumVariable</function>">
+<!ENTITY EnsurePythonVersion "<function>EnsurePythonVersion</function>">
+<!ENTITY EnsureSConsVersion "<function>EnsureSConsVersion</function>">
 <!ENTITY Environment "<function>Environment</function>">
 <!ENTITY Execute "<function>Execute</function>">
 <!ENTITY Exit "<function>Exit</function>">
@@ -186,8 +188,10 @@
 <!ENTITY FindFile "<function>FindFile</function>">
 <!ENTITY FindInstalledFiles "<function>FindInstalledFiles</function>">
 <!ENTITY Finish "<function>Finish</function>">
+<!ENTITY Flatten "<function>Flatten</function>">
 <!ENTITY GenerateHelpText "<function>GenerateHelpText</function>">
 <!ENTITY GetBuildFailures "<function>GetBuildFailures</function>">
+<!ENTITY GetLaunchDir "<function>GetLaunchDir</function>">
 <!ENTITY GetOption "<function>GetOption</function>">
 <!ENTITY Glob "<function>Glob</function>">
 <!ENTITY Help "<function>Help</function>">
@@ -199,6 +203,7 @@
 <!ENTITY ListOption "<function>ListOption</function>">
 <!ENTITY ListVariable "<function>ListVariable</function>">
 <!ENTITY Local "<function>Local</function>">
+<!ENTITY MergeFlags "<function>MergeFlags</function>">
 <!ENTITY Mkdir "<function>Mkdir</function>">
 <!ENTITY Module "<function>Module</function>">
 <!ENTITY Move "<function>Move</function>">
@@ -210,6 +215,8 @@
 <!ENTITY PackageOption "<function>PackageOption</function>">
 <!ENTITY PackageVariable "<function>PackageVariable</function>">
 <!ENTITY ParseConfig "<function>ParseConfig</function>">
+<!ENTITY ParseDepends "<function>ParseDepends</function>">
+<!ENTITY ParseFlags "<function>ParseFlags</function>">
 <!ENTITY PathOption "<function>PathOption</function>">
 <!ENTITY PathOption_PathAccept "<function>PathOption.PathAccept</function>">
 <!ENTITY PathOption_PathExists "<function>PathOption.PathExists</function>">

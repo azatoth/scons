@@ -45,8 +45,10 @@ test = TestSCons.TestSCons()
 test.write('mylatex.py', r"""
 import sys
 import os
-base_name = os.path.splitext(sys.argv[1])[0]
-infile = open(sys.argv[1], 'rb')
+import getopt
+cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:', [])
+base_name = os.path.splitext(arg[0])[0]
+infile = open(arg[0], 'rb')
 dvi_file = open(base_name+'.dvi', 'wb')
 aux_file = open(base_name+'.aux', 'wb')
 log_file = open(base_name+'.log', 'wb')
@@ -112,9 +114,10 @@ ENV = { 'PATH' : os.environ['PATH'],
 foo = Environment(ENV = ENV)
 latex = foo.Dictionary('LATEX')
 makeindex = foo.Dictionary('MAKEINDEX')
+python_path = r'%(_python_)s'
 bar = Environment(ENV = ENV,
-                  LATEX = r'%(_python_)s wrapper.py ' + latex,
-                  MAKEINDEX =  r' wrapper.py ' + makeindex)
+                  LATEX = python_path + ' wrapper.py ' + latex,
+                  MAKEINDEX =  python_path + ' wrapper.py ' + makeindex)
 foo.DVI(target = 'foo.dvi', source = 'foo.ltx')
 bar.DVI(target = 'bar', source = 'bar.latex')
 
@@ -130,7 +133,7 @@ This is the %s LaTeX file.
 """
 
     makeindex =  r"""
-\documentclass{letter}
+\documentclass{report}
 \usepackage{makeidx}
 \makeindex
 \begin{document}
@@ -141,9 +144,9 @@ This is the %s LaTeX file.
 """
 
     latex1 = r"""
-\documentclass{letter}
+\documentclass{report}
 \usepackage{makeidx}
-\makeindex
+\input{latexinputfile}
 \begin{document}
 \index{info}
 This is the %s LaTeX file.
@@ -154,8 +157,12 @@ It has an Index and includes another file.
 """
 
     latex2 = r"""
+\makeindex
+"""
+
+    latex3 = r"""
 \index{include}
-This is the include file.
+This is the include file. mod %s
 \printindex{}
 """
 
@@ -168,7 +175,8 @@ This is the include file.
 
     test.subdir('subdir')
     test.write('latexi.tex',  latex1 % 'latexi.tex');
-    test.write([ 'subdir', 'latexincludefile.tex'], latex2)
+    test.write([ 'subdir', 'latexinputfile'], latex2)
+    test.write([ 'subdir', 'latexincludefile.tex'], latex3 % '1')
 
     test.run(arguments = 'foo.dvi', stderr = None)
     test.must_not_exist('wrapper.out')
@@ -185,6 +193,12 @@ This is the include file.
     test.must_exist('latexi.dvi')
     test.must_exist('latexi.ind')
 
+    test.write([ 'subdir', 'latexincludefile.tex'], latex3 % '2')
+    test.not_up_to_date(arguments = 'latexi.dvi', stderr = None)
+
+    test.run(arguments = '-c', stderr = None)
+    test.must_not_exist('latexi.ind')
+    test.must_not_exist('latexi.ilg')
 
 
 test.pass_test()
