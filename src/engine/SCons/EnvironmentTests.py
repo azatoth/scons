@@ -412,7 +412,7 @@ class SubstitutionTestCase(unittest.TestCase):
         """
         env = SubstitutionEnvironment(AAA = 'a', BBB = 'b')
         mystr = env.subst("$AAA ${AAA}A $BBBB $BBB")
-        assert mystr == "a aA  b", mystr
+        assert mystr == "a aA b", mystr
 
         # Changed the tests below to reflect a bug fix in
         # subst()
@@ -614,7 +614,7 @@ class SubstitutionTestCase(unittest.TestCase):
         """Test the base environment subst_target_source() method"""
         env = SubstitutionEnvironment(AAA = 'a', BBB = 'b')
         mystr = env.subst_target_source("$AAA ${AAA}A $BBBB $BBB")
-        assert mystr == "a aA  b", mystr
+        assert mystr == "a aA b", mystr
 
     def test_backtick(self):
         """Test the backtick() method for capturing command output"""
