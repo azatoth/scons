@@ -1096,7 +1096,7 @@
 
     <screen>
       % <userinput>scons -Q</userinput>
-      scons: *** Source `prog.c' not found, needed by target `prog.o'.  Stop.
+      scons: *** [prog.o] Source `prog.c' not found, needed by target `prog.o'.
     </screen>
 
     <para>
@@ -1114,12 +1114,12 @@
 
     <screen>
       % <userinput>scons -Q --debug=stacktrace</userinput>
-      scons: *** Source `prog.c' not found, needed by target `prog.o'.  Stop.
+      scons: *** [prog.o] Source `prog.c' not found, needed by target `prog.o'.
       scons: internal stack trace:
         File "bootstrap/src/engine/SCons/Job.py", line 197, in start
         File "bootstrap/src/engine/SCons/Script/Main.py", line 167, in prepare
         File "bootstrap/src/engine/SCons/Taskmaster.py", line 182, in prepare
-        File "bootstrap/src/engine/SCons/Executor.py", line 171, in prepare
+        File "bootstrap/src/engine/SCons/Executor.py", line 175, in prepare
     </screen>
 
     <para>

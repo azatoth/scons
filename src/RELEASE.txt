@@ -20,7 +20,7 @@ more effectively, please sign up for the scons-users mailing list at:
 
 
 
-RELEASE 1.1.0.d20081104 - Tue, 04 Nov 2008 07:55:21 -0800
+RELEASE 1.1.0.d20081125 - Tue, 25 Nov 2008 22:01:37 -0800
 
   Please consult the CHANGES.txt file for a list of specific changes
   since last release.
