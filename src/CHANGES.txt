@@ -15,6 +15,12 @@ RELEASE 1.1.0.d20081125 - Tue, 25 Nov 2008 22:01:37 -0800
     - Improve the robustness of GetBuildFailures() by refactoring
       SCons exception handling (especially BuildError exceptions).
 
+    - Have the --taskmastertrace= option print information about
+      individual Task methods, not just the Taskmaster control flow.
+
+    - Eliminate some spurious dependency cycles by being more aggressive
+      about pruning pending children from the Taskmaster walk.
+
   From David Cournapeau:
 
     - Fix $FORTRANMODDIRPREFIX for the ifort (Intel Fortran) tool.
@@ -24,9 +30,20 @@ RELEASE 1.1.0.d20081125 - Tue, 25 Nov 2008 22:01:37 -0800
     - Don't pre-generate an exception message (which will likely be
       ignored anyway) when an EntryProxy re-raises an AttributeError.
 
+  From Jared Grubb:
+
+    - Clean up coding style and white space in Node/FS.py.
+
+    - Fix a typo in the documentation for $_CPPDEFFLAGS.
+
   From Ludwig Hähne:
 
     - Handle Java inner classes declared within a method.
+
+  From Jason Kenny:
+
+    - Suppress mistaken reports of a dependency cycle when a child
+      left on the pending list is a single Node in EXECUTED state.
 
   From Steven Knight:
 
@@ -54,6 +71,15 @@ RELEASE 1.1.0.d20081125 - Tue, 25 Nov 2008 22:01:37 -0800
     - Add support for using the Python "in" keyword on construction
       environments (for example, if "CPPPATH" in env: ...).
 
+    - Fix use of Glob() when a repository or source directory contains
+      an in-memory Node without a corresponding on-disk file or directory.
+
+    - Add a warning about future reservation of $CHANGED_SOURCES,
+      $CHANGED_TARGETS, $UNCHANGED_SOURCES and $UNCHANGED_TARGETS.
+
+    - Enable by default the existing warnings about setting the resource
+      $SOURCE, $SOURCES, $TARGET and $TARGETS variable.
+
   From Rob Managan:
 
     - Scan for TeX files in the paths specified in the $TEXINPUTS
@@ -73,9 +99,31 @@ RELEASE 1.1.0.d20081125 - Tue, 25 Nov 2008 22:01:37 -0800
 
     - Recursive scan included input TeX files.
 
+    - Handle requiring searched-for TeX input graphics files to have
+      extensions (to avoid trying to build a .eps from itself, e.g.).
+
   From Greg Noel:
 
     - Make the Action() function handle positional parameters consistently.
+
+    - Clarify use of Configure.CheckType().
+
+    - Make the File.{Dir,Entry,File}() methods create their entries
+      relative to the calling File's directory, not the SConscript
+      directory.
+
+    - Use the Python os.devnull variable to discard error output when
+      looking for the $CC or $CXX version.
+
+    - Mention LoadableModule() in the SharedLibrary() documentation.
+
+  From Gary Oberbrunner:
+
+    - Update the User's Guide to clarify use of the site_scons/
+      directory and the site_init.py module.
+
+    - Make env.AppendUnique() and env.PrependUnique remove duplicates
+      within a passed-in list being added, too.
 
   From Randall Spangler:
 
