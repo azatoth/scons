@@ -8,7 +8,7 @@
 
 
 
-RELEASE 1.1.0.d20081125 - Tue, 25 Nov 2008 22:01:37 -0800
+RELEASE 1.1.0.d20081207 - Sun, 07 Dec 2008 19:17:23 -0800
 
   From Benoit Belley:
 
