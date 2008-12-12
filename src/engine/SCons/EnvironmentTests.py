@@ -233,6 +233,21 @@ class SubstitutionTestCase(unittest.TestCase):
         assert env.has_key('XXX')
         assert not env.has_key('YYY')
 
+    def test_contains(self):
+        """Test the SubstitutionEnvironment __contains__() method
+        """
+        try:
+            'x' in {'x':1}
+        except TypeError:
+            # TODO(1.5)
+            # An early version of Python that doesn't support "in"
+            # on dictionaries.  Just pass the test.
+            pass
+        else:
+            env = SubstitutionEnvironment(XXX = 'x')
+            assert 'XXX' in env
+            assert not 'YYY' in env
+
     def test_items(self):
         """Test the SubstitutionEnvironment items() method
         """
@@ -1105,22 +1120,56 @@ env4.builder1.env, env3)
         assert env.Dictionary('ENV')['PATH'] == '/foo:/bar'
 
     def test_ReservedVariables(self):
-        """Test generation of warnings when reserved variable names
-        are set in an environment."""
+        """Test warning generation when reserved variable names are set"""
 
-        SCons.Warnings.enableWarningClass(SCons.Warnings.ReservedVariableWarning)
+        reserved_variables = [
+            'SOURCE',
+            'SOURCES',
+            'TARGET',
+            'TARGETS',
+        ]
+
+        warning = SCons.Warnings.ReservedVariableWarning
+        SCons.Warnings.enableWarningClass(warning)
         old = SCons.Warnings.warningAsException(1)
 
         try:
             env4 = Environment()
-            for kw in ['TARGET', 'TARGETS', 'SOURCE', 'SOURCES']:
+            for kw in reserved_variables:
                 exc_caught = None
                 try:
                     env4[kw] = 'xyzzy'
-                except SCons.Warnings.ReservedVariableWarning:
+                except warning:
                     exc_caught = 1
                 assert exc_caught, "Did not catch ReservedVariableWarning for `%s'" % kw
                 assert not env4.has_key(kw), "`%s' variable was incorrectly set" % kw
+        finally:
+            SCons.Warnings.warningAsException(old)
+
+    def test_FutureReservedVariables(self):
+        """Test warning generation when future reserved variable names are set"""
+
+        future_reserved_variables = [
+            'CHANGED_SOURCES',
+            'CHANGED_TARGETS',
+            'UNCHANGED_SOURCES',
+            'UNCHANGED_TARGETS',
+        ]
+
+        warning = SCons.Warnings.FutureReservedVariableWarning
+        SCons.Warnings.enableWarningClass(warning)
+        old = SCons.Warnings.warningAsException(1)
+
+        try:
+            env4 = Environment()
+            for kw in future_reserved_variables:
+                exc_caught = None
+                try:
+                    env4[kw] = 'xyzzy'
+                except warning:
+                    exc_caught = 1
+                assert exc_caught, "Did not catch FutureReservedVariableWarning for `%s'" % kw
+                assert env4.has_key(kw), "`%s' variable was not set" % kw
         finally:
             SCons.Warnings.warningAsException(old)
 
@@ -1584,12 +1633,12 @@ def exists(env):
                           DDD1 = ['a', 'b', 'c'])
         env.AppendUnique(AAA1 = 'a1',
                          AAA2 = ['a2'],
-                         AAA3 = ['a3', 'b', 'c', 'a3'],
+                         AAA3 = ['a3', 'b', 'c', 'c', 'b', 'a3'], # ignore dups
                          AAA4 = 'a4.new',
                          AAA5 = ['a5.new'],
                          BBB1 = 'b1',
                          BBB2 = ['b2'],
-                         BBB3 = ['b3', 'c', 'd', 'b3'],
+                         BBB3 = ['b3', 'c', 'd', 'c', 'b3'],
                          BBB4 = 'b4.new',
                          BBB5 = ['b5.new'],
                          CCC1 = 'c1',
@@ -1614,6 +1663,8 @@ def exists(env):
         assert env['DDD1'] == ['a', 'c', 'b'], env['DDD1'] # b moves to end
         env.AppendUnique(DDD1 = ['a','b'], delete_existing=1)
         assert env['DDD1'] == ['c', 'a', 'b'], env['DDD1'] # a & b move to end
+        env.AppendUnique(DDD1 = ['e','f', 'e'], delete_existing=1)
+        assert env['DDD1'] == ['c', 'a', 'b', 'f', 'e'], env['DDD1'] # add last
         
         env['CLVar'] = CLVar([])
         env.AppendUnique(CLVar = 'bar')
@@ -2240,7 +2291,7 @@ f5: \
                           DDD1 = ['a', 'b', 'c'])
         env.PrependUnique(AAA1 = 'a1',
                           AAA2 = ['a2'],
-                          AAA3 = ['a3', 'b', 'c', 'a3'],
+                          AAA3 = ['a3', 'b', 'c', 'b', 'a3'], # ignore dups
                           AAA4 = 'a4.new',
                           AAA5 = ['a5.new'],
                           BBB1 = 'b1',
@@ -2253,7 +2304,7 @@ f5: \
                           DDD1 = 'b')
         assert env['AAA1'] == 'a1a1', env['AAA1']
         assert env['AAA2'] == ['a2'], env['AAA2']
-        assert env['AAA3'] == ['b', 'c', 'a3'], env['AAA3']
+        assert env['AAA3'] == ['c', 'b', 'a3'], env['AAA3']
         assert env['AAA4'] == 'a4.newa4', env['AAA4']
         assert env['AAA5'] == ['a5.new', 'a5'], env['AAA5']
         assert env['BBB1'] == ['b1'], env['BBB1']
@@ -2269,6 +2320,8 @@ f5: \
         assert env['DDD1'] == ['b', 'a', 'c'], env['DDD1'] # b moves to front
         env.PrependUnique(DDD1 = ['a','c'], delete_existing=1)
         assert env['DDD1'] == ['a', 'c', 'b'], env['DDD1'] # a & c move to front
+        env.PrependUnique(DDD1 = ['d','e','d'], delete_existing=1)
+        assert env['DDD1'] == ['d', 'e', 'a', 'c', 'b'], env['DDD1'] 
 
 
         env['CLVar'] = CLVar([])
@@ -3506,6 +3559,27 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
         assert not env.has_key('ZZZ'), env.has_key('ZZZ')
         assert not env2.has_key('ZZZ'), env2.has_key('ZZZ')
         assert env3.has_key('ZZZ'), env3.has_key('ZZZ')
+
+    def test_contains(self):
+        """Test the OverrideEnvironment __contains__() method"""
+        try:
+            'x' in {'x':1}
+        except TypeError:
+            # TODO(1.5)
+            # An early version of Python that doesn't support "in"
+            # on dictionaries.  Just pass the test.
+            pass
+        else:
+            env, env2, env3 = self.envs
+            assert 'XXX' in env
+            assert 'XXX' in env2
+            assert 'XXX' in env3
+            assert 'YYY' in env
+            assert 'YYY' in env2
+            assert 'YYY' in env3
+            assert not 'ZZZ' in env
+            assert not 'ZZZ' in env2
+            assert 'ZZZ' in env3
 
     def test_items(self):
         """Test the OverrideEnvironment Dictionary() method"""

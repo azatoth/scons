@@ -46,7 +46,7 @@ include_re = re.compile(r'^include\s+(\S+)$', re.M)
 exception_re = re.compile(r'^exception\s+(.+)$', re.M)
 
 def kfile_scan(node, env, target, arg):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     exceptions = exception_re.findall(contents)
     if exceptions:
         raise Exception, "kfile_scan error:  %s" % exceptions[0]
@@ -109,7 +109,7 @@ test.write('zzz', "zzz 1\n")
 test.run(arguments = '.',
          status = 2,
          stderr = """\
-scons: *** kfile_scan error:  yyy 1
+scons: *** [foo] Exception : kfile_scan error:  yyy 1
 """)
 
 test.pass_test()

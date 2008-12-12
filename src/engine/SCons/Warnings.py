@@ -37,6 +37,21 @@ import SCons.Errors
 class Warning(SCons.Errors.UserError):
     pass
 
+class MandatoryWarning(Warning):
+    pass
+
+
+
+class FutureDeprecatedWarning(Warning):
+    pass
+
+class DeprecatedWarning(Warning):
+    pass
+
+class MandatoryDeprecatedWarning(MandatoryWarning):
+    pass
+
+
 
 # NOTE:  If you add a new warning class, add it to the man page, too!
 
@@ -49,9 +64,6 @@ class CorruptSConsignWarning(Warning):
 class DependencyWarning(Warning):
     pass
 
-class DeprecatedWarning(Warning):
-    pass
-
 class DeprecatedCopyWarning(DeprecatedWarning):
     pass
 
@@ -62,6 +74,9 @@ class DeprecatedTargetSignaturesWarning(DeprecatedWarning):
     pass
 
 class DuplicateEnvironmentWarning(Warning):
+    pass
+
+class FutureReservedVariableWarning(Warning):
     pass
 
 class LinkWarning(Warning):
@@ -92,6 +107,9 @@ class ReservedVariableWarning(Warning):
     pass
 
 class StackSizeWarning(Warning):
+    pass
+
+class TaskmasterNeedsExecuteWarning(FutureDeprecatedWarning):
     pass
 
 class FortranCxxMixWarning(LinkWarning):
@@ -183,5 +201,8 @@ def process_warn_strings(arguments):
         else:
             if enable:
                 enableWarningClass(clazz)
+            elif issubclass(clazz, MandatoryDeprecatedWarning):
+                fmt = "Can not disable mandataory warning: '%s'\n"
+                sys.stderr.write(fmt % arg)
             else:
                 suppressWarningClass(clazz)

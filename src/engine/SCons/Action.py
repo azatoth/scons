@@ -102,7 +102,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import cPickle
 import dis
 import os
-import os.path
 import string
 import sys
 import subprocess
@@ -505,12 +504,12 @@ class _ActionAction(ActionBase):
             l = string.join(self.presub_lines(env), '\n  ')
             out = "Building %s with action:\n  %s\n" % (t, l)
             sys.stdout.write(out)
-        s = None
+        cmd = None
         if show and self.strfunction:
-            s = self.strfunction(target, source, env)
-            if s:
+            cmd = self.strfunction(target, source, env)
+            if cmd:
                 if chdir:
-                    s = ('os.chdir(%s)\n' % repr(chdir)) + s
+                    cmd = ('os.chdir(%s)\n' % repr(chdir)) + cmd
                 try:
                     get = env.get
                 except AttributeError:
@@ -519,7 +518,7 @@ class _ActionAction(ActionBase):
                     print_func = get('PRINT_CMD_LINE_FUNC')
                     if not print_func:
                         print_func = self.print_cmd_line
-                print_func(s, target, source, env)
+                print_func(cmd, target, source, env)
         stat = 0
         if execute:
             if chdir:
@@ -537,7 +536,7 @@ class _ActionAction(ActionBase):
             finally:
                 if save_cwd:
                     os.chdir(save_cwd)
-        if s and save_cwd:
+        if cmd and save_cwd:
             print_func('os.chdir(%s)' % repr(save_cwd), target, source, env)
 
         return stat
@@ -579,8 +578,17 @@ def get_default_ENV(env):
 # it'll have to be tweaked to get the full desired functionality.
 # one special arg (so far?), 'error', to tell what to do with exceptions.
 def _subproc(env, cmd, error = 'ignore', **kw):
-    """Do setup for a subprocess.Popen() call"""
-    ### TODO: allow std{in,out,err} to be "'devnull'" (see issue 2228)
+    """Do common setup for a subprocess.Popen() call"""
+    # allow std{in,out,err} to be "'devnull'"
+    io = kw.get('stdin')
+    if is_String(io) and io == 'devnull':
+        kw['stdin'] = open(os.devnull)
+    io = kw.get('stdout')
+    if is_String(io) and io == 'devnull':
+        kw['stdout'] = open(os.devnull, 'w')
+    io = kw.get('stderr')
+    if is_String(io) and io == 'devnull':
+        kw['stderr'] = open(os.devnull, 'w')
 
     # Figure out what shell environment to use
     ENV = kw.get('env', None)
@@ -946,31 +954,42 @@ class FunctionAction(_ActionAction):
         return "%s(target, source, env)" % name
 
     def execute(self, target, source, env):
-        rsources = map(rfile, source)
+        exc_info = (None,None,None)
         try:
-            result = self.execfunction(target=target, source=rsources, env=env)
-        except EnvironmentError, e:
-            # If an IOError/OSError happens, raise a BuildError.
-            # Report the name of the file or directory that caused the
-            # error, which might be different from the target being built
-            # (for example, failure to create the directory in which the
-            # target file will appear).
-            try: filename = e.filename
-            except AttributeError: filename = None
-            result = SCons.Errors.BuildError(node=target,
-                                             errstr=e.strerror,
-                                             status=1,
-                                             filename=filename,
-                                             action=self,
-                                             command=self.strfunction(target, source, env))
-        else:
+            rsources = map(rfile, source)
+            try:
+                result = self.execfunction(target=target, source=rsources, env=env)
+            except KeyboardInterrupt, e:
+                raise
+            except SystemExit, e:
+                raise
+            except Exception, e:
+                result = e
+                exc_info = sys.exc_info()
+
             if result:
-                msg = "Error %s" % result
-                result = SCons.Errors.BuildError(errstr=msg,
-                                                 status=result,
-                                                 action=self,
-                                                 command=self.strfunction(target, source, env))
-        return result
+                result = SCons.Errors.convert_to_BuildError(result, exc_info)
+                result.node=target
+                result.action=self
+                result.command=self.strfunction(target, source, env)
+
+                # FIXME: This maintains backward compatibility with respect to
+                # which type of exceptions were returned by raising an
+                # exception and which ones were returned by value. It would
+                # probably be best to always return them by value here, but
+                # some codes do not check the return value of Actions and I do
+                # not have the time to modify them at this point.
+                if (exc_info[1] and
+                    not isinstance(exc_info[1],EnvironmentError)):
+                    raise result
+
+            return result
+        finally:
+            # Break the cycle between the traceback object and this
+            # function stack frame. See the sys.exc_info() doc info for
+            # more information about this issue.
+            del exc_info
+
 
     def get_presig(self, target, source, env):
         """Return the signature contents of this callable action."""

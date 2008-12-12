@@ -1352,8 +1352,16 @@ These warnings are disabled by default.
 
 .TP
 --warn=deprecated, --warn=no-deprecated
-Enables or disables all warnings about use of deprecated features.
+Enables or disables all warnings about use of
+currently deprecated features.
 These warnings are enabled by default.
+Note that the
+.b --warn=no-deprecated
+option does not disable warnings about absolutely all deprecated features.
+Warnings for some deprecated features that have already been through
+several releases with deprecation warnings
+may be mandatory for a release or two
+before they are officially no longer supported by SCons.
 Warnings for some specific deprecated features
 may be enabled or disabled individually;
 see below.
@@ -1394,6 +1402,18 @@ These warnings are enabled by default.
 Enables or disables the specific warning about linking
 Fortran and C++ object files in a single executable,
 which can yield unpredictable behavior with some compilers.
+
+.TP
+--warn=future-deprecated, --warn=no-future-deprecated
+Enables or disables warnings about features
+that will be deprecated in the future.
+These warnings are disabled by default.
+Enabling this warning is especially
+recommended for projects that redistribute
+SCons configurations for other users to build,
+so that the project can be warned as soon as possible
+about to-be-deprecated features
+that may require changes to the configuration.
 
 .TP
 --warn=link, --warn=no-link
@@ -6939,6 +6959,10 @@ or
 .B C++
 and selects the compiler to be used for the check;
 the default is "C".
+Example:
+.ES
+sconf.CheckType('foo_type', '#include "my_types.h"', 'C++')
+.EE
 
 .TP
 .RI Configure.CheckCC( self )
@@ -8829,10 +8853,10 @@ Examples:
 Execute(Mkdir('/tmp/outputdir'))
 
 env.Command('foo.out', 'foo.in',
-            [Mkdir('/tmp/builddir',
-             Copy('$SOURCE', '/tmp/builddir/foo.in')
+            [Mkdir('/tmp/builddir'),
+             Copy('/tmp/builddir/foo.in', '$SOURCE'),
              "cd /tmp/builddir && make",
-             Copy('/tmp/builddir/foo.out', '$TARGET')])
+             Copy('$TARGET', '/tmp/builddir/foo.out')])
 .EE
 
 .TP
@@ -9367,7 +9391,7 @@ source files of different types:
 
 .ES
 def xyz_scan(node, env, path):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     # Scan the contents and return the included files.
 
 XYZScanner = Scanner(xyz_scan)
@@ -9639,7 +9663,7 @@ import re
 include_re = re.compile(r'^include\\s+(\\S+)$', re.M)
 
 def kfile_scan(node, env, path, arg):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     includes = include_re.findall(contents)
     return includes
 
@@ -9668,7 +9692,7 @@ for files that actually exist:
 include_re = re.compile(r'^include\\s+(\\S+)$', re.M)
 
 def my_scan(node, env, path, arg):
-   contents = node.get_contents()
+   contents = node.get_text_contents()
    includes = include_re.findall(contents)
    if includes == []:
         return []
