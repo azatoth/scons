@@ -189,15 +189,16 @@ def escape(x):
     return '"' + x + '"'
 
 # Get the windows system directory name
-def get_system_root():
-    # A resonable default if we can't read the registry
-    try:
-        val = os.environ['SYSTEMROOT']
-    except KeyError:
-        val = "C:/WINDOWS"
-        pass
+_system_root = None
 
-    # First see if we can look in the registry...
+def get_system_root():
+    global _system_root
+    if _system_root is not None:
+        return _system_root
+
+    # A resonable default if we can't read the registry
+    val = os.environ.get('SYSTEMROOT', "C:/WINDOWS")
+
     if SCons.Util.can_read_reg:
         try:
             # Look for Windows NT system root
@@ -214,6 +215,7 @@ def get_system_root():
                 raise
             except:
                 pass
+    _system_root = val
     return val
 
 # Get the location of the program files directory
@@ -267,9 +269,7 @@ def generate(env):
     # the env's PATH.  The problem with that is that it might not
     # contain an ENV and a PATH.
     if not cmd_interp:
-        systemroot = r'C:\Windows'
-        if os.environ.has_key('SYSTEMROOT'):
-            systemroot = os.environ['SYSTEMROOT']
+        systemroot = get_system_root()
         tmp_path = systemroot + os.pathsep + \
                    os.path.join(systemroot,'System32')
         tmp_pathext = '.com;.exe;.bat;.cmd'
@@ -307,7 +307,7 @@ def generate(env):
         if v:
             env['ENV']['COMSPEC'] = v
 
-    env.AppendENVPath('PATH', env['ENV']['SYSTEMROOT'] + '\System32')
+    env.AppendENVPath('PATH', get_system_root() + '\System32')
 
     env['ENV']['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'
     env['OBJPREFIX']      = ''
