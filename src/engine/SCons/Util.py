@@ -746,6 +746,28 @@ if can_read_reg:
         val = key[p:]
         k = RegOpenKeyEx(root, keyp)
         return RegQueryValueEx(k,val)
+else:
+    try:
+        e = WindowsError
+    except NameError:
+        # Make sure we have a definition of WindowsError so we can
+        # run platform-independent tests of Windows functionality on
+        # platforms other than Windows.  (WindowsError is, in fact, an
+        # OSError subclass on Windows.)
+        class WindowsError(OSError):
+            pass
+        import __builtin__
+        __builtin__.WindowsError = WindowsError
+    else:
+        del e
+        
+    HKEY_CLASSES_ROOT = None
+    HKEY_LOCAL_MACHINE = None
+    HKEY_CURRENT_USER = None
+    HKEY_USERS = None
+
+    def RegGetValue(root, key):
+        raise WindowsError
 
 if sys.platform == 'win32':
 
