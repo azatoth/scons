@@ -8,7 +8,7 @@
 
 
 
-RELEASE 1.X - XXX
+RELEASE 1.2.0 - Sat, 20 Dec 2008 22:47:29 -0800
 
   From Steven Knight:
 
