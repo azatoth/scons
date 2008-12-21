@@ -55,6 +55,9 @@ class DeprecatedWarning(Warning):
 class DeprecatedCopyWarning(DeprecatedWarning):
     pass
 
+class DeprecatedOptionsWarning(DeprecatedWarning):
+    pass
+
 class DeprecatedSourceSignaturesWarning(DeprecatedWarning):
     pass
 
@@ -62,6 +65,9 @@ class DeprecatedTargetSignaturesWarning(DeprecatedWarning):
     pass
 
 class DuplicateEnvironmentWarning(Warning):
+    pass
+
+class FutureReservedVariableWarning(Warning):
     pass
 
 class LinkWarning(Warning):

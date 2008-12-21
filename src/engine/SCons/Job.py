@@ -243,7 +243,7 @@ else:
             while 1:
                 task = self.requestQueue.get()
 
-                if not task:
+                if task is None:
                     # The "None" value is used as a sentinel by
                     # ThreadPool.cleanup().  This indicates that there
                     # are no more tasks, so we should quit.
@@ -284,8 +284,7 @@ else:
                         e.args[0]
                     SCons.Warnings.warn(SCons.Warnings.StackSizeWarning, msg)
             except ValueError, e:
-                msg = "Setting stack size failed:\n    " + \
-                    e.message
+                msg = "Setting stack size failed:\n    " + str(e)
                 SCons.Warnings.warn(SCons.Warnings.StackSizeWarning, msg)
 
             # Create worker threads
