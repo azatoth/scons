@@ -28,6 +28,7 @@ import string
 import sys
 import TestCmd
 import unittest
+import copy
 
 from SCons.Tool.msvs import *
 import SCons.Util
@@ -285,6 +286,35 @@ regdata_cv = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\Cur
 "CommonFilesDir"="C:\Program Files\Common Files"
 "MediaPath"="C:\WINDOWS\Media"
 ''','\n')
+
+def get_visualstudio_versions():
+    from SCons.Tool.MSVCCommon.version import query_versions
+    return query_versions()
+
+def get_default_visualstudio_version(env):
+    from SCons.Tool.MSVCCommon.version import get_default_version
+    return get_default_version(env)
+
+def get_msvs_install_dirs(key=None):
+    from SCons.Tool.MSVCCommon.findloc import find_msvs_paths
+    from SCons.Tool.MSVCCommon.version import query_versions
+    if not key:
+        vers = query_versions()
+        if len(vers) > 0:
+            ver = vers[0]
+        else:
+            ver = 9.0
+        flav = 'std'
+    else:
+        verstr, flav = msvs_parse_version(key)
+        ver = float(verstr)
+        if not flav:
+            flav = 'std'
+        else:
+            if flav == 'Exp':
+                flav = 'express'
+
+    return find_msvs_paths(ver, flav)
 
 regdata_none = []
 
@@ -590,11 +620,11 @@ class msvs8ExpTestCase(msvsTestCase):
 class msvsEmptyTestCase(msvsTestCase):
     """Test Empty Registry"""
     registry = DummyRegistry(regdata_none)
-    default_version = '6.0'
+    default_version = '9.0'
     highest_version = None
     number_of_versions = 0
     install_locs = {
-        '6.0' : {'VSINSTALLDIR': 'C:\\Program Files\\Microsoft Visual Studio'},
+        '6.0' : {},
         '7.0' : {},
         '7.1' : {},
         '8.0' : {},
@@ -629,8 +659,20 @@ if __name__ == "__main__":
 
     for test_class in test_classes:
         print test_class.__doc__
-        suite = unittest.makeSuite(test_class, 'test_')
-        if not unittest.TextTestRunner().run(suite).wasSuccessful():
-            exit_val = 1
+        back_osenv = copy.deepcopy(os.environ)
+        try:
+            # XXX: overriding the os.environ is bad, but doing it
+            # correctly is too complicated for now. Those tests should
+            # be fixed
+            for k in ['VS71COMNTOOLS', 'VS80COMNTOOLS',
+                      'VS90COMNTOOLS']:
+                if os.environ.has_key(k):
+                    del os.environ[k]
+
+            suite = unittest.makeSuite(test_class, 'test_')
+            if not unittest.TextTestRunner().run(suite).wasSuccessful():
+                exit_val = 1
+        finally:
+            os.env = back_osenv
 
     sys.exit(exit_val)

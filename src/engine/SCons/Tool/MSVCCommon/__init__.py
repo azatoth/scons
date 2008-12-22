@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -24,35 +23,21 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-"""
-Verify the message about the deprecated Taskmaster.needs_task()
-method, and the ability to suppress it.
-"""
-
-import TestSCons
-
-test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
-
-test.write('SConstruct', """
-import SCons.Taskmaster
-tm = SCons.Taskmaster.Taskmaster()
-task = SCons.Taskmaster.Task(tm, [], True, None)
-task.needs_execute()
-""")
-
-expect = """
-scons: warning: Direct use of the Taskmaster.Task class will be deprecated
-\tin a future release.
+__doc__ = """
+Common functions for Microsoft Visual Studio and Visual C/C++.
 """
 
-test.run(arguments = '.')
+import os
+from os.path import join as pjoin, dirname as pdirname, \
+                    normpath as pnormpath, exists as pexists
+import re
+import subprocess
+import copy
 
-test.run(arguments = '--warn=taskmaster-needs-execute .',
-         stderr = TestSCons.re_escape(expect) + TestSCons.file_expr)
+import SCons.Errors
+import SCons.Platform.win32
+import SCons.Util
 
-test.run(arguments = '--warn=no-taskmaster-needs-execute .')
+from SCons.Tool.MSVCCommon.version import query_versions, get_default_version, detect_msvs
+from SCons.Tool.MSVCCommon.misc import merge_default_version, set_psdk
 
-test.run(arguments = '--warn=future-deprecated .',
-         stderr = TestSCons.re_escape(expect) + TestSCons.file_expr)
-
-test.pass_test()

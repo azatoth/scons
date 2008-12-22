@@ -401,6 +401,7 @@ arguments = {
                           "SCons.Scanner",
                           "SCons.Script",
                           "SCons.Tool",
+                          "SCons.Tool.MSVCCommon",
                           "SCons.Tool.packaging",
                           "SCons.Variables",
                          ],
