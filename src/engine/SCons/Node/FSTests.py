@@ -304,7 +304,10 @@ class VariantDirTestCase(unittest.TestCase):
         class MkdirAction(Action):
             def __init__(self, dir_made):
                 self.dir_made = dir_made
-            def __call__(self, target, source, env):
+            def __call__(self, target, source, env, executor=None):
+                if executor:
+                    target = executor.get_all_targets()
+                    source = executor.get_all_sources()
                 self.dir_made.extend(target)
 
         save_Link = SCons.Node.FS.Link
@@ -1192,6 +1195,18 @@ class FSTestCase(_tempdirTestCase):
         f1 = fs.File(test.workpath("binary_file"))
         assert f1.get_contents() == "Foo\x1aBar", f1.get_contents()
 
+        try:
+            # TODO(1.5)
+            eval('test_string = u"Foo\x1aBar"')
+        except SyntaxError:
+            pass
+        else:
+            # This tests to make sure we can decode UTF-8 text files.
+            test.write("utf8_file", test_string.encode('utf-8'))
+            f1 = fs.File(test.workpath("utf8_file"))
+            assert eval('f1.get_text_contents() == u"Foo\x1aBar"'), \
+                   f1.get_text_contents()
+
         def nonexistent(method, s):
             try:
                 x = method(s, create = 0)
@@ -1257,11 +1272,32 @@ class FSTestCase(_tempdirTestCase):
         finally:
             test.unlink("file")
 
+        # test Entry.get_text_contents()
+        e = fs.Entry('does_not_exist')
+        c = e.get_text_contents()
+        assert c == "", c
+        assert e.__class__ == SCons.Node.FS.Entry
+
+        test.write("file", "file\n")
+        try:
+            e = fs.Entry('file')
+            c = e.get_text_contents()
+            assert c == "file\n", c
+            assert e.__class__ == SCons.Node.FS.File
+        finally:
+            test.unlink("file")
+
         test.subdir("dir")
         e = fs.Entry('dir')
         c = e.get_contents()
         assert c == "", c
         assert e.__class__ == SCons.Node.FS.Dir
+
+        c = e.get_text_contents()
+        try:
+            eval('assert c == u"", c')
+        except SyntaxError:
+            assert c == ""
 
         if hasattr(os, 'symlink'):
             os.symlink('nonexistent', test.workpath('dangling_symlink'))
@@ -1269,6 +1305,11 @@ class FSTestCase(_tempdirTestCase):
             c = e.get_contents()
             assert e.__class__ == SCons.Node.FS.Entry, e.__class__
             assert c == "", c
+            c = e.get_text_contents()
+            try:
+                eval('assert c == u"", c')
+            except SyntaxError:
+                assert c == "", c
 
         test.write("tstamp", "tstamp\n")
         try:
@@ -1653,6 +1694,13 @@ class DirTestCase(_tempdirTestCase):
         assert a[0] == 'pre', a
         assert a[2] == 'post', a
 
+    def test_subclass(self):
+        """Test looking up subclass of Dir nodes"""
+        class DirSubclass(SCons.Node.FS.Dir):
+            pass
+        sd = self.fs._lookup('special_dir', None, DirSubclass, create=1)
+        sd.must_be_same(SCons.Node.FS.Dir)
+
     def test_get_env_scanner(self):
         """Test the Dir.get_env_scanner() method
         """
@@ -1712,6 +1760,7 @@ class DirTestCase(_tempdirTestCase):
         files = string.split(d.get_contents(), '\n')
 
         assert e.get_contents() == '', e.get_contents()
+        assert e.get_text_contents() == '', e.get_text_contents()
         assert e.get_csig()+" empty" == files[0], files
         assert f.get_csig()+" f" == files[1], files
         assert g.get_csig()+" g" == files[2], files
@@ -2069,6 +2118,13 @@ class EntryTestCase(_tempdirTestCase):
 
 
 class FileTestCase(_tempdirTestCase):
+
+    def test_subclass(self):
+        """Test looking up subclass of File nodes"""
+        class FileSubclass(SCons.Node.FS.File):
+            pass
+        sd = self.fs._lookup('special_file', None, FileSubclass, create=1)
+        sd.must_be_same(SCons.Node.FS.File)
 
     def test_Dirs(self):
         """Test the File.Dirs() method"""
@@ -2758,6 +2814,48 @@ class RepositoryTestCase(_tempdirTestCase):
         finally:
             test.unlink(["rep3", "contents"])
 
+    def test_get_text_contents(self):
+        """Ensure get_text_contents() returns text contents from
+        Repositories"""
+        fs = self.fs
+        test = self.test
+
+        # Use a test string that has a file terminator in it to make
+        # sure we read the entire file, regardless of its contents.
+        try:
+            eval('test_string = u"Con\x1aTents\n"')
+        except SyntaxError:
+            import UserString
+            class FakeUnicodeString(UserString.UserString):
+                def encode(self, encoding):
+                    return str(self)
+            test_string = FakeUnicodeString("Con\x1aTents\n")
+
+
+        # Test with ASCII.
+        test.write(["rep3", "contents"], test_string.encode('ascii'))
+        try:
+            c = fs.File("contents").get_text_contents()
+            assert test_string == c, "got %s" % repr(c)
+        finally:
+            test.unlink(["rep3", "contents"])
+
+        # Test with utf-8
+        test.write(["rep3", "contents"], test_string.encode('utf-8'))
+        try:
+            c = fs.File("contents").get_text_contents()
+            assert test_string == c, "got %s" % repr(c)
+        finally:
+            test.unlink(["rep3", "contents"])
+
+        # Test with utf-16
+        test.write(["rep3", "contents"], test_string.encode('utf-16'))
+        try:
+            c = fs.File("contents").get_text_contents()
+            assert test_string == c, "got %s" % repr(c)
+        finally:
+            test.unlink(["rep3", "contents"])
+
     #def test_is_up_to_date(self):
 
 
@@ -2965,7 +3063,10 @@ class prepareTestCase(unittest.TestCase):
         class MkdirAction(Action):
             def __init__(self, dir_made):
                 self.dir_made = dir_made
-            def __call__(self, target, source, env):
+            def __call__(self, target, source, env, executor=None):
+                if executor:
+                    target = executor.get_all_targets()
+                    source = executor.get_all_sources()
                 self.dir_made.extend(target)
 
         dir_made = []
@@ -3243,7 +3344,8 @@ class SpecialAttrTestCase(unittest.TestCase):
         assert s == os.path.normpath('baz/sub/file.suffix'), s
         assert f.srcpath.is_literal(), f.srcpath
         g = f.srcpath.get()
-        assert isinstance(g, SCons.Node.FS.Entry), g.__class__
+        # Gets disambiguated to SCons.Node.FS.File by get_subst_proxy().
+        assert isinstance(g, SCons.Node.FS.File), g.__class__
 
         s = str(f.srcdir)
         assert s == os.path.normpath('baz/sub'), s
@@ -3277,7 +3379,8 @@ class SpecialAttrTestCase(unittest.TestCase):
         try:
             fs.Entry('eee').get_subst_proxy().no_such_attr
         except AttributeError, e:
-            assert str(e) == "Entry instance 'eee' has no attribute 'no_such_attr'", e
+            # Gets disambiguated to File instance by get_subst_proxy().
+            assert str(e) == "File instance 'eee' has no attribute 'no_such_attr'", e
             caught = 1
         assert caught, "did not catch expected AttributeError"
 
