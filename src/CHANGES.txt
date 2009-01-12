@@ -8,7 +8,7 @@
 
 
 
-RELEASE 1.X - XXX
+RELEASE 1.2.0.d20090112 - Mon, 12 Jan 2009 06:03:08 -0800
 
   From Stanislav Baranov, Ted Johnson and Steven Knight:
 
