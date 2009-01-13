@@ -44,8 +44,8 @@ RELEASE 1.2.0.d20090112 - Mon, 12 Jan 2009 06:03:08 -0800
   From Rob Managan:
 
     - Don't automatically try to build .pdf graphics files for
-      .eps files in \includegraphics{} calls in .tex files
-      when building with the PDF builder (and thus pdflatex).
+      .eps files in \includegraphics{} calls in TeX/LaTeX files
+      when building with the PDF builder (and thus using pdflatex).
 
   From Gary Oberbrunner:
 
