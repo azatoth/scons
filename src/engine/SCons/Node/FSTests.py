@@ -304,7 +304,10 @@ class VariantDirTestCase(unittest.TestCase):
         class MkdirAction(Action):
             def __init__(self, dir_made):
                 self.dir_made = dir_made
-            def __call__(self, target, source, env):
+            def __call__(self, target, source, env, executor=None):
+                if executor:
+                    target = executor.get_all_targets()
+                    source = executor.get_all_sources()
                 self.dir_made.extend(target)
 
         save_Link = SCons.Node.FS.Link
@@ -1691,6 +1694,13 @@ class DirTestCase(_tempdirTestCase):
         assert a[0] == 'pre', a
         assert a[2] == 'post', a
 
+    def test_subclass(self):
+        """Test looking up subclass of Dir nodes"""
+        class DirSubclass(SCons.Node.FS.Dir):
+            pass
+        sd = self.fs._lookup('special_dir', None, DirSubclass, create=1)
+        sd.must_be_same(SCons.Node.FS.Dir)
+
     def test_get_env_scanner(self):
         """Test the Dir.get_env_scanner() method
         """
@@ -2108,6 +2118,13 @@ class EntryTestCase(_tempdirTestCase):
 
 
 class FileTestCase(_tempdirTestCase):
+
+    def test_subclass(self):
+        """Test looking up subclass of File nodes"""
+        class FileSubclass(SCons.Node.FS.File):
+            pass
+        sd = self.fs._lookup('special_file', None, FileSubclass, create=1)
+        sd.must_be_same(SCons.Node.FS.File)
 
     def test_Dirs(self):
         """Test the File.Dirs() method"""
@@ -3046,7 +3063,10 @@ class prepareTestCase(unittest.TestCase):
         class MkdirAction(Action):
             def __init__(self, dir_made):
                 self.dir_made = dir_made
-            def __call__(self, target, source, env):
+            def __call__(self, target, source, env, executor=None):
+                if executor:
+                    target = executor.get_all_targets()
+                    source = executor.get_all_sources()
                 self.dir_made.extend(target)
 
         dir_made = []
@@ -3324,7 +3344,8 @@ class SpecialAttrTestCase(unittest.TestCase):
         assert s == os.path.normpath('baz/sub/file.suffix'), s
         assert f.srcpath.is_literal(), f.srcpath
         g = f.srcpath.get()
-        assert isinstance(g, SCons.Node.FS.Entry), g.__class__
+        # Gets disambiguated to SCons.Node.FS.File by get_subst_proxy().
+        assert isinstance(g, SCons.Node.FS.File), g.__class__
 
         s = str(f.srcdir)
         assert s == os.path.normpath('baz/sub'), s
@@ -3358,7 +3379,8 @@ class SpecialAttrTestCase(unittest.TestCase):
         try:
             fs.Entry('eee').get_subst_proxy().no_such_attr
         except AttributeError, e:
-            assert str(e) == "Entry instance 'eee' has no attribute 'no_such_attr'", e
+            # Gets disambiguated to File instance by get_subst_proxy().
+            assert str(e) == "File instance 'eee' has no attribute 'no_such_attr'", e
             caught = 1
         assert caught, "did not catch expected AttributeError"
 

@@ -582,7 +582,7 @@ class Base(SCons.Node.Node):
         This node, which already existed, is being looked up as the
         specified klass.  Raise an exception if it isn't.
         """
-        if self.__class__ is klass or klass is Entry:
+        if isinstance(self, klass) or klass is Entry:
             return
         raise TypeError, "Tried to lookup %s '%s' as a %s." %\
               (self.__class__.__name__, self.path, klass.__name__)
@@ -965,6 +965,9 @@ class Entry(Base):
 
     def _glob1(self, pattern, ondisk=True, source=False, strings=False):
         return self.disambiguate()._glob1(pattern, ondisk, source, strings)
+
+    def get_subst_proxy(self):
+        return self.disambiguate().get_subst_proxy()
 
 # This is for later so we can differentiate between Entry the class and Entry
 # the method of the FS class.
@@ -1598,9 +1601,12 @@ class Dir(Base):
             if parent.exists():
                 break
             listDirs.append(parent)
-            parent = parent.up()
-        else:
-            raise SCons.Errors.StopError, parent.path
+            p = parent.up()
+            if p is None:
+                # Don't use while: - else: for this condition because
+                # if so, then parent is None and has no .path attribute.
+                raise SCons.Errors.StopError, parent.path
+            parent = p
         listDirs.reverse()
         for dirnode in listDirs:
             try:
@@ -1729,9 +1735,19 @@ class Dir(Base):
                 pass
             else:
                 for entry in map(_my_normcase, entries):
-                    d[entry] = 1
+                    d[entry] = True
             self.on_disk_entries = d
-        return d.has_key(_my_normcase(name))
+        if sys.platform == 'win32':
+            name = _my_normcase(name)
+            result = d.get(name)
+            if result is None:
+                # Belt-and-suspenders for Windows:  check directly for
+                # 8.3 file names that don't show up in os.listdir().
+                result = os.path.exists(self.abspath + os.sep + name)
+                d[name] = result
+            return result
+        else:
+            return d.has_key(name)
 
     memoizer_counters.append(SCons.Memoize.CountValue('srcdir_list'))
 

@@ -24,36 +24,53 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+"""
+Verify use of a batch builder when one of the later targets in the
+list the list depends on a generated file.
+"""
+
 import TestSCons
-import string
-import sys
 
 test = TestSCons.TestSCons()
 
-test.run(arguments = '-h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+test.write('SConstruct', """
+def batch_build(target, source, env):
+    for t, s in zip(target, source):
+        fp = open(str(t), 'wb')
+        if str(t) == 'f3.out':
+            fp.write(open('f3.include', 'rb').read())
+        fp.write(open(str(s), 'rb').read())
+env = Environment()
+bb = Action(batch_build, batch_key=True)
+env['BUILDERS']['Batch'] = Builder(action=bb)
+env1 = env.Clone()
+env1.Batch('f1.out', 'f1.in')
+env1.Batch('f2.out', 'f2.mid')
+f3_out = env1.Batch('f3.out', 'f3.in')
 
-test.run(arguments = '-u -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+env2 = env.Clone()
+env2.Batch('f2.mid', 'f2.in')
 
-test.run(arguments = '-U -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+f3_include = env.Batch('f3.include', 'f3.include.in')
+env.Depends(f3_out, f3_include)
+""")
 
-test.run(arguments = '-D -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+test.write('f1.in', "f1.in\n")
+test.write('f2.in', "f2.in\n")
+test.write('f3.in', "f3.in\n")
+test.write('f3.include.in', "f3.include.in\n")
 
-test.write('SConstruct', "")
+expect = test.wrap_stdout("""\
+batch_build(["f2.mid"], ["f2.in"])
+batch_build(["f3.include"], ["f3.include.in"])
+batch_build(["f1.out", "f2.out", "f3.out"], ["f1.in", "f2.mid", "f3.in"])
+""")
 
-test.run(arguments = '-h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+test.run(stdout = expect)
 
-test.run(arguments = '-u -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+test.must_match('f1.out', "f1.in\n")
+test.must_match('f2.out', "f2.in\n")
 
-test.run(arguments = '-U -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
-
-test.run(arguments = '-D -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+test.up_to_date(arguments = '.')
 
 test.pass_test()
