@@ -145,7 +145,9 @@ def find_mssdk_2003(versionstr):
 
 def find_mssdk(versionstr):
     """Return the MSSSDK given the version string."""
-    if versionstr.startswith('2003'):
+    # TODO(1.5)
+    #if versionstr.startswith('2003'):
+    if versionstr[:4] == '2003':
         mssdk = find_mssdk_2003(versionstr)
     else:
         mssdk = sdir_from_reg(versionstr)

@@ -34,10 +34,16 @@ except ImportError:
     debug = lambda x : None
 
 SUPPORTED_VERSIONS = [9.0, 8.0, 7.1, 7.0, 6.0]
-SUPPORTED_VERSIONSSTR = [str(i) for i in SUPPORTED_VERSIONS]
+# TODO(1.5)
+#SUPPORTED_VERSIONSSTR = [str(i) for i in SUPPORTED_VERSIONS]
+SUPPORTED_VERSIONSSTR = map(str, SUPPORTED_VERSIONS)
 
-VSCOMNTOOL_VARNAME = dict([(v, 'VS%dCOMNTOOLS' % round(v * 10))
-                           for v in SUPPORTED_VERSIONS])
+# TODO(1.5)
+#VSCOMNTOOL_VARNAME = dict([(v, 'VS%dCOMNTOOLS' % round(v * 10))
+#                           for v in SUPPORTED_VERSIONS])
+VSCOMNTOOL_VARNAME = {}
+for v in SUPPORTED_VERSIONS:
+    VSCOMNTOOL_VARNAME[v] = 'VS%dCOMNTOOLS' % round(v * 10)
 
 def is_win64():
     """Return true if running on windows 64 bits."""

@@ -27,12 +27,15 @@ __doc__ = """
 Common functions for Microsoft Visual Studio and Visual C/C++.
 """
 
+import copy
 import os
-from os.path import join as pjoin, dirname as pdirname, \
-                    normpath as pnormpath, exists as pexists
 import re
 import subprocess
-import copy
+
+pjoin = os.path.join
+pdirname = os.path.dirname
+pnormpath = os.path.normpath
+pexists = os.path.exists
 
 import SCons.Errors
 import SCons.Platform.win32
