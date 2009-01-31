@@ -287,34 +287,6 @@ regdata_cv = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\Cur
 "MediaPath"="C:\WINDOWS\Media"
 ''','\n')
 
-def get_visualstudio_versions():
-    from SCons.Tool.MSVCCommon.version import query_versions
-    return query_versions()
-
-def get_default_visualstudio_version(env):
-    from SCons.Tool.MSVCCommon.version import get_default_version
-    return get_default_version(env)
-
-def get_msvs_install_dirs(key=None):
-    from SCons.Tool.MSVCCommon.findloc import find_msvs_paths
-    from SCons.Tool.MSVCCommon.version import query_versions
-    if not key:
-        vers = query_versions()
-        if len(vers) > 0:
-            ver = vers[0]
-        else:
-            ver = 9.0
-        flav = 'std'
-    else:
-        verstr, flav = msvs_parse_version(key)
-        ver = float(verstr)
-        if not flav:
-            flav = 'std'
-        else:
-            if flav == 'Exp':
-                flav = 'express'
-
-    return find_msvs_paths(ver, flav)
 
 regdata_none = []
 
@@ -664,7 +636,8 @@ if __name__ == "__main__":
             # XXX: overriding the os.environ is bad, but doing it
             # correctly is too complicated for now. Those tests should
             # be fixed
-            for k in ['VS71COMNTOOLS', 'VS80COMNTOOLS',
+            for k in ['VS71COMNTOOLS',
+                      'VS80COMNTOOLS',
                       'VS90COMNTOOLS']:
                 if os.environ.has_key(k):
                     del os.environ[k]

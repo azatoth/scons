@@ -1157,6 +1157,38 @@ def GenerateDSW(dswfile, source, env):
 # DSP/DSW/SLN/VCPROJ files.
 ##############################################################################
 
+# TODO(sgk):  eliminate in favor of direct calls to get_default_version()
+def get_default_visualstudio_version(env):
+    from SCons.Tool.MSVCCommon import get_default_version
+    return get_default_version(env)
+
+# TODO(sgk):  eliminate in favor of direct calls to query_versions()
+def get_visualstudio_versions():
+    from SCons.Tool.MSVCCommon import query_versions
+    return query_versions()
+
+# TODO(sgk):  eliminate in favor of some other wrapper
+def get_msvs_install_dirs(key=None):
+    from SCons.Tool.MSVCCommon.findloc import find_msvs_paths
+    from SCons.Tool.MSVCCommon import query_versions
+    if not key:
+        vers = query_versions()
+        if len(vers) > 0:
+            ver = vers[0]
+        else:
+            ver = 9.0
+        flav = 'std'
+    else:
+        verstr, flav = msvs_parse_version(key)
+        ver = float(verstr)
+        if not flav:
+            flav = 'std'
+        else:
+            if flav == 'Exp':
+                flav = 'express'
+
+    return find_msvs_paths(ver, flav)
+
 def GetMSVSProjectSuffix(target, source, env, for_signature):
      return env['MSVS']['PROJECTSUFFIX']
 
