@@ -166,6 +166,9 @@ def set_psdk(env):
 
 def merge_default_version(env):
     version = get_default_version(env)
+    # TODO(SK):  move this import up top without introducing circular
+    # problems with others importing merge_default_version().
+    import SCons.Tool.msvs
     version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
 
     batfilename = FindMSVSBatFile(version_num)
