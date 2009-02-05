@@ -149,21 +149,6 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
     for k, v in vars.items():
         env.PrependENVPath(k, v, delete_existing=1)
 
-def set_psdk(env):
-    from sdk import set_default_sdk, set_sdk
-
-    if not env.has_key("MSSDK"):
-        if env.has_key('MSVS_VERSION'):
-            msver = env['MSVS_VERSION']
-            set_default_sdk(env, msver)
-        else:
-            print "No MSVS_VERSION: this is likely to be a bug"
-
-    elif env['MSSDK'] is not None:
-        set_sdk(env, env['MSSDK'])
-    else:
-        pass
-
 def merge_default_version(env):
     version = get_default_version(env)
     # TODO(SK):  move this import up top without introducing circular

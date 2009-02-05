@@ -23,27 +23,37 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-__doc__ = """
-Common functions for Microsoft Visual Studio and Visual C/C++.
+"""engine.SCons.Tool.mssdk
+
+Tool-specific initialization for Microsoft SDKs, both Platform
+SDKs and Windows SDKs.
+
+There normally shouldn't be any need to import this module directly.
+It will usually be imported through the generic SCons.Tool.Tool()
+selection method.
 """
 
-import copy
-import os
-import re
-import subprocess
+from SCons.Tool.MSVCCommon.sdk import detect_sdk, \
+                                      set_default_sdk, \
+                                      set_sdk_by_directory, \
+                                      set_sdk_by_version
 
-pjoin = os.path.join
-pdirname = os.path.dirname
-pnormpath = os.path.normpath
-pexists = os.path.exists
+def generate(env):
+    """Add construction variables for an MS SDK to an Environment."""
+    if env.has_key('MSSDK_DIR'):
+        set_sdk_by_directory(env, env.subst('$MSSDK_DIR'))
+        return
 
-import SCons.Errors
-import SCons.Platform.win32
-import SCons.Util
+    if env.has_key('MSSDK_VERSION'):
+        set_sdk_by_version(env, env.subst('$MSSDK_VERSION'))
+        return
 
-from SCons.Tool.MSVCCommon.version import query_versions, \
-                                          get_default_version, \
-                                          detect_msvs
+    if env.has_key('MSVS_VERSION'):
+        msver = env['MSVS_VERSION']
+        set_default_sdk(env, msver)
 
-from SCons.Tool.MSVCCommon.misc import FindMSVSBatFile, \
-                                       merge_default_version
+    #print "No MSVS_VERSION: this is likely to be a bug"
+    return
+
+def exists(env):
+    return detect_sdk()

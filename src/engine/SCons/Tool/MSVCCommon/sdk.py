@@ -30,8 +30,9 @@ PSDK 2003 R1 is the earliest version detected.
 
 import os
 
-import SCons.Util
+import SCons.Errors
 from SCons.Tool.MSVCCommon.common import debug, read_reg
+import SCons.Util
 
 # SDK Checks. This is of course a mess as everything else on MS platforms. Here
 # is what we do to detect the SDK:
@@ -40,33 +41,176 @@ from SCons.Tool.MSVCCommon.common import debug, read_reg
 #   HKLM\Software\Microsoft\Microsoft SDKs\Windows
 # All the keys in there are the available versions.
 #
-# For Platform SDK before (2003 server R1 and R2, etc...), there does not seem
-# to have any sane registry key, so the precise location is hardcoded (yeah).
+# For Platform SDK before 6.0 (2003 server R1 and R2, etc...), there does not
+# seem to be any sane registry key, so the precise location is hardcoded.
 #
-# For versions below 2003R1, it seems the PSDK is included with Visual Studio ?
-
-
-# 2003* sdk:
-_SDK2003_HKEY_ROOT = r"Software\Microsoft\MicrosoftSDK\InstalledSDKS"
-_SDK2003_UUID = {"2003R2": "D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1",
-                 "2003R1": "8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"}
+# For versions below 2003R1, it seems the PSDK is included with Visual Studio?
+#
+# Also, per the following:
+#     http://benjamin.smedbergs.us/blog/tag/atl/
+# VC++ Professional comes with the SDK, VC++ Express does not.
 
 # Location of the SDK (checked for 6.1 only)
-_SUPPORTED_SDK_VERSIONS_STR = ["6.1", "6.0A", "6.0", "2003R2", "2003R1"]
-_VERSIONED_SDK_HKEY_ROOT = \
-        r"Software\Microsoft\Microsoft SDKs\Windows\v%s"
 _CURINSTALLED_SDK_HKEY_ROOT = \
         r"Software\Microsoft\Microsoft SDKs\Windows\CurrentInstallFolder"
 
-# For the given version string, we check that the given file does exist
-# relatively to the mssdk path, to be sure we don't deal with a stale entry in
-# the registry.
-_SANITY_CHECK_FILE = {"6.0" : r"bin\gacutil.exe",
-    "6.0A" : r"include\windows.h",
-    "6.1" : r"include\windows.h",
-    "2003R2" : r"SetEnv.Cmd",
-    "2003R1" : r"SetEnv.Cmd"}
 
+class SDKDefinition:
+    """
+    An abstract base class for trying to find installed SDK directories.
+    """
+    def __init__(self, version, **kw):
+        self.version = version
+        self.__dict__.update(kw)
+
+    def find_install_dir(self):
+        """Try to find the MS SDK from the registry.
+
+        Return None if failed or the directory does not exist.
+        """
+        if not SCons.Util.can_read_reg:
+            debug('SCons cannot read registry')
+            return None
+
+        hkey = self.HKEY_FMT % self.hkey_data
+
+        try:
+            install_dir = read_reg(hkey)
+            debug('Found sdk dir in registry: %s' % install_dir)
+        except WindowsError, e:
+            debug('Did not find sdk dir key %s in registry' % hkey)
+            return None
+
+        if not os.path.exists(install_dir):
+            debug('%s is not found on the filesystem' % install_dir)
+            return None
+
+        ftc = os.path.join(mssdk, self.sanity_check_file)
+        if not os.path.exists(ftc):
+            debug("File %s used for sanity check not found" % ftc)
+            return None
+
+        return install_dir
+
+    def get_install_dir(self):
+        """Return the MSSSDK given the version string."""
+        try:
+            return self._install_dir
+        except AttributeError:
+            install_dir = self.find_install_dir()
+            self._install_dir = install_dir
+            return install_dir
+
+class WindowsSDK(SDKDefinition):
+    """
+    A subclass for trying to find installed Windows SDK directories.
+    """
+    HKEY_FMT = r'Software\Microsoft\Microsoft SDKs\Windows\v%s\InstallationFolder'
+    def __init__(self, *args, **kw):
+        apply(SDKDefinition.__init__, (self,)+args, kw)
+        self.hkey_data = self.version
+
+class PlatformSDK(SDKDefinition):
+    """
+    A subclass for trying to find installed Platform SDK directories.
+    """
+    HKEY_FMT = r'Software\Microsoft\MicrosoftSDK\InstalledSDKS\%s\Install Dir'
+    def __init__(self, *args, **kw):
+        apply(SDKDefinition.__init__, (self,)+args, kw)
+        self.hkey_data = self.uuid
+
+# The list of support SDKs which we know how to detect.
+#
+# The first SDK found in the list is the one used by default if there
+# are multiple SDKs installed.  Barring good reasons to the contrary,
+# this means we should list SDKs with from most recent to oldest.
+#
+# If you update this list, update the documentation in Tool/mssdk.xml.
+SupportedSDKList = [
+    WindowsSDK('6.1',
+                sanity_check_file=r'include\windows.h'),
+
+    WindowsSDK('6.0A',
+               sanity_check_file=r'include\windows.h'),
+
+    WindowsSDK('6.0',
+               sanity_check_file=r'bin\gacutil.exe'),
+
+    PlatformSDK('2003R2',
+                sanity_check_file=r'SetEnv.Cmd',
+                uuid="D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1"),
+
+    PlatformSDK('2003R1',
+                sanity_check_file=r'SetEnv.Cmd',
+                uuid="8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"),
+]
+
+
+# Finding installed SDKs isn't cheap, because it goes not only to the
+# registry but also to the disk to sanity-check that there is, in fact,
+# an SDK installed there and that the registry entry isn't just stale.
+# Find this information once, when requested, and cache it.
+
+InstalledSDKList = None
+InstalledSDKMap = None
+
+def get_installed_sdks():
+    global InstalledSDKList
+    global InstalledSDKMap
+    if InstalledSDKList is None:
+        InstalledSDKList = []
+        InstalledSDKMap = {}
+        for sdk in SupportedSDKList:
+            if sdk.get_install_dir():
+                InstalledSDKList.append(sdk)
+                InstalledSDKMap[sdk.version] = sdk
+    return InstalledSDKList
+
+
+# We may be asked to update multiple construction environments with
+# SDK information.  When doing this, we check on-disk for whether
+# the SDK has 'mfc' and 'atl' subdirectories.  Since going to disk
+# is expensive, cache results by directory.
+
+SDKEnvironmentUpdates = {}
+
+def set_sdk_by_directory(env, sdk_dir):
+    global SDKEnvironmentUpdates
+    try:
+        env_tuple_list = SDKEnvironmentUpdate[sdk_dir]
+    except KeyError:
+        env_tuple_list = []
+        SDKEnvironmentUpdate[sdk_dir] = env_tuple_list
+
+        include_path = os.path.join(sdk_dir, 'include')
+        mfc_path = os.path.join(include_path, 'mfc')
+        atl_path = os.path.join(include_path, 'atl')
+
+        if os.path.exists(mfc_path):
+            env_tuple_list.append(('INCLUDE', mfc_path))
+        if os.path.exists(atl_path):
+            env_tuple_list.append(('INCLUDE', atl_path))
+        env_tuple_list.append(('INCLUDE', include_path))
+
+        env_tuple_list.append(('LIB', os.path.join(sdk_dir, 'lib')))
+        env_tuple_list.append(('LIBPATH', os.path.join(sdk_dir, 'lib')))
+        env_tuple_list.append(('PATH', os.path.join(sdk_dir, 'bin')))
+
+    for variable, directory in env_tuple_list:
+        env.PrependENVPath(variable, directory)
+
+
+# TODO(sgk):  currently unused; remove?
+def parse_version(versionstr):
+    import re
+    r = re.compile("([0-9\.]*)([\s\S]*)")
+    m = r.match(versionstr)
+    if not m:
+        raise ValueError("Could not parse version string %s" % versiontr)
+
+    return float(m.group(1)), m.group(2)
+
+# TODO(sgk):  currently unused; remove?
 def get_cur_sdk_dir_from_reg():
     """Try to find the platform sdk directory from the registry.
 
@@ -88,107 +232,22 @@ def get_cur_sdk_dir_from_reg():
 
     return val
 
-def sdir_from_reg(versionstr):
-    """Try to find the MS SDK from the registry.
 
-    Return None if failed or the directory does not exist"""
-    if not SCons.Util.can_read_reg:
-        debug('SCons cannot read registry')
-        return None
+def detect_sdk():
+    return (len(get_installed_sdks()) > 0)
 
-    sdkbase = _VERSIONED_SDK_HKEY_ROOT % versionstr
-
-    try:
-        basedir = read_reg(sdkbase + '\InstallationFolder')
-        debug('Found sdk dir in registry: %s' % basedir)
-    except WindowsError, e:
-        debug('Did not find sdk dir key %s in registry' % \
-              (sdkbase + '\InstallationFolder'))
-        return None
-
-    if not os.path.exists(basedir):
-        debug('%s is not found on the filesystem' % basedir)
-        return None
-
-    return basedir
-
-def parse_version(versionstr):
-    import re
-    r = re.compile("([0-9\.]*)([\s\S]*)")
-    m = r.match(versionstr)
-    if not m:
-        raise ValueError("Could not parse version string %s" % versiontr)
-
-    return float(m.group(1)), m.group(2)
-
-def find_mssdk_2003(versionstr):
-    debug("Looking for %s sdk" % versionstr)
-    sdkbase = _SDK2003_HKEY_ROOT
-
-    if not _SDK2003_UUID.has_key(versionstr):
-        debug("UUID for %s not known" % versionstr)
-        return None
-    else:
-        key = sdkbase + r'\\' + _SDK2003_UUID[versionstr] + r'\Install Dir'
-        try:
-            mssdk = read_reg(key)
-            debug("Found registry key %s" % key)
-        except WindowsError:
-            debug("Could not find registry key %s" % key)
-            return None
-
-    if not os.path.exists(mssdk):
-        debug("path %s not found" % mssdk)
-        return None
-
-    return mssdk
-
-def find_mssdk(versionstr):
-    """Return the MSSSDK given the version string."""
-    # TODO(1.5)
-    #if versionstr.startswith('2003'):
-    if versionstr[:4] == '2003':
-        mssdk = find_mssdk_2003(versionstr)
-    else:
-        mssdk = sdir_from_reg(versionstr)
-
-    if mssdk is not None:
-        ftc = os.path.join(mssdk, _SANITY_CHECK_FILE[versionstr])
-        if not os.path.exists(ftc):
-            debug("File %s used for sanity check not found" % ftc)
-            return None
-    else:
-        return None
-
-    return mssdk
-
-def query_versions():
-    versions = []
-    for v in _SUPPORTED_SDK_VERSIONS_STR:
-        if find_mssdk(v):
-            versions.append(v)
-
-    return versions
-
-def detect_mssdk():
-    versions = query_versions()
-    if len(versions) > 0:
-        return 1
-    else:
-        return 0
-
-def set_sdk(env, mssdk):
-    """Set the Platform sdk given the MS SDK path."""
-    env.PrependENVPath("INCLUDE", os.path.join(mssdk, "include"))
-    env.PrependENVPath("LIB", os.path.join(mssdk, "lib"))
-    env.PrependENVPath("LIBPATH", os.path.join(mssdk, "lib"))
+def set_sdk_by_version(env, mssdk):
+    get_installed_sdks()
+    sdk = InstalledSDKMap.get(mssdk)
+    if not sdk:
+        msg = "No installed SDK version %s" % repr(mssdk)
+        raise SCons.Errors.UserError, msg
+    set_sdk_by_directory(env, sdk.get_install_dir())
 
 def set_default_sdk(env, msver):
     """Set up the default Platform/Windows SDK."""
     # For MSVS < 8, use integrated windows sdk by default
     if msver >= 8:
-        versstr = query_versions()
-        if len(versstr) > 0:
-            mssdk = find_mssdk(versstr[0])
-            if mssdk:
-                set_sdk(env, mssdk)
+        sdks = get_installed_sdks()
+        if len(sdks) > 0:
+            sdks[0].update_env_vars(env)

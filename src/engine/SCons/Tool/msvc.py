@@ -48,7 +48,7 @@ import SCons.Util
 import SCons.Warnings
 import SCons.Scanner.RC
 
-from MSVCCommon import merge_default_version, detect_msvs, set_psdk
+from MSVCCommon import merge_default_version, detect_msvs
 
 CSuffixes = ['.c', '.C']
 CXXSuffixes = ['.cc', '.cpp', '.cxx', '.c++', '.C++']
@@ -234,7 +234,9 @@ def generate(env):
 
     # Set-up ms tools paths for default version
     merge_default_version(env)
-    set_psdk(env)
+
+    import mssdk
+    mssdk.generate(env)
 
     env['CFILESUFFIX'] = '.c'
     env['CXXFILESUFFIX'] = '.cc'
