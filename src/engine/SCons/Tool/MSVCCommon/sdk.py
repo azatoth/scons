@@ -85,7 +85,7 @@ class SDKDefinition:
             debug('%s is not found on the filesystem' % install_dir)
             return None
 
-        ftc = os.path.join(mssdk, self.sanity_check_file)
+        ftc = os.path.join(install_dir, self.sanity_check_file)
         if not os.path.exists(ftc):
             debug("File %s used for sanity check not found" % ftc)
             return None
@@ -177,10 +177,10 @@ SDKEnvironmentUpdates = {}
 def set_sdk_by_directory(env, sdk_dir):
     global SDKEnvironmentUpdates
     try:
-        env_tuple_list = SDKEnvironmentUpdate[sdk_dir]
+        env_tuple_list = SDKEnvironmentUpdates[sdk_dir]
     except KeyError:
         env_tuple_list = []
-        SDKEnvironmentUpdate[sdk_dir] = env_tuple_list
+        SDKEnvironmentUpdates[sdk_dir] = env_tuple_list
 
         include_path = os.path.join(sdk_dir, 'include')
         mfc_path = os.path.join(include_path, 'mfc')
@@ -250,4 +250,4 @@ def set_default_sdk(env, msver):
     if msver >= 8:
         sdks = get_installed_sdks()
         if len(sdks) > 0:
-            sdks[0].update_env_vars(env)
+            set_sdk_by_directory(env, sdks[0].get_install_dir())
