@@ -67,9 +67,12 @@ def get_output(vcbat, args = None, env = None):
                                  stderr=subprocess.PIPE,
                                  env=env)
 
-    stdout, stderr = popen.communicate()
+    # Use the .stdout and .stderr attributes directly because the
+    # .communicate() method uses the threading module on Windows
+    # and won't work under Pythons not built with threading.
+    stdout = popen.stdout.read()
     if popen.wait() != 0:
-        raise IOError(stderr.decode("mbcs"))
+        raise IOError(popen.stderr.read().decode("mbcs"))
 
     output = stdout.decode("mbcs")
     return output
