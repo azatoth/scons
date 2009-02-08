@@ -56,7 +56,8 @@ env.Program('test', 'test.cpp')
 
 expect_stderr = r'''
 scons: \*\*\* The PCHSTOP construction must be defined if PCH is defined.
-''' + TestSCons.file_expr
+File "%s", line \d+, in \?
+''' % re.escape(SConstruct_path)
 
 test.run(arguments='SET_PCHSTOP=0', status=2, stderr=expect_stderr)
 
@@ -64,7 +65,8 @@ test.run(arguments='SET_PCHSTOP=0', status=2, stderr=expect_stderr)
 
 expect_stderr = r'''
 scons: \*\*\* The PCHSTOP construction variable must be a string: .+
-''' + TestSCons.file_expr
+File "%s", line \d+, in \?
+''' % re.escape(SConstruct_path)
 
 test.run(arguments='SET_PCHSTOP=1', status=2, stderr=expect_stderr)
 
