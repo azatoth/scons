@@ -727,7 +727,7 @@ if can_read_reg:
         # I would use os.path.split here, but it's not a filesystem
         # path...
         p = key.rfind('\\') + 1
-        keyp = key[:p]
+        keyp = key[:p-1]          # -1 to omit trailing slash
         val = key[p:]
         k = RegOpenKeyEx(root, keyp)
         return RegQueryValueEx(k,val)

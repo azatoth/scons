@@ -1172,9 +1172,17 @@ def get_msvs_install_dirs(key=None):
     from SCons.Tool.MSVCCommon.findloc import find_msvs_paths
     from SCons.Tool.MSVCCommon import query_versions
     if not key:
+        # TODO: what if query_versions() returns only VS 8.0 Express?
         vers = query_versions()
         if len(vers) > 0:
-            ver = vers[0]
+            try:
+                verstr, flav = msvs_parse_version(vers[0])
+                ver = float(verstr)
+                if not flav:
+                    flav = 'std'
+            except TypeError:
+                ver = vers[0]
+                flav = 'std'
         else:
             ver = 9.0
         flav = 'std'

@@ -39,12 +39,19 @@ def query_versions():
     """Query the system to get available versions of VS. A version is
     considered when a batfile is found."""
     versions = []
-    # We put in decreasing order: versions itself should be in drecreasing
+    # We put in decreasing order: versions itself should be in decreasing
     # order
     for v in SUPPORTED_VERSIONS:
         bat = find_bat(v)
         if bat is not None:
             versions.append(v)
+        # TODO: try Express if v > 8.0?
+        # But then what do we append to versions? (8.0 wouldn't be right, but msvs.py wants this to be a list of floats.)
+        elif v >= 8.0:
+            # Try Express
+            bat = find_bat(v, 'express')
+            if bat is not None:
+                versions.append("%0.1fExp"%v)
 
     return versions
 

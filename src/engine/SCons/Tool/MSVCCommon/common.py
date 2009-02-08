@@ -28,10 +28,16 @@ __doc__ = """
 
 import SCons.Util
 
+# Uncomment to enable debug logging to your choice of file
+#import logging,os
+#os.unlink('c:/temp/debug.log')
+#logging.basicConfig(filename='c:/temp/debug.log', level=logging.DEBUG,)
+
 try:
     from logging import debug
 except ImportError:
     debug = lambda x : None
+
 
 SUPPORTED_VERSIONS = [9.0, 8.0, 7.1, 7.0, 6.0]
 # TODO(1.5)

@@ -86,13 +86,14 @@ def pdir_from_reg(version, flavor = 'std'):
 
     try:
         if version >= 7:
-            comps = read_reg(vsbase + '\Setup\VC\productdir')
+            pdir='\Setup\VC\ProductDir'
         else:
-            comps = read_reg(vsbase + '\Setup\Microsoft Visual C++\productdir')
+            pdir='\Setup\Microsoft Visual C++\ProductDir'
+        comps = read_reg(vsbase + pdir)
         debug('Found product dir in registry: %s' % comps)
     except WindowsError, e:
         debug('Did not find product dir key %s in registry' % \
-              (vsbase + '\Setup\VC\productdir'))
+              (vsbase + pdir))
         return None
 
     if 7 <= version < 8:
