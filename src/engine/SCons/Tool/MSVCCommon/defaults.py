@@ -83,3 +83,9 @@ def use_def_env(env, version, flavor, arch="x86"):
         d = get_def_env(version, flavor, pdir)
         for k, v in d.items():
             env.PrependENVPath(k, v, delete_existing=1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

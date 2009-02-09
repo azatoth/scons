@@ -134,3 +134,9 @@ def get_new(l1, l2):
             new.append(i)
 
     return new
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

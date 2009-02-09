@@ -169,3 +169,9 @@ def find_msvs_paths(version, flavor):
         paths['VSINSTALLDIR'] = os.path.normpath(os.path.join(pdir, os.pardir))
 
     return paths
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

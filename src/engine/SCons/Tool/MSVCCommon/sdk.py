@@ -251,3 +251,9 @@ def set_default_sdk(env, msver):
         sdks = get_installed_sdks()
         if len(sdks) > 0:
             set_sdk_by_directory(env, sdks[0].get_install_dir())
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:
