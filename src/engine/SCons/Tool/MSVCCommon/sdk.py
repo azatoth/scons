@@ -145,6 +145,10 @@ SupportedSDKList = [
                 uuid="8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"),
 ]
 
+SupportedSDKMap = {}
+for sdk in SupportedSDKList:
+    SupportedSDKMap[sdk.version] = sdk
+
 
 # Finding installed SDKs isn't cheap, because it goes not only to the
 # registry but also to the disk to sanity-check that there is, in fact,
@@ -237,10 +241,13 @@ def detect_sdk():
     return (len(get_installed_sdks()) > 0)
 
 def set_sdk_by_version(env, mssdk):
+    if not SupportedSDKMap.has_key(mssdk):
+        msg = "SDK version %s is not supported" % repr(mssdk)
+        raise SCons.Errors.UserError, msg
     get_installed_sdks()
     sdk = InstalledSDKMap.get(mssdk)
     if not sdk:
-        msg = "No installed SDK version %s" % repr(mssdk)
+        msg = "SDK version %s is not installed" % repr(mssdk)
         raise SCons.Errors.UserError, msg
     set_sdk_by_directory(env, sdk.get_install_dir())
 
