@@ -49,8 +49,7 @@ def generate(env):
         return
 
     if env.has_key('MSVS_VERSION'):
-        msver = env['MSVS_VERSION']
-        set_default_sdk(env, msver)
+        set_default_sdk(env, env['MSVS_VERSION'])
 
     #print "No MSVS_VERSION: this is likely to be a bug"
     return
