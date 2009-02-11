@@ -238,7 +238,7 @@ this dictionary with the following keys:
 
 <envar>VERSION</envar>:
 the version of MSVS being used (can be set via
-MSVS_VERSION)
+&cv-link-MSVS_VERSION;)
 
 <envar>VERSIONS</envar>:
 the available versions of MSVS installed
