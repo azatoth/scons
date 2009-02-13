@@ -30,11 +30,11 @@ import os
 
 import SCons.Errors
 
-from SCons.Tool.MSVCCommon.common import  VSCOMNTOOL_VARNAME
 from SCons.Tool.MSVCCommon.version import get_default_version
 from SCons.Tool.MSVCCommon.findloc import find_bat
 from SCons.Tool.MSVCCommon.envhelpers import normalize_env, get_output, parse_output
 from SCons.Tool.MSVCCommon.defaults import use_def_env
+from SCons.Tool.MSVCCommon.vs import get_installed_visual_studios
 
 def FindMSVSBatFile(version, flavor='std', arch="x86"):
     """Returns the location of the MSVS bat file used to set up
@@ -96,7 +96,11 @@ def ParseBatFile(env, path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=Non
 
     # XXX: fix args handling here. Do not use a string but a sequence to avoid
     # escaping problems, and letting Popen taking care of it for us.
-    nenv = normalize_env(env['ENV'], VSCOMNTOOL_VARNAME.values() + ['COMSPEC'])
+    msvs_list = get_installed_visual_studios()
+    # TODO(1.5)
+    #varnames = [ msvs.common_tools_var for msvs in msvs_list ]
+    varnames = map(lambda msvs: msvs.common_tools_var, msvs_list)
+    nenv = normalize_env(env['ENV'], varnames + ['COMSPEC'])
     output = get_output(path, args, env=nenv)
 
     return parse_output(output, vars)

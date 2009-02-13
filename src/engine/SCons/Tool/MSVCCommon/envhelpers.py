@@ -110,6 +110,7 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
 
     return dkeep
 
+# TODO(sgk): unused
 def output_to_dict(output):
     """Given an output string, parse it to find env variables.
 
@@ -122,6 +123,7 @@ def output_to_dict(output):
             parsedenv[m.group(1)] = m.group(2)
     return parsedenv
 
+# TODO(sgk): unused
 def get_new(l1, l2):
     """Given two list l1 and l2, return the items in l2 which are not in l1.
     Order is maintained."""

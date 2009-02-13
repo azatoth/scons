@@ -125,6 +125,7 @@ SCons/Tool/MSVCCommon/misc.py
 SCons/Tool/MSVCCommon/netframework.py
 SCons/Tool/MSVCCommon/sdk.py
 SCons/Tool/MSVCCommon/version.py
+SCons/Tool/MSVCCommon/vs.py
 SCons/Tool/m4.py
 SCons/Tool/masm.py
 SCons/Tool/midl.py

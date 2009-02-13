@@ -1171,31 +1171,14 @@ def get_visualstudio_versions():
 def get_msvs_install_dirs(key=None):
     from SCons.Tool.MSVCCommon.findloc import find_msvs_paths
     from SCons.Tool.MSVCCommon import query_versions
+    from SCons.Tool.MSVCCommon.vs import SupportedVSList
     if not key:
-        # TODO: what if query_versions() returns only VS 8.0 Express?
         vers = query_versions()
-        if len(vers) > 0:
-            try:
-                verstr, flav = msvs_parse_version(vers[0])
-                ver = float(verstr)
-                if not flav:
-                    flav = 'std'
-            except TypeError:
-                ver = vers[0]
-                flav = 'std'
+        if vers:
+            key = vers[0]
         else:
-            ver = 9.0
-        flav = 'std'
-    else:
-        verstr, flav = msvs_parse_version(key)
-        ver = float(verstr)
-        if not flav:
-            flav = 'std'
-        else:
-            if flav == 'Exp':
-                flav = 'express'
-
-    return find_msvs_paths(ver, flav)
+            key = SupportedVSList[0].version
+    return find_msvs_paths(key, None)
 
 def GetMSVSProjectSuffix(target, source, env, for_signature):
      return env['MSVS']['PROJECTSUFFIX']

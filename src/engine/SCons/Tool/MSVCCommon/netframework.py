@@ -32,7 +32,10 @@ import string
 
 from common import read_reg, debug
 
+# Original value recorded by dcournapeau
 _FRAMEWORKDIR_HKEY_ROOT = r'Software\Microsoft\.NETFramework\InstallRoot'
+# On SGK's system
+_FRAMEWORKDIR_HKEY_ROOT = r'Software\Microsoft\Microsoft SDKs\.NETFramework\v2.0\InstallationFolder'
 
 def find_framework_root():
     # XXX: find it from environment (FrameworkDir)

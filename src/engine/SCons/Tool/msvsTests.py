@@ -526,6 +526,8 @@ class msvsTestCase(unittest.TestCase):
     def setUp(self):
         global registry
         registry = self.registry
+        from SCons.Tool.MSVCCommon.vs import reset_installed_visual_studios
+        reset_installed_visual_studios()
 
     def test_get_default_visual_studio_version(self):
         """Test retrieval of the default visual studio version"""
@@ -655,7 +657,7 @@ class msvs8ExpTestCase(msvsTestCase): # XXX: only one still not working
         '7.0' : {},
         '7.1' : {},
         '8.0' : {},
-        '8.0Exp' : {'VSINSTALLDIR': 'C:\\Program Files\\Microsoft Visual Studio 8\\', 'VCINSTALLDIR': 'C:\\Program Files\\Microsoft Visual Studio 8\\VC\\'},
+        '8.0Exp' : {'VSINSTALLDIR': 'C:\\Program Files\\Microsoft Visual Studio 8', 'VCINSTALLDIR': 'C:\\Program Files\\Microsoft Visual Studio 8\\VC'},
     }
     default_install_loc = install_locs['8.0Exp']
 

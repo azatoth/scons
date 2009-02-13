@@ -32,21 +32,17 @@ import os
 import re
 import subprocess
 
-pjoin = os.path.join
-pdirname = os.path.dirname
-pnormpath = os.path.normpath
-pexists = os.path.exists
-
 import SCons.Errors
 import SCons.Platform.win32
 import SCons.Util
 
-from SCons.Tool.MSVCCommon.version import query_versions, \
-                                          get_default_version, \
-                                          detect_msvs
+from SCons.Tool.MSVCCommon.version import query_versions
 
-from SCons.Tool.MSVCCommon.misc import FindMSVSBatFile, \
-                                       merge_default_version
+from SCons.Tool.MSVCCommon.misc import FindMSVSBatFile
+
+from SCons.Tool.MSVCCommon.vs import detect_msvs, \
+                                     get_default_version, \
+                                     merge_default_version
 
 # Local Variables:
 # tab-width:4
