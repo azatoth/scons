@@ -535,9 +535,11 @@ class msvsTestCase(unittest.TestCase):
         debug("Testing for default version %s"%self.default_version)
         env = DummyEnv()
         v1 = get_default_visualstudio_version(env)
-        assert env['MSVS_VERSION'] == self.default_version, (self.default_version, env['MSVS_VERSION'])
-        assert env['MSVS']['VERSION'] == self.default_version, env['MSVS']['VERSION']
-        assert v1 == self.default_version, v1
+        assert env['MSVS_VERSION'] == self.default_version, \
+               (self.default_version, env['MSVS_VERSION'])
+        assert env['MSVS']['VERSION'] == self.default_version, \
+               (self.default_version, env['MSVS']['VERSION'])
+        assert v1 == self.default_version, (self.default_version, v1)
 
         env = DummyEnv({'MSVS_VERSION':'7.0'})
         v2 = get_default_visualstudio_version(env)
@@ -560,13 +562,15 @@ class msvsTestCase(unittest.TestCase):
     def test_get_visual_studio_versions(self):
         """Test retrieval of the list of visual studio versions"""
         v1 = get_visualstudio_versions()
-        assert not v1 or str(v1[0]) == self.highest_version, (v1, self.highest_version)
+        assert not v1 or str(v1[0]) == self.highest_version, \
+               (v1, self.highest_version)
         assert len(v1) == self.number_of_versions, v1
 
     def test_get_msvs_install_dirs(self):
         """Test retrieval of the list of visual studio installed locations"""
         v1 = get_msvs_install_dirs()
-        assert v1 == self.default_install_loc, ("exp,act: ",self.default_install_loc, v1)
+        assert v1 == self.default_install_loc, \
+               ("exp,act: ",self.default_install_loc, v1)
         for key, loc in self.install_locs.items():
             v2 = get_msvs_install_dirs(key)
             assert v2 == loc, key + ': ' + str(v2)
