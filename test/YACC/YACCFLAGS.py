@@ -25,8 +25,8 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import string
 import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -82,3 +82,9 @@ test.must_match(['out', 'aaa.c'],	"aaa.y\n -x\n out in\n")
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

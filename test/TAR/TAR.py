@@ -26,7 +26,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -161,3 +161,9 @@ f5.Tar(target = 'f5.tgz', source = ['file23', 'file24'])
     test.fail_test(test.stdout() != "file22\nfile23\nfile24\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

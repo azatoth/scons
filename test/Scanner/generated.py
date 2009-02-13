@@ -34,8 +34,6 @@ factors triggered the bug Scott saw, and partly because the real-world
 complexity is valuable in its own right.
 """
 
-import sys
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -53,10 +51,7 @@ test.write('SConstruct', """\
 ###
 
 experimenttop = r"%s"
-
 import os
-import os.path
-import string
 import Mylib
 
 BStaticLibMerge = Builder(generator = Mylib.Gen_StaticLibMerge)
@@ -420,3 +415,9 @@ libg_w.h: 1
 """)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

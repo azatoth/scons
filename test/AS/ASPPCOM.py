@@ -28,7 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test the ability to configure the $ASPPCOM construction variable.
 """
 
-import sys
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -71,3 +70,9 @@ test.fail_test(test.read('test4.shobj') != "test4.SPP\n")
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

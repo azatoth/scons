@@ -30,7 +30,7 @@ Test that $M4 and $M4FLAGS work as expected.
 
 import os
 import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -106,3 +106,9 @@ bar.M4(target = 'bar', source = 'bar.m4')
     test.fail_test(test.read('bar', 'r') != "line 1\nbbb\nline 3\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

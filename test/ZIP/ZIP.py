@@ -27,7 +27,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import os
 import stat
 import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -178,3 +178,9 @@ except ImportError:
         test.fail_test(f4stored_size == f4deflated_size)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

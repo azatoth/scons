@@ -29,7 +29,6 @@ Verify that the sconsign script works with files generated when
 using the signatures in an SConsignFile().
 """
 
-import os
 import re
 
 import TestSCons
@@ -465,3 +464,9 @@ sconsign: no entry `hello\.obj' in `\.'
 #""" % locals())
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

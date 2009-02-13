@@ -28,14 +28,12 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test the PRINT_CMD_LINE_FUNC construction variable.
 """
 
-import sys
-import TestCmd
 import TestSCons
 
 _exe = TestSCons._exe
 _obj = TestSCons._obj
 
-test = TestSCons.TestSCons(match = TestCmd.match_re)
+test = TestSCons.TestSCons(match = TestSCons.match_re)
 
 
 test.write('SConstruct', r"""
@@ -73,3 +71,9 @@ e.Program(target = 'prog', source = 'prog.c')
 test.run(arguments = '-Q .')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

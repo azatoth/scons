@@ -30,8 +30,6 @@ whether or not the implicit dependency on executed commands
 is added to targets.
 """
 
-import os
-
 import TestSCons
 
 python = TestSCons.python
@@ -128,3 +126,9 @@ test.must_match('fileQuote.out',    expect_extra % 'fileQuote.out')
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

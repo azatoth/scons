@@ -29,7 +29,6 @@ Test various uses of the -c (clean) option.
 """
 
 import os
-import sys
 
 import TestSCons
 
@@ -316,3 +315,8 @@ test.must_not_exist(test.workpath('foo.out'))
 test.pass_test()
 
 
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

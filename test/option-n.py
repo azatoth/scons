@@ -41,9 +41,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import re
-import sys
 
-import TestCmd
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -170,7 +168,7 @@ test.fail_test(os.path.exists(test.workpath('build', 'f4.in')))
 
 # test Configure-calls in conjunction with -n
 test.subdir('configure')
-test.match_func = TestCmd.match_re_dotall
+test.match_func = TestSCons.match_re_dotall
 test.write('configure/SConstruct',
 """def CustomTest(context):
     def userAction(target,source,env):
@@ -235,3 +233,9 @@ log2_mtime = os.path.getmtime(test.workpath("configure","config.log"))
 test.fail_test( log1_mtime != log2_mtime )
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

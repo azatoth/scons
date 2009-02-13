@@ -29,8 +29,6 @@ Validate that we can rename the output from latex to the
 target name provided by the user.
 """
 
-import os
-
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -74,3 +72,9 @@ test.must_exist('bar.xyz')
 test.must_not_exist('bar.pdf')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

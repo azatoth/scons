@@ -84,11 +84,11 @@ def generate(env):
     env['SUBST_CMD_FILE'] = LinklocGenerator
     env['SHLINK']      = '$LINK'
     env['SHLINKFLAGS'] = SCons.Util.CLVar('$LINKFLAGS')
-    env['SHLINKCOM']   = '${SUBST_CMD_FILE("$SHLINK $SHLINKFLAGS $( $_LIBDIRFLAGS $) $_LIBFLAGS -dll $TARGET $SOURCES")}'
+    env['SHLINKCOM']   = '${SUBST_CMD_FILE("$SHLINK $SHLINKFLAGS $_LIBDIRFLAGS $_LIBFLAGS -dll $TARGET $SOURCES")}'
     env['SHLIBEMITTER']= None
     env['LINK']        = "linkloc"
     env['LINKFLAGS']   = SCons.Util.CLVar('')
-    env['LINKCOM']     = '${SUBST_CMD_FILE("$LINK $LINKFLAGS $( $_LIBDIRFLAGS $) $_LIBFLAGS -exe $TARGET $SOURCES")}'
+    env['LINKCOM']     = '${SUBST_CMD_FILE("$LINK $LINKFLAGS $_LIBDIRFLAGS $_LIBFLAGS -exe $TARGET $SOURCES")}'
     env['LIBDIRPREFIX']='-libpath '
     env['LIBDIRSUFFIX']=''
     env['LIBLINKPREFIX']='-lib '
@@ -104,3 +104,9 @@ def exists(env):
         return env.Detect('linkloc')
     else:
         return 0
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

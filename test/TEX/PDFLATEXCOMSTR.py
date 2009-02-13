@@ -30,8 +30,6 @@ Test that the $PDFLATEXCOMSTR construction variable allows you to configure
 the C compilation output.
 """
 
-import sys
-
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -71,3 +69,9 @@ test.must_match('test1.pdf', "test1.latex\n")
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

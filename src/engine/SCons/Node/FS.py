@@ -552,22 +552,24 @@ class Base(SCons.Node.Node):
         if __debug__: logInstanceCreation(self, 'Node.FS.Base')
         SCons.Node.Node.__init__(self)
 
-        self.name = name
-        self.suffix = SCons.Util.splitext(name)[1]
+        # Filenames and paths are probably reused and are intern'ed to
+        # save some memory.
+        self.name = intern(name)
+        self.suffix = intern(SCons.Util.splitext(name)[1])
         self.fs = fs
 
         assert directory, "A directory must be provided"
 
-        self.abspath = directory.entry_abspath(name)
-        self.labspath = directory.entry_labspath(name)
+        self.abspath = intern(directory.entry_abspath(name))
+        self.labspath = intern(directory.entry_labspath(name))
         if directory.path == '.':
-            self.path = name
+            self.path = intern(name)
         else:
-            self.path = directory.entry_path(name)
+            self.path = intern(directory.entry_path(name))
         if directory.tpath == '.':
-            self.tpath = name
+            self.tpath = intern(name)
         else:
-            self.tpath = directory.entry_tpath(name)
+            self.tpath = intern(directory.entry_tpath(name))
         self.path_elements = directory.path_elements + [self]
 
         self.dir = directory
@@ -612,7 +614,7 @@ class Base(SCons.Node.Node):
         except KeyError:
             pass
         result = self._get_str()
-        self._memo['_save_str'] = result
+        self._memo['_save_str'] = intern(result)
         return result
 
     def _get_str(self):
@@ -3005,8 +3007,9 @@ class FileFinder:
             fd = self.default_filedir
         dir, name = os.path.split(fd)
         drive, d = os.path.splitdrive(dir)
-        if d in ('/', os.sep):
-            return p.fs.get_root(drive).dir_on_disk(name)
+        if not name and d[:1] in ('/', os.sep):
+            #return p.fs.get_root(drive).dir_on_disk(name)
+            return p.fs.get_root(drive)
         if dir:
             p = self.filedir_lookup(p, dir)
             if not p:
@@ -3156,3 +3159,8 @@ def invalidate_node_memos(targets):
             if node:
                 node.clear_memoized_values()                        
 
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

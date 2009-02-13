@@ -29,7 +29,7 @@ Test the ability to configure the $CCCOM construction variable.
 """
 
 import os
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -78,3 +78,9 @@ test.must_match('test2.obj', "test2.C\n")
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

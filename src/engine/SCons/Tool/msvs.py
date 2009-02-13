@@ -584,7 +584,7 @@ V8DSPHeader = """\
 
 V8DSPConfiguration = """\
 \t\t<Configuration
-\t\t\tName="%(variant)s|Win32"
+\t\t\tName="%(variant)s|%(platform)s"
 \t\t\tConfigurationType="0"
 \t\t\tUseOfMFC="0"
 \t\t\tATLMinimizesCRunTimeLibraryUsage="false"
@@ -1459,3 +1459,9 @@ def generate(env):
 
 def exists(env):
     return detect_msvs()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

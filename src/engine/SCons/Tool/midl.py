@@ -82,3 +82,9 @@ def generate(env):
 
 def exists(env):
     return detect_msvs()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:
