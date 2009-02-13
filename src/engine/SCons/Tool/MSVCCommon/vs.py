@@ -194,6 +194,20 @@ class VisualStudio:
 # If you update this list, update the documentation in Tool/msvs.xml.
 
 SupportedVSList = [
+    # Visual Studio 2010
+    # TODO: find the settings, perhaps from someone with a CTP copy?
+    #VisualStudio('TBD',
+    #             hkey_root=r'TBD',
+    #             common_tools_var='TBD',
+    #             batch_file='TBD',
+    #             vc_product_dir_key=r'TBD',
+    #             batch_file_dir_reg_relpath=None,
+    #             batch_file_dir_env_relpath=r'TBD',
+    #             executable_path=r'TBD',
+    #             default_dirname='TBD',
+    #),
+
+    # Visual Studio 2008
     VisualStudio('9.0',
                  hkey_root=r'Software\Microsoft\VisualStudio\9.0',
                  common_tools_var='VS90COMNTOOLS',
@@ -205,7 +219,8 @@ SupportedVSList = [
                  default_dirname='Microsoft Visual Studio 9',
     ),
 
-    # TODO(sgk):  find the right values for 9.0 Express
+    # TODO(sgk):  verify the right values for 9.0 Express
+    # Visual C++ 2008 Express Edition
     VisualStudio('9.0Exp',
                  hkey_root=r'Software\Microsoft\VisualStudio\TODO',
                  common_tools_var='VS90COMNTOOLS',
@@ -217,6 +232,7 @@ SupportedVSList = [
                  default_dirname='Microsoft Visual Studio 9',
     ),
 
+    # Visual Studio 2005
     VisualStudio('8.0',
                  hkey_root=r'Software\Microsoft\VisualStudio\8.0',
                  common_tools_var='VS80COMNTOOLS',
@@ -228,6 +244,7 @@ SupportedVSList = [
                  default_dirname='Microsoft Visual Studio 8',
     ),
 
+    # Visual C++ 2005 Express Edition
     VisualStudio('8.0Exp',
                  hkey_root=r'Software\Microsoft\VCExpress\8.0',
                  common_tools_var='VS80COMNTOOLS',
@@ -239,6 +256,7 @@ SupportedVSList = [
                  default_dirname='Microsoft Visual Studio 8',
     ),
 
+    # Visual Studio .NET 2003
     VisualStudio('7.1',
                  hkey_root=r'Software\Microsoft\VisualStudio\7.1',
                  common_tools_var='VS71COMNTOOLS',
@@ -250,6 +268,7 @@ SupportedVSList = [
                  default_dirname='Microsoft Visual Studio .NET',
     ),
 
+    # Visual Studio .NET
     VisualStudio('7.0',
                  hkey_root=r'Software\Microsoft\VisualStudio\7.0',
                  common_tools_var='VS70COMNTOOLS',
@@ -261,6 +280,7 @@ SupportedVSList = [
                  default_dirname='Microsoft Visual Studio .NET',
     ),
 
+    # Visual Studio 6.0
     VisualStudio('6.0',
                  hkey_root=r'Software\Microsoft\VisualStudio\6.0',
                  common_tools_var='VS60COMNTOOLS',
