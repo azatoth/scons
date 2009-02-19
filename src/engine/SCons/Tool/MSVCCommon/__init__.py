@@ -35,15 +35,13 @@ import subprocess
 import SCons.Errors
 import SCons.Platform.win32
 import SCons.Util
-# RDEVE: these item should be superseded by info stored in vs, right?
-#        keeping in because MSVS testing still rely on them
-from SCons.Tool.MSVCCommon.version import query_versions
 
 from SCons.Tool.MSVCCommon.misc import FindMSVSBatFile
 
 from SCons.Tool.MSVCCommon.vs import detect_msvs, \
                                      get_default_version, \
-                                     merge_default_version
+                                     merge_default_version, \
+                                     query_versions
 
 # Local Variables:
 # tab-width:4
