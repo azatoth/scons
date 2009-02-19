@@ -434,7 +434,7 @@ def get_default_arch(env):
 
     arch = env.get('MSVS_ARCH', 'x86')
 
-    msvs = InstalledVSMap.has_key(env['MSVS_VERSION'])
+    msvs = InstalledVSMap.get(env['MSVS_VERSION'])
 
     if not msvs:
         arch = 'x86'
