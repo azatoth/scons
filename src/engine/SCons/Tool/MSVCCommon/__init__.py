@@ -36,8 +36,6 @@ import SCons.Errors
 import SCons.Platform.win32
 import SCons.Util
 
-from SCons.Tool.MSVCCommon.misc import FindMSVSBatFile
-
 from SCons.Tool.MSVCCommon.vs import detect_msvs, \
                                      get_default_version, \
                                      merge_default_version, \

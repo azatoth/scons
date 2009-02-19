@@ -37,9 +37,9 @@ if sys.platform != 'win32':
 # Test the basics
 
 test.write('SConstruct', """
-from SCons.Tool.MSVCCommon.misc import FindMSVSBatFile, \\
-                                       ParseBatFile, \\
-                                       MergeMSVSBatFile
+#from SCons.Tool.MSVCCommon.misc import FindMSVSBatFile, \\
+#                                       ParseBatFile, \\
+#                                       MergeMSVSBatFile
 from SCons.Tool.MSVCCommon import query_versions
 #env = Environment(tools = ['mingw'])
 DefaultEnvironment(tools = [])
