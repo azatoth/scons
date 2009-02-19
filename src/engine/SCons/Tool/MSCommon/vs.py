@@ -31,11 +31,11 @@ import os
 import SCons.Errors
 import SCons.Util
 
-from SCons.Tool.MSVCCommon.common import debug, \
-                                         read_reg, \
-                                         normalize_env, \
-                                         get_output, \
-                                         parse_output
+from SCons.Tool.MSCommon.common import debug, \
+                                       read_reg, \
+                                       normalize_env, \
+                                       get_output, \
+                                       parse_output
 
 class VisualStudio:
     """

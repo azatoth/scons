@@ -39,7 +39,7 @@ import SCons.Tool.msvs
 import SCons.Tool.msvc
 import SCons.Util
 
-from MSVCCommon import detect_msvs, merge_default_version
+from MSCommon import detect_msvs, merge_default_version
 
 def generate(env):
     """Add Builders and construction variables for lib to an Environment."""

@@ -31,7 +31,7 @@ PSDK 2003 R1 is the earliest version detected.
 import os
 
 import SCons.Errors
-from SCons.Tool.MSVCCommon.common import debug, read_reg
+from SCons.Tool.MSCommon.common import debug, read_reg
 import SCons.Util
 
 # SDK Checks. This is of course a mess as everything else on MS platforms. Here

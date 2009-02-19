@@ -44,7 +44,7 @@ import SCons.Tool.msvc
 import SCons.Tool.msvs
 import SCons.Util
 
-from MSVCCommon import merge_default_version, detect_msvs
+from MSCommon import merge_default_version, detect_msvs
 
 def pdbGenerator(env, target, source, for_signature):
     try:

@@ -41,7 +41,7 @@ import SCons.Defaults
 import SCons.Scanner.IDL
 import SCons.Util
 
-from MSVCCommon import detect_msvs
+from MSCommon import detect_msvs
 
 def midl_emitter(target, source, env):
     """Produces a list of outputs from the MIDL compiler"""

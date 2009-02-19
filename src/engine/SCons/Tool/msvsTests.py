@@ -34,10 +34,10 @@ from SCons.Tool.msvs import *
 import SCons.Util
 import SCons.Warnings
 
-from SCons.Tool.MSVCCommon.common import debug
+from SCons.Tool.MSCommon.common import debug
 
-from SCons.Tool.MSVCCommon import get_default_version, \
-                                  query_versions
+from SCons.Tool.MSCommon import get_default_version, \
+                                query_versions
 
 regdata_6a = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio]
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0]
@@ -529,7 +529,7 @@ class msvsTestCase(unittest.TestCase):
     def setUp(self):
         global registry
         registry = self.registry
-        from SCons.Tool.MSVCCommon.vs import reset_installed_visual_studios
+        from SCons.Tool.MSCommon.vs import reset_installed_visual_studios
         reset_installed_visual_studios()
 
     def test_detect_msvs(self):

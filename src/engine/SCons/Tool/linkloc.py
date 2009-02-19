@@ -43,7 +43,7 @@ import SCons.Errors
 import SCons.Tool
 import SCons.Util
 
-from SCons.Tool.MSVCCommon import detect_msvs, merge_default_version
+from SCons.Tool.MSCommon import detect_msvs, merge_default_version
 from SCons.Tool.PharLapCommon import addPharLapPaths
 
 _re_linker_command = re.compile(r'(\s)@\s*([^\s]+)')
