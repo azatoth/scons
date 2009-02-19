@@ -226,7 +226,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio 9',
-                 supported_arch=['x86', 'amd64']
+                 supported_arch=['x86', 'amd64'],
     ),
 
     # Visual C++ 2008 Express Edition
@@ -239,7 +239,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\VCExpress.exe',
                  default_dirname='Microsoft Visual Studio 9',
-                 supported_arch=['x86']
+                 supported_arch=['x86'],
     ),
 
     # Visual Studio 2005
@@ -252,7 +252,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio 8',
-                 supported_arch=['x86', 'amd64']
+                 supported_arch=['x86', 'amd64'],
     ),
 
     # Visual C++ 2005 Express Edition
@@ -265,7 +265,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\VCExpress.exe',
                  default_dirname='Microsoft Visual Studio 8',
-                 supported_arch=['x86']
+                 supported_arch=['x86'],
     ),
 
     # Visual Studio .NET 2003
@@ -278,7 +278,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=None,
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio .NET',
-                 supported_arch=['x86']
+                 supported_arch=['x86'],
     ),
 
     # Visual Studio .NET
@@ -291,7 +291,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=None,
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio .NET',
-                 supported_arch=['x86']
+                 supported_arch=['x86'],
     ),
 
     # Visual Studio 6.0
@@ -304,7 +304,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=None,
                  executable_path=r'Common\MSDev98\Bin\MSDEV.COM',
                  default_dirname='Microsoft Visual Studio',
-                 supported_arch=['x86']
+                 supported_arch=['x86'],
     ),
 ]
 
