@@ -145,6 +145,15 @@ class VisualStudio:
             self._cache['vc_product_dir'] = vc_product_dir
             return vc_product_dir
 
+    def get_supported_arch(self):
+        try:
+            return self._cache['supported_arch']
+        except KeyError:
+            # RDEVE: for the time being use hardcoded lists
+            # supported_arch = self.find_supported_arch()
+            self._cache['supported_arch'] = self.supported_arch
+            return self.supported_arch
+
     def reset(self):
         self._cache = {}
 
@@ -217,12 +226,12 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio 9',
+                 supported_arch=['x86','amd64']
     ),
 
-    # TODO(sgk):  verify the right values for 9.0 Express
     # Visual C++ 2008 Express Edition
     VisualStudio('9.0Exp',
-                 hkey_root=r'Software\Microsoft\VisualStudio\TODO',
+                 hkey_root=r'Software\Microsoft\VisualStudio\9.0',
                  common_tools_var='VS90COMNTOOLS',
                  batch_file='vcvarsall.bat',
                  vc_product_dir_key=r'Setup\VC\ProductDir',
@@ -230,6 +239,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\VCExpress.exe',
                  default_dirname='Microsoft Visual Studio 9',
+                 supported_arch=['x86']
     ),
 
     # Visual Studio 2005
@@ -242,6 +252,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio 8',
+                 supported_arch=['x86','amd64']
     ),
 
     # Visual C++ 2005 Express Edition
@@ -254,6 +265,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\VCExpress.exe',
                  default_dirname='Microsoft Visual Studio 8',
+                 supported_arch=['x86']
     ),
 
     # Visual Studio .NET 2003
@@ -266,6 +278,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=None,
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio .NET',
+                 supported_arch=['x86']
     ),
 
     # Visual Studio .NET
@@ -278,6 +291,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=None,
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio .NET',
+                 supported_arch=['x86']
     ),
 
     # Visual Studio 6.0
@@ -290,6 +304,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=None,
                  executable_path=r'Common\MSDev98\Bin\MSDEV.COM',
                  default_dirname='Microsoft Visual Studio',
+                 supported_arch=['x86']
     ),
 ]
 
@@ -406,8 +421,32 @@ def get_default_version(env):
 
     return env['MSVS_VERSION']
 
+def get_default_arch(env):
+    """Return the default arch to use for MSVS
+
+    if no version was requested by the user through the MSVS_ARCH environment
+    variable, select x86
+
+    Return
+    ------
+    arch: str
+    """
+
+    arch = env.get('MSVS_ARCH', 'x86')
+
+    msvs = InstalledVSMap.has_key(env['MSVS_VERSION'])
+
+    if not msvs:
+        arch = 'x86'
+    elif not arch in msvs.get_supported_arch():
+        fmt = "Visual Studio version %s does not support architecture %s"
+        raise SCons.Errors.UserError, fmt % (env['MSVS_VERSION'], arch)
+
+    return arch
+
 def merge_default_version(env):
     version = get_default_version(env)
+    arch = get_default_arch(env)
     # TODO(SK):  move this import up top without introducing circular
     # problems with others importing merge_default_version().
     #import SCons.Tool.msvs
@@ -433,7 +472,7 @@ def merge_default_version(env):
         #vscommonvarnames = [ vs.common_tools_var for vs in get_installed_visual_studios() ]
         vscommonvarnames = map(lambda vs: vs.common_tools_var, get_installed_visual_studios())
         nenv = normalize_env(env['ENV'], vscommonvarnames + ['COMSPEC'])
-        output = get_output(batfilename, [], env=nenv)
+        output = get_output(batfilename, arch, env=nenv)
         vars = parse_output(output, vars)
 
         for k, v in vars.items():

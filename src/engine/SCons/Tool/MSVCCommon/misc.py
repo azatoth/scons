@@ -56,8 +56,6 @@ def FindMSVSBatFile(version, flavor='std', arch="x86"):
         - first look into the registry
         - if not found, then look into the environment variable
           VS*COMMNTOOLS"""
-    if not arch in ["x86"]:
-        raise ValueError("Arch different than x86 not supported yet.")
 
     return find_bat(version, flavor)
 
@@ -106,7 +104,8 @@ def ParseBatFile(env, path, vars=['INCLUDE', 'LIB', 'LIBPATH', 'PATH'], args=Non
     return parse_output(output, vars)
 
 def MergeMSVSBatFile(env, version=None, batfilename=None,
-                     vars=["INCLUDE", "LIB", "LIBPATH", "PATH"]):
+                     vars=["INCLUDE", "LIB", "LIBPATH", "PATH"],
+                     args=None):
     """Find MSVC/MSVS bat file for given version, run it and parse the result
     to update the environment.
 
@@ -148,13 +147,15 @@ def MergeMSVSBatFile(env, version=None, batfilename=None,
                 msg = "batfile for version %s not found" % version
                 raise SCons.Errors.MSVCError(msg)
 
-    vars = ParseBatFile(env, batfilename, vars)
+    vars = ParseBatFile(env, batfilename, vars, args)
 
     for k, v in vars.items():
         env.PrependENVPath(k, v, delete_existing=1)
 
 def merge_default_version(env):
     version = get_default_version(env)
+    arch = get_default_arch(env)
+
     # TODO(SK):  move this import up top without introducing circular
     # problems with others importing merge_default_version().
     import SCons.Tool.msvs
@@ -166,7 +167,7 @@ def merge_default_version(env):
     # framework
     if batfilename is not None:
         vars = ('LIB', 'LIBPATH', 'PATH', 'INCLUDE')
-        vars = ParseBatFile(env, batfilename, vars)
+        vars = ParseBatFile(env, batfilename, vars, arch)
 
         for k, v in vars.items():
             env.PrependENVPath(k, v, delete_existing=1)

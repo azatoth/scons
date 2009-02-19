@@ -27,13 +27,17 @@ __doc__ = """
 """
 
 import SCons.Util
-
+import SCons.Errors
 from SCons.Tool.MSVCCommon.findloc import find_bat
 from SCons.Tool.MSVCCommon.vs import get_installed_visual_studios
 
 # Default value of VS to use
 DEFVERSIONSTR = "9.0"
 DEFVERSION = float(DEFVERSIONSTR)
+
+# RDEVE: currently only these flavour have been tested
+SUPPORTED_ARCH = ['x86','amd64']
+
 
 def query_versions():
     """Query the system to get available versions of VS. A version is
@@ -73,6 +77,27 @@ def get_default_version(env):
     env['MSVS']['VERSION'] = env['MSVS_VERSION']
 
     return env['MSVS_VERSION']
+
+def get_default_arch(env):
+    """Return the default arch to use for MSVS
+
+    if no version was requested by the user through the MSVS_ARCH environment
+    variable, select x86
+
+    Return
+    ------
+    arch: str
+    """
+
+    try:
+      arch=env['MSVS_ARCH']
+    except:
+      arch='x86'
+
+    if not arch in SUPPORTED_ARCH:
+      arch='x86'
+
+    return arch
 
 def detect_msvs():
     """Return 1 if at least one version of MS toolchain is detected."""

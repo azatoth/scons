@@ -274,6 +274,19 @@ If a value isn't set, it wasn't available in the registry.
 </summary>
 </cvar>
 
+<cvar name="MSVS_ARCH">
+<summary>
+Sets the architecture for which the generated project(s) should build.
+
+The default value is <literal>x86</literal>.
+<literal>amd64</literal> is also supported
+by &SCons; for some Visual Studio versions.
+Trying to set &cv-MSVS_ARCH; to an architecture that's not
+supported for a given Visual Studio version
+will generate an error.
+</summary>
+</cvar>
+
 <cvar name="MSVS_IGNORE_IDE_PATHS">
 <summary>
 Tells the MS Visual Studio tools to use minimal INCLUDE, LIB, and PATH settings,
