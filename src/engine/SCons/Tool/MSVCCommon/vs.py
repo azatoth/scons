@@ -29,9 +29,13 @@ __doc__ = """Module to detect Visual Studio and/or Visual C/C++
 import os
 
 import SCons.Errors
-from SCons.Tool.MSVCCommon.common import debug, read_reg
 import SCons.Util
 
+from SCons.Tool.MSVCCommon.common import debug, \
+                                         read_reg, \
+                                         normalize_env, \
+                                         get_output, \
+                                         parse_output
 
 class VisualStudio:
     """
@@ -462,9 +466,6 @@ def merge_default_version(env):
     # of failing, but there is no other way with the current scons tool
     # framework
     if batfilename is not None:
-        from SCons.Tool.MSVCCommon.envhelpers import normalize_env, \
-                                                     get_output, \
-                                                     parse_output
 
         vars = ('LIB', 'LIBPATH', 'PATH', 'INCLUDE')
 

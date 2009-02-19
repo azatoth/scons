@@ -44,14 +44,15 @@ Previous SDKs are not available anymore on MS website, so I could not test
 them. I believe VS 6 has its own SDK included, as well as VS 2003 .Net. The SDK
 is set *after* the msvs tool.
 
-The version of the SDK is controled by the scons variable MSSDK:
-        - Not set (default): the system is queried for an available SDK, and
-          the most recent is picked up, except if the MSVS_VERSION is lower or
-          equal to 7.1 (VS 2003 .Net and former versions), in which case the
-          behavior is the same as setting it to None.
-        - set to None: no SDK is queried, assumed to be set correctly by the
-          compiler
-        - set to a path: if the path points to a valid SDK, this SDK is used.
+The version of the SDK can be controlled by the scons variable:
+
+    MSSDK_DIR:      If set, specifies the directory location of the
+                    SDK to be used.
+
+    MSSDK_VERSION:  If set, specifies the version of the SDK to be used.
+
+If neither of these is set, MSVS_VERSION is used to pick an appropriate
+default.
 
 Architecture
 ------------
@@ -67,7 +68,7 @@ Fundamental changes
 ===================
 
 env["ENV"] has been expanded a bit on windows:
-  - add %SYSTEMROOT%\system32 in the path for windows
+  - add %SystemRoot%\system32 in the path for windows
   - add COMSPEC (needed by the .bat file execution)
 
 Internals

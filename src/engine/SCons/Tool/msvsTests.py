@@ -532,6 +532,11 @@ class msvsTestCase(unittest.TestCase):
         from SCons.Tool.MSVCCommon.vs import reset_installed_visual_studios
         reset_installed_visual_studios()
 
+    def test_detect_msvs(self):
+        """Test the detect_msvs() function"""
+        r = detect_msvs()
+        assert r == (self.number_of_versions > 0), r
+
     def test_get_default_version(self):
         """Test retrieval of the default visual studio version"""
         
@@ -562,21 +567,16 @@ class msvsTestCase(unittest.TestCase):
         assert env['MSVS']['VERSION'] == override, env['MSVS']['VERSION']
         assert v3 == override, v3
 
+    def _TODO_test_merge_default_version(self):
+        """Test the merge_default_version() function"""
+        pass
+
     def test_query_versions(self):
         """Test retrieval of the list of visual studio versions"""
         v1 = query_versions()
         assert not v1 or str(v1[0]) == self.highest_version, \
                (v1, self.highest_version)
         assert len(v1) == self.number_of_versions, v1
-
-    def test_get_msvs_install_dirs(self):
-        """Test retrieval of the list of visual studio installed locations"""
-        v1 = get_msvs_install_dirs()
-        assert v1 == self.default_install_loc, \
-               ("exp,act: ",self.default_install_loc, v1)
-        for key, loc in self.install_locs.items():
-            v2 = get_msvs_install_dirs(key)
-            assert v2 == loc, key + ': ' + str(v2)
 
 class msvs6aTestCase(msvsTestCase):
     """Test MSVS 6 Registry"""

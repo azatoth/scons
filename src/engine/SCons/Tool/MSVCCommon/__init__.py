@@ -38,6 +38,7 @@ import SCons.Util
 
 from SCons.Tool.MSVCCommon.vs import detect_msvs, \
                                      get_default_version, \
+                                     get_vs_by_version, \
                                      merge_default_version, \
                                      query_versions
 
