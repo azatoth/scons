@@ -205,16 +205,6 @@ def set_sdk_by_directory(env, sdk_dir):
 
 
 # TODO(sgk):  currently unused; remove?
-def parse_version(versionstr):
-    import re
-    r = re.compile("([0-9\.]*)([\s\S]*)")
-    m = r.match(versionstr)
-    if not m:
-        raise ValueError("Could not parse version string %s" % versiontr)
-
-    return float(m.group(1)), m.group(2)
-
-# TODO(sgk):  currently unused; remove?
 def get_cur_sdk_dir_from_reg():
     """Try to find the platform sdk directory from the registry.
 

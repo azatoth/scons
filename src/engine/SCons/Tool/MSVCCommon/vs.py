@@ -137,14 +137,6 @@ class VisualStudio:
             self._cache['executable'] = executable
             return executable
 
-    def get_vc_product_dir(self):
-        try:
-            return self._cache['vc_product_dir']
-        except KeyError:
-            vc_product_dir = self.find_vc_product_dir()
-            self._cache['vc_product_dir'] = vc_product_dir
-            return vc_product_dir
-
     def get_supported_arch(self):
         try:
             return self._cache['supported_arch']
@@ -153,6 +145,14 @@ class VisualStudio:
             # supported_arch = self.find_supported_arch()
             self._cache['supported_arch'] = self.supported_arch
             return self.supported_arch
+
+    def get_vc_product_dir(self):
+        try:
+            return self._cache['vc_product_dir']
+        except KeyError:
+            vc_product_dir = self.find_vc_product_dir()
+            self._cache['vc_product_dir'] = vc_product_dir
+            return vc_product_dir
 
     def reset(self):
         self._cache = {}
@@ -226,7 +226,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio 9',
-                 supported_arch=['x86','amd64']
+                 supported_arch=['x86', 'amd64']
     ),
 
     # Visual C++ 2008 Express Edition
@@ -252,7 +252,7 @@ SupportedVSList = [
                  batch_file_dir_env_relpath=r'..\..\VC',
                  executable_path=r'..\Common7\IDE\devenv.com',
                  default_dirname='Microsoft Visual Studio 8',
-                 supported_arch=['x86','amd64']
+                 supported_arch=['x86', 'amd64']
     ),
 
     # Visual C++ 2005 Express Edition
@@ -386,6 +386,12 @@ def get_vs_by_version(msvs):
         raise SCons.Errors.UserError, msg
     get_installed_visual_studios()
     vs = InstalledVSMap.get(msvs)
+    # Some check like this would let us provide a useful error message
+    # if they try to set a Visual Studio version that's not installed.
+    # However, we also want to be able to run tests (like the unit
+    # tests) on systems that don't, or won't ever, have it installed.
+    # It might be worth resurrecting this, with some configurable
+    # setting that the tests can use to bypass the check.
     #if not vs:
     #    msg = "Visual Studio version %s is not installed" % repr(msvs)
     #    raise SCons.Errors.UserError, msg
@@ -431,7 +437,6 @@ def get_default_arch(env):
     ------
     arch: str
     """
-
     arch = env.get('MSVS_ARCH', 'x86')
 
     msvs = InstalledVSMap.get(env['MSVS_VERSION'])
@@ -447,10 +452,6 @@ def get_default_arch(env):
 def merge_default_version(env):
     version = get_default_version(env)
     arch = get_default_arch(env)
-    # TODO(SK):  move this import up top without introducing circular
-    # problems with others importing merge_default_version().
-    #import SCons.Tool.msvs
-    #version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
 
     msvs = get_vs_by_version(version)
     if msvs is None:
@@ -461,44 +462,22 @@ def merge_default_version(env):
     # of failing, but there is no other way with the current scons tool
     # framework
     if batfilename is not None:
-        vars = ('LIB', 'LIBPATH', 'PATH', 'INCLUDE')
-        #vars = ParseBatFile(env, batfilename, vars)
-
         from SCons.Tool.MSVCCommon.envhelpers import normalize_env, \
                                                      get_output, \
                                                      parse_output
 
+        vars = ('LIB', 'LIBPATH', 'PATH', 'INCLUDE')
+
+        installed_msvs_list = get_installed_visual_studios()
         # TODO(1.5):
-        #vscommonvarnames = [ vs.common_tools_var for vs in get_installed_visual_studios() ]
-        vscommonvarnames = map(lambda vs: vs.common_tools_var, get_installed_visual_studios())
+        #vscommonvarnames = [ vs.common_tools_var for vs in installed ]
+        vscommonvarnames = map(lambda vs: vs.common_tools_var, installed)
         nenv = normalize_env(env['ENV'], vscommonvarnames + ['COMSPEC'])
         output = get_output(batfilename, arch, env=nenv)
         vars = parse_output(output, vars)
 
         for k, v in vars.items():
             env.PrependENVPath(k, v, delete_existing=1)
-
-
-    #try:
-    #    version = get_default_version(env)
-    #    if version is not None:
-    #        version_num, suite = SCons.Tool.msvs.msvs_parse_version(version)
-    #        if env.has_key('MSVS_USE_DEFAULT_PATHS') and \
-    #           env['MSVS_USE_DEFAULT_PATHS']:
-    #            use_def_env(env, version_num, 'std')
-    #            try:
-    #                use_def_env(env, version_num, 'std')
-    #            except ValueError, e:
-    #                print "Could not get defaultpaths: %s" % e
-    #                MergeMSVSBatFile(env, version_num)
-
-    #        else:
-    #            MergeMSVSBatFile(env, version_num)
-    #    else:
-    #        MergeMSVSBatFile(env)
-
-    #except SCons.Errors.MSVCError:
-    #    pass
 
 # Local Variables:
 # tab-width:4
