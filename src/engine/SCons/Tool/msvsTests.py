@@ -36,6 +36,9 @@ import SCons.Warnings
 
 from SCons.Tool.MSVCCommon.common import debug
 
+from SCons.Tool.MSVCCommon import get_default_version, \
+                                  query_versions
+
 regdata_6a = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio]
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0]
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0\ServicePacks]
@@ -529,12 +532,12 @@ class msvsTestCase(unittest.TestCase):
         from SCons.Tool.MSVCCommon.vs import reset_installed_visual_studios
         reset_installed_visual_studios()
 
-    def test_get_default_visual_studio_version(self):
+    def test_get_default_version(self):
         """Test retrieval of the default visual studio version"""
         
         debug("Testing for default version %s"%self.default_version)
         env = DummyEnv()
-        v1 = get_default_visualstudio_version(env)
+        v1 = get_default_version(env)
         assert env['MSVS_VERSION'] == self.default_version, \
                (self.default_version, env['MSVS_VERSION'])
         assert env['MSVS']['VERSION'] == self.default_version, \
@@ -542,26 +545,26 @@ class msvsTestCase(unittest.TestCase):
         assert v1 == self.default_version, (self.default_version, v1)
 
         env = DummyEnv({'MSVS_VERSION':'7.0'})
-        v2 = get_default_visualstudio_version(env)
+        v2 = get_default_version(env)
         assert env['MSVS_VERSION'] == '7.0', env['MSVS_VERSION']
         assert env['MSVS']['VERSION'] == '7.0', env['MSVS']['VERSION']
         assert v2 == '7.0', v2
 
         env = DummyEnv()
-        v3 = get_default_visualstudio_version(env)
+        v3 = get_default_version(env)
         if v3 == '7.1':
             override = '7.0'
         else:
             override = '7.1'
         env['MSVS_VERSION'] = override
-        v3 = get_default_visualstudio_version(env)
+        v3 = get_default_version(env)
         assert env['MSVS_VERSION'] == override, env['MSVS_VERSION']
         assert env['MSVS']['VERSION'] == override, env['MSVS']['VERSION']
         assert v3 == override, v3
 
-    def test_get_visual_studio_versions(self):
+    def test_query_versions(self):
         """Test retrieval of the list of visual studio versions"""
-        v1 = get_visualstudio_versions()
+        v1 = query_versions()
         assert not v1 or str(v1[0]) == self.highest_version, \
                (v1, self.highest_version)
         assert len(v1) == self.number_of_versions, v1
