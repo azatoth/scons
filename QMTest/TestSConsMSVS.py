@@ -636,7 +636,7 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
         """Returns a full path to the executable (MSDEV or devenv)
         for the specified version of Visual Studio.
         """
-        from SCons.Tool.MSVCCommon import get_vs_by_version
+        from SCons.Tool.MSCommon import get_vs_by_version
 
         msvs = get_vs_by_version(version)
         if not msvs:
