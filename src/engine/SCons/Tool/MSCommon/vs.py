@@ -51,7 +51,7 @@ class VisualStudio:
         pdir = self.get_vc_product_dir()
         if not pdir:
             return None
-        return os.path.join(pdir, self.batch_file)
+        return os.path.normpath(os.path.join(pdir, self.batch_file))
 
     def common_tools_path(self):
         return os.environ.get(self.common_tools_var)
@@ -68,9 +68,11 @@ class VisualStudio:
         else:
             if self.batch_file_dir_reg_relpath:
                 comps = os.path.join(comps, self.batch_file_dir_reg_relpath)
-            if os.path.exists(comps):
-                return comps
-            debug('%s is not found on the file system' % comps)
+                comps = os.path.normpath(comps)
+            if not os.path.exists(comps):
+                debug('%s is not found on the file system' % comps)
+                return None
+            return comps
 
     #
 
@@ -83,7 +85,7 @@ class VisualStudio:
         if not pdir:
             debug('find_batch_file();  no pdir')
             return None
-        batch_file = os.path.join(pdir, self.batch_file)
+        batch_file = os.path.normpath(os.path.join(pdir, self.batch_file))
         if not os.path.isfile(batch_file):
             debug('%s file not on file system' % batch_file)
             return None
@@ -94,6 +96,7 @@ class VisualStudio:
         if not pdir:
             return None
         executable = os.path.join(pdir, self.executable_path)
+        executable = os.path.normpath(executable)
         if not os.path.isfile(executable):
             debug('%s file not on file system' % executable)
             return None
@@ -109,9 +112,11 @@ class VisualStudio:
             else:
                 if self.batch_file_dir_reg_relpath:
                     comps = os.path.join(comps, self.batch_file_dir_reg_relpath)
-                if os.path.exists(comps):
-                    return comps
-                debug('%s is not found on the file system' % comps)
+                    comps = os.path.normpath(comps)
+                if not os.path.exists(comps):
+                    debug('%s is not found on the file system' % comps)
+                    return None
+                return comps
         else:
             debug('SCons can not read registry')
 
@@ -120,6 +125,7 @@ class VisualStudio:
             debug('%s found from %s' % (d, self.common_tools_var))
             if self.batch_file_dir_env_relpath:
                 d = os.path.join(d, self.batch_file_dir_env_relpath)
+                d = os.path.normpath(d)
             return d
         return None
 
@@ -334,7 +340,7 @@ def get_installed_visual_studios():
         InstalledVSMap = {}
         for vs in SupportedVSList:
             debug('trying to find %s' % vs.version)
-            if vs.get_batch_file():
+            if vs.get_executable():
                 debug('found %s' % vs.version)
                 InstalledVSList.append(vs)
                 InstalledVSMap[vs.version] = vs
