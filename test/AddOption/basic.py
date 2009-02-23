@@ -29,8 +29,6 @@ Verify the help text when the AddOption() function is used (and when
 it's not).
 """
 
-import string
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -68,3 +66,9 @@ test.run('-Q -q . -- --prefix=/home/foo --force',
          stdout="None\nNone\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

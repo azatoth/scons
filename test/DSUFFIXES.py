@@ -35,7 +35,6 @@ _python_ = TestSCons._python_
 test = TestSCons.TestSCons()
 
 test.write('mydc.py', r"""
-import string
 import sys
 def do_file(outf, inf):
     for line in open(inf, 'rb').readlines():
@@ -168,3 +167,9 @@ foo.d 2
 test.up_to_date(arguments='.')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

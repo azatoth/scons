@@ -29,7 +29,6 @@ Testing the configuration mechanisms of the 'qt' tool.
 """
 
 import TestSCons
-import os.path
 
 _python_ = TestSCons._python_
 _exe = TestSCons._exe
@@ -277,3 +276,9 @@ test.run(chdir='work2', stderr=None)
 test.must_exist(['work2', 'main' + _exe])
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

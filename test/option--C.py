@@ -24,11 +24,11 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import TestSCons
+import os
 import string
-import sys
-import os.path
 import types
+
+import TestSCons
 
 def match_normcase(lines, matches):
     if not type(lines) is types.ListType:
@@ -88,3 +88,9 @@ test.run(arguments = '-C %s -C %s .' % (wpath_sub_dir, wpath_sub),
                                    build_str = "scons: `.' is up to date.\n"))
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

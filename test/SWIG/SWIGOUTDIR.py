@@ -29,8 +29,6 @@ Verify that use of the $SWIGOUTDIR variable causes SCons to recognize
 that Java files are created in the specified output directory.
 """
 
-import sys
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -85,3 +83,9 @@ test.must_exist('java/build dir/foopack.java')
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

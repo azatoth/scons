@@ -30,7 +30,6 @@ Test the Options help messages.
 
 import os.path
 import re
-import string
 
 try:
     True, False
@@ -171,3 +170,9 @@ test.run(arguments='-h', stdout=expected_stdout, stderr=expected_stderr)
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

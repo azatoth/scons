@@ -28,7 +28,6 @@ import os
 import string
 import sys
 
-import TestCmd
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -283,3 +282,9 @@ main(int argc, char *argv[])
              stdout = "f4.c\nprogbar.c\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

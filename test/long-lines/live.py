@@ -24,10 +24,13 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import os.path
-import string
+"""
+Verify correct execution of long command lines with the live utilities
+that use TempFileMunge().
+"""
+
 import sys
+
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -62,13 +65,13 @@ else:
     linkflag = ' -L' + test.workpath()
 
 test.write('SConstruct', """
-arflags = r'%s'
+arflags = r'%(arflag_init)s'
 while len(arflags) <= 8100:
-    arflags = arflags + r'%s'
+    arflags = arflags + r'%(arflag)s'
 
-linkflags = r'%s'
+linkflags = r'%(linkflag_init)s'
 while len(linkflags) <= 8100:
-    linkflags = linkflags + r'%s'
+    linkflags = linkflags + r'%(linkflag)s'
 
 env = Environment(ARFLAGS = '$ARXXX', ARXXX = arflags,
                   LINKFLAGS = '$LINKXXX', LINKXXX = linkflags)
@@ -77,7 +80,7 @@ env.Program(target = 'foo', source = 'foo.c')
 env.StaticLibrary(target = 'static', source = 'static.c')
 # SharedLibrary() uses $LINKFLAGS by default.
 env.SharedLibrary(target = 'shared', source = 'shared.c', no_import_lib=1)
-""" % (arflag_init, arflag, linkflag_init, linkflag))
+""" % locals())
 
 test.write('foo.c', r"""
 #include <stdio.h>
@@ -124,8 +127,14 @@ test.up_to_date(arguments = '.')
 
 test.run(program = test.workpath('foo'), stdout = "foo.c\n")
 
-test.fail_test(not os.path.exists(lib_static_lib))
+test.must_exist(lib_static_lib)
 
-test.fail_test(not os.path.exists(lib_shared_dll))
+test.must_exist(lib_shared_dll)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

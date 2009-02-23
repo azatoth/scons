@@ -287,11 +287,11 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
 
     if children:
         margin.append(1)
-        map(lambda C, cf=child_func, p=prune, i=IDX(showtags), m=margin, v=visited:
-                   print_tree(C, cf, p, i, m, v),
-            children[:-1])
+        idx = IDX(showtags)
+        for C in children[:-1]:
+            print_tree(C, child_func, prune, idx, margin, visited)
         margin[-1] = 0
-        print_tree(children[-1], child_func, prune, IDX(showtags), margin, visited)
+        print_tree(children[-1], child_func, prune, idx, margin, visited)
         margin.pop()
 
 
@@ -727,10 +727,32 @@ if can_read_reg:
         # I would use os.path.split here, but it's not a filesystem
         # path...
         p = key.rfind('\\') + 1
-        keyp = key[:p]
+        keyp = key[:p-1]          # -1 to omit trailing slash
         val = key[p:]
         k = RegOpenKeyEx(root, keyp)
         return RegQueryValueEx(k,val)
+else:
+    try:
+        e = WindowsError
+    except NameError:
+        # Make sure we have a definition of WindowsError so we can
+        # run platform-independent tests of Windows functionality on
+        # platforms other than Windows.  (WindowsError is, in fact, an
+        # OSError subclass on Windows.)
+        class WindowsError(OSError):
+            pass
+        import __builtin__
+        __builtin__.WindowsError = WindowsError
+    else:
+        del e
+        
+    HKEY_CLASSES_ROOT = None
+    HKEY_LOCAL_MACHINE = None
+    HKEY_CURRENT_USER = None
+    HKEY_USERS = None
+
+    def RegGetValue(root, key):
+        raise WindowsError
 
 if sys.platform == 'win32':
 
@@ -1591,3 +1613,9 @@ class NullSeq(Null):
 
 
 del __revision__
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

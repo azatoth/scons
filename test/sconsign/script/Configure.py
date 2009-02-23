@@ -29,7 +29,7 @@ Verify that we can print .sconsign files with Configure context
 info in them (which have different BuildInfo entries).
 """
 
-import os.path
+import os
 import re
 
 import TestSCons
@@ -41,6 +41,8 @@ test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 
 CC = test.detect('CC', norm=1)
 CC_dir, CC_file = os.path.split(CC)
+
+CC = re.escape(CC)
 CC_dir = re.escape(os.path.normcase(CC_dir))
 CC_file = re.escape(CC_file)
 
@@ -88,3 +90,9 @@ test.run_sconsign(arguments = ".sconsign",
                   stdout = expect)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

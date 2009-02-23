@@ -31,7 +31,6 @@ is read-only.
 """
 
 import os
-import os.path
 import stat
 import sys
 import TestSCons
@@ -172,3 +171,9 @@ test.run(chdir = 'duplicate',
          stderr = expect_stderr)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

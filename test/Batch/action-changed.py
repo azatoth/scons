@@ -58,7 +58,8 @@ os.chmod(test.workpath('build.py'), 0755)
 
 test.write('SConstruct', """
 env = Environment()
-bb = Action('%s $CHANGED_TARGETS -- $CHANGED_SOURCES',
+env.PrependENVPath('PATHEXT', '.PY')
+bb = Action(r'"%s" $CHANGED_TARGETS -- $CHANGED_SOURCES',
             batch_key=True,
             targets='CHANGED_TARGETS')
 env['BUILDERS']['Batch'] = Builder(action=bb)
@@ -82,7 +83,6 @@ test.up_to_date(arguments = '.')
 test.write('build.py', build_py_contents % (python, 'two'))
 os.chmod(test.workpath('build.py'), 0755)
 
-#test.not_up_to_date(options = 'CALLER=1 --taskmastertrace=/dev/tty', arguments = '.')
 test.not_up_to_date(arguments = '.')
 
 test.must_match('f1.out', "two\nf1.in\n")
@@ -90,3 +90,9 @@ test.must_match('f2.out', "two\nf2.in\n")
 test.must_match('f3.out', "two\nf3.in\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

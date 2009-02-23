@@ -24,16 +24,13 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
 import re
-import string
-import sys
+
 import TestSCons
-import TestCmd
 
 _python_ = TestSCons._python_
 
-test = TestSCons.TestSCons(match = TestCmd.match_re_dotall)
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 SConstruct_path = test.workpath('SConstruct')
 
@@ -122,18 +119,13 @@ expected_stderr_list = [
 
 test.run(arguments = '-j7 -k .', status = 2, stderr = None)
 
-missing = []
-for es in expected_stderr_list:
-    if string.find(test.stderr(), es) == -1:
-        missing.append(es)
-
-if missing:
-    sys.stderr.write("Missing the following lines from stderr:\n")
-    for m in missing:
-        sys.stderr.write(m)
-    sys.stderr.write('STDERR ===============================================\n')
-    sys.stderr.write(test.stderr())
-    test.fail_test(1)
+test.must_contain_all_lines(test.stderr(), expected_stderr_list)
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

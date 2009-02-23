@@ -1086,6 +1086,8 @@ class Base(SubstitutionEnvironment):
             scanners.reverse()
             for scanner in scanners:
                 for k in scanner.get_skeys(self):
+                    if k and self['PLATFORM'] == 'win32':
+                        k = string.lower(k)
                     result[k] = scanner
 
         self._memo['_gsm'] = result
@@ -1095,6 +1097,8 @@ class Base(SubstitutionEnvironment):
     def get_scanner(self, skey):
         """Find the appropriate scanner given a key (usually a file suffix).
         """
+        if skey and self['PLATFORM'] == 'win32':
+            skey = string.lower(skey)
         return self._gsm().get(skey)
 
     def scanner_map_delete(self, kw=None):
@@ -2132,17 +2136,13 @@ class Base(SubstitutionEnvironment):
         #            result.append(s)
         build_source(node.all_children(), sources)
 
-        # now strip the build_node from the sources by calling the srcnode
-        # function
-        def get_final_srcnode(file):
-            srcnode = file.srcnode()
-            while srcnode != file.srcnode():
-                srcnode = file.srcnode()
-            return srcnode
-
-        # get the final srcnode for all nodes, this means stripping any
-        # attached build node.
-        map( get_final_srcnode, sources )
+    # THIS CODE APPEARS TO HAVE NO EFFECT
+    #    # get the final srcnode for all nodes, this means stripping any
+    #    # attached build node by calling the srcnode function
+    #    for file in sources:
+    #        srcnode = file.srcnode()
+    #        while srcnode != file.srcnode():
+    #            srcnode = file.srcnode()
 
         # remove duplicates
         return list(set(sources))
@@ -2312,3 +2312,9 @@ def NoSubstitutionProxy(subject):
             self.raw_to_mode(nkw)
             return apply(SCons.Subst.scons_subst, nargs, nkw)
     return _NoSubstitutionProxy(subject)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

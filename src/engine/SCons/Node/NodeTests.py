@@ -435,6 +435,12 @@ class NodeTestCase(unittest.TestCase):
         assert n.cleared, n.cleared
         assert n.ninfo.updated, n.ninfo.cleared
 
+    def test_push_to_cache(self):
+        """Test the base push_to_cache() method"""
+        n = SCons.Node.Node()
+        r = n.push_to_cache()
+        assert r is None, r
+
     def test_retrieve_from_cache(self):
         """Test the base retrieve_from_cache() method"""
         n = SCons.Node.Node()
@@ -1303,3 +1309,9 @@ if __name__ == "__main__":
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

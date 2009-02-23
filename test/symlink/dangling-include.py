@@ -35,8 +35,7 @@ import TestSCons
 test = TestSCons.TestSCons()
 
 if not hasattr(os, 'symlink'):
-    print "No os.symlink() method, no symlinks to test."
-    test.no_result(1)
+    test.skip_test('No os.symlink() method, no symlinks to test.\n')
 
 foo_obj = 'foo' + TestSCons._obj
 
@@ -58,3 +57,9 @@ test.run(arguments = '.', status = 2, stderr = expect,
          match=TestSCons.match_re_dotall)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

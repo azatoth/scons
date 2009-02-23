@@ -62,7 +62,7 @@ test = TestSCons.TestSCons()
 # it sees the failure from the first script.
 
 test.write('myfail.py', r"""\
-import os.path
+import os
 import sys
 import time
 while not os.path.exists('mycopy.started'):
@@ -109,3 +109,9 @@ test.must_not_exist(test.workpath('f6'))
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -28,7 +28,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Verify that Configure contexts work with basic use of VariantDir.
 """
 
-import os.path
+import os
 
 import TestSCons
 
@@ -89,3 +89,9 @@ test.checkLogAndStdout(["Checking for C header file math.h... ",
                       "SConstruct")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -29,11 +29,7 @@ Test use of a preceding - to ignore the return value from a command.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import os.path
-import re
-import string
-import sys
-import TestCmd
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -85,3 +81,9 @@ test.run(arguments='.', status=2, stderr=None)
 test.must_match('f1.out', "f1.in\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

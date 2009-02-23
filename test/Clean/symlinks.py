@@ -24,36 +24,41 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+"""
+Verify correct deletion of broken symlinks.
+"""
+
+import os
+
 import TestSCons
-import string
-import sys
 
 test = TestSCons.TestSCons()
 
-test.run(arguments = '-h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+if not hasattr(os, 'symlink'):
+    test.skip_test('No os.symlink() function; skipping test\n')
 
-test.run(arguments = '-u -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+test.write('SConstruct', """\
+Execute(Mkdir("testdir"))
+dir = Dir("testdir")
+Clean(dir, 'testdir')
+""")
 
-test.run(arguments = '-U -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+test.run(arguments = '-Q -q', stdout='Mkdir("testdir")\n')
 
-test.run(arguments = '-D -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+os.symlink('testdir/symlinksrc', 'testdir/symlinkdst')
 
-test.write('SConstruct', "")
+expect = """\
+Mkdir("testdir")
+Removed %s
+Removed directory testdir
+""" % os.path.join('testdir', 'symlinkdst')
 
-test.run(arguments = '-h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
-
-test.run(arguments = '-u -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
-
-test.run(arguments = '-U -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
-
-test.run(arguments = '-D -h')
-test.fail_test(string.find(test.stdout(), '-h, --help') == -1)
+test.run(arguments = '-c -Q -q', stdout=expect)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

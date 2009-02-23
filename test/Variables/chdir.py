@@ -51,7 +51,6 @@ print "VARIABLE =", repr(env['VARIABLE'])
 
 test.write(['bin', 'opts.cfg'], """\
 import os
-import os.path
 os.chdir(os.path.split(__name__)[0])
 execfile('opts2.cfg')
 """)
@@ -69,3 +68,9 @@ VARIABLE = 'opts2.cfg value'
 test.run(arguments = '-q -Q .', stdout=expect)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

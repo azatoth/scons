@@ -32,10 +32,8 @@ under the covers).
 Note that using BuildDir() does not yet print a deprecation warning.
 """
 
-import os.path
 import string
-import sys
-import time
+
 import TestSCons
 
 _exe = TestSCons._exe
@@ -87,7 +85,6 @@ SConscript('../build/var6/SConscript', "env")
 
 test.subdir(['work1', 'src'])
 test.write(['work1', 'src', 'SConscript'], """
-import os
 import os.path
 
 def buildIt(target, source, env):
@@ -275,3 +272,9 @@ scons: `%s' is up to date.
 """ % test.workpath('build', 'var5')))
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -160,12 +160,12 @@ class Executor:
         us = []
         ut = []
         for b in self.batches:
-            if b.targets[0].changed():
-                cs.extend(map(rfile, b.sources))
-                ct.extend(b.targets)
-            else:
+            if b.targets[0].is_up_to_date():
                 us.extend(map(rfile, b.sources))
                 ut.extend(b.targets)
+            else:
+                cs.extend(map(rfile, b.sources))
+                ct.extend(b.targets)
         self._changed_sources_list = SCons.Util.NodeList(cs)
         self._changed_targets_list = SCons.Util.NodeList(ct)
         self._unchanged_sources_list = SCons.Util.NodeList(us)
@@ -629,3 +629,8 @@ class Null:
         self.set_action_list(action)
 
 
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

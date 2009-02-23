@@ -225,7 +225,8 @@ def mkdir_func(dest):
             os.makedirs(str(entry))
         except os.error, e:
             p = str(entry)
-            if e[0] == errno.EEXIST and os.path.isdir(str(entry)):
+            if (e[0] == errno.EEXIST or (sys.platform=='win32' and e[0]==183)) \
+                    and os.path.isdir(str(entry)):
                 pass            # not an error if already exists
             else:
                 raise
@@ -469,3 +470,9 @@ ConstructionEnvironment = {
     'File'          : Variable_Method_Caller('TARGET', 'File'),
     'RDirs'         : Variable_Method_Caller('TARGET', 'RDirs'),
 }
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

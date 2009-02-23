@@ -28,8 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Verify that the cache mechanism works when checks are not ok.
 """
 
-import os.path
-
 import TestSCons
 
 _exe = TestSCons._exe
@@ -79,7 +77,7 @@ test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
 
 # Same should be true for the default behavior of Decider('content').
 
-test.run(arguments='--config=force target_signatures_content=1')
+test.run(arguments='target_signatures_content=1 --config=force')
 test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                        "Checking for C library no_c_library_SAFFDG... "],
                       ["no"]*2,
@@ -96,3 +94,9 @@ test.checkLogAndStdout(["Checking for C header file no_std_c_header.h... ",
                       "config.log", ".sconf_temp", "SConstruct")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

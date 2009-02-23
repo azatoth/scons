@@ -36,7 +36,9 @@ provided by the TestCommon class:
 
     test.must_contain('file', 'required text\n')
 
-    test.must_contain_lines(lines, output)
+    test.must_contain_all_lines(output, lines, ['title', find])
+
+    test.must_contain_any_line(output, lines, ['title', find])
 
     test.must_exist('file1', ['file2', ...])
 
@@ -44,7 +46,7 @@ provided by the TestCommon class:
 
     test.must_not_be_writable('file1', ['file2', ...])
 
-    test.must_not_contain_lines(lines, output)
+    test.must_not_contain_any_line(output, lines, ['title', find])
 
     test.must_not_exist('file1', ['file2', ...])
 
@@ -85,8 +87,8 @@ The TestCommon module also provides the following variables
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCommon.py 0.34.D001 2008/12/28 23:12:34 knight"
-__version__ = "0.34"
+__revision__ = "TestCommon.py 0.35.D001 2009/02/08 07:10:39 knight"
+__version__ = "0.35"
 
 import copy
 import os
@@ -307,18 +309,63 @@ class TestCommon(TestCmd):
             print file_contents
             self.fail_test(not contains)
 
-    def must_contain_lines(self, lines, output, title=None):
-        if title is None:
-            title = 'output'
+    def must_contain_all_lines(self, output, lines, title=None, find=None):
+        """Ensures that the specified output string (first argument)
+        contains all of the specified lines (second argument).
 
-        missing = filter(lambda l, o=output: string.find(o, l) == -1, lines)
+        An optional third argument can be used to describe the type
+        of output being searched, and only shows up in failure output.
+
+        An optional fourth argument can be used to supply a different
+        function, of the form "find(line, output), to use when searching
+        for lines in the output.
+        """
+        if find is None:
+            find = lambda o, l: string.find(o, l) != -1
+        missing = []
+        for line in lines:
+            if not find(output, line):
+                missing.append(line)
 
         if missing:
-            print "Missing lines from %s:" % title
-            print string.join(missing, '\n')
-            print "%s ============================================================" % title
-            print output
+            if title is None:
+                title = 'output'
+            sys.stdout.write("Missing expected lines from %s:\n" % title)
+            for line in missing:
+                sys.stdout.write('    ' + repr(line) + '\n')
+            sys.stdout.write(self.banner(title + ' '))
+            sys.stdout.write(output)
             self.fail_test()
+
+    def must_contain_any_line(self, output, lines, title=None, find=None):
+        """Ensures that the specified output string (first argument)
+        contains at least one of the specified lines (second argument).
+
+        An optional third argument can be used to describe the type
+        of output being searched, and only shows up in failure output.
+
+        An optional fourth argument can be used to supply a different
+        function, of the form "find(line, output), to use when searching
+        for lines in the output.
+        """
+        if find is None:
+            find = lambda o, l: string.find(o, l) != -1
+        for line in lines:
+            if find(output, line):
+                return
+
+        if title is None:
+            title = 'output'
+        sys.stdout.write("Missing any expected line from %s:\n" % title)
+        for line in lines:
+            sys.stdout.write('    ' + repr(line) + '\n')
+        sys.stdout.write(self.banner(title + ' '))
+        sys.stdout.write(output)
+        self.fail_test()
+
+    def must_contain_lines(self, lines, output, title=None):
+        # Deprecated; retain for backwards compatibility.
+        return self.must_contain_all_lines(output, lines, title)
 
     def must_exist(self, *files):
         """Ensures that the specified file(s) must exist.  An individual
@@ -348,18 +395,36 @@ class TestCommon(TestCmd):
             self.diff(expect, file_contents, 'contents ')
             raise
 
-    def must_not_contain_lines(self, lines, output=None, title=None):
-        if title is None:
-            title = 'output'
+    def must_not_contain_any_line(self, output, lines, title=None, find=None):
+        """Ensures that the specified output string (first argument)
+        does not contain any of the specified lines (second argument).
 
-        unexpected = filter(lambda l, o=output: string.find(o, l) != -1, lines)
+        An optional third argument can be used to describe the type
+        of output being searched, and only shows up in failure output.
+
+        An optional fourth argument can be used to supply a different
+        function, of the form "find(line, output), to use when searching
+        for lines in the output.
+        """
+        if find is None:
+            find = lambda o, l: string.find(o, l) != -1
+        unexpected = []
+        for line in lines:
+            if find(output, line):
+                unexpected.append(line)
 
         if unexpected:
-            print "Unexpected lines in %s:" % title
-            print string.join(unexpected, '\n')
-            print "%s ============================================================" % title
-            print output
+            if title is None:
+                title = 'output'
+            sys.stdout.write("Unexpected lines in %s:\n" % title)
+            for line in unexpected:
+                sys.stdout.write('    ' + repr(line) + '\n')
+            sys.stdout.write(self.banner(title + ' '))
+            sys.stdout.write(output)
             self.fail_test()
+
+    def must_not_contain_lines(self, lines, output, title=None):
+        return self.must_not_contain_any_line(output, lines, title)
 
     def must_not_exist(self, *files):
         """Ensures that the specified file(s) must not exist.
@@ -456,6 +521,8 @@ class TestCommon(TestCmd):
                 print self.stderr()
             except IndexError:
                 pass
+            cmd_args = self.command_args(program, interpreter, arguments)
+            sys.stderr.write('Exception trying to execute: %s\n' % cmd_args)
             raise e
 
     def finish(self, popen, stdout = None, stderr = '', status = 0, **kw):
@@ -553,3 +620,9 @@ class TestCommon(TestCmd):
             # We're under the development directory for this change,
             # so this is an Aegis invocation; pass the test (exit 0).
             self.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

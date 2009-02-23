@@ -30,7 +30,6 @@ if it can't find qmtest on the $PATH.
 """
 
 import os
-import os.path
 import re
 import string
 
@@ -92,7 +91,8 @@ NO RESULT from the following test:
 """ % locals()
 
 expect_stderr = """\
-Warning:  qmtest not found on $PATH, assuming --noqmtest option.
+Warning:  found neither qmtest nor qmtest.py on $PATH;
+\tassuming --noqmtest option.
 FAILING TEST STDERR
 NO RESULT TEST STDERR
 PASSING TEST STDERR
@@ -110,3 +110,9 @@ test.run(arguments = string.join(testlist),
          stderr = expect_stderr)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

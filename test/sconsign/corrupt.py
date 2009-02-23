@@ -28,7 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test that we get proper warnings when .sconsign* files are corrupt.
 """
 
-import os
 import TestSCons
 import TestCmd
 import cPickle
@@ -98,3 +97,9 @@ test.run(chdir='work2', arguments='.', stderr=stderr, stdout=stdout)
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

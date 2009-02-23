@@ -24,9 +24,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import string
-import sys
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -149,3 +146,9 @@ bar.SharedLibrary(target = 'bar/bar', source = 'bar.f90')
     test.must_match('wrapper.out', "wrapper.py\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

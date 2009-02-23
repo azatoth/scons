@@ -29,7 +29,6 @@ Look if qt is installed, and try out all builders.
 """
 
 import os
-import re
 import string
 import sys
 
@@ -63,7 +62,7 @@ env = Environment(tools=['default','qt'],
                   ENV={'PATH':ENV_PATH,
                        'PATHEXT':os.environ.get('PATHEXT'),
                        'HOME':os.getcwd(),
-                       'SYSTEMROOT':ENV.get('SYSTEMROOT')},
+                       'SystemRoot':ENV.get('SystemRoot')},
                        # moc / uic want to write stuff in ~/.qt
                   CXXFILESUFFIX=".cpp")
 
@@ -212,3 +211,9 @@ test.fail_test(string.find(test.stderr(), expect1) == -1 and
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

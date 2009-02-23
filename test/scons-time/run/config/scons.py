@@ -28,7 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Verify specifying an alternate SCons through a config file.
 """
 
-import os
 
 import TestSCons_time
 
@@ -63,3 +62,9 @@ test.must_match('foo-000-1.log', "my_scons.py: %s\n" % prof1)
 test.must_match('foo-000-2.log', "my_scons.py: %s\n" % prof2)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

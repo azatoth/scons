@@ -29,10 +29,6 @@ Test that the --debug=objects option works.
 """
 
 import TestSCons
-import sys
-import string
-import re
-import time
 
 test = TestSCons.TestSCons()
 
@@ -60,3 +56,9 @@ test.run(arguments = "--debug=objects")
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

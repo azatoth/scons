@@ -32,8 +32,6 @@ explicit suffix settings so that the test should work when run on any
 platform.
 """
 
-import string
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -153,3 +151,9 @@ test.must_match('fake_cl.log', """\
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

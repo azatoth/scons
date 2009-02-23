@@ -552,22 +552,24 @@ class Base(SCons.Node.Node):
         if __debug__: logInstanceCreation(self, 'Node.FS.Base')
         SCons.Node.Node.__init__(self)
 
-        self.name = name
-        self.suffix = SCons.Util.splitext(name)[1]
+        # Filenames and paths are probably reused and are intern'ed to
+        # save some memory.
+        self.name = intern(name)
+        self.suffix = intern(SCons.Util.splitext(name)[1])
         self.fs = fs
 
         assert directory, "A directory must be provided"
 
-        self.abspath = directory.entry_abspath(name)
-        self.labspath = directory.entry_labspath(name)
+        self.abspath = intern(directory.entry_abspath(name))
+        self.labspath = intern(directory.entry_labspath(name))
         if directory.path == '.':
-            self.path = name
+            self.path = intern(name)
         else:
-            self.path = directory.entry_path(name)
+            self.path = intern(directory.entry_path(name))
         if directory.tpath == '.':
-            self.tpath = name
+            self.tpath = intern(name)
         else:
-            self.tpath = directory.entry_tpath(name)
+            self.tpath = intern(directory.entry_tpath(name))
         self.path_elements = directory.path_elements + [self]
 
         self.dir = directory
@@ -611,7 +613,7 @@ class Base(SCons.Node.Node):
             return self._memo['_save_str']
         except KeyError:
             pass
-        result = self._get_str()
+        result = intern(self._get_str())
         self._memo['_save_str'] = result
         return result
 
@@ -1601,9 +1603,12 @@ class Dir(Base):
             if parent.exists():
                 break
             listDirs.append(parent)
-            parent = parent.up()
-        else:
-            raise SCons.Errors.StopError, parent.path
+            p = parent.up()
+            if p is None:
+                # Don't use while: - else: for this condition because
+                # if so, then parent is None and has no .path attribute.
+                raise SCons.Errors.StopError, parent.path
+            parent = p
         listDirs.reverse()
         for dirnode in listDirs:
             try:
@@ -1732,9 +1737,19 @@ class Dir(Base):
                 pass
             else:
                 for entry in map(_my_normcase, entries):
-                    d[entry] = 1
+                    d[entry] = True
             self.on_disk_entries = d
-        return d.has_key(_my_normcase(name))
+        if sys.platform == 'win32':
+            name = _my_normcase(name)
+            result = d.get(name)
+            if result is None:
+                # Belt-and-suspenders for Windows:  check directly for
+                # 8.3 file names that don't show up in os.listdir().
+                result = os.path.exists(self.abspath + os.sep + name)
+                d[name] = result
+            return result
+        else:
+            return d.has_key(name)
 
     memoizer_counters.append(SCons.Memoize.CountValue('srcdir_list'))
 
@@ -1946,7 +1961,7 @@ class Dir(Base):
             if not strings:
                 # Make sure the working directory (self) actually has
                 # entries for all Nodes in repositories or variant dirs.
-                map(selfEntry, node_names)
+                for name in node_names: selfEntry(name)
             if ondisk:
                 try:
                     disk_names = os.listdir(dir.abspath)
@@ -2547,6 +2562,22 @@ class File(Base):
         # created.
         self.dir._create()
 
+    def push_to_cache(self):
+        """Try to push the node into a cache
+        """
+        # This should get called before the Nodes' .built() method is
+        # called, which would clear the build signature if the file has
+        # a source scanner.
+        #
+        # We have to clear the local memoized values *before* we push
+        # the node to cache so that the memoization of the self.exists()
+        # return value doesn't interfere.
+        if self.nocache:
+            return
+        self.clear_memoized_values()
+        if self.exists():
+            self.get_build_env().get_CacheDir().push(self)
+
     def retrieve_from_cache(self):
         """Try to retrieve the node's content from a cache
 
@@ -2561,22 +2592,6 @@ class File(Base):
         if not self.is_derived():
             return None
         return self.get_build_env().get_CacheDir().retrieve(self)
-
-    def built(self):
-        """
-        Called just after this node is successfully built.
-        """
-        # Push this file out to cache before the superclass Node.built()
-        # method has a chance to clear the build signature, which it
-        # will do if this file has a source scanner.
-        #
-        # We have to clear the memoized values *before* we push it to
-        # cache so that the memoization of the self.exists() return
-        # value doesn't interfere.
-        self.clear_memoized_values()
-        if self.exists():
-            self.get_build_env().get_CacheDir().push(self)
-        SCons.Node.Node.built(self)
 
     def visited(self):
         if self.exists():
@@ -2992,8 +3007,9 @@ class FileFinder:
             fd = self.default_filedir
         dir, name = os.path.split(fd)
         drive, d = os.path.splitdrive(dir)
-        if d in ('/', os.sep):
-            return p.fs.get_root(drive).dir_on_disk(name)
+        if not name and d[:1] in ('/', os.sep):
+            #return p.fs.get_root(drive).dir_on_disk(name)
+            return p.fs.get_root(drive)
         if dir:
             p = self.filedir_lookup(p, dir)
             if not p:
@@ -3143,3 +3159,8 @@ def invalidate_node_memos(targets):
             if node:
                 node.clear_memoized_values()                        
 
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

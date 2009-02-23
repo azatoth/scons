@@ -24,14 +24,12 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import TestSCons
-import sys
-import os.path
 import os
-import TestCmd
-import time
+import sys
 
-test = TestSCons.TestSCons(match = TestCmd.match_re)
+import TestSCons
+
+test = TestSCons.TestSCons(match = TestSCons.match_re)
 
 if sys.platform != 'win32':
     msg = "Skipping test on non-Windows platform '%s'\n" % sys.platform
@@ -41,11 +39,9 @@ if sys.platform != 'win32':
 # Test the basics
 
 test.write('SConstruct',"""
-import os.path
 import os
 
-env = Environment(CCFLAGS = ' -nologo ',
-                  CPPPATH = '${TARGET.dir}',
+env = Environment(CPPPATH = '${TARGET.dir}',
                   MSVS_USE_MFC_DIRS = 1)
 Export('env')
 
@@ -59,8 +55,6 @@ SConscript(os.path.join('build2','SConscript'))
 test.subdir('src','build')
 
 test.write('src/SConscript',"""
-import os.path
-
 Import('env')
 
 local = env.Clone(WINDOWS_INSERT_DEF = 1)
@@ -75,7 +69,7 @@ local.TypeLibrary('bar.idl')
 
 local.SharedLibrary(target = 'bar.dll',
                     source = barsrc,
-                    PCH=local.PCH('BarPCH.cpp')[0],
+                    PCH=local.PCH('BarPCH.cpp', CXXFLAGS='/nologo')[0],
                     PCHSTOP = 'BarPCH.h',
                     register=1)
 """)
@@ -445,3 +439,9 @@ test.must_not_exist(['build2','bar.lib'])
 test.must_not_exist(['build2','bar.exp'])
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

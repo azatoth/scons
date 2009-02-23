@@ -33,9 +33,6 @@ on disk.)
 Issue 1363:  http://scons.tigris.org/issues/show_bug.cgi?id=1363
 """
 
-import string
-import sys
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -78,11 +75,14 @@ expect = """
 """
 
 test.run(arguments = '--tree=derived foo.h')
-if string.find(test.stdout(), expect) == -1:
-    sys.stdout.write('Did not find expected tree in the following output:\n')
-    sys.stdout.write(test.stdout())
-    test.fail_test()
+test.must_contain_all_lines(test.stdout(), [expect])
 
 test.up_to_date(arguments = 'foo.h')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

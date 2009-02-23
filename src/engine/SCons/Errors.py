@@ -125,6 +125,9 @@ class StopError(Exception):
 class EnvironmentError(Exception):
     pass
 
+class MSVCError(IOError):
+    pass
+
 class ExplicitExit(Exception):
     def __init__(self, node=None, status=None, *args):
         self.node = node
@@ -196,3 +199,9 @@ def convert_to_BuildError(status, exc_info=None):
     #import sys
     #sys.stderr.write("convert_to_BuildError: status %s => (errstr %s, status %s)"%(status,buildError.errstr, buildError.status))
     return buildError
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

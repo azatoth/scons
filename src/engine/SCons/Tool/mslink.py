@@ -44,6 +44,8 @@ import SCons.Tool.msvc
 import SCons.Tool.msvs
 import SCons.Util
 
+from MSCommon import merge_default_version, detect_msvs
+
 def pdbGenerator(env, target, source, for_signature):
     try:
         return ['/PDB:%s' % target[0].attributes.pdb, '/DEBUG']
@@ -188,9 +190,9 @@ def RegServerFunc(target, source, env):
 
 regServerAction = SCons.Action.Action("$REGSVRCOM", "$REGSVRCOMSTR")
 regServerCheck = SCons.Action.Action(RegServerFunc, None)
-shlibLinkAction = SCons.Action.Action('${TEMPFILE("$SHLINK $SHLINKFLAGS $_SHLINK_TARGETS $( $_LIBDIRFLAGS $) $_LIBFLAGS $_PDB $_SHLINK_SOURCES")}')
+shlibLinkAction = SCons.Action.Action('${TEMPFILE("$SHLINK $SHLINKFLAGS $_SHLINK_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_SHLINK_SOURCES")}')
 compositeShLinkAction = shlibLinkAction + regServerCheck
-ldmodLinkAction = SCons.Action.Action('${TEMPFILE("$LDMODULE $LDMODULEFLAGS $_LDMODULE_TARGETS $( $_LIBDIRFLAGS $) $_LIBFLAGS $_PDB $_LDMODULE_SOURCES")}')
+ldmodLinkAction = SCons.Action.Action('${TEMPFILE("$LDMODULE $LDMODULEFLAGS $_LDMODULE_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_LDMODULE_SOURCES")}')
 compositeLdmodAction = ldmodLinkAction + regServerCheck
 
 def generate(env):
@@ -207,7 +209,7 @@ def generate(env):
     env['LINK']        = 'link'
     env['LINKFLAGS']   = SCons.Util.CLVar('/nologo')
     env['_PDB'] = pdbGenerator
-    env['LINKCOM'] = '${TEMPFILE("$LINK $LINKFLAGS /OUT:$TARGET.windows $( $_LIBDIRFLAGS $) $_LIBFLAGS $_PDB $SOURCES.windows")}'
+    env['LINKCOM'] = '${TEMPFILE("$LINK $LINKFLAGS /OUT:$TARGET.windows $_LIBDIRFLAGS $_LIBFLAGS $_PDB $SOURCES.windows")}'
     env.Append(PROGEMITTER = [prog_emitter])
     env['LIBDIRPREFIX']='/LIBPATH:'
     env['LIBDIRSUFFIX']=''
@@ -236,21 +238,8 @@ def generate(env):
     env['REGSVRFLAGS'] = '/s '
     env['REGSVRCOM'] = '$REGSVR $REGSVRFLAGS ${TARGET.windows}'
 
-    try:
-        version = SCons.Tool.msvs.get_default_visualstudio_version(env)
-
-        if env.has_key('MSVS_IGNORE_IDE_PATHS') and env['MSVS_IGNORE_IDE_PATHS']:
-            include_path, lib_path, exe_path = SCons.Tool.msvc.get_msvc_default_paths(env,version)
-        else:
-            include_path, lib_path, exe_path = SCons.Tool.msvc.get_msvc_paths(env,version)
-
-        # since other tools can set these, we just make sure that the
-        # relevant stuff from MSVS is in there somewhere.
-        env.PrependENVPath('INCLUDE', include_path)
-        env.PrependENVPath('LIB', lib_path)
-        env.PrependENVPath('PATH', exe_path)
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
-        pass
+    # Set-up ms tools paths for default version
+    merge_default_version(env)
 
     # Loadable modules are on Windows the same as shared libraries, but they
     # are subject to different build parameters (LDMODULE* variables).
@@ -267,14 +256,10 @@ def generate(env):
     env['LDMODULECOM'] = compositeLdmodAction
 
 def exists(env):
-    platform = env.get('PLATFORM', '')
-    if SCons.Tool.msvs.is_msvs_installed():
-        # there's at least one version of MSVS installed.
-        return 1
-    elif platform in ('win32', 'cygwin'):
-        # Only explicitly search for a 'link' executable on Windows
-        # systems.  Some other systems (e.g. Ubuntu Linux) have an
-        # executable named 'link' and we don't want that to make SCons
-        # think Visual Studio is installed.
-        return env.Detect('link')
-    return None
+    return detect_msvs()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

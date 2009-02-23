@@ -30,10 +30,6 @@ dependencies (sources or Depends()) of a target.
 """
 
 import TestSCons
-import sys
-import string
-import re
-import time
 
 test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
@@ -87,7 +83,7 @@ dtree1 = """
 
 test.run(arguments = "--debug=dtree foo.xxx",
          stderr = stderr)
-test.fail_test(string.find(test.stdout(), dtree1) == -1)
+test.must_contain_all_lines(test.stdout(), [dtree1])
 
 dtree2 = """
 +-.
@@ -99,7 +95,7 @@ dtree2 = """
 """
 test.run(arguments = "--debug=dtree .",
          stderr = stderr)
-test.fail_test(string.find(test.stdout(), dtree2) == -1)
+test.must_contain_all_lines(test.stdout(), [dtree2])
 
 # Make sure we print the debug stuff even if there's a build failure.
 test.write('bar.h', """
@@ -113,6 +109,12 @@ THIS SHOULD CAUSE A BUILD FAILURE
 test.run(arguments = "--debug=dtree foo.xxx",
          status = 2,
          stderr = None)
-test.fail_test(string.find(test.stdout(), dtree1) == -1)
+test.must_contain_all_lines(test.stdout(), [dtree1])
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

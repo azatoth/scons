@@ -297,6 +297,11 @@ class Node:
         except AttributeError:
             pass
 
+    def push_to_cache(self):
+        """Try to push a node into a cache
+        """
+        pass
+
     def retrieve_from_cache(self):
         """Try to retrieve the node's content from a cache
 
@@ -1328,3 +1333,9 @@ class Walker:
 
 
 arg2nodes_lookups = []
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

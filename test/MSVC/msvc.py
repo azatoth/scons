@@ -24,8 +24,11 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import re
+"""
+Verify basic invocation of Microsoft Visual C/C++, including use
+of a precompiled header with the $CCFLAGS variable.
+"""
+
 import sys
 import time
 
@@ -44,7 +47,8 @@ test.write('SConstruct',"""
 import os
 env = Environment()
 env.Append(CPPPATH=os.environ.get('INCLUDE', ''),
-           LIBPATH=os.environ.get('LIB', ''))
+           LIBPATH=os.environ.get('LIB', ''),
+           CCFLAGS='/DPCHDEF')
 env['PDB'] = File('test.pdb')
 env['PCHSTOP'] = 'StdAfx.h'
 env['PCH'] = env.PCH('StdAfx.cpp')[0]
@@ -93,6 +97,9 @@ test.write('StdAfx.h', '''
 
 test.write('StdAfx.cpp', '''
 #include "StdAfx.h"
+#ifndef PCHDEF
+this line generates an error if PCHDEF is not defined!
+#endif
 ''')
 
 #  Visual Studio 8 has deprecated the /Yd option and prints warnings
@@ -172,8 +179,13 @@ start = time.time()
 test.run(arguments='slow.obj', stderr=None)
 slow = time.time() - start
 
-# using precompiled headers should be significantly faster
-assert fast < slow*0.8
+# using precompiled headers should be faster
+limit = slow*0.90
+if fast >= limit:
+    print "Using precompiled headers was not fast enough:"
+    print "slow.obj:  %.3fs" % slow
+    print "fast.obj:  %.3fs (expected less than %.3fs)" % (fast, limit)
+    test.fail_test()
 
 # Modifying resource.h should cause both the resource and precompiled header to be rebuilt:
 test.write('resource.h', '''
@@ -188,3 +200,9 @@ test.run(program=test.workpath('test.exe'), stdout='2003 test 2\n')
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

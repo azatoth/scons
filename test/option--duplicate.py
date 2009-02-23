@@ -29,10 +29,7 @@ SConscript settable option.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
-import sys
 import os
-import os.path
 import stat
 import TestSCons
 
@@ -118,3 +115,9 @@ SCons error: `nonsense' is not a valid duplication style.
 """)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

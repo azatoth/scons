@@ -478,8 +478,8 @@ expected_vcprojfile_8_0 = """\
 \t\t\t\tReBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
 \t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c &quot;Test.exe&quot;"
 \t\t\t\tOutput="Test.exe"
-\t\t\t\tPreprocessorDefinitions=""
-\t\t\t\tIncludeSearchPath=""
+\t\t\t\tPreprocessorDefinitions="DEF1;DEF2"
+\t\t\t\tIncludeSearchPath="inc1;inc2"
 \t\t\t\tForcedIncludes=""
 \t\t\t\tAssemblySearchPath=""
 \t\t\t\tForcedUsingAssemblies=""
@@ -538,7 +538,9 @@ expected_vcprojfile_8_0 = """\
 """
 
 SConscript_contents_8_0 = """\
-env=Environment(platform='win32', tools=['msvs'], MSVS_VERSION='8.0')
+env=Environment(platform='win32', tools=['msvs'], MSVS_VERSION='8.0',
+                CPPDEFINES=['DEF1', 'DEF2'],
+                CPPPATH=['inc1', 'inc2'])
 
 testsrc = ['test1.cpp', 'test2.cpp']
 testincs = ['sdk.h']
@@ -636,28 +638,15 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
         """Returns a full path to the executable (MSDEV or devenv)
         for the specified version of Visual Studio.
         """
-        common_msdev98_bin_msdev_com = ['Common', 'MSDev98', 'Bin', 'MSDEV.COM']
-        common7_ide_devenv_com       = ['Common7', 'IDE', 'devenv.com']
-        common7_ide_vcexpress_exe    = ['Common7', 'IDE', 'VCExpress.exe']
-        sub_paths = {
-            '6.0' : [
-                common_msdev98_bin_msdev_com,
-            ],
-            '7.0' : [
-                common7_ide_devenv_com,
-            ],
-            '7.1' : [
-                common7_ide_devenv_com,
-            ],
-            '8.0' : [
-                common7_ide_devenv_com,
-                common7_ide_vcexpress_exe,
-            ],
-        }
-        from SCons.Tool.msvs import get_msvs_install_dirs
-        vs_path = get_msvs_install_dirs(version)['VSINSTALLDIR']
-        for sp in sub_paths[version]:
-            p = apply(os.path.join, [vs_path] + sp)
-            if os.path.exists(p):
-                return p
-        return apply(os.path.join, [vs_path] + sub_paths[version][0])
+        from SCons.Tool.MSCommon import get_vs_by_version
+
+        msvs = get_vs_by_version(version)
+        if not msvs:
+            return None
+        return msvs.get_executable()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -30,7 +30,6 @@ Test a list of tests to run in a file specified with the -f option.
 
 import os.path
 
-import TestCmd
 import TestRuntest
 
 test_fail_py = os.path.join('test', 'fail.py')
@@ -75,3 +74,9 @@ expect = """qmtest run --output results.qmr --format none --result-stream="scons
 test.run(arguments = '-f t.txt', stdout = expect)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:
