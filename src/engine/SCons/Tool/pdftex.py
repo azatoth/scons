@@ -44,17 +44,18 @@ PDFTeXAction = None
 PDFLaTeXAction = None
 
 def PDFLaTeXAuxAction(target = None, source= None, env=None):
-    SCons.Tool.tex.InternalLaTeXAuxAction( PDFLaTeXAction, target, source, env )
+    result = SCons.Tool.tex.InternalLaTeXAuxAction( PDFLaTeXAction, target, source, env )
+    return result
 
 def PDFTeXLaTeXFunction(target = None, source= None, env=None):
     """A builder for TeX and LaTeX that scans the source file to
     decide the "flavor" of the source and then executes the appropriate
     program."""
     if SCons.Tool.tex.is_LaTeX(source):
-        PDFLaTeXAuxAction(target,source,env)
+        result = PDFLaTeXAuxAction(target,source,env)
     else:
-        PDFTeXAction(target,source,env)
-    return 0
+        result = PDFTeXAction(target,source,env)
+    return result
 
 PDFTeXLaTeXAction = None
 
@@ -71,24 +72,34 @@ def generate(env):
     global PDFTeXLaTeXAction
     if PDFTeXLaTeXAction is None:
         PDFTeXLaTeXAction = SCons.Action.Action(PDFTeXLaTeXFunction,
-                                                strfunction=None)
+                              strfunction=SCons.Tool.tex.TeXLaTeXStrFunction)
 
     import pdf
     pdf.generate(env)
 
     bld = env['BUILDERS']['PDF']
     bld.add_action('.tex', PDFTeXLaTeXAction)
-    bld.add_emitter('.tex', SCons.Tool.tex.tex_emitter)
+    bld.add_emitter('.tex', SCons.Tool.tex.tex_pdf_emitter)
+
+    # Add the epstopdf builder after the pdftex builder 
+    # so pdftex is the default for no source suffix
+    pdf.generate2(env)
 
     env['PDFTEX']      = 'pdftex'
-    env['PDFTEXFLAGS'] = SCons.Util.CLVar('')
+    env['PDFTEXFLAGS'] = SCons.Util.CLVar('-interaction=nonstopmode')
     env['PDFTEXCOM']   = 'cd ${TARGET.dir} && $PDFTEX $PDFTEXFLAGS ${SOURCE.file}'
 
     # Duplicate from latex.py.  If latex.py goes away, then this is still OK.
     env['PDFLATEX']      = 'pdflatex'
-    env['PDFLATEXFLAGS'] = SCons.Util.CLVar('')
+    env['PDFLATEXFLAGS'] = SCons.Util.CLVar('-interaction=nonstopmode')
     env['PDFLATEXCOM']   = 'cd ${TARGET.dir} && $PDFLATEX $PDFLATEXFLAGS ${SOURCE.file}'
     env['LATEXRETRIES']  = 3
 
 def exists(env):
     return env.Detect('pdftex')
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -67,7 +67,10 @@ bibfile = r"""
 """
 
 test.write('SConstruct', """\
-DVI( "foo.ltx" )
+import os
+env = Environment(tools = ['tex', 'latex'],
+                  ENV = {'PATH' : os.environ['PATH']})
+env.DVI( "foo.ltx" )
 """)
 
 test.write('foo.ltx', input_file)
@@ -92,3 +95,9 @@ test.must_not_exist('comment.cut')
 test.must_not_exist('foo.out')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

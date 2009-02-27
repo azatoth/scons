@@ -42,7 +42,8 @@ if not pdflatex:
     test.skip_test("Could not find pdflatex; skipping test(s).\n")
 
 test.write(['SConstruct'], """\
-env = Environment(tools=['pdflatex', 'tex'])
+import os
+env = Environment(tools=['pdftex', 'tex'],ENV = {'PATH' : os.environ['PATH']})
 env.PDF( 'bibtest.tex' )
 """)
 
@@ -120,3 +121,9 @@ if pdf_output_2 != pdf_output_3:
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

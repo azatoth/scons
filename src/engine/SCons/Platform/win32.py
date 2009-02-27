@@ -189,15 +189,16 @@ def escape(x):
     return '"' + x + '"'
 
 # Get the windows system directory name
-def get_system_root():
-    # A resonable default if we can't read the registry
-    try:
-        val = os.environ['SYSTEMROOT']
-    except KeyError:
-        val = "C:/WINDOWS"
-        pass
+_system_root = None
 
-    # First see if we can look in the registry...
+def get_system_root():
+    global _system_root
+    if _system_root is not None:
+        return _system_root
+
+    # A resonable default if we can't read the registry
+    val = os.environ.get('SystemRoot', "C:/WINDOWS")
+
     if SCons.Util.can_read_reg:
         try:
             # Look for Windows NT system root
@@ -214,6 +215,7 @@ def get_system_root():
                 raise
             except:
                 pass
+    _system_root = val
     return val
 
 # Get the location of the program files directory
@@ -267,9 +269,7 @@ def generate(env):
     # the env's PATH.  The problem with that is that it might not
     # contain an ENV and a PATH.
     if not cmd_interp:
-        systemroot = r'C:\Windows'
-        if os.environ.has_key('SYSTEMROOT'):
-            systemroot = os.environ['SYSTEMROOT']
+        systemroot = get_system_root()
         tmp_path = systemroot + os.pathsep + \
                    os.path.join(systemroot,'System32')
         tmp_pathext = '.com;.exe;.bat;.cmd'
@@ -291,16 +291,23 @@ def generate(env):
     # Import things from the external environment to the construction
     # environment's ENV.  This is a potential slippery slope, because we
     # *don't* want to make builds dependent on the user's environment by
-    # default.  We're doing this for SYSTEMROOT, though, because it's
+    # default.  We're doing this for SystemRoot, though, because it's
     # needed for anything that uses sockets, and seldom changes, and
-    # for SYSTEMDRIVE because it's related.
+    # for SystemDrive because it's related.
     #
     # Weigh the impact carefully before adding other variables to this list.
-    import_env = [ 'SYSTEMDRIVE', 'SYSTEMROOT', 'TEMP', 'TMP' ]
+    import_env = [ 'SystemDrive', 'SystemRoot', 'TEMP', 'TMP' ]
     for var in import_env:
         v = os.environ.get(var)
         if v:
             env['ENV'][var] = v
+
+    if not env['ENV'].has_key('COMSPEC'):
+        v = os.environ.get("COMSPEC")
+        if v:
+            env['ENV']['COMSPEC'] = v
+
+    env.AppendENVPath('PATH', get_system_root() + '\System32')
 
     env['ENV']['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'
     env['OBJPREFIX']      = ''
@@ -322,3 +329,9 @@ def generate(env):
     env['TEMPFILEPREFIX'] = '@'
     env['MAXLINELENGTH']  = 2048
     env['ESCAPE']         = escape
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

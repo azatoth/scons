@@ -135,6 +135,12 @@ except NameError:
     # Assign to True in this module namespace so it shows up in pydoc output.
     True = True
 
+try:
+    file
+except NameError:
+    # Pre-2.2 Python has no file() function.
+    __builtin__.file = open
+
 #
 try:
     zip
@@ -173,3 +179,9 @@ except NameError:
 #    object.__setattr__(str, 'lstrip', lstrip)
 #    object.__setattr__(str, 'rstrip', rstrip)
 #    object.__setattr__(str, 'strip', strip)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

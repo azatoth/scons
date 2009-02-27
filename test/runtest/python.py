@@ -29,8 +29,6 @@ Test that the -P option lets us specify a Python version to use.
 """
 
 import os.path
-import re
-import sys
 
 if not hasattr(os.path, 'pardir'):
     os.path.pardir = '..'
@@ -72,3 +70,9 @@ expect = r"""qmtest run --output results.qmr --format none --result-stream="scon
 test.run(arguments = ['-P', mypython, 'test'], stdout = expect)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

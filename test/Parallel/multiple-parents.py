@@ -55,9 +55,9 @@ test = TestSCons.TestSCons()
 #    h) Builds that are interrupted
 
 test.write('SConstruct', """
-opts = Options()
-opts.Add( BoolOption('interrupt', 'Interrupt the build.', 0 ) )
-optEnv = Environment(options=opts)
+vars = Variables()
+vars.Add( BoolVariable('interrupt', 'Interrupt the build.', 0 ) )
+varEnv = Environment(variables=vars)
 
 def fail_action(target = None, source = None, env = None):
     return 2
@@ -93,7 +93,7 @@ prev_prereq = prereq0
 prev_ignore = ignore0
 prev_igreq  = igreq0
 
-if optEnv['interrupt']:
+if varEnv['interrupt']:
     prev_level = prev_level + interrupt
 
 for i in range(1,20):
@@ -143,8 +143,9 @@ Default(all)
 
 re_error = """\
 (scons: \\*\\*\\* \\[failed\\d+] Error 2\\n)|\
-(scons: \\*\\*\\* Source `MissingSrc' not found, needed by target `missing\\d+'\\.(  Stop\\.)?\\n)|\
-(scons: \\*\\*\\* \\[\\w+] Build interrupted\.\\n)\
+(scons: \\*\\*\\* \\[missing\\d+] Source `MissingSrc' not found, needed by target `missing\\d+'\\.(  Stop\\.)?\\n)|\
+(scons: \\*\\*\\* \\[\\w+] Build interrupted\.\\n)|\
+(scons: Build interrupted\.\\n)\
 """
 
 re_errors = "(" + re_error + ")+"
@@ -240,3 +241,9 @@ for i in range(5):
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -24,7 +24,7 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import sys, string
+import sys
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -38,8 +38,8 @@ print env.subst('$SHCXXCOM')
 print env.subst('$SHCXXCOMSTR')
 """)
 test.run(arguments = '.')
-test.fail_test(string.find(test.stdout(), "-xyz") != -1)
-test.fail_test(string.find(test.stdout(), "-abc") == -1)
+test.must_not_contain_any_line(test.stdout(), ["-xyz"])
+test.must_contain_all_lines(test.stdout(), ["-abc"])
 
 
 # Test passing CFLAGS to C compiler by actually compiling programs
@@ -111,3 +111,9 @@ test.run(program = test.workpath('foo'), stdout = "prog.c:  BAR\n")
 test.run(program = test.workpath('bar'), stdout = "prog.c:  BAR\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

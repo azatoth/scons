@@ -34,8 +34,9 @@ selection method.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import base64
-import md5
-import os.path
+import hashlib
+import ntpath
+import os
 import pickle
 import re
 import string
@@ -47,6 +48,8 @@ import SCons.Platform.win32
 import SCons.Script.SConscript
 import SCons.Util
 import SCons.Warnings
+
+from MSCommon import detect_msvs, merge_default_version
 
 ##############################################################################
 # Below here are the classes and functions for generation of
@@ -79,7 +82,14 @@ def _generateGUID(slnfile, name):
     based on the MD5 signatures of the sln filename plus the name of
     the project.  It basically just needs to be unique, and not
     change with each invocation."""
-    solution = _hexdigest(md5.new(str(slnfile)+str(name)).digest()).upper()
+    m = hashlib.md5()
+    # Normalize the slnfile path to a Windows path (\ separators) so
+    # the generated file has a consistent GUID even if we generate
+    # it on a non-Windows platform.
+    m.update(ntpath.normpath(str(slnfile)) + str(name))
+    # TODO(1.5)
+    #solution = m.hexdigest().upper()
+    solution = string.upper(_hexdigest(m.digest()))
     # convert most of the signature to GUID form (discard the rest)
     solution = "{" + solution[:8] + "-" + solution[8:12] + "-" + solution[12:16] + "-" + solution[16:20] + "-" + solution[20:32] + "}"
     return solution
@@ -295,7 +305,9 @@ class _DSPGenerator:
                         self.sources[t[0]].append(self.env[t[1]])
 
         for n in sourcenames:
-            self.sources[n].sort(lambda a, b: cmp(a.lower(), b.lower()))
+            # TODO(1.5):
+            #self.sources[n].sort(lambda a, b: cmp(a.lower(), b.lower()))
+            self.sources[n].sort(lambda a, b: cmp(string.lower(a), string.lower(b)))
 
         def AddConfig(self, variant, buildtarget, outdir, runfile, cmdargs, dspfile=dspfile):
             config = Config()
@@ -394,7 +406,9 @@ class _GenerateV6DSP(_DSPGenerator):
             for base in ("BASE ",""):
                 self.file.write('# PROP %sUse_MFC 0\n'
                                 '# PROP %sUse_Debug_Libraries ' % (base, base))
-                if kind.lower().find('debug') < 0:
+                # TODO(1.5):
+                #if kind.lower().find('debug') < 0:
+                if string.find(string.lower(kind), 'debug') < 0:
                     self.file.write('0\n')
                 else:
                     self.file.write('1\n')
@@ -445,13 +459,17 @@ class _GenerateV6DSP(_DSPGenerator):
                       'Other Files': ''}
 
         cats = categories.keys()
-        cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
+        # TODO(1.5):
+        #cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
+        cats.sort(lambda a, b: cmp(string.lower(a), string.lower(b)))
         for kind in cats:
             if not self.sources[kind]:
                 continue # skip empty groups
 
             self.file.write('# Begin Group "' + kind + '"\n\n')
-            typelist = categories[kind].replace('|',';')
+            # TODO(1.5)
+            #typelist = categories[kind].replace('|', ';')
+            typelist = string.replace(categories[kind], '|', ';')
             self.file.write('# PROP Default_Filter "' + typelist + '"\n')
 
             for file in self.sources[kind]:
@@ -474,7 +492,9 @@ class _GenerateV6DSP(_DSPGenerator):
 
         line = dspfile.readline()
         while line:
-            if line.find("# End Project") > -1:
+            # TODO(1.5):
+            #if line.find("# End Project") > -1:
+            if string.find(line, "# End Project") > -1:
                 break
             line = dspfile.readline()
 
@@ -564,7 +584,7 @@ V8DSPHeader = """\
 
 V8DSPConfiguration = """\
 \t\t<Configuration
-\t\t\tName="%(variant)s|Win32"
+\t\t\tName="%(variant)s|%(platform)s"
 \t\t\tConfigurationType="0"
 \t\t\tUseOfMFC="0"
 \t\t\tATLMinimizesCRunTimeLibraryUsage="false"
@@ -575,8 +595,8 @@ V8DSPConfiguration = """\
 \t\t\t\tReBuildCommandLine="%(rebuildcmd)s"
 \t\t\t\tCleanCommandLine="%(cleancmd)s"
 \t\t\t\tOutput="%(runfile)s"
-\t\t\t\tPreprocessorDefinitions=""
-\t\t\t\tIncludeSearchPath=""
+\t\t\t\tPreprocessorDefinitions="%(preprocdefs)s"
+\t\t\t\tIncludeSearchPath="%(includepath)s"
 \t\t\t\tForcedIncludes=""
 \t\t\t\tAssemblySearchPath=""
 \t\t\t\tForcedUsingAssemblies=""
@@ -666,6 +686,12 @@ class _GenerateV7DSP(_DSPGenerator):
             rebuildcmd  = xmlify(starting + self.env.subst('$MSVSREBUILDCOM', 1) + cmdargs)
             cleancmd    = xmlify(starting + self.env.subst('$MSVSCLEANCOM', 1) + cmdargs)
 
+            # TODO(1.5)
+            #preprocdefs = xmlify(';'.join(self.env.get('CPPDEFINES', [])))
+            #includepath = xmlify(';'.join(self.env.get('CPPPATH', [])))
+            preprocdefs = xmlify(string.join(self.env.get('CPPDEFINES', []), ';'))
+            includepath = xmlify(string.join(self.env.get('CPPPATH', []), ';'))
+
             if not env_has_buildtarget:
                 del self.env['MSVSBUILDTARGET']
 
@@ -692,7 +718,9 @@ class _GenerateV7DSP(_DSPGenerator):
 
     def printSources(self, hierarchy, commonprefix):
         sorteditems = hierarchy.items()
-        sorteditems.sort(lambda a, b: cmp(a[0].lower(), b[0].lower()))
+        # TODO(1.5):
+        #sorteditems.sort(lambda a, b: cmp(a[0].lower(), b[0].lower()))
+        sorteditems.sort(lambda a, b: cmp(string.lower(a[0]), string.lower(b[0])))
 
         # First folders, then files
         for key, value in sorteditems:
@@ -723,7 +751,9 @@ class _GenerateV7DSP(_DSPGenerator):
         self.file.write('\t<Files>\n')
 
         cats = categories.keys()
-        cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
+        # TODO(1.5)
+        #cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
+        cats.sort(lambda a, b: cmp(string.lower(a), string.lower(b)))
         cats = filter(lambda k, s=self: s.sources[k], cats)
         for kind in cats:
             if len(cats) > 1:
@@ -772,7 +802,9 @@ class _GenerateV7DSP(_DSPGenerator):
 
         line = dspfile.readline()
         while line:
-            if line.find('<!-- SCons Data:') > -1:
+            # TODO(1.5)
+            #if line.find('<!-- SCons Data:') > -1:
+            if string.find(line, '<!-- SCons Data:') > -1:
                 break
             line = dspfile.readline()
 
@@ -1131,366 +1163,6 @@ def GenerateDSW(dswfile, source, env):
 # DSP/DSW/SLN/VCPROJ files.
 ##############################################################################
 
-def get_default_visualstudio_version(env):
-    """Returns the version set in the env, or the latest version
-    installed, if it can find it, or '6.0' if all else fails.  Also
-    updates the environment with what it found."""
-
-    versions = ['6.0']
-
-    if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
-        v = get_visualstudio_versions()
-        if v:
-            versions = v
-        env['MSVS'] = {'VERSIONS' : versions}
-    else:
-        versions = env['MSVS'].get('VERSIONS', versions)
-
-    if not env.has_key('MSVS_VERSION'):
-        env['MSVS_VERSION'] = versions[0] #use highest version by default
-
-    env['MSVS']['VERSION'] = env['MSVS_VERSION']
-
-    return env['MSVS_VERSION']
-
-def get_visualstudio_versions():
-    """
-    Get list of visualstudio versions from the Windows registry.
-    Returns a list of strings containing version numbers.  An empty list
-    is returned if we were unable to accees the register (for example,
-    we couldn't import the registry-access module) or the appropriate
-    registry keys weren't found.
-    """
-
-    if not SCons.Util.can_read_reg:
-        return []
-
-    HLM = SCons.Util.HKEY_LOCAL_MACHINE
-    KEYS = {
-        r'Software\Microsoft\VisualStudio'      : '',
-        r'Software\Microsoft\VCExpress'         : 'Exp',
-    }
-    L = []
-    for K, suite_suffix in KEYS.items():
-        try:
-            k = SCons.Util.RegOpenKeyEx(HLM, K)
-            i = 0
-            while 1:
-                try:
-                    p = SCons.Util.RegEnumKey(k,i)
-                except SCons.Util.RegError:
-                    break
-                i = i + 1
-                if not p[0] in '123456789' or p in L:
-                    continue
-                # Only add this version number if there is a valid
-                # registry structure (includes the "Setup" key),
-                # and at least some of the correct directories
-                # exist.  Sometimes VS uninstall leaves around
-                # some registry/filesystem turds that we don't
-                # want to trip over.  Also, some valid registry
-                # entries are MSDN entries, not MSVS ('7.1',
-                # notably), and we want to skip those too.
-                try:
-                    SCons.Util.RegOpenKeyEx(HLM, K + '\\' + p + '\\Setup')
-                except SCons.Util.RegError:
-                    continue
-
-                id = []
-                idk = SCons.Util.RegOpenKeyEx(HLM, K + '\\' + p)
-                # This is not always here -- it only exists if the
-                # user installed into a non-standard location (at
-                # least in VS6 it works that way -- VS7 seems to
-                # always write it)
-                try:
-                    id = SCons.Util.RegQueryValueEx(idk, 'InstallDir')
-                except SCons.Util.RegError:
-                    pass
-
-                # If the InstallDir key doesn't exist,
-                # then we check the default locations.
-                # Note: The IDE's executable is not devenv.exe for VS8 Express.
-                if not id or not id[0]:
-                    files_dir = SCons.Platform.win32.get_program_files_dir()
-                    version_num, suite = msvs_parse_version(p)
-                    if version_num < 7.0:
-                        vs = r'Microsoft Visual Studio\Common\MSDev98'
-                    elif version_num < 8.0:
-                        vs = r'Microsoft Visual Studio .NET\Common7\IDE'
-                    else:
-                        vs = r'Microsoft Visual Studio 8\Common7\IDE'
-                    id = [ os.path.join(files_dir, vs) ]
-                if os.path.exists(id[0]):
-                    L.append(p + suite_suffix)
-        except SCons.Util.RegError:
-            pass
-
-    if not L:
-        return []
-
-    # This is a hack to get around the fact that certain Visual Studio
-    # patches place a "6.1" version in the registry, which does not have
-    # any of the keys we need to find include paths, install directories,
-    # etc.  Therefore we ignore it if it is there, since it throws all
-    # other logic off.
-    try:
-        L.remove("6.1")
-    except ValueError:
-        pass
-
-    L.sort()
-    L.reverse()
-
-    return L
-
-def get_default_visualstudio8_suite(env):
-    """
-    Returns the Visual Studio 2005 suite identifier set in the env, or the
-    highest suite installed.
-    """
-    if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
-        env['MSVS'] = {}
-
-    if env.has_key('MSVS_SUITE'):
-        suite = env['MSVS_SUITE'].upper()
-        suites = [suite]
-    else:
-        suite = 'EXPRESS'
-        suites = [suite]
-        if SCons.Util.can_read_reg:
-            suites = get_visualstudio8_suites()
-            if suites:
-                suite = suites[0] #use best suite by default
-
-    env['MSVS_SUITE'] = suite
-    env['MSVS']['SUITES'] = suites
-    env['MSVS']['SUITE'] = suite
-
-    return suite
-
-def get_visualstudio8_suites():
-    """
-    Returns a sorted list of all installed Visual Studio 2005 suites found
-    in the registry. The highest version should be the first entry in the list.
-    """
-
-    suites = []
-
-    # Detect Standard, Professional and Team edition
-    try:
-        idk = SCons.Util.RegOpenKeyEx(SCons.Util.HKEY_LOCAL_MACHINE,
-            r'Software\Microsoft\VisualStudio\8.0')
-        SCons.Util.RegQueryValueEx(idk, 'InstallDir')
-        editions = { 'PRO': r'Setup\VS\Pro' }       # ToDo: add standard and team editions
-        edition_name = 'STD'
-        for name, key_suffix in editions.items():
-            try:
-                idk = SCons.Util.RegOpenKeyEx(SCons.Util.HKEY_LOCAL_MACHINE,
-                    r'Software\Microsoft\VisualStudio\8.0' + '\\' + key_suffix )
-                edition_name = name
-            except SCons.Util.RegError:
-                pass
-            suites.append(edition_name)
-    except SCons.Util.RegError:
-        pass
-
-    # Detect Express edition
-    try:
-        idk = SCons.Util.RegOpenKeyEx(SCons.Util.HKEY_LOCAL_MACHINE,
-            r'Software\Microsoft\VCExpress\8.0')
-        SCons.Util.RegQueryValueEx(idk, 'InstallDir')
-        suites.append('EXPRESS')
-    except SCons.Util.RegError:
-        pass
-
-    return suites
-
-def is_msvs_installed():
-    """
-    Check the registry for an installed visual studio.
-    """
-    try:
-        v = SCons.Tool.msvs.get_visualstudio_versions()
-        return v
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
-        return 0
-
-def get_msvs_install_dirs(version = None, vs8suite = None):
-    """
-    Get installed locations for various msvc-related products, like the .NET SDK
-    and the Platform SDK.
-    """
-
-    if not SCons.Util.can_read_reg:
-        return {}
-
-    if not version:
-        versions = get_visualstudio_versions()
-        if versions:
-            version = versions[0] #use highest version by default
-        else:
-            return {}
-
-    version_num, suite = msvs_parse_version(version)
-
-    K = 'Software\\Microsoft\\VisualStudio\\' + str(version_num)
-    if (version_num >= 8.0):
-        if vs8suite == None:
-            # We've been given no guidance about which Visual Studio 8
-            # suite to use, so attempt to autodetect.
-            suites = get_visualstudio8_suites()
-            if suites:
-                vs8suite = suites[0]
-
-        if vs8suite == 'EXPRESS':
-            K = 'Software\\Microsoft\\VCExpress\\' + str(version_num)
-
-    # vc++ install dir
-    rv = {}
-    if (version_num < 7.0):
-        key = K + r'\Setup\Microsoft Visual C++\ProductDir'
-    else:
-        key = K + r'\Setup\VC\ProductDir'
-    try:
-        (rv['VCINSTALLDIR'], t) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, key)
-    except SCons.Util.RegError:
-        pass
-
-    # visual studio install dir
-    if (version_num < 7.0):
-        try:
-            (rv['VSINSTALLDIR'], t) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,
-                                                             K + r'\Setup\Microsoft Visual Studio\ProductDir')
-        except SCons.Util.RegError:
-            pass
-
-        if not rv.has_key('VSINSTALLDIR') or not rv['VSINSTALLDIR']:
-            if rv.has_key('VCINSTALLDIR') and rv['VCINSTALLDIR']:
-                rv['VSINSTALLDIR'] = os.path.dirname(rv['VCINSTALLDIR'])
-            else:
-                rv['VSINSTALLDIR'] = os.path.join(SCons.Platform.win32.get_program_files_dir(),'Microsoft Visual Studio')
-    else:
-        try:
-            (rv['VSINSTALLDIR'], t) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,
-                                                             K + r'\Setup\VS\ProductDir')
-        except SCons.Util.RegError:
-            pass
-
-    # .NET framework install dir
-    try:
-        (rv['FRAMEWORKDIR'], t) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,
-            r'Software\Microsoft\.NETFramework\InstallRoot')
-    except SCons.Util.RegError:
-        pass
-
-    if rv.has_key('FRAMEWORKDIR'):
-        # try and enumerate the installed versions of the .NET framework.
-        contents = os.listdir(rv['FRAMEWORKDIR'])
-        l = re.compile('v[0-9]+.*')
-        installed_framework_versions = filter(lambda e, l=l: l.match(e), contents)
-
-        def versrt(a,b):
-            # since version numbers aren't really floats...
-            aa = a[1:]
-            bb = b[1:]
-            aal = string.split(aa, '.')
-            bbl = string.split(bb, '.')
-            # sequence comparison in python is lexicographical
-            # which is exactly what we want.
-            # Note we sort backwards so the highest version is first.
-            return cmp(bbl,aal)
-
-        installed_framework_versions.sort(versrt)
-
-        rv['FRAMEWORKVERSIONS'] = installed_framework_versions
-
-        # TODO: allow a specific framework version to be set
-
-        # Choose a default framework version based on the Visual
-        # Studio version.
-        DefaultFrameworkVersionMap = {
-            '7.0'   : 'v1.0',
-            '7.1'   : 'v1.1',
-            '8.0'   : 'v2.0',
-            # TODO: Does .NET 3.0 need to be worked into here somewhere?
-        }
-        try:
-            default_framework_version = DefaultFrameworkVersionMap[version[:3]]
-        except (KeyError, TypeError):
-            pass
-        else:
-            # Look for the first installed directory in FRAMEWORKDIR that
-            # begins with the framework version string that's appropriate
-            # for the Visual Studio version we're using.
-            for v in installed_framework_versions:
-                if v[:4] == default_framework_version:
-                    rv['FRAMEWORKVERSION'] = v
-                    break
-
-        # If the framework version couldn't be worked out by the previous
-        # code then fall back to using the latest version of the .NET
-        # framework
-        if not rv.has_key('FRAMEWORKVERSION'):
-            rv['FRAMEWORKVERSION'] = installed_framework_versions[0]
-
-    # .NET framework SDK install dir
-    if rv.has_key('FRAMEWORKVERSION'):
-        # The .NET SDK version used must match the .NET version used,
-        # so we deliberately don't fall back to other .NET framework SDK
-        # versions that might be present.
-        ver = rv['FRAMEWORKVERSION'][:4]
-        key = r'Software\Microsoft\.NETFramework\sdkInstallRoot' + ver
-        try:
-            (rv['FRAMEWORKSDKDIR'], t) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,
-                key)
-        except SCons.Util.RegError:
-            pass
-
-    # MS Platform SDK dir
-    try:
-        (rv['PLATFORMSDKDIR'], t) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,
-            r'Software\Microsoft\MicrosoftSDK\Directories\Install Dir')
-    except SCons.Util.RegError:
-        pass
-
-    if rv.has_key('PLATFORMSDKDIR'):
-        # if we have a platform SDK, try and get some info on it.
-        vers = {}
-        try:
-            loc = r'Software\Microsoft\MicrosoftSDK\InstalledSDKs'
-            k = SCons.Util.RegOpenKeyEx(SCons.Util.HKEY_LOCAL_MACHINE,loc)
-            i = 0
-            while 1:
-                try:
-                    key = SCons.Util.RegEnumKey(k,i)
-                    sdk = SCons.Util.RegOpenKeyEx(k,key)
-                    j = 0
-                    name = ''
-                    date = ''
-                    version = ''
-                    while 1:
-                        try:
-                            (vk,vv,t) = SCons.Util.RegEnumValue(sdk,j)
-                            if vk.lower() == 'keyword':
-                                name = vv
-                            if vk.lower() == 'propagation_date':
-                                date = vv
-                            if vk.lower() == 'version':
-                                version = vv
-                            j = j + 1
-                        except SCons.Util.RegError:
-                            break
-                    if name:
-                        vers[name] = (date, version)
-                    i = i + 1
-                except SCons.Util.RegError:
-                    break
-            rv['PLATFORMSDK_MODULES'] = vers
-        except SCons.Util.RegError:
-            pass
-
-    return rv
-
 def GetMSVSProjectSuffix(target, source, env, for_signature):
      return env['MSVS']['PROJECTSUFFIX']
 
@@ -1734,17 +1406,8 @@ def generate(env):
     env['MSVSCLEANCOM'] = '$MSVSSCONSCOM -c "$MSVSBUILDTARGET"'
     env['MSVSENCODING'] = 'Windows-1252'
 
-    try:
-        version = get_default_visualstudio_version(env)
-        # keep a record of some of the MSVS info so the user can use it.
-        dirs = get_msvs_install_dirs(version)
-        env['MSVS'].update(dirs)
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
-        # we don't care if we can't do this -- if we can't, it's
-        # because we don't have access to the registry, or because the
-        # tools aren't installed.  In either case, the user will have to
-        # find them on their own.
-        pass
+    # Set-up ms tools paths for default version
+    merge_default_version(env)
 
     version_num, suite = msvs_parse_version(env['MSVS_VERSION'])
     if (version_num < 7.0):
@@ -1761,26 +1424,10 @@ def generate(env):
     env['SCONS_HOME'] = os.environ.get('SCONS_HOME')
 
 def exists(env):
-    if not env['PLATFORM'] in ('win32', 'cygwin'):
-        return 0
+    return detect_msvs()
 
-    try:
-        v = SCons.Tool.msvs.get_visualstudio_versions()
-    except (SCons.Util.RegError, SCons.Errors.InternalError):
-        pass
-
-    if not v:
-        version_num = 6.0
-        if env.has_key('MSVS_VERSION'):
-            version_num, suite = msvs_parse_version(env['MSVS_VERSION'])
-        if version_num >= 7.0:
-            # The executable is 'devenv' in Visual Studio Pro,
-            # Team System and others.  Express Editions have different
-            # executable names.  Right now we're only going to worry
-            # about Visual C++ 2005 Express Edition.
-            return env.Detect('devenv') or env.Detect('vcexpress')
-        else:
-            return env.Detect('msdev')
-    else:
-        # there's at least one version of MSVS installed.
-        return 1
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

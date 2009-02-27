@@ -98,8 +98,6 @@ try:
 except ImportError:
     pass
 
-from SCons.Debug import Trace
-
 class SConsInteractiveCmd(cmd.Cmd):
     """\
     build [TARGETS]         Build the specified TARGETS and their dependencies.
@@ -163,6 +161,7 @@ class SConsInteractiveCmd(cmd.Cmd):
         build [TARGETS]         Build the specified TARGETS and their
                                 dependencies.  'b' is a synonym.
         """
+        import SCons.Node
         import SCons.SConsign
         import SCons.Script.Main
 
@@ -260,6 +259,12 @@ class SConsInteractiveCmd(cmd.Cmd):
             node.set_state(SCons.Node.no_state)
             node.implicit = None
 
+            # Debug:  Uncomment to verify that all Taskmaster reference
+            # counts have been reset to zero.
+            #if node.ref_count != 0:
+            #    from SCons.Debug import Trace
+            #    Trace('node %s, ref_count %s !!!\n' % (node, node.ref_count))
+
         SCons.SConsign.Reset()
         SCons.Script.Main.progress_display("scons: done clearing node information.")
 
@@ -349,7 +354,11 @@ class SConsInteractiveCmd(cmd.Cmd):
         if not argv:
             argv = os.environ[self.shell_variable]
         try:
-            p = subprocess.Popen(argv)
+            # Per "[Python-Dev] subprocess insufficiently platform-independent?"
+            # http://mail.python.org/pipermail/python-dev/2008-August/081979.html "+
+            # Doing the right thing with an argument list currently
+            # requires different shell= values on Windows and Linux.
+            p = subprocess.Popen(argv, shell=(sys.platform=='win32'))
         except EnvironmentError, e:
             sys.stderr.write('scons: %s: %s\n' % (argv[0], e.strerror))
         else:
@@ -369,3 +378,9 @@ def interact(fs, parser, options, targets, target_top):
                             targets = targets,
                             target_top = target_top)
     c.cmdloop()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

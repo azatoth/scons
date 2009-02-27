@@ -31,8 +31,6 @@ be aware of the necessary created bibliography files.
 Test configuration contributed by Christopher Drexler.
 """
 
-import string
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -44,7 +42,8 @@ if not dvips or not bibtex:
     test.skip_test("Could not find dvips or bibtex; skipping test(s).\n")
 
 test.write('SConstruct', """\
-env = Environment(tools = ['tex', 'latex', 'dvips'])
+import os
+env = Environment(tools = ['tex', 'latex', 'dvips'],ENV = {'PATH' : os.environ['PATH']})
 env.PostScript('simple', 'simple.tex')
 """)
 
@@ -110,7 +109,7 @@ test.must_exist(test.workpath('simple.blg'))
 test.run(arguments = '-c .')
 
 x = "Could not remove 'simple.aux': No such file or directory"
-test.fail_test(string.find(test.stdout(), x) != -1)
+test.must_not_contain_any_line(test.stdout(), [x])
 
 test.must_not_exist(test.workpath('simple.aux'))
 test.must_not_exist(test.workpath('simple.bbl'))
@@ -208,3 +207,9 @@ test.write('d-toc.tex', r"""
 \listoftables
 \cleardoublepage
 """)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

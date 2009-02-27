@@ -40,9 +40,7 @@ test = TestSCons.TestSCons()
 
 
 
-as = test.detect('AS', 'as')
-
-if not as:
+if not test.detect('AS', 'as'):
     test.skip_test("as not found; skipping test\n")
 
 x86 = (sys.platform == 'win32' or string.find(sys.platform, 'linux') != -1)
@@ -182,3 +180,9 @@ test.unlink('wrapper.out')
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -341,7 +341,6 @@
       { 'BUILDERS': {'_InternalInstall': &lt;function InstallBuilderWrapper at 0x700000&gt;, 'Object': &lt;SCons.Builder.CompositeBuilder instance at 0x700000&gt;, 'PCH': &lt;SCons.Builder.BuilderBase instance at 0x700000&gt;, 'RES': &lt;SCons.Builder.BuilderBase instance at 0x700000&gt;, 'SharedObject': &lt;SCons.Builder.CompositeBuilder instance at 0x700000&gt;, 'StaticObject': &lt;SCons.Builder.CompositeBuilder instance at 0x700000&gt;, '_InternalInstallAs': &lt;function InstallAsBuilderWrapper at 0x700000&gt;},
         'CC': 'cl',
         'CCCOM': &lt;SCons.Action.FunctionAction instance at 0x700000&gt;,
-        'CCCOMFLAGS': '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS /c $SOURCES /Fo$TARGET $CCPCHFLAGS $CCPDBFLAGS',
         'CCFLAGS': ['/nologo'],
         'CCPCHFLAGS': ['${(PCH and "/Yu%s /Fp%s"%(PCHSTOP or "",File(PCH))) or ""}'],
         'CCPDBFLAGS': ['${(PDB and "/Z7") or ""}'],
@@ -371,7 +370,7 @@
                          '.spp',
                          '.SPP'],
         'CXX': '$CC',
-        'CXXCOM': '$CXX $CXXFLAGS $CCCOMFLAGS',
+        'CXXCOM': '$CXX /Fo$TARGET /c $SOURCES $CXXFLAGS $CCFLAGS $_CCCOMCOM',
         'CXXFILESUFFIX': '.cc',
         'CXXFLAGS': ['$CCFLAGS', '$(', '/TP', '$)'],
         'DSUFFIXES': ['.d'],
@@ -407,6 +406,7 @@
         'RC': 'rc',
         'RCCOM': &lt;SCons.Action.FunctionAction instance at 0x700000&gt;,
         'RCFLAGS': [],
+        'RCSUFFIXES': ['.rc', '.rc2'],
         'RDirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0x700000&gt;,
         'SCANNERS': [],
         'SHCC': '$CC',
@@ -414,7 +414,7 @@
         'SHCCFLAGS': ['$CCFLAGS'],
         'SHCFLAGS': ['$CFLAGS'],
         'SHCXX': '$CXX',
-        'SHCXXCOM': '$SHCXX $SHCXXFLAGS $CCCOMFLAGS',
+        'SHCXXCOM': '$SHCXX /Fo$TARGET /c $SOURCES $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM',
         'SHCXXFLAGS': ['$CXXFLAGS'],
         'SHELL': None,
         'SHLIBPREFIX': '',
@@ -426,6 +426,7 @@
         'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0x700000&gt;,
         'TEMPFILEPREFIX': '@',
         'TOOLS': ['msvc', 'install', 'install'],
+        '_CCCOMCOM': '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS $CCPCHFLAGS $CCPDBFLAGS',
         '_CPPDEFFLAGS': '${_defines(CPPDEFPREFIX, CPPDEFINES, CPPDEFSUFFIX, __env__)}',
         '_CPPINCFLAGS': '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
         '_LIBDIRFLAGS': '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)',
@@ -1095,7 +1096,7 @@
 
     <screen>
       % <userinput>scons -Q</userinput>
-      scons: *** Source `prog.c' not found, needed by target `prog.o'.  Stop.
+      scons: *** [prog.o] Source `prog.c' not found, needed by target `prog.o'.
     </screen>
 
     <para>
@@ -1113,12 +1114,12 @@
 
     <screen>
       % <userinput>scons -Q --debug=stacktrace</userinput>
-      scons: *** Source `prog.c' not found, needed by target `prog.o'.  Stop.
+      scons: *** [prog.o] Source `prog.c' not found, needed by target `prog.o'.
       scons: internal stack trace:
-        File "bootstrap/src/engine/SCons/Job.py", line 198, in start
-        File "bootstrap/src/engine/SCons/Script/Main.py", line 169, in prepare
-        File "bootstrap/src/engine/SCons/Taskmaster.py", line 184, in prepare
-        File "bootstrap/src/engine/SCons/Executor.py", line 171, in prepare
+        File "bootstrap/src/engine/SCons/Job.py", line 197, in start
+        File "bootstrap/src/engine/SCons/Script/Main.py", line 167, in prepare
+        File "bootstrap/src/engine/SCons/Taskmaster.py", line 188, in prepare
+        File "bootstrap/src/engine/SCons/Executor.py", line 175, in prepare
     </screen>
 
     <para>
@@ -1177,31 +1178,59 @@
       Taskmaster: Looking for a node to evaluate
       Taskmaster:     Considering node &lt;no_state   0   'prog'&gt; and its children:
       Taskmaster:        &lt;no_state   0   'prog.o'&gt;
-      Taskmaster:      adjusting ref count: &lt;pending    1   'prog'&gt;
+      Taskmaster:      adjusted ref count: &lt;pending    1   'prog'&gt;, child 'prog.o'
       Taskmaster:     Considering node &lt;no_state   0   'prog.o'&gt; and its children:
       Taskmaster:        &lt;no_state   0   'prog.c'&gt;
       Taskmaster:        &lt;no_state   0   'inc.h'&gt;
-      Taskmaster:      adjusting ref count: &lt;pending    1   'prog.o'&gt;
-      Taskmaster:      adjusting ref count: &lt;pending    2   'prog.o'&gt;
+      Taskmaster:      adjusted ref count: &lt;pending    1   'prog.o'&gt;, child 'prog.c'
+      Taskmaster:      adjusted ref count: &lt;pending    2   'prog.o'&gt;, child 'inc.h'
       Taskmaster:     Considering node &lt;no_state   0   'prog.c'&gt; and its children:
       Taskmaster: Evaluating &lt;pending    0   'prog.c'&gt;
+      
+      Task.make_ready_current(): node &lt;pending    0   'prog.c'&gt;
+      Task.prepare():      node &lt;up_to_date 0   'prog.c'&gt;
+      Task.executed_with_callbacks(): node &lt;up_to_date 0   'prog.c'&gt;
+      Task.postprocess():  node &lt;up_to_date 0   'prog.c'&gt;
+      Task.postprocess():  removing &lt;up_to_date 0   'prog.c'&gt;
+      Task.postprocess():  adjusted parent ref count &lt;pending    1   'prog.o'&gt;
       
       Taskmaster: Looking for a node to evaluate
       Taskmaster:     Considering node &lt;no_state   0   'inc.h'&gt; and its children:
       Taskmaster: Evaluating &lt;pending    0   'inc.h'&gt;
+      
+      Task.make_ready_current(): node &lt;pending    0   'inc.h'&gt;
+      Task.prepare():      node &lt;up_to_date 0   'inc.h'&gt;
+      Task.executed_with_callbacks(): node &lt;up_to_date 0   'inc.h'&gt;
+      Task.postprocess():  node &lt;up_to_date 0   'inc.h'&gt;
+      Task.postprocess():  removing &lt;up_to_date 0   'inc.h'&gt;
+      Task.postprocess():  adjusted parent ref count &lt;pending    0   'prog.o'&gt;
       
       Taskmaster: Looking for a node to evaluate
       Taskmaster:     Considering node &lt;pending    0   'prog.o'&gt; and its children:
       Taskmaster:        &lt;up_to_date 0   'prog.c'&gt;
       Taskmaster:        &lt;up_to_date 0   'inc.h'&gt;
       Taskmaster: Evaluating &lt;pending    0   'prog.o'&gt;
+      
+      Task.make_ready_current(): node &lt;pending    0   'prog.o'&gt;
+      Task.prepare():      node &lt;executing  0   'prog.o'&gt;
+      Task.execute():      node &lt;executing  0   'prog.o'&gt;
       cc -o prog.o -c -I. prog.c
+      Task.executed_with_callbacks(): node &lt;executing  0   'prog.o'&gt;
+      Task.postprocess():  node &lt;executed   0   'prog.o'&gt;
+      Task.postprocess():  removing &lt;executed   0   'prog.o'&gt;
+      Task.postprocess():  adjusted parent ref count &lt;pending    0   'prog'&gt;
       
       Taskmaster: Looking for a node to evaluate
       Taskmaster:     Considering node &lt;pending    0   'prog'&gt; and its children:
       Taskmaster:        &lt;executed   0   'prog.o'&gt;
       Taskmaster: Evaluating &lt;pending    0   'prog'&gt;
+      
+      Task.make_ready_current(): node &lt;pending    0   'prog'&gt;
+      Task.prepare():      node &lt;executing  0   'prog'&gt;
+      Task.execute():      node &lt;executing  0   'prog'&gt;
       cc -o prog prog.o
+      Task.executed_with_callbacks(): node &lt;executing  0   'prog'&gt;
+      Task.postprocess():  node &lt;executed   0   'prog'&gt;
       
       Taskmaster: Looking for a node to evaluate
       Taskmaster: No candidate anymore.

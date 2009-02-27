@@ -62,7 +62,9 @@ def shlib_generator(target, source, env, for_signature):
     if implib: cmd.append('-Wl,--out-implib,'+implib.get_string(for_signature))
 
     def_target = env.FindIxes(target, 'WINDOWSDEFPREFIX', 'WINDOWSDEFSUFFIX')
-    if def_target: cmd.append('-Wl,--output-def,'+def_target.get_string(for_signature))
+    insert_def = env.subst("$WINDOWS_INSERT_DEF")
+    if not insert_def in ['', '0', 0] and def_target: \
+        cmd.append('-Wl,--output-def,'+def_target.get_string(for_signature))
 
     return [cmd]
 
@@ -149,3 +151,9 @@ def generate(env):
 
 def exists(env):
     return find(env)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

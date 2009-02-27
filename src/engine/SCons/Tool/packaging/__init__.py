@@ -169,7 +169,9 @@ def Package(env, target=None, source=None, **kw):
         args,varargs,varkw,defaults=getargspec(packager.package)
         if defaults!=None:
             args=args[:-len(defaults)] # throw away arguments with default values
-        map(args.remove, 'env target source'.split())
+        args.remove('env')
+        args.remove('target')
+        args.remove('source')
         # now remove any args for which we have a value in kw.
         #args=[x for x in args if not kw.has_key(x)]
         args=filter(lambda x, kw=kw: not kw.has_key(x), args)
@@ -304,3 +306,9 @@ def stripinstallbuilder(target, source, env):
                 setattr(ss, 'PACKAGING_INSTALL_LOCATION', s.get_path())
 
     return (target, n_source)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

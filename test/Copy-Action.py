@@ -30,9 +30,8 @@ times and modes.
 """
 
 import os
-import os.path
-import sys
 import stat
+import sys
 
 import TestSCons
 
@@ -186,3 +185,9 @@ if errors:
     test.fail_test()
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

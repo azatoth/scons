@@ -89,7 +89,6 @@ import getopt
 import glob
 import os
 import os.path
-import popen2
 import re
 import stat
 import string
@@ -209,7 +208,11 @@ for o, a in opts:
     elif o in ['-P', '--python']:
         python = a
     elif o in ['--qmtest']:
-        qmtest = 'qmtest'
+        if sys.platform == 'win32':
+            # typically in c:/PythonXX/Scripts
+            qmtest = 'qmtest.py'
+        else:
+            qmtest = 'qmtest'
     elif o in ['-q', '--quiet']:
         printcommand = 0
     elif o in ['--sp']:
@@ -265,15 +268,23 @@ else:
                     return f
         return None
 
+# See if --qmtest or --noqmtest specified
 try:
     qmtest
 except NameError:
-    q = 'qmtest'
-    qmtest = whereis(q)
-    if qmtest:
-        qmtest = q
-    else:
-        sys.stderr.write('Warning:  %s not found on $PATH, assuming --noqmtest option.\n' % q)
+    # Neither specified; find it in path.
+    qmtest = None
+    for q in ['qmtest', 'qmtest.py']:
+        path = whereis(q)
+        if path:
+            # The name was found on $PATH; just execute the found name so
+            # we don't have to worry about paths containing white space.
+            qmtest = q
+            break
+    if not qmtest:
+        msg = ('Warning:  found neither qmtest nor qmtest.py on $PATH;\n' +
+               '\tassuming --noqmtest option.\n')
+        sys.stderr.write(msg)
         sys.stderr.flush()
 
 aegis = whereis('aegis')
@@ -345,25 +356,37 @@ class SystemExecutor(Base):
             sys.stdout.write("Unexpected exit status %d\n" % s)
 
 try:
-    popen2.Popen3
-except AttributeError:
-    class PopenExecutor(Base):
-        def execute(self):
-            (tochild, fromchild, childerr) = os.popen3(self.command_str)
-            tochild.close()
-            self.stderr = childerr.read()
-            self.stdout = fromchild.read()
-            fromchild.close()
-            self.status = childerr.close()
-            if not self.status:
-                self.status = 0
+    import subprocess
+except ImportError:
+    import popen2
+    try:
+        popen2.Popen3
+    except AttributeError:
+        class PopenExecutor(Base):
+            def execute(self):
+                (tochild, fromchild, childerr) = os.popen3(self.command_str)
+                tochild.close()
+                self.stderr = childerr.read()
+                self.stdout = fromchild.read()
+                fromchild.close()
+                self.status = childerr.close()
+                if not self.status:
+                    self.status = 0
+    else:
+        class PopenExecutor(Base):
+            def execute(self):
+                p = popen2.Popen3(self.command_str, 1)
+                p.tochild.close()
+                self.stdout = p.fromchild.read()
+                self.stderr = p.childerr.read()
+                self.status = p.wait()
 else:
     class PopenExecutor(Base):
         def execute(self):
-            p = popen2.Popen3(self.command_str, 1)
-            p.tochild.close()
-            self.stdout = p.fromchild.read()
-            self.stderr = p.childerr.read()
+            p = subprocess.Popen(self.command_str, shell=True)
+            p.stdin.close()
+            self.stdout = p.stdout.read()
+            self.stdout = p.stderr.read()
             self.status = p.wait()
 
 class Aegis(SystemExecutor):
@@ -779,3 +802,9 @@ elif len(no_result):
     sys.exit(2)
 else:
     sys.exit(0)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

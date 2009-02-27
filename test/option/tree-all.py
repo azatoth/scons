@@ -32,8 +32,6 @@ complete dependencies of a target.
 import TestSCons
 import sys
 import string
-import re
-import time
 
 test = TestSCons.TestSCons()
 
@@ -134,10 +132,7 @@ tree2 = """
 """ % locals()
 
 test.run(arguments = "--tree=all .")
-if string.find(test.stdout(), tree2) == -1:
-    sys.stdout.write('Did not find expected tree in the following output:\n')
-    sys.stdout.write(test.stdout())
-    test.fail_test()
+test.must_contain_all_lines(test.stdout(), [tree2])
 
 tree3 = """
 +-.
@@ -232,3 +227,9 @@ if string.count(test.stdout(), tree1) != 1:
     test.fail_test()
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

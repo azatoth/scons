@@ -394,7 +394,11 @@ if mswindows:
                                  STARTF_USESHOWWINDOW, CREATE_NEW_CONSOLE
         from win32event import WaitForSingleObject, INFINITE, WAIT_OBJECT_0
     else:
-        from _subprocess import *
+        # SCons:  don't die on Python versions that don't have _subprocess.
+        try:
+            from _subprocess import *
+        except ImportError:
+            pass
         class STARTUPINFO:
             dwFlags = 0
             hStdInput = None
@@ -1284,3 +1288,9 @@ if __name__ == "__main__":
         _demo_windows()
     else:
         _demo_posix()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -28,8 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test building Java applications when using Repositories.
 """
 
-import string
-
 import TestSCons
 
 python = TestSCons.python
@@ -275,8 +273,12 @@ public class Foo2 extends UnicastRemoteObject implements Hello {
 
 test.run(chdir = 'work1', options = opts, arguments = ".")
 
-test.fail_test(string.find(test.stdout(), ' src/Foo1.java src/Foo2.java') == -1)
-test.fail_test(string.find(test.stdout(), ' com.sub.foo.Foo1 com.sub.foo.Foo2') == -1)
+expect = [
+    ' src/Foo1.java src/Foo2.java',
+    ' com.sub.foo.Foo1 com.sub.foo.Foo2',
+]
+
+test.must_contain_all_lines(test.stdout(), expect)
 
 # XXX I'd rather run the resulting class files through the JVM here to
 # see that they were built from the proper work1 sources, but I don't
@@ -345,3 +347,9 @@ test.must_exist    (test.workpath('work3', 'outdir', 'com', 'sub', 'foo', 'Foo2_
 test.up_to_date(chdir = 'work3', options = opts, arguments = ".")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

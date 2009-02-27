@@ -29,9 +29,6 @@ Verify that --debug=explain correctly handles changes to actions
 that contain a list of function Actions.
 """
 
-import os.path
-import string
-import sys
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -98,3 +95,9 @@ ChangingCopy(["f2.out"], ["f2.in"])
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

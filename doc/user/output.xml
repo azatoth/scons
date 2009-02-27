@@ -256,7 +256,7 @@
     that &SCons; is configured to supply
     the right options to the compiler,
     or a developer may want to
-    cut-and-paste a comiloe command
+    cut-and-paste a compile command
     to add a few options
     for a custom test.
 
@@ -683,9 +683,9 @@
           scons: `.' is up to date.
           Build succeeded.
           % <userinput>scons -Q fail=1</userinput>
-          scons: *** Source `source' not found, needed by target `target'.  Stop.
+          scons: *** [target] Source `source' not found, needed by target `target'.
           FAILED!!!!
-          Failed building Source `source' not found, needed by target `target'.
+          Failed building target: Source `source' not found, needed by target `target'.
     </screen>
 
   </section>

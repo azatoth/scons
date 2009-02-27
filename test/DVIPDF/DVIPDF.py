@@ -24,10 +24,8 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import os.path
 import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -39,8 +37,10 @@ test = TestSCons.TestSCons()
 test.write('mytex.py', r"""
 import os
 import sys
-base_name = os.path.splitext(sys.argv[1])[0]
-infile = open(sys.argv[1], 'rb')
+import getopt
+cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:', [])
+base_name = os.path.splitext(arg[0])[0]
+infile = open(arg[0], 'rb')
 out_file = open(base_name+'.dvi', 'wb')
 for l in infile.readlines():
     if l[:4] != '#tex':
@@ -51,8 +51,10 @@ sys.exit(0)
 test.write('mylatex.py', r"""
 import os
 import sys
-base_name = os.path.splitext(sys.argv[1])[0]
-infile = open(sys.argv[1], 'rb')
+import getopt
+cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:', [])
+base_name = os.path.splitext(arg[0])[0]
+infile = open(arg[0], 'rb')
 out_file = open(base_name+'.dvi', 'wb')
 for l in infile.readlines():
     if l[:6] != '#latex':
@@ -63,8 +65,10 @@ sys.exit(0)
 test.write('mydvipdf.py', r"""
 import os
 import sys
-infile = open(sys.argv[1], 'rb')
-out_file = open(sys.argv[2], 'wb')
+import getopt
+cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:', [])
+infile = open(arg[0], 'rb')
+out_file = open(arg[1], 'wb')
 for l in infile.readlines():
     if l[:7] != '#dvipdf':
         out_file.write(l)
@@ -94,9 +98,9 @@ test.write('test2.tex', r"""This is a .tex test.
 
 test.run(arguments = '.', stderr = None)
 
-test.fail_test(test.read('test1.pdf') != "This is a .dvi test.\n")
+test.must_match('test1.pdf', "This is a .dvi test.\n")
 
-test.fail_test(test.read('test2.pdf') != "This is a .tex test.\n")
+test.must_match('test2.pdf', "This is a .tex test.\n")
 
 
 
@@ -139,20 +143,26 @@ This is the %s TeX file.
 
     test.run(arguments = 'foo.pdf', stderr = None)
 
-    test.fail_test(os.path.exists(test.workpath('wrapper.out')))
+    test.must_not_exist(test.workpath('wrapper.out'))
 
-    test.fail_test(not os.path.exists(test.workpath('foo.pdf')))
+    test.must_exist(test.workpath('foo.pdf'))
 
     test.run(arguments = 'xxx.pdf', stderr = None)
 
-    test.fail_test(os.path.exists(test.workpath('wrapper.out')))
+    test.must_not_exist(test.workpath('wrapper.out'))
 
-    test.fail_test(os.path.exists(test.workpath('xxx.dvi')))
+    test.must_not_exist(test.workpath('xxx.dvi'))
 
     test.run(arguments = 'bar.pdf', stderr = None)
 
-    test.fail_test(test.read('wrapper.out') != "dvipdf bar.dvi bar.pdf\n")
+    test.must_match('wrapper.out', "dvipdf bar.dvi bar.pdf\n")
 
-    test.fail_test(not os.path.exists(test.workpath('bar.pdf')))
+    test.must_exist(test.workpath('bar.pdf'))
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

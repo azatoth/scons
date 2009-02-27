@@ -23,8 +23,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import sys
 import unittest
 
@@ -121,3 +119,9 @@ if __name__ == "__main__":
     suite = unittest.makeSuite(BoolVariableTestCase, 'test_')
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

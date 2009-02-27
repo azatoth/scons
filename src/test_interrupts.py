@@ -83,7 +83,7 @@ else:
 tryexc_pat = re.compile(
 r'^(?P<try_or_except>(?P<indent> *)(try|except)( [^\n]*)?:.*)',re.MULTILINE)
 keyboardint_pat = re.compile(r' *except +([^,],)*KeyboardInterrupt([ ,][^\n]*)?:[^\n]*')
-exceptall_pat   = re.compile(r' *except *:[^\n]*')
+exceptall_pat   = re.compile(r' *except(?: *| +Exception *, *[^: ]+):[^\n]*')
 
 uncaughtKeyboardInterrupt = 0
 for f in files:
@@ -138,3 +138,9 @@ for f in files:
 test.fail_test(uncaughtKeyboardInterrupt)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

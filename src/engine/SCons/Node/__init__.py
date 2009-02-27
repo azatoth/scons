@@ -44,8 +44,6 @@ be able to depend on any other type of "thing."
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import copy
 from itertools import chain, izip
 import string
@@ -298,6 +296,11 @@ class Node:
             delattr(self, 'executor')
         except AttributeError:
             pass
+
+    def push_to_cache(self):
+        """Try to push a node into a cache
+        """
+        pass
 
     def retrieve_from_cache(self):
         """Try to retrieve the node's content from a cache
@@ -623,7 +626,7 @@ class Node:
                 # essentially short-circuits an N*M scan of the
                 # sources for each individual target, which is a hell
                 # of a lot more efficient.
-                for tgt in executor.targets:
+                for tgt in executor.get_all_targets():
                     tgt.add_to_implicit(implicit)
 
                 if implicit_deps_unchanged or self.is_up_to_date():
@@ -716,7 +719,7 @@ class Node:
                 if s not in ignore_set:
                     sources.append(s)
         else:
-            sources = executor.get_unignored_sources(self.ignore)
+            sources = executor.get_unignored_sources(self, self.ignore)
         seen = set()
         bsources = []
         bsourcesigs = []
@@ -1106,7 +1109,10 @@ class Node:
             env = self.get_build_env()
             for s in self.sources:
                 scanner = self.get_source_scanner(s)
-                path = self.get_build_scanner_path(scanner)
+                if scanner:
+                    path = self.get_build_scanner_path(scanner)
+                else:
+                    path = None
                 def f(node, env=env, scanner=scanner, path=path):
                     return node.get_found_includes(env, scanner, path)
                 return SCons.Util.render_tree(s, f, 1)
@@ -1327,3 +1333,9 @@ class Walker:
 
 
 arg2nodes_lookups = []
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

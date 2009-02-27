@@ -81,7 +81,10 @@ def get_calling_namespaces():
     """Return the locals and globals for the function that called
     into this module in the current call stack."""
     try: 1/0
-    except ZeroDivisionError: frame = sys.exc_info()[2].tb_frame
+    except ZeroDivisionError: 
+        # Don't start iterating with the current stack-frame to
+        # prevent creating reference cycles (f_back is safe).
+        frame = sys.exc_info()[2].tb_frame.f_back
 
     # Find the first frame that *isn't* from this file.  This means
     # that we expect all of the SCons frames that implement an Export()
@@ -186,7 +189,11 @@ def _SConscript(fs, *files, **kw):
                 # fs match so we can open the SConscript.
                 fs.chdir(top, change_os_dir=1)
                 if f.rexists():
-                    _file_ = open(f.rfile().get_abspath(), "r")
+                    actual = f.rfile()
+                    _file_ = open(actual.get_abspath(), "r")
+                elif f.srcnode().rexists():
+                    actual = f.srcnode().rfile()
+                    _file_ = open(actual.get_abspath(), "r")
                 elif f.has_src_builder():
                     # The SConscript file apparently exists in a source
                     # code management system.  Build it, but then clear
@@ -230,8 +237,7 @@ def _SConscript(fs, *files, **kw):
                         # interpret the stuff within the SConscript file
                         # relative to where we are logically.
                         fs.chdir(ldir, change_os_dir=0)
-                        # TODO Not sure how to handle src_dir here
-                        os.chdir(f.rfile().dir.get_abspath())
+                        os.chdir(actual.dir.get_abspath())
 
                     # Append the SConscript directory to the beginning
                     # of sys.path so Python modules in the SConscript
@@ -276,7 +282,20 @@ def _SConscript(fs, *files, **kw):
                 fs.chdir(frame.prev_dir, change_os_dir=0)
                 rdir = frame.prev_dir.rdir()
                 rdir._create()  # Make sure there's a directory there.
-                os.chdir(rdir.get_abspath())
+                try:
+                    os.chdir(rdir.get_abspath())
+                except OSError, e:
+                    # We still couldn't chdir there, so raise the error,
+                    # but only if actions are being executed.
+                    #
+                    # If the -n option was used, the directory would *not*
+                    # have been created and we should just carry on and
+                    # let things muddle through.  This isn't guaranteed
+                    # to work if the SConscript files are reading things
+                    # from disk (for example), but it should work well
+                    # enough for most configurations.
+                    if SCons.Action.execute_actions:
+                        raise e
 
             results.append(frame.retval)
 
@@ -614,3 +633,9 @@ def BuildDefaultGlobals():
              GlobalDict[m] = d[m]
 
     return GlobalDict.copy()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

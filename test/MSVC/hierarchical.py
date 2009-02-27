@@ -50,8 +50,8 @@ SConscript('build/SConscript')
 test.write('src/SConscript',"""
 import os
 env = Environment()
-env.Append(CPPPATH=os.environ['INCLUDE'],
-           LIBPATH=os.environ['LIB'])
+env.Append(CPPPATH=os.environ.get('INCLUDE', ''),
+           LIBPATH=os.environ.get('LIB', ''))
 env['PCH'] = 'StdAfx.pch'
 env['PDB'] = '#out/test.pdb'
 env['PCHSTOP'] = 'StdAfx.h'
@@ -91,3 +91,9 @@ test.must_not_exist(test.workpath('build/StdAfx.obj'))
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

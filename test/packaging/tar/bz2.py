@@ -29,7 +29,6 @@ This tests the SRC bz2 packager, which does the following:
  - create a tar package from the specified files
 """
 
-import os
 import TestSCons
 
 python = TestSCons.python
@@ -62,3 +61,9 @@ env.Package( PACKAGETYPE  = 'src_tarbz2',
   test.must_exist( 'src.tar.bz2' )
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

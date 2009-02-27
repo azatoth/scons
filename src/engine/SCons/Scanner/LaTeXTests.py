@@ -39,6 +39,9 @@ test = TestCmd.TestCmd(workdir = '')
 test.write('test1.latex',"""
 \include{inc1}
 \input{inc2}
+include{incNO}
+%\include{incNO}
+xyzzy \include{inc6}
 """)
 
 test.write('test2.latex',"""
@@ -58,6 +61,8 @@ test.write('inc2.tex',"\n")
 test.write(['subdir', 'inc3.tex'], "\n")
 test.write(['subdir', 'inc4.eps'], "\n")
 test.write('inc5.xyz', "\n")
+test.write('inc6.tex', "\n")
+test.write('incNO.tex', "\n")
 
 # define some helpers:
 #   copied from CTest.py
@@ -111,16 +116,16 @@ def deps_match(self, deps, headers):
 
 class LaTeXScannerTestCase1(unittest.TestCase):
     def runTest(self):
-        env = DummyEnvironment()
+        env = DummyEnvironment(LATEXSUFFIXES = [".tex", ".ltx", ".latex"])
         s = SCons.Scanner.LaTeX.LaTeXScanner()
         path = s.path(env)
         deps = s(env.File('test1.latex'), env, path)
-        headers = ['inc1.tex', 'inc2.tex']
+        headers = ['inc1.tex', 'inc2.tex', 'inc6.tex']
         deps_match(self, deps, headers)
 
 class LaTeXScannerTestCase2(unittest.TestCase):
      def runTest(self):
-         env = DummyEnvironment(TEXINPUTS=[test.workpath("subdir")])
+         env = DummyEnvironment(TEXINPUTS=[test.workpath("subdir")],LATEXSUFFIXES = [".tex", ".ltx", ".latex"])
          s = SCons.Scanner.LaTeX.LaTeXScanner()
          path = s.path(env)
          deps = s(env.File('test2.latex'), env, path)
@@ -129,11 +134,11 @@ class LaTeXScannerTestCase2(unittest.TestCase):
 
 class LaTeXScannerTestCase3(unittest.TestCase):
      def runTest(self):
-         env = DummyEnvironment(TEXINPUTS=[test.workpath("subdir")])
+         env = DummyEnvironment(TEXINPUTS=[test.workpath("subdir")],LATEXSUFFIXES = [".tex", ".ltx", ".latex"])
          s = SCons.Scanner.LaTeX.LaTeXScanner()
          path = s.path(env)
          deps = s(env.File('test3.latex'), env, path)
-         files = ['subdir/inc4.eps', 'inc5.xyz']
+         files = ['inc5.xyz', 'subdir/inc4.eps']
          deps_match(self, deps, files)
 
 
@@ -149,3 +154,9 @@ if __name__ == "__main__":
     result = runner.run(suite())
     if not result.wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

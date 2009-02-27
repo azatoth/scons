@@ -40,7 +40,7 @@ import SCons.Util
 assemblers = ['as']
 
 ASSuffixes = ['.s', '.asm', '.ASM']
-ASPPSuffixes = ['.spp', '.SPP']
+ASPPSuffixes = ['.spp', '.SPP', '.sx']
 if SCons.Util.case_sensitive_suffixes('.s', '.S'):
     ASPPSuffixes.extend(['.S'])
 else:
@@ -70,3 +70,9 @@ def generate(env):
 
 def exists(env):
     return env.Detect(assemblers)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

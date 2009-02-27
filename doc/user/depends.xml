@@ -27,10 +27,10 @@
 
   So far we've seen how &SCons; handles one-time builds.
   But one of the main functions of a build tool like &SCons;
-  is to rebuild only the necessary things
+  is to rebuild only what is necessary
   when source files change--or, put another way,
   &SCons; should <emphasis>not</emphasis>
-  waste time rebuilding things that have already been built.
+  waste time rebuilding things that don't need to be rebuilt.
   You can see this at work simply by re-invoking &SCons;
   after building our simple &hello; example:
 
@@ -175,7 +175,7 @@
 
         <para>
 
-        Using MD5 Signatures to decide if an input file has changed
+        Using MD5 signatures to decide if an input file has changed
         has one surprising benefit:
         if a source file has been changed
         in such a way that the contents of the
@@ -249,7 +249,7 @@
       The most familiar way to use time stamps
       is the way &Make; does:
       that is, have &SCons; decide
-      and target must be rebuilt if
+      that a target must be rebuilt
       if a source file's modification time is
       <emphasis>newer</emphasis>
       than the target file.
@@ -350,7 +350,7 @@
          % <userinput>touch -t 198901010000 hello.c</userinput>
          % <userinput>scons -Q hello</userinput>
          cc -o hello.o -c hello.c
-         scons: `hello' is up to date.
+         cc -o hello hello.o
       </screen>
 
       <para>
@@ -376,8 +376,8 @@
       As a performance enhancement,
       &SCons; provides a way to use
       MD5 checksums of file contents
-      but to only read the contents
-      whenever the file's timestamp has changed.
+      but to read those contents
+      only when the file's timestamp has changed.
       To do this, call the &Decider;
       function with <literal>'MD5-timestamp'</literal>
       argument as follows:
@@ -449,11 +449,11 @@
       While most developers are programming,
       this isn't a problem in practice,
       since it's unlikely that someone will have built
-      and then thought quickly enought to make a substantive
+      and then thought quickly enough to make a substantive
       change to a source file within one second.
       Certain build scripts or
       continuous integration tools may, however,
-      rely on the ability to applying changes to files
+      rely on the ability to apply changes to files
       automatically and then rebuild as quickly as possible,
       in which case use of
       <literal>Decider('MD5-timestamp')</literal>
@@ -491,7 +491,7 @@
       We'd like to have each target file depend on
       only its section of the input file.
       However, since the input file may contain a lot of data,
-      we only want to open the input file if its timestamp has changed.
+      we want to open the input file only if its timestamp has changed.
       This could done with a custom
       &Decider; function that might look something like this:
 
@@ -615,7 +615,7 @@
 
       For example, if we arbitrarily want to build
       one program using MD5 checkums
-      and another use file modification times
+      and another using file modification times
       from the same source
       we might configure it this way:
 
@@ -990,7 +990,7 @@
 
     <screen>
        C:\><userinput>scons -Q hello.exe</userinput>
-       cl /nologo /Iinclude /I\home\project\inc /c hello.c /Fohello.obj
+       cl /Fohello.obj /c hello.c /nologo /Iinclude /I\home\project\inc
        link /nologo /OUT:hello.exe hello.obj
     </screen>
 
@@ -1270,6 +1270,146 @@
   </section>
 
   <section>
+  <title>Dependencies From External Files:  the &ParseDepends;
+  Function</title>
+
+    <para>
+
+    &SCons; has built-in scanners for a number of languages. Sometimes
+    these scanners fail to extract certain implicit dependencies due
+    to limitations of the scanner implementation.
+
+    </para>
+
+    <para>
+
+    The following example illustrates a case where the built-in C
+    scanner is unable to extract the implicit dependency on a header
+    file.
+
+    </para>
+
+    <programlisting>
+      #define FOO_HEADER &lt;foo.h&gt;
+      #include FOO_HEADER
+
+      int main() {
+          return FOO;
+      }
+    </programlisting>
+
+    <screen>
+      % <userinput>scons -Q</userinput>
+      cc -o hello.o -c -I. hello.c
+      cc -o hello hello.o
+      % <userinput>edit foo.h</userinput>
+         [CHANGE CONTENTS OF foo.h]
+      % <userinput>scons -Q</userinput>
+      scons: `.' is up to date.
+    </screen>
+
+    <para>
+
+    Apparently, the scanner does not know about the header dependency.
+    Being not a full-fledged C preprocessor, the scanner does not
+    expand the macro.
+
+    </para>
+
+    <para>
+
+    In these cases, you may also use the compiler to extract the
+    implicit dependencies. &ParseDepends; can parse the contents of
+    the compiler output in the style of &Make;, and explicitly
+    establish all of the listed dependencies.
+
+    </para>
+
+    <para>
+
+    The following example uses &ParseDepends; to process a compiler
+    generated dependency file which is generated as a side effect
+    during compilation of the object file:
+
+    </para>
+
+    <!-- XXX The ParseDepends example below fakes proper working by a
+    priori specification of the dependency file. The produced hello.d
+    file is not found (or used) for unknown reasons. -->
+
+    <programlisting>
+      obj = Object('hello.c', CCFLAGS='-MD -MF hello.d', CPPPATH='.')
+      SideEffect('hello.d', obj)
+      ParseDepends('hello.d')
+      Program('hello', obj)
+    </programlisting>
+
+    <screen>
+      % <userinput>scons -Q</userinput>
+      cc -o hello.o -c -MD -MF hello.d -I. hello.c
+      cc -o hello hello.o
+      % <userinput>edit foo.h</userinput>
+         [CHANGE CONTENTS OF foo.h]
+      % <userinput>scons -Q</userinput>
+      cc -o hello.o -c -MD -MF hello.d -I. hello.c
+    </screen>
+
+    <para>
+
+    Parsing dependencies from a compiler-generated
+    <filename>.d</filename> file has a chicken-and-egg problem, that
+    causes unnecessary rebuilds:
+
+    </para>
+
+    
+
+    <!--
+    <scons_output example="parsedeprebuild" os="posix">
+      <scons_output_command>scons -Q</scons_output_command>
+      <scons_output_command>scons -Q</scons_output_command>
+      <scons_output_command>scons -Q</scons_output_command>
+    </scons_output>
+    -->
+
+    <screen>
+      % <userinput>scons -Q</userinput>
+      cc -o hello.o -c -MD -MF hello.d -I. hello.c
+      cc -o hello hello.o
+      % <userinput>scons -Q --debug=explain</userinput>
+      scons: rebuilding `hello.o' because `foo.h' is a new dependency
+      cc -o hello.o -c -MD -MF hello.d -I. hello.c
+      % <userinput>scons -Q</userinput>
+      scons: `.' is up to date.
+    </screen>
+
+    <para>
+
+    In the first pass, the dependency file is generated while the
+    object file is compiled. At that time, &SCons; does not know about
+    the dependency on <filename>foo.h</filename>. In the second pass,
+    the object file is regenerated because <filename>foo.h</filename>
+    is detected as a new dependency.
+
+    </para>
+
+    <para>
+
+    &ParseDepends; immediately reads the specified file at invocation
+    time and just returns if the file does not exist. A dependency
+    file generated during the build process is not automatically
+    parsed again. Hence, the compiler-extracted dependencies are not
+    stored in the signature database during the same build pass. This
+    limitation of &ParseDepends; leads to unnecessary recompilations.
+    Therefore, &ParseDepends; should only be used if scanners are not
+    available for the employed language or not powerful enough for the
+    specific task.
+
+    </para>
+
+  </section>
+
+  <section>
   <title>Ignoring Dependencies:  the &Ignore; Function</title>
 
     <para>
@@ -1338,6 +1478,32 @@
        Ignore(hello, '/usr/include/stdio.h')
     </programlisting>
 
+    <para>
+    &Ignore; can also be used to prevent a generated file from being built 
+    by default. This is due to the fact that directories depend on 
+    their contents.  So to ignore a generated file from the default build, 
+    you specify that the directory should ignore the generated file.
+    Note that the file will still be built if the user specifically 
+    requests the target on scons command line, or if the file is
+    a dependency of another file which is requested and/or is built
+    by default.
+    </para>
+
+    <programlisting>
+      hello_obj=Object('hello.c')
+      hello = Program(hello_obj)
+      Ignore('.',[hello,hello_obj])
+    </programlisting>
+
+    <screen>
+      % <userinput>scons -Q</userinput>
+      scons: `.' is up to date.
+      % <userinput>scons -Q hello</userinput>
+      cc -o hello.o -c hello.c
+      cc -o hello hello.o
+      % <userinput>scons -Q hello</userinput>
+      scons: `hello' is up to date.
+    </screen>
   </section>
 
   <section>

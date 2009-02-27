@@ -25,8 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -116,9 +115,7 @@ env.Command(target='foo.out', source=[], action='not_a_program')
 """)
 
 test.run(status=2, stderr=None)
-err = test.stderr()
-test.fail_test(string.find(err, 'Exception') != -1 or \
-               string.find(err, 'Traceback') != -1)
+test.must_not_contain_any_line(test.stderr(), ['Exception', 'Traceback'])
 
 
 # Test ETOOLONG (arg list too long).  This is not in exitvalmap,
@@ -133,14 +130,17 @@ env.Command(target='longcmd.out', source=[], action='echo %s')
 """%long_cmd)
 
 test.run(status=2, stderr=None)
-err = test.stderr()
-test.fail_test(string.find(err, 'Exception') != -1 or \
-               string.find(err, 'Traceback') != -1)
+
+test.must_not_contain_any_line(test.stderr(), ['Exception', 'Traceback'])
+
 # Python 1.5.2 on a FC3 system doesn't even get to the exitvalmap
 # because it fails with "No such file or directory."  Just comment
 # this out for now, there are plenty of other good tests below.
-#test.fail_test(string.find(err, "too long") == -1 and # posix
-#	       string.find(err, "nvalid argument") == -1) # win32
+#expected = [
+#    "too long", # posix
+#    "nvalid argument", # win32
+#]
+#test.must_contain_any_line(test.stderr(), expected)
 
 
 # Test bad shell ('./one' is a dir, so it can't be used as a shell).
@@ -156,15 +156,13 @@ env.Command(target='badshell.out', source=[], action='foo')
 """)
 
 test.run(status=2, stderr=None)
-err = test.stderr()
-if string.find(err, 'Exception') != -1 or string.find(err, 'Traceback') != -1:
-    print "Exception or Traceback found in the following error output:"
-    print err
-    test.fail_test()
-if string.find(err, 'ermission') == -1 and string.find(err, 'such file') == -1:
-    print "Missing '[Pp]ermission' or 'such file' string in the following error output:"
-    print err
-    test.fail_test()
+test.must_not_contain_any_line(test.stderr(), ['Exception', 'Traceback'])
+expect = [
+    'No such file',
+    'Permission denied',
+    'permission denied',
+]
+test.must_contain_any_line(test.stderr(), expect)
 
 
 # Test command with exit status -1.
@@ -176,10 +174,38 @@ env.Command('dummy.txt', None, ['python -c "import sys; sys.exit(-1)"'])
 """)
 
 test.run(status=2, stderr=None)
-err = test.stderr()
-test.fail_test(string.find(err, 'Exception') != -1 or \
-               string.find(err, 'Traceback') != -1)
+test.must_not_contain_any_line(test.stderr(), ['Exception', 'Traceback'])
+
+
+# Test SConscript with errors and an atexit function.
+# Should not give traceback; the task error should get converted
+# to a BuildError.
+test.write('SConstruct', """
+import atexit
+
+env = Environment()
+env2 = env.Clone()
+
+env.Install("target", "dir1/myFile")
+env2.Install("target", "dir2/myFile")
+
+def print_build_failures():
+    from SCons.Script import GetBuildFailures
+    for bf in GetBuildFailures():
+	print bf.action
+
+atexit.register(print_build_failures)
+""")
+
+test.run(status=2, stderr=None)
+test.must_not_contain_any_line(test.stderr(), ['Exception', 'Traceback'])
 
 
 # No tests failed; OK.
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -31,5 +31,20 @@ and will then be removed entirely (some day).
 """
 
 import SCons.Variables
+import SCons.Warnings
 
-PackageOption = SCons.Variables.PackageVariable
+warned = False
+
+def PackageOption(*args, **kw):
+    global warned
+    if not warned:
+        msg = "The PackageOption() function is deprecated; use the PackageVariable() function instead."
+        SCons.Warnings.warn(SCons.Warnings.DeprecatedOptionsWarning, msg)
+        warned = True
+    return apply(SCons.Variables.PackageVariable, args, kw)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

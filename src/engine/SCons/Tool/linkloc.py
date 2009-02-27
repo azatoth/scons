@@ -43,7 +43,7 @@ import SCons.Errors
 import SCons.Tool
 import SCons.Util
 
-from SCons.Tool.msvc import get_msvc_paths
+from SCons.Tool.MSCommon import detect_msvs, merge_default_version
 from SCons.Tool.PharLapCommon import addPharLapPaths
 
 _re_linker_command = re.compile(r'(\s)@\s*([^\s]+)')
@@ -84,22 +84,29 @@ def generate(env):
     env['SUBST_CMD_FILE'] = LinklocGenerator
     env['SHLINK']      = '$LINK'
     env['SHLINKFLAGS'] = SCons.Util.CLVar('$LINKFLAGS')
-    env['SHLINKCOM']   = '${SUBST_CMD_FILE("$SHLINK $SHLINKFLAGS $( $_LIBDIRFLAGS $) $_LIBFLAGS -dll $TARGET $SOURCES")}'
+    env['SHLINKCOM']   = '${SUBST_CMD_FILE("$SHLINK $SHLINKFLAGS $_LIBDIRFLAGS $_LIBFLAGS -dll $TARGET $SOURCES")}'
     env['SHLIBEMITTER']= None
     env['LINK']        = "linkloc"
     env['LINKFLAGS']   = SCons.Util.CLVar('')
-    env['LINKCOM']     = '${SUBST_CMD_FILE("$LINK $LINKFLAGS $( $_LIBDIRFLAGS $) $_LIBFLAGS -exe $TARGET $SOURCES")}'
+    env['LINKCOM']     = '${SUBST_CMD_FILE("$LINK $LINKFLAGS $_LIBDIRFLAGS $_LIBFLAGS -exe $TARGET $SOURCES")}'
     env['LIBDIRPREFIX']='-libpath '
     env['LIBDIRSUFFIX']=''
     env['LIBLINKPREFIX']='-lib '
     env['LIBLINKSUFFIX']='$LIBSUFFIX'
 
-    msvs_version = env.get('MSVS_VERSION')
-    include_path, lib_path, exe_path = get_msvc_paths(env, version = msvs_version)
-    env['ENV']['LIB'] = lib_path
-    env.PrependENVPath('PATH', exe_path)
+    # Set-up ms tools paths for default version
+    merge_default_version(env)
 
     addPharLapPaths(env)
 
 def exists(env):
-    return env.Detect('linkloc')
+    if detect_msvs():
+        return env.Detect('linkloc')
+    else:
+        return 0
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -37,7 +37,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import copy
 import os
-import os.path
+import sys
 import re
 import shlex
 import string
@@ -105,24 +105,39 @@ def apply_tools(env, tools, toolpath):
         else:
             env.Tool(tool)
 
-# These names are controlled by SCons; users should never set or override
-# them.  This warning can optionally be turned off, but scons will still
-# ignore the illegal variable names even if it's off.
-reserved_construction_var_names = \
-    ['TARGET', 'TARGETS', 'SOURCE', 'SOURCES']
+# These names are (or will be) controlled by SCons; users should never
+# set or override them.  This warning can optionally be turned off,
+# but scons will still ignore the illegal variable names even if it's off.
+reserved_construction_var_names = [
+    'CHANGED_SOURCES',
+    'CHANGED_TARGETS',
+    'SOURCE',
+    'SOURCES',
+    'TARGET',
+    'TARGETS',
+    'UNCHANGED_SOURCES',
+    'UNCHANGED_TARGETS',
+]
+
+future_reserved_construction_var_names = []
 
 def copy_non_reserved_keywords(dict):
     result = semi_deepcopy(dict)
     for k in result.keys():
         if k in reserved_construction_var_names:
-            SCons.Warnings.warn(SCons.Warnings.ReservedVariableWarning,
-                                "Ignoring attempt to set reserved variable `%s'" % k)
+            msg = "Ignoring attempt to set reserved variable `$%s'"
+            SCons.Warnings.warn(SCons.Warnings.ReservedVariableWarning, msg % k)
             del result[k]
     return result
 
 def _set_reserved(env, key, value):
-    msg = "Ignoring attempt to set reserved variable `%s'" % key
-    SCons.Warnings.warn(SCons.Warnings.ReservedVariableWarning, msg)
+    msg = "Ignoring attempt to set reserved variable `$%s'"
+    SCons.Warnings.warn(SCons.Warnings.ReservedVariableWarning, msg % key)
+
+def _set_future_reserved(env, key, value):
+    env._dict[key] = value
+    msg = "`$%s' will be reserved in a future release and setting it will become ignored"
+    SCons.Warnings.warn(SCons.Warnings.FutureReservedVariableWarning, msg % key)
 
 def _set_BUILDERS(env, key, value):
     try:
@@ -141,6 +156,24 @@ def _del_SCANNERS(env, key):
 def _set_SCANNERS(env, key, value):
     env._dict[key] = value
     env.scanner_map_delete()
+
+def _delete_duplicates(l, keep_last):
+    """Delete duplicates from a sequence, keeping the first or last."""
+    seen={}
+    result=[]
+    if keep_last:           # reverse in & out, then keep first
+        l.reverse()
+    for i in l:
+        try:
+            if not seen.has_key(i):
+                result.append(i)
+                seen[i]=1
+        except TypeError:
+            # probably unhashable.  Just keep it.
+            result.append(i)
+    if keep_last:
+        result.reverse()
+    return result
 
 
 
@@ -230,7 +263,7 @@ class BuilderWrapper(MethodWrapper):
         elif name == 'builder':
             return self.method
         else:
-            return self.__dict__[name]
+            raise AttributeError, name
 
     def __setattr__(self, name, value):
         if name == 'env':
@@ -346,6 +379,8 @@ class SubstitutionEnvironment:
         self._special_set = {}
         for key in reserved_construction_var_names:
             self._special_set[key] = _set_reserved
+        for key in future_reserved_construction_var_names:
+            self._special_set[key] = _set_future_reserved
         self._special_set['BUILDERS'] = _set_BUILDERS
         self._special_set['SCANNERS'] = _set_SCANNERS
 
@@ -393,11 +428,14 @@ class SubstitutionEnvironment:
             self._dict[key] = value
 
     def get(self, key, default=None):
-        "Emulates the get() method of dictionaries."""
+        """Emulates the get() method of dictionaries."""
         return self._dict.get(key, default)
 
     def has_key(self, key):
         return self._dict.has_key(key)
+
+    def __contains__(self, key):
+        return self._dict.__contains__(key)
 
     def items(self):
         return self._dict.items()
@@ -451,7 +489,7 @@ class SubstitutionEnvironment:
     def lvars(self):
         return {}
 
-    def subst(self, string, raw=0, target=None, source=None, conv=None):
+    def subst(self, string, raw=0, target=None, source=None, conv=None, executor=None):
         """Recursively interpolates construction variables from the
         Environment into the specified string, returning the expanded
         result.  Construction variables are specified by a $ prefix
@@ -464,6 +502,8 @@ class SubstitutionEnvironment:
         gvars = self.gvars()
         lvars = self.lvars()
         lvars['__env__'] = self
+        if executor:
+            lvars.update(executor.get_lvars())
         return SCons.Subst.scons_subst(string, self, raw, target, source, gvars, lvars, conv)
 
     def subst_kw(self, kw, raw=0, target=None, source=None):
@@ -475,12 +515,14 @@ class SubstitutionEnvironment:
             nkw[k] = v
         return nkw
 
-    def subst_list(self, string, raw=0, target=None, source=None, conv=None):
+    def subst_list(self, string, raw=0, target=None, source=None, conv=None, executor=None):
         """Calls through to SCons.Subst.scons_subst_list().  See
         the documentation for that function."""
         gvars = self.gvars()
         lvars = self.lvars()
         lvars['__env__'] = self
+        if executor:
+            lvars.update(executor.get_lvars())
         return SCons.Subst.scons_subst_list(string, self, raw, target, source, gvars, lvars, conv)
 
     def subst_path(self, path, target=None, source=None):
@@ -526,24 +568,21 @@ class SubstitutionEnvironment:
 
     def backtick(self, command):
         import subprocess
-        if SCons.Util.is_List(command): 
-            p = subprocess.Popen(command,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 universal_newlines=True)
-        else:
-            p = subprocess.Popen(command,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 universal_newlines=True,
-                                 shell=True)
-        out = p.stdout.read()
-        p.stdout.close()
-        err = p.stderr.read()
-        p.stderr.close()
+        # common arguments
+        kw = { 'stdin' : 'devnull',
+               'stdout' : subprocess.PIPE,
+               'stderr' : subprocess.PIPE,
+               'universal_newlines' : True,
+             }
+        # if the command is a list, assume it's been quoted
+        # othewise force a shell
+        if not SCons.Util.is_List(command): kw['shell'] = True
+        # run constructed command
+        #TODO(1.5) p = SCons.Action._subproc(self, command, **kw)
+        p = apply(SCons.Action._subproc, (self, command), kw)
+        out,err = p.communicate()
         status = p.wait()
         if err:
-            import sys
             sys.stderr.write(err)
         if status:
             raise OSError("'%s' exited %d" % (command, status))
@@ -747,13 +786,16 @@ class SubstitutionEnvironment:
             do_parse(arg, do_parse)
         return dict
 
-    def MergeFlags(self, args, unique=1):
+    def MergeFlags(self, args, unique=1, dict=None):
         """
-        Merge the dict in args into the construction variables.  If args
-        is not a dict, it is converted into a dict using ParseFlags.
-        If unique is not set, the flags are appended rather than merged.
+        Merge the dict in args into the construction variables of this
+        env, or the passed-in dict.  If args is not a dict, it is
+        converted into a dict using ParseFlags.  If unique is not set,
+        the flags are appended rather than merged.
         """
 
+        if dict is None:
+            dict = self
         if not SCons.Util.is_Dict(args):
             args = self.ParseFlags(args)
         if not unique:
@@ -800,6 +842,26 @@ class SubstitutionEnvironment:
                         t.insert(0, v)
             self[key] = t
         return self
+
+#     def MergeShellPaths(self, args, prepend=1):
+#         """
+#         Merge the dict in args into the shell environment in env['ENV'].  
+#         Shell path elements are appended or prepended according to prepend.
+
+#         Uses Pre/AppendENVPath, so it always appends or prepends uniquely.
+
+#         Example: env.MergeShellPaths({'LIBPATH': '/usr/local/lib'})
+#         prepends /usr/local/lib to env['ENV']['LIBPATH'].
+#         """
+
+#         for pathname, pathval in args.items():
+#             if not pathval:
+#                 continue
+#             if prepend:
+#                 apply(self.PrependENVPath, (pathname, pathval))
+#             else:
+#                 apply(self.AppendENVPath, (pathname, pathval))
+
 
 # Used by the FindSourceFiles() method, below.
 # Stuck here for support of pre-2.2 Python versions.
@@ -1024,6 +1086,8 @@ class Base(SubstitutionEnvironment):
             scanners.reverse()
             for scanner in scanners:
                 for k in scanner.get_skeys(self):
+                    if k and self['PLATFORM'] == 'win32':
+                        k = string.lower(k)
                     result[k] = scanner
 
         self._memo['_gsm'] = result
@@ -1033,6 +1097,8 @@ class Base(SubstitutionEnvironment):
     def get_scanner(self, skey):
         """Find the appropriate scanner given a key (usually a file suffix).
         """
+        if skey and self['PLATFORM'] == 'win32':
+            skey = string.lower(skey)
         return self._gsm().get(skey)
 
     def scanner_map_delete(self, kw=None):
@@ -1139,31 +1205,49 @@ class Base(SubstitutionEnvironment):
                                 orig[val] = None
         self.scanner_map_delete(kw)
 
-    def AppendENVPath(self, name, newpath, envname = 'ENV', sep = os.pathsep):
+    # allow Dirs and strings beginning with # for top-relative
+    # Note this uses the current env's fs (in self).
+    def _canonicalize(self, path):
+        if not SCons.Util.is_String(path): # typically a Dir
+            path = str(path)
+        if path and path[0] == '#':
+            path = str(self.fs.Dir(path))
+        return path
+
+    def AppendENVPath(self, name, newpath, envname = 'ENV', 
+                      sep = os.pathsep, delete_existing=1):
         """Append path elements to the path 'name' in the 'ENV'
         dictionary for this environment.  Will only add any particular
         path once, and will normpath and normcase all paths to help
         assure this.  This can also handle the case where the env
         variable is a list instead of a string.
+
+        If delete_existing is 0, a newpath which is already in the path
+        will not be moved to the end (it will be left where it is).
         """
 
         orig = ''
         if self._dict.has_key(envname) and self._dict[envname].has_key(name):
             orig = self._dict[envname][name]
 
-        nv = SCons.Util.AppendPath(orig, newpath, sep)
+        nv = SCons.Util.AppendPath(orig, newpath, sep, delete_existing,
+                                   canonicalize=self._canonicalize)
 
         if not self._dict.has_key(envname):
             self._dict[envname] = {}
 
         self._dict[envname][name] = nv
 
-    def AppendUnique(self, **kw):
+    def AppendUnique(self, delete_existing=0, **kw):
         """Append values to existing construction variables
         in an Environment, if they're not already there.
+        If delete_existing is 1, removes existing values first, so
+        values move to end.
         """
         kw = copy_non_reserved_keywords(kw)
         for key, val in kw.items():
+            if SCons.Util.is_List(val):
+                val = _delete_duplicates(val, delete_existing)
             if not self._dict.has_key(key) or self._dict[key] in ('', None):
                 self._dict[key] = val
             elif SCons.Util.is_Dict(self._dict[key]) and \
@@ -1173,17 +1257,26 @@ class Base(SubstitutionEnvironment):
                 dk = self._dict[key]
                 if not SCons.Util.is_List(dk):
                     dk = [dk]
-                val = filter(lambda x, dk=dk: x not in dk, val)
+                if delete_existing:
+                    dk = filter(lambda x, val=val: x not in val, dk)
+                else:
+                    val = filter(lambda x, dk=dk: x not in dk, val)
                 self._dict[key] = dk + val
             else:
                 dk = self._dict[key]
                 if SCons.Util.is_List(dk):
                     # By elimination, val is not a list.  Since dk is a
                     # list, wrap val in a list first.
-                    if not val in dk:
+                    if delete_existing:
+                        dk = filter(lambda x, val=val: x not in val, dk)
                         self._dict[key] = dk + [val]
+                    else:
+                        if not val in dk:
+                            self._dict[key] = dk + [val]
                 else:
-                    self._dict[key] = self._dict[key] + val
+                    if delete_existing:
+                        dk = filter(lambda x, val=val: x not in val, dk)
+                    self._dict[key] = dk + val
         self.scanner_map_delete(kw)
 
     def Clone(self, tools=[], toolpath=None, parse_flags = None, **kw):
@@ -1477,31 +1570,40 @@ class Base(SubstitutionEnvironment):
                                 orig[val] = None
         self.scanner_map_delete(kw)
 
-    def PrependENVPath(self, name, newpath, envname = 'ENV', sep = os.pathsep):
+    def PrependENVPath(self, name, newpath, envname = 'ENV', sep = os.pathsep,
+                       delete_existing=1):
         """Prepend path elements to the path 'name' in the 'ENV'
         dictionary for this environment.  Will only add any particular
         path once, and will normpath and normcase all paths to help
         assure this.  This can also handle the case where the env
         variable is a list instead of a string.
+
+        If delete_existing is 0, a newpath which is already in the path
+        will not be moved to the front (it will be left where it is).
         """
 
         orig = ''
         if self._dict.has_key(envname) and self._dict[envname].has_key(name):
             orig = self._dict[envname][name]
 
-        nv = SCons.Util.PrependPath(orig, newpath, sep)
+        nv = SCons.Util.PrependPath(orig, newpath, sep, delete_existing,
+                                    canonicalize=self._canonicalize)
 
         if not self._dict.has_key(envname):
             self._dict[envname] = {}
 
         self._dict[envname][name] = nv
 
-    def PrependUnique(self, **kw):
-        """Append values to existing construction variables
+    def PrependUnique(self, delete_existing=0, **kw):
+        """Prepend values to existing construction variables
         in an Environment, if they're not already there.
+        If delete_existing is 1, removes existing values first, so
+        values move to front.
         """
         kw = copy_non_reserved_keywords(kw)
         for key, val in kw.items():
+            if SCons.Util.is_List(val):
+                val = _delete_duplicates(val, not delete_existing)
             if not self._dict.has_key(key) or self._dict[key] in ('', None):
                 self._dict[key] = val
             elif SCons.Util.is_Dict(self._dict[key]) and \
@@ -1511,16 +1613,25 @@ class Base(SubstitutionEnvironment):
                 dk = self._dict[key]
                 if not SCons.Util.is_List(dk):
                     dk = [dk]
-                val = filter(lambda x, dk=dk: x not in dk, val)
+                if delete_existing:
+                    dk = filter(lambda x, val=val: x not in val, dk)
+                else:
+                    val = filter(lambda x, dk=dk: x not in dk, val)
                 self._dict[key] = val + dk
             else:
                 dk = self._dict[key]
                 if SCons.Util.is_List(dk):
                     # By elimination, val is not a list.  Since dk is a
                     # list, wrap val in a list first.
-                    if not val in dk:
+                    if delete_existing:
+                        dk = filter(lambda x, val=val: x not in val, dk)
                         self._dict[key] = [val] + dk
+                    else:
+                        if not val in dk:
+                            self._dict[key] = [val] + dk
                 else:
+                    if delete_existing:
+                        dk = filter(lambda x, val=val: x not in val, dk)
                     self._dict[key] = val + dk
         self.scanner_map_delete(kw)
 
@@ -1599,6 +1710,7 @@ class Base(SubstitutionEnvironment):
                 pass
         elif SCons.Util.is_String(pathext):
             pathext = self.subst(pathext)
+        prog = self.subst(prog)
         path = SCons.Util.WhereIs(prog, path, pathext, reject)
         if path: return path
         return None
@@ -1812,6 +1924,10 @@ class Base(SubstitutionEnvironment):
         action = apply(self.Action, (action,) + args, kw)
         result = action([], [], self)
         if isinstance(result, SCons.Errors.BuildError):
+            errstr = result.errstr
+            if result.filename:
+                errstr = result.filename + ': ' + errstr
+            sys.stderr.write("scons: *** %s\n" % errstr)
             return result.status
         else:
             return result
@@ -1904,6 +2020,11 @@ class Base(SubstitutionEnvironment):
             name = self.subst(name)
             if not os.path.isabs(name):
                 name = os.path.join(str(self.fs.SConstruct_dir), name)
+        if name:
+            name = os.path.normpath(name)
+            sconsign_dir = os.path.dirname(name)
+            if sconsign_dir and not os.path.exists(sconsign_dir):
+                self.Execute(SCons.Defaults.Mkdir(sconsign_dir))
         SCons.SConsign.File(name, dbm_module)
 
     def SideEffect(self, side_effect, target):
@@ -2015,17 +2136,13 @@ class Base(SubstitutionEnvironment):
         #            result.append(s)
         build_source(node.all_children(), sources)
 
-        # now strip the build_node from the sources by calling the srcnode
-        # function
-        def get_final_srcnode(file):
-            srcnode = file.srcnode()
-            while srcnode != file.srcnode():
-                srcnode = file.srcnode()
-            return srcnode
-
-        # get the final srcnode for all nodes, this means stripping any
-        # attached build node.
-        map( get_final_srcnode, sources )
+    # THIS CODE APPEARS TO HAVE NO EFFECT
+    #    # get the final srcnode for all nodes, this means stripping any
+    #    # attached build node by calling the srcnode function
+    #    for file in sources:
+    #        srcnode = file.srcnode()
+    #        while srcnode != file.srcnode():
+    #            srcnode = file.srcnode()
 
         # remove duplicates
         return list(set(sources))
@@ -2109,6 +2226,10 @@ class OverrideEnvironment(Base):
             return 1
         except KeyError:
             return self.__dict__['__subject'].has_key(key)
+    def __contains__(self, key):
+        if self.__dict__['overrides'].__contains__(key):
+            return 1
+        return self.__dict__['__subject'].__contains__(key)
     def Dictionary(self):
         """Emulates the items() method of dictionaries."""
         d = self.__dict__['__subject'].Dictionary().copy()
@@ -2191,3 +2312,9 @@ def NoSubstitutionProxy(subject):
             self.raw_to_mode(nkw)
             return apply(SCons.Subst.scons_subst, nargs, nkw)
     return _NoSubstitutionProxy(subject)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

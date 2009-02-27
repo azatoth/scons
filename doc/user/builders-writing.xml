@@ -102,7 +102,7 @@ This functionality could be invoked as in the following example:
   programs, libraries, documents.
   you frequently want to be
   able to build some other type of file
-  not supported directly by &SCons;
+  not supported directly by &SCons;.
   Fortunately, &SCons; makes it very easy
   to define your own &Builder; objects
   for any custom file types you want to build.
@@ -172,7 +172,8 @@ This functionality could be invoked as in the following example:
 
     <para>
 
-    With the &Builder; so attached to our &consenv;
+    With the &Builder; attached to our &consenv;
+    with the name <function>Foo</function>,
     we can now actually call it like so:
 
     </para>
@@ -670,7 +671,7 @@ This functionality could be invoked as in the following example:
 
     <para>
 
-    One very flexible thing that you can is specify
+    One very flexible thing that you can do is
     use a construction variable to specify
     different emitter functions for different
     construction variable.
@@ -828,13 +829,17 @@ This functionality could be invoked as in the following example:
     to include in &SConscript;s; just put that module in
     <filename>site_scons/my_utils.py</filename> or any valid Python module name of your
     choice.  For instance you can do something like this in
-    <filename>site_scons/my_utils.py</filename> to add a build_id method:
+    <filename>site_scons/my_utils.py</filename> to add build_id and MakeWorkDir functions:
   </para>
     
   <programlisting>
+      from SCons.Script import *   # for Execute and Mkdir
       def build_id():
          """Return a build ID (stub version)"""
          return "100"
+      def MakeWorkDir(workdir):
+         """Create the specified dir immediately"""
+         Execute(Mkdir(workdir))
   </programlisting>
 
   <para>
@@ -847,7 +852,26 @@ This functionality could be invoked as in the following example:
   <programlisting>
       import my_utils
       print "build_id=" + my_utils.build_id()
+      my_utils.MakeWorkDir('/tmp/work')
   </programlisting>
+
+  <para>
+    Note that although you can put this library in
+    <filename>site_scons/site_init.py</filename>,
+    it is no better there than <filename>site_scons/my_utils.py</filename>
+    since you still have to import that module into your &SConscript;.
+    Also note that in order to refer to objects in the SCons namespace
+    such as &Environment; or &Mkdir; or &Execute; in any file other
+    than a &SConstruct; or &SConscript; you always need to do
+  </para>
+  <programlisting>
+      from SCons.Script import *
+  </programlisting>
+
+  <para>
+    This is true in modules in <filename>site_scons</filename> such as
+    <filename>site_scons/site_init.py</filename> as well.
+  </para>
 
   <para>
 

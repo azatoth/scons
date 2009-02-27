@@ -75,15 +75,14 @@ sccs get foo.c
 sccs get foo.h
 """, '\n')
 
-stdout = test.stdout()
-missing = filter(lambda l, s=stdout: string.find(s, l) == -1, lines)
-if missing:
-    print "Missing the following output lines:"
-    print string.join(missing, '\n')
-    print "Actual STDOUT =========="
-    print stdout
-    test.fail_test(1)
+test.must_contain_all_lines(test.stdout(), lines)
 
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

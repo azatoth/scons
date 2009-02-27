@@ -29,8 +29,6 @@ Various utility functions go here.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import copy
 import os
 import os.path
@@ -109,18 +107,6 @@ def updrive(path):
         path = string.upper(drive) + rest
     return path
 
-class CallableComposite(UserList):
-    """A simple composite callable class that, when called, will invoke all
-    of its contained callables with the same arguments."""
-    def __call__(self, *args, **kwargs):
-        retvals = map(lambda x, args=args, kwargs=kwargs: apply(x,
-                                                                args,
-                                                                kwargs),
-                      self.data)
-        if self.data and (len(self.data) == len(filter(callable, retvals))):
-            return self.__class__(retvals)
-        return NodeList(retvals)
-
 class NodeList(UserList):
     """This class is almost exactly like a regular list of Nodes
     (actually it can hold any object), with one important difference.
@@ -137,23 +123,20 @@ class NodeList(UserList):
     def __str__(self):
         return string.join(map(str, self.data))
 
+    def __iter__(self):
+        return iter(self.data)
+
+    def __call__(self, *args, **kwargs):
+        result = map(lambda x, args=args, kwargs=kwargs: apply(x,
+                                                               args,
+                                                               kwargs),
+                     self.data)
+        return self.__class__(result)
+
     def __getattr__(self, name):
-        if not self.data:
-            # If there is nothing in the list, then we have no attributes to
-            # pass through, so raise AttributeError for everything.
-            raise AttributeError, "NodeList has no attribute: %s" % name
+        result = map(lambda x, n=name: getattr(x, n), self.data)
+        return self.__class__(result)
 
-        # Return a list of the attribute, gotten from every element
-        # in the list
-        attrList = map(lambda x, n=name: getattr(x, n), self.data)
-
-        # Special case.  If the attribute is callable, we do not want
-        # to return a list of callables.  Rather, we want to return a
-        # single callable that, when called, will invoke the function on
-        # all elements of this list.
-        if self.data and (len(self.data) == len(filter(callable, attrList))):
-            return CallableComposite(attrList)
-        return self.__class__(attrList)
 
 _get_env_var = re.compile(r'^\$([_a-zA-Z]\w*|{[_a-zA-Z]\w*})$')
 
@@ -304,11 +287,11 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
 
     if children:
         margin.append(1)
-        map(lambda C, cf=child_func, p=prune, i=IDX(showtags), m=margin, v=visited:
-                   print_tree(C, cf, p, i, m, v),
-            children[:-1])
+        idx = IDX(showtags)
+        for C in children[:-1]:
+            print_tree(C, child_func, prune, idx, margin, visited)
         margin[-1] = 0
-        print_tree(children[-1], child_func, prune, IDX(showtags), margin, visited)
+        print_tree(children[-1], child_func, prune, idx, margin, visited)
         margin.pop()
 
 
@@ -744,10 +727,32 @@ if can_read_reg:
         # I would use os.path.split here, but it's not a filesystem
         # path...
         p = key.rfind('\\') + 1
-        keyp = key[:p]
+        keyp = key[:p-1]          # -1 to omit trailing slash
         val = key[p:]
         k = RegOpenKeyEx(root, keyp)
         return RegQueryValueEx(k,val)
+else:
+    try:
+        e = WindowsError
+    except NameError:
+        # Make sure we have a definition of WindowsError so we can
+        # run platform-independent tests of Windows functionality on
+        # platforms other than Windows.  (WindowsError is, in fact, an
+        # OSError subclass on Windows.)
+        class WindowsError(OSError):
+            pass
+        import __builtin__
+        __builtin__.WindowsError = WindowsError
+    else:
+        del e
+        
+    HKEY_CLASSES_ROOT = None
+    HKEY_LOCAL_MACHINE = None
+    HKEY_CURRENT_USER = None
+    HKEY_USERS = None
+
+    def RegGetValue(root, key):
+        raise WindowsError
 
 if sys.platform == 'win32':
 
@@ -846,7 +851,8 @@ else:
                     continue
         return None
 
-def PrependPath(oldpath, newpath, sep = os.pathsep):
+def PrependPath(oldpath, newpath, sep = os.pathsep, 
+                delete_existing=1, canonicalize=None):
     """This prepends newpath elements to the given oldpath.  Will only
     add any particular path once (leaving the first one it encounters
     and ignoring the rest, to preserve path order), and will
@@ -859,6 +865,13 @@ def PrependPath(oldpath, newpath, sep = os.pathsep):
       Old Path: "/foo/bar:/foo"
       New Path: "/biz/boom:/foo"
       Result:   "/biz/boom:/foo:/foo/bar"
+
+    If delete_existing is 0, then adding a path that exists will
+    not move it to the beginning; it will stay where it is in the
+    list.
+
+    If canonicalize is not None, it is applied to each element of 
+    newpath before use.
     """
 
     orig = oldpath
@@ -868,28 +881,60 @@ def PrependPath(oldpath, newpath, sep = os.pathsep):
         paths = string.split(paths, sep)
         is_list = 0
 
-    if is_List(newpath) or is_Tuple(newpath):
-        newpaths = newpath
-    else:
+    if is_String(newpath):
         newpaths = string.split(newpath, sep)
+    elif not is_List(newpath) and not is_Tuple(newpath):
+        newpaths = [ newpath ]  # might be a Dir
+    else:
+        newpaths = newpath
 
-    newpaths = newpaths + paths # prepend new paths
+    if canonicalize:
+        newpaths=map(canonicalize, newpaths)
 
-    normpaths = []
-    paths = []
-    # now we add them only if they are unique
-    for path in newpaths:
-        normpath = os.path.normpath(os.path.normcase(path))
-        if path and not normpath in normpaths:
-            paths.append(path)
-            normpaths.append(normpath)
+    if not delete_existing:
+        # First uniquify the old paths, making sure to 
+        # preserve the first instance (in Unix/Linux,
+        # the first one wins), and remembering them in normpaths.
+        # Then insert the new paths at the head of the list
+        # if they're not already in the normpaths list.
+        result = []
+        normpaths = []
+        for path in paths:
+            if not path:
+                continue
+            normpath = os.path.normpath(os.path.normcase(path))
+            if normpath not in normpaths:
+                result.append(path)
+                normpaths.append(normpath)
+        newpaths.reverse()      # since we're inserting at the head
+        for path in newpaths:
+            if not path:
+                continue
+            normpath = os.path.normpath(os.path.normcase(path))
+            if normpath not in normpaths:
+                result.insert(0, path)
+                normpaths.append(normpath)
+        paths = result
+
+    else:
+        newpaths = newpaths + paths # prepend new paths
+
+        normpaths = []
+        paths = []
+        # now we add them only if they are unique
+        for path in newpaths:
+            normpath = os.path.normpath(os.path.normcase(path))
+            if path and not normpath in normpaths:
+                paths.append(path)
+                normpaths.append(normpath)
 
     if is_list:
         return paths
     else:
         return string.join(paths, sep)
 
-def AppendPath(oldpath, newpath, sep = os.pathsep):
+def AppendPath(oldpath, newpath, sep = os.pathsep, 
+               delete_existing=1, canonicalize=None):
     """This appends new path elements to the given old path.  Will
     only add any particular path once (leaving the last one it
     encounters and ignoring the rest, to preserve path order), and
@@ -902,6 +947,12 @@ def AppendPath(oldpath, newpath, sep = os.pathsep):
       Old Path: "/foo/bar:/foo"
       New Path: "/biz/boom:/foo"
       Result:   "/foo/bar:/biz/boom:/foo"
+
+    If delete_existing is 0, then adding a path that exists
+    will not move it to the end; it will stay where it is in the list.
+
+    If canonicalize is not None, it is applied to each element of 
+    newpath before use.
     """
 
     orig = oldpath
@@ -911,24 +962,52 @@ def AppendPath(oldpath, newpath, sep = os.pathsep):
         paths = string.split(paths, sep)
         is_list = 0
 
-    if is_List(newpath) or is_Tuple(newpath):
-        newpaths = newpath
-    else:
+    if is_String(newpath):
         newpaths = string.split(newpath, sep)
+    elif not is_List(newpath) and not is_Tuple(newpath):
+        newpaths = [ newpath ]  # might be a Dir
+    else:
+        newpaths = newpath
 
-    newpaths = paths + newpaths # append new paths
-    newpaths.reverse()
+    if canonicalize:
+        newpaths=map(canonicalize, newpaths)
 
-    normpaths = []
-    paths = []
-    # now we add them only of they are unique
-    for path in newpaths:
-        normpath = os.path.normpath(os.path.normcase(path))
-        if path and not normpath in normpaths:
-            paths.append(path)
-            normpaths.append(normpath)
+    if not delete_existing:
+        # add old paths to result, then
+        # add new paths if not already present
+        # (I thought about using a dict for normpaths for speed,
+        # but it's not clear hashing the strings would be faster
+        # than linear searching these typically short lists.)
+        result = []
+        normpaths = []
+        for path in paths:
+            if not path:
+                continue
+            result.append(path)
+            normpaths.append(os.path.normpath(os.path.normcase(path)))
+        for path in newpaths:
+            if not path:
+                continue
+            normpath = os.path.normpath(os.path.normcase(path))
+            if normpath not in normpaths:
+                result.append(path)
+                normpaths.append(normpath)
+        paths = result
+    else:
+        # start w/ new paths, add old ones if not present,
+        # then reverse.
+        newpaths = paths + newpaths # append new paths
+        newpaths.reverse()
 
-    paths.reverse()
+        normpaths = []
+        paths = []
+        # now we add them only if they are unique
+        for path in newpaths:
+            normpath = os.path.normpath(os.path.normcase(path))
+            if path and not normpath in normpaths:
+                paths.append(path)
+                normpaths.append(normpath)
+        paths.reverse()
 
     if is_list:
         return paths
@@ -968,6 +1047,10 @@ class CLVar(UserList):
     """
     def __init__(self, seq = []):
         UserList.__init__(self, Split(seq))
+    def __add__(self, other):
+        return UserList.__add__(self, CLVar(other))
+    def __radd__(self, other):
+        return UserList.__radd__(self, CLVar(other))
     def __coerce__(self, other):
         return (self, CLVar(other))
     def __str__(self):
@@ -1031,11 +1114,12 @@ class Selector(OrderedDict):
     """A callable ordered dictionary that maps file suffixes to
     dictionary values.  We preserve the order in which items are added
     so that get_suffix() calls always return the first suffix added."""
-    def __call__(self, env, source):
-        try:
-            ext = source[0].suffix
-        except IndexError:
-            ext = ""
+    def __call__(self, env, source, ext=None):
+        if ext is None:
+            try:
+                ext = source[0].suffix
+            except IndexError:
+                ext = ""
         try:
             return self[ext]
         except KeyError:
@@ -1442,6 +1526,12 @@ md5 = False
 def MD5signature(s):
     return str(s)
 
+def MD5filesignature(fname, chunksize=65536):
+    f = open(fname, "rb")
+    result = f.read()
+    f.close()
+    return result
+
 try:
     import hashlib
 except ImportError:
@@ -1454,6 +1544,17 @@ else:
             m.update(str(s))
             return m.hexdigest()
 
+        def MD5filesignature(fname, chunksize=65536):
+            m = hashlib.md5()
+            f = open(fname, "rb")
+            while 1:
+                blck = f.read(chunksize)
+                if not blck:
+                    break
+                m.update(str(blck))
+            f.close()
+            return m.hexdigest()
+            
 def MD5collect(signatures):
     """
     Collects a list of signatures into an aggregate signature.
@@ -1474,9 +1575,10 @@ def MD5collect(signatures):
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/68205
 # ASPN: Python Cookbook: Null Object Design Pattern
 
+# TODO(1.5):
+#class Null(object):
 class Null:
-    """ Null objects always and reliably "do nothging." """
-
+    """ Null objects always and reliably "do nothing." """
     def __new__(cls, *args, **kwargs):
         if not '_inst' in vars(cls):
             #cls._inst = type.__new__(cls, *args, **kwargs)
@@ -1487,16 +1589,33 @@ class Null:
     def __call__(self, *args, **kwargs):
         return self
     def __repr__(self):
-        return "Null()"
+        return "Null(0x%08X)" % id(self)
     def __nonzero__(self):
         return False
-    def __getattr__(self, mname):
+    def __getattr__(self, name):
         return self
     def __setattr__(self, name, value):
         return self
     def __delattr__(self, name):
         return self
 
+class NullSeq(Null):
+    def __len__(self):
+        return 0
+    def __iter__(self):
+        return iter(())
+    def __getitem__(self, i):
+        return self
+    def __delitem__(self, i):
+        return self
+    def __setitem__(self, i, v):
+        return self
 
 
 del __revision__
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

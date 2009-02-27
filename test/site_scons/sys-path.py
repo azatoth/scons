@@ -44,13 +44,11 @@ print "Imported site_scons/testmod2.py."
 """)
 
 test.write(['sub1', 'SConscript'], """
-import sys
 import testmod2 # This call did not work before the fix
 
 """)
 
 test.write('SConstruct', """
-import sys
 import testmod1 # this always worked
 SConscript('sub1/SConscript')
 """)
@@ -63,3 +61,9 @@ scons: `.' is up to date.\n""")
 test.pass_test()
 
 # end of file
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

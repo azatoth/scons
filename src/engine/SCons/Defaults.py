@@ -38,6 +38,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
+import errno
 import shutil
 import stat
 import string
@@ -169,6 +170,7 @@ def get_paths_str(dest):
         return '"' + str(dest) + '"'
 
 def chmod_func(dest, mode):
+    SCons.Node.FS.invalidate_node_memos(dest)
     if not SCons.Util.is_List(dest):
         dest = [dest]
     for element in dest:
@@ -180,6 +182,7 @@ def chmod_strfunc(dest, mode):
 Chmod = ActionFactory(chmod_func, chmod_strfunc)
 
 def copy_func(dest, src):
+    SCons.Node.FS.invalidate_node_memos(dest)
     if SCons.Util.is_List(src) and os.path.isdir(dest):
         for file in src:
             shutil.copy2(file, dest)
@@ -194,6 +197,7 @@ Copy = ActionFactory(copy_func,
                      convert=str)
 
 def delete_func(dest, must_exist=0):
+    SCons.Node.FS.invalidate_node_memos(dest)
     if not SCons.Util.is_List(dest):
         dest = [dest]
     for entry in dest:
@@ -213,19 +217,34 @@ def delete_strfunc(dest, must_exist=0):
 Delete = ActionFactory(delete_func, delete_strfunc)
 
 def mkdir_func(dest):
+    SCons.Node.FS.invalidate_node_memos(dest)
     if not SCons.Util.is_List(dest):
         dest = [dest]
     for entry in dest:
-        os.makedirs(str(entry))
+        try:
+            os.makedirs(str(entry))
+        except os.error, e:
+            p = str(entry)
+            if (e[0] == errno.EEXIST or (sys.platform=='win32' and e[0]==183)) \
+                    and os.path.isdir(str(entry)):
+                pass            # not an error if already exists
+            else:
+                raise
 
 Mkdir = ActionFactory(mkdir_func,
                       lambda dir: 'Mkdir(%s)' % get_paths_str(dir))
 
-Move = ActionFactory(lambda dest, src: os.rename(src, dest),
+def move_func(dest, src):
+    SCons.Node.FS.invalidate_node_memos(dest)
+    SCons.Node.FS.invalidate_node_memos(src)
+    os.rename(src, dest)
+
+Move = ActionFactory(move_func,
                      lambda dest, src: 'Move("%s", "%s")' % (dest, src),
                      convert=str)
 
 def touch_func(dest):
+    SCons.Node.FS.invalidate_node_memos(dest)
     if not SCons.Util.is_List(dest):
         dest = [dest]
     for file in dest:
@@ -414,7 +433,10 @@ class Variable_Method_Caller:
         self.method = method
     def __call__(self, *args, **kw):
         try: 1/0
-        except ZeroDivisionError: frame = sys.exc_info()[2].tb_frame
+        except ZeroDivisionError: 
+            # Don't start iterating with the current stack-frame to
+            # prevent creating reference cycles (f_back is safe).
+            frame = sys.exc_info()[2].tb_frame.f_back
         variable = self.variable
         while frame:
             if frame.f_locals.has_key(variable):
@@ -448,3 +470,9 @@ ConstructionEnvironment = {
     'File'          : Variable_Method_Caller('TARGET', 'File'),
     'RDirs'         : Variable_Method_Caller('TARGET', 'RDirs'),
 }
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

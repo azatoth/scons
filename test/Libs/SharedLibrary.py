@@ -28,7 +28,6 @@ import os
 import string
 import sys
 
-import TestCmd
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -213,13 +212,13 @@ if sys.platform == 'win32' or string.find(sys.platform, 'irix') != -1:
     test.run(arguments = '-f SConstructFoo')
 else:
     test.run(arguments = '-f SConstructFoo', status=2, stderr='''\
-scons: \*\*\* Source file: foo\..* is static and is not compatible with shared target: .*
+scons: \*\*\* \[.*\] Source file: foo\..* is static and is not compatible with shared target: .*
 ''',
     match=TestSCons.match_re_dotall)
     # Run it again to make sure that we still get the error
     # even though the static objects already exist.
     test.run(arguments = '-f SConstructFoo', status=2, stderr='''\
-scons: \*\*\* Source file: foo\..* is static and is not compatible with shared target: .*
+scons: \*\*\* \[.*\] Source file: foo\..* is static and is not compatible with shared target: .*
 ''',
     match=TestSCons.match_re_dotall)
 
@@ -283,3 +282,9 @@ main(int argc, char *argv[])
              stdout = "f4.c\nprogbar.c\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

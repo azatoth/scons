@@ -35,8 +35,8 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import errno
 import os
 import os.path
-import popen2
 import string
+import subprocess
 import sys
 import select
 
@@ -51,7 +51,7 @@ exitvalmap = {
 def escape(arg):
     "escape shell special characters"
     slash = '\\'
-    special = '"$'
+    special = '"$()'
 
     arg = string.replace(arg, slash, slash+slash)
     for c in special:
@@ -93,7 +93,7 @@ def _get_env_command(sh, escape, cmd, args, env):
     s = string.join(args)
     if env:
         l = ['env', '-'] + \
-            map(lambda t, e=escape: t[0]+'='+e(t[1]), env.items()) + \
+            map(lambda t, e=escape: e(t[0])+'='+e(t[1]), env.items()) + \
             [sh, '-c', escape(s)]
         s = string.join(l)
     return s
@@ -131,8 +131,10 @@ def process_cmd_output(cmd_stdout, cmd_stderr, stdout, stderr):
                 raise
 
 def exec_popen3(l, env, stdout, stderr):
-    proc = popen2.Popen3(string.join(l), 1)
-    process_cmd_output(proc.fromchild, proc.childerr, stdout, stderr)
+    proc = subprocess.Popen(string.join(l),
+                            stdout=stdout,
+                            stderr=stderr,
+                            shell=True)
     stat = proc.wait()
     if stat & 0xff:
         return stat | 0x80
@@ -254,3 +256,9 @@ def generate(env):
 
     # This platform supports RPATH specifications.
     env['__RPATH'] = '$_RPATH'
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -69,6 +69,9 @@ class Node:
     def disambiguate(self):
         return self
 
+    def push_to_cache(self):
+        pass
+
     def retrieve_from_cache(self):
         global cache_text
         if self.cached:
@@ -87,7 +90,8 @@ class Node:
 
     def built(self):
         global built_text
-        built_text = built_text + " really"
+        if not self.cached:
+            built_text = built_text + " really"
 
     def has_builder(self):
         return not self.builder is None
@@ -166,8 +170,21 @@ class Node:
             class Executor:
                 def prepare(self):
                     pass
+                def get_action_targets(self):
+                    return self.targets
+                def get_all_targets(self):
+                    return self.targets
+                def get_all_children(self):
+                    result = []
+                    for node in self.targets:
+                        result.extend(node.children())
+                    return result
+                def get_all_prerequisites(self):
+                    return []
+                def get_action_side_effects(self):
+                    return []
             self.executor = Executor()
-        self.executor.targets = self.targets
+            self.executor.targets = self.targets
         return self.executor
 
 class OtherError(Exception):
@@ -752,7 +769,7 @@ class TaskmasterTestCase(unittest.TestCase):
         # set it up by having something that approximates a real Builder
         # return this list--but that's more work than is probably
         # warranted right now.
-        t.targets = [n1, n2]
+        n1.get_executor().targets = [n1, n2]
         t.prepare()
         assert n1.prepared
         assert n2.prepared
@@ -763,7 +780,7 @@ class TaskmasterTestCase(unittest.TestCase):
         t = tm.next_task()
         # More bogus reaching in and setting the targets.
         n3.set_state(SCons.Node.up_to_date)
-        t.targets = [n3, n4]
+        n3.get_executor().targets = [n3, n4]
         t.prepare()
         assert n3.prepared
         assert n4.prepared
@@ -803,7 +820,7 @@ class TaskmasterTestCase(unittest.TestCase):
         tm = SCons.Taskmaster.Taskmaster([n6, n7])
         t = tm.next_task()
         # More bogus reaching in and setting the targets.
-        t.targets = [n6, n7]
+        n6.get_executor().targets = [n6, n7]
         t.prepare()
         assert n6.prepared
         assert n7.prepared
@@ -815,9 +832,21 @@ class TaskmasterTestCase(unittest.TestCase):
         class ExceptionExecutor:
             def prepare(self):
                 raise Exception, "Executor.prepare() exception"
+            def get_all_targets(self):
+                return self.nodes
+            def get_all_children(self):
+                result = []
+                for node in self.nodes:
+                    result.extend(node.children())
+                return result
+            def get_all_prerequisites(self):
+                return []
+            def get_action_side_effects(self):
+                return []
 
         n11 = Node("n11")
         n11.executor = ExceptionExecutor()
+        n11.executor.nodes = [n11]
         tm = SCons.Taskmaster.Taskmaster([n11])
         t = tm.next_task()
         try:
@@ -876,9 +905,9 @@ class TaskmasterTestCase(unittest.TestCase):
         t = tm.next_task()
         try:
             t.execute()
-        except SCons.Errors.TaskmasterException, e:
+        except SCons.Errors.BuildError, e:
             assert e.node == n4, e.node
-            assert e.errstr == "Exception", e.errstr
+            assert e.errstr == "OtherError : ", e.errstr
             assert len(e.exc_info) == 3, e.exc_info
             exc_traceback = sys.exc_info()[2]
             assert type(e.exc_info[2]) == type(exc_traceback), e.exc_info[2]
@@ -1056,21 +1085,38 @@ Taskmaster: Looking for a node to evaluate
 Taskmaster:     Considering node <no_state   0   'n1'> and its children:
 Taskmaster: Evaluating <pending    0   'n1'>
 
+Task.make_ready_current(): node <pending    0   'n1'>
+Task.prepare():      node <executing  0   'n1'>
+Task.execute():      node <executing  0   'n1'>
+Task.postprocess():  node <executing  0   'n1'>
+
 Taskmaster: Looking for a node to evaluate
 Taskmaster:     Considering node <executed   0   'n1'> and its children:
 Taskmaster:        already handled (executed)
 Taskmaster:     Considering node <no_state   0   'n3'> and its children:
 Taskmaster:        <executed   0   'n1'>
 Taskmaster:        <no_state   0   'n2'>
-Taskmaster:      adjusting ref count: <pending    1   'n3'>
+Taskmaster:      adjusted ref count: <pending    1   'n3'>, child 'n2'
 Taskmaster:     Considering node <no_state   0   'n2'> and its children:
 Taskmaster: Evaluating <pending    0   'n2'>
+
+Task.make_ready_current(): node <pending    0   'n2'>
+Task.prepare():      node <executing  0   'n2'>
+Task.execute():      node <executing  0   'n2'>
+Task.postprocess():  node <executing  0   'n2'>
+Task.postprocess():  removing <executing  0   'n2'>
+Task.postprocess():  adjusted parent ref count <pending    0   'n3'>
 
 Taskmaster: Looking for a node to evaluate
 Taskmaster:     Considering node <pending    0   'n3'> and its children:
 Taskmaster:        <executed   0   'n1'>
 Taskmaster:        <executed   0   'n2'>
 Taskmaster: Evaluating <pending    0   'n3'>
+
+Task.make_ready_current(): node <pending    0   'n3'>
+Task.prepare():      node <executing  0   'n3'>
+Task.execute():      node <executing  0   'n3'>
+Task.postprocess():  node <executing  0   'n3'>
 
 Taskmaster: Looking for a node to evaluate
 Taskmaster: No candidate anymore.
@@ -1084,3 +1130,9 @@ if __name__ == "__main__":
     suite = unittest.makeSuite(TaskmasterTestCase, 'test_')
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

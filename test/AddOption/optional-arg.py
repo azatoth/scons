@@ -29,8 +29,6 @@ Verify use of the nargs='?' keyword argument to specify a long
 command-line option with an optional argument value.
 """
 
-import string
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -100,3 +98,9 @@ test.run(status=2, stderr=expect, match=TestSCons.match_re)
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

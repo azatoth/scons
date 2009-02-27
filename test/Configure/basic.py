@@ -43,6 +43,8 @@ test.write('SConstruct', """\
 env = Environment()
 import os
 env.AppendENVPath('PATH', os.environ['PATH'])
+# Throw in a bad variable name intentionally used by Ubuntu packaging.
+env['ENV']['HASH(0x12345678)'] = 'Bad variable name!'
 conf = Configure(env)
 r1 = conf.CheckCHeader( 'math.h' )
 r2 = conf.CheckCHeader( 'no_std_c_header.h' ) # leads to compile error
@@ -81,3 +83,9 @@ test.checkLogAndStdout(["Checking for C header file math.h... ",
                       "config.log", ".sconf_temp", "SConstruct")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

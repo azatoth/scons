@@ -70,7 +70,8 @@ env = Environment(SWIGFLAGS='-python',
                   CPPPATH='%(python_include_dir)s/',
                   LDMODULEPREFIX='%(ldmodule_prefix)s',
                   LDMODULESUFFIX='%(_dll)s',
-                  FRAMEWORKSFLAGS='%(python_frameworks_flags)s',
+                  FRAMEWORKS='%(python_frameworks_flags)s',
+                  SWIG=r'%(swig)s',
                   )
 
 import sys
@@ -111,3 +112,9 @@ test.run(arguments = '.')
 test.up_to_date(options = '--debug=explain', arguments = '.')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

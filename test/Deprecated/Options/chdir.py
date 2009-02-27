@@ -31,7 +31,7 @@ file lives by using the __name__ value.
 
 import TestSCons
 
-test = TestSCons.TestSCons()
+test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 test.subdir('bin', 'subdir')
 
@@ -51,7 +51,6 @@ print "VARIABLE =", repr(env['VARIABLE'])
 
 test.write(['bin', 'opts.cfg'], """\
 import os
-import os.path
 os.chdir(os.path.split(__name__)[0])
 execfile('opts2.cfg')
 """)
@@ -66,6 +65,16 @@ expect = """\
 VARIABLE = 'opts2.cfg value'
 """
 
-test.run(arguments = '-q -Q .', stdout=expect)
+warnings = """
+scons: warning: The Options class is deprecated; use the Variables class instead.
+""" + TestSCons.file_expr
+
+test.run(arguments = '-q -Q .', stdout=expect, stderr=warnings)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

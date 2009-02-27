@@ -23,8 +23,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import optparse
 import re
 import string
@@ -128,6 +126,7 @@ class SConsValues(optparse.Values):
         'help',
         'implicit_cache',
         'max_drift',
+        'md5_chunksize',
         'no_exec',
         'num_jobs',
         'random',
@@ -175,6 +174,11 @@ class SConsValues(optparse.Values):
                 # file/Node lookups while processing the SConscript files.
                 SCons.Node.FS.set_diskcheck(value)
         elif name == 'stack_size':
+            try:
+                value = int(value)
+            except ValueError:
+                raise SCons.Errors.UserError, "An integer is required: %s"%repr(value)
+        elif name == 'md5_chunksize':
             try:
                 value = int(value)
             except ValueError:
@@ -728,6 +732,13 @@ def Parser(version):
                   help="Set maximum system clock drift to N seconds.",
                   metavar="N")
 
+    op.add_option('--md5-chunksize',
+                  nargs=1, type="int",
+                  dest='md5_chunksize', default=SCons.Node.FS.File.md5_chunksize,
+                  action="store",
+                  help="Set chunk-size for MD5 signature computation to N kilobytes.",
+                  metavar="N")
+
     op.add_option('-n', '--no-exec', '--just-print', '--dry-run', '--recon',
                   dest='no_exec', default=False,
                   action="store_true",
@@ -927,3 +938,9 @@ def Parser(version):
                   help=SUPPRESS_HELP)
 
     return op
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

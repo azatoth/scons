@@ -24,10 +24,8 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os.path
 import string
-import sys
-import time
+
 import TestSCons
 
 _exe = TestSCons._exe
@@ -93,7 +91,6 @@ SConscript('../build/var6/SConscript', "env")
 
 test.subdir(['work1', 'src'])
 test.write(['work1', 'src', 'SConscript'], """
-import os
 import os.path
 
 def buildIt(target, source, env):
@@ -406,3 +403,9 @@ non_existing.h:
 """)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

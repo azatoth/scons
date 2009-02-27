@@ -29,11 +29,9 @@ Test that the --debug=stree option prints a dependency tree with output
 that indicates the state of various Node status flags.
 """
 
-import TestSCons
-import sys
 import string
-import re
-import time
+
+import TestSCons
 
 test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
@@ -135,3 +133,9 @@ test.run(arguments = "--no-exec --debug=stree foo.xxx",
 test.fail_test(string.count(test.stdout(), stree2) != 1)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

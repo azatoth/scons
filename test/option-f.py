@@ -24,8 +24,9 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import os
+
 import TestSCons
-import os.path
 
 test = TestSCons.TestSCons()
 
@@ -41,6 +42,11 @@ print "SConscript " + os.getcwd()
 test.write(subdir_BuildThis, """
 import os
 print "subdir/BuildThis", os.getcwd()
+""")
+
+test.write('Build2', """
+import os
+print "Build2", os.getcwd()
 """)
 
 wpath = test.workpath()
@@ -84,6 +90,10 @@ print "STDIN " + os.getcwd()
          stdout = test.wrap_stdout(read_str = 'STDIN %s\n' % wpath,
                                    build_str = "scons: `.' is up to date.\n"))
 
+expect = test.wrap_stdout(read_str = 'Build2 %s\nSConscript %s\n' % (wpath, wpath),
+                          build_str = "scons: `.' is up to date.\n")
+test.run(arguments = '-f Build2 -f SConscript .', stdout=expect)
+
 test.run(arguments = '-f no_such_file .',
          stdout = test.wrap_stdout("scons: `.' is up to date.\n"),
          stderr = None)
@@ -92,3 +102,9 @@ scons: warning: Ignoring missing SConscript 'no_such_file'
 """ + TestSCons.file_expr))
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

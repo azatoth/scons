@@ -46,7 +46,6 @@ if not os.environ.get('QTDIR', None):
 
 test.write('SConstruct', """
 import os
-import os.path
 
 def DoWithVariables(variables, prefix, what):
   saved_variables = { }
@@ -152,3 +151,9 @@ env.Tool('qt', ['$TOOL_PATH'])
 test.run(arguments = '.')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

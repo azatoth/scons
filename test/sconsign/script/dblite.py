@@ -29,6 +29,8 @@ Verify that various ways of getting at a an sconsign file written with
 the default dblite module and default .dblite suffix work correctly.
 """
 
+import re
+
 import TestSConsign
 
 test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
@@ -36,6 +38,9 @@ test = TestSConsign.TestSConsign(match = TestSConsign.match_re)
 CC = test.detect('CC', norm=1)
 LINK = test.detect('LINK', norm=1)
 if LINK is None: LINK = CC
+
+CC = re.escape(CC)
+LINK = re.escape(LINK)
 
 test.subdir('sub1', 'sub2')
 
@@ -139,3 +144,9 @@ test.run_sconsign(arguments = "%s -r -f dblite my_sconsign.dblite" % common_flag
                   stdout = expect_r)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

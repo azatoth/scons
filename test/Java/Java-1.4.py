@@ -29,9 +29,8 @@ Test Java compilation with a live Java 1.4 "javac" compiler.
 """
 
 import os
-import os.path
-import string
 import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -397,3 +396,9 @@ classes_must_not_exist('class5', expect_5)
 test.fail_test(failed)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

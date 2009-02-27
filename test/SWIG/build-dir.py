@@ -66,11 +66,12 @@ test.write(['SConstruct'], """\
 #
 env = Environment(CPPPATH = [".", r'%(python_include_dir)s'],
                   CPPDEFINES = "NDEBUG",
+                  SWIG =r'%(swig)s',
                   SWIGFLAGS = ["-python", "-c++"],
                   SWIGCXXFILESUFFIX = "_wrap.cpp",
                   LDMODULEPREFIX='_',
                   LDMODULESUFFIX='%(_dll)s',
-                  FRAMEWORKSFLAGS='%(python_frameworks_flags)s')
+                  FRAMEWORKS='%(python_frameworks_flags)s')
 
 import sys
 if sys.version[0] == '1':
@@ -167,3 +168,9 @@ test.run(arguments = '.')
 test.up_to_date(arguments = '.')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

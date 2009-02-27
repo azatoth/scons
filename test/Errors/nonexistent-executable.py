@@ -97,11 +97,12 @@ else:
         not_found_127 % (no_such_file, 'f1'),
         No_such % (no_such_file, 'f1'),
     ]
-    error_message_not_found = 1
-    for err in errs:
-        if string.find(test.stderr(), err) != -1:
-            error_message_not_found = None
-            break
-    test.fail_test(error_message_not_found)
+    test.must_contain_any_line(test.stderr(), errs)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

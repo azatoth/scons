@@ -28,7 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test the ability to create a rpm package from a explicit target name.
 """
 
-import os
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -87,3 +86,9 @@ scons: *** Setting target is not supported for rpm.
 test.run(arguments='', status=2, stderr=expect)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

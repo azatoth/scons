@@ -29,8 +29,6 @@ Writing and reading information to the .sconsign file or files.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 import cPickle
 import os
 import os.path
@@ -375,3 +373,9 @@ def File(name, dbm_module=None):
         DB_Name = name
         if not dbm_module is None:
             DB_Module = dbm_module
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

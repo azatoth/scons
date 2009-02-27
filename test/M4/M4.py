@@ -29,9 +29,8 @@ Test that $M4 and $M4FLAGS work as expected.
 """
 
 import os
-import os.path
 import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -49,7 +48,8 @@ sys.exit(0)
 """)
 
 test.write('SConstruct', """
-env = Environment(M4 = r'%(_python_)s mym4.py', tools=['default', 'm4'])
+env = Environment(tools=['default', 'm4'],
+                  M4 = r'%(_python_)s mym4.py')
 env.M4(target = 'aaa.x', source = 'aaa.x.m4')
 """ % locals())
 
@@ -78,9 +78,11 @@ os.system(string.join(sys.argv[1:], " "))
 """ % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
 
     test.write('SConstruct', """
-foo = Environment(M4=r'%(m4)s', M4FLAGS='-DFFF=fff')
+foo = Environment(tools=['default', 'm4'],
+                  M4=r'%(m4)s', M4FLAGS='-DFFF=fff')
 m4 = foo.Dictionary('M4')
-bar = Environment(M4 = r'%(_python_)s wrapper.py ' + m4, M4FLAGS='-DBBB=bbb')
+bar = Environment(tools=['default', 'm4'],
+                  M4 = r'%(_python_)s wrapper.py ' + m4, M4FLAGS='-DBBB=bbb')
 foo.M4(target = 'foo.x', source = 'foo.x.m4')
 bar.M4(target = 'bar', source = 'bar.m4')
 """ % locals())
@@ -104,3 +106,9 @@ bar.M4(target = 'bar', source = 'bar.m4')
     test.fail_test(test.read('bar', 'r') != "line 1\nbbb\nline 3\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

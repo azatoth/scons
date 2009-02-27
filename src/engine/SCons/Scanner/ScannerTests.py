@@ -481,6 +481,8 @@ class ClassicTestCase(unittest.TestCase):
                 return self._exists
             def get_contents(self):
                 return self._contents
+            def get_text_contents(self):
+                return self._contents
             def get_dir(self):
                 return self._dir
 
@@ -590,3 +592,9 @@ if __name__ == "__main__":
     result = runner.run(suite())
     if not result.wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

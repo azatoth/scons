@@ -32,8 +32,6 @@ This is a test for fix of Issue 1004, reported by Matt Doar and
 packaged by Gary Oberbrunner.
 """
 
-import string
-
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -85,6 +83,12 @@ test.must_not_exist('test1.obj')
 test.run(arguments="-Q case=2", stderr=None)
 
 expect = 'strip.py: %s' % test.workpath('test1.exe')
-test.fail_test(string.find(test.stdout(), expect) == -1)
+test.must_contain_all_lines(test.stdout(), [expect])
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

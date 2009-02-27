@@ -33,7 +33,7 @@ selection method.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.Util
+import SCons
 
 import os.path
 
@@ -98,3 +98,9 @@ def exists(env):
         if os.path.exists(cppc):
             return cppc
     return None
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

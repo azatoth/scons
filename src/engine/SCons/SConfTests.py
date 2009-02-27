@@ -207,6 +207,8 @@ class SConfTestCase(unittest.TestCase):
                         return None
                     def prepare(self):
                         pass
+                    def push_to_cache(self):
+                        pass
                     def retrieve_from_cache(self):
                         return 0
                     def build(self, **kw):
@@ -219,10 +221,11 @@ class SConfTestCase(unittest.TestCase):
                         pass
                     def get_executor(self):
                         class Executor:
-                            pass
-                        e = Executor()
-                        e.targets = [self]
-                        return e
+                            def __init__(self, targets):
+                                self.targets = targets
+                            def get_all_targets(self):
+                                return self.targets
+                        return Executor([self])
                 return [MyNode('n1'), MyNode('n2')]
         try:
             self.scons_env.Append(BUILDERS = {'SConfActionBuilder' : MyBuilder()})
@@ -304,6 +307,100 @@ int main() {
             assert ret and output == "RUN OK" + os.linesep, (ret, output)
             (ret, output) = sconf.TryAction(action=actionFAIL)
             assert not ret and output == "", (ret, output)
+        finally:
+            sconf.Finish()
+
+    def _test_check_compilers(self, comp, func, name):
+        """This is the implementation for CheckCC and CheckCXX tests."""
+        from copy import deepcopy
+
+        # Check that Check* works
+        r = func()
+        assert r, "could not find %s ?" % comp
+
+        # Check that Check* does fail if comp is not available in env
+        oldcomp = deepcopy(self.scons_env[comp])
+        del self.scons_env[comp]
+        r = func()
+        assert not r, "%s worked wo comp ?" % name
+
+        # Check that Check* does fail if comp is set but empty
+        self.scons_env[comp] = ''
+        r = func()
+        assert not r, "%s worked with comp = '' ?" % name
+
+        # Check that Check* does fail if comp is set to buggy executable
+        self.scons_env[comp] = 'thiscccompilerdoesnotexist'
+        r = func()
+        assert not r, "%s worked with comp = thiscompilerdoesnotexist ?" % name
+
+        # Check that Check* does fail if CFLAGS is buggy
+        self.scons_env[comp] = oldcomp
+        self.scons_env['%sFLAGS' % comp] = '/WX qwertyuiop.c'
+        r = func()
+        assert not r, "%s worked with %sFLAGS = qwertyuiop ?" % (name, comp)
+
+    def test_CheckCC(self):
+        """Test SConf.CheckCC()
+        """
+        self._resetSConfState()
+        sconf = self.SConf.SConf(self.scons_env,
+                                 conf_dir=self.test.workpath('config.tests'),
+                                 log_file=self.test.workpath('config.log'))
+        try:
+            try:
+                self._test_check_compilers('CC', sconf.CheckCC, 'CheckCC')
+            except AssertionError:
+                sys.stderr.write(self.test.read('config.log'))
+                raise
+        finally:
+            sconf.Finish()
+
+    def test_CheckSHCC(self):
+        """Test SConf.CheckSHCC()
+        """
+        self._resetSConfState()
+        sconf = self.SConf.SConf(self.scons_env,
+                                 conf_dir=self.test.workpath('config.tests'),
+                                 log_file=self.test.workpath('config.log'))
+        try:
+            try:
+                self._test_check_compilers('SHCC', sconf.CheckSHCC, 'CheckSHCC')
+            except AssertionError:
+                sys.stderr.write(self.test.read('config.log'))
+                raise
+        finally:
+            sconf.Finish()
+
+    def test_CheckCXX(self):
+        """Test SConf.CheckCXX()
+        """
+        self._resetSConfState()
+        sconf = self.SConf.SConf(self.scons_env,
+                                 conf_dir=self.test.workpath('config.tests'),
+                                 log_file=self.test.workpath('config.log'))
+        try:
+            try:
+                self._test_check_compilers('CXX', sconf.CheckCXX, 'CheckCXX')
+            except AssertionError:
+                sys.stderr.write(self.test.read('config.log'))
+                raise
+        finally:
+            sconf.Finish()
+
+    def test_CheckSHCXX(self):
+        """Test SConf.CheckSHCXX()
+        """
+        self._resetSConfState()
+        sconf = self.SConf.SConf(self.scons_env,
+                                 conf_dir=self.test.workpath('config.tests'),
+                                 log_file=self.test.workpath('config.log'))
+        try:
+            try:
+                self._test_check_compilers('SHCXX', sconf.CheckSHCXX, 'CheckSHCXX')
+            except AssertionError:
+                sys.stderr.write(self.test.read('config.log'))
+                raise
         finally:
             sconf.Finish()
 
@@ -655,3 +752,8 @@ if __name__ == "__main__":
     if not res.wasSuccessful():
         sys.exit(1)
 
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

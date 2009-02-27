@@ -31,5 +31,20 @@ and will then be removed entirely (some day).
 """
 
 import SCons.Variables
+import SCons.Warnings
 
-EnumOption = SCons.Variables.EnumVariable
+warned = False
+
+def EnumOption(*args, **kw):
+    global warned
+    if not warned:
+        msg = "The EnumOption() function is deprecated; use the EnumVariable() function instead."
+        SCons.Warnings.warn(SCons.Warnings.DeprecatedOptionsWarning, msg)
+        warned = True
+    return apply(SCons.Variables.EnumVariable, args, kw)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

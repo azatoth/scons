@@ -49,7 +49,8 @@ if not pdflatex:
 test.subdir('sub')
 
 test.write('SConstruct', """\
-env = Environment(TOOLS = ['tex', 'pdftex'])
+import os
+env = Environment(TOOLS = ['tex', 'pdftex'], ENV = {'PATH' : os.environ['PATH']})
 env.PDF( 'sub/x.tex' )
 env.DVI( 'sub/x.tex' )
 """)
@@ -87,3 +88,9 @@ Sub-document 2
 test.not_up_to_date(arguments = '.')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

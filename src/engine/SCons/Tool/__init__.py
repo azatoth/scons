@@ -55,6 +55,7 @@ DefaultToolpath=[]
 CScanner = SCons.Scanner.C.CScanner()
 DScanner = SCons.Scanner.D.DScanner()
 LaTeXScanner = SCons.Scanner.LaTeX.LaTeXScanner()
+PDFLaTeXScanner = SCons.Scanner.LaTeX.PDFLaTeXScanner()
 ProgramScanner = SCons.Scanner.Prog.ProgramScanner()
 SourceFileScanner = SCons.Scanner.Base({}, name='SourceFileScanner')
 
@@ -76,8 +77,13 @@ for suffix in CSuffixes:
 for suffix in DSuffixes:
     SourceFileScanner.add_scanner(suffix, DScanner)
 
+# FIXME: what should be done here? Two scanners scan the same extensions,
+# but look for different files, e.g., "picture.eps" vs. "picture.pdf".
+# The builders for DVI and PDF explicitly reference their scanners
+# I think that means this is not needed???
 for suffix in LaTeXSuffixes:
-     SourceFileScanner.add_scanner(suffix, LaTeXScanner)
+    SourceFileScanner.add_scanner(suffix, LaTeXScanner)
+    SourceFileScanner.add_scanner(suffix, PDFLaTeXScanner)
 
 class Tool:
     def __init__(self, name, toolpath=[], **kw):
@@ -136,7 +142,7 @@ class Tool:
                         file.close()
                     return module
                 except ImportError, e:
-                    if e!="No module named %s"%self.name:
+                    if str(e)!="No module named %s"%self.name:
                         raise SCons.Errors.EnvironmentError, e
                     try:
                         import zipimport
@@ -266,7 +272,7 @@ def createLoadableModuleBuilder(env):
         action_list = [ SCons.Defaults.SharedCheck,
                         SCons.Defaults.LdModuleLinkAction ]
         ld_module = SCons.Builder.Builder(action = action_list,
-                                          emitter = "$SHLIBEMITTER",
+                                          emitter = "$LDMODULEEMITTER",
                                           prefix = '$LDMODULEPREFIX',
                                           suffix = '$LDMODULESUFFIX',
                                           target_scanner = ProgramScanner,
@@ -659,3 +665,9 @@ def tool_list(platform, env):
              + other_tools)
 
     return filter(lambda x: x, tools)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

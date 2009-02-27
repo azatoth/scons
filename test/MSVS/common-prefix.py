@@ -31,13 +31,11 @@ solution (.sln) files that look correct.
 """
 
 import os
-import os.path
 import sys
 
-import TestCmd
-import TestSCons
+import TestSConsMSVS
 
-test = TestSCons.TestSCons()
+test = TestSConsMSVS.TestSConsMSVS()
 
 if sys.platform != 'win32':
     msg = "Skipping Visual Studio test on non-Windows platform '%s'\n" % sys.platform
@@ -180,3 +178,9 @@ assert vcproj[:len(expect)] == expect, test.diff_substr(expect, vcproj)
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

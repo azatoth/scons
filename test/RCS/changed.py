@@ -28,8 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test explicit checkouts from local RCS files.
 """
 
-import os.path
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -95,3 +93,9 @@ test.run(program = test.workpath('main.exe'), stdout = "main.c 2\n")
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

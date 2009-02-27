@@ -29,7 +29,6 @@ Test the ListVariable canned Variable type.
 """
 
 import os
-import os.path
 import string
 
 import TestSCons
@@ -175,3 +174,9 @@ scons: Nothing to be done for `dummy'.
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

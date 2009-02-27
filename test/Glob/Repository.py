@@ -55,6 +55,12 @@ def cat(env, source, target):
         f.write(open(src, "rb").read())
     f.close()
 
+# Verify that we can glob a repository-only Node that exists
+# only in memory, not on disk.
+File('../repository/mmm.in')
+m = Glob('m*.in')
+assert str(m[0]) == 'mmm.in'
+
 env = Environment(BUILDERS={'Build':Builder(action=cat)})
 env.Build('aaa.out', Glob('a*.in'))
 env.Build('bbb.out', Glob('b*.in'))
@@ -115,3 +121,9 @@ test.must_match(['work', 'ccc.out'], "repository/ccc.in\n")
 
 #
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

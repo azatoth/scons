@@ -30,8 +30,8 @@ Verify that the Install() Builder works
 
 import os.path
 import string
-import sys
 import time
+
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -134,16 +134,22 @@ test.write(['work', 'f1.in'], "f1.in again again\n")
 os.chmod(test.workpath('work', 'export'), 0555)
 f = open(f1_out, 'rb')
 
-expect = """\
-scons: *** [%s] %s: Permission denied
-""" % (os.path.join('export', 'f1.out'),
-       test.workpath('work', 'export', 'f1.out'))
 
-test.run(chdir = 'work',
-         arguments = f1_out,
-         stderr=expect,
-         status=2)
+expect =  [
+    "Permission denied",
+    "The process cannot access the file because it is being used by another process",
+]
+
+test.run(chdir = 'work', arguments = f1_out, stderr=None, status=2)
+
+test.must_contain_any_line(test.stderr(), expect)
 
 f.close()
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -28,7 +28,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test transparent RCS checkouts from an RCS subdirectory.
 """
 
-import os.path
+import os
 
 import TestSCons
 
@@ -122,7 +122,7 @@ expect = """\
 
 scons: warning: Ignoring missing SConscript '%(sub_SConscript)s'
 %(SConstruct_file_line)s
-scons: *** Source `aaa.in' not found, needed by target `aaa.out'.  Stop.
+scons: *** [aaa.out] Source `aaa.in' not found, needed by target `aaa.out'.
 """ % locals()
 
 test.run(status=2, stderr=expect)
@@ -186,3 +186,9 @@ test.must_be_writable(test.workpath('sub', 'fff.in'))
 
 #
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

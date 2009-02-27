@@ -52,8 +52,9 @@ if not dvips or not latex:
 test.subdir(['docs'])
 
 test.write(['SConstruct'], """\
+import os
 env = Environment(tools = ['pdftex', 'dvipdf', 'dvips', 'tex', 'latex'],
-                  ENV = {},
+                  ENV = {'PATH' : os.environ['PATH']},
                   BUILD_DIR = '#build/docs')
 
 # Use 'duplicate=1' because LaTeX toolchain does not work properly for
@@ -164,3 +165,9 @@ if ps_output_1 != ps_output_2:
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

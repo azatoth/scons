@@ -100,7 +100,7 @@ expect = """\
 
 scons: warning: Ignoring missing SConscript '%(sub_SConscript)s'
 %(SConstruct_file_line)s
-scons: *** Source `aaa.in' not found, needed by target `aaa.out'.  Stop.
+scons: *** [aaa.out] Source `aaa.in' not found, needed by target `aaa.out'.
 """ % locals()
 
 test.run(status=2, stderr=expect)
@@ -123,14 +123,7 @@ cat(["sub/fff.out"], ["sub/fff.in"])
 cat(["sub/all"], ["sub/ddd.out", "sub/eee.out", "sub/fff.out"])
 """, '\n')
 
-stdout = test.stdout()
-missing = filter(lambda l, s=stdout: string.find(s, l) == -1, lines)
-if missing:
-    print "Missing the following output lines:"
-    print string.join(missing, '\n')
-    print "Actual STDOUT =========="
-    print stdout
-    test.fail_test(1)
+test.must_contain_all_lines(test.stdout(), lines)
 
 test.must_match('all', """\
 s.aaa.in aaa.in
@@ -147,3 +140,9 @@ test.must_not_be_writable(test.workpath('sub', 'fff.in'))
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

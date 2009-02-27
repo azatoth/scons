@@ -50,8 +50,6 @@ interface and the SCons build engine.  There are two key classes here:
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import SCons.compat
-
 from itertools import chain
 import operator
 import string
@@ -60,6 +58,7 @@ import traceback
 
 import SCons.Errors
 import SCons.Node
+import SCons.Warnings
 
 StateString = SCons.Node.StateString
 NODE_NO_STATE = SCons.Node.no_state
@@ -140,6 +139,10 @@ class Task:
         self.node = node
         self.exc_clear()
 
+    def trace_message(self, method, node, description='node'):
+        fmt = '%-20s %s %s\n'
+        return fmt % (method + ':', description, self.tm.trace_node(node))
+
     def display(self, message):
         """
         Hook to allow the calling interface to display a message.
@@ -161,6 +164,8 @@ class Task:
         unlink underlying files and make all necessary directories before
         the Action is actually called to build the targets.
         """
+        T = self.tm.trace
+        if T: T.write(self.trace_message('Task.prepare()', self.node))
 
         # Now that it's the appropriate time, give the TaskMaster a
         # chance to raise any exceptions it encountered while preparing
@@ -181,8 +186,9 @@ class Task:
         # target t.prepare() methods check that each target's explicit
         # or implicit dependencies exists, and also initialize the
         # .sconsign info.
-        self.targets[0].get_executor().prepare()
-        for t in self.targets:
+        executor = self.targets[0].get_executor()
+        executor.prepare()
+        for t in executor.get_action_targets():
             t.prepare()
             for s in t.side_effects:
                 s.prepare()
@@ -193,14 +199,14 @@ class Task:
         return self.node
 
     def needs_execute(self):
-        """
-        Called to determine whether the task's execute() method should
-        be run.
-
-        This method allows one to skip the somethat costly execution
-        of the execute() method in a seperate thread. For example,
-        that would be unnecessary for up-to-date targets.
-        """
+        # TODO(deprecate):  "return True" is the old default behavior;
+        # change it to NotImplementedError (after running through the
+        # Deprecation Cycle) so the desired behavior is explicitly
+        # determined by which concrete subclass is used.
+        #raise NotImplementedError
+        msg = ('Direct use of the Taskmaster.Task class will be deprecated\n'
+               + '\tin a future release.')
+        SCons.Warnings.warn(SCons.Warnings.TaskmasterNeedsExecuteWarning, msg)
         return True
 
     def execute(self):
@@ -211,11 +217,20 @@ class Task:
         so only do thread safe stuff here.  Do thread unsafe stuff in
         prepare(), executed() or failed().
         """
+        T = self.tm.trace
+        if T: T.write(self.trace_message('Task.execute()', self.node))
 
         try:
             everything_was_cached = 1
             for t in self.targets:
-                if not t.retrieve_from_cache():
+                if t.retrieve_from_cache():
+                    # Call the .built() method without calling the
+                    # .push_to_cache() method, since we just got the
+                    # target from the cache and don't need to push
+                    # it back there.
+                    t.set_state(NODE_EXECUTED)
+                    t.built()
+                else:
                     everything_was_cached = 0
                     break
             if not everything_was_cached:
@@ -227,9 +242,11 @@ class Task:
             raise
         except SCons.Errors.BuildError:
             raise
-        except:
-            raise SCons.Errors.TaskmasterException(self.targets[0],
-                                                   sys.exc_info())
+        except Exception, e:
+            buildError = SCons.Errors.convert_to_BuildError(e)
+            buildError.node = self.targets[0]
+            buildError.exc_info = sys.exc_info()
+            raise buildError
 
     def executed_without_callbacks(self):
         """
@@ -237,6 +254,10 @@ class Task:
         and the Taskmaster instance doesn't want to call
         the Node's callback methods.
         """
+        T = self.tm.trace
+        if T: T.write(self.trace_message('Task.executed_without_callbacks()',
+                                         self.node))
+
         for t in self.targets:
             if t.get_state() == NODE_EXECUTING:
                 for side_effect in t.side_effects:
@@ -256,11 +277,16 @@ class Task:
         post-visit actions that must take place regardless of whether
         or not the target was an actual built target or a source Node.
         """
+        T = self.tm.trace
+        if T: T.write(self.trace_message('Task.executed_with_callbacks()',
+                                         self.node))
+
         for t in self.targets:
             if t.get_state() == NODE_EXECUTING:
                 for side_effect in t.side_effects:
                     side_effect.set_state(NODE_NO_STATE)
                 t.set_state(NODE_EXECUTED)
+                t.push_to_cache()
                 t.built()
             t.visited()
 
@@ -269,17 +295,30 @@ class Task:
     def failed(self):
         """
         Default action when a task fails:  stop the build.
+
+        Note: Although this function is normally invoked on nodes in
+        the executing state, it might also be invoked on up-to-date
+        nodes when using Configure().
         """
         self.fail_stop()
 
     def fail_stop(self):
         """
         Explicit stop-the-build failure.
+
+        This sets failure status on the target nodes and all of
+        their dependent parent nodes.
+
+        Note: Although this function is normally invoked on nodes in
+        the executing state, it might also be invoked on up-to-date
+        nodes when using Configure().
         """
-        
+        T = self.tm.trace
+        if T: T.write(self.trace_message('Task.failed_stop()', self.node))
+
         # Invoke will_not_build() to clean-up the pending children
         # list.
-        self.tm.will_not_build(self.targets)
+        self.tm.will_not_build(self.targets, lambda n: n.set_state(NODE_FAILED))
 
         # Tell the taskmaster to not start any new tasks
         self.tm.stop()
@@ -296,9 +335,16 @@ class Task:
 
         This sets failure status on the target nodes and all of
         their dependent parent nodes.
+
+        Note: Although this function is normally invoked on nodes in
+        the executing state, it might also be invoked on up-to-date
+        nodes when using Configure().
         """
-        self.tm.will_not_build(self.targets)
-        
+        T = self.tm.trace
+        if T: T.write(self.trace_message('Task.failed_continue()', self.node))
+
+        self.tm.will_not_build(self.targets, lambda n: n.set_state(NODE_FAILED))
+
     def make_ready_all(self):
         """
         Marks all targets in a task ready for execution.
@@ -306,6 +352,9 @@ class Task:
         This is used when the interface needs every target Node to be
         visited--the canonical example being the "scons -c" option.
         """
+        T = self.tm.trace
+        if T: T.write(self.trace_message('Task.make_ready_all()', self.node))
+
         self.out_of_date = self.targets[:]
         for t in self.targets:
             t.disambiguate().set_state(NODE_EXECUTING)
@@ -319,6 +368,10 @@ class Task:
 
         This is the default behavior for building only what's necessary.
         """
+        T = self.tm.trace
+        if T: T.write(self.trace_message('Task.make_ready_current()',
+                                         self.node))
+
         self.out_of_date = []
         needs_executing = False
         for t in self.targets:
@@ -338,7 +391,7 @@ class Task:
                 t.set_state(NODE_EXECUTING)
                 for s in t.side_effects:
                     s.set_state(NODE_EXECUTING)
-        else:                
+        else:
             for t in self.targets:
                 # We must invoke visited() to ensure that the node
                 # information has been computed before allowing the
@@ -359,6 +412,8 @@ class Task:
         waiting parent Nodes, or Nodes waiting on a common side effect,
         that can be put back on the candidates list.
         """
+        T = self.tm.trace
+        if T: T.write(self.trace_message('Task.postprocess()', self.node))
 
         # We may have built multiple targets, some of which may have
         # common parents waiting for this build.  Count up how many
@@ -369,8 +424,16 @@ class Task:
 
         targets = set(self.targets)
 
+        pending_children = self.tm.pending_children
         parents = {}
         for t in targets:
+            # A node can only be in the pending_children set if it has
+            # some waiting_parents.
+            if t.waiting_parents:
+                if T: T.write(self.trace_message('Task.postprocess()',
+                                                 t,
+                                                 'removing'))
+                pending_children.discard(t)
             for p in t.waiting_parents:
                 parents[p] = parents.get(p, 0) + 1
 
@@ -383,13 +446,14 @@ class Task:
                 for p in s.waiting_s_e:
                     if p.ref_count == 0:
                         self.tm.candidates.append(p)
-                        self.tm.pending_children.discard(p)
 
         for p, subtract in parents.items():
             p.ref_count = p.ref_count - subtract
+            if T: T.write(self.trace_message('Task.postprocess()',
+                                             p,
+                                             'adjusted parent ref count'))
             if p.ref_count == 0:
                 self.tm.candidates.append(p)
-                self.tm.pending_children.discard(p)
 
         for t in targets:
             t.postprocess()
@@ -447,6 +511,30 @@ class Task:
             exc_traceback = None
         raise exc_type, exc_value, exc_traceback
 
+class AlwaysTask(Task):
+    def needs_execute(self):
+        """
+        Always returns True (indicating this Task should always
+        be executed).
+
+        Subclasses that need this behavior (as opposed to the default
+        of only executing Nodes that are out of date w.r.t. their
+        dependencies) can use this as follows:
+
+            class MyTaskSubclass(SCons.Taskmaster.Task):
+                needs_execute = SCons.Taskmaster.Task.execute_always
+        """
+        return True
+
+class OutOfDateTask(Task):
+    def needs_execute(self):
+        """
+        Returns True (indicating this Task should be executed) if this
+        Task's target state indicates it needs executing, which has
+        already been determined by an earlier up-to-date check.
+        """
+        return self.targets[0].get_state() == SCons.Node.executing
+
 
 def find_cycle(stack, visited):
     if stack[-1] in visited:
@@ -467,11 +555,13 @@ class Taskmaster:
     The Taskmaster for walking the dependency DAG.
     """
 
-    def __init__(self, targets=[], tasker=Task, order=None, trace=None):
+    def __init__(self, targets=[], tasker=None, order=None, trace=None):
         self.original_top = targets
         self.top_targets_left = targets[:]
         self.top_targets_left.reverse()
         self.candidates = []
+        if tasker is None:
+            tasker = OutOfDateTask
         self.tasker = tasker
         if not order:
             order = lambda l: l
@@ -480,7 +570,6 @@ class Taskmaster:
         self.trace = trace
         self.next_candidate = self.find_next_candidate
         self.pending_children = set()
-
 
     def find_next_candidate(self):
         """
@@ -521,7 +610,7 @@ class Taskmaster:
     def no_next_candidate(self):
         """
         Stops Taskmaster processing by not returning a next candidate.
-        
+
         Note that we have to clean-up the Taskmaster candidate list
         because the cycle detection depends on the fact all nodes have
         been processed somehow.
@@ -529,8 +618,95 @@ class Taskmaster:
         while self.candidates:
             candidates = self.candidates
             self.candidates = []
-            self.will_not_build(candidates, lambda n: n.state < NODE_UP_TO_DATE)
+            self.will_not_build(candidates)
         return None
+
+    def _validate_pending_children(self):
+        """
+        Validate the content of the pending_children set. Assert if an
+        internal error is found.
+
+        This function is used strictly for debugging the taskmaster by
+        checking that no invariants are violated. It is not used in
+        normal operation.
+
+        The pending_children set is used to detect cycles in the
+        dependency graph. We call a "pending child" a child that is
+        found in the "pending" state when checking the dependencies of
+        its parent node.
+
+        A pending child can occur when the Taskmaster completes a loop
+        through a cycle. For example, lets imagine a graph made of
+        three node (A, B and C) making a cycle. The evaluation starts
+        at node A. The taskmaster first consider whether node A's
+        child B is up-to-date. Then, recursively, node B needs to
+        check whether node C is up-to-date. This leaves us with a
+        dependency graph looking like:
+
+                                      Next candidate \
+                                                      \
+        Node A (Pending) --> Node B(Pending) --> Node C (NoState)
+                ^                                     |
+                |                                     |
+                +-------------------------------------+
+
+        Now, when the Taskmaster examines the Node C's child Node A,
+        it finds that Node A is in the "pending" state. Therefore,
+        Node A is a pending child of node C.
+
+        Pending children indicate that the Taskmaster has potentially
+        loop back through a cycle. We say potentially because it could
+        also occur when a DAG is evaluated in parallel. For example,
+        consider the following graph:
+
+
+        Node A (Pending) --> Node B(Pending) --> Node C (Pending) --> ...
+                |                                     ^
+                |                                     |
+                +----------> Node D (NoState) --------+
+                                  /
+                  Next candidate /
+
+        The Taskmaster first evaluates the nodes A, B, and C and
+        starts building some children of node C. Assuming, that the
+        maximum parallel level has not been reached, the Taskmaster
+        will examine Node D. It will find that Node C is a pending
+        child of Node D.
+
+        In summary, evaluating a graph with a cycle will always
+        involve a pending child at one point. A pending child might
+        indicate either a cycle or a diamond-shaped DAG. Only a
+        fraction of the nodes ends-up being a "pending child" of
+        another node. This keeps the pending_children set small in
+        practice.
+
+        We can differentiate between the two cases if we wait until
+        the end of the build. At this point, all the pending children
+        nodes due to a diamond-shaped DAG will have been properly
+        built (or will have failed to build). But, the pending
+        children involved in a cycle will still be in the pending
+        state.
+
+        The taskmaster removes nodes from the pending_children set as
+        soon as a pending_children node moves out of the pending
+        state. This also helps to keep the pending_children set small.
+        """
+
+        for n in self.pending_children:
+            assert n.state in (NODE_PENDING, NODE_EXECUTING), \
+                (str(n), StateString[n.state])
+            assert len(n.waiting_parents) != 0, (str(n), len(n.waiting_parents))
+            for p in n.waiting_parents:
+                assert p.ref_count > 0, (str(n), str(p), p.ref_count)
+
+
+    def trace_message(self, message):
+        return 'Taskmaster: %s\n' % message
+
+    def trace_node(self, node):
+        return '<%-10s %-3s %s>' % (StateString[node.get_state()],
+                                    node.ref_count,
+                                    repr(str(node)))
 
     def _find_next_ready_node(self):
         """
@@ -557,16 +733,24 @@ class Taskmaster:
         self.ready_exc = None
 
         T = self.trace
-        if T: T.write('\nTaskmaster: Looking for a node to evaluate\n')
+        if T: T.write('\n' + self.trace_message('Looking for a node to evaluate'))
 
         while 1:
             node = self.next_candidate()
             if node is None:
-                if T: T.write('Taskmaster: No candidate anymore.\n\n')
+                if T: T.write(self.trace_message('No candidate anymore.') + '\n')
                 return None
 
             node = node.disambiguate()
             state = node.get_state()
+
+            # For debugging only:
+            #
+            # try:
+            #     self._validate_pending_children()
+            # except:
+            #     self.ready_exc = sys.exc_info()
+            #     return node
 
             if CollectStats:
                 if not hasattr(node, 'stats'):
@@ -577,8 +761,7 @@ class Taskmaster:
             else:
                 S = None
 
-            if T: T.write('Taskmaster:     Considering node <%-10s %-3s %s> and its children:\n' % 
-                          (StateString[node.get_state()], node.ref_count, repr(str(node))))
+            if T: T.write(self.trace_message('    Considering node %s and its children:' % self.trace_node(node)))
 
             if state == NODE_NO_STATE:
                 # Mark this node as being on the execution stack:
@@ -586,25 +769,27 @@ class Taskmaster:
             elif state > NODE_PENDING:
                 # Skip this node if it has already been evaluated:
                 if S: S.already_handled = S.already_handled + 1
-                if T: T.write('Taskmaster:        already handled (executed)\n')
+                if T: T.write(self.trace_message('       already handled (executed)'))
                 continue
 
+            executor = node.get_executor()
+
             try:
-                children = node.children()
+                children = executor.get_all_children()
             except SystemExit:
                 exc_value = sys.exc_info()[1]
                 e = SCons.Errors.ExplicitExit(node, exc_value.code)
                 self.ready_exc = (SCons.Errors.ExplicitExit, e)
-                if T: T.write('Taskmaster:        SystemExit\n')
+                if T: T.write(self.trace_message('       SystemExit'))
                 return node
-            except:
+            except Exception, e:
                 # We had a problem just trying to figure out the
                 # children (like a child couldn't be linked in to a
                 # VariantDir, or a Scanner threw something).  Arrange to
                 # raise the exception when the Task is "executed."
                 self.ready_exc = sys.exc_info()
                 if S: S.problem = S.problem + 1
-                if T: T.write('Taskmaster:        exception while scanning children.\n')
+                if T: T.write(self.trace_message('       exception %s while scanning children.\n' % e))
                 return node
 
             children_not_visited = []
@@ -612,11 +797,10 @@ class Taskmaster:
             children_not_ready = []
             children_failed = False
 
-            for child in chain(children,node.prerequisites):
+            for child in chain(children, executor.get_all_prerequisites()):
                 childstate = child.get_state()
 
-                if T: T.write('Taskmaster:        <%-10s %-3s %s>\n' % 
-                              (StateString[childstate], child.ref_count, repr(str(child))))
+                if T: T.write(self.trace_message('       ' + self.trace_node(child)))
 
                 if childstate == NODE_NO_STATE:
                     children_not_visited.append(child)
@@ -635,8 +819,8 @@ class Taskmaster:
             children_not_visited.reverse()
             self.candidates.extend(self.order(children_not_visited))
             #if T and children_not_visited:
-            #    T.write('Taskmaster:      adding to candidates: %s\n' % map(str, children_not_visited))
-            #    T.write('Taskmaster:      candidates now: %s\n' % map(str, self.candidates))
+            #    T.write(self.trace_message('     adding to candidates: %s' % map(str, children_not_visited)))
+            #    T.write(self.trace_message('     candidates now: %s\n' % map(str, self.candidates)))
 
             # Skip this node if any of its children have failed.
             #
@@ -657,11 +841,11 @@ class Taskmaster:
             # added the other children to the list of candidate nodes
             # to keep on building (--keep-going).
             if children_failed:
-                node.set_state(NODE_FAILED)
+                for n in executor.get_action_targets():
+                    n.set_state(NODE_FAILED)
 
                 if S: S.child_failed = S.child_failed + 1
-                if T: T.write('Taskmaster:****** <%-10s %-3s %s>\n' % 
-                              (StateString[node.get_state()], node.ref_count, repr(str(node))))
+                if T: T.write(self.trace_message('****** %s\n' % self.trace_node(node)))
                 continue
 
             if children_not_ready:
@@ -675,17 +859,21 @@ class Taskmaster:
                     # count so we can be put back on the list for
                     # re-evaluation when they've all finished.
                     node.ref_count =  node.ref_count + child.add_to_waiting_parents(node)
-                    if T: T.write('Taskmaster:      adjusting ref count: <%-10s %-3s %s>\n' %
-                                  (StateString[node.get_state()], node.ref_count, repr(str(node))))
+                    if T: T.write(self.trace_message('     adjusted ref count: %s, child %s' %
+                                  (self.trace_node(node), repr(str(child)))))
 
+                if T:
+                    for pc in children_pending:
+                        T.write(self.trace_message('       adding %s to the pending children set\n' %
+                                self.trace_node(pc)))
                 self.pending_children = self.pending_children | children_pending
-                
+
                 continue
 
             # Skip this node if it has side-effects that are
             # currently being built:
             wait_side_effects = False
-            for se in node.side_effects:
+            for se in executor.get_action_side_effects():
                 if se.get_state() == NODE_EXECUTING:
                     se.add_to_waiting_s_e(node)
                     wait_side_effects = True
@@ -697,8 +885,17 @@ class Taskmaster:
             # The default when we've gotten through all of the checks above:
             # this node is ready to be built.
             if S: S.build = S.build + 1
-            if T: T.write('Taskmaster: Evaluating <%-10s %-3s %s>\n' % 
-                          (StateString[node.get_state()], node.ref_count, repr(str(node))))
+            if T: T.write(self.trace_message('Evaluating %s\n' %
+                                             self.trace_node(node)))
+
+            # For debugging only:
+            #
+            # try:
+            #     self._validate_pending_children()
+            # except:
+            #     self.ready_exc = sys.exc_info()
+            #     return node
+
             return node
 
         return None
@@ -715,7 +912,7 @@ class Taskmaster:
         if node is None:
             return None
 
-        tlist = node.get_executor().targets
+        tlist = node.get_executor().get_all_targets()
 
         task = self.tasker(self, tlist, node in self.original_top, node)
         try:
@@ -734,23 +931,24 @@ class Taskmaster:
 
         return task
 
-    def will_not_build(self, nodes, mark_fail=lambda n: n.state != NODE_FAILED):
+    def will_not_build(self, nodes, node_func=lambda n: None):
         """
-        Perform clean-up about nodes that will never be built.
+        Perform clean-up about nodes that will never be built. Invokes
+        a user defined function on all of these nodes (including all
+        of their parents).
         """
+
+        T = self.trace
 
         pending_children = self.pending_children
 
-        to_visit = set()
-        for node in nodes:
-            # Set failure state on all of the parents that were dependent
-            # on this failed build.
-            if mark_fail(node):
-                node.set_state(NODE_FAILED)
-                parents = node.waiting_parents
-                to_visit = to_visit | parents
-                pending_children = pending_children - parents
+        to_visit = set(nodes)
+        pending_children = pending_children - to_visit
 
+        if T:
+            for n in nodes:
+                T.write(self.trace_message('       removing node %s from the pending children set\n' %
+                        self.trace_node(n)))
         try:
             while 1:
                 try:
@@ -762,11 +960,21 @@ class Taskmaster:
                         to_visit.remove(node)
                     else:
                         break
-                if mark_fail(node):
-                    node.set_state(NODE_FAILED)
-                    parents = node.waiting_parents
-                    to_visit = to_visit | parents
-                    pending_children = pending_children - parents
+
+                node_func(node)
+
+                # Prune recursion by flushing the waiting children
+                # list immediately.
+                parents = node.waiting_parents
+                node.waiting_parents = set()
+
+                to_visit = to_visit | parents
+                pending_children = pending_children - parents
+
+                for p in parents:
+                    p.ref_count = p.ref_count - 1
+                    if T: T.write(self.trace_message('       removing parent %s from the pending children set\n' %
+                                  self.trace_node(p)))
         except KeyError:
             # The container to_visit has been emptied.
             pass
@@ -786,15 +994,37 @@ class Taskmaster:
         """
         Check for dependency cycles.
         """
-        if self.pending_children:
-            desc = 'Found dependency cycle(s):\n'
-            for node in self.pending_children:
-                cycle = find_cycle([node], set())
-                if cycle:
-                    desc = desc + "  " + string.join(map(str, cycle), " -> ") + "\n"
-                else:
-                    desc = desc + \
-                        "  Internal Error: no cycle found for node %s (%s) in state %s\n" %  \
-                        (node, repr(node), StateString[node.get_state()]) 
+        if not self.pending_children:
+            return
 
-            raise SCons.Errors.UserError, desc
+        # TODO(1.5)
+        #nclist = [ (n, find_cycle([n], set())) for n in self.pending_children ]
+        nclist = map(lambda n: (n, find_cycle([n], set())), self.pending_children)
+
+        # TODO(1.5)
+        #genuine_cycles = [
+        #    node for node, cycle in nclist
+        #             if cycle or node.get_state() != NODE_EXECUTED
+        #]
+        genuine_cycles = filter(lambda t: t[1] or t[0].get_state() != NODE_EXECUTED, nclist)
+        if not genuine_cycles:
+            # All of the "cycles" found were single nodes in EXECUTED state,
+            # which is to say, they really weren't cycles.  Just return.
+            return
+
+        desc = 'Found dependency cycle(s):\n'
+        for node, cycle in nclist:
+            if cycle:
+                desc = desc + "  " + string.join(map(str, cycle), " -> ") + "\n"
+            else:
+                desc = desc + \
+                    "  Internal Error: no cycle found for node %s (%s) in state %s\n" %  \
+                    (node, repr(node), StateString[node.get_state()])
+
+        raise SCons.Errors.UserError, desc
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -67,8 +67,11 @@ class MyAction(MyActionBase):
     def __init__(self):
         self.order = 0
 
-    def __call__(self, target, source, env):
+    def __call__(self, target, source, env, executor=None):
         global built_it, built_target, built_source, built_args, built_order
+        if executor:
+            target = executor.get_all_targets()
+            source = executor.get_all_sources()
         built_it = 1
         built_target = target
         built_source = source
@@ -431,6 +434,12 @@ class NodeTestCase(unittest.TestCase):
         n.built()
         assert n.cleared, n.cleared
         assert n.ninfo.updated, n.ninfo.cleared
+
+    def test_push_to_cache(self):
+        """Test the base push_to_cache() method"""
+        n = SCons.Node.Node()
+        r = n.push_to_cache()
+        assert r is None, r
 
     def test_retrieve_from_cache(self):
         """Test the base retrieve_from_cache() method"""
@@ -1300,3 +1309,9 @@ if __name__ == "__main__":
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

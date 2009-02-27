@@ -26,7 +26,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -34,7 +34,7 @@ _python_ = TestSCons._python_
 test = TestSCons.TestSCons()
 
 test.write('myrmic.py', r"""
-import os.path
+import os
 import sys
 args = sys.argv[1:]
 while args:
@@ -324,3 +324,9 @@ test.must_exist(test.workpath('outdir2', 'com', 'sub', 'bar', 'Example4_Stub.cla
 test.up_to_date(arguments = '.')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

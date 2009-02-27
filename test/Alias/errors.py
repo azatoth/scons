@@ -24,10 +24,7 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import sys
 import TestSCons
-import TestCmd
 
 test = TestSCons.TestSCons()
 
@@ -40,7 +37,13 @@ env.Alias('A', 'B')
 """)
 
 test.run(arguments='A',
-         stderr="scons: *** Source `D' not found, needed by target `C'.  Stop.\n",
+         stderr="scons: *** [C] Source `D' not found, needed by target `C'.\n",
          status=2)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

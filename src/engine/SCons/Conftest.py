@@ -142,6 +142,101 @@ int main() {
     _YesNoResult(context, ret, None, text)
     return ret
 
+def CheckCC(context):
+    """
+    Configure check for a working C compiler.
+
+    This checks whether the C compiler, as defined in the $CC construction
+    variable, can compile a C source file. It uses the current $CCCOM value
+    too, so that it can test against non working flags.
+
+    """
+    context.Display("Checking whether the C compiler works")
+    text = """
+int main()
+{
+    return 0;
+}
+"""
+    ret = _check_empty_program(context, 'CC', text, 'C')
+    _YesNoResult(context, ret, None, text)
+    return ret
+
+def CheckSHCC(context):
+    """
+    Configure check for a working shared C compiler.
+
+    This checks whether the C compiler, as defined in the $SHCC construction
+    variable, can compile a C source file. It uses the current $SHCCCOM value
+    too, so that it can test against non working flags.
+
+    """
+    context.Display("Checking whether the (shared) C compiler works")
+    text = """
+int foo()
+{
+    return 0;
+}
+"""
+    ret = _check_empty_program(context, 'SHCC', text, 'C', use_shared = True)
+    _YesNoResult(context, ret, None, text)
+    return ret
+
+def CheckCXX(context):
+    """
+    Configure check for a working CXX compiler.
+
+    This checks whether the CXX compiler, as defined in the $CXX construction
+    variable, can compile a CXX source file. It uses the current $CXXCOM value
+    too, so that it can test against non working flags.
+
+    """
+    context.Display("Checking whether the C++ compiler works")
+    text = """
+int main()
+{
+    return 0;
+}
+"""
+    ret = _check_empty_program(context, 'CXX', text, 'C++')
+    _YesNoResult(context, ret, None, text)
+    return ret
+
+def CheckSHCXX(context):
+    """
+    Configure check for a working shared CXX compiler.
+
+    This checks whether the CXX compiler, as defined in the $SHCXX construction
+    variable, can compile a CXX source file. It uses the current $SHCXXCOM value
+    too, so that it can test against non working flags.
+
+    """
+    context.Display("Checking whether the (shared) C++ compiler works")
+    text = """
+int main()
+{
+    return 0;
+}
+"""
+    ret = _check_empty_program(context, 'SHCXX', text, 'C++', use_shared = True)
+    _YesNoResult(context, ret, None, text)
+    return ret
+
+def _check_empty_program(context, comp, text, language, use_shared = False):
+    """Return 0 on success, 1 otherwise."""
+    if not context.env.has_key(comp) or not context.env[comp]:
+        # The compiler construction variable is not set or empty
+        return 1
+
+    lang, suffix, msg = _lang2suffix(language)
+    if msg:
+        return 1
+
+    if use_shared:
+        return context.CompileSharedObject(text, suffix)
+    else:
+        return context.CompileProg(text, suffix)
+
 
 def CheckFunc(context, function_name, header = None, language = None):
     """
@@ -681,3 +776,9 @@ def _lang2suffix(lang):
 
 
 # vim: set sw=4 et sts=4 tw=79 fo+=l:
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

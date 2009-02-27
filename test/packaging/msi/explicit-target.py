@@ -29,7 +29,6 @@ Test the ability to use a explicit target package name and the use
 of FindInstalledFiles() in conjuction with .msi packages.
 """
 
-import os
 import TestSCons
 
 python = TestSCons.python
@@ -90,3 +89,9 @@ test.fail_test( not Package.attributes['Description'].value == 'balalalalal' )
 test.fail_test( not Package.attributes['Comments'].value    == 'this should be reallly really long' )
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

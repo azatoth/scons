@@ -56,7 +56,6 @@ __all__ = ['PackageVariable',]
 
 import string
 
-import SCons.compat
 import SCons.Errors
 
 __enable_strings  = ('1', 'yes', 'true',  'on', 'enable', 'search')
@@ -102,3 +101,9 @@ def PackageVariable(key, help, default, searchfunc=None):
     return (key, help, default,
             lambda k, v, e, f=searchfunc: _validator(k,v,e,f),
             _converter)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

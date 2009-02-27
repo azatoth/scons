@@ -29,6 +29,7 @@ Verify that we handle %module(directors="1") statements, both with and
 without white space before the opening parenthesis.
 """
 
+import os.path
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -40,17 +41,26 @@ if not swig:
 
 python_include_dir = test.get_python_inc()
 
+python_frameworks_flags = test.get_python_frameworks_flags()
+
+Python_h = os.path.join(python_include_dir, 'Python.h')
+if not os.path.exists(Python_h):
+    test.skip_test('Can not find %s, skipping test.\n' % Python_h)
+
 test.write(['SConstruct'], """\
-env = Environment(SWIGFLAGS = '-python',
-                  CPPPATH=r"%(python_include_dir)s")
+env = Environment(SWIGFLAGS = '-python -c++',
+                  CPPPATH=r"%(python_include_dir)s",
+                  SWIG=r'%(swig)s',
+		  FRAMEWORKS='%(python_frameworks_flags)s',
+		  )
 
 import sys
 if sys.version[0] == '1':
     # SWIG requires the -classic flag on pre-2.0 Python versions.
     env.Append(SWIGFLAGS = ' -classic')
 
-env.SharedLibrary('test1.so', 'test1.i')
-env.SharedLibrary('test2.so', 'test2.i')
+env.LoadableModule('test1.so', ['test1.i', 'test1.cc'])
+env.LoadableModule('test2.so', ['test2.i', 'test2.cc'])
 """ % locals())
 
 test.write(['test1.cc'], """\
@@ -97,6 +107,17 @@ test.write(['test2.i'], """\
 
 test.run(arguments = '.')
 
+# Note that both tests use directors, so a file *_wrap.h should be generated
+# in each case. If the emitter does not correctly allow for this, the test will
+# not be up to date.
+test.must_exist('test1_wrap.h')
+test.must_exist('test2_wrap.h')
 test.up_to_date(arguments = '.')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

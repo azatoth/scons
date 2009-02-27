@@ -304,7 +304,10 @@ class VariantDirTestCase(unittest.TestCase):
         class MkdirAction(Action):
             def __init__(self, dir_made):
                 self.dir_made = dir_made
-            def __call__(self, target, source, env):
+            def __call__(self, target, source, env, executor=None):
+                if executor:
+                    target = executor.get_all_targets()
+                    source = executor.get_all_sources()
                 self.dir_made.extend(target)
 
         save_Link = SCons.Node.FS.Link
@@ -361,7 +364,7 @@ class VariantDirTestCase(unittest.TestCase):
 
         save_Link = SCons.Node.FS.Link
         def Link_IOError(target, source, env):
-            raise IOError, "Link_IOError"
+            raise IOError, (17, "Link_IOError")
         SCons.Node.FS.Link = SCons.Action.Action(Link_IOError, None)
 
         test.write(['work', 'src', 'IOError'], "work/src/IOError\n")
@@ -1192,6 +1195,18 @@ class FSTestCase(_tempdirTestCase):
         f1 = fs.File(test.workpath("binary_file"))
         assert f1.get_contents() == "Foo\x1aBar", f1.get_contents()
 
+        try:
+            # TODO(1.5)
+            eval('test_string = u"Foo\x1aBar"')
+        except SyntaxError:
+            pass
+        else:
+            # This tests to make sure we can decode UTF-8 text files.
+            test.write("utf8_file", test_string.encode('utf-8'))
+            f1 = fs.File(test.workpath("utf8_file"))
+            assert eval('f1.get_text_contents() == u"Foo\x1aBar"'), \
+                   f1.get_text_contents()
+
         def nonexistent(method, s):
             try:
                 x = method(s, create = 0)
@@ -1257,11 +1272,32 @@ class FSTestCase(_tempdirTestCase):
         finally:
             test.unlink("file")
 
+        # test Entry.get_text_contents()
+        e = fs.Entry('does_not_exist')
+        c = e.get_text_contents()
+        assert c == "", c
+        assert e.__class__ == SCons.Node.FS.Entry
+
+        test.write("file", "file\n")
+        try:
+            e = fs.Entry('file')
+            c = e.get_text_contents()
+            assert c == "file\n", c
+            assert e.__class__ == SCons.Node.FS.File
+        finally:
+            test.unlink("file")
+
         test.subdir("dir")
         e = fs.Entry('dir')
         c = e.get_contents()
         assert c == "", c
         assert e.__class__ == SCons.Node.FS.Dir
+
+        c = e.get_text_contents()
+        try:
+            eval('assert c == u"", c')
+        except SyntaxError:
+            assert c == ""
 
         if hasattr(os, 'symlink'):
             os.symlink('nonexistent', test.workpath('dangling_symlink'))
@@ -1269,6 +1305,11 @@ class FSTestCase(_tempdirTestCase):
             c = e.get_contents()
             assert e.__class__ == SCons.Node.FS.Entry, e.__class__
             assert c == "", c
+            c = e.get_text_contents()
+            try:
+                eval('assert c == u"", c')
+            except SyntaxError:
+                assert c == "", c
 
         test.write("tstamp", "tstamp\n")
         try:
@@ -1653,6 +1694,13 @@ class DirTestCase(_tempdirTestCase):
         assert a[0] == 'pre', a
         assert a[2] == 'post', a
 
+    def test_subclass(self):
+        """Test looking up subclass of Dir nodes"""
+        class DirSubclass(SCons.Node.FS.Dir):
+            pass
+        sd = self.fs._lookup('special_dir', None, DirSubclass, create=1)
+        sd.must_be_same(SCons.Node.FS.Dir)
+
     def test_get_env_scanner(self):
         """Test the Dir.get_env_scanner() method
         """
@@ -1688,6 +1736,35 @@ class DirTestCase(_tempdirTestCase):
                         os.path.join('ddd', 'f1'),
                         os.path.join('ddd', 'f2'),
                         os.path.join('ddd', 'f3')], kids
+
+    def test_get_contents(self):
+        """Test getting the contents for a directory.
+        """
+        test = self.test
+
+        test.subdir('d')
+        test.write(['d', 'g'], "67890\n")
+        test.write(['d', 'f'], "12345\n")
+        test.subdir(['d','sub'])
+        test.write(['d', 'sub','h'], "abcdef\n")
+        test.subdir(['d','empty'])
+
+        d = self.fs.Dir('d')
+        g = self.fs.File(os.path.join('d', 'g'))
+        f = self.fs.File(os.path.join('d', 'f'))
+        h = self.fs.File(os.path.join('d', 'sub', 'h'))
+        e = self.fs.Dir(os.path.join('d', 'empty'))
+        s = self.fs.Dir(os.path.join('d', 'sub'))
+
+        #TODO(1.5) files = d.get_contents().split('\n')
+        files = string.split(d.get_contents(), '\n')
+
+        assert e.get_contents() == '', e.get_contents()
+        assert e.get_text_contents() == '', e.get_text_contents()
+        assert e.get_csig()+" empty" == files[0], files
+        assert f.get_csig()+" f" == files[1], files
+        assert g.get_csig()+" g" == files[2], files
+        assert s.get_csig()+" sub" == files[3], files
 
     def test_implicit_re_scans(self):
         """Test that adding entries causes a directory to be re-scanned
@@ -2042,6 +2119,13 @@ class EntryTestCase(_tempdirTestCase):
 
 class FileTestCase(_tempdirTestCase):
 
+    def test_subclass(self):
+        """Test looking up subclass of File nodes"""
+        class FileSubclass(SCons.Node.FS.File):
+            pass
+        sd = self.fs._lookup('special_file', None, FileSubclass, create=1)
+        sd.must_be_same(SCons.Node.FS.File)
+
     def test_Dirs(self):
         """Test the File.Dirs() method"""
         fff = self.fs.File('subdir/fff')
@@ -2098,6 +2182,7 @@ class GlobTestCase(_tempdirTestCase):
         self.test.write('disk-aaa', "disk-aaa\n")
         self.test.write('disk-bbb', "disk-bbb\n")
         self.test.write('disk-ccc', "disk-ccc\n")
+        self.test.write('#disk-hash', "#disk-hash\n")
         self.test.subdir('disk-sub')
         self.test.write(['disk-sub', 'disk-ddd'], "disk-sub/disk-ddd\n")
         self.test.write(['disk-sub', 'disk-eee'], "disk-sub/disk-eee\n")
@@ -2108,6 +2193,7 @@ class GlobTestCase(_tempdirTestCase):
         self.test.write('both-aaa', "both-aaa\n")
         self.test.write('both-bbb', "both-bbb\n")
         self.test.write('both-ccc', "both-ccc\n")
+        self.test.write('#both-hash', "#both-hash\n")
         self.test.subdir('both-sub1')
         self.test.write(['both-sub1', 'both-ddd'], "both-sub1/both-ddd\n")
         self.test.write(['both-sub1', 'both-eee'], "both-sub1/both-eee\n")
@@ -2120,6 +2206,7 @@ class GlobTestCase(_tempdirTestCase):
         self.both_aaa = fs.File('both-aaa')
         self.both_bbb = fs.File('both-bbb')
         self.both_ccc = fs.File('both-ccc')
+        self._both_hash = fs.File('./#both-hash')
         self.both_sub1 = fs.Dir('both-sub1')
         self.both_sub1_both_ddd = self.both_sub1.File('both-ddd')
         self.both_sub1_both_eee = self.both_sub1.File('both-eee')
@@ -2134,18 +2221,19 @@ class GlobTestCase(_tempdirTestCase):
         self.ggg = fs.File('ggg')
         self.hhh = fs.File('hhh')
         self.iii = fs.File('iii')
+        self._hash = fs.File('./#hash')
         self.subdir1 = fs.Dir('subdir1')
+        self.subdir1_lll = self.subdir1.File('lll')
         self.subdir1_jjj = self.subdir1.File('jjj')
         self.subdir1_kkk = self.subdir1.File('kkk')
-        self.subdir1_lll = self.subdir1.File('lll')
         self.subdir2 = fs.Dir('subdir2')
-        self.subdir2_jjj = self.subdir2.File('jjj')
-        self.subdir2_kkk = self.subdir2.File('kkk')
         self.subdir2_lll = self.subdir2.File('lll')
+        self.subdir2_kkk = self.subdir2.File('kkk')
+        self.subdir2_jjj = self.subdir2.File('jjj')
         self.sub = fs.Dir('sub')
         self.sub_dir3 = self.sub.Dir('dir3')
-        self.sub_dir3_jjj = self.sub_dir3.File('jjj')
         self.sub_dir3_kkk = self.sub_dir3.File('kkk')
+        self.sub_dir3_jjj = self.sub_dir3.File('jjj')
         self.sub_dir3_lll = self.sub_dir3.File('lll')
 
 
@@ -2174,12 +2262,24 @@ class GlobTestCase(_tempdirTestCase):
             r = apply(self.fs.Glob, (input,), kwargs)
             if node_expect:
                 r.sort(lambda a,b: cmp(a.path, b.path))
-                result = node_expect
+                result = []
+                for n in node_expect:
+                    if type(n) == type(''):
+                        n = self.fs.Entry(n)
+                    result.append(n)
+                fmt = lambda n: "%s %s" % (repr(n), repr(str(n)))
             else:
                 r = map(str, r)
                 r.sort()
                 result = string_expect
-            assert r == result, "Glob(%s) expected %s, got %s" % (input, map(str, result), map(str, r))
+                fmt = lambda n: n
+            if r != result:
+                import pprint
+                print "Glob(%s) expected:" % repr(input)
+                pprint.pprint(map(fmt, result))
+                print "Glob(%s) got:" % repr(input)
+                pprint.pprint(map(fmt, r))
+                self.fail()
 
     def test_exact_match(self):
         """Test globbing for exact Node matches"""
@@ -2217,37 +2317,48 @@ class GlobTestCase(_tempdirTestCase):
 
         self.do_cases(cases)
 
-    def test_asterisk(self):
-        """Test globbing for simple asterisk Node matches"""
+    def test_asterisk1(self):
+        """Test globbing for simple asterisk Node matches (1)"""
         cases = (
             ('h*',
              ['hhh'],
              [self.hhh]),
 
             ('*',
-             ['both-aaa', 'both-bbb', 'both-ccc',
+             ['#both-hash', '#hash',
+              'both-aaa', 'both-bbb', 'both-ccc',
               'both-sub1', 'both-sub2',
               'ggg', 'hhh', 'iii',
               'sub', 'subdir1', 'subdir2'],
-             [self.both_aaa, self.both_bbb, self.both_ccc,
+             [self._both_hash, self._hash,
+              self.both_aaa, self.both_bbb, self.both_ccc, 'both-hash',
               self.both_sub1, self.both_sub2,
-              self.ggg, self.hhh, self.iii,
+              self.ggg, 'hash', self.hhh, self.iii,
               self.sub, self.subdir1, self.subdir2]),
         )
 
         self.do_cases(cases, ondisk=False)
 
+    def test_asterisk2(self):
+        """Test globbing for simple asterisk Node matches (2)"""
         cases = (
             ('disk-b*',
              ['disk-bbb'],
              None),
 
             ('*',
-             ['both-aaa', 'both-bbb', 'both-ccc', 'both-sub1', 'both-sub2',
+             ['#both-hash', '#disk-hash', '#hash',
+              'both-aaa', 'both-bbb', 'both-ccc',
+              'both-sub1', 'both-sub2',
               'disk-aaa', 'disk-bbb', 'disk-ccc', 'disk-sub',
               'ggg', 'hhh', 'iii',
               'sub', 'subdir1', 'subdir2'],
-             None),
+             ['./#both-hash', './#disk-hash', './#hash',
+              'both-aaa', 'both-bbb', 'both-ccc', 'both-hash',
+              'both-sub1', 'both-sub2',
+              'disk-aaa', 'disk-bbb', 'disk-ccc', 'disk-sub',
+              'ggg', 'hash', 'hhh', 'iii',
+              'sub', 'subdir1', 'subdir2']),
         )
 
         self.do_cases(cases)
@@ -2303,8 +2414,12 @@ class GlobTestCase(_tempdirTestCase):
               join('both-sub2', 'both-ddd'),
               join('both-sub2', 'both-eee'),
               join('both-sub2', 'both-fff')],
-             [self.both_sub1_both_ddd, self.both_sub1_both_eee, self.both_sub1_both_fff,
-              self.both_sub2_both_ddd, self.both_sub2_both_eee, self.both_sub2_both_fff],
+             [self.both_sub1_both_ddd,
+              self.both_sub1_both_eee,
+              self.both_sub1_both_fff,
+              self.both_sub2_both_ddd,
+              self.both_sub2_both_eee,
+              self.both_sub2_both_fff],
              ),
 
             ('subdir?/*',
@@ -2369,6 +2484,18 @@ class GlobTestCase(_tempdirTestCase):
 
         self.do_cases(cases)
 
+    def test_sort(self):
+        """Test whether globbing sorts"""
+        join = os.path.join
+        # At least sometimes this should return out-of-order items
+        # if Glob doesn't sort.
+        g = self.fs.Glob('disk-sub/*', strings=True)
+        expect = [
+            os.path.join('disk-sub', 'disk-ddd'),
+            os.path.join('disk-sub', 'disk-eee'),
+            os.path.join('disk-sub', 'disk-fff'),
+        ]
+        assert g == expect, str(g) + " is not sorted, but should be!"
 
 
 class RepositoryTestCase(_tempdirTestCase):
@@ -2687,6 +2814,48 @@ class RepositoryTestCase(_tempdirTestCase):
         finally:
             test.unlink(["rep3", "contents"])
 
+    def test_get_text_contents(self):
+        """Ensure get_text_contents() returns text contents from
+        Repositories"""
+        fs = self.fs
+        test = self.test
+
+        # Use a test string that has a file terminator in it to make
+        # sure we read the entire file, regardless of its contents.
+        try:
+            eval('test_string = u"Con\x1aTents\n"')
+        except SyntaxError:
+            import UserString
+            class FakeUnicodeString(UserString.UserString):
+                def encode(self, encoding):
+                    return str(self)
+            test_string = FakeUnicodeString("Con\x1aTents\n")
+
+
+        # Test with ASCII.
+        test.write(["rep3", "contents"], test_string.encode('ascii'))
+        try:
+            c = fs.File("contents").get_text_contents()
+            assert test_string == c, "got %s" % repr(c)
+        finally:
+            test.unlink(["rep3", "contents"])
+
+        # Test with utf-8
+        test.write(["rep3", "contents"], test_string.encode('utf-8'))
+        try:
+            c = fs.File("contents").get_text_contents()
+            assert test_string == c, "got %s" % repr(c)
+        finally:
+            test.unlink(["rep3", "contents"])
+
+        # Test with utf-16
+        test.write(["rep3", "contents"], test_string.encode('utf-16'))
+        try:
+            c = fs.File("contents").get_text_contents()
+            assert test_string == c, "got %s" % repr(c)
+        finally:
+            test.unlink(["rep3", "contents"])
+
     #def test_is_up_to_date(self):
 
 
@@ -2894,7 +3063,10 @@ class prepareTestCase(unittest.TestCase):
         class MkdirAction(Action):
             def __init__(self, dir_made):
                 self.dir_made = dir_made
-            def __call__(self, target, source, env):
+            def __call__(self, target, source, env, executor=None):
+                if executor:
+                    target = executor.get_all_targets()
+                    source = executor.get_all_sources()
                 self.dir_made.extend(target)
 
         dir_made = []
@@ -3172,7 +3344,8 @@ class SpecialAttrTestCase(unittest.TestCase):
         assert s == os.path.normpath('baz/sub/file.suffix'), s
         assert f.srcpath.is_literal(), f.srcpath
         g = f.srcpath.get()
-        assert isinstance(g, SCons.Node.FS.Entry), g.__class__
+        # Gets disambiguated to SCons.Node.FS.File by get_subst_proxy().
+        assert isinstance(g, SCons.Node.FS.File), g.__class__
 
         s = str(f.srcdir)
         assert s == os.path.normpath('baz/sub'), s
@@ -3206,7 +3379,8 @@ class SpecialAttrTestCase(unittest.TestCase):
         try:
             fs.Entry('eee').get_subst_proxy().no_such_attr
         except AttributeError, e:
-            assert str(e) == "Entry instance 'eee' has no attribute 'no_such_attr'", e
+            # Gets disambiguated to File instance by get_subst_proxy().
+            assert str(e) == "File instance 'eee' has no attribute 'no_such_attr'", e
             caught = 1
         assert caught, "did not catch expected AttributeError"
 
@@ -3332,3 +3506,9 @@ if __name__ == "__main__":
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:
