@@ -31,8 +31,9 @@ PSDK 2003 R1 is the earliest version detected.
 import os
 
 import SCons.Errors
-from SCons.Tool.MSCommon.common import debug, read_reg
 import SCons.Util
+
+from common import debug, read_reg
 
 # SDK Checks. This is of course a mess as everything else on MS platforms. Here
 # is what we do to detect the SDK:
@@ -127,7 +128,7 @@ class PlatformSDK(SDKDefinition):
 # If you update this list, update the documentation in Tool/mssdk.xml.
 SupportedSDKList = [
     WindowsSDK('6.1',
-                sanity_check_file=r'include\windows.h'),
+                sanity_check_file=r'bin\SetEnv.Cmd'),
 
     WindowsSDK('6.0A',
                sanity_check_file=r'include\windows.h'),
@@ -228,8 +229,11 @@ def get_cur_sdk_dir_from_reg():
     return val
 
 
-def detect_sdk():
-    return (len(get_installed_sdks()) > 0)
+def detect_sdk(version=None):
+    sdks = get_installed_sdks()
+    if version is None:
+        return len(sdks) > 0
+    return sdks.has_key(version)
 
 def set_sdk_by_version(env, mssdk):
     if not SupportedSDKMap.has_key(mssdk):
