@@ -24,7 +24,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 __doc__ = """
-Common helper functions for working with
+Common helper functions for working with the Microsoft tool chain.
 """
 
 import copy
