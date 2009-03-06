@@ -128,21 +128,40 @@ class PlatformSDK(SDKDefinition):
 # If you update this list, update the documentation in Tool/mssdk.xml.
 SupportedSDKList = [
     WindowsSDK('6.1',
-                sanity_check_file=r'bin\SetEnv.Cmd'),
+               sanity_check_file=r'bin\SetEnv.Cmd',
+               include_subdir='include',
+               lib_subdir={
+                   'x86'       : ['lib'],
+                   'x86_64'    : [r'lib\x64'],
+                   'ia64'      : [r'lib\ia64'],
+               },
+              ),
 
     WindowsSDK('6.0A',
-               sanity_check_file=r'include\windows.h'),
+               sanity_check_file=r'include\windows.h'
+               include_subdir='include',
+               lib_subdir={
+                   'x86'       : ['lib'],
+                   'x86_64'    : [r'lib\x64'],
+                   'ia64'      : [r'lib\ia64'],
+               },
+              ),
 
     WindowsSDK('6.0',
-               sanity_check_file=r'bin\gacutil.exe'),
+               sanity_check_file=r'bin\gacutil.exe',
+               include_subdir='include',
+               lib_subdir='lib',
+              ),
 
     PlatformSDK('2003R2',
                 sanity_check_file=r'SetEnv.Cmd',
-                uuid="D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1"),
+                uuid="D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1"
+               ),
 
     PlatformSDK('2003R1',
                 sanity_check_file=r'SetEnv.Cmd',
-                uuid="8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3"),
+                uuid="8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3",
+               ),
 ]
 
 SupportedSDKMap = {}
