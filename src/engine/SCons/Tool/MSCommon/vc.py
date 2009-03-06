@@ -53,25 +53,27 @@ class VisualC:
         #return ';'.join(result)
         return string.join(result, ';')
 
-    #
+    # Support for searching for an appropriate .bat file.
+    # The map is indexed by (target_architecture, host_architecture).
+    # Entries where the host_architecture is None specify the
+    # cross-platform "default" .bat file if there isn't sn entry
+    # specific to the current host architecture.
 
     batch_file_map = {
-        # Indexed by (target_architecture, host_architecture).
-        ('x86_64', 'x86') : [
-            r'bin\x86_amd64\vcvarsx86_amd64.bat',
-        ],
-        ('x86_64', 'x86') : [
-            r'bin\ia64\vcvarsia64.bat',
-            r'bin\x86_ia64\vcvarsx86_ia64.bat',
-        ],
         ('x86_64', 'x86_64') : [
             r'bin\amd64\vcvarsamd64.bat',
             r'bin\x86_amd64\vcvarsx86_amd64.bat',
         ],
+        ('x86_64', 'x86') : [
+            r'bin\x86_amd64\vcvarsx86_amd64.bat',
+        ],
         ('ia64', 'ia64') : [
+            r'bin\ia64\vcvarsia64.bat',
             r'bin\x86_ia64\vcvarsx86_ia64.bat',
         ],
-        ('x86', 'x86') : [
+        ('ia64', None) : [
+            r'bin\x86_ia64\vcvarsx86_ia64.bat',
+        ('x86', None) : [
             r'bin\vcvars32.bat',
         ],
     }
@@ -79,6 +81,9 @@ class VisualC:
     def find_batch_file(self):
         key = (target_architecture, host_architecture)
         potential_batch_files = self.batch_file_map.get(key)
+        if not potential_batch_files:
+            key = (target_architecture, None)
+            potential_batch_files = self.batch_file_map.get(key)
         if potential_batch_files:
             product_dir = self.msvc_root_dir()
             for batch_file in potential_batch_files:
