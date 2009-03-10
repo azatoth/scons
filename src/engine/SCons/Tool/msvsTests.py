@@ -532,9 +532,9 @@ class msvsTestCase(unittest.TestCase):
         from SCons.Tool.MSCommon.vs import reset_installed_visual_studios
         reset_installed_visual_studios()
 
-    def test_detect_msvs(self):
-        """Test the detect_msvs() function"""
-        r = detect_msvs()
+    def test_msvs_exists(self):
+        """Test the msvs_exists() function"""
+        r = msvs_exists()
         assert r == (self.number_of_versions > 0), r
 
     def test_get_default_version(self):

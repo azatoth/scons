@@ -70,7 +70,7 @@ class SDKDefinition:
         Return None if failed or the directory does not exist.
         """
         if not SCons.Util.can_read_reg:
-            debug('find_sdk_dir():  can not read registry')
+            debug('find_sdk_dir(): can not read registry')
             return None
 
         hkey = self.HKEY_FMT % self.hkey_data
@@ -78,7 +78,7 @@ class SDKDefinition:
         try:
             sdk_dir = read_reg(hkey)
         except WindowsError, e:
-            debug('find_sdk_dir(): no registry key %s' % hkey)
+            debug('find_sdk_dir(): no SDK registry key %s' % repr(hkey))
             return None
 
         if not os.path.exists(sdk_dir):
@@ -87,7 +87,7 @@ class SDKDefinition:
 
         ftc = os.path.join(sdk_dir, self.sanity_check_file)
         if not os.path.exists(ftc):
-            debug("find_sdk_dir():  sanity check %s not found" % ftc)
+            debug("find_sdk_dir(): sanity check %s not found" % ftc)
             return None
 
         return sdk_dir
@@ -138,7 +138,7 @@ SupportedSDKList = [
               ),
 
     WindowsSDK('6.0A',
-               sanity_check_file=r'include\windows.h'
+               sanity_check_file=r'include\windows.h',
                include_subdir='include',
                lib_subdir={
                    'x86'       : ['lib'],

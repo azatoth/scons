@@ -49,7 +49,7 @@ import SCons.Script.SConscript
 import SCons.Util
 import SCons.Warnings
 
-from MSCommon import detect_msvs, merge_default_version
+from MSCommon import msvs_exists, merge_default_version
 
 ##############################################################################
 # Below here are the classes and functions for generation of
@@ -1424,7 +1424,7 @@ def generate(env):
     env['SCONS_HOME'] = os.environ.get('SCONS_HOME')
 
 def exists(env):
-    return detect_msvs()
+    return msvs_exists()
 
 # Local Variables:
 # tab-width:4

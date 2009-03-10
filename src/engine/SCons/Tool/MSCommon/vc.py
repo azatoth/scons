@@ -28,7 +28,11 @@ __doc__ = """Module for Visual C/C++ detection and configuration.
 
 import os
 
+import SCons.Warnings
+
 import common
+
+debug = common.debug
 
 class VisualC:
     """
@@ -37,6 +41,7 @@ class VisualC:
     def __init__(self, version, **kw):
         self.version = version
         self.__dict__.update(kw)
+        self._cache = {}
 
     def vcbin_arch(self):
         if common.is_win64():
@@ -73,34 +78,58 @@ class VisualC:
         ],
         ('ia64', None) : [
             r'bin\x86_ia64\vcvarsx86_ia64.bat',
+        ],
         ('x86', None) : [
             r'bin\vcvars32.bat',
         ],
     }
 
-    def find_batch_file(self):
+    def find_batch_file(self, target_architecture, host_architecture):
         key = (target_architecture, host_architecture)
         potential_batch_files = self.batch_file_map.get(key)
         if not potential_batch_files:
             key = (target_architecture, None)
             potential_batch_files = self.batch_file_map.get(key)
         if potential_batch_files:
-            product_dir = self.msvc_root_dir()
+            product_dir = self.get_vc_dir()
             for batch_file in potential_batch_files:
                 bf = os.path.join(product_dir, batch_file)
                 if os.path.isfile(bf):
                     return bf
         return None
 
+    def find_vc_dir(self):
+        root = 'Software\\'
+        if common.is_win64():
+            root = root + 'Wow6432Node\\'
+        for key in self.hkeys:
+            key = root + key
+            try:
+                comps = common.read_reg(key)
+            except WindowsError, e:
+                debug('find_vc_dir(): no VC registry key %s' % repr(key))
+            else:
+                debug('find_vc_dir(): found VC in registry: %s' % comps)
+                return comps
+        return None
+
     #
 
-    def get_batch_file(self):
+    def get_batch_file(self, target_architecture, host_architecture):
         try:
             return self._cache['batch_file']
         except KeyError:
-            executable = self.find_batch_file()
+            batch_file = self.find_batch_file(target_architecture, host_architecture)
             self._cache['batch_file'] = batch_file
             return batch_file
+
+    def get_vc_dir(self):
+        try:
+            return self._cache['vc_dir']
+        except KeyError:
+            vc_dir = self.find_vc_dir()
+            self._cache['vc_dir'] = vc_dir
+            return vc_dir
         
 
 # The list of supported Visual C/C++ versions we know how to detect.
@@ -110,15 +139,15 @@ class VisualC:
 # this means we should list VC with from most recent to oldest.
 #
 # If you update this list, update the documentation in Tool/vc.xml.
-SupportedVisualCList = [
+SupportedVCList = [
     VisualC('9.0',
-            hkey_root=[
-                r'Software%sMicrosoft\VisualStudio\9.0\Setup\VC\ProductDir',
-                r'Software%sMicrosoft\VCExpress\9.0\Setup\VC\ProductDir',
+            hkeys=[
+                r'Microsoft\VisualStudio\9.0\Setup\VC\ProductDir',
+                r'Microsoft\VCExpress\9.0\Setup\VC\ProductDir',
             ],
             default_install=r'Microsoft Visual Studio 9.0\VC',
             common_tools_var='VS90COMNTOOLS',
-            vc_sub_dir='VC\\',
+            vc_subdir=r'\VC',
             batch_file_base='vcvars',
             supported_arch=['x86', 'x86_64', 'ia64'],
             atlmc_include_subdir = [r'ATLMFC\INCLUDE'],
@@ -133,13 +162,13 @@ SupportedVisualCList = [
             },
     ),
     VisualC('8.0',
-            hkey_root=[
-                r'Software%sMicrosoft\VisualStudio\8.0\Setup\VC\ProductDir',
-                r'Software%sMicrosoft\VCExpress\8.0\Setup\VC\ProductDir',
+            hkeys=[
+                r'Microsoft\VisualStudio\8.0\Setup\VC\ProductDir',
+                r'Microsoft\VCExpress\8.0\Setup\VC\ProductDir',
             ],
             default_install=r'%s\Microsoft Visual Studio 8\VC',
             common_tools_var='VS80COMNTOOLS',
-            vc_sub_dir='VC\\',
+            vc_subdir=r'\VC',
             batch_file_base='vcvars',
             supported_arch=['x86', 'x86_64', 'ia64'],
             atlmc_include_subdir = [r'ATLMFC\INCLUDE'],
@@ -154,12 +183,12 @@ SupportedVisualCList = [
             },
     ),
     VisualC('7.1',
-            hkey_root=[
-                r'Software%sMicrosoft\VisualStudio\7.1\Setup\VC\ProductDir',
+            hkeys=[
+                r'Microsoft\VisualStudio\7.1\Setup\VC\ProductDir',
             ],
             default_install=r'%s\Microsoft Visual Studio 7.1.NET 2003\VC7',
             common_tools_var='VS71COMNTOOLS',
-            vc_sub_dir='VC7\\',
+            vc_subdir=r'\VC7',
             batch_file_base='vcvars',
             supported_arch=['x86'],
             atlmc_include_subdir = [r'ATLMFC\INCLUDE'],
@@ -168,12 +197,12 @@ SupportedVisualCList = [
             },
     ),
     VisualC('7.0',
-            hkey_root=[
-                r'Software%sMicrosoft\VisualStudio\7.0\Setup\VC\ProductDir',
+            hkeys=[
+                r'Microsoft\VisualStudio\7.0\Setup\VC\ProductDir',
             ],
             default_install=r'%s\Microsoft Visual Studio .NET\VC7',
             common_tools_var='VS70COMNTOOLS',
-            vc_sub_dir='VC7\\',
+            vc_subdir=r'\VC7',
             batch_file_base='vcvars',
             supported_arch=['x86'],
             atlmc_include_subdir = [r'ATLMFC\INCLUDE'],
@@ -182,12 +211,12 @@ SupportedVisualCList = [
             },
     ),
     VisualC('6.0',
-            hkey_root=[
-                r'Software%sMicrosoft\VisualStudio\6.0\Setup\Microsoft Visual C++\ProductDir',
+            hkeys=[
+                r'Microsoft\VisualStudio\6.0\Setup\Microsoft Visual C++\ProductDir',
             ],
             default_install=r'%s\Microsoft Visual Studio\VC98',
             common_tools_var='VS60COMNTOOLS',
-            vc_sub_dir='VC98\\',
+            vc_subdir=r'\VC98',
             batch_file_base='vcvars',
             supported_arch=['x86'],
             atlmc_include_subdir = [r'ATL\INCLUDE', r'MFC\INCLUDE'],
@@ -225,12 +254,6 @@ def get_installed_vcs():
     return InstalledVCList
 
 
-def detect_vc(version=None):
-    vcs = get_installed_vcs()
-    if version is None:
-        return len(vcs) > 0
-    return vcs.has_key(version)
-
 def set_vc_by_version(env, msvc):
     if not SupportedVCMap.has_key(msvc):
         msg = "VC version %s is not supported" % repr(msvc)
@@ -241,6 +264,62 @@ def set_vc_by_version(env, msvc):
         msg = "VC version %s is not installed" % repr(msvc)
         raise SCons.Errors.UserError, msg
     set_vc_by_directory(env, vc.get_vc_dir())
+
+# New stuff
+
+def script_env(script):
+    stdout = common.get_output(script)
+    return common.parse_output(stdout)
+
+def msvc_setup_env(env):
+    debug('msvc_setup_env()')
+    installed_vcs = get_installed_vcs()
+    msvc_version = env.get('MSVC_VERSION')
+    if not msvc_version:
+        if not installed_vcs:
+            msg = 'No installed VCs'
+            debug('msv %s\n' % repr(msg))
+            SCons.Warnings.warn(SCons.Warnings.VisualCMissingWarning, msg)
+            return
+        msvc = installed_vcs[0]
+        msvc_version = msvc.version
+        env['MSVC_VERSION'] = msvc_version
+    else:
+        msvc = InstalledVCMap.get(msvc_version)
+        if not msvc:
+            msg = 'VC version %s not installed' % msvc_version
+            debug('msv %s\n' % repr(msg))
+            SCons.Warnings.warn(SCons.Warnings.VisualCMissingWarning, msg)
+            return
+
+    host_platform = env.get('HOST_PLATFORM')
+    if not host_platform:
+      #host_platform = get_default_host_platform()
+      host_platform = 'x86'
+    target_platform = env.get('TARGET_PLATFORM')
+    if not target_platform:
+      target_platform = host_platform
+
+    use_script = env.get('MSVC_USE_SCRIPT', True)
+    if SCons.Util.is_String(use_script):
+        d = script_env(use_script)
+        debug('use_script 1 %s\n' % repr(use_script))
+    elif use_script:
+        script = msvc.get_batch_file(target_platform, host_platform)
+        d = script_env(script)
+        debug('use_script 2 %s\n' % repr(script))
+    else:
+        d = msvc.get_default_env()
+        debug('msvc.get_default_env()\n')
+
+    for k, v in d.items():
+        env.PrependENVPath(k, v, delete_existing=True)
+      
+def msvc_exists(version=None):
+    vcs = get_installed_vcs()
+    if version is None:
+        return len(vcs) > 0
+    return InstalledVCMap.has_key(version)
 
 # Local Variables:
 # tab-width:4
