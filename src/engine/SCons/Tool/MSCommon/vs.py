@@ -52,6 +52,18 @@ class VisualStudio:
 
     #
 
+    def find_batch_file(self):
+        vs_dir = self.get_vs_dir()
+        if not vs_dir:
+            debug('find_executable():  no vs_dir')
+            return None
+        batch_file = os.path.join(vs_dir, self.batch_file_path)
+        batch_file = os.path.normpath(batch_file)
+        if not os.path.isfile(batch_file):
+            debug('find_batch_file():  %s not on file system' % batch_file)
+            return None
+        return batch_file
+
     def find_vs_dir(self):
         vc.get_installed_vcs()
         ivc = vc.InstalledVCMap.get(self.vc_version)
@@ -61,11 +73,11 @@ class VisualStudio:
         return ivc.get_vc_dir()[:-len(ivc.vc_subdir)]
 
     def find_executable(self):
-        pdir = self.get_vs_dir()
-        if not pdir:
-            debug('find_executable():  no pdir')
+        vs_dir = self.get_vs_dir()
+        if not vs_dir:
+            debug('find_executable():  no vs_dir')
             return None
-        executable = os.path.join(pdir, self.executable_path)
+        executable = os.path.join(vs_dir, self.executable_path)
         executable = os.path.normpath(executable)
         if not os.path.isfile(executable):
             debug('find_executable():  %s not on file system' % executable)
@@ -73,6 +85,14 @@ class VisualStudio:
         return executable
 
     #
+
+    def get_batch_file(self):
+        try:
+            return self._cache['batch_file']
+        except KeyError:
+            batch_file = self.find_batch_file()
+            self._cache['batch_file'] = batch_file
+            return batch_file
 
     def get_executable(self):
         try:
@@ -163,7 +183,8 @@ SupportedVSList = [
     VisualStudio('9.0',
                  hkeys=[r'Microsoft\VisualStudio\9.0'],
                  common_tools_var='VS90COMNTOOLS',
-                 executable_path=r'..\Common7\IDE\devenv.com',
+                 executable_path=r'Common7\IDE\devenv.com',
+                 batch_file_path='Common7\Tools\vsvars32.bat',
                  default_dirname='Microsoft Visual Studio 9',
                  supported_arch=['x86', 'amd64'],
     ),
@@ -175,7 +196,8 @@ SupportedVSList = [
                  vc_version='9.0',
                  hkeys=[r'Microsoft\VisualStudio\9.0'],
                  common_tools_var='VS90COMNTOOLS',
-                 executable_path=r'..\Common7\IDE\VCExpress.exe',
+                 executable_path=r'Common7\IDE\VCExpress.exe',
+                 batch_file_path='Common7\Tools\vsvars32.bat',
                  default_dirname='Microsoft Visual Studio 9',
                  supported_arch=['x86'],
     ),
@@ -186,7 +208,8 @@ SupportedVSList = [
     VisualStudio('8.0',
                  hkeys=[r'Microsoft\VisualStudio\8.0'],
                  common_tools_var='VS80COMNTOOLS',
-                 executable_path=r'..\Common7\IDE\devenv.com',
+                 executable_path=r'Common7\IDE\devenv.com',
+                 batch_file_path='Common7\Tools\vsvars32.bat',
                  default_dirname='Microsoft Visual Studio 8',
                  supported_arch=['x86', 'amd64'],
     ),
@@ -198,9 +221,8 @@ SupportedVSList = [
                  vc_version='8.0',
                  hkeys=[r'Microsoft\VCExpress\8.0'],
                  common_tools_var='VS80COMNTOOLS',
-                 # The batch file is in the VC directory, so
-                 # so the devenv.com executable is next door in ..\IDE.
-                 executable_path=r'..\Common7\IDE\VCExpress.exe',
+                 executable_path=r'Common7\IDE\VCExpress.exe',
+                 batch_file_path='Common7\Tools\vsvars32.bat',
                  default_dirname='Microsoft Visual Studio 8',
                  supported_arch=['x86'],
     ),
@@ -211,7 +233,8 @@ SupportedVSList = [
     VisualStudio('7.1',
                  hkeys=[r'Microsoft\VisualStudio\7.1'],
                  common_tools_var='VS71COMNTOOLS',
-                 executable_path=r'..\IDE\devenv.com',
+                 executable_path=r'IDE\devenv.com',
+                 batch_file_path='Common7\Tools\vsvars32.bat',
                  default_dirname='Microsoft Visual Studio .NET',
                  supported_arch=['x86'],
     ),
@@ -222,7 +245,8 @@ SupportedVSList = [
     VisualStudio('7.0',
                  hkeys=[r'Microsoft\VisualStudio\7.0'],
                  common_tools_var='VS70COMNTOOLS',
-                 executable_path=r'..\IDE\devenv.com',
+                 executable_path=r'IDE\devenv.com',
+                 batch_file_path='Common7\Tools\vsvars32.bat',
                  default_dirname='Microsoft Visual Studio .NET',
                  supported_arch=['x86'],
     ),
@@ -232,6 +256,7 @@ SupportedVSList = [
                  hkeys=[r'Microsoft\VisualStudio\6.0'],
                  common_tools_var='VS60COMNTOOLS',
                  executable_path=r'Common\MSDev98\Bin\MSDEV.COM',
+                 batch_file_path='Common7\Tools\vsvars32.bat',
                  default_dirname='Microsoft Visual Studio',
                  supported_arch=['x86'],
     ),
