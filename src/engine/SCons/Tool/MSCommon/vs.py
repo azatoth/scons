@@ -37,7 +37,7 @@ from common import debug, \
                    normalize_env, \
                    parse_output
 
-import vc
+import SCons.Tool.MSCommon.vc
 
 class VisualStudio:
     """
@@ -65,8 +65,8 @@ class VisualStudio:
         return batch_file
 
     def find_vs_dir(self):
-        vc.get_installed_vcs()
-        ivc = vc.InstalledVCMap.get(self.vc_version)
+        SCons.Tool.MSCommon.vc.get_installed_vcs()
+        ivc = SCons.Tool.MSCommon.vc.InstalledVCMap.get(self.vc_version)
         if not ivc:
             debug('find_vs_dir():  no installed VC %s' % self.vc_version)
             return None
