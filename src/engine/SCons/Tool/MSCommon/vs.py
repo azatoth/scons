@@ -47,6 +47,7 @@ class VisualStudio:
     def __init__(self, version, **kw):
         self.version = version
         kw['vc_version'] = kw.get('vc_version', version)
+        kw['sdk_version'] = kw.get('sdk_version', version)
         self.__dict__.update(kw)
         self._cache = {}
 
@@ -181,6 +182,7 @@ SupportedVSList = [
     # The batch file we look for is in the VC directory,
     # so the devenv.com executable is up in ..\..\Common7\IDE.
     VisualStudio('9.0',
+                 sdk_version='6.1',
                  hkeys=[r'Microsoft\VisualStudio\9.0'],
                  common_tools_var='VS90COMNTOOLS',
                  executable_path=r'Common7\IDE\devenv.com',
@@ -194,6 +196,7 @@ SupportedVSList = [
     # so the VCExpress.exe executable is up in ..\..\Common7\IDE.
     VisualStudio('9.0Exp',
                  vc_version='9.0',
+                 sdk_version='6.1',
                  hkeys=[r'Microsoft\VisualStudio\9.0'],
                  common_tools_var='VS90COMNTOOLS',
                  executable_path=r'Common7\IDE\VCExpress.exe',
@@ -206,6 +209,7 @@ SupportedVSList = [
     # The batch file we look for is in the VC directory,
     # so the devenv.com executable is up in ..\..\Common7\IDE.
     VisualStudio('8.0',
+                 sdk_version='6.0A',
                  hkeys=[r'Microsoft\VisualStudio\8.0'],
                  common_tools_var='VS80COMNTOOLS',
                  executable_path=r'Common7\IDE\devenv.com',
@@ -219,6 +223,7 @@ SupportedVSList = [
     # so the VCExpress.exe executable is up in ..\..\Common7\IDE.
     VisualStudio('8.0Exp',
                  vc_version='8.0',
+                 sdk_version='6.0A',
                  hkeys=[r'Microsoft\VCExpress\8.0'],
                  common_tools_var='VS80COMNTOOLS',
                  executable_path=r'Common7\IDE\VCExpress.exe',
@@ -231,6 +236,7 @@ SupportedVSList = [
     # The batch file we look for is in the Common7\Tools directory,
     # so the devenv.com executable is next door in ..\IDE.
     VisualStudio('7.1',
+                 sdk_version='6.0',
                  hkeys=[r'Microsoft\VisualStudio\7.1'],
                  common_tools_var='VS71COMNTOOLS',
                  executable_path=r'IDE\devenv.com',
@@ -243,6 +249,7 @@ SupportedVSList = [
     # The batch file we look for is in the Common7\Tools directory,
     # so the devenv.com executable is next door in ..\IDE.
     VisualStudio('7.0',
+                 sdk_version='2003R2',
                  hkeys=[r'Microsoft\VisualStudio\7.0'],
                  common_tools_var='VS70COMNTOOLS',
                  executable_path=r'IDE\devenv.com',
@@ -253,6 +260,7 @@ SupportedVSList = [
 
     # Visual Studio 6.0
     VisualStudio('6.0',
+                 sdk_version='2003R1',
                  hkeys=[r'Microsoft\VisualStudio\6.0'],
                  common_tools_var='VS60COMNTOOLS',
                  executable_path=r'Common\MSDev98\Bin\MSDEV.COM',

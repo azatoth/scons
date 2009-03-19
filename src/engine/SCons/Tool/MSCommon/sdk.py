@@ -33,7 +33,9 @@ import os
 import SCons.Errors
 import SCons.Util
 
-from common import debug, read_reg
+import common
+
+debug = common.debug
 
 # SDK Checks. This is of course a mess as everything else on MS platforms. Here
 # is what we do to detect the SDK:
@@ -76,7 +78,7 @@ class SDKDefinition:
         hkey = self.HKEY_FMT % self.hkey_data
 
         try:
-            sdk_dir = read_reg(hkey)
+            sdk_dir = common.read_reg(hkey)
         except WindowsError, e:
             debug('find_sdk_dir(): no SDK registry key %s' % repr(hkey))
             return None
@@ -235,7 +237,7 @@ def get_cur_sdk_dir_from_reg():
         return None
 
     try:
-        val = read_reg(_CURINSTALLED_SDK_HKEY_ROOT)
+        val = common.read_reg(_CURINSTALLED_SDK_HKEY_ROOT)
         debug("Found current sdk dir in registry: %s" % val)
     except WindowsError, e:
         debug("Did not find current sdk in registry")
@@ -247,31 +249,64 @@ def get_cur_sdk_dir_from_reg():
 
     return val
 
-
-def detect_sdk(version=None):
-    sdks = get_installed_sdks()
-    if version is None:
-        return len(sdks) > 0
-    return sdks.has_key(version)
-
-def set_sdk_by_version(env, mssdk):
+def get_sdk_by_version(mssdk):
     if not SupportedSDKMap.has_key(mssdk):
         msg = "SDK version %s is not supported" % repr(mssdk)
         raise SCons.Errors.UserError, msg
     get_installed_sdks()
-    sdk = InstalledSDKMap.get(mssdk)
-    if not sdk:
-        msg = "SDK version %s is not installed" % repr(mssdk)
-        raise SCons.Errors.UserError, msg
-    set_sdk_by_directory(env, sdk.get_sdk_dir())
+    return InstalledSDKMap.get(mssdk)
 
-def set_default_sdk(env, msver):
+def get_default_sdk():
     """Set up the default Platform/Windows SDK."""
-    # For MSVS < 8, use integrated windows sdk by default
-    if msver >= 8:
-        sdks = get_installed_sdks()
-        if len(sdks) > 0:
-            set_sdk_by_directory(env, sdks[0].get_sdk_dir())
+    get_installed_sdks()
+    return InstalledSDKList[0]
+
+def mssdk_setup_env(env):
+    debug('msvs_setup_env()')
+    if env.has_key('MSSDK_DIR'):
+        sdk_dir = env['MSSDK_DIR']
+        if sdk_dir is None:
+            return
+        sdk_dir = env.subst(sdk_dir)
+    elif env.has_key('MSSDK_VERSION'):
+        sdk_version = env['MSSDK_VERSION']
+        if sdk_version is None:
+            msg = "SDK version %s is not installed" % repr(mssdk)
+            raise SCons.Errors.UserError, msg
+        sdk_version = env.subst(sdk_version)
+        mssdk = get_sdk_by_version(sdk_version)
+        sdk_dir = mssdk.get_sdk_dir()
+    elif env.has_key('MSVS_VERSION'):
+        msvs_version = env['MSVS_VERSION']
+        if msvs_version is None:
+            return
+        msvs_version = env.subst(msvs_version)
+        import vs
+        msvs = vs.get_vs_by_version(msvs_version)
+        sdk_version = msvs.sdk_version
+        if not sdk_version:
+            return
+        mssdk = get_sdk_by_version(sdk_version)
+        if not mssdk:
+            mssdk = get_default_sdk()
+            if not mssdk:
+                return
+        sdk_dir = mssdk.get_sdk_dir()
+    else:
+        mssdk = get_default_sdk()
+        if not mssdk:
+            return
+        sdk_dir = mssdk.get_sdk_dir()
+
+    set_sdk_by_directory(env, sdk_dir)
+
+    #print "No MSVS_VERSION: this is likely to be a bug"
+
+def mssdk_exists(version=None):
+    sdks = get_installed_sdks()
+    if version is None:
+        return len(sdks) > 0
+    return sdks.has_key(version)
 
 # Local Variables:
 # tab-width:4

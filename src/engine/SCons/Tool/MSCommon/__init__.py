@@ -36,6 +36,9 @@ import SCons.Errors
 import SCons.Platform.win32
 import SCons.Util
 
+from SCons.Tool.MSCommon.sdk import mssdk_exists, \
+                                    mssdk_setup_env
+
 from SCons.Tool.MSCommon.vc import msvc_exists, \
                                    msvc_setup_env
 
