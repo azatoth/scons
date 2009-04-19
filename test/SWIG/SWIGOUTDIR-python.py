@@ -25,21 +25,12 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that SCons realizes the -noproxy option means no .py file will
-be created.
+Verify that use of the $SWIGOUTDIR variable causes SCons to recognize
+that Python files are created in the specified output directory.
 """
 
-import os
-import sys
-
 import TestSCons
-
-# swig-python expects specific filenames.
-# the platform specific suffix won't necessarily work.
-if sys.platform == 'win32':
-    _dll = '.dll'
-else:
-    _dll   = '.so' 
+import os
 
 test = TestSCons.TestSCons()
 
@@ -53,40 +44,42 @@ Python_h = os.path.join(python_include, 'Python.h')
 if not os.path.exists(Python_h):
     test.skip_test('Can not find %s, skipping test.\n' % Python_h)
 
-# handle testing on other platforms:
-ldmodule_prefix = '_'
-
-test.write("dependency.i", """\
-%module dependency
-""")
-
-test.write("dependent.i", """\
-%module dependent
-
-%include dependency.i
-""")
-
-test.write('SConstruct', """
-foo = Environment(SWIGFLAGS=['-python', '-noproxy'],
-                  CPPPATH=[r'%(python_include)s'],
-                  LDMODULEPREFIX='%(ldmodule_prefix)s',
-                  LDMODULESUFFIX='%(_dll)s',
+test.write(['SConstruct'], """\
+env = Environment(SWIGFLAGS = '-python -c++',
+                  CPPPATH=[r"%(python_include)s"],
                   SWIG=[r'%(swig)s'],
+                  SWIGOUTDIR='python/build dir',
                   LIBPATH=[r'%(python_libpath)s'],
                   LIBS='%(python_lib)s',
-                  )
+                 )
 
-swig = foo.Dictionary('SWIG')
-bar = foo.Clone(SWIG = [r'%(python)s', 'wrapper.py', swig])
-foo.CFile(target = 'dependent', source = ['dependent.i'])
+import sys
+if sys.version[0] == '1':
+    # SWIG requires the -classic flag on pre-2.0 Python versions.
+    env.Append(SWIGFLAGS = ' -classic')
+
+env.LoadableModule('python_foo_interface', 'python_foo_interface.i')
 """ % locals())
 
+test.write('python_foo_interface.i', """\
+%module foopack
+""")
+
+# SCons should realize that it needs to create the "python/build dir"
+# subdirectory to hold the generated .py files.
 test.run(arguments = '.')
 
-# If we mistakenly depend on the .py file that SWIG didn't create
-# (suppressed by the -noproxy option) then the build won't be up-to-date.
-test.up_to_date(arguments = '.')
+test.must_exist('python/build dir/foopack.py') 
 
+# SCons should remove the built .py files.
+test.run(arguments = '-c')
+
+test.must_not_exist('python/build dir/foopack.py') 
+
+# SCons should realize it needs to rebuild the removed .py files.
+test.not_up_to_date(arguments = '.')
+
+test.must_exist('python/build dir/foopack.py') 
 
 
 test.pass_test()

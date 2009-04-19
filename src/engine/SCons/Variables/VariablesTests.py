@@ -23,7 +23,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
 import sys
 import unittest
 import TestSCons
@@ -54,7 +53,7 @@ def check(key, value, env):
 def checkSave(file, expected):
     gdict = {}
     ldict = {}
-    exec string.replace(open(file).read(), '\r', '\n') in gdict, ldict
+    exec open(file, 'rU').read() in gdict, ldict
     assert expected == ldict, "%s\n...not equal to...\n%s" % (expected, ldict)
 
 class VariablesTestCase(unittest.TestCase):
@@ -514,6 +513,44 @@ B 42 54 b - alpha test ['B']
 """
         text = opts.GenerateHelpText(env, sort=cmp)
         assert text == expectAlpha, text
+        
+    def test_Aliases(self):
+        """Test option aliases"""
+        # test alias as a tuple
+        opts = SCons.Variables.Variables()
+        opts.AddVariables(
+                (('ANSWER', 'ANSWERALIAS'),
+                 'THE answer to THE question',
+                 "42"),
+                )
+        
+        env = Environment()
+        opts.Update(env, {'ANSWER' : 'answer'})
+        
+        assert env.has_key('ANSWER')
+        
+        env = Environment()
+        opts.Update(env, {'ANSWERALIAS' : 'answer'})
+        
+        assert env.has_key('ANSWER') and not env.has_key('ANSWERALIAS')
+        
+        # test alias as a list
+        opts = SCons.Variables.Variables()
+        opts.AddVariables(
+                (['ANSWER', 'ANSWERALIAS'],
+                 'THE answer to THE question',
+                 "42"),
+                )
+        
+        env = Environment()
+        opts.Update(env, {'ANSWER' : 'answer'})
+        
+        assert env.has_key('ANSWER')
+        
+        env = Environment()
+        opts.Update(env, {'ANSWERALIAS' : 'answer'})
+        
+        assert env.has_key('ANSWER') and not env.has_key('ANSWERALIAS')
 
 
 
@@ -538,7 +575,75 @@ class UnknownVariablesTestCase(unittest.TestCase):
         r = opts.UnknownVariables()
         assert r == {'UNKNOWN' : 'unknown'}, r
         assert env['ANSWER'] == 'answer', env['ANSWER']
+        
+    def test_AddOptionUpdatesUnknown(self):
+        """Test updating of the 'unknown' dict"""
+        opts = SCons.Variables.Variables()
+        
+        opts.Add('A',
+                 'A test variable',
+                 "1")
+        
+        args = {
+            'A'             : 'a',
+            'ADDEDLATER'    : 'notaddedyet',
+        }
+        
+        env = Environment()
+        opts.Update(env,args)
+        
+        r = opts.UnknownVariables()
+        assert r == {'ADDEDLATER' : 'notaddedyet'}, r
+        assert env['A'] == 'a', env['A']
+        
+        opts.Add('ADDEDLATER',
+                 'An option not present initially',
+                 "1")
+                 
+        args = {
+            'A'             : 'a',
+            'ADDEDLATER'    : 'added',
+        }
+        
+        opts.Update(env, args)
+        
+        r = opts.UnknownVariables()
+        assert len(r) == 0, r
+        assert env['ADDEDLATER'] == 'added', env['ADDEDLATER']
 
+    def test_AddOptionWithAliasUpdatesUnknown(self):
+        """Test updating of the 'unknown' dict (with aliases)"""
+        opts = SCons.Variables.Variables()
+        
+        opts.Add('A',
+                 'A test variable',
+                 "1")
+        
+        args = {
+            'A'                 : 'a',
+            'ADDEDLATERALIAS'   : 'notaddedyet',
+        }
+        
+        env = Environment()
+        opts.Update(env,args)
+        
+        r = opts.UnknownVariables()
+        assert r == {'ADDEDLATERALIAS' : 'notaddedyet'}, r
+        assert env['A'] == 'a', env['A']
+        
+        opts.AddVariables(
+            (('ADDEDLATER', 'ADDEDLATERALIAS'),
+             'An option not present initially',
+             "1"),
+            )
+        
+        args['ADDEDLATERALIAS'] = 'added'
+        
+        opts.Update(env, args)
+        
+        r = opts.UnknownVariables()
+        assert len(r) == 0, r
+        assert env['ADDEDLATER'] == 'added', env['ADDEDLATER']
 
 
 if __name__ == "__main__":

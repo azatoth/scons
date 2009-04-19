@@ -25,50 +25,39 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that we use a default target of the current directory when there
-is no Default() in the SConstruct file and there are no command-line
-arguments, or a null command-line argument.
+Verify that env.Requires() nodes are evaluated before other children.
 """
-
-import os.path
 
 import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.write('SConstruct', r"""
-def cat(env, source, target):
-    target = str(target[0])
-    source = map(str, source)
-    print 'cat(%s) > %s' % (source, target)
-    f = open(target, "wb")
-    for src in source:
-        f.write(open(src, "rb").read())
-    f.close()
-
-env = Environment(BUILDERS={'Build':Builder(action=cat)})
-env.Build('aaa.out', 'aaa.in')
+test.write('SConstruct', """
+def copy_and_create_func(target, source, env):
+    fp = open(str(target[0]), 'wb')
+    for s in map(str, source):
+        fp.write(open(s, 'rb').read())
+    fp.close()
+    open('file.in', 'wb').write("file.in 1\\n")
+    return None
+copy_and_create = Action(copy_and_create_func)
+env = Environment()
+env.Requires('file.out', 'prereq.out')
+env.Command('file.out', 'file.in', Copy('$TARGET', '$SOURCES'))
+env.Command('prereq.out', 'prereq.in', copy_and_create)
 """)
 
-test.write('aaa.in', "aaa.in\n")
+test.write('prereq.in', "prereq.in 1\n")
 
-up_to_date = test.wrap_stdout("scons: `.' is up to date.\n")
+# First:  build file.out.  prereq.out should be built first, and if
+# not, we'll get an error when the build action tries to use it to
+# build file.out.
 
-#
-test.run()
-test.must_match('aaa.out', "aaa.in\n")
-test.run(stdout=up_to_date)
+test.run(arguments = 'file.out')
 
-#
-test.unlink('aaa.out')
-test.must_not_exist('aaa.out')
+test.must_match('prereq.out', "prereq.in 1\n")
+test.must_match('file.out', "file.in 1\n")
 
-#
-test.run([''])
-test.must_match('aaa.out', "aaa.in\n")
-test.run([''], stdout=up_to_date)
-
-#
 test.pass_test()
 
 # Local Variables:

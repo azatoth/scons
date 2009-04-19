@@ -36,6 +36,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import os.path
 import re
 import string
+import subprocess
 
 import SCons.Action
 import SCons.Defaults
@@ -90,8 +91,18 @@ def _swigEmitter(target, source, env):
                 mnames, directors = _find_modules(src)
             if directors:
                 _add_director_header_targets(target, env)
-            target.extend(map(lambda m, d=target[0].dir:
-                                     d.File(m + ".py"), mnames))
+            python_files = map(lambda m: m + ".py", mnames)
+            outdir = env.subst('$SWIGOUTDIR', target=target, source=source)
+            # .py files should be generated in SWIGOUTDIR if specified,
+            # otherwise in the same directory as the target
+            if outdir:
+                 python_files = map(lambda j, o=outdir, e=env:
+                                       e.fs.File(os.path.join(o, j)),
+                                    python_files)
+            else:
+                python_files = map(lambda m, d=target[0].dir:
+                                       d.File(m), python_files)
+            target.extend(python_files)
         if "-java" in flags:
             if mnames is None:
                 mnames, directors = _find_modules(src)
@@ -108,6 +119,19 @@ def _swigEmitter(target, source, env):
                 SCons.Util.AddMethod(jf, t_from_s, 'target_from_source')
             target.extend(java_files)
     return (target, source)
+
+def _get_swig_version(env):
+    """Run the SWIG command line tool to get and return the version number"""
+    pipe = SCons.Action._subproc(env, [env['SWIG'], '-version'],
+                                 stdin = 'devnull',
+                                 stderr = 'devnull',
+                                 stdout = subprocess.PIPE)
+    if pipe.wait() != 0: return
+
+    out = pipe.stdout.read()
+    match = re.search(r'SWIG Version\s+(\S+)$', out, re.MULTILINE)
+    if match:
+        return match.group(1)
 
 def generate(env):
     """Add Builders and construction variables for swig to an Environment."""
@@ -129,6 +153,7 @@ def generate(env):
     java_file.add_emitter('.i', _swigEmitter)
 
     env['SWIG']              = 'swig'
+    env['SWIGVERSION']       = _get_swig_version(env)
     env['SWIGFLAGS']         = SCons.Util.CLVar('')
     env['SWIGDIRECTORSUFFIX'] = '_wrap.h'
     env['SWIGCFILESUFFIX']   = '_wrap$CFILESUFFIX'

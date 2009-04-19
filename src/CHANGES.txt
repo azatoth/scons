@@ -19,6 +19,11 @@ RELEASE X.X.X - XXX
 
     - Fix a TypeError on #include of file names with Unicode characters.
 
+    - Fix an exception if a null command-line argument is passed in.
+
+    - Evaluate Requires() prerequisites before a Node's direct children
+      (sources and dependencies).
+
 
 
 RELEASE 1.2.0.d20090223 - Mon, 23 Feb 2009 08:41:06 -0800
