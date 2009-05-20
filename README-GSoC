@@ -1,0 +1,7 @@
+This branch is used to develop the "Installer" project for Google's Summer of Code (GSoC) 2009.
+
+Features:
+
+- Stand-alone version of SCons that does not depend on a Python installation
+- Installer with support for SCons, the SCons engine, documentation, adding SCons to the $PATH, and uninstallation
+- GUI front-end to SCons for users that are not comfortable with working on the command line
