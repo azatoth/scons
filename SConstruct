@@ -1160,6 +1160,35 @@ for p in [ scons ]:
         env.Command(unpack_targets, dist_local_zip, unzipit,
                     UNPACK_ZIP_DIR = test_local_zip_dir)
 
+    #
+    # Build the stand-alone SCons executable
+    # FIXME: On Linux/Unix, try to build the executable via wine
+    # FIXME: Add support for 64-bit Python on Windows
+    #
+    if platform == "win32":
+        try:
+            import cx_Freeze
+
+            exe = pkg + '-exe'
+            build_dir_exe = os.path.join(build_dir, exe)
+
+            commands = [
+                Delete(build_dir_exe),
+                '$PYTHON $PYTHONFLAGS $SETUP_PY build_exe --build-exe=%s' % (build_dir_exe),
+                ]
+
+            rf = []
+            for script in scripts:
+                rf.append("%s.exe" % script)
+            exe_targets = map(lambda x, s=build_dir_exe: os.path.join(s, x), rf)
+
+            env.Command(exe_targets, build_src_files, commands)
+
+
+        except ImportError:
+            # cx_Freeze is not available, so skip building the executable
+            pass
+
 #
 #
 #
