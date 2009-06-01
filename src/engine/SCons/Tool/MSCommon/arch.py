@@ -44,7 +44,7 @@ SupportedArchitectureList = [
 
     ArchitectureDefinition(
         'x86_64',
-        ['AMD64, 'amd64, 'em64t, 'EM64T, 'x86_64'],
+        ['AMD64', 'amd64', 'em64t', 'EM64T', 'x86_64'],
     ),
 
     ArchitectureDefinition(
@@ -59,15 +59,3 @@ for a in SupportedArchitectureList:
     for s in a.synonyms:
         SupportedArchitectureMap[s] = a
 
-def get_architecture(arch=None):
-    """Returns the definition for the specified architecture string.
-
-    If no string is specified, the system default is returned (as defined
-    by the PROCESSOR_ARCHITEW6432 or PROCESSOR_ARCHITECTURE environment
-    variables).
-    """
-    if arch is None:
-        arch = os.environ.get('PROCESSOR_ARCHITEW6432')
-        if not arch:
-            arch = os.environ['PROCESSOR_ARCHITECTURE']
-    return SupportedArchitectureMap.get(arch, '')

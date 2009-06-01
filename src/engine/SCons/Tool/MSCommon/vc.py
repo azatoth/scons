@@ -47,12 +47,12 @@ class VisualC:
         if common.is_win64():
             result = {
                 'x86_64' : ['amd64', r'BIN\x86_amd64'],
-                'ia64' : [r'BIN\ia64'],
+                'ia64'   : [r'BIN\ia64'],
             }.get(target_arch, [])
         else:
             result = {
                 'x86_64' : ['x86_amd64'],
-                'ia64' : ['x86_ia64'],
+                'ia64'   : ['x86_ia64'],
             }.get(target_arch, [])
         # TODO(1.5)
         #return ';'.join(result)
@@ -130,6 +130,9 @@ class VisualC:
             vc_dir = self.find_vc_dir()
             self._cache['vc_dir'] = vc_dir
             return vc_dir
+        
+    def reset(self):
+        self._cache={}
         
 
 # The list of supported Visual C/C++ versions we know how to detect.
@@ -237,7 +240,7 @@ for vc in SupportedVCList:
 # just stale.  Find this information once, when requested, and cache it.
 
 InstalledVCList = None
-InstalledVCMap = None
+InstalledVCMap  = None
 
 def get_installed_vcs():
     global InstalledVCList
@@ -292,25 +295,25 @@ def msvc_setup_env(env):
             SCons.Warnings.warn(SCons.Warnings.VisualCMissingWarning, msg)
             return
 
-    host_platform = env.get('HOST_PLATFORM')
+    host_platform = env.get('HOST_ARCH')
     if not host_platform:
       #host_platform = get_default_host_platform()
       host_platform = 'x86'
-    target_platform = env.get('TARGET_PLATFORM')
+    target_platform = env.get('TARGET_ARCH')
     if not target_platform:
       target_platform = host_platform
 
     use_script = env.get('MSVC_USE_SCRIPT', True)
     if SCons.Util.is_String(use_script):
-        d = script_env(use_script)
         debug('use_script 1 %s\n' % repr(use_script))
+        d = script_env(use_script)
     elif use_script:
         script = msvc.get_batch_file(target_platform, host_platform)
+        debug('use_script 2 %s target_platform:%s host_platform:%s\n' % (repr(script),target_platform,host_platform))
         d = script_env(script)
-        debug('use_script 2 %s\n' % repr(script))
     else:
-        d = msvc.get_default_env()
         debug('msvc.get_default_env()\n')
+        d = msvc.get_default_env()
 
     for k, v in d.items():
         env.PrependENVPath(k, v, delete_existing=True)
@@ -320,6 +323,15 @@ def msvc_exists(version=None):
     if version is None:
         return len(vcs) > 0
     return InstalledVCMap.has_key(version)
+    
+    
+def reset_installed_vcs():
+    global InstalledVCList
+    global InstalledVCMap
+    InstalledVCList = None
+    InstalledVCMap  = None
+    for vc in SupportedVCList:
+        vc.reset()
 
 # Local Variables:
 # tab-width:4

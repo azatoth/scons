@@ -278,11 +278,13 @@ def mssdk_setup_env(env):
         sdk_dir = mssdk.get_sdk_dir()
     elif env.has_key('MSVS_VERSION'):
         msvs_version = env['MSVS_VERSION']
+        debug('Getting MSVS_VERSION from env:%s'%msvs_version)
         if msvs_version is None:
             return
         msvs_version = env.subst(msvs_version)
         import vs
         msvs = vs.get_vs_by_version(msvs_version)
+        debug('msvs is :%s'%msvs)
         sdk_version = msvs.sdk_version
         if not sdk_version:
             return
