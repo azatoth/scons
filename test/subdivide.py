@@ -133,7 +133,30 @@ if os.sep == '\\':
     import string
     expect = string.replace(expect, '\\', '\\\\')
 
-test.must_match(['src', 'prog.exe'], expect)
+# On Windows Vista, the test is likely to fail because of case differences in file paths.
+# Since that does not constitue a test failure, this function ignores case when comparing
+# the file contents to the expected contents. It is based on TestCommon.must_match()
+def must_match_case_insensitive(file, expect, test, mode = 'rb'):
+    """Matches the contents of the specified file (first argument)
+    against the expected contents (second argument).  The expected
+    contents are a list of lines or a string which will be split
+    on newlines. The third argument is the test class to be used.
+    """
+    file_contents = test.read(file, mode)
+    try:
+        test.fail_test(not test.match(file_contents.lower(), expect.lower()))
+    except KeyboardInterrupt:
+        raise
+    except:
+        print "Unexpected contents of `%s'" % file
+        test.diff(expect, file_contents, 'contents ')
+        raise
+
+# Assume consistent case for paths on non-Windows systems
+if sys.platform != 'win32':
+    test.must_match(['src', 'prog.exe'], expect)
+else:
+    must_match_case_insensitive(['src', 'prog.exe'], expect, test)
 
 test.up_to_date(chdir='src', arguments = test.workpath())
 
