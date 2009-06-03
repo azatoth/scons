@@ -36,6 +36,7 @@ being the equivalent of Decider('content').
 """
 
 import os
+import sys
 
 import TestSCons
 
