@@ -30,7 +30,11 @@ Test how we handle a failing test specified on the command line.
 
 import TestRuntest
 
+import os.path
+
 test = TestRuntest.TestRuntest()
+
+qmtest_basename = os.path.basename(test.where_is('qmtest'))
 
 test.subdir('test')
 
@@ -38,7 +42,7 @@ test.write_failing_test(['test', 'fail.py'])
 
 # NOTE:  The "test/fail.py   : FAIL" line has spaces at the end.
 
-expect = r"""qmtest run --output baseline.qmr --format none --result-stream="scons_tdb.AegisBaselineStream" test/fail.py
+expect = r"""%(qmtest_basename)s run --output baseline.qmr --format none --result-stream="scons_tdb.AegisBaselineStream" test/fail.py
 --- TEST RESULTS -------------------------------------------------------------
 
   test/fail.py                                  : FAIL    
@@ -54,8 +58,8 @@ expect = r"""qmtest run --output baseline.qmr --format none --result-stream="sco
 
 --- STATISTICS ---------------------------------------------------------------
 
-       1 (100%) tests as expected
-"""
+       1 (100%%) tests as expected
+""" % locals()
 
 test.run(arguments = '-b . test/fail.py', status = 1, stdout = expect)
 

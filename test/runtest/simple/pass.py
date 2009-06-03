@@ -30,7 +30,11 @@ Test how we handle a passing test specified on the command line.
 
 import TestRuntest
 
+import os.path
+
 test = TestRuntest.TestRuntest()
+
+qmtest_basename = os.path.basename(test.where_is('qmtest'))
 
 test.subdir('test')
 
@@ -38,7 +42,7 @@ test.write_passing_test(['test', 'pass.py'])
 
 # NOTE:  The "test/pass.py   : PASS" line has spaces at the end.
 
-expect = r"""qmtest run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" test/pass.py
+expect = r"""%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" test/pass.py
 --- TEST RESULTS -------------------------------------------------------------
 
   test/pass.py                                  : PASS    
@@ -52,8 +56,8 @@ expect = r"""qmtest run --output results.qmr --format none --result-stream="scon
 
        1        tests total
 
-       1 (100%) tests PASS
-"""
+       1 (100%%) tests PASS
+""" % locals()
 
 test.run(arguments = 'test/pass.py', stdout = expect)
 

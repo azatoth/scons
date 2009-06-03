@@ -30,13 +30,17 @@ Test how we handle a no-results test specified on the command line.
 
 import TestRuntest
 
+import os.path
+
 test = TestRuntest.TestRuntest()
+
+qmtest_basename = os.path.basename(test.where_is('qmtest'))
 
 test.subdir('test')
 
 test.write_no_result_test(['test', 'no_result.py'])
 
-expect = r"""qmtest run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" test/no_result.py
+expect = r"""%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" test/no_result.py
 --- TEST RESULTS -------------------------------------------------------------
 
   test/no_result.py                             : NO_RESULT
@@ -54,8 +58,8 @@ expect = r"""qmtest run --output results.qmr --format none --result-stream="scon
 
        1        tests total
 
-       1 (100%) tests NO_RESULT
-"""
+       1 (100%%) tests NO_RESULT
+""" % locals()
 
 test.run(arguments = 'test/no_result.py', status = 1, stdout = expect)
 

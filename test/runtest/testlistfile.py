@@ -38,6 +38,8 @@ test_pass_py = os.path.join('test', 'pass.py')
 
 test = TestRuntest.TestRuntest()
 
+qmtest_basename = os.path.basename(test.where_is('qmtest'))
+
 test.subdir('test')
 
 test.write_failing_test(['test', 'fail.py'])
@@ -54,7 +56,7 @@ test.write('t.txt', """\
 # NOTE:  The "test/fail.py : FAIL" and "test/pass.py : PASS" lines both
 # have spaces at the end.
 
-expect = """qmtest run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" %(test_pass_py)s
+expect = """%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" %(test_pass_py)s
 --- TEST RESULTS -------------------------------------------------------------
 
   %(test_pass_py)s                                  : PASS    

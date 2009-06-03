@@ -40,6 +40,7 @@ test.subdir(['src'],
 
 src_passTests_py = os.path.join('src', 'passTests.py')
 src_suite_passTests_py = os.path.join('src', 'suite', 'passTests.py')
+qmtest_basename = os.path.basename(test.where_is('qmtest'))
 
 test.write_passing_test(['src', 'pass.py'])
 
@@ -52,7 +53,7 @@ test.write_passing_test(['src', 'suite', 'passTests.py'])
 # NOTE:  The "test/pass.py : PASS" and "test/passTests.py : PASS" lines
 # both have spaces at the end.
 
-expect = r"""qmtest run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" src
+expect = r"""%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" src
 --- TEST RESULTS -------------------------------------------------------------
 
   %(src_passTests_py)s                              : PASS    

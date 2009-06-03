@@ -38,6 +38,7 @@ import TestRuntest
 test = TestRuntest.TestRuntest()
 
 test_pass_py = os.path.join('test', 'pass.py')
+qmtest_basename = os.path.basename(test.where_is('qmtest'))
 
 head, python = os.path.split(TestRuntest.python)
 head, dir = os.path.split(head)
@@ -50,7 +51,7 @@ test.write_passing_test(['test', 'pass.py'])
 
 # NOTE:  The "test/pass.py : PASS" line has spaces at the end.
 
-expect = r"""qmtest run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" --context python="%(mypython)s" test
+expect = r"""%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" --context python="%(mypython)s" test
 --- TEST RESULTS -------------------------------------------------------------
 
   %(test_pass_py)s                                  : PASS    

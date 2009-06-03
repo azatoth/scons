@@ -28,9 +28,13 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test how we handle a failing test specified on the command line.
 """
 
+import os.path
+
 import TestRuntest
 
 test = TestRuntest.TestRuntest()
+
+qmtest_basename = os.path.basename(test.where_is('qmtest'))
 
 test.subdir('test')
 
@@ -38,7 +42,7 @@ test.write_failing_test(['test', 'fail.py'])
 
 # NOTE:  The "test/fail.py   : FAIL" line has spaces at the end.
 
-expect = r"""qmtest run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" test/fail.py
+expect = r"""%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" test/fail.py
 --- TEST RESULTS -------------------------------------------------------------
 
   test/fail.py                                  : FAIL    
@@ -56,8 +60,8 @@ expect = r"""qmtest run --output results.qmr --format none --result-stream="scon
 
        1        tests total
 
-       1 (100%) tests FAIL
-"""
+       1 (100%%) tests FAIL
+""" % locals()
 
 test.run(arguments = 'test/fail.py', status = 1, stdout = expect)
 
