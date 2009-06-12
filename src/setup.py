@@ -431,6 +431,7 @@ if is_win32 and 'build_exe' in sys.argv:
             # The 'encodings' package is needed to correctly parse SConstruct files.
             packages = ['encodings'] + arguments['packages'],
             path = path,
+            init_script = os.path.abspath('script/standalone_init.py'),
         )
 
         arguments['options'] = dict(build_exe = build_options)

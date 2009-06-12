@@ -671,6 +671,7 @@ scons = {
                             'scons-time.1',
                             'script/scons.bat',
                             #'script/scons-post-install.py',
+                            'script/standalone_init.py',
                             'setup.cfg',
                             'setup.py',
                           ],
