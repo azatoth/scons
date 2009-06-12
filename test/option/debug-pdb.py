@@ -25,6 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import TestSCons
+import os
 
 test = TestSCons.TestSCons()
 
@@ -32,8 +33,17 @@ test.write('SConstruct', """\
 env = Environment()
 """)
 
+expected = ["(Pdb)"]
+
+# The stand-alone version will not show code around the current location,
+# but we still expect to be inside engine/scons/script/main.py
+if os.environ.has_key('SCONS_EXEC') and os.environ['SCONS_EXEC'] == '1':
+    expected.append("main.py")
+else:
+    expected.append("SCons")
+
 test.run(arguments = "--debug=pdb", stdin = "n\ns\nq\n")
-test.must_contain_all_lines(test.stdout(), ["(Pdb)", "SCons"])
+test.must_contain_all_lines(test.stdout(), expected)
 
 test.pass_test()
 

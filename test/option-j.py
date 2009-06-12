@@ -126,37 +126,42 @@ test.run(arguments='-j 2 out')
 # module (simulated), which is the case if this version of Python wasn't
 # built with threading support.
 
-test.subdir('pythonlib')
+# The stand-alone version will always search it's library.zip before using
+# the system's PYTHONPATH, so we cannot force it to pick up our threading.py
+# module first.
+if not os.environ.has_key('SCONS_EXEC') or os.environ['SCONS_EXEC'] != '1':
 
-test.write(['pythonlib', 'threading.py'], """\
-raise ImportError
-""")
+    test.subdir('pythonlib')
 
-save_pythonpath = os.environ.get('PYTHONPATH', '')
-os.environ['PYTHONPATH'] = test.workpath('pythonlib')
+    test.write(['pythonlib', 'threading.py'], """\
+    raise ImportError
+    """)
 
-#start2, finish1 = RunTest('-j 2 f1, f2', "fifth")
+    save_pythonpath = os.environ.get('PYTHONPATH', '')
+    os.environ['PYTHONPATH'] = test.workpath('pythonlib')
 
-test.write('f1.in', 'f1.in pythonlib\n')
-test.write('f2.in', 'f2.in pythonlib\n')
+    #start2, finish1 = RunTest('-j 2 f1, f2', "fifth")
 
-test.run(arguments = "-j 2 f1 f2", stderr=None)
+    test.write('f1.in', 'f1.in pythonlib\n')
+    test.write('f2.in', 'f2.in pythonlib\n')
 
-warn = \
-"""scons: warning: parallel builds are unsupported by this version of Python;
-\tignoring -j or num_jobs option.
-"""
-test.must_contain_all_lines(test.stderr(), [warn])
+    test.run(arguments = "-j 2 f1 f2", stderr=None)
 
-str = test.read("f1")
-start1,finish1 = map(float, string.split(str, "\n"))
+    warn = \
+    """scons: warning: parallel builds are unsupported by this version of Python;
+    \tignoring -j or num_jobs option.
+    """
+    test.must_contain_all_lines(test.stderr(), [warn])
 
-str = test.read("f2")
-start2,finish2 = map(float, string.split(str, "\n"))
+    str = test.read("f1")
+    start1,finish1 = map(float, string.split(str, "\n"))
 
-test.fail_test(start2 < finish1)
+    str = test.read("f2")
+    start2,finish2 = map(float, string.split(str, "\n"))
 
-os.environ['PYTHONPATH'] = save_pythonpath
+    test.fail_test(start2 < finish1)
+
+    os.environ['PYTHONPATH'] = save_pythonpath
 
 
 # Test SetJobs() with no -j:

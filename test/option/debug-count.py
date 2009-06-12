@@ -30,6 +30,7 @@ Test that the --debug=count option works.
 
 import string
 import re
+import os
 
 import TestSCons
 
@@ -87,10 +88,12 @@ scons: warning: --debug=count is not supported when running SCons
 \twith the python -O option or optimized \\(.pyo\\) modules.
 """ + TestSCons.file_expr
 
-test.run(arguments = '--debug=count -h',
-         interpreter = ['python', '-O'],
-         stderr = expect_warning,
-         match = TestSCons.match_re)
+# Do not run the following test when testing the stand-alone executable
+if not os.environ.has_key('SCONS_EXEC') or os.environ['SCONS_EXEC'] != '1':
+    test.run(arguments = '--debug=count -h',
+            interpreter = ['python', '-O'],
+            stderr = expect_warning,
+            match = TestSCons.match_re)
 
 
 test.pass_test()
