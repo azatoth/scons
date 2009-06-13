@@ -47,6 +47,7 @@ import SCons.Warnings
 import SCons.Conftest
 
 from SCons.Debug import Trace
+from SCons.i18n import *
 
 # Turn off the Conftest error logging
 SCons.Conftest.LogInputFiles = 0
@@ -79,7 +80,7 @@ def SetCacheMode(mode):
     elif mode == "cache":
         cache_mode = CACHE
     else:
-        raise ValueError, "SCons.SConf.SetCacheMode: Unknown mode " + mode
+        raise ValueError, _("SCons.SConf.SetCacheMode: Unknown mode ") + mode
 
 progress_display = SCons.Util.display # will be overwritten by SCons.Script
 def SetProgressDisplay(display):
@@ -108,7 +109,7 @@ def _createConfigH(target, source, env):
     t.close()
 
 def _stringConfigH(target, source, env):
-    return "scons: Configure: creating " + str(target[0])
+    return _("scons: Configure: creating ") + str(target[0])
 
 def CreateConfigHBuilder(env):
     """Called just before the building targets phase begins."""
@@ -120,7 +121,7 @@ def CreateConfigHBuilder(env):
     env.Append( BUILDERS={'SConfigHBuilder':sconfigHBld} )
     for k in _ac_config_hs.keys():
         env.SConfigHBuilder(k, env.Value(_ac_config_hs[k]))
-    
+
 class SConfWarning(SCons.Warnings.Warning):
     pass
 SCons.Warnings.enableWarningClass(SConfWarning)
@@ -135,16 +136,16 @@ class ConfigureDryRunError(SConfError):
     process, but the user requested a dry-run"""
     def __init__(self,target):
         if not isinstance(target, SCons.Node.FS.File):
-            msg = 'Cannot create configure directory "%s" within a dry-run.' % str(target)
+            msg = _('Cannot create configure directory "%s" within a dry-run.') % str(target)
         else:
-            msg = 'Cannot update configure test "%s" within a dry-run.' % str(target)
+            msg = _('Cannot update configure test "%s" within a dry-run.') % str(target)
         SConfError.__init__(self,msg)
 
 class ConfigureCacheError(SConfError):
     """Raised when a use explicitely requested the cache feature, but the test
     is run the first time."""
     def __init__(self,target):
-        SConfError.__init__(self, '"%s" is not yet built and cache is forced.' % str(target))
+        SConfError.__init__(self, _('"%s" is not yet built and cache is forced.') % str(target))
 
 # define actions for building text files
 def _createSource( target, source, env ):
@@ -201,7 +202,7 @@ class Streamer:
         if self.orig:
             self.orig.flush()
         self.s.flush()
-        
+
 
 class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
     """
@@ -219,9 +220,9 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
         """
         if not isinstance(bi, SConfBuildInfo):
             SCons.Warnings.warn(SConfWarning,
-              "The stored build information has an unexpected class: %s" % bi.__class__)
+              _("The stored build information has an unexpected class: %s") % bi.__class__)
         else:
-            self.display("The original builder output was:\n" +
+            self.display(_("The original builder output was:\n") +
                          string.replace("  |" + str(bi.string),
                                         "\n", "\n  |"))
 
@@ -237,7 +238,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
             # to build a reference cycle.
             self.exc_clear()
         else:
-            self.display('Caught exception while building "%s":\n' %
+            self.display(_('Caught exception while building "%s":\n') %
                          self.targets[0])
             try:
                 excepthook = sys.excepthook
@@ -298,13 +299,13 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
             is_up_to_date = 0
 
         if cached_error and is_up_to_date:
-            self.display("Building \"%s\" failed in a previous run and all "
-                         "its sources are up to date." % str(self.targets[0]))
+            self.display(_("Building \"%s\" failed in a previous run and all "
+                         "its sources are up to date.") % str(self.targets[0]))
             binfo = self.targets[0].get_stored_info().binfo
             self.display_cached_string(binfo)
             raise SCons.Errors.BuildError # will be 'caught' in self.failed
-        elif is_up_to_date:            
-            self.display("\"%s\" is up to date." % str(self.targets[0]))
+        elif is_up_to_date:
+            self.display(_("\"%s\" is up to date.") % str(self.targets[0]))
             binfo = self.targets[0].get_stored_info().binfo
             self.display_cached_string(binfo)
         elif dryrun:
@@ -387,7 +388,7 @@ class SConfBase:
     """
 
     def __init__(self, env, custom_tests = {}, conf_dir='$CONFIGUREDIR',
-                 log_file='$CONFIGURELOG', config_h = None, _depth = 0): 
+                 log_file='$CONFIGURELOG', config_h = None, _depth = 0):
         """Constructor. Pass additional tests in the custom_tests-dictinary,
         e.g. custom_tests={'CheckPrivate':MyPrivateTest}, where MyPrivateTest
         defines a custom test.
@@ -400,7 +401,7 @@ class SConfBase:
                       SCons.Node.FS.FS(env.fs.pathTop)
         if sconf_global is not None:
             raise (SCons.Errors.UserError,
-                   "Only one SConf object may be active at one time")
+                   _("Only one SConf object may be active at one time"))
         self.env = env
         if log_file is not None:
             log_file = SConfFS.File(env.subst(log_file))
@@ -448,7 +449,7 @@ class SConfBase:
 
         If value is None (default), then #define name is written. If value is not
         none, then #define name value is written.
-        
+
         comment is a string which will be put as a C comment in the
         header, to explain the meaning of the value (appropriate C comments /* and
         */ will be put automatically."""
@@ -540,11 +541,11 @@ class SConfBase:
         try:
             self.pspawn = self.env['PSPAWN']
         except KeyError:
-            raise SCons.Errors.UserError('Missing PSPAWN construction variable.')
+            raise SCons.Errors.UserError(_('Missing PSPAWN construction variable.'))
         try:
             save_spawn = self.env['SPAWN']
         except KeyError:
-            raise SCons.Errors.UserError('Missing SPAWN construction variable.')
+            raise SCons.Errors.UserError(_('Missing SPAWN construction variable.'))
 
         nodesToBeBuilt = []
 
@@ -642,12 +643,12 @@ class SConfBase:
         def __call__(self, *args, **kw):
             if not self.sconf.active:
                 raise (SCons.Errors.UserError,
-                       "Test called after sconf.Finish()")
+                       _("Test called after sconf.Finish()"))
             context = CheckContext(self.sconf)
             ret = apply(self.test, (context,) +  args, kw)
             if self.sconf.config_h is not None:
                 self.sconf.config_h_text = self.sconf.config_h_text + context.config_h
-            context.Result("error: no result")
+            context.Result(_("error: no result"))
             return ret
 
     def AddTest(self, test_name, test_instance):
@@ -679,7 +680,7 @@ class SConfBase:
         global _ac_config_logs
         global sconf_global
         global SConfFS
-        
+
         self.lastEnvFs = self.env.fs
         self.env.fs = SConfFS
         self._createDir(self.confdir)
@@ -706,7 +707,7 @@ class SConfBase:
             self.logstream.write('file %s,line %d:\n\tConfigure(confdir = %s)\n' %
                                  (tb[0], tb[1], str(self.confdir)) )
             SConfFS.chdir(old_fs_dir)
-        else: 
+        else:
             self.logstream = None
         # we use a special builder to create source files from TEXT
         action = SCons.Action.Action(_createSource,
@@ -723,7 +724,7 @@ class SConfBase:
         global sconf_global, _ac_config_hs
 
         if not self.active:
-            raise SCons.Errors.UserError, "Finish may be called only once!"
+            raise SCons.Errors.UserError, _("Finish may be called only once!")
         if self.logstream is not None and not dryrun:
             self.logstream.write("\n")
             self.logstream.close()
@@ -789,13 +790,13 @@ class CheckContext:
         """
         if type(res) in BooleanTypes:
             if res:
-                text = "yes"
+                text = _("yes")
             else:
-                text = "no"
+                text = _("no")
         elif type(res) == types.StringType:
             text = res
         else:
-            raise TypeError, "Expected string, int or bool, got " + str(type(res))
+            raise TypeError, _("Expected string, int or bool, got ") + str(type(res))
 
         if self.did_show_result == 0:
             # Didn't show result yet, do it now.
@@ -823,7 +824,7 @@ class CheckContext:
         elif( attr == 'lastTarget' ):
             return self.sconf.lastTarget
         else:
-            raise AttributeError, "CheckContext instance has no attribute '%s'" % attr
+            raise AttributeError, _("CheckContext instance has no attribute '%s'") % attr
 
     #### Stuff used by Conftest.py (look there for explanations).
 
@@ -906,14 +907,14 @@ def CheckType(context, type_name, includes = "", language = None):
 
 def CheckTypeSize(context, type_name, includes = "", language = None, expect = None):
     res = SCons.Conftest.CheckTypeSize(context, type_name,
-                                       header = includes, language = language, 
+                                       header = includes, language = language,
                                        expect = expect)
     context.did_show_result = 1
     return res
 
 def CheckDeclaration(context, declaration, includes = "", language = None):
     res = SCons.Conftest.CheckDeclaration(context, declaration,
-                                          includes = includes, 
+                                          includes = includes,
                                           language = language)
     context.did_show_result = 1
     return not res
@@ -993,7 +994,7 @@ def CheckLib(context, library = None, symbol = "main",
 
     if not SCons.Util.is_List(library):
         library = [library]
-    
+
     # ToDo: accept path for the library
     res = SCons.Conftest.CheckLib(context, library, symbol, header = header,
                                         language = language, autoadd = autoadd)
