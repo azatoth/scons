@@ -60,6 +60,8 @@ import SCons.Tool
 import SCons.Util
 import SCons.Warnings
 
+from SCons.i18n import *
+
 class _Null:
     pass
 
@@ -125,18 +127,18 @@ def copy_non_reserved_keywords(dict):
     result = semi_deepcopy(dict)
     for k in result.keys():
         if k in reserved_construction_var_names:
-            msg = "Ignoring attempt to set reserved variable `$%s'"
+            msg = _("Ignoring attempt to set reserved variable `$%s'")
             SCons.Warnings.warn(SCons.Warnings.ReservedVariableWarning, msg % k)
             del result[k]
     return result
 
 def _set_reserved(env, key, value):
-    msg = "Ignoring attempt to set reserved variable `$%s'"
+    msg = _("Ignoring attempt to set reserved variable `$%s'")
     SCons.Warnings.warn(SCons.Warnings.ReservedVariableWarning, msg % key)
 
 def _set_future_reserved(env, key, value):
     env._dict[key] = value
-    msg = "`$%s' will be reserved in a future release and setting it will become ignored"
+    msg = _("`$%s' will be reserved in a future release and setting it will become ignored")
     SCons.Warnings.warn(SCons.Warnings.FutureReservedVariableWarning, msg % key)
 
 def _set_BUILDERS(env, key, value):
@@ -424,7 +426,7 @@ class SubstitutionEnvironment:
             # efficient than calling another function or a method.
             if not self._dict.has_key(key) \
                and not _is_valid_var.match(key):
-                    raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                    raise SCons.Errors.UserError, _("Illegal construction variable `%s'") % key
             self._dict[key] = value
 
     def get(self, key, default=None):
@@ -698,7 +700,7 @@ class SubstitutionEnvironment:
             #  -symbolic       (linker global binding)
             #  -R dir          (deprecated linker rpath)
             # IBM compilers may also accept -qframeworkdir=foo
-    
+
             params = shlex.split(arg)
             append_next_arg_to = None   # for multi-word args
             for arg in params:
@@ -781,7 +783,7 @@ class SubstitutionEnvironment:
                     append_next_arg_to = arg
                 else:
                     dict['CCFLAGS'].append(arg)
-    
+
         for arg in flags:
             do_parse(arg, do_parse)
         return dict
@@ -845,7 +847,7 @@ class SubstitutionEnvironment:
 
 #     def MergeShellPaths(self, args, prepend=1):
 #         """
-#         Merge the dict in args into the shell environment in env['ENV'].  
+#         Merge the dict in args into the shell environment in env['ENV'].
 #         Shell path elements are appended or prepended according to prepend.
 
 #         Uses Pre/AppendENVPath, so it always appends or prepends uniquely.
@@ -1211,7 +1213,7 @@ class Base(SubstitutionEnvironment):
             path = str(self.fs.Dir(path))
         return path
 
-    def AppendENVPath(self, name, newpath, envname = 'ENV', 
+    def AppendENVPath(self, name, newpath, envname = 'ENV',
                       sep = os.pathsep, delete_existing=1):
         """Append path elements to the path 'name' in the 'ENV'
         dictionary for this environment.  Will only add any particular
@@ -1316,7 +1318,7 @@ class Base(SubstitutionEnvironment):
         apply_tools(clone, tools, toolpath)
 
         # apply them again in case the tools overwrote them
-        apply(clone.Replace, (), new)        
+        apply(clone.Replace, (), new)
 
         # Finally, apply any flags to be merged in
         if parse_flags: clone.MergeFlags(parse_flags)
@@ -1327,7 +1329,7 @@ class Base(SubstitutionEnvironment):
     def Copy(self, *args, **kw):
         global _warn_copy_deprecated
         if _warn_copy_deprecated:
-            msg = "The env.Copy() method is deprecated; use the env.Clone() method instead."
+            msg = _("The env.Copy() method is deprecated; use the env.Clone() method instead.")
             SCons.Warnings.warn(SCons.Warnings.DeprecatedCopyWarning, msg)
             _warn_copy_deprecated = False
         return apply(self.Clone, args, kw)
@@ -1367,7 +1369,7 @@ class Base(SubstitutionEnvironment):
         copy_function = self._copy2_from_cache
         if function in ('MD5', 'content'):
             if not SCons.Util.md5:
-                raise UserError, "MD5 signatures are not available in this version of Python."
+                raise UserError, _("MD5 signatures are not available in this version of Python.")
             function = self._changed_content
         elif function == 'MD5-timestamp':
             function = self._changed_timestamp_then_content
@@ -1377,7 +1379,7 @@ class Base(SubstitutionEnvironment):
         elif function == 'timestamp-match':
             function = self._changed_timestamp_match
         elif not callable(function):
-            raise UserError, "Unknown Decider value %s" % repr(function)
+            raise UserError, ("Unknown Decider value %s") % repr(function)
 
         # We don't use AddMethod because we don't want to turn the
         # function, which only expects three arguments, into a bound
@@ -1494,7 +1496,7 @@ class Base(SubstitutionEnvironment):
         if only_one:
             targets = reduce(lambda x, y: x+y, map(lambda p: p[0], tdlist))
             if len(targets) > 1:
-                raise SCons.Errors.UserError, "More than one dependency target found in `%s':  %s" % (filename, targets)
+                raise SCons.Errors.UserError, _("More than one dependency target found in `%s':  %s") % (filename, targets)
         for target, depends in tdlist:
             self.Depends(target, depends)
 
@@ -2032,7 +2034,7 @@ class Base(SubstitutionEnvironment):
 
         for side_effect in side_effects:
             if side_effect.multiple_side_effect_has_builder():
-                raise SCons.Errors.UserError, "Multiple ways to build the same target were specified for: %s" % str(side_effect)
+                raise SCons.Errors.UserError, _("Multiple ways to build the same target were specified for: %s") % str(side_effect)
             side_effect.add_source(targets)
             side_effect.side_effect = 1
             self.Precious(side_effect)
@@ -2050,20 +2052,20 @@ class Base(SubstitutionEnvironment):
     def SourceSignatures(self, type):
         global _warn_source_signatures_deprecated
         if _warn_source_signatures_deprecated:
-            msg = "The env.SourceSignatures() method is deprecated;\n" + \
-                  "\tconvert your build to use the env.Decider() method instead."
+            msg = _("The env.SourceSignatures() method is deprecated;\n" + \
+                  "\tconvert your build to use the env.Decider() method instead.")
             SCons.Warnings.warn(SCons.Warnings.DeprecatedSourceSignaturesWarning, msg)
             _warn_source_signatures_deprecated = False
         type = self.subst(type)
         self.src_sig_type = type
         if type == 'MD5':
             if not SCons.Util.md5:
-                raise UserError, "MD5 signatures are not available in this version of Python."
+                raise UserError, _("MD5 signatures are not available in this version of Python.")
             self.decide_source = self._changed_content
         elif type == 'timestamp':
             self.decide_source = self._changed_timestamp_match
         else:
-            raise UserError, "Unknown source signature type '%s'" % type
+            raise UserError, _("Unknown source signature type '%s'") % type
 
     def Split(self, arg):
         """This function converts a string or list into a list of strings
@@ -2086,15 +2088,15 @@ class Base(SubstitutionEnvironment):
     def TargetSignatures(self, type):
         global _warn_target_signatures_deprecated
         if _warn_target_signatures_deprecated:
-            msg = "The env.TargetSignatures() method is deprecated;\n" + \
-                  "\tconvert your build to use the env.Decider() method instead."
+            msg = _("The env.TargetSignatures() method is deprecated;\n" + \
+                  "\tconvert your build to use the env.Decider() method instead.")
             SCons.Warnings.warn(SCons.Warnings.DeprecatedTargetSignaturesWarning, msg)
             _warn_target_signatures_deprecated = False
         type = self.subst(type)
         self.tgt_sig_type = type
         if type in ('MD5', 'content'):
             if not SCons.Util.md5:
-                raise UserError, "MD5 signatures are not available in this version of Python."
+                raise UserError, _("MD5 signatures are not available in this version of Python.")
             self.decide_target = self._changed_content
         elif type == 'timestamp':
             self.decide_target = self._changed_timestamp_match
@@ -2103,7 +2105,7 @@ class Base(SubstitutionEnvironment):
         elif type == 'source':
             self.decide_target = self._changed_source
         else:
-            raise UserError, "Unknown target signature type '%s'"%type
+            raise UserError, _("Unknown target signature type '%s'")%type
 
     def Value(self, value, built_value=None):
         """
@@ -2192,7 +2194,7 @@ class OverrideEnvironment(Base):
             return self.__dict__['__subject'].__getitem__(key)
     def __setitem__(self, key, value):
         if not is_valid_construction_var(key):
-            raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+            raise SCons.Errors.UserError, _("Illegal construction variable `%s'") % key
         self.__dict__['overrides'][key] = value
     def __delitem__(self, key):
         try:
