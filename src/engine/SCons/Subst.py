@@ -39,6 +39,8 @@ import SCons.Errors
 
 from SCons.Util import is_String, is_Sequence
 
+from SCons.i18n import *
+
 # Indexed by the SUBST_* constants below.
 _strconv = [SCons.Util.to_String_for_subst,
             SCons.Util.to_String_for_subst,
@@ -54,7 +56,7 @@ def SetAllowableExceptions(*excepts):
 
 def raise_exception(exception, target, s):
     name = exception.__class__.__name__
-    msg = "%s `%s' trying to evaluate `%s'" % (name, exception, s)
+    msg = _("%s `%s' trying to evaluate `%s'") % (name, exception, s)
     if target:
         raise SCons.Errors.BuildError, (target[0], msg)
     else:
@@ -176,7 +178,7 @@ class NLWrapper:
     In practice, this might be a wash performance-wise, but it's a little
     cleaner conceptually...
     """
-    
+
     def __init__(self, list, func):
         self.list = list
         self.func = func
@@ -194,7 +196,7 @@ class NLWrapper:
         self._create_nodelist = self._return_nodelist
         return self.nodelist
     _create_nodelist = _gen_nodelist
-    
+
 
 class Targets_or_Sources(UserList.UserList):
     """A class that implements $TARGETS or $SOURCES expansions by in turn
@@ -240,7 +242,7 @@ class Target_or_Source:
         except IndexError:
             # If there is nothing in the list, then we have no attributes to
             # pass through, so raise AttributeError for everything.
-            raise AttributeError, "NodeList has no attribute: %s" % attr
+            raise AttributeError, _("NodeList has no attribute: %s") % attr
         return getattr(nl0, attr)
     def __str__(self):
         nl = self.nl._create_nodelist()
@@ -458,7 +460,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
                             raise_exception(NameError(key), lvars['TARGETS'], s)
                         else:
                             return ''
-    
+
                     # Before re-expanding the result, handle
                     # recursive expansion by copying the local
                     # variable dictionary and overwriting a null
