@@ -113,6 +113,8 @@ import SCons.Executor
 import SCons.Util
 import SCons.Subst
 
+from SCons.i18n import *
+
 # we use these a lot, so try to optimize them
 is_String = SCons.Util.is_String
 is_List = SCons.Util.is_List
@@ -299,7 +301,7 @@ def _actionAppend(act1, act2):
     a1 = Action(act1)
     a2 = Action(act2)
     if a1 is None or a2 is None:
-        raise TypeError, "Cannot append %s to %s" % (type(act1), type(act2))
+        raise TypeError, _("Cannot append %s to %s") % (type(act1), type(act2))
     if isinstance(a1, ListAction):
         if isinstance(a2, ListAction):
             return ListAction(a1.list + a2.list)
@@ -328,15 +330,15 @@ def _do_create_keywords(args, kw):
             kw['strfunction'] = cmdstrfunc
         else:
             raise SCons.Errors.UserError(
-                'Invalid command display variable type. '
+                _('Invalid command display variable type. '
                 'You must either pass a string or a callback which '
-                'accepts (target, source, env) as parameters.')
+                'accepts (target, source, env) as parameters.'))
         if len(args) > 1:
             kw['varlist'] = args[1:] + kw['varlist']
     if kw.get('strfunction', _null) is not _null \
                       and kw.get('cmdstr', _null) is not _null:
         raise SCons.Errors.UserError(
-            'Cannot have both strfunction and cmdstr args to Action()')
+            _('Cannot have both strfunction and cmdstr args to Action()'))
 
 def _do_create_action(act, kw):
     """This is the actual "implementation" for the
@@ -533,7 +535,7 @@ class _ActionAction(ActionBase):
                 source = executor.get_all_sources()
             t = string.join(map(str, target), ' and ')
             l = string.join(self.presub_lines(env), '\n  ')
-            out = "Building %s with action:\n  %s\n" % (t, l)
+            out = _("Building %s with action:\n  %s\n") % (t, l)
             sys.stdout.write(out)
         cmd = None
         if show and self.strfunction:
@@ -685,8 +687,8 @@ class CommandAction(_ActionAction):
         apply(_ActionAction.__init__, (self,), kw)
         if is_List(cmd):
             if filter(is_List, cmd):
-                raise TypeError, "CommandAction should be given only " \
-                      "a single command"
+                raise TypeError, _("CommandAction should be given only " \
+                      "a single command")
         self.cmd_list = cmd
 
     def __str__(self):
@@ -746,12 +748,12 @@ class CommandAction(_ActionAction):
         try:
             shell = env['SHELL']
         except KeyError:
-            raise SCons.Errors.UserError('Missing SHELL construction variable.')
+            raise SCons.Errors.UserError(_('Missing SHELL construction variable.'))
 
         try:
             spawn = env['SPAWN']
         except KeyError:
-            raise SCons.Errors.UserError('Missing SPAWN construction variable.')
+            raise SCons.Errors.UserError(_('Missing SPAWN construction variable.'))
         else:
             if is_String(spawn):
                 spawn = env.subst(spawn, raw=1, conv=lambda x: x)
@@ -787,7 +789,7 @@ class CommandAction(_ActionAction):
             cmd_line = escape_list(cmd_line, escape)
             result = spawn(shell, escape, cmd_line[0], cmd_line, ENV)
             if not ignore and result:
-                msg = "Error %s" % result
+                msg = _("Error %s") % result
                 return SCons.Errors.BuildError(errstr=msg,
                                                status=result,
                                                action=self,
@@ -859,7 +861,7 @@ class CommandGeneratorAction(ActionBase):
         #TODO(1.5) gen_cmd = Action(ret, **self.gen_kw)
         gen_cmd = apply(Action, (ret,), self.gen_kw)
         if not gen_cmd:
-            raise SCons.Errors.UserError("Object returned from command generator: %s cannot be used to create an Action." % repr(ret))
+            raise SCons.Errors.UserError(_("Object returned from command generator: %s cannot be used to create an Action.") % repr(ret))
         return gen_cmd
 
     def __str__(self):
@@ -882,7 +884,7 @@ class CommandGeneratorAction(ActionBase):
                  show=_null, execute=_null, chdir=_null, executor=None):
         act = self._generate(target, source, env, 0, executor)
         if act is None:
-            raise UserError("While building `%s': Cannot deduce file extension from source files: %s" % (repr(map(str, target)), repr(map(str, source))))
+            raise UserError(_("While building `%s': Cannot deduce file extension from source files: %s") % (repr(map(str, target)), repr(map(str, source))))
         return act(target, source, env, exitstatfunc, presub,
                    show, execute, chdir, executor)
 
@@ -942,7 +944,7 @@ class LazyAction(CommandGeneratorAction, CommandAction):
         #TODO(1.5) gen_cmd = Action(c, **self.gen_kw)
         gen_cmd = apply(Action, (c,), self.gen_kw)
         if not gen_cmd:
-            raise SCons.Errors.UserError("$%s value %s cannot be used to create an Action." % (self.var, repr(c)))
+            raise SCons.Errors.UserError(_("$%s value %s cannot be used to create an Action.") % (self.var, repr(c)))
         return gen_cmd
 
     def _generate(self, target, source, env, for_signature, executor=None):
@@ -987,7 +989,7 @@ class FunctionAction(_ActionAction):
             try:
                 return self.execfunction.__class__.__name__
             except AttributeError:
-                return "unknown_python_function"
+                return _("unknown_python_function")
 
     def strfunction(self, target, source, env, executor=None):
         if self.cmdstr is None:
@@ -1028,7 +1030,7 @@ class FunctionAction(_ActionAction):
         name = self.function_name()
         if name == 'ActionCaller':
             return str(self.execfunction)
-        return "%s(target, source, env)" % name
+        return _("%s(target, source, env)") % name
 
     def execute(self, target, source, env, executor=None):
         exc_info = (None,None,None)
