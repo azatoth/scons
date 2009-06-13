@@ -53,6 +53,7 @@ import SCons.Environment
 import SCons.PathList
 import SCons.Subst
 import SCons.Tool
+from SCons.i18n import *
 
 # A placeholder for a default Environment (for fetching source files
 # from source code management systems and the like).  This must be
@@ -120,7 +121,7 @@ def SharedFlagChecker(source, target, env):
             except AttributeError:
                 shared = None
             if not shared:
-                raise SCons.Errors.UserError, "Source file: %s is static and is not compatible with shared target: %s" % (src, target[0])
+                raise SCons.Errors.UserError, _("Source file: %s is static and is not compatible with shared target: %s") % (src, target[0])
 
 SharedCheck = SCons.Action.Action(SharedFlagChecker, None)
 
@@ -322,7 +323,7 @@ def _stripixes(prefix, list, suffix, stripprefixes, stripsuffixes, env, c=None):
     where it finds them.  This is used by tools (like the GNU linker)
     that need to turn something like 'libfoo.a' into '-lfoo'.
     """
-    
+
     if not list:
         return list
 
@@ -336,7 +337,7 @@ def _stripixes(prefix, list, suffix, stripprefixes, stripsuffixes, env, c=None):
             c = env_c
         else:
             c = _concat_ixes
-    
+
     stripprefixes = map(env.subst, SCons.Util.flatten(stripprefixes))
     stripsuffixes = map(env.subst, SCons.Util.flatten(stripsuffixes))
 
@@ -397,7 +398,7 @@ def _defines(prefix, defs, suffix, env, c=_concat_ixes):
     else:
         l = [str(defs)]
     return c(prefix, env.subst_path(l), suffix, env)
-    
+
 class NullCmdGenerator:
     """This is a callable class that can be used in place of other
     command generators if you don't want them to do anything.
@@ -433,7 +434,7 @@ class Variable_Method_Caller:
         self.method = method
     def __call__(self, *args, **kw):
         try: 1/0
-        except ZeroDivisionError: 
+        except ZeroDivisionError:
             # Don't start iterating with the current stack-frame to
             # prevent creating reference cycles (f_back is safe).
             frame = sys.exc_info()[2].tb_frame.f_back
