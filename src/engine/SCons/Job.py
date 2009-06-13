@@ -35,6 +35,8 @@ import os
 import signal
 
 import SCons.Errors
+from SCons.i18n import *
+
 
 # The default stack size (in kilobytes) of the threads used to execute
 # jobs in parallel.
@@ -47,7 +49,7 @@ import SCons.Errors
 explicit_stack_size = None
 default_stack_size = 256
 
-interrupt_msg = 'Build interrupted.'
+interrupt_msg = _('Build interrupted.')
 
 
 class InterruptState:
@@ -85,7 +87,7 @@ class Jobs:
             stack_size = explicit_stack_size
             if stack_size is None:
                 stack_size = default_stack_size
-                
+
             try:
                 self.job = Parallel(taskmaster, num, stack_size)
                 self.num_jobs = num
@@ -170,14 +172,14 @@ class Serial:
     """
 
     def __init__(self, taskmaster):
-        """Create a new serial job given a taskmaster. 
+        """Create a new serial job given a taskmaster.
 
         The taskmaster's next_task() method should return the next task
         that needs to be executed, or None if there are no more tasks. The
         taskmaster's executed() method will be called for each task when it
         is successfully executed or failed() will be called if it failed to
         execute (e.g. execute() raised an exception)."""
-        
+
         self.taskmaster = taskmaster
         self.interrupted = InterruptState()
 
@@ -186,7 +188,7 @@ class Serial:
         and executing them, and return when there are no more tasks. If a task
         fails to execute (i.e. execute() raises an exception), then the job will
         stop."""
-        
+
         while 1:
             task = self.taskmaster.next_task()
 
@@ -267,7 +269,7 @@ else:
 
         def __init__(self, num, stack_size, interrupted):
             """Create the request and reply queues, and 'num' worker threads.
-            
+
             One must specify the stack size of the worker threads. The
             stack size is specified in kilobytes.
             """
@@ -275,16 +277,16 @@ else:
             self.resultsQueue = Queue.Queue(0)
 
             try:
-                prev_size = threading.stack_size(stack_size*1024) 
+                prev_size = threading.stack_size(stack_size*1024)
             except AttributeError, e:
                 # Only print a warning if the stack size has been
                 # explicitly set.
                 if not explicit_stack_size is None:
-                    msg = "Setting stack size is unsupported by this version of Python:\n    " + \
+                    msg = _("Setting stack size is unsupported by this version of Python:\n    ") + \
                         e.args[0]
                     SCons.Warnings.warn(SCons.Warnings.StackSizeWarning, msg)
             except ValueError, e:
-                msg = "Setting stack size failed:\n    " + str(e)
+                msg = _("Setting stack size failed:\n    ") + str(e)
                 SCons.Warnings.warn(SCons.Warnings.StackSizeWarning, msg)
 
             # Create worker threads
@@ -322,7 +324,7 @@ else:
                 self.requestQueue.put(None)
 
             # Wait for all of the workers to terminate.
-            # 
+            #
             # If we don't do this, later Python versions (2.4, 2.5) often
             # seem to raise exceptions during shutdown.  This happens
             # in requestQueue.get(), as an assertion failure that
@@ -339,7 +341,7 @@ else:
             self.workers = []
 
     class Parallel:
-        """This class is used to execute tasks in parallel, and is somewhat 
+        """This class is used to execute tasks in parallel, and is somewhat
         less efficient than Serial, but is appropriate for parallel builds.
 
         This class is thread safe.
@@ -373,7 +375,7 @@ else:
             an exception), then the job will stop."""
 
             jobs = 0
-            
+
             while 1:
                 # Start up as many available tasks as we're
                 # allowed to.
