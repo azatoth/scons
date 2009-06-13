@@ -35,6 +35,8 @@ import os
 import string
 import sys
 
+from SCons.i18n import *
+
 # Recipe 14.10 from the Python Cookbook.
 try:
     import weakref
@@ -64,7 +66,7 @@ def string_to_classes(s):
 def fetchLoggedInstances(classes="*"):
     classnames = string_to_classes(classes)
     return map(lambda cn: (cn, len(tracked_classes[cn])), classnames)
-  
+
 def countLoggedInstances(classes, file=sys.stdout):
     for classname in string_to_classes(classes):
         file.write("%s: %d\n" % (classname, len(tracked_classes[classname])))
@@ -163,7 +165,7 @@ def dump_caller_counts(file=sys.stdout):
     keys = caller_bases.keys()
     keys.sort()
     for k in keys:
-        file.write("Callers of %s:%d(%s), %d calls:\n"
+        file.write(_("Callers of %s:%d(%s), %d calls:\n")
                     % (func_shorten(k) + (caller_bases[k],)))
         _dump_one_caller(k, file)
 
