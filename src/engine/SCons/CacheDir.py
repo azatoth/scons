@@ -34,6 +34,8 @@ import sys
 
 import SCons.Action
 
+from SCons.i18n import *
+
 cache_enabled = True
 cache_debug = False
 cache_force = False
@@ -45,9 +47,9 @@ def CacheRetrieveFunc(target, source, env):
     cd = env.get_CacheDir()
     cachedir, cachefile = cd.cachepath(t)
     if not fs.exists(cachefile):
-        cd.CacheDebug('CacheRetrieve(%s):  %s not in cache\n', t, cachefile)
+        cd.CacheDebug(_('CacheRetrieve(%s):  %s not in cache\n'), t, cachefile)
         return 1
-    cd.CacheDebug('CacheRetrieve(%s):  retrieving from %s\n', t, cachefile)
+    cd.CacheDebug(_('CacheRetrieve(%s):  retrieving from %s\n'), t, cachefile)
     if SCons.Action.execute_actions:
         if fs.islink(cachefile):
             fs.symlink(fs.readlink(cachefile), t.path)
@@ -63,7 +65,7 @@ def CacheRetrieveString(target, source, env):
     cd = env.get_CacheDir()
     cachedir, cachefile = cd.cachepath(t)
     if t.fs.exists(cachefile):
-        return "Retrieved `%s' from cache" % t.path
+        return _("Retrieved `%s' from cache") % t.path
     return None
 
 CacheRetrieve = SCons.Action.Action(CacheRetrieveFunc, CacheRetrieveString)
@@ -85,13 +87,13 @@ def CachePushFunc(target, source, env):
         # other person running the same build pushes their copy to
         # the cache after we decide we need to build it but before our
         # build completes.
-        cd.CacheDebug('CachePush(%s):  %s already exists in cache\n', t, cachefile)
+        cd.CacheDebug(_('CachePush(%s):  %s already exists in cache\n'), t, cachefile)
         return
 
-    cd.CacheDebug('CachePush(%s):  pushing to %s\n', t, cachefile)
+    cd.CacheDebug(_('CachePush(%s):  pushing to %s\n'), t, cachefile)
 
     tempfile = cachefile+'.tmp'+str(os.getpid())
-    errfmt = "Unable to copy %s to cache. Cache file is %s"
+    errfmt = _("Unable to copy %s to cache. Cache file is %s")
 
     if not fs.isdir(cachedir):
         try:
@@ -128,7 +130,7 @@ class CacheDir:
         try:
             import hashlib
         except ImportError:
-            msg = "No hashlib or MD5 module available, CacheDir() not supported"
+            msg = _("No hashlib or MD5 module available, CacheDir() not supported")
             SCons.Warnings.warn(SCons.Warnings.NoMD5ModuleWarning, msg)
             self.path = None
         else:
