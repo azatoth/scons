@@ -29,7 +29,7 @@ Register functions which are executed when SCons exits for any reason.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-
+from SCons.i18n import *
 
 _exithandlers = []
 def _run_exitfuncs():
@@ -65,7 +65,7 @@ try:
 except AttributeError:
     pass
 
-# make our exit function get run by python when it exits:    
+# make our exit function get run by python when it exits:
 sys.exitfunc = _run_exitfuncs
 
 del sys
