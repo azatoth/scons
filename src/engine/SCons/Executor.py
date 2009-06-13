@@ -36,7 +36,7 @@ import UserList
 from SCons.Debug import logInstanceCreation
 import SCons.Errors
 import SCons.Memoize
-
+from SCons.i18n import *
 
 class Batch:
     """Remembers exact association between targets
@@ -226,7 +226,7 @@ class Executor:
         if not SCons.Util.is_List(action):
             if not action:
                 import SCons.Errors
-                raise SCons.Errors.UserError, "Executor must have an action."
+                raise SCons.Errors.UserError, _("Executor must have an action.")
             action = [action]
         self.action_list = action
 
@@ -347,11 +347,11 @@ class Executor:
                 status.executor = self
                 raise status
             elif status:
-                msg = "Error %s" % status
+                msg = _("Error %s") % status
                 raise SCons.Errors.BuildError(
-                    errstr=msg, 
+                    errstr=msg,
                     node=self.batches[0].targets,
-                    executor=self, 
+                    executor=self,
                     action=act)
         return status
 
@@ -393,7 +393,7 @@ class Executor:
         """
         for s in self.get_all_sources():
             if s.missing():
-                msg = "Source `%s' not found, needed by target `%s'."
+                msg = _("Source `%s' not found, needed by target `%s'.")
                 raise SCons.Errors.StopError, msg % (s, self.batches[0].targets[0])
 
     def add_pre_action(self, action):
@@ -612,7 +612,7 @@ class Null:
         """Morph this Null executor to a real Executor object."""
         batches = self.batches
         self.__class__ = Executor
-        self.__init__([])            
+        self.__init__([])
         self.batches = batches
 
     # The following methods require morphing this Null Executor to a
