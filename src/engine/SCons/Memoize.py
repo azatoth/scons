@@ -121,6 +121,8 @@ This collected caching logic nicely, but had two drawbacks:
 
 import new
 
+from SCons.i18n import *
+
 # A flag controlling whether or not we actually use memoization.
 use_memoizer = None
 
@@ -142,7 +144,7 @@ class Counter:
         self.miss = 0
         CounterList.append(self)
     def display(self):
-        fmt = "    %7d hits %7d misses    %s()"
+        fmt = _("    %7d hits %7d misses    %s()")
         print fmt % (self.hit, self.miss, self.name)
     def __cmp__(self, other):
         try:
@@ -229,10 +231,10 @@ try:
     use_metaclass = A.use_metaclass
 except AttributeError:
     use_metaclass = None
-    reason = 'no metaclasses'
+    reason = _('no metaclasses')
 except TypeError:
     use_metaclass = None
-    reason = 'new.instancemethod() bug'
+    reason = _('new.instancemethod() bug')
 else:
     del A
 
@@ -256,7 +258,7 @@ if not use_metaclass:
 
     def EnableMemoization():
         import SCons.Warnings
-        msg = 'memoization is not supported in this version of Python (%s)'
+        msg = _('memoization is not supported in this version of Python (%s)')
         raise SCons.Warnings.NoMetaclassSupportWarning, msg % reason
 
 else:
