@@ -31,6 +31,7 @@ SCons C Pre-Processor module
 # This module doesn't use anything from SCons by name, but we import SCons
 # here to pull in zip() from the SCons.compat layer for early Pythons.
 import SCons
+from SCons.i18n import *
 
 import os
 import re
@@ -204,7 +205,7 @@ class FunctionEvaluator:
         with the specified values.
         """
         if len(self.args) != len(values):
-            raise ValueError, "Incorrect number of arguments to `%s'" % self.name
+            raise ValueError, _("Incorrect number of arguments to `%s'") % self.name
         # Create a dictionary that maps the macro arguments to the
         # corresponding values in this "call."  We'll use this when we
         # eval() the expansion so that arguments will get expanded to
