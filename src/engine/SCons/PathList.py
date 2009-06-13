@@ -39,6 +39,8 @@ import SCons.Memoize
 import SCons.Node
 import SCons.Util
 
+from SCons.i18n import *
+
 #
 # Variables to specify the different types of entries in a PathList object:
 #
@@ -134,7 +136,7 @@ class _PathList:
                 if SCons.Util.is_Sequence(value):
                     result.extend(value)
                     continue
-                    
+
             elif type == TYPE_OBJECT:
                 value = node_conv(value)
             if value:
@@ -163,7 +165,7 @@ class PathListCache:
     The main type of duplication we're trying to catch will come from
     looking up the same path list from two different clones of the
     same construction environment.  That is, given
-    
+
         env2 = env1.Clone()
 
     both env1 and env2 will have the same CPPPATH value, and we can
