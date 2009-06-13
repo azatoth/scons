@@ -31,6 +31,7 @@ and user errors in SCons.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import SCons.Util
+from SCons.i18n import *
 
 import exceptions
 
@@ -74,11 +75,11 @@ class BuildError(Exception):
         ---------------------------------------------------------
 
         node : the error occured while building this target node(s)
-        
+
         executor : the executor that caused the build to fail (might
                    be None if the build failures is not due to the
                    executor failing)
-        
+
         action : the action that caused the build to fail (might be
                  None if the build failures is not due to the an
                  action failure)
@@ -88,11 +89,11 @@ class BuildError(Exception):
                   is not due to the an action failure)
         """
 
-    def __init__(self, 
-                 node=None, errstr="Unknown error", status=2, exitstatus=2,
+    def __init__(self,
+                 node=None, errstr=_("Unknown error"), status=2, exitstatus=2,
                  filename=None, executor=None, action=None, command=None,
                  exc_info=(None, None, None)):
-        
+
         self.errstr = errstr
         self.status = status
         self.exitstatus = exitstatus
@@ -104,7 +105,7 @@ class BuildError(Exception):
         self.action = action
         self.command = command
 
-        Exception.__init__(self, node, errstr, status, exitstatus, filename, 
+        Exception.__init__(self, node, errstr, status, exitstatus, filename,
                            executor, action, command, exc_info)
 
     def __str__(self):
@@ -151,7 +152,7 @@ def convert_to_BuildError(status, exc_info=None):
         buildError.exitstatus = 2   # always exit with 2 on build errors
     elif isinstance(status, ExplicitExit):
         status = status.status
-        errstr = 'Explicit exit, status %s' % status
+        errstr = _('Explicit exit, status %s') % status
         buildError = BuildError(
             errstr=errstr,
             status=status,      # might be 0, OK here
@@ -173,7 +174,7 @@ def convert_to_BuildError(status, exc_info=None):
         # target file will appear).
         try: filename = status.filename
         except AttributeError: filename = None
-        buildError = BuildError( 
+        buildError = BuildError(
             errstr=status.strerror,
             status=status.errno,
             exitstatus=2,
@@ -192,10 +193,10 @@ def convert_to_BuildError(status, exc_info=None):
             exitstatus=2)
     else:
         buildError = BuildError(
-            errstr="Error %s" % status,
+            errstr=_("Error %s") % status,
             status=status,
             exitstatus=2)
-    
+
     #import sys
     #sys.stderr.write("convert_to_BuildError: status %s => (errstr %s, status %s)"%(status,buildError.errstr, buildError.status))
     return buildError
