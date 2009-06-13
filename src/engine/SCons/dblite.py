@@ -8,11 +8,13 @@ import os
 import types
 import __builtin__
 
+from SCons.i18n import *
+
 keep_all_files = 00000
 ignore_corrupt_dbfiles = 0
 
 def corruption_warning(filename):
-    print "Warning: Discarding corrupt database:", filename
+    print _("Warning: Discarding corrupt database:"), filename
 
 if hasattr(types, 'UnicodeType'):
     def is_string(s):
@@ -134,7 +136,7 @@ class dblite:
 
   def _check_writable(self):
     if (self._flag == "r"):
-      raise IOError("Read-only database: %s" % self._file_name)
+      raise IOError(_("Read-only database: %s") % self._file_name)
 
   def __getitem__(self, key):
     return self._dict[key]
@@ -142,9 +144,9 @@ class dblite:
   def __setitem__(self, key, value):
     self._check_writable()
     if (not is_string(key)):
-      raise TypeError, "key `%s' must be a string but is %s" % (key, type(key))
+      raise TypeError, _("key `%s' must be a string but is %s") % (key, type(key))
     if (not is_string(value)):
-      raise TypeError, "value `%s' must be a string but is %s" % (value, type(value))
+      raise TypeError, _("value `%s' must be a string but is %s") % (value, type(value))
     self._dict[key] = value
     self._needs_sync = 0001
 
@@ -193,9 +195,9 @@ def _exercise():
   try:
     db.sync()
   except IOError, e:
-    assert str(e) == "Read-only database: tmp.dblite"
+    assert str(e) == _("Read-only database: tmp.dblite")
   else:
-    raise RuntimeError, "IOError expected."
+    raise RuntimeError, _("IOError expected.")
   db = open("tmp", "w")
   assert len(db) == 4
   db["ping"] = "pong"
@@ -203,15 +205,15 @@ def _exercise():
   try:
     db[(1,2)] = "tuple"
   except TypeError, e:
-    assert str(e) == "key `(1, 2)' must be a string but is <type 'tuple'>", str(e)
+    assert str(e) == _("key `(1, 2)' must be a string but is <type 'tuple'>"), str(e)
   else:
-    raise RuntimeError, "TypeError exception expected"
+    raise RuntimeError, _("TypeError exception expected")
   try:
     db["list"] = [1,2]
   except TypeError, e:
-    assert str(e) == "value `[1, 2]' must be a string but is <type 'list'>", str(e)
+    assert str(e) == _("value `[1, 2]' must be a string but is <type 'list'>"), str(e)
   else:
-    raise RuntimeError, "TypeError exception expected"
+    raise RuntimeError, _("TypeError exception expected")
   db = open("tmp", "r")
   assert len(db) == 5
   db = open("tmp", "n")
@@ -224,7 +226,7 @@ def _exercise():
   except cPickle.UnpicklingError:
     pass
   else:
-    raise RuntimeError, "cPickle exception expected."
+    raise RuntimeError, _("cPickle exception expected.")
   global ignore_corrupt_dbfiles
   ignore_corrupt_dbfiles = 2
   db = open("tmp", "r")
@@ -233,9 +235,9 @@ def _exercise():
   try:
     db = open("tmp", "w")
   except IOError, e:
-    assert str(e) == "[Errno 2] No such file or directory: 'tmp.dblite'", str(e)
+    assert str(e) == _("[Errno 2] No such file or directory: 'tmp.dblite'"), str(e)
   else:
-    raise RuntimeError, "IOError expected."
+    raise RuntimeError, _("IOError expected.")
   print "OK"
 
 if (__name__ == "__main__"):
