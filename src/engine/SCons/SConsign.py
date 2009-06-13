@@ -36,9 +36,11 @@ import os.path
 import SCons.dblite
 import SCons.Warnings
 
+from SCons.i18n import *
+
 def corrupt_dblite_warning(filename):
     SCons.Warnings.warn(SCons.Warnings.CorruptSConsignWarning,
-                        "Ignoring corrupt .sconsign file: %s"%filename)
+                        _("Ignoring corrupt .sconsign file: %s")%filename)
 
 SCons.dblite.ignore_corrupt_dbfiles = 1
 SCons.dblite.corruption_warning = corrupt_dblite_warning
@@ -209,7 +211,7 @@ class DB(Base):
                 raise
             except Exception, e:
                 SCons.Warnings.warn(SCons.Warnings.CorruptSConsignWarning,
-                                    "Ignoring corrupt sconsign entry : %s (%s)\n"%(self.dir.tpath, e))
+                                    _("Ignoring corrupt sconsign entry : %s (%s)\n")%(self.dir.tpath, e))
             for key, entry in self.entries.items():
                 entry.convert_from_sconsign(dir, key)
 
@@ -292,7 +294,7 @@ class DirFile(Dir):
             raise
         except:
             SCons.Warnings.warn(SCons.Warnings.CorruptSConsignWarning,
-                                "Ignoring corrupt .sconsign file: %s"%self.sconsign)
+                                _("Ignoring corrupt .sconsign file: %s")%self.sconsign)
 
         global sig_files
         sig_files.append(self)
