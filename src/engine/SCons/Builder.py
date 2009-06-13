@@ -113,6 +113,8 @@ import SCons.Node.FS
 import SCons.Util
 import SCons.Warnings
 
+from SCons.i18n import *
+
 class _Null:
     pass
 
@@ -156,21 +158,21 @@ class DictCmdGenerator(SCons.Util.Selector):
             for src in map(str, source):
                 my_ext = match_splitext(src, suffixes)[1]
                 if ext and my_ext != ext:
-                    raise UserError("While building `%s' from `%s': Cannot build multiple sources with different extensions: %s, %s" % (repr(map(str, target)), src, ext, my_ext))
+                    raise UserError(_("While building `%s' from `%s': Cannot build multiple sources with different extensions: %s, %s") % (repr(map(str, target)), src, ext, my_ext))
                 ext = my_ext
         else:
             ext = match_splitext(str(source[0]), self.src_suffixes())[1]
 
         if not ext:
             #return ext
-            raise UserError("While building `%s': Cannot deduce file extension from source files: %s" % (repr(map(str, target)), repr(map(str, source))))
+            raise UserError(_("While building `%s': Cannot deduce file extension from source files: %s") % (repr(map(str, target)), repr(map(str, source))))
 
         try:
             ret = SCons.Util.Selector.__call__(self, env, source, ext)
         except KeyError, e:
-            raise UserError("Ambiguous suffixes after environment substitution: %s == %s == %s" % (e[0], e[1], e[2]))
+            raise UserError(_("Ambiguous suffixes after environment substitution: %s == %s == %s") % (e[0], e[1], e[2]))
         if ret is None:
-            raise UserError("While building `%s' from `%s': Don't know how to build from a source file with suffix `%s'.  Expected a suffix in this list: %s." % \
+            raise UserError(_("While building `%s' from `%s': Don't know how to build from a source file with suffix `%s'.  Expected a suffix in this list: %s.") % \
                             (repr(map(str, target)), repr(map(str, source)), ext, repr(self.keys())))
         return ret
 
@@ -233,7 +235,7 @@ class OverrideWarner(UserDict.UserDict):
         for k in self.keys():
             if misleading_keywords.has_key(k):
                 alt = misleading_keywords[k]
-                msg = "Did you mean to use `%s' instead of `%s'?" % (alt, k)
+                msg = _("Did you mean to use `%s' instead of `%s'?") % (alt, k)
                 SCons.Warnings.warn(SCons.Warnings.MisleadingKeywordsWarning, msg)
         self.already_warned = 1
 
@@ -242,7 +244,7 @@ def Builder(**kw):
     composite = None
     if kw.has_key('generator'):
         if kw.has_key('action'):
-            raise UserError, "You must not specify both an action and a generator."
+            raise UserError, _("You must not specify both an action and a generator.")
         kw['action'] = SCons.Action.CommandGeneratorAction(kw['generator'], {})
         del kw['generator']
     elif kw.has_key('action'):
@@ -265,7 +267,7 @@ def Builder(**kw):
             # a callable to use as the actual emitter.
             var = SCons.Util.get_environment_var(emitter)
             if not var:
-                raise UserError, "Supplied emitter '%s' does not appear to refer to an Environment variable" % emitter
+                raise UserError, _("Supplied emitter '%s' does not appear to refer to an Environment variable") % emitter
             kw['emitter'] = EmitterProxy(var)
         elif SCons.Util.is_Dict(emitter):
             kw['emitter'] = DictEmitter(emitter)
@@ -289,7 +291,7 @@ def _node_errors(builder, env, tlist, slist):
     # were specified.
     for t in tlist:
         if t.side_effect:
-            raise UserError, "Multiple ways to build the same target were specified for: %s" % t
+            raise UserError, _("Multiple ways to build the same target were specified for: %s") % t
         if t.has_explicit_builder():
             if not t.env is None and not t.env is env:
                 action = t.builder.action
@@ -297,26 +299,26 @@ def _node_errors(builder, env, tlist, slist):
                 contents = action.get_contents(tlist, slist, env)
 
                 if t_contents == contents:
-                    msg = "Two different environments were specified for target %s,\n\tbut they appear to have the same action: %s" % (t, action.genstring(tlist, slist, t.env))
+                    msg = _("Two different environments were specified for target %s,\n\tbut they appear to have the same action: %s") % (t, action.genstring(tlist, slist, t.env))
                     SCons.Warnings.warn(SCons.Warnings.DuplicateEnvironmentWarning, msg)
                 else:
-                    msg = "Two environments with different actions were specified for the same target: %s" % t
+                    msg = _("Two environments with different actions were specified for the same target: %s") % t
                     raise UserError, msg
             if builder.multi:
                 if t.builder != builder:
-                    msg = "Two different builders (%s and %s) were specified for the same target: %s" % (t.builder.get_name(env), builder.get_name(env), t)
+                    msg = _("Two different builders (%s and %s) were specified for the same target: %s") % (t.builder.get_name(env), builder.get_name(env), t)
                     raise UserError, msg
                 # TODO(batch):  list constructed each time!
                 if t.get_executor().get_all_targets() != tlist:
-                    msg = "Two different target lists have a target in common: %s  (from %s and from %s)" % (t, map(str, t.get_executor().get_all_targets()), map(str, tlist))
+                    msg = _("Two different target lists have a target in common: %s  (from %s and from %s)") % (t, map(str, t.get_executor().get_all_targets()), map(str, tlist))
                     raise UserError, msg
             elif t.sources != slist:
-                msg = "Multiple ways to build the same target were specified for: %s  (from %s and from %s)" % (t, map(str, t.sources), map(str, slist))
+                msg = _("Multiple ways to build the same target were specified for: %s  (from %s and from %s)") % (t, map(str, t.sources), map(str, slist))
                 raise UserError, msg
 
     if builder.single_source:
         if len(slist) > 1:
-            raise UserError, "More than one source given for single-source builder: targets=%s sources=%s" % (map(str,tlist), map(str,slist))
+            raise UserError, _("More than one source given for single-source builder: targets=%s sources=%s") % (map(str,tlist), map(str,slist))
 
 class EmitterProxy:
     """This is a callable class that can act as a
@@ -389,14 +391,14 @@ class BuilderBase:
         self.single_source = single_source
         if overrides.has_key('overrides'):
             SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning,
-                "The \"overrides\" keyword to Builder() creation has been deprecated;\n" +\
-                "\tspecify the items as keyword arguments to the Builder() call instead.")
+                _("The \"overrides\" keyword to Builder() creation has been deprecated;\n" +\
+                "\tspecify the items as keyword arguments to the Builder() call instead."))
             overrides.update(overrides['overrides'])
             del overrides['overrides']
         if overrides.has_key('scanner'):
             SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning,
-                                "The \"scanner\" keyword to Builder() creation has been deprecated;\n"
-                                "\tuse: source_scanner or target_scanner as appropriate.")
+                                _("The \"scanner\" keyword to Builder() creation has been deprecated;\n"
+                                "\tuse: source_scanner or target_scanner as appropriate."))
             del overrides['scanner']
         self.overrides = overrides
 
@@ -427,7 +429,7 @@ class BuilderBase:
         self.src_builder = src_builder
 
     def __nonzero__(self):
-        raise InternalError, "Do not test for the Node.builder attribute directly; use Node.has_builder() instead"
+        raise InternalError, _("Do not test for the Node.builder attribute directly; use Node.has_builder() instead")
 
     def get_name(self, env):
         """Attempts to get the name of the Builder.
@@ -489,7 +491,7 @@ class BuilderBase:
             try:
                 t_from_s = slist[0].target_from_source
             except AttributeError:
-                raise UserError("Do not know how to create a target from source `%s'" % slist[0])
+                raise UserError(_("Do not know how to create a target from source `%s'") % slist[0])
             except IndexError:
                 tlist = []
             else:
@@ -572,7 +574,7 @@ class BuilderBase:
 
         if executor is None:
             if not self.action:
-                fmt = "Builder %s must have an action to build %s."
+                fmt = _("Builder %s must have an action to build %s.")
                 raise UserError, fmt % (self.get_name(env or self.env),
                                         map(str,tlist))
             key = self.action.batch_key(env or self.env, tlist, slist)
