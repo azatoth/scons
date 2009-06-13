@@ -30,3 +30,5 @@ except ImportError:
     def _(string):
         return string
 
+def N_(string):
+    return string
