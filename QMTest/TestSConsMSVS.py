@@ -60,8 +60,8 @@ CFG=Test - Win32 Release
 # PROP BASE Use_Debug_Libraries 0
 # PROP BASE Output_Dir ""
 # PROP BASE Intermediate_Dir ""
-# PROP BASE Cmd_Line "echo Starting SCons && "<PYTHON>" -c "<SCONS_SCRIPT_MAIN>" -C "<WORKPATH>" -f SConstruct "Test.exe""
-# PROP BASE Rebuild_Opt "-c && echo Starting SCons && "<PYTHON>" -c "<SCONS_SCRIPT_MAIN>" -C "<WORKPATH>" -f SConstruct "Test.exe""
+# PROP BASE Cmd_Line "echo Starting SCons && "<SCONS_EXECUTABLE>" -C "<WORKPATH>" -f SConstruct "Test.exe""
+# PROP BASE Rebuild_Opt "-c && echo Starting SCons && "<SCONS_EXECUTABLE>" -C "<WORKPATH>" -f SConstruct "Test.exe""
 # PROP BASE Target_File "Test.exe"
 # PROP BASE Bsc_Name ""
 # PROP BASE Target_Dir ""
@@ -69,8 +69,8 @@ CFG=Test - Win32 Release
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "echo Starting SCons && "<PYTHON>" -c "<SCONS_SCRIPT_MAIN>" -C "<WORKPATH>" -f SConstruct "Test.exe""
-# PROP Rebuild_Opt "-c && echo Starting SCons && "<PYTHON>" -c "<SCONS_SCRIPT_MAIN>" -C "<WORKPATH>" -f SConstruct "Test.exe""
+# PROP Cmd_Line "echo Starting SCons && "<SCONS_EXECUTABLE>" -C "<WORKPATH>" -f SConstruct "Test.exe""
+# PROP Rebuild_Opt "-c && echo Starting SCons && "<SCONS_EXECUTABLE>" -C "<WORKPATH>" -f SConstruct "Test.exe""
 # PROP Target_File "Test.exe"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
@@ -230,9 +230,9 @@ expected_vcprojfile_7_0 = """\
 \t\t\tATLMinimizesCRunTimeLibraryUsage="FALSE">
 \t\t\t<Tool
 \t\t\t\tName="VCNMakeTool"
-\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
-\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c &quot;Test.exe&quot;"
-\t\t\t\tRebuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
+\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<SCONS_EXECUTABLE>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
+\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<SCONS_EXECUTABLE>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c &quot;Test.exe&quot;"
+\t\t\t\tRebuildCommandLine="echo Starting SCons &amp;&amp; &quot;<SCONS_EXECUTABLE>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
 \t\t\t\tOutput="Test.exe"/>
 \t\t</Configuration>
 \t</Configurations>
@@ -351,9 +351,9 @@ expected_vcprojfile_7_1 = """\
 \t\t\tATLMinimizesCRunTimeLibraryUsage="FALSE">
 \t\t\t<Tool
 \t\t\t\tName="VCNMakeTool"
-\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
-\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c &quot;Test.exe&quot;"
-\t\t\t\tRebuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
+\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<SCONS_EXECUTABLE>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
+\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<SCONS_EXECUTABLE>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c &quot;Test.exe&quot;"
+\t\t\t\tRebuildCommandLine="echo Starting SCons &amp;&amp; &quot;<SCONS_EXECUTABLE>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
 \t\t\t\tOutput="Test.exe"/>
 \t\t</Configuration>
 \t</Configurations>
@@ -474,9 +474,9 @@ expected_vcprojfile_8_0 = """\
 \t\t\t>
 \t\t\t<Tool
 \t\t\t\tName="VCNMakeTool"
-\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
-\t\t\t\tReBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
-\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<PYTHON>&quot; -c &quot;<SCONS_SCRIPT_MAIN_XML>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c &quot;Test.exe&quot;"
+\t\t\t\tBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<SCONS_EXECUTABLE>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
+\t\t\t\tReBuildCommandLine="echo Starting SCons &amp;&amp; &quot;<SCONS_EXECUTABLE>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct &quot;Test.exe&quot;"
+\t\t\t\tCleanCommandLine="echo Starting SCons &amp;&amp; &quot;<SCONS_EXECUTABLE>&quot; -C &quot;<WORKPATH>&quot; -f SConstruct -c &quot;Test.exe&quot;"
 \t\t\t\tOutput="Test.exe"
 \t\t\t\tPreprocessorDefinitions="DEF1;DEF2"
 \t\t\t\tIncludeSearchPath="inc1;inc2"
@@ -602,7 +602,8 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
     def msvs_substitute(self, input, msvs_ver,
                         subdir=None, sconscript=None,
                         python=None,
-                        project_guid=None):
+                        project_guid=None,
+                        scons_executable=None):
         if not hasattr(self, '_msvs_versions'):
             self.msvs_versions()
 
@@ -620,18 +621,13 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
         if project_guid is None:
             project_guid = "{E5466E26-0003-F18B-8F8A-BCD76C86388D}"
 
-        if os.environ.has_key('SCONS_LIB_DIR'):
-            exec_script_main = "from os.path import join; import sys; sys.path = [ r'%s' ] + sys.path; import SCons.Script; SCons.Script.main()" % os.environ['SCONS_LIB_DIR']
-        else:
-            exec_script_main = "from os.path import join; import sys; sys.path = [ join(sys.prefix, 'Lib', 'site-packages', 'scons-%s'), join(sys.prefix, 'scons-%s'), join(sys.prefix, 'Lib', 'site-packages', 'scons'), join(sys.prefix, 'scons') ] + sys.path; import SCons.Script; SCons.Script.main()" % (self.scons_version, self.scons_version)
-        exec_script_main_xml = string.replace(exec_script_main, "'", "&apos;")
+        if scons_executable is None:
+            scons_executable = "scons"
 
         result = string.replace(input, r'<WORKPATH>', workpath)
-        result = string.replace(result, r'<PYTHON>', python)
         result = string.replace(result, r'<SCONSCRIPT>', sconscript)
-        result = string.replace(result, r'<SCONS_SCRIPT_MAIN>', exec_script_main)
-        result = string.replace(result, r'<SCONS_SCRIPT_MAIN_XML>', exec_script_main_xml)
         result = string.replace(result, r'<PROJECT_GUID>', project_guid)
+        result = string.replace(result, r'<SCONS_EXECUTABLE>', scons_executable)
         return result
 
     def get_msvs_executable(self, version):

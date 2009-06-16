@@ -83,6 +83,10 @@ for the resulting project file to be non-empty.
 In addition to the above lists of values,
 the following values may be specified:
 
+<literal>scons_executable</literal>:
+The SCons executable that is re-invoked by Visual Studio. By default, "scons"
+is used and assumed to be in the path.
+
 <literal>target</literal>:
 The name of the target
 <filename>.dsp</filename>

@@ -105,39 +105,6 @@ def msvs_parse_version(s):
     num, suite = version_re.match(s).groups()
     return float(num), suite
 
-# This is how we re-invoke SCons from inside MSVS Project files.
-# The problem is that we might have been invoked as either scons.bat
-# or scons.py.  If we were invoked directly as scons.py, then we could
-# use sys.argv[0] to find the SCons "executable," but that doesn't work
-# if we were invoked as scons.bat, which uses "python -c" to execute
-# things and ends up with "-c" as sys.argv[0].  Consequently, we have
-# the MSVS Project file invoke SCons the same way that scons.bat does,
-# which works regardless of how we were invoked.
-def getExecScriptMain(env, xml=None):
-    scons_home = env.get('SCONS_HOME')
-    if not scons_home and os.environ.has_key('SCONS_LIB_DIR'):
-        scons_home = os.environ['SCONS_LIB_DIR']
-    if scons_home:
-        exec_script_main = "from os.path import join; import sys; sys.path = [ r'%s' ] + sys.path; import SCons.Script; SCons.Script.main()" % scons_home
-    else:
-        version = SCons.__version__
-        exec_script_main = "from os.path import join; import sys; sys.path = [ join(sys.prefix, 'Lib', 'site-packages', 'scons-%(version)s'), join(sys.prefix, 'scons-%(version)s'), join(sys.prefix, 'Lib', 'site-packages', 'scons'), join(sys.prefix, 'scons') ] + sys.path; import SCons.Script; SCons.Script.main()" % locals()
-    if xml:
-        exec_script_main = xmlify(exec_script_main)
-    return exec_script_main
-
-# The string for the Python executable we tell the Project file to use
-# is either sys.executable or, if an external PYTHON_ROOT environment
-# variable exists, $(PYTHON)ROOT\\python.exe (generalized a little to
-# pluck the actual executable name from sys.executable).
-try:
-    python_root = os.environ['PYTHON_ROOT']
-except KeyError:
-    python_executable = sys.executable
-else:
-    python_executable = os.path.join('$$(PYTHON_ROOT)',
-                                     os.path.split(sys.executable)[1])
-
 class Config:
     pass
 
@@ -402,6 +369,11 @@ class _GenerateV6DSP(_DSPGenerator):
             if not env_has_buildtarget:
                 self.env['MSVSBUILDTARGET'] = buildtarget
 
+            if self.env.has_key('scons_executable') and self.env['scons_executable'] != None:
+                scons_executable = self.env['scons_executable']
+            else:
+                scons_executable = 'scons'
+
             # have to write this twice, once with the BASE settings, and once without
             for base in ("BASE ",""):
                 self.file.write('# PROP %sUse_MFC 0\n'
@@ -415,6 +387,7 @@ class _GenerateV6DSP(_DSPGenerator):
                 self.file.write('# PROP %sOutput_Dir "%s"\n'
                                 '# PROP %sIntermediate_Dir "%s"\n' % (base,outdir,base,outdir))
                 cmd = 'echo Starting SCons && ' + self.env.subst('$MSVSBUILDCOM', 1)
+                cmd = cmd % scons_executable
                 self.file.write('# PROP %sCmd_Line "%s"\n'
                                 '# PROP %sRebuild_Opt "-c && %s"\n'
                                 '# PROP %sTarget_File "%s"\n'
@@ -677,14 +650,19 @@ class _GenerateV7DSP(_DSPGenerator):
             if not env_has_buildtarget:
                 self.env['MSVSBUILDTARGET'] = buildtarget
 
+            if self.env.has_key('scons_executable') and self.env['scons_executable'] != None:
+                scons_executable = self.env['scons_executable']
+            else:
+                scons_executable = 'scons'
+
             starting = 'echo Starting SCons && '
             if cmdargs:
                 cmdargs = ' ' + cmdargs
             else:
                 cmdargs = ''
-            buildcmd    = xmlify(starting + self.env.subst('$MSVSBUILDCOM', 1) + cmdargs)
-            rebuildcmd  = xmlify(starting + self.env.subst('$MSVSREBUILDCOM', 1) + cmdargs)
-            cleancmd    = xmlify(starting + self.env.subst('$MSVSCLEANCOM', 1) + cmdargs)
+            buildcmd    = xmlify(starting + self.env.subst('$MSVSBUILDCOM', 1) % scons_executable + cmdargs)
+            rebuildcmd  = xmlify(starting + self.env.subst('$MSVSREBUILDCOM', 1) % scons_executable + cmdargs)
+            cleancmd    = xmlify(starting + self.env.subst('$MSVSCLEANCOM', 1) % scons_executable + cmdargs)
 
             # TODO(1.5)
             #preprocdefs = xmlify(';'.join(self.env.get('CPPDEFINES', [])))
@@ -1218,10 +1196,16 @@ def projectEmitter(target, source, env):
     (base, suff) = SCons.Util.splitext(str(target[0]))
     suff = env.subst('$MSVSPROJECTSUFFIX')
     target[0] = base + suff
+    
+    if env.has_key('scons_executable') and env['scons_executable'] != None:
+        scons_executable = env['scons_executable']
+    else:
+        scons_executable = 'scons'
 
     if not source:
         source = 'prj_inputs:'
         source = source + env.subst('$MSVSSCONSCOM', 1)
+        source = source % scons_executable
         source = source + env.subst('$MSVSENCODING', 1)
 
         if env.has_key('buildtarget') and env['buildtarget'] != None:
@@ -1398,7 +1382,7 @@ def generate(env):
             default_MSVS_SConscript = env.File('SConstruct')
         env['MSVSSCONSCRIPT'] = default_MSVS_SConscript
 
-    env['MSVSSCONS'] = '"%s" -c "%s"' % (python_executable, getExecScriptMain(env))
+    env['MSVSSCONS'] = '"%s"'
     env['MSVSSCONSFLAGS'] = '-C "${MSVSSCONSCRIPT.dir.abspath}" -f ${MSVSSCONSCRIPT.name}'
     env['MSVSSCONSCOM'] = '$MSVSSCONS $MSVSSCONSFLAGS'
     env['MSVSBUILDCOM'] = '$MSVSSCONSCOM "$MSVSBUILDTARGET"'
