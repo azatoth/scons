@@ -134,7 +134,7 @@ if not os.environ.has_key('SCONS_EXEC') or os.environ['SCONS_EXEC'] != '1':
     test.subdir('pythonlib')
 
     test.write(['pythonlib', 'threading.py'], """\
-    raise ImportError
+raise ImportError
     """)
 
     save_pythonpath = os.environ.get('PYTHONPATH', '')
@@ -148,9 +148,9 @@ if not os.environ.has_key('SCONS_EXEC') or os.environ['SCONS_EXEC'] != '1':
     test.run(arguments = "-j 2 f1 f2", stderr=None)
 
     warn = \
-    """scons: warning: parallel builds are unsupported by this version of Python;
-    \tignoring -j or num_jobs option.
-    """
+"""scons: warning: parallel builds are unsupported by this version of Python;
+\tignoring -j or num_jobs option.
+"""
     test.must_contain_all_lines(test.stderr(), [warn])
 
     str = test.read("f1")
