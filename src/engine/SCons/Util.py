@@ -1632,6 +1632,33 @@ class NullSeq(Null):
     def __setitem__(self, i, v):
         return self
 
+def python_interpreter_command():
+    executable = sys.executable
+    if os.path.basename(executable).lower().find('python') == -1:
+        if sys.platform in ('win32', 'cygwin'):
+            def whereis(file):
+                pathext = [''] + string.split(os.environ['PATHEXT'], os.pathsep)
+                for dir in string.split(os.environ['PATH'], os.pathsep):
+                    f = os.path.join(dir, file)
+                    for ext in pathext:
+                        fext = f + ext
+                        if os.path.isfile(fext):
+                            return fext
+                return None
+        else:
+            def whereis(file):
+                for dir in string.split(os.environ['PATH'], os.pathsep):
+                    f = os.path.join(dir, file)
+                    if os.path.isfile(f):
+                        try:
+                            st = os.stat(f)
+                        except OSError:
+                            continue
+                        if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
+                            return f
+                return None
+        executable = whereis('python')
+    return executable
 
 del __revision__
 

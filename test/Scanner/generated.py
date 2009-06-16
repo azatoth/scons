@@ -266,9 +266,13 @@ def escape(s):
         s = '"' + s + '"'
     return s
 
-cmd_generated = "%s $SOURCE" % escape(sys.executable)
-cmd_justlib = "%s %s -C ${SOURCES[0].dir}" % (escape(sys.executable),
-                                              escape(sys.argv[0]))
+if sys.__dict__.has_key('frozen') and sys.frozen:
+    cmd_generated = "%s $SOURCE" % escape(SCons.Util.python_interpreter_command())
+    cmd_justlib = "%s -C ${SOURCES[0].dir}" % escape(sys.executable)
+else:
+    cmd_generated = "%s $SOURCE" % escape(sys.executable)
+    cmd_justlib = "%s %s -C ${SOURCES[0].dir}" % (escape(sys.executable),
+                                                  escape(sys.argv[0]))
 
 ##### Deps appear correct ... but wacky scanning?
 # Why?

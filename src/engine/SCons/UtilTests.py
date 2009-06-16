@@ -781,6 +781,16 @@ class flattenTestCase(unittest.TestCase):
         result = flatten('xyz')
         assert result == ['xyz'], result
 
+class PythonTestCase(unittest.TestCase):
+
+    def test_python_command(self):
+        """Test getting the path to the Python interpreter"""
+        result = python_interpreter_command()
+        assert result != None, result
+        assert result.lower().find('python') != -1
+        exit_code = os.system(result + " -c \"import sys\"")
+        assert exit_code == 0, exit_code
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     tclasses = [ dictifyTestCase,
@@ -788,6 +798,7 @@ if __name__ == "__main__":
                  MD5TestCase,
                  NodeListTestCase,
                  UtilTestCase,
+                 PythonTestCase,
                ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')

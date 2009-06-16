@@ -43,6 +43,7 @@ import stat
 import string
 import sys
 import tempfile
+import SCons.Util
 
 project = 'scons'
 default_version = '1.2.0'
@@ -457,7 +458,7 @@ env = Environment(
                    BUILDERS            = { 'SCons_revision' : revbuilder,
                                            'SOElim' : soelimbuilder },
 
-                   PYTHON              = '"%s"' % sys.executable,
+                   PYTHON              = '"%s"' % SCons.Util.python_interpreter_command(),
                    PYTHONFLAGS         = '-tt',
                  )
 
