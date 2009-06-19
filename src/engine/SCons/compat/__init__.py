@@ -62,6 +62,9 @@ rest of our code will find our pre-loaded compatibility module.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+from SCons.i18n import *
+
+
 def import_as(module, name):
     """
     Imports the specified module (from our local directory) as the
@@ -212,7 +215,7 @@ except AttributeError:
         except OSError:
             if os.path.isdir(src):
                 if shutil.destinsrc(src, dst):
-                    raise Error, "Cannot move a directory '%s' into itself '%s'." % (src, dst)
+                    raise Error, _("Cannot move a directory '%s' into itself '%s'.") % (src, dst)
                 shutil.copytree(src, dst, symlinks=True)
                 shutil.rmtree(src)
             else:

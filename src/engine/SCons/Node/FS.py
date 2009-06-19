@@ -47,6 +47,8 @@ import string
 import sys
 import time
 
+from SCons.i18n import *
+
 try:
     import codecs
 except ImportError:
@@ -125,7 +127,7 @@ class EntryProxyAttributeError(AttributeError):
         self.attribute = attribute
     def __str__(self):
         entry = self.entry_proxy.get()
-        fmt = "%s instance %s has no attribute %s"
+        fmt = _("%s instance %s has no attribute %s")
         return fmt % (entry.__class__.__name__,
                       repr(entry.name),
                       repr(self.attribute))
@@ -163,7 +165,7 @@ def save_strings(val):
 # tells us whether or not os.path.splitdrive() actually does anything
 # on this system, and therefore whether we need to bother calling it
 # when looking up path names in various methods below.
-# 
+#
 
 do_splitdrive = None
 
@@ -256,8 +258,8 @@ def set_duplicate(duplicate):
     }
 
     if not duplicate in Valid_Duplicates:
-        raise SCons.Errors.InternalError, ("The argument of set_duplicate "
-                                           "should be in Valid_Duplicates")
+        raise SCons.Errors.InternalError, (_("The argument of set_duplicate "
+                                           "should be in Valid_Duplicates"))
     global Link_Funcs
     Link_Funcs = []
     for func in string.split(duplicate,'-'):
@@ -298,7 +300,7 @@ def LinkFunc(target, source, env):
 
 Link = SCons.Action.Action(LinkFunc, None)
 def LocalString(target, source, env):
-    return 'Local copy of %s from %s' % (target[0], source[0])
+    return _('Local copy of %s from %s') % (target[0], source[0])
 
 LocalCopy = SCons.Action.Action(LinkFunc, LocalString)
 
@@ -592,7 +594,7 @@ class Base(SCons.Node.Node):
         self.suffix = SCons.Util.silent_intern(SCons.Util.splitext(name)[1])
         self.fs = fs
 
-        assert directory, "A directory must be provided"
+        assert directory, _("A directory must be provided")
 
         self.abspath = SCons.Util.silent_intern(directory.entry_abspath(name))
         self.labspath = SCons.Util.silent_intern(directory.entry_labspath(name))
@@ -620,7 +622,7 @@ class Base(SCons.Node.Node):
         """
         if isinstance(self, klass) or klass is Entry:
             return
-        raise TypeError, "Tried to lookup %s '%s' as a %s." %\
+        raise TypeError, _("Tried to lookup %s '%s' as a %s.") %\
               (self.__class__.__name__, self.path, klass.__name__)
 
     def get_dir(self):
@@ -910,7 +912,7 @@ class Entry(Base):
                 self.__class__ = Dir
                 self._morph()
             elif must_exist:
-                msg = "No such file or directory: '%s'" % self.abspath
+                msg = _("No such file or directory: '%s'") % self.abspath
                 raise SCons.Errors.UserError, msg
             else:
                 self.__class__ = File
@@ -990,7 +992,7 @@ class Entry(Base):
     def rel_path(self, other):
         d = self.disambiguate()
         if d.__class__ is Entry:
-            raise "rel_path() could not disambiguate File/Dir"
+            raise _("rel_path() could not disambiguate File/Dir")
         return d.rel_path(other)
 
     def new_ninfo(self):
@@ -1127,7 +1129,7 @@ class FS(LocalFS):
 
         DirNodeInfo.fs = self
         FileNodeInfo.fs = self
-    
+
     def set_SConstruct_dir(self, dir):
         self.SConstruct_dir = dir
 
@@ -1294,11 +1296,11 @@ class FS(LocalFS):
         if not isinstance(variant_dir, SCons.Node.Node):
             variant_dir = self.Dir(variant_dir)
         if src_dir.is_under(variant_dir):
-            raise SCons.Errors.UserError, "Source directory cannot be under variant directory."
+            raise SCons.Errors.UserError, _("Source directory cannot be under variant directory.")
         if variant_dir.srcdir:
             if variant_dir.srcdir == src_dir:
                 return # We already did this.
-            raise SCons.Errors.UserError, "'%s' already has a source directory: '%s'."%(variant_dir, variant_dir.srcdir)
+            raise SCons.Errors.UserError, _("'%s' already has a source directory: '%s'.")%(variant_dir, variant_dir.srcdir)
         variant_dir.link(src_dir, duplicate)
 
     def Repository(self, *dirs):
@@ -1320,7 +1322,7 @@ class FS(LocalFS):
         """
         targets = []
         message = None
-        fmt = "building associated VariantDir targets: %s"
+        fmt = _("building associated VariantDir targets: %s")
         start_dir = dir
         while dir:
             for bd in dir.variant_dirs:
@@ -1339,7 +1341,7 @@ class FS(LocalFS):
         """
         Globs
 
-        This is mainly a shim layer 
+        This is mainly a shim layer
         """
         if cwd is None:
             cwd = self.getcwd()
@@ -1413,7 +1415,7 @@ class Dir(Base):
 
     def diskcheck_match(self):
         diskcheck_match(self, self.isfile,
-                        "File %s found where directory expected.")
+                        _("File %s found where directory expected.")
 
     def __clearRepositoryCache(self, duplicate=None):
         """Called when we change the repository(ies) for a directory.
@@ -1575,7 +1577,7 @@ class Dir(Base):
 
             path_elems = ['..'] * (len(self.path_elements) - i) \
                          + map(lambda n: n.name, other.path_elements[i:])
-             
+
             result = string.join(path_elems, os.sep)
 
         memo_dict[other] = result
@@ -2265,7 +2267,7 @@ class File(Base):
 
     def diskcheck_match(self):
         diskcheck_match(self, self.isdir,
-                        "Directory %s found where file expected.")
+                        _("Directory %s found where file expected."))
 
     def __init__(self, name, directory, fs):
         if __debug__: logInstanceCreation(self, 'Node.FS.File')
@@ -2383,7 +2385,7 @@ class File(Base):
                 e.filename = fname
             raise
         return cs
-        
+
 
     memoizer_counters.append(SCons.Memoize.CountValue('get_size'))
 
@@ -2739,7 +2741,7 @@ class File(Base):
                 try:
                     self._createDir()
                 except SCons.Errors.StopError, drive:
-                    desc = "No drive `%s' for target `%s'." % (drive, self)
+                    desc = _("No drive `%s' for target `%s'.") % (drive, self)
                     raise SCons.Errors.StopError, desc
 
     #
@@ -2758,7 +2760,7 @@ class File(Base):
         Unlink(self, None, None)
         e = Link(self, src, None)
         if isinstance(e, SCons.Errors.BuildError):
-            desc = "Cannot duplicate `%s' in `%s': %s." % (src.path, self.dir.path, e.errstr)
+            desc = _("Cannot duplicate `%s' in `%s': %s.") % (src.path, self.dir.path, e.errstr)
             raise SCons.Errors.StopError, desc
         self.linked = 1
         # The Link() action may or may not have actually
@@ -2930,7 +2932,7 @@ class File(Base):
                         # ...and they'd like a local copy.
                         e = LocalCopy(self, r, None)
                         if isinstance(e, SCons.Errors.BuildError):
-                            raise 
+                            raise
                         self.store_info()
                     if T: Trace(' 1\n')
                     return 1
@@ -3081,7 +3083,7 @@ class FileFinder:
 
     def _find_file_key(self, filename, paths, verbose=None):
         return (filename, paths)
-        
+
     memoizer_counters.append(SCons.Memoize.CountDict('find_file', _find_file_key))
 
     def find_file(self, filename, paths, verbose=None):
@@ -3157,11 +3159,11 @@ class FileFinder:
         result = None
         for dir in paths:
             if verbose:
-                verbose("looking for '%s' in '%s' ...\n" % (filename, dir))
+                verbose(_("looking for '%s' in '%s' ...\n") % (filename, dir))
             node, d = dir.srcdir_find_file(filename)
             if node:
                 if verbose:
-                    verbose("... FOUND '%s' in '%s'\n" % (filename, d))
+                    verbose(_("... FOUND '%s' in '%s'\n") % (filename, d))
                 result = node
                 break
 
@@ -3198,7 +3200,7 @@ def invalidate_node_memos(targets):
 
     if not SCons.Util.is_List(targets):
         targets = [targets]
-    
+
     for entry in targets:
         # If the target is a Node object, clear the cache. If it is a
         # filename, look up potentially existing Node object first.
@@ -3210,7 +3212,7 @@ def invalidate_node_memos(targets):
             # do not correspond to an existing Node object.
             node = get_default_fs().Entry(entry)
             if node:
-                node.clear_memoized_values()                        
+                node.clear_memoized_values()
 
 # Local Variables:
 # tab-width:4

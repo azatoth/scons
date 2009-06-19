@@ -360,6 +360,8 @@ import string
 import types
 import traceback
 
+from SCons.i18n import *
+
 # Exception classes used by this module.
 class CalledProcessError(Exception):
     """This exception is raised when a process run by check_call() returns
@@ -369,7 +371,7 @@ class CalledProcessError(Exception):
         self.returncode = returncode
         self.cmd = cmd
     def __str__(self):
-        return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
+        return _("Command '%s' returned non-zero exit status %d") % (self.cmd, self.returncode)
 
 
 if mswindows:
@@ -596,23 +598,23 @@ class Popen(object):
 
         self._child_created = False
         if not is_int_or_long(bufsize):
-            raise TypeError("bufsize must be an integer")
+            raise TypeError(_("bufsize must be an integer"))
 
         if mswindows:
             if preexec_fn is not None:
-                raise ValueError("preexec_fn is not supported on Windows "
-                                 "platforms")
+                raise ValueError(_("preexec_fn is not supported on Windows "
+                                 "platforms"))
             if close_fds:
-                raise ValueError("close_fds is not supported on Windows "
-                                 "platforms")
+                raise ValueError(_("close_fds is not supported on Windows "
+                                 "platforms"))
         else:
             # POSIX
             if startupinfo is not None:
-                raise ValueError("startupinfo is only supported on Windows "
-                                 "platforms")
+                raise ValueError(_("startupinfo is only supported on Windows "
+                                 "platforms"))
             if creationflags != 0:
-                raise ValueError("creationflags is only supported on Windows "
-                                 "platforms")
+                raise ValueError(_("creationflags is only supported on Windows "
+                                 "platforms"))
 
         self.stdin = None
         self.stdout = None
@@ -787,9 +789,9 @@ class Popen(object):
                 w9xpopen = os.path.join(os.path.dirname(sys.exec_prefix),
                                         "w9xpopen.exe")
                 if not os.path.exists(w9xpopen):
-                    raise RuntimeError("Cannot locate w9xpopen.exe, which is "
+                    raise RuntimeError(_("Cannot locate w9xpopen.exe, which is "
                                        "needed for Popen to work with your "
-                                       "shell or platform.")
+                                       "shell or platform."))
             return w9xpopen
 
 
@@ -1130,7 +1132,7 @@ class Popen(object):
                 self.returncode = os.WEXITSTATUS(sts)
             else:
                 # Should never happen
-                raise RuntimeError("Unknown child exit status!")
+                raise RuntimeError(_("Unknown child exit status!"))
 
 
         def poll(self, _deadstate=None):
@@ -1230,7 +1232,7 @@ def _demo_posix():
     # Example 1: Simple redirection: Get process list
     #
     plist = Popen(["ps"], stdout=PIPE).communicate()[0]
-    print "Process list:"
+    print _("Process list:")
     print plist
 
     #
@@ -1243,7 +1245,7 @@ def _demo_posix():
     #
     # Example 3: Connecting several subprocesses
     #
-    print "Looking for 'hda'..."
+    print _("Looking for 'hda'...")
     p1 = Popen(["dmesg"], stdout=PIPE)
     p2 = Popen(["grep", "hda"], stdin=p1.stdout, stdout=PIPE)
     print repr(p2.communicate()[0])
@@ -1252,25 +1254,25 @@ def _demo_posix():
     # Example 4: Catch execution error
     #
     print
-    print "Trying a weird file..."
+    print _("Trying a weird file...")
     try:
         print Popen(["/this/path/does/not/exist"]).communicate()
     except OSError, e:
         if e.errno == errno.ENOENT:
-            print "The file didn't exist.  I thought so..."
-            print "Child traceback:"
+            print _("The file didn't exist.  I thought so...")
+            print _("Child traceback:")
             print e.child_traceback
         else:
-            print "Error", e.errno
+            print _("Error"), e.errno
     else:
-        sys.stderr.write( "Gosh.  No error.\n" )
+        sys.stderr.write( _("Gosh.  No error.\n") )
 
 
 def _demo_windows():
     #
     # Example 1: Connecting several subprocesses
     #
-    print "Looking for 'PROMPT' in set output..."
+    print _("Looking for 'PROMPT' in set output...")
     p1 = Popen("set", stdout=PIPE, shell=True)
     p2 = Popen('find "PROMPT"', stdin=p1.stdout, stdout=PIPE)
     print repr(p2.communicate()[0])
@@ -1278,7 +1280,7 @@ def _demo_windows():
     #
     # Example 2: Simple execution of program
     #
-    print "Executing calc..."
+    print _("Executing calc...")
     p = Popen("calc")
     p.wait()
 

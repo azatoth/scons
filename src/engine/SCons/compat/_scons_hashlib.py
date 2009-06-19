@@ -33,6 +33,8 @@ the underlying md5 module isn't available.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+from SCons.i18n import *
+
 import md5
 import string
 
@@ -42,7 +44,7 @@ class md5obj:
 
     def __init__(self, name, string=''):
         if not name in ('MD5', 'md5'):
-            raise ValueError, "unsupported hash type"
+            raise ValueError, _("unsupported hash type")
         self.name = 'md5'
         self.m = self.md5_module.md5()
 

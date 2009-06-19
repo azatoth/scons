@@ -54,6 +54,8 @@ what's tested is actually `z in y'.
 # - Raymond Hettinger added a number of speedups and other
 #   improvements.
 
+from SCons.i18n import *
+
 from __future__ import generators
 try:
     from itertools import ifilter, ifilterfalse
@@ -91,8 +93,8 @@ class BaseSet(object):
         """This is an abstract class."""
         # Don't call this from a concrete subclass!
         if self.__class__ is BaseSet:
-            raise TypeError, ("BaseSet is an abstract class.  "
-                              "Use Set or ImmutableSet.")
+            raise TypeError, (_("BaseSet is an abstract class.  "
+                              "Use Set or ImmutableSet."))
 
     # Standard protocols: __len__, __repr__, __str__, __iter__
 
@@ -129,7 +131,7 @@ class BaseSet(object):
     # case).
 
     def __cmp__(self, other):
-        raise TypeError, "can't compare sets using cmp()"
+        raise TypeError, _("can't compare sets using cmp()")
 
     # Equality comparisons using the underlying dicts.  Mixed-type comparisons
     # are allowed here, where Set == z for non-Set z always returns False,
@@ -340,7 +342,7 @@ class BaseSet(object):
         # Check that the other argument to a binary operation is also
         # a set, raising a TypeError otherwise.
         if not isinstance(other, BaseSet):
-            raise TypeError, "Binary operation only permitted between sets"
+            raise TypeError, _("Binary operation only permitted between sets")
 
     def _compute_hash(self):
         # Calculate hash code for a set by xor'ing the hash codes of
@@ -438,7 +440,7 @@ class Set(BaseSet):
     def __hash__(self):
         """A Set cannot be hashed."""
         # We inherit object.__hash__, so we must deny this explicitly
-        raise TypeError, "Can't hash a Set, only an ImmutableSet."
+        raise TypeError, _("Can't hash a Set, only an ImmutableSet.")
 
     # In-place union, intersection, differences.
     # Subtle:  The xyz_update() functions deliberately return None,

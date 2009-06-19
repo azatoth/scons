@@ -40,6 +40,7 @@ import types
 from UserDict import UserDict
 from UserList import UserList
 from UserString import UserString
+from SCons.i18n import *
 
 # Don't "from types import ..." these because we need to get at the
 # types module later to look for UnicodeType.
@@ -480,7 +481,7 @@ else:
         # assumes that the obj argument is a string must of the time.
         return isinstance(obj, StringTypes) or not isinstance(obj, SequenceTypes)
 
-    def do_flatten(sequence, result, isinstance=isinstance, 
+    def do_flatten(sequence, result, isinstance=isinstance,
                    StringTypes=StringTypes, SequenceTypes=SequenceTypes):
         for item in sequence:
             if isinstance(item, StringTypes) or not isinstance(item, SequenceTypes):
@@ -488,7 +489,7 @@ else:
             else:
                 do_flatten(item, result)
 
-    def flatten(obj, isinstance=isinstance, StringTypes=StringTypes, 
+    def flatten(obj, isinstance=isinstance, StringTypes=StringTypes,
                 SequenceTypes=SequenceTypes, do_flatten=do_flatten):
         """Flatten a sequence to a non-nested list.
 
@@ -506,7 +507,7 @@ else:
                 do_flatten(item, result)
         return result
 
-    def flatten_sequence(sequence, isinstance=isinstance, StringTypes=StringTypes, 
+    def flatten_sequence(sequence, isinstance=isinstance, StringTypes=StringTypes,
                          SequenceTypes=SequenceTypes, do_flatten=do_flatten):
         """Flatten a sequence to a non-nested list.
 
@@ -529,7 +530,7 @@ else:
     # to_String_for_signature() will use a for_signature() method if the
     # specified object has one.
     #
-    def to_String(s, 
+    def to_String(s,
                   isinstance=isinstance, str=str,
                   UserString=UserString, BaseStringTypes=BaseStringTypes):
         if isinstance(s,BaseStringTypes):
@@ -542,11 +543,11 @@ else:
         else:
             return str(s)
 
-    def to_String_for_subst(s, 
+    def to_String_for_subst(s,
                             isinstance=isinstance, join=string.join, str=str, to_String=to_String,
                             BaseStringTypes=BaseStringTypes, SequenceTypes=SequenceTypes,
                             UserString=UserString):
-                            
+
         # Note that the test cases are sorted by order of probability.
         if isinstance(s, BaseStringTypes):
             return s
@@ -562,7 +563,7 @@ else:
         else:
             return str(s)
 
-    def to_String_for_signature(obj, to_String_for_subst=to_String_for_subst, 
+    def to_String_for_signature(obj, to_String_for_subst=to_String_for_subst,
                                 AttributeError=AttributeError):
         try:
             f = obj.for_signature
@@ -745,7 +746,7 @@ else:
         __builtin__.WindowsError = WindowsError
     else:
         del e
-        
+
     HKEY_CLASSES_ROOT = None
     HKEY_LOCAL_MACHINE = None
     HKEY_CURRENT_USER = None
@@ -851,7 +852,7 @@ else:
                     continue
         return None
 
-def PrependPath(oldpath, newpath, sep = os.pathsep, 
+def PrependPath(oldpath, newpath, sep = os.pathsep,
                 delete_existing=1, canonicalize=None):
     """This prepends newpath elements to the given oldpath.  Will only
     add any particular path once (leaving the first one it encounters
@@ -870,7 +871,7 @@ def PrependPath(oldpath, newpath, sep = os.pathsep,
     not move it to the beginning; it will stay where it is in the
     list.
 
-    If canonicalize is not None, it is applied to each element of 
+    If canonicalize is not None, it is applied to each element of
     newpath before use.
     """
 
@@ -892,7 +893,7 @@ def PrependPath(oldpath, newpath, sep = os.pathsep,
         newpaths=map(canonicalize, newpaths)
 
     if not delete_existing:
-        # First uniquify the old paths, making sure to 
+        # First uniquify the old paths, making sure to
         # preserve the first instance (in Unix/Linux,
         # the first one wins), and remembering them in normpaths.
         # Then insert the new paths at the head of the list
@@ -933,7 +934,7 @@ def PrependPath(oldpath, newpath, sep = os.pathsep,
     else:
         return string.join(paths, sep)
 
-def AppendPath(oldpath, newpath, sep = os.pathsep, 
+def AppendPath(oldpath, newpath, sep = os.pathsep,
                delete_existing=1, canonicalize=None):
     """This appends new path elements to the given old path.  Will
     only add any particular path once (leaving the last one it
@@ -951,7 +952,7 @@ def AppendPath(oldpath, newpath, sep = os.pathsep,
     If delete_existing is 0, then adding a path that exists
     will not move it to the end; it will stay where it is in the list.
 
-    If canonicalize is not None, it is applied to each element of 
+    If canonicalize is not None, it is applied to each element of
     newpath before use.
     """
 
@@ -1092,7 +1093,7 @@ class OrderedDict(UserDict):
         try:
             key = self._keys[-1]
         except IndexError:
-            raise KeyError('dictionary is empty')
+            raise KeyError(_('dictionary is empty'))
 
         val = self[key]
         del self[key]
@@ -1554,7 +1555,7 @@ else:
                 m.update(str(blck))
             f.close()
             return m.hexdigest()
-            
+
 def MD5collect(signatures):
     """
     Collects a list of signatures into an aggregate signature.

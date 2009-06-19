@@ -7,6 +7,8 @@
 
 __revision__ = "$Id: textwrap.py,v 1.32.8.2 2004/05/13 01:48:15 gward Exp $"
 
+from SCons.i18n import *
+
 import string, re
 
 try:
@@ -222,7 +224,7 @@ class TextWrapper:
         """
         lines = []
         if self.width <= 0:
-            raise ValueError("invalid width %r (must be > 0)" % self.width)
+            raise ValueError(_("invalid width %r (must be > 0)") % self.width)
 
         while chunks:
 
