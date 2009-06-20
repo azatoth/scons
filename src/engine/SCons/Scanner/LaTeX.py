@@ -127,8 +127,8 @@ class LaTeX(SCons.Scanner.Base):
     Unlike most scanners, which use regular expressions that just
     return the included file name, this returns a tuple consisting
     of the keyword for the inclusion ("include", "includegraphics",
-    "input", or "bibliography"), and then the file name itself.  
-    Based on a quick look at LaTeX documentation, it seems that we 
+    "input", or "bibliography"), and then the file name itself.
+    Based on a quick look at LaTeX documentation, it seems that we
     should append .tex suffix for the "include" keywords, append .tex if
     there is no extension for the "input" keyword, and need to add .bib
     for the "bibliography" keyword that does not accept extensions by itself.
@@ -136,7 +136,7 @@ class LaTeX(SCons.Scanner.Base):
     Finally, if there is no extension for an "includegraphics" keyword
     latex will append .ps or .eps to find the file, while pdftex may use .pdf,
     .jpg, .tif, .mps, or .png.
-    
+
     The actual subset and search order may be altered by
     DeclareGraphicsExtensions command. This complication is ignored.
     The default order corresponds to experimentation with teTeX
@@ -327,7 +327,7 @@ class LaTeX(SCons.Scanner.Base):
                 # likely refer to system-level files
                 if include[0] != 'usepackage':
                     SCons.Warnings.warn(SCons.Warnings.DependencyWarning,
-                                        "No dependency generated for file: %s (included from: %s) -- file not found" % (i, node))
+                                        _("No dependency generated for file: %s (included from: %s) -- file not found") % (i, node))
             else:
                 sortkey = self.sort_key(n)
                 nodes.append((sortkey, n))

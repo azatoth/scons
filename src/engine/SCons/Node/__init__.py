@@ -55,6 +55,7 @@ import SCons.Memoize
 import SCons.Util
 
 from SCons.Debug import Trace
+from SCons.i18n import *
 
 def classname(obj):
     return string.split(str(obj.__class__), '.')[-1]
@@ -350,12 +351,12 @@ class Node:
         """
         for d in self.depends:
             if d.missing():
-                msg = "Explicit dependency `%s' not found, needed by target `%s'."
+                msg = _("Explicit dependency `%s' not found, needed by target `%s'.")
                 raise SCons.Errors.StopError, msg % (d, self)
         if self.implicit is not None:
             for i in self.implicit:
                 if i.missing():
-                    msg = "Implicit dependency `%s' not found, needed by target `%s'."
+                    msg = _("Implicit dependency `%s' not found, needed by target `%s'.")
                     raise SCons.Errors.StopError, msg % (i, self)
         self.binfo = self.get_binfo()
 
@@ -835,7 +836,7 @@ class Node:
                 s = map(str, e)
             else:
                 s = str(e)
-            raise SCons.Errors.UserError("attempted to add a non-Node dependency to %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
+            raise SCons.Errors.UserError(_("attempted to add a non-Node dependency to %s:\n\t%s is a %s, not a Node") % (str(self), s, type(e)))
 
     def add_prerequisite(self, prerequisite):
         """Adds prerequisites"""
@@ -852,7 +853,7 @@ class Node:
                 s = map(str, e)
             else:
                 s = str(e)
-            raise SCons.Errors.UserError("attempted to ignore a non-Node dependency of %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
+            raise SCons.Errors.UserError(_("attempted to ignore a non-Node dependency of %s:\n\t%s is a %s, not a Node") % (str(self), s, type(e)))
 
     def add_source(self, source):
         """Adds sources."""
@@ -866,7 +867,7 @@ class Node:
                 s = map(str, e)
             else:
                 s = str(e)
-            raise SCons.Errors.UserError("attempted to add a non-Node as source of %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
+            raise SCons.Errors.UserError(_("attempted to add a non-Node as source of %s:\n\t%s is a %s, not a Node") % (str(self), s, type(e)))
 
     def _add_child(self, collection, set, child):
         """Adds 'child' to 'collection', first checking 'set' to see if it's
@@ -1032,7 +1033,7 @@ class Node:
         the content signature of an #included .h file) is updated.
         """
         t = 0
-        if t: Trace('changed(%s [%s], %s)' % (self, classname(self), node))
+        if t: Trace(_('changed(%s [%s], %s)') % (self, classname(self), node))
         if node is None:
             node = self
 
@@ -1050,12 +1051,12 @@ class Node:
             # entries to equal the new dependency list, for the benefit
             # of the loop below that updates node information.
             then.extend([None] * diff)
-            if t: Trace(': old %s new %s' % (len(then), len(children)))
+            if t: Trace(_(': old %s new %s') % (len(then), len(children)))
             result = True
 
         for child, prev_ni in izip(children, then):
             if child.changed_since_last_build(self, prev_ni):
-                if t: Trace(': %s changed' % child)
+                if t: Trace(_(': %s changed') % child)
                 result = True
 
         contents = self.get_executor().get_contents()
@@ -1063,11 +1064,11 @@ class Node:
             import SCons.Util
             newsig = SCons.Util.MD5signature(contents)
             if bi.bactsig != newsig:
-                if t: Trace(': bactsig %s != newsig %s' % (bi.bactsig, newsig))
+                if t: Trace(_(': bactsig %s != newsig %s') % (bi.bactsig, newsig))
                 result = True
 
         if not result:
-            if t: Trace(': up to date')
+            if t: Trace(_(': up to date'))
 
         if t: Trace('\n')
 
@@ -1176,10 +1177,10 @@ class Node:
 
     def explain(self):
         if not self.exists():
-            return "building `%s' because it doesn't exist\n" % self
+            return _("building `%s' because it doesn't exist\n") % self
 
         if self.always_build:
-            return "rebuilding `%s' because AlwaysBuild() is specified\n" % self
+            return _("rebuilding `%s' because AlwaysBuild() is specified\n") % self
 
         old = self.get_stored_info()
         if old is None:
@@ -1192,7 +1193,7 @@ class Node:
             old_bkids    = old.bsources    + old.bdepends    + old.bimplicit
             old_bkidsigs = old.bsourcesigs + old.bdependsigs + old.bimplicitsigs
         except AttributeError:
-            return "Cannot explain why `%s' is being rebuilt: No previous build information found\n" % self
+            return _("Cannot explain why `%s' is being rebuilt: No previous build information found\n") % self
 
         new = self.get_binfo()
 
@@ -1218,19 +1219,19 @@ class Node:
         removed = filter(lambda x, nk=new_bkids: not x in nk, old_bkids)
         if removed:
             removed = map(stringify, removed)
-            fmt = "`%s' is no longer a dependency\n"
+            fmt = _("`%s' is no longer a dependency\n")
             lines.extend(map(lambda s, fmt=fmt: fmt % s, removed))
 
         for k in new_bkids:
             if not k in old_bkids:
-                lines.append("`%s' is a new dependency\n" % stringify(k))
+                lines.append(_("`%s' is a new dependency\n") % stringify(k))
             elif k.changed_since_last_build(self, osig[k]):
                 lines.append("`%s' changed\n" % stringify(k))
 
         if len(lines) == 0 and old_bkids != new_bkids:
-            lines.append("the dependency order changed:\n" +
-                         "%sold: %s\n" % (' '*15, map(stringify, old_bkids)) +
-                         "%snew: %s\n" % (' '*15, map(stringify, new_bkids)))
+            lines.append(_("the dependency order changed:\n") +
+                         _("%sold: %s\n") % (' '*15, map(stringify, old_bkids)) +
+                         _("%snew: %s\n") % (' '*15, map(stringify, new_bkids)))
 
         if len(lines) == 0:
             def fmt_with_title(title, strlines):
@@ -1239,17 +1240,17 @@ class Node:
                 return ' '*15 + title + string.join(lines, sep) + '\n'
             if old.bactsig != new.bactsig:
                 if old.bact == new.bact:
-                    lines.append("the contents of the build action changed\n" +
+                    lines.append(_("the contents of the build action changed\n") +
                                  fmt_with_title('action: ', new.bact))
                 else:
-                    lines.append("the build action changed:\n" +
+                    lines.append(_("the build action changed:\n") +
                                  fmt_with_title('old: ', old.bact) +
                                  fmt_with_title('new: ', new.bact))
 
         if len(lines) == 0:
-            return "rebuilding `%s' for unknown reasons\n" % self
+            return _("rebuilding `%s' for unknown reasons\n") % self
 
-        preamble = "rebuilding `%s' because" % self
+        preamble = _("rebuilding `%s' because") % self
         if len(lines) == 1:
             return "%s %s"  % (preamble, lines[0])
         else:

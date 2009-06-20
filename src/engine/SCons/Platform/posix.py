@@ -42,6 +42,7 @@ import select
 
 import SCons.Util
 from SCons.Platform import TempFileMunge
+from SCons.i18n import *
 
 exitvalmap = {
     2 : 127,
@@ -71,7 +72,7 @@ def exec_spawnvpe(l, env):
     # returned by os.waitpid() or os.system().
     return stat
 
-def exec_fork(l, env): 
+def exec_fork(l, env):
     pid = os.fork()
     if not pid:
         # Child process.
@@ -80,7 +81,7 @@ def exec_fork(l, env):
             os.execvpe(l[0], l, env)
         except OSError, e:
             exitval = exitvalmap.get(e[0], e[0])
-            sys.stderr.write("scons: %s: %s\n" % (l[0], e[1]))
+            sys.stderr.write(_("scons: %s: %s\n") % (l[0], e[1]))
         os._exit(exitval)
     else:
         # Parent process.
@@ -167,7 +168,7 @@ def exec_piped_fork(l, env, stdout, stderr):
             os.execvpe(l[0], l, env)
         except OSError, e:
             exitval = exitvalmap.get(e[0], e[0])
-            stderr.write("scons: %s: %s\n" % (l[0], e[1]))
+            stderr.write(_("scons: %s: %s\n") % (l[0], e[1]))
         os._exit(exitval)
     else:
         # Parent process
@@ -206,7 +207,7 @@ def piped_fork_spawn(sh, escape, cmd, args, env, stdout, stderr):
 def generate(env):
     # If os.spawnvpe() exists, we use it to spawn commands.  Otherwise
     # if the env utility exists, we use os.system() to spawn commands,
-    # finally we fall back on os.fork()/os.exec().  
+    # finally we fall back on os.fork()/os.exec().
     #
     # os.spawnvpe() is prefered because it is the most efficient.  But
     # for Python versions without it, os.system() is prefered because it

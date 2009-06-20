@@ -35,6 +35,9 @@ import string
 import SCons.Node.FS
 import SCons.Util
 
+from SCons.i18n import *
+
+
 
 class _Null:
     pass
@@ -375,7 +378,7 @@ class Classic(Current):
 
             if n is None:
                 SCons.Warnings.warn(SCons.Warnings.DependencyWarning,
-                                    "No dependency generated for file: %s (included from: %s) -- file not found" % (i, node))
+                                    _("No dependency generated for file: %s (included from: %s) -- file not found") % (i, node))
             else:
                 sortkey = self.sort_key(include)
                 nodes.append((sortkey, n))

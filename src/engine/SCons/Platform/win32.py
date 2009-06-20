@@ -41,7 +41,7 @@ import tempfile
 from SCons.Platform.posix import exitvalmap
 from SCons.Platform import TempFileMunge
 import SCons.Util
-
+from SCons.i18n import *
 
 
 try:
@@ -54,12 +54,12 @@ try:
     win32con.HANDLE_FLAG_INHERIT
 except ImportError:
     parallel_msg = \
-        "you do not seem to have the pywin32 extensions installed;\n" + \
-        "\tparallel (-j) builds may not work reliably with open Python files."
+        _("you do not seem to have the pywin32 extensions installed;\n") + \
+        _("\tparallel (-j) builds may not work reliably with open Python files.")
 except AttributeError:
     parallel_msg = \
-        "your pywin32 extensions do not support file handle operations;\n" + \
-        "\tparallel (-j) builds may not work reliably with open Python files."
+        _("your pywin32 extensions do not support file handle operations;\n") + \
+        _("\tparallel (-j) builds may not work reliably with open Python files.")
 else:
     parallel_msg = None
 
@@ -99,7 +99,7 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
     #   (tmpFileStderr) and copy the contents of this file
     #   to stdout (stderr) given in the argument
     if not sh:
-        sys.stderr.write("scons: Could not find command interpreter, is it in your PATH?\n")
+        sys.stderr.write(_("scons: Could not find command interpreter, is it in your PATH?\n"))
         return 127
     else:
         # one temporary file for stdout and stderr
@@ -133,9 +133,9 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
             try:
                 ret = exitvalmap[e[0]]
             except KeyError:
-                sys.stderr.write("scons: unknown OSError exception code %d - %s: %s\n" % (e[0], cmd, e[1]))
+                sys.stderr.write(_("scons: unknown OSError exception code %d - %s: %s\n") % (e[0], cmd, e[1]))
             if stderr is not None:
-                stderr.write("scons: %s: %s\n" % (cmd, e[1]))
+                stderr.write(_("scons: %s: %s\n") % (cmd, e[1]))
         # copy child output from tempfiles to our streams
         # and do clean up stuff
         if stdout is not None and stdoutRedirected == 0:
@@ -159,7 +159,7 @@ def exec_spawn(l, env):
     except OSError, e:
         try:
             result = exitvalmap[e[0]]
-            sys.stderr.write("scons: %s: %s\n" % (l[0], e[1]))
+            sys.stderr.write(_("scons: %s: %s\n") % (l[0], e[1]))
         except KeyError:
             result = 127
             if len(l) > 2:
@@ -169,12 +169,12 @@ def exec_spawn(l, env):
                     command = l[0]
             else:
                 command = l[0]
-            sys.stderr.write("scons: unknown OSError exception code %d - '%s': %s\n" % (e[0], command, e[1]))
+            sys.stderr.write(_("scons: unknown OSError exception code %d - '%s': %s\n") % (e[0], command, e[1]))
     return result
 
 def spawn(sh, escape, cmd, args, env):
     if not sh:
-        sys.stderr.write("scons: Could not find command interpreter, is it in your PATH?\n")
+        sys.stderr.write(_("scons: Could not find command interpreter, is it in your PATH?\n"=)
         return 127
     return exec_spawn([sh, '/C', escape(string.join(args))], env)
 
@@ -236,7 +236,7 @@ def get_program_files_dir():
         # A reasonable default if we can't read the registry
         # (Actually, it's pretty reasonable even if we can :-)
         val = os.path.join(os.path.dirname(get_system_root()),"Program Files")
-        
+
     return val
 
 def generate(env):
@@ -274,7 +274,7 @@ def generate(env):
                    os.path.join(systemroot,'System32')
         tmp_pathext = '.com;.exe;.bat;.cmd'
         if os.environ.has_key('PATHEXT'):
-            tmp_pathext = os.environ['PATHEXT'] 
+            tmp_pathext = os.environ['PATHEXT']
         cmd_interp = SCons.Util.WhereIs('cmd', tmp_path, tmp_pathext)
         if not cmd_interp:
             cmd_interp = SCons.Util.WhereIs('command', tmp_path, tmp_pathext)
@@ -284,7 +284,7 @@ def generate(env):
         if not cmd_interp:
             cmd_interp = env.Detect('command')
 
-    
+
     if not env.has_key('ENV'):
         env['ENV']        = {}
 

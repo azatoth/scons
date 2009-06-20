@@ -33,12 +33,14 @@ and will then be removed entirely (some day).
 import SCons.Variables
 import SCons.Warnings
 
+from SCons.i18n import *
+
 warned = False
 
 def PackageOption(*args, **kw):
     global warned
     if not warned:
-        msg = "The PackageOption() function is deprecated; use the PackageVariable() function instead."
+        msg = _("The PackageOption() function is deprecated; use the PackageVariable() function instead.")
         SCons.Warnings.warn(SCons.Warnings.DeprecatedOptionsWarning, msg)
         warned = True
     return apply(SCons.Variables.PackageVariable, args, kw)

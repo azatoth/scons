@@ -33,13 +33,15 @@ and will then be removed entirely (some day).
 import SCons.Variables
 import SCons.Warnings
 
+from SCons.i18n import *
+
 warned = False
 
 class _PathOptionClass:
     def warn(self):
         global warned
         if not warned:
-            msg = "The PathOption() function is deprecated; use the PathVariable() function instead."
+            msg = _("The PathOption() function is deprecated; use the PathVariable() function instead.")
             SCons.Warnings.warn(SCons.Warnings.DeprecatedOptionsWarning, msg)
             warned = True
 

@@ -68,6 +68,8 @@ import SCons.Warnings
 
 import SCons.Script.Interactive
 
+from SCons.i18n import *
+
 def fetch_win32_parallel_msg():
     # A subsidiary function that exists solely to isolate this import
     # so we don't have to pull it in on all platforms, and so that an
@@ -170,7 +172,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
         if SCons.Taskmaster.OutOfDateTask.needs_execute(self):
             return True
         if self.top and self.targets[0].has_builder():
-            display("scons: `%s' is up to date." % str(self.node))
+            display(_("scons: `%s' is up to date.") % str(self.node))
         return False
 
     def execute(self):
@@ -186,7 +188,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
             finish_time = time.time()
             last_command_end = finish_time
             cumulative_command_time = cumulative_command_time+finish_time-start_time
-            sys.stdout.write("Command execution time: %f seconds\n"%(finish_time-start_time))
+            sys.stdout.write(_("Command execution time: %f seconds\n")%(finish_time-start_time))
 
     def do_failed(self, status=2):
         _BuildFailures.append(self.exception[1])
@@ -202,7 +204,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
             SCons.Taskmaster.OutOfDateTask.fail_stop(self)
             exit_status = status
             this_build_status = status
-            
+
     def executed(self):
         t = self.targets[0]
         if self.top and not t.has_builder() and not t.side_effect:
@@ -210,12 +212,12 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
                 def classname(obj):
                     return string.split(str(obj.__class__), '.')[-1]
                 if classname(t) in ('File', 'Dir', 'Entry'):
-                    errstr="Do not know how to make %s target `%s' (%s)." % (classname(t), t, t.abspath)
+                    errstr=_("Do not know how to make %s target `%s' (%s).") % (classname(t), t, t.abspath)
                 else: # Alias or Python or ...
-                    errstr="Do not know how to make %s target `%s'." % (classname(t), t)
+                    errstr=_("Do not know how to make %s target `%s'.") % (classname(t), t)
                 sys.stderr.write("scons: *** " + errstr)
                 if not self.options.keep_going:
-                    sys.stderr.write("  Stop.")
+                    sys.stderr.write(_("  Stop."))
                 sys.stderr.write("\n")
                 try:
                     raise SCons.Errors.BuildError(t, errstr)
@@ -225,7 +227,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
                     self.exception_set()
                 self.do_failed()
             else:
-                print "scons: Nothing to be done for `%s'." % t
+                print _("scons: Nothing to be done for `%s'.") % t
                 SCons.Taskmaster.OutOfDateTask.executed(self)
         else:
             SCons.Taskmaster.OutOfDateTask.executed(self)
@@ -249,7 +251,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
             except ValueError:
                 t, e = exc_info
                 tb = None
-                
+
         # Deprecated string exceptions will have their string stored
         # in the first entry of the tuple.
         if e is None:
@@ -264,13 +266,13 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
                 node = [ node ]
         nodename = string.join(map(str, node), ', ')
 
-        errfmt = "scons: *** [%s] %s\n"
+        errfmt = _("scons: *** [%s] %s\n")
         sys.stderr.write(errfmt % (nodename, buildError))
 
-        if (buildError.exc_info[2] and buildError.exc_info[1] and 
+        if (buildError.exc_info[2] and buildError.exc_info[1] and
            # TODO(1.5)
            #not isinstance(
-           #    buildError.exc_info[1], 
+           #    buildError.exc_info[1],
            #    (EnvironmentError, SCons.Errors.StopError, SCons.Errors.UserError))):
            not isinstance(buildError.exc_info[1], EnvironmentError) and
            not isinstance(buildError.exc_info[1], SCons.Errors.StopError) and
@@ -278,7 +280,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
             type, value, trace = buildError.exc_info
             traceback.print_exception(type, value, trace)
         elif tb and print_stacktrace:
-            sys.stderr.write("scons: internal stack trace:\n")
+            sys.stderr.write(_("scons: internal stack trace:\n"))
             traceback.print_tb(tb, file=sys.stderr)
 
         self.exception = (e, buildError, tb) # type, value, traceback
@@ -313,7 +315,7 @@ class CleanTask(SCons.Taskmaster.AlwaysTask):
             if os.path.lexists(path):
                 if os.path.isfile(path) or os.path.islink(path):
                     if remove: os.unlink(path)
-                    display("Removed " + pathstr)
+                    display(_("Removed ") + pathstr)
                 elif os.path.isdir(path) and not os.path.islink(path):
                     # delete everything in the dir
                     entries = os.listdir(path)
@@ -325,26 +327,26 @@ class CleanTask(SCons.Taskmaster.AlwaysTask):
                         s = os.path.join(pathstr, e)
                         if os.path.isfile(p):
                             if remove: os.unlink(p)
-                            display("Removed " + s)
+                            display(_("Removed ") + s)
                         else:
                             self.fs_delete(p, s, remove)
                     # then delete dir itself
                     if remove: os.rmdir(path)
-                    display("Removed directory " + pathstr)
+                    display(_("Removed directory ") + pathstr)
                 else:
-                    errstr = "Path '%s' exists but isn't a file or directory."
+                    errstr = _("Path '%s' exists but isn't a file or directory.")
                     raise SCons.Errors.UserError(errstr % (pathstr))
         except SCons.Errors.UserError, e:
             print e
         except (IOError, OSError), e:
-            print "scons: Could not remove '%s':" % pathstr, e.strerror
+            print _("scons: Could not remove '%s':") % pathstr, e.strerror
 
     def show(self):
         target = self.targets[0]
         if (target.has_builder() or target.side_effect) and not target.noclean:
             for t in self.targets:
                 if not t.isdir():
-                    display("Removed " + str(t))
+                    display(_("Removed ") + str(t))
         if SCons.Environment.CleanTargets.has_key(target):
             files = SCons.Environment.CleanTargets[target]
             for f in files:
@@ -362,10 +364,10 @@ class CleanTask(SCons.Taskmaster.AlwaysTask):
                     # the file not existing.  In either case, print a
                     # message and keep going to try to remove as many
                     # targets aa possible.
-                    print "scons: Could not remove '%s':" % str(t), e.strerror
+                    print _("scons: Could not remove '%s':") % str(t), e.strerror
                 else:
                     if removed:
-                        display("Removed " + str(t))
+                        display(_("Removed ") + str(t))
         if SCons.Environment.CleanTargets.has_key(target):
             files = SCons.Environment.CleanTargets[target]
             for f in files:
@@ -510,7 +512,7 @@ class CountStats(Stats):
             i = i + 1
         keys = stats_table.keys()
         keys.sort()
-        self.outfp.write("Object counts:\n")
+        self.outfp.write(_("Object counts:\n"))
         pre = ["   "]
         post = ["   %s\n"]
         l = len(self.stats)
@@ -531,7 +533,7 @@ class MemStats(Stats):
         self.labels.append(label)
         self.stats.append(SCons.Debug.memory())
     def do_print(self):
-        fmt = 'Memory %-32s %12d\n'
+        fmt = _('Memory %-32s %12d\n')
         for label, stats in map(None, self.labels, self.stats):
             self.outfp.write(fmt % (label, stats))
 
@@ -556,7 +558,7 @@ def find_deepest_user_frame(tb):
     Input is a "pre-processed" stack trace in the form
     returned by traceback.extract_tb() or traceback.extract_stack()
     """
-    
+
     tb.reverse()
 
     # find the deepest traceback frame that is not part
@@ -569,7 +571,7 @@ def find_deepest_user_frame(tb):
 
 def _scons_user_error(e):
     """Handle user errors. Print out a message and a description of the
-    error, along with the line number and routine where it occured. 
+    error, along with the line number and routine where it occured.
     The file and line number will be the deepest stack frame that is
     not part of SCons itself.
     """
@@ -579,7 +581,7 @@ def _scons_user_error(e):
         traceback.print_exception(etype, value, tb)
     filename, lineno, routine, dummy = find_deepest_user_frame(traceback.extract_tb(tb))
     sys.stderr.write("\nscons: *** %s\n" % value)
-    sys.stderr.write('File "%s", line %d, in %s\n' % (filename, lineno, routine))
+    sys.stderr.write(_('File "%s", line %d, in %s\n') % (filename, lineno, routine))
     sys.exit(2)
 
 def _scons_user_warning(e):
@@ -590,22 +592,22 @@ def _scons_user_warning(e):
     """
     etype, value, tb = sys.exc_info()
     filename, lineno, routine, dummy = find_deepest_user_frame(traceback.extract_tb(tb))
-    sys.stderr.write("\nscons: warning: %s\n" % e)
-    sys.stderr.write('File "%s", line %d, in %s\n' % (filename, lineno, routine))
+    sys.stderr.write(_("\nscons: warning: %s\n") % e)
+    sys.stderr.write(_('File "%s", line %d, in %s\n') % (filename, lineno, routine))
 
 def _scons_internal_warning(e):
     """Slightly different from _scons_user_warning in that we use the
     *current call stack* rather than sys.exc_info() to get our stack trace.
     This is used by the warnings framework to print warnings."""
     filename, lineno, routine, dummy = find_deepest_user_frame(traceback.extract_stack())
-    sys.stderr.write("\nscons: warning: %s\n" % e[0])
-    sys.stderr.write('File "%s", line %d, in %s\n' % (filename, lineno, routine))
+    sys.stderr.write(_("\nscons: warning: %s\n") % e[0])
+    sys.stderr.write(_('File "%s", line %d, in %s\n') % (filename, lineno, routine))
 
 def _scons_internal_error():
     """Handle all errors but user errors. Print out a message telling
     the user what to do in this case and print a normal trace.
     """
-    print 'internal error'
+    print _('internal error')
     traceback.print_exc()
     sys.exit(2)
 
@@ -641,8 +643,8 @@ def _set_debug_values(options):
         if enable_count:
             count_stats.enable(sys.stdout)
         else:
-            msg = "--debug=count is not supported when running SCons\n" + \
-                  "\twith the python -O option or optimized (.pyo) modules."
+            msg = _("--debug=count is not supported when running SCons\n") + \
+                  _("\twith the python -O option or optimized (.pyo) modules.")
             SCons.Warnings.warn(SCons.Warnings.NoObjectCountWarning, msg)
     if "dtree" in debug_values:
         options.tree_printers.append(TreePrinter(derived=True))
@@ -683,11 +685,11 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
     else:
         site_dir_name = "site_scons"
         err_if_not_found = False
-        
+
     site_dir = os.path.join(topdir.path, site_dir_name)
     if not os.path.exists(site_dir):
         if err_if_not_found:
-            raise SCons.Errors.UserError, "site dir %s not found."%site_dir
+            raise SCons.Errors.UserError, _("site dir %s not found.")%site_dir
         return
 
     site_init_filename = "site_init.py"
@@ -713,7 +715,7 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
                 try:
                     m = sys.modules['SCons.Script']
                 except Exception, e:
-                    fmt = 'cannot import site_init.py: missing SCons.Script module %s'
+                    fmt = _('cannot import site_init.py: missing SCons.Script module %s')
                     raise SCons.Errors.InternalError, fmt % repr(e)
                 try:
                     # This is the magic.
@@ -721,13 +723,13 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
                 except KeyboardInterrupt:
                     raise
                 except Exception, e:
-                    fmt = '*** Error loading site_init file %s:\n'
+                    fmt = _('*** Error loading site_init file %s:\n')
                     sys.stderr.write(fmt % repr(site_init_file))
                     raise
             except KeyboardInterrupt:
                 raise
             except ImportError, e:
-                fmt = '*** cannot import site init file %s:\n'
+                fmt = _('*** cannot import site init file %s:\n')
                 sys.stderr.write(fmt % repr(site_init_file))
                 raise
         finally:
@@ -808,7 +810,7 @@ def _main(parser):
         try:
             os.chdir(cdir)
         except OSError:
-            sys.stderr.write("Could not change directory to %s\n" % cdir)
+            sys.stderr.write(_("Could not change directory to %s\n") % cdir)
 
     target_top = None
     if options.climb_up:
@@ -823,7 +825,7 @@ def _main(parser):
             else:
                 script_dir = ''
         if script_dir and script_dir != os.getcwd():
-            display("scons: Entering directory `%s'" % script_dir)
+            display(_("scons: Entering directory `%s'") % script_dir)
             os.chdir(script_dir)
 
     # Now that we're in the top-level SConstruct directory, go ahead
@@ -852,7 +854,7 @@ def _main(parser):
             # Give them the options usage now, before we fail
             # trying to read a non-existent SConstruct file.
             raise SConsPrintHelpException
-        raise SCons.Errors.UserError, "No SConstruct file found."
+        raise SCons.Errors.UserError, _("No SConstruct file found.")
 
     if scripts[0] == "-":
         d = fs.getcwd()
@@ -884,7 +886,7 @@ def _main(parser):
         _load_site_scons_dir(d, options.site_dir)
     elif not options.no_site_dir:
         _load_site_scons_dir(d)
-        
+
     if options.include_dir:
         sys.path = options.include_dir + sys.path
 
@@ -916,12 +918,12 @@ def _main(parser):
     if not hasattr(sys.stderr, 'isatty') or not sys.stderr.isatty():
         sys.stderr = SCons.Util.Unbuffered(sys.stderr)
 
-    memory_stats.append('before reading SConscript files:')
+    memory_stats.append(_('before reading SConscript files:'))
     count_stats.append(('pre-', 'read'))
 
     # And here's where we (finally) read the SConscript files.
 
-    progress_display("scons: Reading SConscript files ...")
+    progress_display(_("scons: Reading SConscript files ..."))
 
     start_time = time.time()
     try:
@@ -933,15 +935,15 @@ def _main(parser):
         # reading SConscript files and haven't started building
         # things yet, stop regardless of whether they used -i or -k
         # or anything else.
-        sys.stderr.write("scons: *** %s  Stop.\n" % e)
+        sys.stderr.write(_("scons: *** %s  Stop.\n") % e)
         exit_status = 2
         sys.exit(exit_status)
     global sconscript_time
     sconscript_time = time.time() - start_time
 
-    progress_display("scons: done reading SConscript files.")
+    progress_display(_("scons: done reading SConscript files."))
 
-    memory_stats.append('after reading SConscript files:')
+    memory_stats.append(_('after reading SConscript files:'))
     count_stats.append(('post-', 'read'))
 
     # Re-{enable,disable} warnings in case they disabled some in
@@ -959,8 +961,8 @@ def _main(parser):
     # warning about deprecated Python versions--delayed until here
     # in case they disabled the warning in the SConscript files.
     if python_version_deprecated():
-        msg = "Support for pre-2.2 Python (%s) is deprecated.\n" + \
-              "    If this will cause hardship, contact dev@scons.tigris.org."
+        msg = _("Support for pre-2.2 Python (%s) is deprecated.\n") + \
+              _("    If this will cause hardship, contact dev@scons.tigris.org.")
         SCons.Warnings.warn(SCons.Warnings.PythonVersionWarning,
                             msg % python_version_string())
 
@@ -984,7 +986,7 @@ def _main(parser):
             raise SConsPrintHelpException
         else:
             print help_text
-            print "Use scons -H for help about command-line options."
+            print _("Use scons -H for help about command-line options.")
         exit_status = 0
         return
 
@@ -1083,7 +1085,7 @@ def _build_targets(fs, options, targets, target_top):
                         # x doesn't have a cwd, so it's either not a target,
                         # or not a file, so go ahead and keep it as a default
                         # target and let the engine sort it out:
-                        return 1                
+                        return 1
                 d = filter(check_dir, SCons.Script.DEFAULT_TARGETS)
                 SCons.Script.DEFAULT_TARGETS[:] = d
                 target_top = None
@@ -1092,7 +1094,7 @@ def _build_targets(fs, options, targets, target_top):
         targets = SCons.Script._Get_Default_Targets(d, fs)
 
     if not targets:
-        sys.stderr.write("scons: *** No targets specified and no Default() targets found.  Stop.\n")
+        sys.stderr.write(_("scons: *** No targets specified and no Default() targets found.  Stop.\n"))
         return None
 
     def Entry(x, ltop=lookup_top, ttop=target_top, fs=fs):
@@ -1122,23 +1124,23 @@ def _build_targets(fs, options, targets, target_top):
     nodes = filter(None, map(Entry, targets))
 
     task_class = BuildTask      # default action is to build targets
-    opening_message = "Building targets ..."
-    closing_message = "done building targets."
+    opening_message = _("Building targets ...")
+    closing_message = _("done building targets.")
     if options.keep_going:
-        failure_message = "done building targets (errors occurred during build)."
+        failure_message = _("done building targets (errors occurred during build).")
     else:
-        failure_message = "building terminated because of errors."
+        failure_message = _("building terminated because of errors.")
     if options.question:
         task_class = QuestionTask
     try:
         if options.clean:
             task_class = CleanTask
-            opening_message = "Cleaning targets ..."
-            closing_message = "done cleaning targets."
+            opening_message = _("Cleaning targets ...")
+            closing_message = _("done cleaning targets.")
             if options.keep_going:
-                failure_message = "done cleaning targets (errors occurred during clean)."
+                failure_message = _("done cleaning targets (errors occurred during clean).")
             else:
-                failure_message = "cleaning terminated because of errors."
+                failure_message = _("cleaning terminated because of errors.")
     except AttributeError:
         pass
 
@@ -1178,14 +1180,14 @@ def _build_targets(fs, options, targets, target_top):
     if num_jobs > 1:
         msg = None
         if jobs.num_jobs == 1:
-            msg = "parallel builds are unsupported by this version of Python;\n" + \
-                  "\tignoring -j or num_jobs option.\n"
+            msg = _("parallel builds are unsupported by this version of Python;\n") + \
+                  _("\tignoring -j or num_jobs option.\n")
         elif sys.platform == 'win32':
             msg = fetch_win32_parallel_msg()
         if msg:
             SCons.Warnings.warn(SCons.Warnings.NoParallelSupportWarning, msg)
 
-    memory_stats.append('before building targets:')
+    memory_stats.append(_('before building targets:'))
     count_stats.append(('pre-', 'build'))
 
     def jobs_postfunc(
@@ -1196,26 +1198,26 @@ def _build_targets(fs, options, targets, target_top):
         ):
         if jobs.were_interrupted():
             if not options.no_progress and not options.silent:
-                sys.stderr.write("scons: Build interrupted.\n")
+                sys.stderr.write(_("scons: Build interrupted.\n"))
             global exit_status
             global this_build_status
             exit_status = 2
             this_build_status = 2
 
         if this_build_status:
-            progress_display("scons: " + failure_message)
+            progress_display(_("scons: ") + failure_message)
         else:
-            progress_display("scons: " + closing_message)
+            progress_display(_("scons: ") + closing_message)
         if not options.no_exec:
             if jobs.were_interrupted():
-                progress_display("scons: writing .sconsign file.")
+                progress_display(_("scons: writing .sconsign file."))
             SCons.SConsign.write()
 
-    progress_display("scons: " + opening_message)
+    progress_display(_("scons: ") + opening_message)
     jobs.run(postfunc = jobs_postfunc)
 
-    memory_stats.append('after building targets:')
-    count_stats.append(('post-', 'build'))
+    memory_stats.append(_('after building targets:'))
+    count_stats.append((_('post-'), _('build')))
 
     return nodes
 
@@ -1268,18 +1270,18 @@ def main():
     # after the SConscript files have been read, in case they
     # disable that warning.
     if python_version_unsupported():
-        msg = "scons: *** SCons version %s does not run under Python version %s.\n"
+        msg = _("scons: *** SCons version %s does not run under Python version %s.\n")
         sys.stderr.write(msg % (SCons.__version__, python_version_string()))
         sys.exit(1)
 
-    parts = ["SCons by Steven Knight et al.:\n"]
+    parts = [_("SCons by Steven Knight et al.:\n")]
     try:
         import __main__
         parts.append(version_string("script", __main__))
     except (ImportError, AttributeError):
         # On Windows there is no scons.py, so there is no
         # __main__.__version__, hence there is no script version.
-        pass 
+        pass
     parts.append(version_string("engine", SCons))
     parts.append("__COPYRIGHT__")
     version = string.join(parts, '')
@@ -1289,14 +1291,14 @@ def main():
     values = SConsOptions.SConsValues(parser.get_default_values())
 
     OptionsParser = parser
-    
+
     try:
         _exec_main(parser, values)
     except SystemExit, s:
         if s:
             exit_status = s
     except KeyboardInterrupt:
-        print("scons: Build interrupted.")
+        print(_("scons: Build interrupted."))
         sys.exit(2)
     except SyntaxError, e:
         _scons_syntax_error(e)
@@ -1324,7 +1326,7 @@ def main():
         #SCons.Debug.dumpLoggedInstances('*')
 
     if print_memoizer:
-        SCons.Memoize.Dump("Memoizer (memory cache) hits and misses:")
+        SCons.Memoize.Dump(_("Memoizer (memory cache) hits and misses:"))
 
     # Dump any development debug info that may have been enabled.
     # These are purely for internal debugging during development, so
@@ -1343,10 +1345,10 @@ def main():
             else:
                 ct = last_command_end - first_command_start
         scons_time = total_time - sconscript_time - ct
-        print "Total build time: %f seconds"%total_time
-        print "Total SConscript file execution time: %f seconds"%sconscript_time
-        print "Total SCons execution time: %f seconds"%scons_time
-        print "Total command execution time: %f seconds"%ct
+        print _("Total build time: %f seconds")%total_time
+        print _("Total SConscript file execution time: %f seconds")%sconscript_time
+        print _("Total SCons execution time: %f seconds")%scons_time
+        print _("Total command execution time: %f seconds")%ct
 
     sys.exit(exit_status)
 

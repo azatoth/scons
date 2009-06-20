@@ -33,6 +33,8 @@ and will then be removed entirely (some day).
 import SCons.Variables
 import SCons.Warnings
 
+from SCons.i18n import *
+
 from BoolOption import BoolOption  # okay
 from EnumOption import EnumOption  # okay
 from ListOption import ListOption  # naja
@@ -45,7 +47,7 @@ class Options(SCons.Variables.Variables):
     def __init__(self, *args, **kw):
         global warned
         if not warned:
-            msg = "The Options class is deprecated; use the Variables class instead."
+            msg = _("The Options class is deprecated; use the Variables class instead.")
             SCons.Warnings.warn(SCons.Warnings.DeprecatedOptionsWarning, msg)
             warned = True
         apply(SCons.Variables.Variables.__init__,

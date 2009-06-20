@@ -38,6 +38,8 @@ import SCons.Scanner
 import SCons.Util
 import SCons.Warnings
 
+from SCons.i18n import *
+
 class F90Scanner(SCons.Scanner.Classic):
     """
     A Classic Scanner subclass for Fortran source files which takes
@@ -118,7 +120,7 @@ class F90Scanner(SCons.Scanner.Classic):
 
             if n is None:
                 SCons.Warnings.warn(SCons.Warnings.DependencyWarning,
-                                    "No dependency generated for file: %s (referenced by: %s) -- file not found" % (i, node))
+                                    _("No dependency generated for file: %s (referenced by: %s) -- file not found") % (i, node))
             else:
                 sortkey = self.sort_key(dep)
                 nodes.append((sortkey, n))

@@ -21,7 +21,7 @@ their own platform definition.
 
 #
 # __COPYRIGHT__
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -53,6 +53,8 @@ import tempfile
 import SCons.Errors
 import SCons.Subst
 import SCons.Tool
+
+from SCons.i18n import *
 
 def platform_default():
     """Return the platform string for our execution environment.
@@ -110,7 +112,7 @@ def platform_module(name = platform_default()):
                     importer = zipimport.zipimporter( sys.modules['SCons.Platform'].__path__[0] )
                     mod = importer.load_module(full_name)
                 except ImportError:
-                    raise SCons.Errors.UserError, "No platform named '%s'" % name
+                    raise SCons.Errors.UserError, _("No platform named '%s'") % name
             setattr(SCons.Platform, name, mod)
     return sys.modules[full_name]
 
@@ -125,7 +127,7 @@ class PlatformSpec:
 
     def __str__(self):
         return self.name
-        
+
 class TempFileMunge:
     """A callable class.  You can set an Environment variable to this,
     then call it with a string argument, then it will perform temporary
@@ -214,10 +216,10 @@ class TempFileMunge:
         # purity get in the way of just being helpful, so we'll
         # reach into SCons.Action directly.
         if SCons.Action.print_actions:
-            print("Using tempfile "+native_tmp+" for command line:\n"+
+            print(_("Using tempfile ")+native_tmp+_(" for command line:\n")+
                   str(cmd[0]) + " " + string.join(args," "))
         return [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
-    
+
 def Platform(name = platform_default()):
     """Select a canned Platform specification.
     """

@@ -1,6 +1,6 @@
 """SCons.Scanner.C
 
-This module implements the depenency scanner for C/C++ code. 
+This module implements the depenency scanner for C/C++ code.
 
 """
 
@@ -34,6 +34,8 @@ import SCons.Scanner
 import SCons.Util
 
 import SCons.cpp
+
+from SCons.i18n import *
 
 class SConsCPPScanner(SCons.cpp.PreProcessor):
     """
@@ -99,7 +101,7 @@ class SConsCPPScannerWrapper:
                               dict = dictify_CPPDEFINES(env))
         result = cpp(node)
         for included, includer in cpp.missing:
-            fmt = "No dependency generated for file: %s (included from: %s) -- file not found"
+            fmt = _("No dependency generated for file: %s (included from: %s) -- file not found")
             SCons.Warnings.warn(SCons.Warnings.DependencyWarning,
                                 fmt % (included, includer))
         return result
