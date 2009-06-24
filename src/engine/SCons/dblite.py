@@ -10,6 +10,7 @@ import __builtin__
 
 keep_all_files = 00000
 ignore_corrupt_dbfiles = 0
+is_jython = os.name.startswith('java')
 
 def corruption_warning(filename):
     print "Warning: Discarding corrupt database:", filename
@@ -117,8 +118,22 @@ class dblite:
     # (e.g. from a previous run as root).  We should still be able to
     # unlink() the file if the directory's writable, though, so ignore
     # any OSError exception  thrown by the chmod() call.
-    try: self._os_chmod(self._file_name, 0777)
-    except OSError: pass
+    try:
+      if is_jython:
+        print self._file_name
+        # TODO: verify with other Python, Jython versions, difference in referencing objects
+        # and passing right argument count
+        import os as jython_os
+        jython_os.chmod(self._file_name, 0777)
+        # change reference
+        self._os_unlink = jython_os.unlink
+        self._os_rename = jython_os.rename
+        self._os_chown = None # not available
+      else:
+        self._os_chmod(self._file_name, 0777)
+    except OSError:
+      pass
+    
     self._os_unlink(self._file_name)
     self._os_rename(self._tmp_name, self._file_name)
     if self._os_chown is not None and self._chown_to > 0: # don't chown to root or -1
@@ -216,9 +231,9 @@ def _exercise():
   assert len(db) == 5
   db = open("tmp", "n")
   assert len(db) == 0
-  _open("tmp.dblite", "w")
+  dblite._open("tmp.dblite", "w")
   db = open("tmp", "r")
-  _open("tmp.dblite", "w").write("x")
+  dblite._open("tmp.dblite", "w").write("x")
   try:
     db = open("tmp", "r")
   except cPickle.UnpicklingError:

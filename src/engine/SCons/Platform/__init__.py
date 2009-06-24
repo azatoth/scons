@@ -62,8 +62,6 @@ def platform_default():
     care about the machine architecture.
     """
     osname = os.name
-    if osname == 'java':
-        osname = os._osType
     if osname == 'posix':
         if sys.platform == 'cygwin':
             return 'cygwin'
@@ -81,6 +79,8 @@ def platform_default():
             return 'posix'
     elif os.name == 'os2':
         return 'os2'
+    elif os.name.startswith('java'):
+        return 'java'
     else:
         return sys.platform
 
@@ -93,25 +93,22 @@ def platform_module(name = platform_default()):
     """
     full_name = 'SCons.Platform.' + name
     if not sys.modules.has_key(full_name):
-        if os.name == 'java':
-            eval(full_name)
-        else:
+        try:
+            file, path, desc = imp.find_module(name,
+                                  sys.modules['SCons.Platform'].__path__)
             try:
-                file, path, desc = imp.find_module(name,
-                                        sys.modules['SCons.Platform'].__path__)
-                try:
-                    mod = imp.load_module(full_name, file, path, desc)
-                finally:
-                    if file:
-                        file.close()
+                mod = imp.load_module('SCons.Platform.java', file, path, desc)
+            finally:
+                if file:
+                    file.close()
+        except ImportError:
+            try:
+                import zipimport
+                importer = zipimport.zipimporter( sys.modules['SCons.Platform'].__path__[0] )
+                mod = importer.load_module(full_name)
             except ImportError:
-                try:
-                    import zipimport
-                    importer = zipimport.zipimporter( sys.modules['SCons.Platform'].__path__[0] )
-                    mod = importer.load_module(full_name)
-                except ImportError:
-                    raise SCons.Errors.UserError, "No platform named '%s'" % name
-            setattr(SCons.Platform, name, mod)
+                raise SCons.Errors.UserError, "No platform named '%s'" % name
+        setattr(SCons.Platform, name, mod)
     return sys.modules[full_name]
 
 def DefaultToolList(platform, env):

@@ -458,7 +458,7 @@ env = Environment(
                                            'SOElim' : soelimbuilder },
 
                    PYTHON              = '"%s"' % sys.executable,
-                   PYTHONFLAGS         = '-tt',
+                   PYTHONFLAGS         = os.name.startswith('java') and ' ' or '-tt',
                  )
 
 Version_values = [Value(version), Value(build_id)]

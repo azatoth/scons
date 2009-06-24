@@ -181,8 +181,8 @@ class DummyNode:
     def get_subst_proxy(self):
         return self
 
-if os.name == 'java':
-    python = os.path.join(sys.prefix, 'jython')
+if os.name.startswith('java'):
+    python = os.path.join(sys.prefix, 'bin', 'jython')
 else:
     python = sys.executable
 
@@ -1721,7 +1721,6 @@ class ListActionTestCase(unittest.TestCase):
         a = SCons.Action.ListAction([f, f, f])
         a([], [], Environment(s = self))
         assert self.inc == 3, self.inc
-
         cmd2 = r'%s %s %s syzygy' % (_python_, act_py, outfile)
 
         def function2(target, source, env):

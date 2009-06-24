@@ -25,6 +25,8 @@ import os
 import os.path
 import string
 import sys
+import subprocess
+
 
 __doc__ = """bootstrap.py
 
@@ -210,7 +212,11 @@ sys.stdout.flush()
 
 os.environ['SCONS_LIB_DIR'] = os.path.join(bootstrap_dir, src_engine)
 
-os.execve(sys.executable, args, os.environ)
+try:
+    os.execve(sys.executable, args, os.environ)
+except AttributeError:
+    subprocess.Popen([sys.executable] + args, env = os.environ)
+
 
 # Local Variables:
 # tab-width:4

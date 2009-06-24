@@ -94,6 +94,7 @@ import stat
 import string
 import sys
 import time
+import subprocess
 
 if not hasattr(os, 'WEXITSTATUS'):
     os.WEXITSTATUS = lambda x: x
@@ -119,6 +120,7 @@ print_times = None
 python = None
 sp = None
 spe = None
+is_jython = os.name.startswith('java')
 
 helpstr = """\
 Usage: runtest.py [OPTIONS] [TEST ...]
@@ -324,12 +326,18 @@ try:
     os.spawnv
 except AttributeError:
     def spawn_it(command_args):
-        pid = os.fork()
-        if pid == 0:
-            os.execv(command_args[0], command_args)
-        else:
-            pid, status = os.waitpid(pid, 0)
-            return status >> 8
+        try:
+            pid = os.fork()
+            if pid == 0:
+                os.execv(command_args[0], command_args)
+            else:
+                pid, status = os.waitpid(pid, 0)
+                return status >> 8
+        except AttributeError:
+            p = subprocess.Popen(command_args, env = os.environ)
+            p.wait()
+            pid = p.pid
+            return p.returncode >> 8
 else:
     def spawn_it(command_args):
         command = command_args[0]
@@ -723,8 +731,8 @@ if list_only:
 
 #
 if not python:
-    if os.name == 'java':
-        python = os.path.join(sys.prefix, 'jython')
+    if os.name.startswith('java'):
+        python = os.path.join(sys.prefix, 'bin', 'jython')
     else:
         python = sys.executable
 
@@ -744,7 +752,7 @@ else:
 
 total_start_time = time_func()
 for t in tests:
-    t.command_args = [python, '-tt']
+    t.command_args = is_jython and [python] or [python, '-tt']
     if debug:
         t.command_args.append(debug)
     t.command_args.append(t.path)

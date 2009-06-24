@@ -29,6 +29,7 @@ SCons string substitution.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import os
 import re
 import string
 import types
@@ -44,7 +45,7 @@ _strconv = [SCons.Util.to_String_for_subst,
             SCons.Util.to_String_for_subst,
             SCons.Util.to_String_for_signature]
 
-
+is_jython = os.name.startswith('java')
 
 AllowableExceptions = (IndexError, NameError)
 
@@ -552,7 +553,11 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
     # setting it explicitly and then deleting, so we don't pollute the
     # construction environment Dictionary(ies) that are typically used
     # for expansion.
-    gvars['__builtins__'] = __builtins__
+    if is_jython:
+        import __builtin__
+        gvars['__builtins__'] = __builtin__
+    else:
+        gvars['__builtins__'] = __builtins__
 
     ss = StringSubber(env, mode, conv, gvars)
     result = ss.substitute(strSubst, lvars)
@@ -846,7 +851,11 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
     # setting it explicitly and then deleting, so we don't pollute the
     # construction environment Dictionary(ies) that are typically used
     # for expansion.
-    gvars['__builtins__'] = __builtins__
+    if is_jython:
+        import __builtin__
+        gvars['__builtins__'] = __builtin__
+    else:
+        gvars['__builtins__'] = __builtins__
 
     ls = ListSubber(env, mode, conv, gvars)
     ls.substitute(strSubst, lvars, 0)
