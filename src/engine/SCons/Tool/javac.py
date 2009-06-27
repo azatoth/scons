@@ -43,6 +43,8 @@ from SCons.Node.FS import _my_normcase
 from SCons.Tool.JavaCommon import parse_java_file
 import SCons.Util
 
+from SCons.i18n import *
+
 def classname(path):
     """Turn a string (path name) into a Java class name."""
     return string.replace(os.path.normpath(path), os.sep, '.')
@@ -63,7 +65,7 @@ def emit_java_classes(target, source, env):
     elif isinstance(s, SCons.Node.FS.Dir):
         sourcedir = s.rdir()
     else:
-        raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % s.__class__)
+        raise SCons.Errors.UserError(_("Java source must be File or Dir, not '%s'") % s.__class__)
 
     slist = []
     js = _my_normcase(java_suffix)
@@ -89,7 +91,7 @@ def emit_java_classes(target, source, env):
 
             slist.extend(result.keys())
         else:
-            raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % entry.__class__)
+            raise SCons.Errors.UserError(_("Java source must be File or Dir, not '%s'") % entry.__class__)
 
     version = env.get('JAVAVERSION', '1.4')
     full_tlist = []

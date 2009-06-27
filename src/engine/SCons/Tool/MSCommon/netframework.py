@@ -32,6 +32,8 @@ import string
 
 from common import read_reg, debug
 
+from SCons.i18n import *
+
 # Original value recorded by dcournapeau
 _FRAMEWORKDIR_HKEY_ROOT = r'Software\Microsoft\.NETFramework\InstallRoot'
 # On SGK's system
@@ -41,13 +43,13 @@ def find_framework_root():
     # XXX: find it from environment (FrameworkDir)
     try:
         froot = read_reg(_FRAMEWORKDIR_HKEY_ROOT)
-        debug("Found framework install root in registry: %s" % froot)
+        debug(_("Found framework install root in registry: %s") % froot)
     except WindowsError, e:
-        debug("Could not read reg key %s" % _FRAMEWORKDIR_HKEY_ROOT)
+        debug(_("Could not read reg key %s") % _FRAMEWORKDIR_HKEY_ROOT)
         return None
 
     if not os.path.exists(froot):
-        debug("%s not found on fs" % froot)
+        debug(_("%s not found on fs") % froot)
         return None
 
     return froot

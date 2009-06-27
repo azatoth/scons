@@ -77,26 +77,28 @@ import os.path
 
 import SCons.Errors
 
+from SCons.i18n import *
+
 class _PathVariableClass:
 
     def PathAccept(self, key, val, env):
         """Accepts any path, no checking done."""
         pass
-    
+
     def PathIsDir(self, key, val, env):
         """Validator to check if Path is a directory."""
         if not os.path.isdir(val):
             if os.path.isfile(val):
-                m = 'Directory path for option %s is a file: %s'
+                m = _('Directory path for option %s is a file: %s')
             else:
-                m = 'Directory path for option %s does not exist: %s'
+                m = _('Directory path for option %s does not exist: %s')
             raise SCons.Errors.UserError(m % (key, val))
 
     def PathIsDirCreate(self, key, val, env):
         """Validator to check if Path is a directory,
            creating it if it does not exist."""
         if os.path.isfile(val):
-            m = 'Path for option %s is a file, not a directory: %s'
+            m = _('Path for option %s is a file, not a directory: %s')
             raise SCons.Errors.UserError(m % (key, val))
         if not os.path.isdir(val):
             os.makedirs(val)
@@ -105,15 +107,15 @@ class _PathVariableClass:
         """validator to check if Path is a file"""
         if not os.path.isfile(val):
             if os.path.isdir(val):
-                m = 'File path for option %s is a directory: %s'
+                m = _('File path for option %s is a directory: %s')
             else:
-                m = 'File path for option %s does not exist: %s'
+                m = _('File path for option %s does not exist: %s')
             raise SCons.Errors.UserError(m % (key, val))
 
     def PathExists(self, key, val, env):
         """validator to check if Path exists"""
         if not os.path.exists(val):
-            m = 'Path for option %s does not exist: %s'
+            m = _('Path for option %s does not exist: %s')
             raise SCons.Errors.UserError(m % (key, val))
 
     def __call__(self, key, help, default, validator=None):

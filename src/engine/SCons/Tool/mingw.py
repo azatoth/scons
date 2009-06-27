@@ -43,6 +43,8 @@ import SCons.Defaults
 import SCons.Tool
 import SCons.Util
 
+from SCons.i18n import *
+
 # This is what we search for to find mingw:
 key_program = 'mingw32-gcc'
 
@@ -51,7 +53,7 @@ def find(env):
     return env.WhereIs(key_program) or SCons.Util.WhereIs(key_program)
 
 def shlib_generator(target, source, env, for_signature):
-    cmd = SCons.Util.CLVar(['$SHLINK', '$SHLINKFLAGS']) 
+    cmd = SCons.Util.CLVar(['$SHLINK', '$SHLINKFLAGS'])
 
     dll = env.FindIxes(target, 'SHLIBPREFIX', 'SHLIBSUFFIX')
     if dll: cmd.extend(['-o', dll])
@@ -73,13 +75,13 @@ def shlib_emitter(target, source, env):
     no_import_lib = env.get('no_import_lib', 0)
 
     if not dll:
-        raise SCons.Errors.UserError, "A shared library should have exactly one target with the suffix: %s" % env.subst("$SHLIBSUFFIX")
-    
+        raise SCons.Errors.UserError, _("A shared library should have exactly one target with the suffix: %s") % env.subst("$SHLIBSUFFIX")
+
     if not no_import_lib and \
        not env.FindIxes(target, 'LIBPREFIX', 'LIBSUFFIX'):
 
         # Append an import library to the list of targets.
-        target.append(env.ReplaceIxes(dll,  
+        target.append(env.ReplaceIxes(dll,
                                       'SHLIBPREFIX', 'SHLIBSUFFIX',
                                       'LIBPREFIX', 'LIBSUFFIX'))
 
@@ -90,12 +92,12 @@ def shlib_emitter(target, source, env):
     def_source = env.FindIxes(source, 'WINDOWSDEFPREFIX', 'WINDOWSDEFSUFFIX')
     def_target = env.FindIxes(target, 'WINDOWSDEFPREFIX', 'WINDOWSDEFSUFFIX')
     if not def_source and not def_target:
-        target.append(env.ReplaceIxes(dll,  
+        target.append(env.ReplaceIxes(dll,
                                       'SHLIBPREFIX', 'SHLIBSUFFIX',
                                       'WINDOWSDEFPREFIX', 'WINDOWSDEFSUFFIX'))
-    
+
     return (target, source)
-                         
+
 
 shlib_action = SCons.Action.Action(shlib_generator, generator=1)
 
@@ -110,7 +112,7 @@ def generate(env):
     if mingw:
         dir = os.path.dirname(mingw)
         env.PrependENVPath('PATH', dir )
-        
+
 
     # Most of mingw is the same as gcc and friends...
     gnu_tools = ['gcc', 'g++', 'gnulink', 'ar', 'gas', 'm4']
@@ -143,7 +145,7 @@ def generate(env):
     env['RCINCSUFFIX'] = ''
     env['RCCOM'] = '$RC $_CPPDEFFLAGS $RCINCFLAGS ${RCINCPREFIX} ${SOURCE.dir} $RCFLAGS -i $SOURCE -o $TARGET'
     env['BUILDERS']['RES'] = res_builder
-    
+
     # Some setting from the platform also have to be overridden:
     env['OBJSUFFIX'] = '.o'
     env['LIBPREFIX'] = 'lib'

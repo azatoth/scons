@@ -50,6 +50,8 @@ import SCons.Scanner.D
 import SCons.Scanner.LaTeX
 import SCons.Scanner.Prog
 
+from SCons.i18n import *
+
 DefaultToolpath=[]
 
 CScanner = SCons.Scanner.C.CScanner()
@@ -112,7 +114,7 @@ class Tool:
                     if file:
                         file.close()
             except ImportError, e:
-                if str(e)!="No module named %s"%self.name:
+                if str(e)!=_("No module named %s")%self.name:
                     raise SCons.Errors.EnvironmentError, e
                 try:
                     import zipimport
@@ -142,7 +144,7 @@ class Tool:
                         file.close()
                     return module
                 except ImportError, e:
-                    if str(e)!="No module named %s"%self.name:
+                    if str(e)!=_("No module named %s")%self.name:
                         raise SCons.Errors.EnvironmentError, e
                     try:
                         import zipimport
@@ -151,10 +153,10 @@ class Tool:
                         setattr(SCons.Tool, self.name, module)
                         return module
                     except ImportError, e:
-                        m = "No tool named '%s': %s" % (self.name, e)
+                        m = _("No tool named '%s': %s") % (self.name, e)
                         raise SCons.Errors.EnvironmentError, m
             except ImportError, e:
-                m = "No tool named '%s': %s" % (self.name, e)
+                m = _("No tool named '%s': %s") % (self.name, e)
                 raise SCons.Errors.EnvironmentError, m
 
     def __call__(self, env, *args, **kw):

@@ -37,6 +37,8 @@ from SCons.Tool.install import copyFunc
 
 copyToBuilder, copyAsBuilder = None, None
 
+from SCons.i18n import *
+
 def copyto_emitter(target, source, env):
     """ changes the path of the source to be under the target (which
     are assumed to be directories.
@@ -49,7 +51,7 @@ def copyto_emitter(target, source, env):
     return (n_target, source)
 
 def copy_action_func(target, source, env):
-    assert( len(target) == len(source) ), "\ntarget: %s\nsource: %s" %(map(str, target),map(str, source))
+    assert( len(target) == len(source) ), _("\ntarget: %s\nsource: %s") %(map(str, target),map(str, source))
 
     for t, s in zip(target, source):
         if copyFunc(t.get_path(), s.get_path(), env):

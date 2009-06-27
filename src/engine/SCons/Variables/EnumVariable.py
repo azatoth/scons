@@ -45,10 +45,12 @@ import string
 
 import SCons.Errors
 
+from SCons.i18n import *
+
 def _validator(key, val, env, vals):
     if not val in vals:
         raise SCons.Errors.UserError(
-            'Invalid value for option %s: %s' % (key, val))
+            _('Invalid value for option %s: %s') % (key, val))
 
 
 def EnumVariable(key, help, default, allowed_values, map={}, ignorecase=0):
@@ -78,7 +80,7 @@ def EnumVariable(key, help, default, allowed_values, map={}, ignorecase=0):
     The 'validator' tests whether the value is in the list of allowed
     values. The 'converter' converts input values according to the
     given 'map'-dictionary (unmapped input values are returned
-    unchanged). 
+    unchanged).
     """
     help = '%s (%s)' % (help, string.join(allowed_values, '|'))
     # define validator

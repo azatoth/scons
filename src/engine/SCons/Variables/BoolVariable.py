@@ -42,6 +42,8 @@ import string
 
 import SCons.Errors
 
+from SCons.i18n import *
+
 __true_strings  = ('y', 'yes', 'true', 't', '1', 'on' , 'all' )
 __false_strings = ('n', 'no', 'false', 'f', '0', 'off', 'none')
 
@@ -60,18 +62,18 @@ def _text2bool(val):
     lval = string.lower(val)
     if lval in __true_strings: return True
     if lval in __false_strings: return False
-    raise ValueError("Invalid value for boolean option: %s" % val)
+    raise ValueError(_("Invalid value for boolean option: %s") % val)
 
 
 def _validator(key, val, env):
     """
     Validates the given value to be either '0' or '1'.
-    
+
     This is usable as 'validator' for SCons' Variables.
     """
     if not env[key] in (True, False):
         raise SCons.Errors.UserError(
-            'Invalid value for boolean option %s: %s' % (key, env[key]))
+            _('Invalid value for boolean option %s: %s') % (key, env[key]))
 
 
 def BoolVariable(key, help, default):

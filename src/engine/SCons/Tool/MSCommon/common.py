@@ -34,6 +34,7 @@ import re
 
 import SCons.Util
 
+from SCons.i18n import *
 
 logfile = os.environ.get('SCONS_MSCOMMON_DEBUG')
 if logfile:
@@ -90,13 +91,13 @@ def normalize_env(env, keys):
 def get_output(vcbat, args = None, env = None):
     """Parse the output of given bat file, with given args."""
     if args:
-        debug("Calling '%s %s'" % (vcbat, args))
+        debug(_("Calling '%s %s'") % (vcbat, args))
         popen = subprocess.Popen('"%s" %s & set' % (vcbat, args),
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
                                  env=env)
     else:
-        debug("Calling '%s'" % vcbat)
+        debug(_("Calling '%s'") % vcbat)
         popen = subprocess.Popen('"%s" & set' % vcbat,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
@@ -133,7 +134,7 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
                 p = p.encode('mbcs')
                 # XXX: For some reason, VC98 .bat file adds "" around the PATH
                 # values, and it screws up the environment later, so we strip
-                # it. 
+                # it.
                 p = p.strip('"')
                 dkeep[key].append(p)
 

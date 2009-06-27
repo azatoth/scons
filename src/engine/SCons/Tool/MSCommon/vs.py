@@ -31,6 +31,8 @@ import os
 import SCons.Errors
 import SCons.Util
 
+from SCons.i18n import *
+
 from SCons.Tool.MSCommon.common import debug, \
                                        read_reg, \
                                        normalize_env, \
@@ -56,36 +58,36 @@ class VisualStudio:
         """
         pdir = self.get_vc_product_dir()
         if not pdir:
-            debug('find_batch_file():  no pdir')
+            debug(_('find_batch_file():  no pdir'))
             return None
         batch_file = os.path.normpath(os.path.join(pdir, self.batch_file))
         batch_file = os.path.normpath(batch_file)
         if not os.path.isfile(batch_file):
-            debug('find_batch_file():  %s not on file system' % batch_file)
+            debug(('find_batch_file():  %s not on file system') % batch_file)
             return None
         return batch_file
 
     def find_executable(self):
         pdir = self.get_vc_product_dir()
         if not pdir:
-            debug('find_executable():  no pdir')
+            debug(_('find_executable():  no pdir'))
             return None
         executable = os.path.join(pdir, self.executable_path)
         executable = os.path.normpath(executable)
         if not os.path.isfile(executable):
-            debug('find_executable():  %s not on file system' % executable)
+            debug(_('find_executable():  %s not on file system') % executable)
             return None
         return executable
 
     def find_vc_product_dir(self):
         if not SCons.Util.can_read_reg:
-            debug('find_vc_product_dir():  can not read registry')
+            debug(_('find_vc_product_dir():  can not read registry'))
             return None
         key = self.hkey_root + '\\' + self.vc_product_dir_key
         try:
             comps = read_reg(key)
         except WindowsError, e:
-            debug('find_vc_product_dir():  no registry key %s' % key)
+            debug(_('find_vc_product_dir():  no registry key %s') % key)
         else:
             if self.batch_file_dir_reg_relpath:
                 comps = os.path.join(comps, self.batch_file_dir_reg_relpath)
@@ -93,15 +95,15 @@ class VisualStudio:
             if os.path.exists(comps):
                 return comps
             else:
-                debug('find_vc_product_dir():  %s not on file system' % comps)
+                debug(_('find_vc_product_dir():  %s not on file system'_) % comps)
 
         d = os.environ.get(self.common_tools_var)
         if not d:
-            msg = 'find_vc_product_dir():  no %s variable'
+            msg = _('find_vc_product_dir():  no %s variable'_)
             debug(msg % self.common_tools_var)
             return None
         if not os.path.isdir(d):
-            debug('find_vc_product_dir():  %s not on file system' % d)
+            debug(_('find_vc_product_dir():  %s not on file system') % d)
             return None
         if self.batch_file_dir_env_relpath:
             d = os.path.join(d, self.batch_file_dir_env_relpath)
@@ -332,9 +334,9 @@ def get_installed_visual_studios():
         InstalledVSList = []
         InstalledVSMap = {}
         for vs in SupportedVSList:
-            debug('trying to find VS %s' % vs.version)
+            debug(_('trying to find VS %s') % vs.version)
             if vs.get_executable():
-                debug('found VS %s' % vs.version)
+                debug(_('found VS %s') % vs.version)
                 InstalledVSList.append(vs)
                 InstalledVSMap[vs.version] = vs
     return InstalledVSList
@@ -385,7 +387,7 @@ def detect_msvs():
 
 def get_vs_by_version(msvs):
     if not SupportedVSMap.has_key(msvs):
-        msg = "Visual Studio version %s is not supported" % repr(msvs)
+        msg = _("Visual Studio version %s is not supported") % repr(msvs)
         raise SCons.Errors.UserError, msg
     get_installed_visual_studios()
     vs = InstalledVSMap.get(msvs)
@@ -447,7 +449,7 @@ def get_default_arch(env):
     if not msvs:
         arch = 'x86'
     elif not arch in msvs.get_supported_arch():
-        fmt = "Visual Studio version %s does not support architecture %s"
+        fmt = _("Visual Studio version %s does not support architecture %s")
         raise SCons.Errors.UserError, fmt % (env['MSVS_VERSION'], arch)
 
     return arch

@@ -40,6 +40,8 @@ import SCons.Warnings
 
 from SCons.Tool.FortranCommon import isfortran
 
+from SCons.i18n import *
+
 cplusplus = __import__('c++', globals(), locals(), [])
 
 issued_mixed_link_warning = False
@@ -50,9 +52,9 @@ def smart_link(source, target, env, for_signature):
     if has_cplusplus and has_fortran:
         global issued_mixed_link_warning
         if not issued_mixed_link_warning:
-            msg = "Using $CXX to link Fortran and C++ code together.\n\t" + \
-              "This may generate a buggy executable if the '%s'\n\t" + \
-              "compiler does not know how to deal with Fortran runtimes."
+            msg = _("Using $CXX to link Fortran and C++ code together.\n\t") + \
+              _("This may generate a buggy executable if the '%s'\n\t") + \
+              _("compiler does not know how to deal with Fortran runtimes.")
             SCons.Warnings.warn(SCons.Warnings.FortranCxxMixWarning,
                                 msg % env.subst('$CXX'))
             issued_mixed_link_warning = True
@@ -102,8 +104,8 @@ def generate(env):
     # don't set up the emitter, cause AppendUnique will generate a list
     # starting with None :-(
     env.Append(LDMODULEEMITTER='$SHLIBEMITTER')
-    env['LDMODULEPREFIX'] = '$SHLIBPREFIX' 
-    env['LDMODULESUFFIX'] = '$SHLIBSUFFIX' 
+    env['LDMODULEPREFIX'] = '$SHLIBPREFIX'
+    env['LDMODULESUFFIX'] = '$SHLIBSUFFIX'
     env['LDMODULEFLAGS'] = '$SHLINKFLAGS'
     env['LDMODULECOM'] = '$LDMODULE -o $TARGET $LDMODULEFLAGS $SOURCES $_LIBDIRFLAGS $_LIBFLAGS'
 

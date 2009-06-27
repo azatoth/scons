@@ -34,6 +34,7 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import SCons.Tool
 
+from SCons.i18n import *
 
 def generate(env):
     """Add Builders and construction variables for lib to an Environment."""
@@ -85,7 +86,7 @@ def shlib_emitter(target, source, env):
     no_import_lib = env.get('no_import_lib', 0)
 
     if not dll:
-        raise SCons.Errors.UserError, "A shared library should have exactly one target with the suffix: %s" % env.subst("$SHLIBSUFFIX")
+        raise SCons.Errors.UserError, _("A shared library should have exactly one target with the suffix: %s") % env.subst("$SHLIBSUFFIX")
 
     if not no_import_lib and \
        not env.FindIxes(target, 'LIBPREFIX', 'LIBSUFFIX'):

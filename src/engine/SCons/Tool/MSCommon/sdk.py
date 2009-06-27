@@ -34,6 +34,8 @@ import SCons.Errors
 from SCons.Tool.MSCommon.common import debug, read_reg
 import SCons.Util
 
+from SCons.i18n import *
+
 # SDK Checks. This is of course a mess as everything else on MS platforms. Here
 # is what we do to detect the SDK:
 #
@@ -69,7 +71,7 @@ class SDKDefinition:
         Return None if failed or the directory does not exist.
         """
         if not SCons.Util.can_read_reg:
-            debug('find_sdk_dir():  can not read registry')
+            debug(_('find_sdk_dir():  can not read registry'))
             return None
 
         hkey = self.HKEY_FMT % self.hkey_data
@@ -77,16 +79,16 @@ class SDKDefinition:
         try:
             sdk_dir = read_reg(hkey)
         except WindowsError, e:
-            debug('find_sdk_dir(): no registry key %s' % hkey)
+            debug(_('find_sdk_dir(): no registry key %s') % hkey)
             return None
 
         if not os.path.exists(sdk_dir):
-            debug('find_sdk_dir():  %s not on file system' % sdk_dir)
+            debug(_('find_sdk_dir():  %s not on file system') % sdk_dir)
             return None
 
         ftc = os.path.join(sdk_dir, self.sanity_check_file)
         if not os.path.exists(ftc):
-            debug("find_sdk_dir():  sanity check %s not found" % ftc)
+            debug(_("find_sdk_dir():  sanity check %s not found") % ftc)
             return None
 
         return sdk_dir
@@ -211,18 +213,18 @@ def get_cur_sdk_dir_from_reg():
 
     Return None if failed or the directory does not exist"""
     if not SCons.Util.can_read_reg:
-        debug('SCons cannot read registry')
+        debug(_('SCons cannot read registry'))
         return None
 
     try:
         val = read_reg(_CURINSTALLED_SDK_HKEY_ROOT)
-        debug("Found current sdk dir in registry: %s" % val)
+        debug(_("Found current sdk dir in registry: %s") % val)
     except WindowsError, e:
-        debug("Did not find current sdk in registry")
+        debug(_("Did not find current sdk in registry"))
         return None
 
     if not os.path.exists(val):
-        debug("Current sdk dir %s not on fs" % val)
+        debug(_("Current sdk dir %s not on fs") % val)
         return None
 
     return val
@@ -233,12 +235,12 @@ def detect_sdk():
 
 def set_sdk_by_version(env, mssdk):
     if not SupportedSDKMap.has_key(mssdk):
-        msg = "SDK version %s is not supported" % repr(mssdk)
+        msg = _("SDK version %s is not supported") % repr(mssdk)
         raise SCons.Errors.UserError, msg
     get_installed_sdks()
     sdk = InstalledSDKMap.get(mssdk)
     if not sdk:
-        msg = "SDK version %s is not installed" % repr(mssdk)
+        msg = _("SDK version %s is not installed") % repr(mssdk)
         raise SCons.Errors.UserError, msg
     set_sdk_by_directory(env, sdk.get_sdk_dir())
 

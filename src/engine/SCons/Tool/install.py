@@ -38,6 +38,7 @@ import stat
 
 import SCons.Action
 from SCons.Util import make_path_relative
+from SCons.i18n import *
 
 #
 # We keep track of *all* installed files.
@@ -54,7 +55,7 @@ def copyFunc(dest, source, env):
     if os.path.isdir(source):
         if os.path.exists(dest):
             if not os.path.isdir(dest):
-                raise SCons.Errors.UserError, "cannot overwrite non-directory `%s' with a directory `%s'" % (str(dest), str(source))
+                raise SCons.Errors.UserError, _("cannot overwrite non-directory `%s' with a directory `%s'") % (str(dest), str(source))
         else:
             parent = os.path.split(dest)[0]
             if not os.path.exists(parent):
@@ -73,10 +74,10 @@ def installFunc(target, source, env):
     try:
         install = env['INSTALL']
     except KeyError:
-        raise SCons.Errors.UserError('Missing INSTALL construction variable.')
+        raise SCons.Errors.UserError(_('Missing INSTALL construction variable.'))
 
     assert len(target)==len(source), \
-           "Installing source %s into target %s: target and source lists must have same length."%(map(str, source), map(str, target))
+           _("Installing source %s into target %s: target and source lists must have same length.")%(map(str, source), map(str, target))
     for t,s in zip(target,source):
         if install(t.get_path(),s.get_path(),env):
             return 1
@@ -93,7 +94,7 @@ def stringFunc(target, source, env):
         type = 'directory'
     else:
         type = 'file'
-    return 'Install %s: "%s" as "%s"' % (type, source, target)
+    return _('Install %s: "%s" as "%s"') % (type, source, target)
 
 #
 # Emitter functions
@@ -135,7 +136,7 @@ BaseInstallBuilder               = None
 def InstallBuilderWrapper(env, target=None, source=None, dir=None, **kw):
     if target and dir:
         import SCons.Errors
-        raise SCons.Errors.UserError, "Both target and dir defined for Install(), only one may be defined."
+        raise SCons.Errors.UserError, _("Both target and dir defined for Install(), only one may be defined.")
     if not dir:
         dir=target
 
@@ -149,7 +150,7 @@ def InstallBuilderWrapper(env, target=None, source=None, dir=None, **kw):
     try:
         dnodes = env.arg2nodes(dir, target_factory.Dir)
     except TypeError:
-        raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?" % str(dir)
+        raise SCons.Errors.UserError, _("Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the Install() arguments backwards?") % str(dir)
     sources = env.arg2nodes(source, env.fs.Entry)
     tgt = []
     for dnode in dnodes:
@@ -181,7 +182,7 @@ def generate(env):
                   dest='install_sandbox',
                   type="string",
                   action="store",
-                  help='A directory under which all installed files will be placed.')
+                  help=_('A directory under which all installed files will be placed.'))
 
     global BaseInstallBuilder
     if BaseInstallBuilder is None:

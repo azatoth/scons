@@ -59,6 +59,7 @@ import UserList
 
 import SCons.Util
 
+from SCons.i18n import *
 
 class _ListVariable(UserList.UserList):
     def __init__(self, initlist=[], allowedElems=[]):
@@ -101,7 +102,7 @@ def _converter(val, allowedElems, mapdict):
         val = map(lambda v, m=mapdict: m.get(v, v), val)
         notAllowed = filter(lambda v, aE=allowedElems: not v in aE, val)
         if notAllowed:
-            raise ValueError("Invalid value(s) for option: %s" %
+            raise ValueError(_("Invalid value(s) for option: %s") %
                              string.join(notAllowed, ','))
     return _ListVariable(val, allowedElems)
 
@@ -122,7 +123,7 @@ def ListVariable(key, help, default, names, map={}):
     A 'package list' option may either be 'all', 'none' or a list of
     package names (separated by space).
     """
-    names_str = 'allowed names: %s' % string.join(names, ' ')
+    names_str = _('allowed names: %s') % string.join(names, ' ')
     if SCons.Util.is_List(default):
         default = string.join(default, ',')
     help = string.join(

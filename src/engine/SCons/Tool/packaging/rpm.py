@@ -36,6 +36,7 @@ import SCons.Builder
 from SCons.Environment import OverrideEnvironment
 from SCons.Tool.packaging import stripinstallbuilder, src_targz
 from SCons.Errors import UserError
+from SCons.i18n import *
 
 def package(env, target, source, PACKAGEROOT, NAME, VERSION,
             PACKAGEVERSION, DESCRIPTION, SUMMARY, X_RPM_GROUP, LICENSE,
@@ -50,7 +51,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     # checking if the target has been set to the default by the Package()
     # Environment function.
     if str(target[0])!="%s-%s"%(NAME, VERSION):
-        raise UserError( "Setting target is not supported for rpm." )
+        raise UserError( _("Setting target is not supported for rpm.") )
     else:
         # This should be overridable from the construction environment,
         # which it is by using ARCHITECTURE=.
@@ -118,7 +119,7 @@ def collectintargz(target, source, env):
         #tarball = env['SOURCE_URL'].split('/')[-1]
         tarball = string.split(env['SOURCE_URL'], '/')[-1]
     except KeyError, e:
-        raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
+        raise SCons.Errors.UserError( _("Missing PackageTag '%s' for RPM packager") % e.args[0] )
 
     tarball = src_targz.package(env, source=sources, target=tarball,
                                 PACKAGEROOT=env['PACKAGEROOT'], )
@@ -154,7 +155,7 @@ def build_specfile(target, source, env):
             env['CHANGE_SPECFILE'](target, source)
 
     except KeyError, e:
-        raise SCons.Errors.UserError( '"%s" package field for RPM is missing.' % e.args[0] )
+        raise SCons.Errors.UserError( _('"%s" package field for RPM is missing.') % e.args[0] )
 
 
 #

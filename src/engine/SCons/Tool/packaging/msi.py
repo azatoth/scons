@@ -5,7 +5,7 @@ The msi packager.
 
 #
 # __COPYRIGHT__
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
@@ -32,6 +32,8 @@ import os
 import SCons
 from SCons.Action import Action
 from SCons.Builder import Builder
+
+from SCons.i18n import *
 
 from xml.dom.minidom import *
 from xml.sax.saxutils import escape
@@ -91,7 +93,7 @@ def is_dos_short_file_name(file):
 def gen_dos_short_file_name(file, filename_set):
     """ see http://support.microsoft.com/default.aspx?scid=kb;en-us;Q142982
 
-    These are no complete 8.3 dos short names. The ~ char is missing and 
+    These are no complete 8.3 dos short names. The ~ char is missing and
     replaced with one character from the filename. WiX warns about such
     filenames, since a collision might occur. Google for "CNDL1014" for
     more information.
@@ -122,7 +124,7 @@ def gen_dos_short_file_name(file, filename_set):
 
         duplicate, num = shortname in filename_set, num+1
 
-    assert( is_dos_short_file_name(shortname) ), 'shortname is %s, longname is %s' % (shortname, file)
+    assert( is_dos_short_file_name(shortname) ), _('shortname is %s, longname is %s') % (shortname, file)
     filename_set.append(shortname)
     return shortname
 
@@ -218,7 +220,7 @@ def build_wxsfile(target, source, env):
             env['CHANGE_SPECFILE'](target, source)
 
     except KeyError, e:
-        raise SCons.Errors.UserError( '"%s" package field for MSI is missing.' % e.args[0] )
+        raise SCons.Errors.UserError( _('"%s" package field for MSI is missing.') % e.args[0] )
 
 #
 # setup function
@@ -298,7 +300,7 @@ def build_wxsfile_file_section(root, files, NAME, VERSION, VENDOR, filename_set,
         # walk down the xml tree finding parts of the directory
         dir_parts = filter( lambda d: d != '', dir_parts )
         for d in dir_parts[:]:
-            already_created = filter( lambda c: c.nodeName == 'Directory' and c.attributes['LongName'].value == escape(d), Directory.childNodes ) 
+            already_created = filter( lambda c: c.nodeName == 'Directory' and c.attributes['LongName'].value == escape(d), Directory.childNodes )
 
             if already_created != []:
                 Directory = already_created[0]

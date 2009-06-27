@@ -44,6 +44,8 @@ import SCons.Tool.msvc
 import SCons.Tool.msvs
 import SCons.Util
 
+from SCons.i18n import *
+
 from MSCommon import merge_default_version, detect_msvs
 
 def pdbGenerator(env, target, source, for_signature):
@@ -103,7 +105,7 @@ def _dllEmitter(target, source, env, paramtp):
     no_import_lib = env.get('no_import_lib', 0)
 
     if not dll:
-        raise SCons.Errors.UserError, 'A shared library should have exactly one target with the suffix: %s' % env.subst('$%sSUFFIX' % paramtp)
+        raise SCons.Errors.UserError, _('A shared library should have exactly one target with the suffix: %s') % env.subst('$%sSUFFIX' % paramtp)
 
     insert_def = env.subst("$WINDOWS_INSERT_DEF")
     if not insert_def in ['', '0', 0] and \
@@ -148,7 +150,7 @@ def windowsLibEmitter(target, source, env):
 
 def ldmodEmitter(target, source, env):
     """Emitter for loadable modules.
-    
+
     Loadable modules are identical to shared libraries on Windows, but building
     them is subject to different parameters (LDMODULE*).
     """
@@ -161,7 +163,7 @@ def prog_emitter(target, source, env):
 
     exe = env.FindIxes(target, "PROGPREFIX", "PROGSUFFIX")
     if not exe:
-        raise SCons.Errors.UserError, "An executable should have exactly one target with the suffix: %s" % env.subst("$PROGSUFFIX")
+        raise SCons.Errors.UserError, _("An executable should have exactly one target with the suffix: %s") % env.subst("$PROGSUFFIX")
 
     version_num, suite = SCons.Tool.msvs.msvs_parse_version(env.get('MSVS_VERSION', '6.0'))
     if version_num >= 8.0 and env.get('WINDOWS_INSERT_MANIFEST', 0):

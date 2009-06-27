@@ -33,6 +33,7 @@ from SCons.Variables import *
 from SCons.Errors import *
 from SCons.Util import is_List, make_path_relative
 from SCons.Warnings import warn, Warning
+from SCons.i18n import *
 
 import os, imp
 import SCons.Defaults
@@ -58,7 +59,7 @@ def Tag(env, target, source, *more_tags, **kw_tags):
         kw_tags[first_tag[0]] = ''
 
     if len(kw_tags) == 0 and len(more_tags) == 0:
-        raise UserError, "No tags given."
+        raise UserError, _("No tags given.")
 
     # XXX: sanity checks
     for x in more_tags:
@@ -91,7 +92,7 @@ def Package(env, target=None, source=None, **kw):
         source = env.FindInstalledFiles()
 
     if len(source)==0:
-        raise UserError, "No source for Package() given"
+        raise UserError, _("No source for Package() given")
 
     # decide which types of packages shall be built. Can be defined through
     # four mechanisms: command line argument, keyword argument,
@@ -110,7 +111,7 @@ def Package(env, target=None, source=None, **kw):
         elif env['BUILDERS'].has_key('Zip'):
             kw['PACKAGETYPE']='zip'
         else:
-            raise UserError, "No type for Package() given"
+            raise UserError, _("No type for Package() given")
 
     PACKAGETYPE=kw['PACKAGETYPE']
     if not is_List(PACKAGETYPE):
@@ -122,7 +123,7 @@ def Package(env, target=None, source=None, **kw):
             file,path,desc=imp.find_module(type, __path__)
             return imp.load_module(type, file, path, desc)
         except ImportError, e:
-            raise EnvironmentError("packager %s not available: %s"%(type,str(e)))
+            raise EnvironmentError(_("packager %s not available: %s")%(type,str(e)))
 
     packagers=map(load_packager, PACKAGETYPE)
 
@@ -143,7 +144,7 @@ def Package(env, target=None, source=None, **kw):
             kw['PACKAGEROOT'] = default_name%kw
 
     except KeyError, e:
-        raise SCons.Errors.UserError( "Missing Packagetag '%s'"%e.args[0] )
+        raise SCons.Errors.UserError( _("Missing Packagetag '%s'")%e.args[0] )
 
     # setup the source files
     source=env.arg2nodes(source, env.fs.Entry)
@@ -159,7 +160,7 @@ def Package(env, target=None, source=None, **kw):
         assert( len(target) == 0 )
 
     except KeyError, e:
-        raise SCons.Errors.UserError( "Missing Packagetag '%s' for %s packager"\
+        raise SCons.Errors.UserError( _("Missing Packagetag '%s' for %s packager")\
                                       % (e.args[0],packager.__name__) )
     except TypeError, e:
         # this exception means that a needed argument for the packager is
@@ -179,10 +180,10 @@ def Package(env, target=None, source=None, **kw):
         if len(args)==0:
             raise # must be a different error, so reraise
         elif len(args)==1:
-            raise SCons.Errors.UserError( "Missing Packagetag '%s' for %s packager"\
+            raise SCons.Errors.UserError( _("Missing Packagetag '%s' for %s packager")\
                                           % (args[0],packager.__name__) )
         else:
-            raise SCons.Errors.UserError( "Missing Packagetags '%s' for %s packager"\
+            raise SCons.Errors.UserError( _("Missing Packagetags '%s' for %s packager")\
                                           % (", ".join(args),packager.__name__) )
 
     target=env.arg2nodes(target, env.fs.Entry)
@@ -205,7 +206,7 @@ def generate(env):
                   default=None,
                   type="string",
                   action="store",
-                  help='The type of package to create.')
+                  help=_('The type of package to create.'))
 
     try:
         env['BUILDERS']['Package']
@@ -221,7 +222,7 @@ def exists(env):
 def options(opts):
     opts.AddVariables(
         EnumVariable( 'PACKAGETYPE',
-                     'the type of package to create.',
+                     _('the type of package to create.'),
                      None, allowed_values=map( str, __all__ ),
                      ignorecase=2
                   )
@@ -292,8 +293,8 @@ def stripinstallbuilder(target, source, env):
              file.builder.name=="InstallAsBuilder"))
 
     if len(filter(has_no_install_location, source)):
-        warn(Warning, "there are files to package which have no\
-        InstallBuilder attached, this might lead to irreproducible packages")
+        warn(Warning, _("there are files to package which have no\
+        InstallBuilder attached, this might lead to irreproducible packages"))
 
     n_source=[]
     for s in source:

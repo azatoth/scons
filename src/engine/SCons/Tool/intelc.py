@@ -34,10 +34,12 @@ selection method.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+from SCons.i18n import *
+
 import math, sys, os.path, glob, string, re
 
 is_windows = sys.platform == 'win32'
-is_win64 = is_windows and (os.environ['PROCESSOR_ARCHITECTURE'] == 'AMD64' or 
+is_win64 = is_windows and (os.environ['PROCESSOR_ARCHITECTURE'] == 'AMD64' or
                            (os.environ.has_key('PROCESSOR_ARCHITEW6432') and
                             os.environ['PROCESSOR_ARCHITEW6432'] == 'AMD64'))
 is_linux = sys.platform == 'linux2'
@@ -118,7 +120,7 @@ def check_abi(abi):
         abi = valid_abis[abi]
     except KeyError:
         raise SCons.Errors.UserError, \
-              "Intel compiler: Invalid ABI %s, valid values are %s"% \
+              _("Intel compiler: Invalid ABI %s, valid values are %s")% \
               (abi, valid_abis.keys())
     return abi
 
@@ -157,7 +159,7 @@ def get_intel_registry_value(valuename, version=None, abi=None):
         k = SCons.Util.RegOpenKeyEx(SCons.Util.HKEY_LOCAL_MACHINE, K)
     except SCons.Util.RegError:
         raise MissingRegistryError, \
-              "%s was not found in the registry, for Intel compiler version %s, abi='%s'"%(K, version,abi)
+              _("%s was not found in the registry, for Intel compiler version %s, abi='%s'")%(K, version,abi)
 
     # Get the value:
     try:
@@ -165,7 +167,7 @@ def get_intel_registry_value(valuename, version=None, abi=None):
         return v  # or v.encode('iso-8859-1', 'replace') to remove unicode?
     except SCons.Util.RegError:
         raise MissingRegistryError, \
-              "%s\\%s was not found in the registry."%(K, valuename)
+              _("%s\\%s was not found in the registry.")%(K, valuename)
 
 
 def get_all_compiler_versions():
@@ -214,11 +216,11 @@ def get_all_compiler_versions():
                         # after uninstalling).
 
                         print \
-                            "scons: *** Ignoring the registry key for the Intel compiler version %s.\n" \
+                            _("scons: *** Ignoring the registry key for the Intel compiler version %s.\n" \
                             "scons: *** It seems that the compiler was uninstalled and that the registry\n" \
-                            "scons: *** was not cleaned up properly.\n" % subkey
+                            "scons: *** was not cleaned up properly.\n") % subkey
                     else:
-                        print "scons: *** Ignoring "+str(value)
+                        print _("scons: *** Ignoring ")+str(value)
 
                 i = i + 1
         except EnvironmentError:
@@ -257,13 +259,13 @@ def get_intel_compiler_top(version, abi):
 
     if is_windows:
         if not SCons.Util.can_read_reg:
-            raise NoRegistryModuleError, "No Windows registry module was found"
+            raise NoRegistryModuleError, _("No Windows registry module was found")
         top = get_intel_registry_value('ProductDir', version, abi)
         # pre-11, icl was in Bin.  11 and later, it's in Bin/<abi> apparently.
         if not os.path.exists(os.path.join(top, "Bin", "icl.exe")) \
               and not os.path.exists(os.path.join(top, "Bin", abi, "icl.exe")):
             raise MissingDirError, \
-                  "Can't find Intel compiler in %s"%(top)
+                  _("Can't find Intel compiler in %s")%(top)
     elif is_mac or is_linux:
         # first dir is new (>=9.0) style, second is old (8.0) style.
         dirs=('/opt/intel/cc/%s', '/opt/intel_cc_%s')
@@ -276,7 +278,7 @@ def get_intel_compiler_top(version, abi):
                 break
         if not top:
             raise MissingDirError, \
-                  "Can't find version %s Intel compiler in %s (abi='%s')"%(version,top, abi)
+                  _("Can't find version %s Intel compiler in %s (abi='%s')")%(version,top, abi)
     return top
 
 
@@ -313,8 +315,8 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
         v = get_version_from_list(version, vlist)
         if not v:
             raise SCons.Errors.UserError, \
-                  "Invalid Intel compiler version %s: "%version + \
-                  "installed versions are %s"%(', '.join(vlist))
+                  _("Invalid Intel compiler version %s: ")%version + \
+                  _("installed versions are %s")%(', '.join(vlist))
         version = v
 
     # if abi is unspecified, use ia32
@@ -350,19 +352,19 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
 
             SCons.Warnings.enableWarningClass(ICLTopDirWarning)
             SCons.Warnings.warn(ICLTopDirWarning,
-                                "Failed to find Intel compiler for version='%s', abi='%s'"%
+                                _("Failed to find Intel compiler for version='%s', abi='%s'")%
                                 (str(version), str(abi)))
         else:
             # should be cleaned up to say what this other version is
             # since in this case we have some other Intel compiler installed
             SCons.Warnings.enableWarningClass(ICLTopDirWarning)
             SCons.Warnings.warn(ICLTopDirWarning,
-                                "Can't find Intel compiler top dir for version='%s', abi='%s'"%
+                                _("Can't find Intel compiler top dir for version='%s', abi='%s'")%
                                     (str(version), str(abi)))
 
     if topdir:
         if verbose:
-            print "Intel C compiler: using version %s (%g), abi %s, in '%s'"%\
+            print _("Intel C compiler: using version %s (%g), abi %s, in '%s'")%\
                   (repr(version), linux_ver_normalize(version),abi,topdir)
             if is_linux:
                 # Show the actual compiler version by running the compiler.
@@ -455,9 +457,9 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
                     pass
                 SCons.Warnings.enableWarningClass(ICLLicenseDirWarning)
                 SCons.Warnings.warn(ICLLicenseDirWarning,
-                                    "Intel license dir was not found."
-                                    "  Tried using the INTEL_LICENSE_FILE environment variable (%s), the registry (%s) and the default path (%s)."
-                                    "  Using the default path as a last resort."
+                                    _("Intel license dir was not found.")
+                                    _("  Tried using the INTEL_LICENSE_FILE environment variable (%s), the registry (%s) and the default path (%s).")
+                                    _("  Using the default path as a last resort.")
                                         % (envlicdir, reglicdir, defaultlicdir))
         env['ENV']['INTEL_LICENSE_FILE'] = licdir
 

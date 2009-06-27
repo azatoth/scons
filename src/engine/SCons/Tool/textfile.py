@@ -55,6 +55,8 @@ from SCons.Node import Node
 from SCons.Node.Python import Value
 from SCons.Util import is_String, is_Sequence, is_Dict
 
+from SCons.i18n import *
+
 def _do_subst(node, subs):
     """
     Fetch the node contents and replace all instances of the keys with
@@ -80,7 +82,7 @@ def _action(target, source, env):
         linesep = linesep.get_text_contents()
     else:
         raise SCons.Errors.UserError(
-                           'unexpected type/class for LINESEPARATOR: %s'
+                           _('unexpected type/class for LINESEPARATOR: %s')
                                          % repr(linesep), None)
 
     # create a dictionary to use for the substitutions
@@ -93,7 +95,7 @@ def _action(target, source, env):
         elif is_Sequence(d):
             pass
         else:
-            raise SCons.Errors.UserError('SUBST_DICT must be dict or sequence')
+            raise SCons.Errors.UserError(_('SUBST_DICT must be dict or sequence'))
         subs = []
         for (k,v) in d:
             if callable(v):
@@ -108,7 +110,7 @@ def _action(target, source, env):
     try:
         fd = open(target[0].get_path(), "wb")
     except (OSError,IOError), e:
-        raise SCons.Errors.UserError("Can't write target file %s" % target[0])
+        raise SCons.Errors.UserError(_("Can't write target file %s") % target[0])
     # separate lines by 'linesep' only if linesep is not empty
     lsep = None
     for s in source:
@@ -118,7 +120,7 @@ def _action(target, source, env):
     fd.close()
 
 def _strfunc(target, source, env):
-    return "Creating '%s'" % target[0]
+    return _("Creating '%s'") % target[0]
 
 def _convert_list_R(newlist, sources):
     for elem in sources:
@@ -130,7 +132,7 @@ def _convert_list_R(newlist, sources):
             newlist.append(Value(elem))
 def _convert_list(target, source, env):
     if len(target) != 1:
-        raise SCons.Errors.UserError("Only one target file allowed")
+        raise SCons.Errors.UserError(_("Only one target file allowed"))
     newlist = []
     _convert_list_R(newlist, source)
     return target, newlist

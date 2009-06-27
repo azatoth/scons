@@ -46,6 +46,8 @@ import SCons.Util
 import SCons.Action
 import SCons.Defaults
 
+from SCons.i18n import *
+
 def get_cmd(source, env):
     tar_file_with_included_specfile = source
     if SCons.Util.is_List(source):
@@ -86,7 +88,7 @@ def build_rpm(target, source, env):
             rpm_output = os.path.basename(output)
             expected   = os.path.basename(input.get_path())
 
-            assert expected == rpm_output, "got %s but expected %s" % (rpm_output, expected)
+            assert expected == rpm_output, _("got %s but expected %s") % (rpm_output, expected)
             shutil.copy( output, input.abspath )
 
 
