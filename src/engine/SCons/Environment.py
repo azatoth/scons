@@ -2052,7 +2052,7 @@ class Base(SubstitutionEnvironment):
     def SourceSignatures(self, type):
         global _warn_source_signatures_deprecated
         if _warn_source_signatures_deprecated:
-            msg = _("The env.SourceSignatures() method is deprecated;\n" + \
+            msg = _("The env.SourceSignatures() method is deprecated;\n"\
                   "\tconvert your build to use the env.Decider() method instead.")
             SCons.Warnings.warn(SCons.Warnings.DeprecatedSourceSignaturesWarning, msg)
             _warn_source_signatures_deprecated = False
@@ -2088,7 +2088,7 @@ class Base(SubstitutionEnvironment):
     def TargetSignatures(self, type):
         global _warn_target_signatures_deprecated
         if _warn_target_signatures_deprecated:
-            msg = _("The env.TargetSignatures() method is deprecated;\n" + \
+            msg = _("The env.TargetSignatures() method is deprecated;\n"\
                   "\tconvert your build to use the env.Decider() method instead.")
             SCons.Warnings.warn(SCons.Warnings.DeprecatedTargetSignaturesWarning, msg)
             _warn_target_signatures_deprecated = False

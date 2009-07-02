@@ -165,7 +165,7 @@ def dump_caller_counts(file=sys.stdout):
     keys = caller_bases.keys()
     keys.sort()
     for k in keys:
-        file.write(_("Callers of %s:%d(%s), %d calls:\n")
+        file.write("Callers of %s:%d(%s), %d calls:\n"
                     % (func_shorten(k) + (caller_bases[k],)))
         _dump_one_caller(k, file)
 

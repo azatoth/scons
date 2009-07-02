@@ -207,7 +207,7 @@ class Task:
         # determined by which concrete subclass is used.
         #raise NotImplementedError
         msg = (_('Direct use of the Taskmaster.Task class will be deprecated\n'
-               + '\tin a future release.'))
+              '\tin a future release.'))
         SCons.Warnings.warn(SCons.Warnings.TaskmasterNeedsExecuteWarning, msg)
         return True
 
@@ -432,9 +432,7 @@ class Task:
             # A node can only be in the pending_children set if it has
             # some waiting_parents.
             if t.waiting_parents:
-                if T: T.write(self.trace_message(_('Task.postprocess()',
-                                                 t,
-                                                 'removing')))
+                if T: T.write(self.trace_message(_('Task.postprocess() %s removing') % t))
                 pending_children.discard(t)
             for p in t.waiting_parents:
                 parents[p] = parents.get(p, 0) + 1
@@ -451,9 +449,7 @@ class Task:
 
         for p, subtract in parents.items():
             p.ref_count = p.ref_count - subtract
-            if T: T.write(self.trace_message(_('Task.postprocess()',
-                                             p,
-                                             'adjusted parent ref count')))
+            if T: T.write(self.trace_message(_('Task.postprocess() %s adjusted parent ref count') % p))
             if p.ref_count == 0:
                 self.tm.candidates.append(p)
 

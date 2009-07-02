@@ -27,8 +27,8 @@ try:
 
     _ = gettext.gettext
 except ImportError:
-    def _(string):
-        return string
+    def _(message):
+        return message
 
-def N_(string):
-    return string
+def N_(message):
+    return message

@@ -391,7 +391,7 @@ class BuilderBase:
         self.single_source = single_source
         if overrides.has_key('overrides'):
             SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning,
-                _("The \"overrides\" keyword to Builder() creation has been deprecated;\n" +\
+                _("The \"overrides\" keyword to Builder() creation has been deprecated;\n"\
                 "\tspecify the items as keyword arguments to the Builder() call instead."))
             overrides.update(overrides['overrides'])
             del overrides['overrides']
