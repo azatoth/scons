@@ -1,0 +1,29 @@
+Reference failure
+
+Jython bugtracker: no id (tracker not working)
+
+ariane@rainbow:/tmp$ touch foo.txt
+ariane@rainbow:/tmp$ chmod 644 foo.txt 
+ariane@rainbow:/tmp$ jython bug.py 
+reference failure chmod() takes exactly 2 arguments (3 given)
+ariane@rainbow:/tmp$ rm foo.txt 
+ariane@rainbow:/tmp$ touch foo.txt
+ariane@rainbow:/tmp$ chmod 644 foo.txt 
+ariane@rainbow:/tmp$ ls -la foo.txt 
+-rw-r--r-- 1 ariane ariane 0 2009-07-02 23:54 foo.txt
+ariane@rainbow:/tmp$ python bug.py 
+ariane@rainbow:/tmp$ ls -la foo.txt 
+-rwxrwxrwx 1 ariane ariane 0 2009-07-02 23:54 foo.txt
+
+import os
+
+class foo(object):
+    _os_chmod = os.chmod
+
+    def __init__(self):
+        self._os_chmod("/tmp/foo.txt", 0777)
+
+try:
+    test = foo()
+except TypeError, e:
+    print "reference failure", e
