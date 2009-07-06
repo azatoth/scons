@@ -163,7 +163,7 @@ def nsis_scanner( node, env, path, source_dir = None, includes_seen = None):
                     filename = os.path.abspath(os.path.join(nsis_install_location, 'Include', p))
                 else:
                     # get ../bin/makensis and go up two directories
-                    filename = os.path.abspath(os.path.join(nsis_install_location, '..', '..', 'share', 'nsis', 'Include', p))
+                    filename = os.path.abspath(os.path.join(nsis_install_location, '..', 'share', 'nsis', 'Include', p))
                 if not os.path.isfile(filename):
                     filename = os.path.abspath(os.path.join(str(source_dir),p))
                 # Why absolute path?  Cause it breaks mysteriously without it :(
