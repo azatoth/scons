@@ -1188,6 +1188,8 @@ for p in [ scons ]:
             for script in scripts:
                 rf.append("%s.exe" % script)
             exe_targets = map(lambda x, s=build_dir_exe: os.path.join(s, x), rf)
+            
+            env.Depends(exe_targets, os.path.join(build_dir, 'scons', init_script))
 
             env.Command(exe_targets, build_src_files, commands)
 
@@ -1242,8 +1244,6 @@ for p in [ scons ]:
 
                 inst_script_final = os.path.join(build_dir, 'installer', inst_script)
                 inst = env.NSISInstaller(inst_script_final)
-                if not os.path.exists(str(inst[0])):
-                    print str(inst[0]), "does not exist!"
                 env.Local(inst)
                 env.Install('$DISTDIR', inst)
 

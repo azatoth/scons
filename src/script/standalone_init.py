@@ -1,8 +1,8 @@
 #------------------------------------------------------------------------------
 # standalone_init.py
-#   Initialization script for cx_Freeze based on Console.py which doesn't
-# truncate the path. It also sets the attribute sys.frozen so that the Win32
-# extensions behave as expected.
+#   Initialization script for cx_Freeze based on Console.py which appends
+# the contents of $PYTHONPATH to sys.path. It also sets the attribute
+# sys.frozen so that the Win32 extensions behave as expected.
 #------------------------------------------------------------------------------
 
 import encodings
@@ -10,9 +10,14 @@ import os
 import sys
 import warnings
 import zipimport
+import string
 
 sys.frozen = True
-#sys.path = sys.path[:4]
+sys.path = sys.path[:4]
+
+if os.environ.has_key('PYTHONPATH'):
+    for element in string.split(os.environ['PYTHONPATH'], os.pathsep):
+        sys.path.append(element)
 
 os.environ["TCL_LIBRARY"] = os.path.join(DIR_NAME, "tcl")
 os.environ["TK_LIBRARY"] = os.path.join(DIR_NAME, "tk")
