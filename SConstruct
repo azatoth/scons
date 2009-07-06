@@ -460,6 +460,8 @@ env = Environment(
 
                    PYTHON              = '"%s"' % SCons.Util.python_interpreter_command(),
                    PYTHONFLAGS         = '-tt',
+
+                   tools               = ['default', 'textfile']
                  )
 
 Version_values = [Value(version), Value(build_id)]
@@ -672,7 +674,6 @@ scons = {
                             'scons-time.1',
                             'script/scons.bat',
                             #'script/scons-post-install.py',
-                            'script/standalone_init.py',
                             'setup.cfg',
                             'setup.py',
                           ],
@@ -1173,9 +1174,13 @@ for p in [ scons ]:
 
             exe = pkg + '-exe'
             build_dir_exe = os.path.join(build_dir, exe)
+            
+            init_script = os.path.join('script', 'standalone_init.py')
 
             commands = [
                 Delete(build_dir_exe),
+                Mkdir(build_dir_exe),
+                Copy(os.path.join(build_dir, 'scons', init_script), os.path.join('src', init_script)),
                 '$PYTHON $PYTHONFLAGS $SETUP_PY build_exe --build-exe=%s' % (build_dir_exe),
                 ]
 
@@ -1185,6 +1190,62 @@ for p in [ scons ]:
             exe_targets = map(lambda x, s=build_dir_exe: os.path.join(s, x), rf)
 
             env.Command(exe_targets, build_src_files, commands)
+
+            nsis = env.Detect('makensis')
+            if nsis:
+                build_dir_inst = os.path.join(build_dir, 'installer')
+                inst_script = 'scons_installer.nsi'
+                inst_script_in = os.path.join('installer', inst_script + '.in')
+                inst_script_out = os.path.join(build_dir, inst_script_in)
+                
+                commands = [
+                    Delete(build_dir_inst),
+                    Mkdir(build_dir_inst),
+                    Copy(inst_script_out, inst_script_in),
+                           ]
+                
+                env.Command(inst_script_out, inst_script_in, commands)
+
+                def scons_standalone_files_install():
+                    files = env.Glob(os.path.join(build_dir_exe, '*.??*'), strings = 1)
+                    directives = []
+                    for file in files:
+                        f = os.path.join('..', '..', file)
+                        f = string.replace(f, '\\', '\\\\')
+                        directives.append("  File %s" % (f))
+                    return string.join(directives, '\n')
+
+                def scons_standalone_files_uninstall():
+                    files = env.Glob(os.path.join(build_dir_exe, '*.??*'), strings = 1)
+                    directives = []
+                    for file in files:
+                        f = "@INSTDIR@\\%s" % (os.path.basename(file))
+                        f = string.replace(f, '\\', '\\\\')
+                        directives.append("  Delete $%s" % (f))
+                    return string.join(directives, '\n')
+                
+                inst_filename = string.join([project, version], '-') + '.exe'
+                
+                subst_dict = [
+                              ('@INSTALLER_NAME@'                   , string.join([project, version])),
+                              ('@INSTALLER_FILE@'                   , inst_filename),
+                              ('@SCONS_STANDALONE_FILES_INSTALL@'   , scons_standalone_files_install),
+                              ('@UNINSTALLER_FILE@'                 , string.join(['uninstall', project, version], '-') + '.exe'),
+                              ('@SCONS_STANDALONE_FILES_UNINSTALL@' , scons_standalone_files_uninstall),
+                              ('@INSTDIR@'                          , 'INSTDIR'),
+                              ('@LICENSE_DATA@'                     , os.path.join('..', 'scons', 'LICENSE.txt')),
+                              ('@INSTALL_DIR_REG_KEY@'              , string.join(['Software', project, version], '\\\\')),
+                              ('@PRODUCT_NAME@'                     , project),
+                              ('@UNINSTALL_DISPLAY_NAME@'           , 'SCons: A software construction tool'),
+                             ]                
+                env.Substfile(inst_script_out, SUBST_DICT = subst_dict)
+
+                inst_script_final = os.path.join(build_dir, 'installer', inst_script)
+                inst = env.NSISInstaller(inst_script_final)
+                if not os.path.exists(str(inst[0])):
+                    print str(inst[0]), "does not exist!"
+                env.Local(inst)
+                env.Install('$DISTDIR', inst)
 
 
         except ImportError:
