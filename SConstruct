@@ -1189,8 +1189,6 @@ for p in [ scons ]:
                 rf.append("%s.exe" % script)
             exe_targets = map(lambda x, s=build_dir_exe: os.path.join(s, x), rf)
             
-            env.Depends(exe_targets, os.path.join(build_dir, 'scons', init_script))
-
             env.Command(exe_targets, build_src_files, commands)
 
             nsis = env.Detect('makensis')
