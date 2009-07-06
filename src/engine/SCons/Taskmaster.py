@@ -220,7 +220,7 @@ class Task:
         prepare(), executed() or failed().
         """
         T = self.tm.trace
-        if T: T.write(self.trace_message(_('Task.execute()'), self.node))
+        if T: T.write(self.trace_message('Task.execute()', self.node))
 
         try:
             everything_was_cached = 1
@@ -257,7 +257,7 @@ class Task:
         the Node's callback methods.
         """
         T = self.tm.trace
-        if T: T.write(self.trace_message(_('Task.executed_without_callbacks()'),
+        if T: T.write(self.trace_message('Task.executed_without_callbacks()',
                                          self.node))
 
         for t in self.targets:
@@ -280,7 +280,7 @@ class Task:
         or not the target was an actual built target or a source Node.
         """
         T = self.tm.trace
-        if T: T.write(self.trace_message(_('Task.executed_with_callbacks()'),
+        if T: T.write(self.trace_message('Task.executed_with_callbacks()',
                                          self.node))
 
         for t in self.targets:
@@ -316,7 +316,7 @@ class Task:
         nodes when using Configure().
         """
         T = self.tm.trace
-        if T: T.write(self.trace_message(_('Task.failed_stop()'), self.node))
+        if T: T.write(self.trace_message('Task.failed_stop()', self.node))
 
         # Invoke will_not_build() to clean-up the pending children
         # list.
@@ -343,7 +343,7 @@ class Task:
         nodes when using Configure().
         """
         T = self.tm.trace
-        if T: T.write(self.trace_message(_('Task.failed_continue()'), self.node))
+        if T: T.write(self.trace_message('Task.failed_continue()', self.node))
 
         self.tm.will_not_build(self.targets, lambda n: n.set_state(NODE_FAILED))
 
@@ -355,7 +355,7 @@ class Task:
         visited--the canonical example being the "scons -c" option.
         """
         T = self.tm.trace
-        if T: T.write(self.trace_message(_('Task.make_ready_all()'), self.node))
+        if T: T.write(self.trace_message('Task.make_ready_all()', self.node))
 
         self.out_of_date = self.targets[:]
         for t in self.targets:
@@ -371,7 +371,7 @@ class Task:
         This is the default behavior for building only what's necessary.
         """
         T = self.tm.trace
-        if T: T.write(self.trace_message(_('Task.make_ready_current()'),
+        if T: T.write(self.trace_message('Task.make_ready_current()',
                                          self.node))
 
         self.out_of_date = []
@@ -415,7 +415,7 @@ class Task:
         that can be put back on the candidates list.
         """
         T = self.tm.trace
-        if T: T.write(self.trace_message(_('Task.postprocess()'), self.node))
+        if T: T.write(self.trace_message('Task.postprocess()', self.node))
 
         # We may have built multiple targets, some of which may have
         # common parents waiting for this build.  Count up how many
@@ -432,7 +432,7 @@ class Task:
             # A node can only be in the pending_children set if it has
             # some waiting_parents.
             if t.waiting_parents:
-                if T: T.write(self.trace_message(_('Task.postprocess() %s removing') % t))
+                if T: T.write(self.trace_message('Task.postprocess() %s removing' % t))
                 pending_children.discard(t)
             for p in t.waiting_parents:
                 parents[p] = parents.get(p, 0) + 1
@@ -449,7 +449,7 @@ class Task:
 
         for p, subtract in parents.items():
             p.ref_count = p.ref_count - subtract
-            if T: T.write(self.trace_message(_('Task.postprocess() %s adjusted parent ref count') % p))
+            if T: T.write(self.trace_message('Task.postprocess() %s adjusted parent ref count') % p)
             if p.ref_count == 0:
                 self.tm.candidates.append(p)
 

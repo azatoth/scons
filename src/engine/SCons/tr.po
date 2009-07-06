@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tr\n"
 "POT-Creation-Date: 2009-06-29 11:24+EEST\n"
-"PO-Revision-Date: 2009-07-02 14:29+0300\n"
+"PO-Revision-Date: 2009-07-06 15:40+0300\n"
 "Last-Translator: Tuba Şahin <nestanka@gmail.com>\n"
 "Language-Team:  <tr@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -352,17 +352,19 @@ msgstr ""
 
 #: SConsign.py:43 SConsign.py:297
 msgid "Ignoring corrupt .sconsign file: %s"
-msgstr ""
+msgstr "Bozuk .sconsign dosyası yoksayılıyor: %s"
 
 #: SConsign.py:214
 msgid "Ignoring corrupt sconsign entry : %s (%s)\n"
-msgstr ""
+msgstr "Bozuk sconsign girdisi yoksayılıyor : %s (%s)\n"
 
 #: Sig.py:42
 msgid ""
 "The SCons.Sig module no longer exists.\n"
 "    Remove the following \"import SCons.Sig\" line to eliminate this warning:"
 msgstr ""
+"SCons.Sig modülü artık yok.\n"
+"    Bu uyarıdan kurtulmak için \"import SCons.Sig\" satırını silin:"
 
 #: Subst.py:59
 msgid "%s `%s' trying to evaluate `%s'"
@@ -492,9 +494,10 @@ msgstr ""
 
 #: dblite.py:139
 msgid "Read-only database: %s"
-msgstr ""
+msgstr "Sadece-okunabilir veritabanı: %s"
 
 #: dblite.py:147
+# ,
 msgid "key `%s' must be a string but is %s"
 msgstr ""
 
@@ -504,27 +507,27 @@ msgstr ""
 
 #: dblite.py:198
 msgid "Read-only database: tmp.dblite"
-msgstr ""
+msgstr "Sadece-okunabilir veritabanı: tmp.dblite"
 
 #: dblite.py:200 dblite.py:240
 msgid "IOError expected."
-msgstr ""
+msgstr "IOError alındı."
 
 #: dblite.py:208
 msgid "key `(1, 2)' must be a string but is <type 'tuple'>"
-msgstr ""
+msgstr "anahtar `(1, 2)' dizgi olmalı ama demet"
 
 #: dblite.py:210 dblite.py:216
 msgid "TypeError exception expected"
-msgstr ""
+msgstr "TypeError istinası alındı."
 
 #: dblite.py:214
 msgid "value `[1, 2]' must be a string but is <type 'list'>"
-msgstr ""
+msgstr "değer `[1, 2]' bir dizgi olmalı ama liste"
 
 #: dblite.py:229
 msgid "cPickle exception expected."
-msgstr ""
+msgstr "cPickle istisnası alındı."
 
 #: dblite.py:238
 msgid "[Errno 2] No such file or directory: 'tmp.dblite'"
