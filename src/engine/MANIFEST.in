@@ -134,6 +134,7 @@ SCons/Tool/msvs.py
 SCons/Tool/mwcc.py
 SCons/Tool/mwld.py
 SCons/Tool/nasm.py
+SCons/Tool/nsis.py
 SCons/Tool/packaging/__init__.py
 SCons/Tool/packaging/ipk.py
 SCons/Tool/packaging/msi.py

@@ -651,6 +651,7 @@ def tool_list(platform, env):
                                 'jar', 'javac', 'javah',
                                 'latex', 'lex',
                                 'm4', 'midl', 'msvs',
+                                'nsis',
                                 'pdflatex', 'pdftex', 'Perforce',
                                 'RCS', 'rmic', 'rpcgen',
                                 'SCCS',

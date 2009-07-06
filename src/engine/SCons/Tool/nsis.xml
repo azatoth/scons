@@ -1,0 +1,35 @@
+<!--
+__COPYRIGHT__
+
+This file is processed by the bin/SConsDoc.py module.
+See its __doc__ string for a discussion of the format.
+-->
+<tool name="nsis">
+<summary>
+Set construction variables for the &b-NSISInstaller; builder.
+</summary>
+<sets>
+NSIS
+</sets>
+<uses>
+NSISDEFINES
+</uses>
+</tool>
+
+<builder name="NSISInstaller">
+<summary>
+The &b-NSISInstaller; builder creates MS Windows installers from
+<filename>.nsi</filename> files.
+</summary>
+</builder>
+<cvar name="NSIS">
+<summary>
+The makensis command
+</summary>
+</cvar>
+
+<cvar name="NSISDEFINES">
+<summary>
+TODO: Document me!
+</summary>
+</cvar>
