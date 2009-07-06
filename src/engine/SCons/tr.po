@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tr\n"
 "POT-Creation-Date: 2009-06-29 11:24+EEST\n"
-"PO-Revision-Date: 2009-07-06 15:40+0300\n"
+"PO-Revision-Date: 2009-07-07 01:58+0300\n"
 "Last-Translator: Tuba Şahin <nestanka@gmail.com>\n"
 "Language-Team:  <tr@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -200,7 +200,7 @@ msgstr ""
 
 #: Environment.py:1372 Environment.py:2063 Environment.py:2099
 msgid "MD5 signatures are not available in this version of Python."
-msgstr "MD5 imzaları Python un bu versiyonunda bulunmuyor."
+msgstr "MD5 imzaları Python un bu sürümünde bulunmuyor."
 
 #: Environment.py:1499
 msgid "More than one dependency target found in `%s':  %s"
@@ -211,16 +211,20 @@ msgid ""
 "The env.SourceSignatures() method is deprecated;\n"
 "\tconvert your build to use the env.Decider() method instead."
 msgstr ""
+"The env.SourceSignatures() metodu artık kullanılmıyor;\n"
+"\tderlemenizi env.Decider() metodunu kullanacak şekilde değiştirin."
 
 #: Environment.py:2068
 msgid "Unknown source signature type '%s'"
-msgstr ""
+msgstr "Bilinmeyen kaynak imza türü '%s'"
 
 #: Environment.py:2091
 msgid ""
 "The env.TargetSignatures() method is deprecated;\n"
 "\tconvert your build to use the env.Decider() method instead."
 msgstr ""
+"env.TargetSignatures() metodu artık kullanılmıyor;\n"
+"\tderlemenizi env.Decider() metodunu kullanacak şekilde değiştirin."
 
 #: Environment.py:2108
 msgid "Unknown target signature type '%s'"
@@ -232,25 +236,27 @@ msgstr "Bilinmeyen hata"
 
 #: Errors.py:155
 msgid "Explicit exit, status %s"
-msgstr ""
+msgstr "Belirtilmiş çıkıç, durum %s"
 
 #: Executor.py:229
 msgid "Executor must have an action."
-msgstr ""
+msgstr "Çalıştırıcı bir eyleme sahip olmalı"
 
 #: Executor.py:396
 msgid "Source `%s' not found, needed by target `%s'."
-msgstr ""
+msgstr "Hedef `%s' tarafından istenen kaynak `%s' bulunamadı."
 
 #: Job.py:52
 msgid "Build interrupted."
-msgstr ""
+msgstr "Derleme kesildi."
 
 #: Job.py:285
 msgid ""
 "Setting stack size is unsupported by this version of Python:\n"
 "    "
 msgstr ""
+"Yığın boyutu ayarı Python un bu sürümünde desteklenmiyor:\n"
+"    "
 
 #: Job.py:289
 msgid ""
@@ -268,7 +274,7 @@ msgstr ""
 
 #: Memoize.py:237
 msgid "new.instancemethod() bug"
-msgstr ""
+msgstr "new.instancemethod() hatası"
 
 #: Memoize.py:261
 msgid "memoization is not supported in this version of Python (%s)"
@@ -276,11 +282,11 @@ msgstr ""
 
 #: SConf.py:83
 msgid "SCons.SConf.SetCacheMode: Unknown mode "
-msgstr ""
+msgstr "SCons.SConf.SetCacheMode: Bilinmeyen kip "
 
 #: SConf.py:112
 msgid "scons: Configure: creating "
-msgstr ""
+msgstr "scons: Yapılandırma: oluşturuluyor "
 
 #: SConf.py:139
 msgid "Cannot create configure directory \"%s\" within a dry-run."
@@ -292,39 +298,39 @@ msgstr ""
 
 #: SConf.py:148
 msgid "\"%s\" is not yet built and cache is forced."
-msgstr ""
+msgstr "\"%s\" henüz derlenmedi ve önbellek zorlanıyor."
 
 #: SConf.py:223
 msgid "The stored build information has an unexpected class: %s"
-msgstr ""
+msgstr "Saklanan derleme bilgisi beklenmeyen bir sınıfa sahip: %s"
 
 #: SConf.py:225
 msgid "The original builder output was:\n"
-msgstr ""
+msgstr "Özgün derleyici çıktısı: \n"
 
 #: SConf.py:241
 msgid "Caught exception while building \"%s\":\n"
-msgstr ""
+msgstr "\"%s\" derlenirken istisna yakalandı:\n"
 
 #: SConf.py:302
 msgid "Building \"%s\" failed in a previous run and all its sources are up to date."
-msgstr ""
+msgstr "\"%s\" derlemesi bir önceki çalışmada başarısız oldu ve bütün kaynakları güncel."
 
 #: SConf.py:308
 msgid "\"%s\" is up to date."
-msgstr ""
+msgstr "\"%s\" güncel."
 
 #: SConf.py:404
 msgid "Only one SConf object may be active at one time"
-msgstr ""
+msgstr "Aynı anda sadece bir Sconf nesnesi etkin olabilir"
 
 #: SConf.py:544
 msgid "Missing PSPAWN construction variable."
-msgstr ""
+msgstr "Kayıp PSPAWN yapılandırma değişkeni."
 
 #: SConf.py:646
 msgid "Test called after sconf.Finish()"
-msgstr ""
+msgstr "sconf.Finish() den sonra test çağırıldı"
 
 #: SConf.py:651
 msgid "error: no result"
@@ -332,7 +338,7 @@ msgstr "hata: sonuç yok"
 
 #: SConf.py:727
 msgid "Finish may be called only once!"
-msgstr ""
+msgstr "Finish sadece bir kere çağrılabilir!"
 
 #: SConf.py:793
 msgid "yes"
@@ -344,11 +350,11 @@ msgstr "hayır"
 
 #: SConf.py:799
 msgid "Expected string, int or bool, got "
-msgstr ""
+msgstr "Beklenen string, sayı yada boole alınan"
 
 #: SConf.py:827
 msgid "CheckContext instance has no attribute '%s'"
-msgstr ""
+msgstr "CheckContext örneğinin hiç özelliği yok '%s'"
 
 #: SConsign.py:43 SConsign.py:297
 msgid "Ignoring corrupt .sconsign file: %s"
