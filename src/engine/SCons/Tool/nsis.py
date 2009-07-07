@@ -39,6 +39,7 @@ to NSIS.
 import SCons.Builder
 import SCons.Util
 import SCons.Scanner
+import os
 import os.path
 import sys
 
@@ -68,13 +69,13 @@ def toString(item,env):
         return str(item)
 
 def runNSIS(source,target,env,for_signature):
-    ret = env['NSIS']+" "
+    ret = quoteIfSpaced(env['NSIS'])+" "
     if env.has_key('NSISFLAGS'):
         for flag in env['NSISFLAGS']:
             ret += flag
             ret += ' '
     if env.has_key('NSISDEFINES'):
-        for d in env['NSISDEFINES']:
+        for d in env['NSISDEFINES'].keys():
             ret += '-D'+d
             if env['NSISDEFINES'][d]:
                 ret +='='+quoteIfSpaced(toString(env['NSISDEFINES'][d],env))
@@ -224,6 +225,31 @@ def nsis_parse( sources, keyword, multiple, nsisdefines ):
                 raise
     return stuff
 
+def find_nsis(env):
+    nsis_exe = 'makensis'
+    
+    nsis = env.Detect(nsis_exe)
+    if nsis:
+        return nsis
+
+    if is_windows:
+        env_vars = ['ProgramFiles', 'ProgramFiles(x86)']
+        
+        for var in env_vars:
+            if os.environ.has_key(var):
+                nsis = os.path.join(os.environ[var], 'NSIS', nsis_exe + '.exe')
+                if os.path.isfile(nsis):
+                    return nsis
+    else:
+        locations = ['/usr/bin', '/usr/local/bin']
+        
+        for location in locations:
+            nsis = os.path.join(location, nsis_exe)
+            if os.path.isfile(nsis):
+                return nsis
+
+    return None
+
 def generate(env):
     env['BUILDERS']['NSISInstaller'] = SCons.Builder.Builder(generator=runNSIS,
                                        src_suffix='.nsi',
@@ -232,7 +258,7 @@ def generate(env):
                skeys = ['.nsi','.nsh']))
     if not env.has_key('NSISDEFINES'):
         env['NSISDEFINES'] = {}
-    env['NSIS'] = env.Detect('makensis')
+    env['NSIS'] = find_nsis(env)
 
 def exists(env):
-    return env.Detect('makensis')
+    return find_nsis(env)

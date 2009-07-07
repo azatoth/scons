@@ -32,28 +32,17 @@ makensis = test.where_is('makensis')
 if not makensis:
     test.skip_test("Could not find 'makensis'; skipping test.\n")
 
-# Test whether the nsis tool can find makensis
-test.write('SConstruct', """\
-import os
-import SCons.Tool.nsis
+# Test creation of an installer with NSIS header files
+test.write('dummyfile', 'A')
 
-env = Environment(ENV = os.environ)
-
-nsis = SCons.Tool.nsis.exists(env)
-assert nsis
-
-assert env['NSIS'] != None, env['NSIS']
-""")
-
-test.run()
-
-# Test creation of a simple installer
 test.write('foo.nsi', """\
 Name "Foo"
 
 OutFile "foo_installer.exe"
 
 Section "Foo"
+
+File "dummyfile"
 
 SectionEnd 
 """)
@@ -64,7 +53,15 @@ env = Environment(ENV = os.environ)
 env.NSISInstaller('foo')
 """)
 
+
 test.run()
 test.must_exist('foo_installer.exe')
+
+test.run()
+test.must_contain_all_lines(test.stdout(), ['is up to date'])
+
+test.write('dummyfile', 'B')
+test.run()
+test.must_not_contain_any_line(test.stdout(), ['is up to date'])
 
 test.pass_test()

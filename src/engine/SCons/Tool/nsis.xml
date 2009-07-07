@@ -13,6 +13,7 @@ NSIS
 </sets>
 <uses>
 NSISDEFINES
+NSISFLAGS
 </uses>
 </tool>
 
@@ -30,6 +31,13 @@ The makensis command
 
 <cvar name="NSISDEFINES">
 <summary>
-TODO: Document me!
+A dictionary with variables that will be passed to NSIS on the command line
+via -Dkey=value.
+</summary>
+</cvar>
+<cvar name="NSISFLAGS">
+<summary>
+A list of flags that will be passed to NSIS on the command line. Note that
+NSIS will accept flags as -flag on both Windows and other platforms.
 </summary>
 </cvar>
