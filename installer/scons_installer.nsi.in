@@ -26,6 +26,7 @@ Var StartMenuFolder
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE @LICENSE_DATA@
 !insertmacro MULTIUSER_PAGE_INSTALLMODE
+!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "SCons"
 !define MUI_STARTMENUPAGE_NODISABLE
@@ -43,6 +44,8 @@ Var StartMenuFolder
 !insertmacro MUI_LANGUAGE "English"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
+
+InstType "Full"
 
 Var RegHive
 
@@ -82,7 +85,9 @@ FunctionEnd
   ${endif}
 !macroend
 
-Section "SConsStandAlone"
+Section "SCons Executable" SconsExe
+
+  SectionIn 1
 
   SetOutPath $INSTDIR
 
@@ -102,11 +107,41 @@ Section "SConsStandAlone"
 
 SectionEnd
 
-Section "AddToPath"
+Section "Add to $$PATH" AddToPath
+
+  SectionIn 1
 
   ${EnvVarUpdate} $0 "PATH" "A" $RegHive $INSTDIR
 
 SectionEnd
+
+LangString DESC_SconsExe  ${LANG_ENGLISH} "The stand-alone SCons executable."
+LangString DESC_AddToPath ${LANG_ENGLISH} "Add the installation directory to the path."
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${SconsExe}  $(DESC_SconsExe)
+  !insertmacro MUI_DESCRIPTION_TEXT ${AddToPath} $(DESC_AddToPath)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+Function .onSelChange
+  SectionGetFlags ${SconsExe} $0
+  IntOp $0 $0 & ${SF_SELECTED}
+  ${if} $0 == 0
+    SectionGetFlags ${AddToPath} $0
+    IntOp $0 $0 ~
+    IntOp $0 $0 | ${SF_SELECTED}
+    IntOp $0 $0 ~
+    IntOp $0 $0 | ${SF_RO}
+    SectionSetFlags ${AddToPath} $0
+  ${else}
+    SectionGetFlags ${AddToPath} $0
+    IntOp $0 $0 ~
+    IntOp $0 $0 | ${SF_RO}
+    IntOp $0 $0 ~
+    SectionSetFlags ${AddToPath} $0
+  ${endif}
+FunctionEnd
+
 
 Section "Uninstall"
 
