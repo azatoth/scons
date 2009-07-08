@@ -126,7 +126,7 @@ def nsis_path( filename, nsisdefines, rootdir ):
         varPos = filename.find('${')
     return filename
     
-def nsis_scanner( node, env, path, source_dir = None, includes_seen = None):
+def nsis_scanner( node, env, path, source_dir = None, known_includes = None, include_dirs = None):
     """
     The scanner that looks through the source .nsi files and finds all lines
     that are the 'File' command, fixes the directories etc, and returns them.
@@ -140,8 +140,16 @@ def nsis_scanner( node, env, path, source_dir = None, includes_seen = None):
             source_dir = env['NSISSRCDIR']
         except:
             source_dir = node.get_dir()
-    if includes_seen is None:
-        includes_seen = []
+    if known_includes is None:
+        known_includes = []
+    if include_dirs is None:
+        nsis_install_location = os.path.dirname(env.WhereIs(env['NSIS']))
+        if is_windows:
+            nsis_include_dir = os.path.abspath(os.path.join(nsis_install_location, 'Include'))
+        else:
+            # get ../bin/makensis and go up two directories
+             nsis_include_dir = os.path.abspath(os.path.join(nsis_install_location, '..', 'share', 'nsis', 'Include'))
+        include_dirs = [nsis_include_dir]
     for include in nsis_parse([node],'file',1, env['NSISDEFINES']):
         exp = nsis_path(include,env['NSISDEFINES'],source_dir)
         if type(exp) != list:
@@ -150,28 +158,32 @@ def nsis_scanner( node, env, path, source_dir = None, includes_seen = None):
             for filename in env.Glob( os.path.abspath(
                 os.path.join(str(source_dir),p))):
                     # Why absolute path?  Cause it breaks mysteriously without it :(
-                    if filename not in includes_seen:
-                        nodes.append(filename)
-                        includes_seen.append(filename)
+                    nodes.append(filename)
+    for include_dir in nsis_parse([node], '!addincludedir', 1, env['NSISDEFINES']):
+        if not os.path.isabs(include_dir):
+            new_include_dir = os.path.abspath(os.path.join(str(source_dir), include_dir))
+        else:
+            new_include_dir = include_dir
+        if new_include_dir not in include_dirs:
+            include_dirs.append(new_include_dir)
     for include in nsis_parse([node],'!include',1, env['NSISDEFINES']):
         exp = nsis_path(include,env['NSISDEFINES'],source_dir)
         if type(exp) != list:
             exp = [exp]
         for p in exp:
             if p not in [ 'LogicLib.nsh', 'MUI2.nsh' ]:
-                nsis_install_location = os.path.dirname(env.WhereIs(env['NSIS']))
-                if is_windows:
-                    filename = os.path.abspath(os.path.join(nsis_install_location, 'Include', p))
-                else:
-                    # get ../bin/makensis and go up two directories
-                    filename = os.path.abspath(os.path.join(nsis_install_location, '..', 'share', 'nsis', 'Include', p))
+                for include_dir in include_dirs:
+                    filename = os.path.join(include_dir, p)
+                    if os.path.isfile(filename):
+                        break
                 if not os.path.isfile(filename):
                     filename = os.path.abspath(os.path.join(str(source_dir),p))
                 # Why absolute path?  Cause it breaks mysteriously without it :(
-                if filename not in includes_seen:
+                if filename not in known_includes:
                         nodes.append(filename)
-                        includes_seen.append(filename)
-                        nodes += nsis_scanner(env.File(filename), env, path, source_dir = source_dir, includes_seen = includes_seen)
+                        known_includes.append(filename)
+                        nodes += nsis_scanner(env.File(filename), env, path, source_dir = source_dir, 
+                                              known_includes = known_includes, include_dirs = include_dirs)
     return nodes
 
 def nsis_parse( sources, keyword, multiple, nsisdefines ):
