@@ -93,6 +93,9 @@ def nsis_emitter( source, target, env ):
     """
     nsp = nsis_parse(source,'OutFile',0, env['NSISDEFINES'])
     if not nsp:
+        # Assume that the installer will have the same name as the first source file
+        target = nsis_path(str(source[0]), env['NSISDEFINES'], '')
+        target = os.path.splitext(target)[0] + '.exe'
         return (target,source)
     nsp = nsis_path(nsp,env['NSISDEFINES'],'')
     if not SCons.Util.is_List(nsp):

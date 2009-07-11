@@ -51,9 +51,11 @@ subst_dict = [('@OUTFILE_NAME@', 'subst_inst.exe')]
 
 nsis_input = env.Substfile('substfile.nsi.in', SUBST_DICT = subst_dict)
 nsis = env.NSISInstaller(nsis_input)
+env.InstallAs(nsis, 'test_inst.exe')
 """)
 
 test.run()
 test.must_exist('subst_inst.exe')
+test.must_exist('test_inst.exe')
 
 test.pass_test()
