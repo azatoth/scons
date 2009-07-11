@@ -44,6 +44,7 @@ import string
 import sys
 import tempfile
 import SCons.Util
+import glob
 
 project = 'scons'
 default_version = '1.2.0'
@@ -245,6 +246,9 @@ packaging_flavors = [
 
     ('local-zip',       "A .zip file for dropping into other software " +
                         "for local use."),
+
+    ('installer',       "A Windows installer, containing the stand-alone " +
+                        "version of SCons."),
 ]
 
 test_deb_dir          = os.path.join(build_dir, "test-deb")
@@ -255,6 +259,7 @@ test_local_tar_gz_dir = os.path.join(build_dir, "test-local-tar-gz")
 test_zip_dir          = os.path.join(build_dir, "test-zip")
 test_src_zip_dir      = os.path.join(build_dir, "test-src-zip")
 test_local_zip_dir    = os.path.join(build_dir, "test-local-zip")
+test_installer_dir    = os.path.join(build_dir, "test-installer")
 
 unpack_tar_gz_dir     = os.path.join(build_dir, "unpack-tar-gz")
 unpack_zip_dir        = os.path.join(build_dir, "unpack-zip")
@@ -451,6 +456,7 @@ env = Environment(
                    TEST_SRC_ZIP_DIR    = test_src_zip_dir,
                    TEST_TAR_GZ_DIR     = test_tar_gz_dir,
                    TEST_ZIP_DIR        = test_zip_dir,
+                   TEST_INSTALLER_DIR  = test_installer_dir,
 
                    UNPACK_TAR_GZ_DIR   = unpack_tar_gz_dir,
                    UNPACK_ZIP_DIR      = unpack_zip_dir,
@@ -1173,7 +1179,7 @@ for p in [ scons ]:
             import cx_Freeze
 
             exe = pkg + '-exe'
-            build_dir_exe = os.path.join(build_dir, exe)
+            build_dir_exe = os.path.join(build_dir, 'installer', exe)
             
             init_script = os.path.join('script', 'standalone_init.py')
 
@@ -1189,7 +1195,35 @@ for p in [ scons ]:
                 rf.append("%s.exe" % script)
             exe_targets = map(lambda x, s=build_dir_exe: os.path.join(s, x), rf)
             
-            env.Command(exe_targets, build_src_files, commands)
+            standalone_exe = env.Command(exe_targets, build_src_files, commands)
+            env.Alias('installer', standalone_exe)
+
+            def installer_scan_dir(target, source, env):
+                if SCons.Util.is_List(source):
+                    dir_to_scan = os.path.dirname(str(source[0]))
+                else:
+                    dir_to_scan = os.path.dirname(str(source))
+                
+                source_strings = []
+                source_strings = map(lambda x: str(x), source)
+                
+                dir_contents = glob.glob(os.path.join(dir_to_scan, '*.*'))
+                
+                for entry in dir_contents:
+                    if entry in source_strings:
+                        continue
+                    installer_add_node(env, entry)
+
+            def installer_add_node(env, source):
+                print "New node:", source
+                new_node = env.Entry(source)
+                env.Depends(new_node, '###DummyTarget###')
+
+            env.Append(BUILDERS = {'InstallerScanDir': Builder(action=installer_scan_dir)})
+            
+            inst_scan_dir = env.InstallerScanDir('###DummyTarget###', exe_targets)
+            env.AlwaysBuild(inst_scan_dir)
+            env.Alias('installer', inst_scan_dir)
 
             nsis = env.Detect('makensis')
             if nsis:
@@ -1199,8 +1233,6 @@ for p in [ scons ]:
                 inst_script_out = os.path.join(build_dir, inst_script_in)
                 
                 commands = [
-                    Delete(build_dir_inst),
-                    Mkdir(build_dir_inst),
                     Copy(inst_script_out, inst_script_in),
                            ]
                 
@@ -1228,7 +1260,7 @@ for p in [ scons ]:
                 
                 subst_dict = [
                               ('@INSTALLER_NAME@'                   , string.join([project, version])),
-                              ('@INSTALLER_FILE@'                   , inst_filename),
+                              ('@INSTALLER_FILE@'                   , os.path.splitext(inst_script)[0] + '.exe'),
                               ('@SCONS_STANDALONE_FILES_INSTALL@'   , scons_standalone_files_install),
                               ('@UNINSTALLER_FILE@'                 , string.join(['uninstall', project, version], '-') + '.exe'),
                               ('@SCONS_STANDALONE_FILES_UNINSTALL@' , scons_standalone_files_uninstall),
@@ -1238,12 +1270,20 @@ for p in [ scons ]:
                               ('@PRODUCT_NAME@'                     , project),
                               ('@UNINSTALL_DISPLAY_NAME@'           , 'SCons: A software construction tool'),
                              ]                
-                env.Substfile(inst_script_out, SUBST_DICT = subst_dict)
+                substfile = env.Substfile(inst_script_out, SUBST_DICT = subst_dict)
+                env.AlwaysBuild(substfile)
+                print "Substfile", substfile, str(substfile)
 
-                inst_script_final = os.path.join(build_dir, 'installer', inst_script)
-                inst = env.NSISInstaller(inst_script_final)
+                inst = env.NSISInstaller(substfile)
                 env.Local(inst)
-                env.Install('$DISTDIR', inst)
+                env.Depends(inst, standalone_exe)
+                inst = env.InstallAs(os.path.join(env['DISTDIR'], inst_filename), inst)
+                commands = [
+                            Delete('$TEST_INSTALLER_DIR'),
+                            Mkdir('$TEST_INSTALLER_DIR'),
+                           ]
+                env.Command(test_installer_dir, inst, commands)
+                #env.Install('$TEST_INSTALLER_DIR', inst)
 
 
         except ImportError:
