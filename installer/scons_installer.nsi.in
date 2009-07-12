@@ -16,6 +16,8 @@
 !define MUI_LANGDLL_REGISTRY_KEY "@INSTALL_DIR_REG_KEY@" 
 !define MUI_LANGDLL_REGISTRY_VALUENAME "InstallerLanguage"
 
+SetCompressor lzma
+
 ##########################################################################
 # Additional headers
 ##########################################################################
