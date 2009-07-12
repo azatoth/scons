@@ -118,11 +118,17 @@ hg_status_lines = []
 svn_status_lines = []
 
 if hg:
-    cmd = "%s status --all 2> /dev/null" % hg
+    if platform == "win32":
+        cmd = "%s status --all 2> NUL" % hg
+    else:
+        cmd = "%s status --all 2> /dev/null" % hg
     hg_status_lines = os.popen(cmd, "r").readlines()
 
 if svn:
-    cmd = "%s status --verbose 2> /dev/null" % svn
+    if platform == "win32":
+        cmd = "%s status --verbose 2> NUL" % svn
+    else:
+        cmd = "%s status --verbose 2> /dev/null" % svn
     svn_status_lines = os.popen(cmd, "r").readlines()
 
 revision = ARGUMENTS.get('REVISION', '')
@@ -130,7 +136,10 @@ def generate_build_id(revision):
     return revision
 
 if not revision and hg:
-    hg_heads = os.popen("%s heads 2> /dev/null" % hg, "r").read()
+    if platform == "win32":
+        hg_heads = os.popen("%s heads 2> NUL" % hg, "r").read()
+    else:
+        hg_heads = os.popen("%s heads 2> /dev/null" % hg, "r").read()
     cs = re.search('changeset:\s+(\S+)', hg_heads)
     if cs:
         revision = cs.group(1)
@@ -144,7 +153,10 @@ if not revision and hg:
             return result
 
 if not revision and svn:
-    svn_info = os.popen("%s info 2> /dev/null" % svn, "r").read()
+    if platform == "win32":
+        svn_info = os.popen("%s info 2> NUL" % svn, "r").read()
+    else:
+        svn_info = os.popen("%s info 2> /dev/null" % svn, "r").read()
     m = re.search('Revision: (\d+)', svn_info)
     if m:
         revision = m.group(1)
