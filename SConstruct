@@ -1220,7 +1220,7 @@ for p in [ scons ]:
 
             env.Append(BUILDERS = {'InstallerScanDir': Builder(action=installer_scan_dir)})
             
-            inst_scan_dir = env.InstallerScanDir('###DummyTarget###', env.Directory(build_dir_exe))
+            inst_scan_dir = env.InstallerScanDir('###DummyTarget###', env.Dir(build_dir_exe))
             env.AlwaysBuild(inst_scan_dir)
             env.Alias('installer', inst_scan_dir)
 
