@@ -127,6 +127,7 @@ def nsis_path( filename, nsisdefines, rootdir ):
             return val
         filename = filename[0:varPos] + val + filename[endpos+1:]
         varPos = filename.find('${')
+    filename = filename.replace('\\', os.sep)
     return filename
     
 def nsis_scanner( node, env, path, source_dir = None, known_includes = None, include_dirs = None):
@@ -163,6 +164,7 @@ def nsis_scanner( node, env, path, source_dir = None, known_includes = None, inc
                     # Why absolute path?  Cause it breaks mysteriously without it :(
                     nodes.append(filename)
     for include_dir in nsis_parse([node], '!addincludedir', 1, env['NSISDEFINES']):
+        include_dir.replace('\\', os.sep)
         if not os.path.isabs(include_dir):
             new_include_dir = os.path.abspath(os.path.join(str(source_dir), include_dir))
         else:

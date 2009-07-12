@@ -40,11 +40,17 @@ Name "Foo"
 
 OutFile "foo_installer.exe"
 
+!include dummy_dir\\..\\test_custom_header.nsh
+
 Section "Foo"
 
 File "dummyfile"
 
 SectionEnd 
+""")
+
+test.write('test_custom_header.nsh', """
+!echo "Bar"
 """)
 
 test.write('SConstruct', """\
@@ -53,6 +59,7 @@ env = Environment(ENV = os.environ)
 env.NSISInstaller('foo')
 """)
 
+test.subdir('dummy_dir')
 
 test.run()
 test.must_exist('foo_installer.exe')
