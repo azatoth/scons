@@ -1,0 +1,311 @@
+##########################################################################
+# Global constants and definitions
+##########################################################################
+!define MULTIUSER_EXECUTIONLEVEL Highest
+!define MULTIUSER_MUI
+!define MULTIUSER_INSTALLMODE_COMMANDLINE
+!define MULTIUSER_INSTALLMODE_INSTDIR "SCons"
+!define MULTIUSER_INSTALLMODE_INSTDIR_REGISTRY_KEY "@INSTALL_DIR_REG_KEY@"
+!define MULTIUSER_INSTALLMODE_INSTDIR_REGISTRY_VALUENAME "InstallLocation"
+!define MULTIUSER_INSTALLMODE_FUNCTION "SetRegHive"
+!define MULTIUSER_INSTALLMODE_UNFUNCTION "un.SetRegHive"
+
+!define MUI_ABORTWARNING
+
+!define MUI_LANGDLL_REGISTRY_ROOT "HKCU" 
+!define MUI_LANGDLL_REGISTRY_KEY "@INSTALL_DIR_REG_KEY@" 
+!define MUI_LANGDLL_REGISTRY_VALUENAME "InstallerLanguage"
+
+##########################################################################
+# Additional headers
+##########################################################################
+!include MultiUser.nsh
+!include MUI2.nsh
+
+##########################################################################
+# Installer pages
+##########################################################################
+Name "@DOC_INSTALLER_NAME@"
+
+OutFile "@DOC_INSTALLER_FILE@"
+
+Var StartMenuFolder
+
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE @LICENSE_DATA@
+!insertmacro MULTIUSER_PAGE_INSTALLMODE
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "SCons"
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT HKCU
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "@INSTALL_DIR_REG_KEY@"
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "StartMenuFolder"
+!insertmacro MUI_PAGE_STARTMENU "Application" $StartMenuFolder
+!insertmacro MUI_PAGE_INSTFILES
+!define MUI_FINISHPAGE_LINK "SCons Website"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://www.scons.org"
+#!insertmacro MUI_PAGE_FINISH
+
+##########################################################################
+# Uninstaller pages
+##########################################################################
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+#!insertmacro MUI_UNPAGE_FINISH
+
+##########################################################################
+# L10n support
+##########################################################################
+!insertmacro MUI_LANGUAGE "English"
+
+!insertmacro MUI_RESERVEFILE_LANGDLL
+
+##########################################################################
+# Helper functions and macros
+##########################################################################
+Var RegHive
+
+Function SetRegHive
+
+  ${if} $MultiUser.InstallMode == "AllUsers"
+    StrCpy $RegHive "HKLM"
+  ${else}
+    StrCpy $RegHive "HKCU"
+  ${endif}
+
+FunctionEnd
+
+Function un.SetRegHive
+
+  ${if} $MultiUser.InstallMode == "AllUsers"
+    StrCpy $RegHive "HKLM"
+  ${else}
+    StrCpy $RegHive "HKCU"
+  ${endif}
+
+FunctionEnd
+
+!macro MultiUserWriteRegStr subkey entry_name new_entry_string
+  ${if} $MultiUser.InstallMode == "AllUsers"
+    WriteRegStr HKLM "${subkey}" "${entry_name}" "${new_entry_string}"
+  ${else}
+    WriteRegStr HKCU "${subkey}" "${entry_name}" "${new_entry_string}"
+  ${endif}
+!macroend
+
+!macro MultiUserDeleteRegKey subkey
+  ${if} $MultiUser.InstallMode == "AllUsers"
+    DeleteRegKey HKLM "${subkey}"
+  ${else}
+    DeleteRegKey HKCU "${subkey}"
+  ${endif}
+!macroend
+
+##########################################################################
+# Installation types
+##########################################################################
+InstType "Full"
+InstType "HTML only"
+InstType "PDF only"
+
+##########################################################################
+# Installer sections
+##########################################################################
+Section
+  SetOutPath $INSTDIR
+  
+  WriteUninstaller $INSTDIR\@DOC_UNINSTALLER_FILE@
+  
+  !insertmacro MultiUserWriteRegStr ${MULTIUSER_INSTALLMODE_INSTDIR_REGISTRY_KEY} ${MULTIUSER_INSTALLMODE_INSTDIR_REGISTRY_VALUENAME} $INSTDIR
+  
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN "Application"
+  CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
+  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall Documentation.lnk" $INSTDIR\@DOC_UNINSTALLER_FILE@
+  !insertmacro MUI_STARTMENU_WRITE_END
+  
+  # For details, see http://nsis.sourceforge.net/Add_uninstall_information_to_Add/Remove_Programs  
+  !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@DOC_PRODUCT_NAME@" "DisplayName" "@DOC_UNINSTALL_DISPLAY_NAME@"
+  !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@DOC_PRODUCT_NAME@" "UninstallString" "$\"$INSTDIR\@DOC_UNINSTALLER_FILE@$\""
+  !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@DOC_PRODUCT_NAME@" "QuietUninstallString" "$\"$INSTDIR\@DOC_UNINSTALLER_FILE@$\" /S"
+SectionEnd
+
+SectionGroup /e "HTML Documentation" HtmlDocs
+  Section "User's Guide" HtmlUsersGuide
+    SectionIn 1
+    SectionIn 2
+    
+    SetOutPath $INSTDIR\doc
+
+@HTML_USERS_GUIDE_FILES@
+
+    !insertmacro MUI_STARTMENU_WRITE_BEGIN "Application"
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SCons User's Guide (HTML) .lnk" $INSTDIR\doc\scons-user.html
+    !insertmacro MUI_STARTMENU_WRITE_END
+
+    SetOutPath $INSTDIR
+  SectionEnd
+  Section "Man Pages" HtmlManpages
+    SectionIn 1
+    SectionIn 2
+    
+    SetOutPath $INSTDIR\doc
+
+@HTML_MAN_PAGES_FILES@
+
+    !insertmacro MUI_STARTMENU_WRITE_BEGIN "Application"
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SCons Manual Page (HTML) .lnk" $INSTDIR\doc\scons-man.html
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SCons-Time Manual Page (HTML) .lnk" $INSTDIR\doc\scons-time-man.html
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SConsign Manual Page (HTML) .lnk" $INSTDIR\doc\sconsign-man.html
+    !insertmacro MUI_STARTMENU_WRITE_END
+
+    SetOutPath $INSTDIR
+  SectionEnd
+  Section "API Reference" HtmlApiReference
+    SectionIn 1
+    SectionIn 2
+    
+    SetOutPath $INSTDIR\doc\api
+
+@HTML_API_REFERENCE_FILES@
+
+    !insertmacro MUI_STARTMENU_WRITE_BEGIN "Application"
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SCons API Reference (HTML) .lnk" $INSTDIR\doc\api\index.html
+    !insertmacro MUI_STARTMENU_WRITE_END
+
+
+    SetOutPath $INSTDIR
+  SectionEnd
+SectionGroupEnd
+
+SectionGroup /e "PDF Documentation" PdfDocs
+  Section "User's Guide" PdfUsersGuide
+    SectionIn 1
+    SectionIn 3
+    
+    SetOutPath $INSTDIR\doc
+
+@PDF_USERS_GUIDE_FILES@
+
+    !insertmacro MUI_STARTMENU_WRITE_BEGIN "Application"
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SCons User's Guide (PDF) .lnk" $INSTDIR\doc\scons-user.pdf
+    !insertmacro MUI_STARTMENU_WRITE_END
+
+    SetOutPath $INSTDIR
+  SectionEnd
+  Section "API Reference" PdfApiReference
+    SectionIn 1
+    SectionIn 3
+    
+    SetOutPath $INSTDIR\doc
+
+@PDF_API_REFERENCE_FILES@
+
+    !insertmacro MUI_STARTMENU_WRITE_BEGIN "Application"
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SCons API Reference (PDF) .lnk" $INSTDIR\doc\scons-api.pdf
+    !insertmacro MUI_STARTMENU_WRITE_END
+
+
+    SetOutPath $INSTDIR
+  SectionEnd
+SectionGroupEnd
+
+##########################################################################
+# Installer l10n
+##########################################################################
+LangString DESC_HtmlDocs  ${LANG_ENGLISH} "SCons documentation in HTML format."
+LangString DESC_HtmlUsersGuide  ${LANG_ENGLISH} "SCons user's guide."
+LangString DESC_HtmlManPages  ${LANG_ENGLISH} "Manual pages for scons (1), scons-time (1), and sconsign (1)."
+LangString DESC_HtmlApiReference  ${LANG_ENGLISH} "API reference for the SCons engine."
+
+LangString DESC_PdfDocs  ${LANG_ENGLISH} "SCons documentation in PDF format."
+LangString DESC_PdfUsersGuide  ${LANG_ENGLISH} "SCons user's guide."
+LangString DESC_PdfApiReference  ${LANG_ENGLISH} "API reference for the SCons engine."
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${HtmlDocs}  $(DESC_HtmlDocs)
+  !insertmacro MUI_DESCRIPTION_TEXT ${HtmlUsersGuide}  $(DESC_HtmlUsersGuide)
+  !insertmacro MUI_DESCRIPTION_TEXT ${HtmlManPages}  $(DESC_HtmlManPages)
+  !insertmacro MUI_DESCRIPTION_TEXT ${HtmlApiReference}  $(DESC_HtmlApiReference)
+  !insertmacro MUI_DESCRIPTION_TEXT ${PdfDocs}  $(DESC_PdfDocs)
+  !insertmacro MUI_DESCRIPTION_TEXT ${PdfUsersGuide}  $(DESC_PdfUsersGuide)
+  !insertmacro MUI_DESCRIPTION_TEXT ${PdfApiReference}  $(DESC_PdfApiReference)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+##########################################################################
+# Installer functions
+##########################################################################
+Function .onInit
+
+  !insertmacro MUI_LANGDLL_DISPLAY
+  !insertmacro MULTIUSER_INIT
+
+# Taken from: http://nsis.sourceforge.net/Allow_only_one_installer_instance
+  BringToFront
+  ; Check if already running
+  ; If so don't open another but bring to front
+  System::Call "kernel32::CreateMutexA(i 0, i 0, t '$(^Name)') i .r0 ?e"
+  Pop $0
+  StrCmp $0 0 launch
+   StrLen $0 "$(^Name)"
+   IntOp $0 $0 + 1
+  loop:
+    FindWindow $1 '#32770' '' 0 $1
+    IntCmp $1 0 +5
+    System::Call "user32::GetWindowText(i r1, t .r2, i r0) i."
+    StrCmp $2 "$(^Name)" 0 loop
+    System::Call "user32::ShowWindow(i r1,i 9) i."         ; If minimized then maximize
+    System::Call "user32::SetForegroundWindow(i r1) i."    ; Bring to front
+    Abort
+  launch:
+# End taken from: http://nsis.sourceforge.net/Allow_only_one_installer_instance
+
+FunctionEnd
+
+##########################################################################
+# Uninstaller sections
+##########################################################################
+Section "Uninstall"
+
+  Delete $INSTDIR\@DOC_UNINSTALLER_FILE@
+
+@HTML_USERS_GUIDE_FILES_UNINSTALL@
+@HTML_MAN_PAGES_FILES_UNINSTALL@
+@HTML_API_REFERENCE_FILES_UNINSTALL@
+
+@PDF_USERS_GUIDE_FILES_UNINSTALL@
+@PDF_API_REFERENCE_FILES_UNINSTALL@
+
+  RMDir $INSTDIR
+  
+  !insertmacro MUI_STARTMENU_GETFOLDER "Application" $StartMenuFolder
+  
+  Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall Documentation.lnk"
+  
+  Delete "$SMPROGRAMS\$StartMenuFolder\SCons User's Guide (HTML) .lnk"
+  
+  Delete "$SMPROGRAMS\$StartMenuFolder\SCons Manual Page (HTML) .lnk"
+  Delete "$SMPROGRAMS\$StartMenuFolder\SCons-Time Manual Page (HTML) .lnk"
+  Delete "$SMPROGRAMS\$StartMenuFolder\SConsign Manual Page (HTML) .lnk"
+  
+  Delete "$SMPROGRAMS\$StartMenuFolder\SCons API Reference (HTML) .lnk"
+  
+  Delete "$SMPROGRAMS\$StartMenuFolder\SCons User's Guide (PDF) .lnk"
+  
+  Delete "$SMPROGRAMS\$StartMenuFolder\SCons API Reference (PDF) .lnk"
+  
+  RMDir "$SMPROGRAMS\$StartMenuFolder"
+  
+  !insertmacro MultiUserDeleteRegKey "Software\Microsoft\Windows\CurrentVersion\Uninstall\@DOC_PRODUCT_NAME@"
+
+SectionEnd
+
+##########################################################################
+# Uninstaller functions
+##########################################################################
+Function un.onInit
+
+  !insertmacro MUI_UNGETLANGUAGE
+  !insertmacro MULTIUSER_UNINIT
+  
+FunctionEnd

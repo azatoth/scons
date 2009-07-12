@@ -1200,28 +1200,27 @@ for p in [ scons ]:
 
             def installer_scan_dir(target, source, env):
                 if SCons.Util.is_List(source):
-                    dir_to_scan = os.path.dirname(str(source[0]))
+                    dir_to_scan = str(source[0])
                 else:
-                    dir_to_scan = os.path.dirname(str(source))
+                    dir_to_scan = str(source)
                 
                 source_strings = []
                 source_strings = map(lambda x: str(x), source)
                 
-                dir_contents = glob.glob(os.path.join(dir_to_scan, '*.*'))
+                dir_contents = glob.glob(os.path.join(dir_to_scan, '*'))
                 
                 for entry in dir_contents:
                     if entry in source_strings:
                         continue
-                    installer_add_node(env, entry)
+                    installer_add_node(env, target, entry)
 
-            def installer_add_node(env, source):
-                print "New node:", source
+            def installer_add_node(env, target, source):
                 new_node = env.Entry(source)
-                env.Depends(new_node, '###DummyTarget###')
+                env.Depends(new_node, target)
 
             env.Append(BUILDERS = {'InstallerScanDir': Builder(action=installer_scan_dir)})
             
-            inst_scan_dir = env.InstallerScanDir('###DummyTarget###', exe_targets)
+            inst_scan_dir = env.InstallerScanDir('###DummyTarget###', env.Directory(build_dir_exe))
             env.AlwaysBuild(inst_scan_dir)
             env.Alias('installer', inst_scan_dir)
 
@@ -1271,9 +1270,7 @@ for p in [ scons ]:
                               ('@UNINSTALL_DISPLAY_NAME@'           , 'SCons: A software construction tool'),
                              ]                
                 substfile = env.Substfile(inst_script_out, SUBST_DICT = subst_dict)
-                env.AlwaysBuild(substfile)
-                print "Substfile", substfile, str(substfile)
-
+                
                 inst = env.NSISInstaller(substfile)
                 env.Local(inst)
                 env.Depends(inst, standalone_exe)
@@ -1293,7 +1290,7 @@ for p in [ scons ]:
 #
 #
 #
-Export('build_dir', 'env')
+Export('build_dir', 'env', 'project', 'version', 'SCons_revision')
 
 SConscript('QMTest/SConscript')
 
