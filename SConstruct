@@ -1199,15 +1199,21 @@ for p in [ scons ]:
                 Delete(build_dir_exe),
                 Mkdir(build_dir_exe),
                 Copy(os.path.join(build_dir, 'scons', init_script), os.path.join('src', init_script)),
-                '$PYTHON $PYTHONFLAGS $SETUP_PY build_exe --build-exe=%s' % (build_dir_exe),
                 ]
+            init_script_copy = env.Command(os.path.join(build_dir, 'scons', init_script), 
+                                           build_src_files + [os.path.join('src', init_script)],
+                                           commands)
 
             rf = []
             for script in scripts:
                 rf.append("%s.exe" % script)
             exe_targets = map(lambda x, s=build_dir_exe: os.path.join(s, x), rf)
             
-            standalone_exe = env.Command(exe_targets, build_src_files, commands)
+            commands = [
+                '$PYTHON $PYTHONFLAGS $SETUP_PY build_exe --build-exe=%s' % (build_dir_exe),
+                ]
+            
+            standalone_exe = env.Command(exe_targets, init_script_copy, commands)
             env.Alias('installer', standalone_exe)
 
             def installer_scan_dir(target, source, env):
@@ -1236,8 +1242,7 @@ for p in [ scons ]:
             env.AlwaysBuild(inst_scan_dir)
             env.Alias('installer', inst_scan_dir)
 
-            nsis = env.Detect('makensis')
-            if nsis:
+            if env.has_key('NSIS') and env['NSIS']:
                 build_dir_inst = os.path.join(build_dir, 'installer')
                 inst_script = 'scons_installer.nsi'
                 inst_script_in = os.path.join('installer', inst_script + '.in')
@@ -1292,7 +1297,7 @@ for p in [ scons ]:
                             Mkdir('$TEST_INSTALLER_DIR'),
                            ]
                 env.Command(test_installer_dir, inst, commands)
-                #env.Install('$TEST_INSTALLER_DIR', inst)
+                env.Install('$TEST_INSTALLER_DIR', inst)
 
 
         except ImportError:

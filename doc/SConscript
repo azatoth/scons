@@ -532,7 +532,7 @@ if tar_deps:
 else:
     Alias('doc', os.path.join(build_dir, 'doc'))
 
-if env.has_key('NSIS') and env['NSIS']:
+if jw and env.has_key('NSIS') and env['NSIS']:
     inst_script = 'scons_doc_installer.nsi'
     inst_script_input = os.path.join(build_dir, '..', 'installer', 'scons_doc_installer.nsi.in')
     inst_dir = os.path.join(build_dir, 'installer')
