@@ -1633,8 +1633,7 @@ class NullSeq(Null):
         return self
 
 def python_interpreter_command():
-    executable = sys.executable
-    if os.path.basename(executable).lower().find('python') == -1:
+    if hasattr(sys, 'frozen') and sys.frozen:
         if sys.platform in ('win32', 'cygwin'):
             def whereis(file):
                 pathext = [''] + string.split(os.environ['PATHEXT'], os.pathsep)
@@ -1658,6 +1657,9 @@ def python_interpreter_command():
                             return f
                 return None
         executable = whereis('python')
+    else:
+        executable = sys.executable
+        
     return executable
 
 del __revision__
