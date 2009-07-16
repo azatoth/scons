@@ -45,6 +45,7 @@ import sys
 import tempfile
 import SCons.Util
 import glob
+import subprocess
 
 project = 'scons'
 default_version = '1.2.0'
@@ -89,6 +90,11 @@ hg = os.path.exists('.hg') and whereis('hg')
 svn = os.path.exists('.svn') and whereis('svn')
 unzip = whereis('unzip')
 zip = whereis('zip')
+
+if sys.__dict__.has_key('frozen') and sys.frozen:
+    python = whereis('python')
+else:
+    python = sys.executable
 
 #
 # Now grab the information that we "build" into the files.
@@ -476,7 +482,7 @@ env = Environment(
                    BUILDERS            = { 'SCons_revision' : revbuilder,
                                            'SOElim' : soelimbuilder },
 
-                   PYTHON              = '"%s"' % SCons.Util.python_interpreter_command(),
+                   PYTHON              = '"%s"' % python,
                    PYTHONFLAGS         = '-tt',
 
                    tools               = ['default', 'textfile']
@@ -1183,126 +1189,226 @@ for p in [ scons ]:
 
     #
     # Build the stand-alone SCons executable
-    # FIXME: On Linux/Unix, try to build the executable via wine
-    # FIXME: Add support for 64-bit Python on Windows
+    # FIXME: Investigate support for 64-bit Python on Windows
     #
+    
+    build_installer = 0
+    installer_python = python
+    wine_python = None
+    
+    # If we are on Windows...
     if platform == "win32":
         try:
-            import cx_Freeze
-
-            exe = pkg + '-exe'
-            build_dir_exe = os.path.join(build_dir, 'installer', exe)
-            
-            init_script = os.path.join('script', 'standalone_init.py')
-
-            commands = [
-                Delete(build_dir_exe),
-                Mkdir(build_dir_exe),
-                Copy(os.path.join(build_dir, 'scons', init_script), os.path.join('src', init_script)),
-                ]
-            init_script_copy = env.Command(os.path.join(build_dir, 'scons', init_script), 
-                                           build_src_files + [os.path.join('src', init_script)],
-                                           commands)
-
-            rf = []
-            for script in scripts:
-                rf.append("%s.exe" % script)
-            exe_targets = map(lambda x, s=build_dir_exe: os.path.join(s, x), rf)
-            
-            commands = [
-                '$PYTHON $PYTHONFLAGS $SETUP_PY build_exe --build-exe=%s' % (build_dir_exe),
-                ]
-            
-            standalone_exe = env.Command(exe_targets, init_script_copy, commands)
-            env.Alias('installer', standalone_exe)
-
-            def installer_scan_dir(target, source, env):
-                if SCons.Util.is_List(source):
-                    dir_to_scan = str(source[0])
-                else:
-                    dir_to_scan = str(source)
+            # ...and are running via the SCons binary
+            if sys.frozen and python:
+                # See if the cx_Freeze module is available in the system's Python
+                retval = subprocess.call('%s -c "import cx_Freeze"' % python)
                 
-                source_strings = []
-                source_strings = map(lambda x: str(x), source)
-                
-                dir_contents = glob.glob(os.path.join(dir_to_scan, '*'))
-                
-                for entry in dir_contents:
-                    if entry in source_strings:
-                        continue
-                    installer_add_node(env, target, entry)
+                if retval == 0:
+                    build_installer = 1
+        except AttributeError:
+            # We are running via Python, see if the cx_Freeze module is available
+            try:
+                import cx_Freeze
+                build_installer = 1
+            except ImportError:
+                pass
+    else:
+        # We aren't on Windows, see if there is a wine installation
+        wine_root = (('WINEPREFIX' in os.environ) and os.environ['WINEPREFIX']) or (('HOME' in os.environ) and os.path.join(os.environ['HOME'], '.wine'))
+        wine = env.WhereIs('wine')
+        if wine and wine_root:
+            # Now try to find a Python executable
+            wine_python = None
+            wine_pythons = [
+                            #'Python31', # not supported yet
+                            #'Python30', # not supported yet
+                            'Python26',
+                            'Python25',
+                            'Python24',
+                            'Python23', # This is the minimum version cx_Freeze requires
+                           ]
+            for entry in wine_pythons:
+                wine_python = os.path.join(wine_root, 'drive_c', entry, 'python.exe')
+                if os.path.isfile(wine_python):
+                    # Check whether wine_python can import the cx_Freeze module
+                    cmd_str = 'wine %s -c "import cx_Freeze"' % wine_python
+                    result = os.system(cmd_str)
+                    if result == 0:
+                        build_installer = 1
+                        installer_python = 'wine ' + wine_python
 
-            def installer_add_node(env, target, source):
-                new_node = env.Entry(source)
+    build_installer = build_installer and hasattr(env, 'NSISInstaller')
+
+    if build_installer:
+        build_dir_installer = env.Dir(os.path.join(build_dir, 'installer'))
+        build_dir_exe = env.Dir(os.path.join(str(build_dir_installer), pkg + '-exe'))
+        exe_init_script = env.File('#installer/standalone_init.py')
+        exe_setup_py = env.File(os.path.join(str(build_dir_installer), 'setup.py'))
+        
+        commands = [
+                    Mkdir(build_dir_exe),
+                    Copy(build_dir_installer, exe_init_script),
+                   ]
+        init_script_copy = env.Command(
+                                        os.path.join(str(build_dir_installer), 'standalone_init.py'),
+                                        exe_init_script,
+                                        commands
+                                      )
+
+        env.SCons_revision(exe_setup_py, '#installer/setup.py')
+        env.Depends(exe_setup_py, init_script_copy)
+        
+        exe_targets = []
+        exe_scripts = ['scons', 'sconsign']
+        for script in exe_scripts:
+            exe_targets.append(os.path.join(str(build_dir_exe), script + '.exe'))
+        
+        commands = [
+                    '%s $PYTHONFLAGS %s build_exe --build-exe=%s' % (installer_python, str(exe_setup_py), pkg + '-exe'),
+                   ]
+        standalone_exe = env.Command(exe_targets, [init_script_copy, exe_setup_py], commands)
+        env.Depends(standalone_exe, build_src_files)
+        
+        def scan_dir(target, source, env):
+            dir_contents = glob.glob(os.path.join(str(source[0]), '*.*'))
+            
+            for entry in dir_contents:
+                new_node = env.Entry(entry)
                 env.Depends(new_node, target)
-
-            env.Append(BUILDERS = {'InstallerScanDir': Builder(action=installer_scan_dir)})
+        
+        env.Append(BUILDERS={'ScanDir':Builder(action=scan_dir)})
+        
+        def wine_sanity_check(target, source, env):
+            # At the moment, pyInstaller doesn't pick up dll dependencies under wine, so we check for them here
+            python_dll = glob.glob(os.path.join(str(source[0]), 'python*.dll'))
             
-            inst_scan_dir = env.InstallerScanDir('###DummyTarget###', env.Dir(build_dir_exe))
-            env.AlwaysBuild(inst_scan_dir)
-            env.Alias('installer', inst_scan_dir)
+            if (len(python_dll) == 0) and (installer_python != python):
+                python_dll = os.path.join(wine_root, 'drive_c', 'windows', 'system32', 'python' + wine_python[-2:] + '.dll')
+                if os.path.isfile(python_dll):
+                    env.Execute(Copy(str(source[0]), python_dll))
 
-            if env.has_key('NSIS') and env['NSIS']:
-                build_dir_inst = os.path.join(build_dir, 'installer')
-                inst_script = 'scons_installer.nsi'
-                inst_script_in = os.path.join('installer', inst_script + '.in')
-                inst_script_out = os.path.join(build_dir, inst_script_in)
-                
-                commands = [
-                    Copy(inst_script_out, inst_script_in),
-                           ]
-                
-                env.Command(inst_script_out, inst_script_in, commands)
+            pywintypes_dll = glob.glob(os.path.join(str(source[0]), 'pywintypes*.dll'))
+            
+            if (len(pywintypes_dll) == 0) and (installer_python != python):
+                pywintypes_dll = os.path.join(wine_root, 'drive_c', 'windows', 'system32', 'pywintypes' + wine_python[-2:] + '.dll')
+                if os.path.isfile(pywintypes_dll):
+                    env.Execute(Copy(str(source[0]), pywintypes_dll))
 
-                def scons_standalone_files_install():
-                    files = env.Glob(os.path.join(build_dir_exe, '*.??*'), strings = 1)
-                    directives = []
-                    for file in files:
-                        f = os.path.join('..', '..', file)
-                        f = string.replace(f, '\\', '\\\\')
-                        directives.append("  File %s" % (f))
-                    return string.join(directives, '\n')
+            # For Python 2.6, we also copy the C runtime library and its manifest
+            if wine_python[-2:] == "26":
+                msvc_runtime = os.path.join(os.path.dirname(wine_python), 'msvcr90.dll')
+                if os.path.isfile(msvc_runtime):
+                    env.Execute(Copy(str(source[0]), msvc_runtime))
+                else:
+                    print 'Error:', msvc_runtime , 'not found'
+                    return 1
 
-                def scons_standalone_files_uninstall():
-                    files = env.Glob(os.path.join(build_dir_exe, '*.??*'), strings = 1)
-                    directives = []
-                    for file in files:
-                        f = "@INSTDIR@\\%s" % (os.path.basename(file))
-                        f = string.replace(f, '\\', '\\\\')
-                        directives.append("  Delete $%s" % (f))
-                    return string.join(directives, '\n')
-                
-                inst_filename = string.join([project, version], '-') + '.exe'
-                
-                subst_dict = [
-                              ('@INSTALLER_NAME@'                   , string.join([project, version])),
-                              ('@INSTALLER_FILE@'                   , os.path.splitext(inst_script)[0] + '.exe'),
-                              ('@SCONS_STANDALONE_FILES_INSTALL@'   , scons_standalone_files_install),
-                              ('@UNINSTALLER_FILE@'                 , string.join(['uninstall', project, version], '-') + '.exe'),
-                              ('@SCONS_STANDALONE_FILES_UNINSTALL@' , scons_standalone_files_uninstall),
-                              ('@INSTDIR@'                          , 'INSTDIR'),
-                              ('@LICENSE_DATA@'                     , os.path.join('..', 'scons', 'LICENSE.txt')),
-                              ('@INSTALL_DIR_REG_KEY@'              , string.join(['Software', project, version], '\\\\')),
-                              ('@PRODUCT_NAME@'                     , project),
-                              ('@UNINSTALL_DISPLAY_NAME@'           , 'SCons: A software construction tool'),
-                             ]                
-                substfile = env.Substfile(inst_script_out, SUBST_DICT = subst_dict)
-                
-                inst = env.NSISInstaller(substfile)
-                env.Local(inst)
-                env.Depends(inst, standalone_exe)
-                inst = env.InstallAs(os.path.join(env['DISTDIR'], inst_filename), inst)
-                commands = [
-                            Delete('$TEST_INSTALLER_DIR'),
-                            Mkdir('$TEST_INSTALLER_DIR'),
-                           ]
-                env.Command(test_installer_dir, inst, commands)
-                env.Install('$TEST_INSTALLER_DIR', inst)
+                msvc_manifest = os.path.join(os.path.dirname(wine_python), 'Microsoft.VC90.CRT.manifest')
+                if os.path.isfile(msvc_manifest):
+                    env.Execute(Copy(str(source[0]), msvc_manifest))
+                else:
+                    print 'Error:', msvc_manifest , 'not found'
+                    return 1
+        
+        env.Append(BUILDERS={'wineSanityCheck':Builder(action=wine_sanity_check)})
+        
+        scan_exe_dir = env.ScanDir('StandaloneExeFiles', env.Dir(build_dir_exe))
+        
+        if wine_python:
+            sanity_check = env.StandaloneSanityCheck('StandaloneExeFilesChecked', env.Dir(build_dir_exe))            
+            env.Depends(sanity_check, standalone_exe)
+            env.AlwaysBuild(sanity_check)
+            env.Depends(scan_exe_dir, sanity_check)
+        else:
+            env.Depends(scan_exe_dir, standalone_exe)
+        env.AlwaysBuild(scan_exe_dir)
 
+        inst_script_in = os.path.join(str(build_dir_installer), 'scons_installer.nsi.in')
+        env.Command(inst_script_in, '#installer/scons_installer.nsi.in', Copy('$TARGET', '$SOURCE'))
 
-        except ImportError:
-            # cx_Freeze is not available, so skip building the executable
-            pass
+        def scons_standalone_files_install():
+            files = env.Glob(os.path.join(str(build_dir_exe), '*.??*'), strings = 1)
+            directives = []
+            for file in files:
+                f = os.path.join('..', '..', file)
+                f = string.replace(f, '\\', '\\\\')
+                directives.append("  File %s" % (f))
+            return string.join(directives, '\n')
+
+        def scons_standalone_files_uninstall():
+            files = env.Glob(os.path.join(str(build_dir_exe), '*.??*'), strings = 1)
+            directives = []
+            for file in files:
+                f = "@INSTDIR@\\%s" % (os.path.basename(file))
+                f = string.replace(f, '\\', '\\\\')
+                directives.append("  Delete $%s" % (f))
+            return string.join(directives, '\n')
+
+        inst_filename = string.join([project, version], '-') + '.exe'
+
+        subst_dict = [
+                        ('@INSTALLER_NAME@'                   , string.join([project, version])),
+                        ('@INSTALLER_FILE@'                   , 'scons_installer.exe'),
+                        ('@SCONS_STANDALONE_FILES_INSTALL@'   , scons_standalone_files_install),
+                        ('@UNINSTALLER_FILE@'                 , string.join(['uninstall', project, version], '-') + '.exe'),
+                        ('@SCONS_STANDALONE_FILES_UNINSTALL@' , scons_standalone_files_uninstall),
+                        ('@INSTDIR@'                          , 'INSTDIR'),
+                        ('@LICENSE_DATA@'                     , os.path.join('..', 'scons', 'LICENSE.txt')),
+                        ('@INSTALL_DIR_REG_KEY@'              , string.join(['Software', project, version], '\\\\')),
+                        ('@PRODUCT_NAME@'                     , project),
+                        ('@UNINSTALL_DISPLAY_NAME@'           , 'SCons: A software construction tool'),
+                     ]                
+        inst_script = env.Substfile(inst_script_in, SUBST_DICT = subst_dict)
+
+        inst = env.NSISInstaller(inst_script)
+        env.Depends(inst, standalone_exe)
+        env.Depends(inst, scan_exe_dir)
+        
+        inst = env.InstallAs(os.path.join(env['DISTDIR'], inst_filename), inst)
+        commands = [
+                    Delete('$TEST_INSTALLER_DIR'),
+                    Mkdir('$TEST_INSTALLER_DIR'),
+                   ]
+        env.Command(test_installer_dir, inst, commands)
+        env.Install('$TEST_INSTALLER_DIR', inst)
+        env.Alias('installer', inst)
+        
+        # Experimental code for using PyInstaller to build binary SCons
+        # def pyinstaller_hook_builder(target, source, env):
+            # env.Execute(Mkdir(target))
+            
+            # for root, dirs, files in os.walk(str(source[0])):
+                # if '__init__.py' in files:
+                    # module_name = root[len(str(source[0])) + 1:].replace(os.sep, '.')
+                    # hook_file_name = os.path.join(str(target[0]), 'hook-' + module_name + '.py')
+                    # hook_file = open(str(hook_file_name), 'w')
+                    # hook_file.write('hiddenimports = [\n')
+                    
+                    # for dir in dirs:
+                        # hook_file.write('"%s.%s",\n'% (module_name, dir))
+                    
+                    # for file in files:
+                        # if file == '__init__.py':
+                            # continue
+                        # hook_file.write('"%s.%s",\n' % (module_name, os.path.splitext(file)[0]))
+                    
+                    # hook_file.write(']')
+                    # hook_file.close()
+
+        # env.Append(BUILDERS={'PyInstallerHookBuilder':Builder(action=pyinstaller_hook_builder)})
+        # hooks = env.PyInstallerHookBuilder(env.Dir(os.path.join(str(build_dir_installer), 'hooks')), env.Dir(os.path.join(build, 'engine')))
+        # env.AlwaysBuild(hooks)
+
+        # build_dir_pyinstaller = os.path.join(str(build_dir_installer), 'pyinstaller')
+        # spec_file = os.path.join(build_dir_pyinstaller, 'scons.spec')
+
+        # spec_file_node = env.Command(spec_file, '#installer/scons.spec', Copy('$TARGET', '$SOURCE'))
+        
+        # commands = [
+                    # '%s %s %s' % (python, os.path.join(os.environ['PYINSTALLER'], 'Build.py'), spec_file),
+                   # ]
+        # pyinst_standalone_exe = env.Command('Dummy', [spec_file_node, build_src_files], commands)
 
 #
 #

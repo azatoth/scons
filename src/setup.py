@@ -415,45 +415,7 @@ arguments = {
                           'build_scripts'   : build_scripts}
 }
 
-# FIXME: Add support for 64-bit Python on Windows
-if is_win32 and 'build_exe' in sys.argv:
-    try:
-        import cx_Freeze
-        import os.path
-
-        path = sys.path
-
-        for item in arguments['package_dir'].values():
-            path.append(item)
-
-        build_options = dict(
-            compressed = True,
-            # The 'encodings' package is needed to correctly parse SConstruct files.
-            packages = ['encodings'] + arguments['packages'],
-            path = path,
-            init_script = os.path.abspath('script/standalone_init.py'),
-        )
-
-        arguments['options'] = dict(build_exe = build_options)
-
-        executables = []        
-    
-        # Filter out all scripts that are unlikely to be Python files
-        for script in scripts:
-            unused, extension = os.path.splitext(script)
-            if extension not in ['', 'py', 'pyw']:
-                continue
-
-            executables.append(cx_Freeze.Executable(script))
-
-        arguments['executables'] = executables
-    
-        apply(cx_Freeze.setup, (), arguments)
-
-    except ImportError:
-        sys.stdout.write("cx_Freeze not available, skipping the 'build_exe' command.")
-else:
-    apply(distutils.core.setup, (), arguments)
+apply(distutils.core.setup, (), arguments)
 
 if Installed:
     print string.join(Installed, '\n')
