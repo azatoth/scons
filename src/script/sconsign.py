@@ -154,7 +154,7 @@ libs.extend(map(lambda x: os.path.join(x, scons_version), prefs))
 libs.extend(map(lambda x: os.path.join(x, 'scons'), prefs))
 
 # If this is the binary version of SCons, don't manipulate the path
-if (not hasattr(sys, 'frozen')) or (sys.frozen == 0)
+if (not hasattr(sys, 'frozen')) or (sys.frozen == 0):
     sys.path = libs + sys.path
 
 ##############################################################################

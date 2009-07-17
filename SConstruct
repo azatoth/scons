@@ -1237,6 +1237,7 @@ for p in [ scons ]:
                     if result == 0:
                         build_installer = 1
                         installer_python = 'wine ' + wine_python
+                        break
 
     build_installer = build_installer and hasattr(env, 'NSISInstaller')
 
@@ -1284,19 +1285,19 @@ for p in [ scons ]:
             python_dll = glob.glob(os.path.join(str(source[0]), 'python*.dll'))
             
             if (len(python_dll) == 0) and (installer_python != python):
-                python_dll = os.path.join(wine_root, 'drive_c', 'windows', 'system32', 'python' + wine_python[-2:] + '.dll')
+                python_dll = os.path.join(wine_root, 'drive_c', 'windows', 'system32', 'python' + os.path.dirname(wine_python)[-2:] + '.dll')
                 if os.path.isfile(python_dll):
                     env.Execute(Copy(str(source[0]), python_dll))
 
             pywintypes_dll = glob.glob(os.path.join(str(source[0]), 'pywintypes*.dll'))
             
             if (len(pywintypes_dll) == 0) and (installer_python != python):
-                pywintypes_dll = os.path.join(wine_root, 'drive_c', 'windows', 'system32', 'pywintypes' + wine_python[-2:] + '.dll')
+                pywintypes_dll = os.path.join(wine_root, 'drive_c', 'windows', 'system32', 'pywintypes' + os.path.dirname(wine_python)[-2:] + '.dll')
                 if os.path.isfile(pywintypes_dll):
                     env.Execute(Copy(str(source[0]), pywintypes_dll))
 
             # For Python 2.6, we also copy the C runtime library and its manifest
-            if wine_python[-2:] == "26":
+            if os.path.dirname(wine_python)[-2:] == "26":
                 msvc_runtime = os.path.join(os.path.dirname(wine_python), 'msvcr90.dll')
                 if os.path.isfile(msvc_runtime):
                     env.Execute(Copy(str(source[0]), msvc_runtime))
@@ -1316,7 +1317,7 @@ for p in [ scons ]:
         scan_exe_dir = env.ScanDir('StandaloneExeFiles', env.Dir(build_dir_exe))
         
         if wine_python:
-            sanity_check = env.StandaloneSanityCheck('StandaloneExeFilesChecked', env.Dir(build_dir_exe))            
+            sanity_check = env.wineSanityCheck('StandaloneExeFilesChecked', env.Dir(build_dir_exe))            
             env.Depends(sanity_check, standalone_exe)
             env.AlwaysBuild(sanity_check)
             env.Depends(scan_exe_dir, sanity_check)
