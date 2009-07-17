@@ -174,7 +174,7 @@ def exec_spawn(l, env):
 
 def spawn(sh, escape, cmd, args, env):
     if not sh:
-        sys.stderr.write(_("scons: Could not find command interpreter, is it in your PATH?\n"=)
+        sys.stderr.write(_("scons: Could not find command interpreter, is it in your PATH?\n"))
         return 127
     return exec_spawn([sh, '/C', escape(string.join(args))], env)
 

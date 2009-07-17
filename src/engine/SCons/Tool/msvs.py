@@ -1127,7 +1127,7 @@ class _GenerateV6DSW(_DSWGenerator):
         try:
             self.file = open(self.dswfile,'w')
         except IOError, detail:
-            raise SCons.Errors.InternalError, _('Unable to open "' + self.dswfile + '" for writing:') + str(detail)
+            raise SCons.Errors.InternalError, _('Unable to open %s for writing: %s') % (self.dswfile, str(detail))
         else:
             self.PrintWorkspace()
             self.file.close()

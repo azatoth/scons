@@ -95,11 +95,11 @@ class VisualStudio:
             if os.path.exists(comps):
                 return comps
             else:
-                debug(_('find_vc_product_dir():  %s not on file system'_) % comps)
+                debug(_('find_vc_product_dir():  %s not on file system') % comps)
 
         d = os.environ.get(self.common_tools_var)
         if not d:
-            msg = _('find_vc_product_dir():  no %s variable'_)
+            msg = _('find_vc_product_dir():  no %s variable')
             debug(msg % self.common_tools_var)
             return None
         if not os.path.isdir(d):

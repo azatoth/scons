@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: tr\n"
-"POT-Creation-Date: 2009-06-29 11:24+EEST\n"
-"PO-Revision-Date: 2009-07-07 01:58+0300\n"
+"POT-Creation-Date: 2009-07-17 03:45+EEST\n"
+"PO-Revision-Date: 2009-07-16 03:45+0300\n"
 "Last-Translator: Tuba Şahin <nestanka@gmail.com>\n"
 "Language-Team:  <tr@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -20,9 +20,13 @@ msgid "Cannot append %s to %s"
 msgstr "%s eylemi %s eylemine eklenemiyor."
 
 #: Action.py:333
-#,fuzzy
-msgid "Invalid command display variable type. You must either pass a string or a callback which accepts (target, source, env) as parameters."
-msgstr "Geçersiz komut değişken türü gösteriyor. Ya bir dizgi ya da (hedef, kaynak, çevre) parametrelerini kabul eden geridönüş metodu belirtmelisiniz."
+#, fuzzy
+msgid ""
+"Invalid command display variable type. You must either pass a string or a "
+"callback which accepts (target, source, env) as parameters."
+msgstr ""
+"Geçersiz komut değişken türü gösteriyor. Ya bir dizgi ya da (hedef, kaynak, "
+"çevre) parametrelerini kabul eden geridönüş metodu belirtmelisiniz."
 
 #: Action.py:341
 msgid "Cannot have both strfunction and cmdstr args to Action()"
@@ -47,12 +51,17 @@ msgid "Missing SPAWN construction variable."
 msgstr "Kayıp SPAWN yapılandırma değişkeni."
 
 #: Action.py:792 Errors.py:196 Executor.py:350
+#, fuzzy
 msgid "Error %s"
-msgstr "Hata %s"
+msgstr "Hata"
 
 #: Action.py:864
-msgid "Object returned from command generator: %s cannot be used to create an Action."
-msgstr "Nesne komut üreticisinden geri döndü: %s Action oluşturmak için kullanılamıyor."
+msgid ""
+"Object returned from command generator: %s cannot be used to create an "
+"Action."
+msgstr ""
+"Nesne komut üreticisinden geri döndü: %s Action oluşturmak için "
+"kullanılamıyor."
 
 #: Action.py:887 Builder.py:168
 msgid "While building `%s': Cannot deduce file extension from source files: %s"
@@ -63,24 +72,33 @@ msgid "$%s value %s cannot be used to create an Action."
 msgstr "$%s değeri %s Action oluşturmak için kullanılamıyor."
 
 #: Action.py:992
+#, fuzzy
 msgid "unknown_python_function"
-msgstr "bilinmeyen_python_fonksiyonu"
+msgstr "bilinmeyen eylem %r"
 
 #: Action.py:1033
 msgid "%s(target, source, env)"
 msgstr "%s(hedef, kaynak, çevre)"
 
 #: Builder.py:161
-msgid "While building `%s' from `%s': Cannot build multiple sources with different extensions: %s, %s"
-msgstr "`%s' `%s' kaynağından derlenirken: Farklı uzantılı birden çok kaynaklar derlenemiyor: %s, %s"
+msgid ""
+"While building `%s' from `%s': Cannot build multiple sources with different "
+"extensions: %s, %s"
+msgstr ""
+"`%s' `%s' kaynağından derlenirken: Farklı uzantılı birden çok kaynaklar "
+"derlenemiyor: %s, %s"
 
 #: Builder.py:173
 msgid "Ambiguous suffixes after environment substitution: %s == %s == %s"
 msgstr "Çevre değişikliğinden sonra belirsiz sonekler: %s == %s == %s"
 
 #: Builder.py:175
-msgid "While building `%s' from `%s': Don't know how to build from a source file with suffix `%s'.  Expected a suffix in this list: %s."
-msgstr "`%s' `%s' kaynağından derlenirken: `%s uzantılı dosyasının nasıl derleneceği bilinmiyor  Bilinen uzantılar: %s"
+msgid ""
+"While building `%s' from `%s': Don't know how to build from a source file "
+"with suffix `%s'.  Expected a suffix in this list: %s."
+msgstr ""
+"`%s' `%s' kaynağından derlenirken: `%s uzantılı dosyasının nasıl derleneceği "
+"bilinmiyor  Bilinen uzantılar: %s"
 
 #: Builder.py:238
 msgid "Did you mean to use `%s' instead of `%s'?"
@@ -91,7 +109,8 @@ msgid "You must not specify both an action and a generator."
 msgstr "Aynı anda eylem ve üretici belirtmemelisiniz."
 
 #: Builder.py:270
-msgid "Supplied emitter '%s' does not appear to refer to an Environment variable"
+msgid ""
+"Supplied emitter '%s' does not appear to refer to an Environment variable"
 msgstr ""
 
 #: Builder.py:294 Environment.py:2037
@@ -107,24 +126,37 @@ msgstr ""
 "\tama aynı eyleme sahip görünüyorlar: %s"
 
 #: Builder.py:305
-msgid "Two environments with different actions were specified for the same target: %s"
+msgid ""
+"Two environments with different actions were specified for the same target: %"
+"s"
 msgstr "Aynı hedef için farklı eylemlerle iki çevre belirtilmiş: %s"
 
 #: Builder.py:309
-msgid "Two different builders (%s and %s) were specified for the same target: %s"
+msgid ""
+"Two different builders (%s and %s) were specified for the same target: %s"
 msgstr "Aynı hedef için iki farklı derleyici (%s ve %s) belirtilmiş: %s"
 
 #: Builder.py:313
-msgid "Two different target lists have a target in common: %s  (from %s and from %s)"
-msgstr "İki farklı hedef listesi ortak bir hedef içeriyor: %s  (%s listesi ve %s listesi)"
+msgid ""
+"Two different target lists have a target in common: %s  (from %s and from %s)"
+msgstr ""
+"İki farklı hedef listesi ortak bir hedef içeriyor: %s  (%s listesi ve %s "
+"listesi)"
 
 #: Builder.py:316
-msgid "Multiple ways to build the same target were specified for: %s  (from %s and from %s)"
-msgstr "Aynı hedefi derlemek için birden fazla yol belirtilmiş: %s  (%s kaynağından ve %s kaynağından)"
+msgid ""
+"Multiple ways to build the same target were specified for: %s  (from %s and "
+"from %s)"
+msgstr ""
+"Aynı hedefi derlemek için birden fazla yol belirtilmiş: %s  (%s kaynağından "
+"ve %s kaynağından)"
 
 #: Builder.py:321
-msgid "More than one source given for single-source builder: targets=%s sources=%s"
-msgstr "Tek-kaynak derleyicisi için verilen birden fazla kaynak: hedefler=%s kaynaklar=%s"
+msgid ""
+"More than one source given for single-source builder: targets=%s sources=%s"
+msgstr ""
+"Tek-kaynak derleyicisi için verilen birden fazla kaynak: hedefler=%s "
+"kaynaklar=%s"
 
 #: Builder.py:394
 msgid ""
@@ -139,8 +171,12 @@ msgid ""
 msgstr ""
 
 #: Builder.py:432
-msgid "Do not test for the Node.builder attribute directly; use Node.has_builder() instead"
-msgstr "Node.builder niteliğini direkt test etmeyin; yerine Node.has_builder() kullanın"
+msgid ""
+"Do not test for the Node.builder attribute directly; use Node.has_builder() "
+"instead"
+msgstr ""
+"Node.builder niteliğini direkt test etmeyin; yerine Node.has_builder() "
+"kullanın"
 
 #: Builder.py:494
 msgid "Do not know how to create a target from source `%s'"
@@ -183,20 +219,27 @@ msgid "Source file: %s is static and is not compatible with shared target: %s"
 msgstr "Kaynak dosyası: %s statik ve paylaşılmış hedefle uyumlu değil: %s"
 
 #: Environment.py:130 Environment.py:136
+#, fuzzy
 msgid "Ignoring attempt to set reserved variable `$%s'"
-msgstr ""
+msgstr "ayrılan değişkenleri ihmal etme girişimi "
 
 #: Environment.py:141
-msgid "`$%s' will be reserved in a future release and setting it will become ignored"
-msgstr ""
+#, fuzzy
+msgid ""
+"`$%s' will be reserved in a future release and setting it will become ignored"
+msgstr "`$%s' bir sonraki sürümde ayrılacak ve "
 
 #: Environment.py:429 Environment.py:2197
+#, fuzzy
 msgid "Illegal construction variable `%s'"
-msgstr ""
+msgstr "Yasal olmayan yapılandurma değişkeni"
 
 #: Environment.py:1332
-msgid "The env.Copy() method is deprecated; use the env.Clone() method instead."
+#, fuzzy
+msgid ""
+"The env.Copy() method is deprecated; use the env.Clone() method instead."
 msgstr ""
+"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
 
 #: Environment.py:1372 Environment.py:2063 Environment.py:2099
 msgid "MD5 signatures are not available in this version of Python."
@@ -231,8 +274,9 @@ msgid "Unknown target signature type '%s'"
 msgstr "Bilinmeyen hedef imzası türü: %s'"
 
 #: Errors.py:93
+#, fuzzy
 msgid "Unknown error"
-msgstr "Bilinmeyen hata"
+msgstr "bilinmeyen eylem %r"
 
 #: Errors.py:155
 msgid "Explicit exit, status %s"
@@ -278,6 +322,254 @@ msgstr "new.instancemethod() hatası"
 
 #: Memoize.py:261
 msgid "memoization is not supported in this version of Python (%s)"
+msgstr "memoization is not supported in this version of Python (%s)"
+
+#: Node/FS.py:130
+msgid "%s instance %s has no attribute %s"
+msgstr "`"
+
+#: Node/FS.py:261
+msgid "The argument of set_duplicate should be in Valid_Duplicates"
+msgstr ""
+
+#: Node/FS.py:303
+msgid "Local copy of %s from %s"
+msgstr ""
+
+#: Node/FS.py:597
+msgid "A directory must be provided"
+msgstr ""
+
+#: Node/FS.py:625
+msgid "Tried to lookup %s '%s' as a %s."
+msgstr ""
+
+#: Node/FS.py:915
+msgid "No such file or directory: '%s'"
+msgstr ""
+
+#: Node/FS.py:995
+msgid "rel_path() could not disambiguate File/Dir"
+msgstr ""
+
+#: Node/FS.py:1299
+msgid "Source directory cannot be under variant directory."
+msgstr ""
+
+#: Node/FS.py:1303
+msgid "'%s' already has a source directory: '%s'."
+msgstr ""
+
+#: Node/FS.py:1325
+msgid "building associated VariantDir targets: %s"
+msgstr ""
+
+#: Node/FS.py:1418
+msgid "File %s found where directory expected."
+msgstr ""
+
+#: Node/FS.py:2270
+msgid "Directory %s found where file expected."
+msgstr ""
+
+#: Node/FS.py:2744
+msgid "No drive `%s' for target `%s'."
+msgstr ""
+
+#: Node/FS.py:2763
+msgid "Cannot duplicate `%s' in `%s': %s."
+msgstr ""
+
+#: Node/FS.py:3162
+msgid "looking for '%s' in '%s' ...\n"
+msgstr ""
+
+#: Node/FS.py:3166
+msgid "... FOUND '%s' in '%s'\n"
+msgstr ""
+
+#: Node/__init__.py:354
+msgid "Explicit dependency `%s' not found, needed by target `%s'."
+msgstr ""
+
+#: Node/__init__.py:359
+msgid "Implicit dependency `%s' not found, needed by target `%s'."
+msgstr ""
+
+#: Node/__init__.py:839
+msgid ""
+"attempted to add a non-Node dependency to %s:\n"
+"\t%s is a %s, not a Node"
+msgstr ""
+
+#: Node/__init__.py:856
+msgid ""
+"attempted to ignore a non-Node dependency of %s:\n"
+"\t%s is a %s, not a Node"
+msgstr ""
+
+#: Node/__init__.py:870
+msgid ""
+"attempted to add a non-Node as source of %s:\n"
+"\t%s is a %s, not a Node"
+msgstr ""
+
+#: Node/__init__.py:1036
+msgid "changed(%s [%s], %s)"
+msgstr ""
+
+#: Node/__init__.py:1054
+msgid ": old %s new %s"
+msgstr ""
+
+#: Node/__init__.py:1059
+msgid ": %s changed"
+msgstr ""
+
+#: Node/__init__.py:1067
+msgid ": bactsig %s != newsig %s"
+msgstr ""
+
+#: Node/__init__.py:1071
+msgid ": up to date"
+msgstr ""
+
+#: Node/__init__.py:1180
+msgid "building `%s' because it doesn't exist\n"
+msgstr ""
+
+#: Node/__init__.py:1183
+msgid "rebuilding `%s' because AlwaysBuild() is specified\n"
+msgstr ""
+
+#: Node/__init__.py:1196
+msgid ""
+"Cannot explain why `%s' is being rebuilt: No previous build information "
+"found\n"
+msgstr ""
+
+#: Node/__init__.py:1222
+msgid "`%s' is no longer a dependency\n"
+msgstr ""
+
+#: Node/__init__.py:1227
+msgid "`%s' is a new dependency\n"
+msgstr ""
+
+#: Node/__init__.py:1232
+msgid "the dependency order changed:\n"
+msgstr ""
+
+#: Node/__init__.py:1233
+msgid "%sold: %s\n"
+msgstr ""
+
+#: Node/__init__.py:1234
+msgid "%snew: %s\n"
+msgstr ""
+
+#: Node/__init__.py:1243
+msgid "the contents of the build action changed\n"
+msgstr ""
+
+#: Node/__init__.py:1246
+msgid "the build action changed:\n"
+msgstr ""
+
+#: Node/__init__.py:1251
+msgid "rebuilding `%s' for unknown reasons\n"
+msgstr "bilinmeyen nedenlerden ötürü `%s' yeniden derleniyor\n"
+
+#: Node/__init__.py:1253
+msgid "rebuilding `%s' because"
+msgstr "`%s' yeniden derleniyor çünkü"
+
+#: Options/BoolOption.py:43
+#, fuzzy
+msgid ""
+"The BoolOption() function is deprecated; use the BoolVariable() function "
+"instead."
+msgstr ""
+"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+
+#: Options/EnumOption.py:43
+#, fuzzy
+msgid ""
+"The EnumOption() function is deprecated; use the EnumVariable() function "
+"instead."
+msgstr ""
+"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+
+#: Options/ListOption.py:43
+#, fuzzy
+msgid ""
+"The ListOption() function is deprecated; use the ListVariable() function "
+"instead."
+msgstr ""
+"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+
+#: Options/PackageOption.py:43
+#, fuzzy
+msgid ""
+"The PackageOption() function is deprecated; use the PackageVariable() "
+"function instead."
+msgstr ""
+"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+
+#: Options/PathOption.py:44
+#, fuzzy
+msgid ""
+"The PathOption() function is deprecated; use the PathVariable() function "
+"instead."
+msgstr ""
+"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+
+#: Options/__init__.py:50
+#, fuzzy
+msgid "The Options class is deprecated; use the Variables class instead."
+msgstr ""
+"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+
+#: Platform/__init__.py:115
+msgid "No platform named '%s'"
+msgstr ""
+
+#: Platform/__init__.py:219
+msgid " for command line:\n"
+msgstr ""
+
+#: Platform/__init__.py:219
+msgid "Using tempfile "
+msgstr ""
+
+#: Platform/posix.py:84 Platform/posix.py:171 Platform/win32.py:138
+#: Platform/win32.py:162 Script/Interactive.py:365
+#, fuzzy
+msgid "scons: %s: %s\n"
+msgstr "seçenek %s: %s"
+
+#: Platform/win32.py:57
+msgid "you do not seem to have the pywin32 extensions installed;\n"
+msgstr ""
+
+#: Platform/win32.py:58 Platform/win32.py:62
+msgid "\tparallel (-j) builds may not work reliably with open Python files."
+msgstr ""
+
+#: Platform/win32.py:61
+msgid "your pywin32 extensions do not support file handle operations;\n"
+msgstr ""
+
+#: Platform/win32.py:102 Platform/win32.py:177
+msgid "scons: Could not find command interpreter, is it in your PATH?\n"
+msgstr ""
+
+#: Platform/win32.py:136
+msgid "scons: unknown OSError exception code %d - %s: %s\n"
+msgstr ""
+
+#: Platform/win32.py:172
+msgid "scons: unknown OSError exception code %d - '%s': %s\n"
 msgstr ""
 
 #: SConf.py:83
@@ -313,8 +605,11 @@ msgid "Caught exception while building \"%s\":\n"
 msgstr "\"%s\" derlenirken istisna yakalandı:\n"
 
 #: SConf.py:302
-msgid "Building \"%s\" failed in a previous run and all its sources are up to date."
-msgstr "\"%s\" derlemesi bir önceki çalışmada başarısız oldu ve bütün kaynakları güncel."
+msgid ""
+"Building \"%s\" failed in a previous run and all its sources are up to date."
+msgstr ""
+"\"%s\" derlemesi bir önceki çalışmada başarısız oldu ve bütün kaynakları "
+"güncel."
 
 #: SConf.py:308
 msgid "\"%s\" is up to date."
@@ -353,8 +648,9 @@ msgid "Expected string, int or bool, got "
 msgstr "Beklenen string, sayı yada boole alınan"
 
 #: SConf.py:827
+#, fuzzy
 msgid "CheckContext instance has no attribute '%s'"
-msgstr "CheckContext örneğinin hiç özelliği yok '%s'"
+msgstr "`"
 
 #: SConsign.py:43 SConsign.py:297
 msgid "Ignoring corrupt .sconsign file: %s"
@@ -363,6 +659,577 @@ msgstr "Bozuk .sconsign dosyası yoksayılıyor: %s"
 #: SConsign.py:214
 msgid "Ignoring corrupt sconsign entry : %s (%s)\n"
 msgstr "Bozuk sconsign girdisi yoksayılıyor : %s (%s)\n"
+
+#: Scanner/C.py:104 Scanner/LaTeX.py:330 Scanner/__init__.py:381
+msgid ""
+"No dependency generated for file: %s (included from: %s) -- file not found"
+msgstr ""
+
+#: Scanner/Fortran.py:123
+msgid ""
+"No dependency generated for file: %s (referenced by: %s) -- file not found"
+msgstr ""
+
+#: Script/Interactive.py:136
+#, fuzzy
+msgid "*** Unknown command: %s"
+msgstr "bilinmeyen eylem %r"
+
+#: Script/Interactive.py:221
+msgid "scons: Clearing cached node information ..."
+msgstr ""
+
+#: Script/Interactive.py:271
+msgid "scons: done clearing node information."
+msgstr ""
+
+#: Script/Main.py:175
+#, fuzzy
+msgid "scons: `%s' is up to date."
+msgstr "\"%s\" güncel."
+
+#: Script/Main.py:191
+msgid "Command execution time: %f seconds\n"
+msgstr ""
+
+#: Script/Main.py:215
+#, fuzzy
+msgid "Do not know how to make %s target `%s' (%s)."
+msgstr "Kaynaktan nasıl hedef yaratılacağı bilinmiyor `%s'"
+
+#: Script/Main.py:217
+#, fuzzy
+msgid "Do not know how to make %s target `%s'."
+msgstr "Kaynaktan nasıl hedef yaratılacağı bilinmiyor `%s'"
+
+#: Script/Main.py:220
+msgid "  Stop."
+msgstr ""
+
+#: Script/Main.py:230
+msgid "scons: Nothing to be done for `%s'."
+msgstr ""
+
+#: Script/Main.py:269
+msgid "scons: *** [%s] %s\n"
+msgstr ""
+
+#: Script/Main.py:283
+msgid "scons: internal stack trace:\n"
+msgstr ""
+
+#: Script/Main.py:318 Script/Main.py:330 Script/Main.py:349 Script/Main.py:370
+msgid "Removed "
+msgstr ""
+
+#: Script/Main.py:335
+msgid "Removed directory "
+msgstr ""
+
+#: Script/Main.py:337
+msgid "Path '%s' exists but isn't a file or directory."
+msgstr ""
+
+#: Script/Main.py:342 Script/Main.py:367
+msgid "scons: Could not remove '%s':"
+msgstr ""
+
+#: Script/Main.py:515
+msgid "Object counts:\n"
+msgstr ""
+
+#: Script/Main.py:536
+msgid "Memory %-32s %12d\n"
+msgstr ""
+
+#: Script/Main.py:584 Script/Main.py:596 Script/Main.py:604
+msgid "File \"%s\", line %d, in %s\n"
+msgstr ""
+
+#: Script/Main.py:595 Script/Main.py:603
+msgid ""
+"\n"
+"scons: warning: %s\n"
+msgstr ""
+
+#: Script/Main.py:610
+msgid "internal error"
+msgstr ""
+
+#: Script/Main.py:646
+msgid "--debug=count is not supported when running SCons\n"
+msgstr ""
+
+#: Script/Main.py:647
+msgid "\twith the python -O option or optimized (.pyo) modules."
+msgstr ""
+
+#: Script/Main.py:692
+msgid "site dir %s not found."
+msgstr ""
+
+#: Script/Main.py:718
+msgid "cannot import site_init.py: missing SCons.Script module %s"
+msgstr ""
+
+#: Script/Main.py:726
+msgid "*** Error loading site_init file %s:\n"
+msgstr ""
+
+#: Script/Main.py:732
+msgid "*** cannot import site init file %s:\n"
+msgstr ""
+
+#: Script/Main.py:813
+msgid "Could not change directory to %s\n"
+msgstr ""
+
+#: Script/Main.py:828
+msgid "scons: Entering directory `%s'"
+msgstr ""
+
+#: Script/Main.py:857
+msgid "No SConstruct file found."
+msgstr ""
+
+#: Script/Main.py:921
+msgid "before reading SConscript files:"
+msgstr ""
+
+#: Script/Main.py:926
+msgid "scons: Reading SConscript files ..."
+msgstr ""
+
+#: Script/Main.py:938
+msgid "scons: *** %s  Stop.\n"
+msgstr ""
+
+#: Script/Main.py:944
+msgid "scons: done reading SConscript files."
+msgstr ""
+
+#: Script/Main.py:946
+msgid "after reading SConscript files:"
+msgstr ""
+
+#: Script/Main.py:964
+msgid "Support for pre-2.2 Python (%s) is deprecated.\n"
+msgstr ""
+
+#: Script/Main.py:965
+msgid "    If this will cause hardship, contact dev@scons.tigris.org."
+msgstr ""
+
+#: Script/Main.py:989
+msgid "Use scons -H for help about command-line options."
+msgstr ""
+
+#: Script/Main.py:1097
+msgid ""
+"scons: *** No targets specified and no Default() targets found.  Stop.\n"
+msgstr ""
+
+#: Script/Main.py:1127
+msgid "Building targets ..."
+msgstr ""
+
+#: Script/Main.py:1128
+msgid "done building targets."
+msgstr ""
+
+#: Script/Main.py:1130
+msgid "done building targets (errors occurred during build)."
+msgstr ""
+
+#: Script/Main.py:1132
+msgid "building terminated because of errors."
+msgstr ""
+
+#: Script/Main.py:1138
+msgid "Cleaning targets ..."
+msgstr ""
+
+#: Script/Main.py:1139
+msgid "done cleaning targets."
+msgstr ""
+
+#: Script/Main.py:1141
+msgid "done cleaning targets (errors occurred during clean)."
+msgstr ""
+
+#: Script/Main.py:1143
+msgid "cleaning terminated because of errors."
+msgstr ""
+
+#: Script/Main.py:1183
+#, fuzzy
+msgid "parallel builds are unsupported by this version of Python;\n"
+msgstr ""
+"Yığın boyutu ayarı Python un bu sürümünde desteklenmiyor:\n"
+"    "
+
+#: Script/Main.py:1184
+msgid "\tignoring -j or num_jobs option.\n"
+msgstr ""
+
+#: Script/Main.py:1190
+msgid "before building targets:"
+msgstr ""
+
+#: Script/Main.py:1201
+#, fuzzy
+msgid "scons: Build interrupted.\n"
+msgstr "Derleme kesildi."
+
+#: Script/Main.py:1208 Script/Main.py:1210 Script/Main.py:1216
+msgid "scons: "
+msgstr ""
+
+#: Script/Main.py:1213
+#, fuzzy
+msgid "scons: writing .sconsign file."
+msgstr "Bozuk .sconsign dosyası yoksayılıyor: %s"
+
+#: Script/Main.py:1219
+msgid "after building targets:"
+msgstr ""
+
+#: Script/Main.py:1220
+msgid "build"
+msgstr ""
+
+#: Script/Main.py:1220
+msgid "post-"
+msgstr ""
+
+#: Script/Main.py:1273
+msgid "scons: *** SCons version %s does not run under Python version %s.\n"
+msgstr ""
+
+#: Script/Main.py:1277
+msgid "SCons by Steven Knight et al.:\n"
+msgstr ""
+
+#: Script/Main.py:1301
+#, fuzzy
+msgid "scons: Build interrupted."
+msgstr "Derleme kesildi."
+
+#: Script/Main.py:1329
+msgid "Memoizer (memory cache) hits and misses:"
+msgstr ""
+
+#: Script/Main.py:1348
+msgid "Total build time: %f seconds"
+msgstr ""
+
+#: Script/Main.py:1349
+msgid "Total SConscript file execution time: %f seconds"
+msgstr ""
+
+#: Script/Main.py:1350
+msgid "Total SCons execution time: %f seconds"
+msgstr ""
+
+#: Script/Main.py:1351
+msgid "Total command execution time: %f seconds"
+msgstr ""
+
+#: Script/SConsOptions.py:137
+msgid "This option is not settable from a SConscript file: %s"
+msgstr ""
+
+#: Script/SConsOptions.py:145
+msgid "A positive integer is required: %s"
+msgstr ""
+
+#: Script/SConsOptions.py:150 Script/SConsOptions.py:175
+#: Script/SConsOptions.py:180
+msgid "An integer is required: %s"
+msgstr ""
+
+#: Script/SConsOptions.py:155
+msgid "A string is required: %s"
+msgstr ""
+
+#: Script/SConsOptions.py:157
+#, fuzzy
+msgid "Not a valid duplication style: %s"
+msgstr "geçersiz seçenek türü: %r"
+
+#: Script/SConsOptions.py:165
+#, fuzzy
+msgid "Not a valid diskcheck value: %s"
+msgstr "seçenek %s: geçersiz %s değer: %r"
+
+#: Script/SConsOptions.py:227 compat/_scons_optparse.py:724
+msgid "'const' must not be supplied for action %r"
+msgstr "%r eylemi için 'const' sağlanmamalı"
+
+#: Script/SConsOptions.py:272
+#, fuzzy
+msgid "SCons error: %s\n"
+msgstr "%s: hata: %s\n"
+
+#: Script/SConsOptions.py:321 compat/_scons_optparse.py:1517
+#: compat/_scons_optparse.py:1556
+msgid "%s option requires an argument"
+msgstr "%s seçeneği bir parametre gerektirir"
+
+#: Script/SConsOptions.py:323 compat/_scons_optparse.py:1519
+#: compat/_scons_optparse.py:1558
+msgid "%s option requires %d arguments"
+msgstr "%s seçeneği %d parametrelerini gerektirir"
+
+#: Script/SConsOptions.py:332 compat/_scons_optparse.py:1528
+msgid "%s option does not take a value"
+msgstr "%s seçeneği bir değer almaz"
+
+#: Script/SConsOptions.py:372
+#, fuzzy
+msgid "usage: %s\n"
+msgstr "Kullanım: %s\n"
+
+#: Script/SConsOptions.py:500
+msgid "usage: scons [OPTION] [TARGET] ..."
+msgstr ""
+
+#: Script/SConsOptions.py:535
+msgid "Ignored for compatibility."
+msgstr ""
+
+#: Script/SConsOptions.py:540
+msgid "Remove specified targets and dependencies."
+msgstr ""
+
+#: Script/SConsOptions.py:546
+msgid "Change to DIR before doing anything."
+msgstr ""
+
+#: Script/SConsOptions.py:553
+msgid "Print CacheDir debug info to FILE."
+msgstr ""
+
+#: Script/SConsOptions.py:564
+msgid "Copy already-built targets into the CacheDir."
+msgstr ""
+
+#: Script/SConsOptions.py:569
+msgid "Print build actions for files from CacheDir."
+msgstr ""
+
+#: Script/SConsOptions.py:577
+msgid "Controls Configure subsystem: %s."
+msgstr ""
+
+#: Script/SConsOptions.py:589
+msgid ""
+"Search up directory tree for SConstruct,       build all Default() targets."
+msgstr ""
+
+#: Script/SConsOptions.py:619
+msgid "Warning:  %s is not a valid debug type"
+msgstr ""
+
+#: Script/SConsOptions.py:620
+msgid "Print various types of debugging information: %s."
+msgstr ""
+
+#: Script/SConsOptions.py:633
+msgid "Warning: `%s' is not a valid diskcheck type"
+msgstr ""
+
+#: Script/SConsOptions.py:640
+msgid "Enable specific on-disk checks."
+msgstr ""
+
+#: Script/SConsOptions.py:645
+msgid "`%s' is not a valid duplication style."
+msgstr ""
+
+#: Script/SConsOptions.py:651
+msgid "Set the preferred duplication methods. Must be one of "
+msgstr ""
+
+#: Script/SConsOptions.py:664
+msgid "Read FILE as the top-level SConstruct file."
+msgstr ""
+
+#: Script/SConsOptions.py:669
+msgid "Print defined help message, or this one."
+msgstr ""
+
+#: Script/SConsOptions.py:673
+#, fuzzy
+msgid "Print this message and exit."
+msgstr "bu yardım mesajını göster ve çık"
+
+#: Script/SConsOptions.py:678
+msgid "Ignore errors from build actions."
+msgstr ""
+
+#: Script/SConsOptions.py:684
+msgid "Search DIR for imported Python modules."
+msgstr ""
+
+#: Script/SConsOptions.py:690
+msgid "Cache implicit dependencies"
+msgstr ""
+
+#: Script/SConsOptions.py:699
+msgid "Ignore cached implicit dependencies."
+msgstr ""
+
+#: Script/SConsOptions.py:704
+msgid "Ignore changes in implicit dependencies."
+msgstr ""
+
+#: Script/SConsOptions.py:709
+msgid "Run in interactive mode."
+msgstr ""
+
+#: Script/SConsOptions.py:715
+msgid "Allow N jobs at once."
+msgstr ""
+
+#: Script/SConsOptions.py:721
+msgid "Keep going when a target can't be made."
+msgstr ""
+
+#: Script/SConsOptions.py:727
+msgid "Set maximum system clock drift to N seconds."
+msgstr ""
+
+#: Script/SConsOptions.py:734
+msgid "Set chunk-size for MD5 signature computation to N kilobytes."
+msgstr ""
+
+#: Script/SConsOptions.py:740
+msgid "Don't build; just print commands."
+msgstr ""
+
+#: Script/SConsOptions.py:745
+msgid "Don't search or use the usual site_scons dir."
+msgstr ""
+
+#: Script/SConsOptions.py:751
+msgid "Profile SCons and put results in FILE."
+msgstr ""
+
+#: Script/SConsOptions.py:757
+msgid "Don't build; exit status says if up to date."
+msgstr ""
+
+#: Script/SConsOptions.py:762
+msgid "Suppress \"Reading/Building\" progress messages."
+msgstr ""
+
+#: Script/SConsOptions.py:767
+msgid "Build dependencies in random order."
+msgstr ""
+
+#: Script/SConsOptions.py:772
+msgid "Don't print commands."
+msgstr ""
+
+#: Script/SConsOptions.py:778
+msgid "Use DIR instead of the usual site_scons dir."
+msgstr ""
+
+#: Script/SConsOptions.py:785
+msgid "Set the stack size of the threads used to run jobs to N kilobytes."
+msgstr ""
+
+#: Script/SConsOptions.py:792
+msgid "Trace Node evaluation to FILE."
+msgstr ""
+
+#: Script/SConsOptions.py:810
+msgid "Warning:  %s is not a valid --tree option"
+msgstr ""
+
+#: Script/SConsOptions.py:813
+msgid "Print a dependency tree in various formats: %s."
+msgstr ""
+
+#: Script/SConsOptions.py:826
+msgid ""
+"Search up directory tree for SConstruct,       build targets at or below "
+"current directory."
+msgstr ""
+
+#: Script/SConsOptions.py:832
+msgid ""
+"Search up directory tree for SConstruct,       build Default() targets from "
+"local SConscript."
+msgstr ""
+
+#: Script/SConsOptions.py:840
+#, fuzzy
+msgid "Print the SCons version number and exit."
+msgstr "programın sürüm numarasını göster ve çık"
+
+#: Script/SConsOptions.py:851
+msgid "Enable or disable warnings."
+msgstr ""
+
+#: Script/SConsOptions.py:858
+msgid "Search REPOSITORY for source and target files."
+msgstr ""
+
+#: Script/SConsOptions.py:866
+msgid "Warning:  the %s option is not yet implemented\n"
+msgstr ""
+
+#: Script/SConscript.py:121
+msgid "Export of non-existent variable '%s'"
+msgstr ""
+
+#: Script/SConscript.py:153
+msgid "Return of non-existent variable '%s'"
+msgstr ""
+
+#: Script/SConscript.py:272
+msgid "Ignoring missing SConscript '%s'"
+msgstr ""
+
+#: Script/SConscript.py:343
+msgid "could not find SConscript stack frame"
+msgstr ""
+
+#: Script/SConscript.py:397
+msgid "Invalid SConscript usage - no parameters"
+msgstr ""
+
+#: Script/SConscript.py:419
+msgid "Invalid SConscript() usage - too many arguments"
+msgstr ""
+
+#: Script/SConscript.py:431
+msgid ""
+"Invalid SConscript() usage - can only specify one SConscript with a "
+"variant_dir"
+msgstr ""
+
+#: Script/SConscript.py:462 Script/SConscript.py:572
+msgid "Calling Configure from Builders is not supported."
+msgstr ""
+
+#: Script/SConscript.py:477
+msgid "SCons %s or greater required, but you have SCons %s"
+msgstr ""
+
+#: Script/SConscript.py:490
+msgid "Python %d.%d or greater required, but you have Python %s"
+msgstr ""
+
+#: Script/SConscript.py:530
+msgid "Import of non-existent variable '%s'"
+msgstr ""
+
+#: Script/__init__.py:369
+msgid "%s = _SConscript.DefaultEnvironmentCall(%s)"
+msgstr ""
 
 #: Sig.py:42
 msgid ""
@@ -377,8 +1244,9 @@ msgid "%s `%s' trying to evaluate `%s'"
 msgstr ""
 
 #: Subst.py:245
+#, fuzzy
 msgid "NodeList has no attribute: %s"
-msgstr ""
+msgstr "`"
 
 #: Taskmaster.py:170
 msgid "Task.prepare()"
@@ -388,46 +1256,6 @@ msgstr ""
 msgid ""
 "Direct use of the Taskmaster.Task class will be deprecated\n"
 "\tin a future release."
-msgstr ""
-
-#: Taskmaster.py:223
-msgid "Task.execute()"
-msgstr ""
-
-#: Taskmaster.py:260
-msgid "Task.executed_without_callbacks()"
-msgstr ""
-
-#: Taskmaster.py:283
-msgid "Task.executed_with_callbacks()"
-msgstr ""
-
-#: Taskmaster.py:319
-msgid "Task.failed_stop()"
-msgstr ""
-
-#: Taskmaster.py:346
-msgid "Task.failed_continue()"
-msgstr ""
-
-#: Taskmaster.py:358
-msgid "Task.make_ready_all()"
-msgstr ""
-
-#: Taskmaster.py:374
-msgid "Task.make_ready_current()"
-msgstr ""
-
-#: Taskmaster.py:418
-msgid "Task.postprocess()"
-msgstr ""
-
-#: Taskmaster.py:435
-msgid "Task.postprocess() %s removing"
-msgstr ""
-
-#: Taskmaster.py:452
-msgid "Task.postprocess() %s adjusted parent ref count"
 msgstr ""
 
 #: Taskmaster.py:734
@@ -478,8 +1306,635 @@ msgstr ""
 msgid "  Internal Error: no cycle found for node %s (%s) in state %s\n"
 msgstr ""
 
+#: Tool/FortranCommon.py:65
+msgid "Could not locate "
+msgstr ""
+
+#: Tool/MSCommon/common.py:94
+msgid "Calling '%s %s'"
+msgstr ""
+
+#: Tool/MSCommon/common.py:100
+msgid "Calling '%s'"
+msgstr ""
+
+#: Tool/MSCommon/netframework.py:46
+msgid "Found framework install root in registry: %s"
+msgstr ""
+
+#: Tool/MSCommon/netframework.py:48
+msgid "Could not read reg key %s"
+msgstr ""
+
+#: Tool/MSCommon/netframework.py:52
+msgid "%s not found on fs"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:74
+msgid "find_sdk_dir():  can not read registry"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:82
+msgid "find_sdk_dir(): no registry key %s"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:86
+msgid "find_sdk_dir():  %s not on file system"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:91
+msgid "find_sdk_dir():  sanity check %s not found"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:216
+msgid "SCons cannot read registry"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:221
+msgid "Found current sdk dir in registry: %s"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:223
+msgid "Did not find current sdk in registry"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:227
+msgid "Current sdk dir %s not on fs"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:238
+msgid "SDK version %s is not supported"
+msgstr ""
+
+#: Tool/MSCommon/sdk.py:243
+msgid "SDK version %s is not installed"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:61
+msgid "find_batch_file():  no pdir"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:73
+msgid "find_executable():  no pdir"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:78
+msgid "find_executable():  %s not on file system"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:84
+msgid "find_vc_product_dir():  can not read registry"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:90
+msgid "find_vc_product_dir():  no registry key %s"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:98 Tool/MSCommon/vs.py:106
+msgid "find_vc_product_dir():  %s not on file system"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:102
+msgid "find_vc_product_dir():  no %s variable"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:337
+msgid "trying to find VS %s"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:339
+msgid "found VS %s"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:390
+msgid "Visual Studio version %s is not supported"
+msgstr ""
+
+#: Tool/MSCommon/vs.py:452
+msgid "Visual Studio version %s does not support architecture %s"
+msgstr ""
+
+#: Tool/PharLapCommon.py:51 Tool/intelc.py:262
+msgid "No Windows registry module was found"
+msgstr ""
+
+#: Tool/PharLapCommon.py:67
+msgid ""
+"Cannot find Phar Lap ETS path in the registry.  Is it installed properly?"
+msgstr ""
+
+#: Tool/PharLapCommon.py:84
+msgid ""
+"Cannot find embkern.h in ETS include directory.\n"
+"Is Phar Lap ETS installed properly?"
+msgstr ""
+
+#: Tool/__init__.py:117 Tool/__init__.py:147
+msgid "No module named %s"
+msgstr ""
+
+#: Tool/__init__.py:156 Tool/__init__.py:159
+#, fuzzy
+msgid "No tool named '%s': %s"
+msgstr "seçenek %s: %s"
+
+#: Tool/filesystem.py:54
+#, fuzzy
+msgid ""
+"\n"
+"target: %s\n"
+"source: %s"
+msgstr "%s(hedef, kaynak, çevre)"
+
+#: Tool/install.py:58
+#, fuzzy
+msgid "cannot overwrite non-directory `%s' with a directory `%s'"
+msgstr "'%s' dizini kendi içine '%s' taşınamıyor."
+
+#: Tool/install.py:77
+#, fuzzy
+msgid "Missing INSTALL construction variable."
+msgstr "Kayıp KABUK yapılandırma değişkeni."
+
+#: Tool/install.py:80
+msgid ""
+"Installing source %s into target %s: target and source lists must have same "
+"length."
+msgstr ""
+
+#: Tool/install.py:97
+msgid "Install %s: \"%s\" as \"%s\""
+msgstr ""
+
+#: Tool/install.py:139
+msgid "Both target and dir defined for Install(), only one may be defined."
+msgstr ""
+
+#: Tool/install.py:153
+msgid ""
+"Target `%s' of Install() is a file, but should be a directory.  Perhaps you "
+"have the Install() arguments backwards?"
+msgstr ""
+
+#: Tool/install.py:185
+msgid "A directory under which all installed files will be placed."
+msgstr ""
+
+#: Tool/intelc.py:123
+msgid "Intel compiler: Invalid ABI %s, valid values are %s"
+msgstr ""
+
+#: Tool/intelc.py:162
+msgid ""
+"%s was not found in the registry, for Intel compiler version %s, abi='%s'"
+msgstr ""
+
+#: Tool/intelc.py:170
+msgid "%s\\%s was not found in the registry."
+msgstr ""
+
+#: Tool/intelc.py:219
+msgid ""
+"scons: *** Ignoring the registry key for the Intel compiler version %s.\n"
+"scons: *** It seems that the compiler was uninstalled and that the registry\n"
+"scons: *** was not cleaned up properly.\n"
+msgstr ""
+
+#: Tool/intelc.py:223
+msgid "scons: *** Ignoring "
+msgstr ""
+
+#: Tool/intelc.py:268
+msgid "Can't find Intel compiler in %s"
+msgstr ""
+
+#: Tool/intelc.py:281
+msgid "Can't find version %s Intel compiler in %s (abi='%s')"
+msgstr ""
+
+#: Tool/intelc.py:318
+msgid "Invalid Intel compiler version %s: "
+msgstr ""
+
+#: Tool/intelc.py:319
+msgid "installed versions are %s"
+msgstr ""
+
+#: Tool/intelc.py:355
+msgid "Failed to find Intel compiler for version='%s', abi='%s'"
+msgstr ""
+
+#: Tool/intelc.py:362
+msgid "Can't find Intel compiler top dir for version='%s', abi='%s'"
+msgstr ""
+
+#: Tool/intelc.py:367
+msgid "Intel C compiler: using version %s (%g), abi %s, in '%s'"
+msgstr ""
+
+#: Tool/intelc.py:460
+msgid "Intel license dir was not found."
+msgstr ""
+
+#: Tool/intelc.py:461
+msgid ""
+"  Tried using the INTEL_LICENSE_FILE environment variable (%s), the registry "
+"(%s) and the default path (%s)."
+msgstr ""
+
+#: Tool/intelc.py:462
+msgid "  Using the default path as a last resort."
+msgstr ""
+
+#: Tool/javac.py:68 Tool/javac.py:94
+msgid "Java source must be File or Dir, not '%s'"
+msgstr ""
+
+#: Tool/link.py:55
+msgid ""
+"Using $CXX to link Fortran and C++ code together.\n"
+"\t"
+msgstr ""
+
+#: Tool/link.py:56
+msgid ""
+"This may generate a buggy executable if the '%s'\n"
+"\t"
+msgstr ""
+
+#: Tool/link.py:57
+msgid "compiler does not know how to deal with Fortran runtimes."
+msgstr ""
+
+#: Tool/mingw.py:78 Tool/mslink.py:108 Tool/mwld.py:89
+msgid "A shared library should have exactly one target with the suffix: %s"
+msgstr ""
+
+#: Tool/mslink.py:166
+msgid "An executable should have exactly one target with the suffix: %s"
+msgstr ""
+
+#: Tool/msvc.py:62
+msgid "The PCHSTOP construction must be defined if PCH is defined."
+msgstr ""
+
+#: Tool/msvc.py:64
+msgid "The PCHSTOP construction variable must be a string: %r"
+msgstr ""
+
+#: Tool/msvs.py:194 Tool/msvs.py:932
+msgid "You must specify a 'variant' argument (i.e. 'Debug' or "
+msgstr ""
+
+#: Tool/msvs.py:195
+msgid "'Release') to create an MSVSProject."
+msgstr ""
+
+#: Tool/msvs.py:230
+msgid "Sizes of 'outdir' and 'variant' lists must be the same."
+msgstr ""
+
+#: Tool/msvs.py:330 Tool/msvs.py:928
+msgid "Adding '"
+msgstr ""
+
+#: Tool/msvs.py:543 Tool/msvs.py:852 Tool/msvs.py:1081 Tool/msvs.py:1184
+#: Tool/msvs.py:1200
+msgid "\" for writing:"
+msgstr ""
+
+#: Tool/msvs.py:543 Tool/msvs.py:852 Tool/msvs.py:1081 Tool/msvs.py:1184
+#: Tool/msvs.py:1200
+msgid "Unable to open \""
+msgstr ""
+
+#: Tool/msvs.py:866
+msgid "You must specify a 'projects' argument to create an MSVSSolution."
+msgstr ""
+
+#: Tool/msvs.py:870
+msgid "The 'projects' argument must be a list of nodes."
+msgstr ""
+
+#: Tool/msvs.py:874
+msgid "You must specify at least one project to create an MSVSSolution."
+msgstr ""
+
+#: Tool/msvs.py:933
+msgid "'Release') to create an MSVS Solution File."
+msgstr ""
+
+#: Tool/msvs.py:1130
+msgid "Unable to open %s for writing: %s"
+msgstr ""
+
+#: Tool/msvs.py:1187
+msgid ""
+"This is just a placeholder file.\n"
+"The real project file is here:\n"
+"%s\n"
+msgstr ""
+
+#: Tool/msvs.py:1203
+msgid ""
+"This is just a placeholder file.\n"
+"The real workspace file is here:\n"
+"%s\n"
+msgstr ""
+
+#: Tool/msvs.py:1239 Tool/msvs.py:1243
+msgid ""
+"buildtarget can be a string, a node, a list of strings or nodes, or None"
+msgstr ""
+
+#: Tool/msvs.py:1255 Tool/msvs.py:1259
+msgid "outdir can be a string, a node, a list of strings or nodes, or None"
+msgstr ""
+
+#: Tool/msvs.py:1265 Tool/msvs.py:1328
+msgid "name must be a string"
+msgstr ""
+
+#: Tool/msvs.py:1275 Tool/msvs.py:1338
+msgid "name must be a string or a list of strings"
+msgstr ""
+
+#: Tool/msvs.py:1279 Tool/msvs.py:1342
+msgid "variant must be specified"
+msgstr ""
+
+#: Tool/msvs.py:1290 Tool/msvs.py:1292
+msgid " must be a string or a list of strings"
+msgstr ""
+
+#: Tool/msvs.py:1340
+msgid "variant must be a string or a list of strings"
+msgstr ""
+
+#: Tool/msvs.py:1348
+msgid "slnguid must be a string"
+msgstr ""
+
+#: Tool/packaging/__init__.py:62
+msgid "No tags given."
+msgstr ""
+
+#: Tool/packaging/__init__.py:95
+msgid "No source for Package() given"
+msgstr ""
+
+#: Tool/packaging/__init__.py:114
+msgid "No type for Package() given"
+msgstr ""
+
+#: Tool/packaging/__init__.py:126
+msgid "packager %s not available: %s"
+msgstr ""
+
+#: Tool/packaging/__init__.py:147
+msgid "Missing Packagetag '%s'"
+msgstr ""
+
+#: Tool/packaging/__init__.py:163 Tool/packaging/__init__.py:183
+msgid "Missing Packagetag '%s' for %s packager"
+msgstr ""
+
+#: Tool/packaging/__init__.py:186
+msgid "Missing Packagetags '%s' for %s packager"
+msgstr ""
+
+#: Tool/packaging/__init__.py:209
+msgid "The type of package to create."
+msgstr ""
+
+#: Tool/packaging/__init__.py:225
+msgid "the type of package to create."
+msgstr ""
+
+#: Tool/packaging/__init__.py:296
+msgid ""
+"there are files to package which have no        InstallBuilder attached, "
+"this might lead to irreproducible packages"
+msgstr ""
+
+#: Tool/packaging/msi.py:127
+msgid "shortname is %s, longname is %s"
+msgstr ""
+
+#: Tool/packaging/msi.py:223
+msgid "\"%s\" package field for MSI is missing."
+msgstr ""
+
+#: Tool/packaging/rpm.py:54
+msgid "Setting target is not supported for rpm."
+msgstr ""
+
+#: Tool/packaging/rpm.py:122
+msgid "Missing PackageTag '%s' for RPM packager"
+msgstr ""
+
+#: Tool/packaging/rpm.py:158
+msgid "\"%s\" package field for RPM is missing."
+msgstr ""
+
+#: Tool/qt.py:76
+msgid "Generated moc file '%s' is not included by '%s'"
+msgstr ""
+
+#: Tool/qt.py:135
+msgid "scons: qt: '%s' seems to be a binary. Discarded."
+msgstr ""
+
+#: Tool/qt.py:140
+msgid "scons: qt: '%s' is no cxx file. Discarded."
+msgstr ""
+
+#: Tool/qt.py:153
+msgid "scons: qt: Scanning '%s' (header of '%s')"
+msgstr ""
+
+#: Tool/qt.py:158
+msgid "scons: qt: no header for '%s'."
+msgstr ""
+
+#: Tool/qt.py:166 Tool/qt.py:173
+msgid "scons: qt: found Q_OBJECT macro in '%s', moc'ing to '%s'"
+msgstr ""
+
+#: Tool/qt.py:197
+msgid "Could not detect qt, using moc executable as a hint (QTDIR=%s)"
+msgstr ""
+
+#: Tool/qt.py:202
+msgid "Could not detect qt, using empty QTDIR"
+msgstr ""
+
+#: Tool/rpm.py:91
+msgid "got %s but expected %s"
+msgstr ""
+
+#: Tool/tex.py:138
+msgid " searching for '%s' with extensions: "
+msgstr ""
+
+#: Tool/tex.py:143 Tool/tex.py:157
+msgid " look for '%s'"
+msgstr ""
+
+#: Tool/tex.py:146 Tool/tex.py:161
+msgid " found '%s'"
+msgstr ""
+
+#: Tool/tex.py:164
+msgid " did not find '%s'"
+msgstr ""
+
+#: Tool/tex.py:242
+msgid "file %s changed, rerunning Latex, new hash = "
+msgstr ""
+
+#: Tool/tex.py:280
+msgid "Need to run bibtex"
+msgstr ""
+
+#: Tool/tex.py:292
+msgid "Need to run makeindex"
+msgstr ""
+
+#: Tool/tex.py:309
+msgid "Need to run makeindex for nomenclature"
+msgstr ""
+
+#: Tool/tex.py:319
+msgid "Need to run makeindex for glossary"
+msgstr ""
+
+#: Tool/tex.py:329
+msgid "rerun Latex due to latex or package rerun warning"
+msgstr ""
+
+#: Tool/tex.py:334
+msgid "rerun Latex due to 'Rerun to get citations correct' warning"
+msgstr ""
+
+#: Tool/tex.py:339
+msgid "rerun Latex due to undefined references or citations"
+msgstr ""
+
+#: Tool/tex.py:342
+msgid "reached max number of retries on Latex ,"
+msgstr ""
+
+#: Tool/tex.py:348
+#, fuzzy
+msgid "move %s to %s"
+msgstr "%s eylemi %s eylemine eklenemiyor."
+
+#: Tool/tex.py:432
+msgid " scanning "
+msgstr ""
+
+#: Tool/tex.py:442
+msgid "files included by '%s': "
+msgstr ""
+
+#: Tool/tex.py:451
+msgid " done scanning "
+msgstr ""
+
+#: Tool/tex.py:539
+msgid "search path "
+msgstr ""
+
+#: Tool/textfile.py:85
+msgid "unexpected type/class for LINESEPARATOR: %s"
+msgstr ""
+
+#: Tool/textfile.py:98
+msgid "SUBST_DICT must be dict or sequence"
+msgstr ""
+
+#: Tool/textfile.py:113
+msgid "Can't write target file %s"
+msgstr ""
+
+#: Tool/textfile.py:123
+msgid "Creating '%s'"
+msgstr ""
+
+#: Tool/textfile.py:135
+msgid "Only one target file allowed"
+msgstr ""
+
 #: Util.py:1096
 msgid "dictionary is empty"
+msgstr ""
+
+#: Variables/BoolVariable.py:65
+msgid "Invalid value for boolean option: %s"
+msgstr ""
+
+#: Variables/BoolVariable.py:76
+msgid "Invalid value for boolean option %s: %s"
+msgstr ""
+
+#: Variables/EnumVariable.py:53
+#, fuzzy
+msgid "Invalid value for option %s: %s"
+msgstr "geçersiz seçenek türü: %r"
+
+#: Variables/ListVariable.py:105
+#, fuzzy
+msgid "Invalid value(s) for option: %s"
+msgstr "gçersiz eylem: %r"
+
+#: Variables/ListVariable.py:126
+msgid "allowed names: %s"
+msgstr ""
+
+#: Variables/PackageVariable.py:87
+msgid "Path does not exist for option %s: %s"
+msgstr ""
+
+#: Variables/PathVariable.py:92
+msgid "Directory path for option %s is a file: %s"
+msgstr ""
+
+#: Variables/PathVariable.py:94
+msgid "Directory path for option %s does not exist: %s"
+msgstr ""
+
+#: Variables/PathVariable.py:101
+msgid "Path for option %s is a file, not a directory: %s"
+msgstr ""
+
+#: Variables/PathVariable.py:110
+msgid "File path for option %s is a directory: %s"
+msgstr ""
+
+#: Variables/PathVariable.py:112
+msgid "File path for option %s does not exist: %s"
+msgstr ""
+
+#: Variables/PathVariable.py:118
+msgid "Path for option %s does not exist: %s"
+msgstr ""
+
+#: Variables/__init__.py:133
+#, fuzzy
+msgid "Illegal Variables.Add() key `%s'"
+msgstr "Yasal olmayan yapılandurma değişkeni"
+
+#: Variables/__init__.py:215
+msgid ""
+"Error converting option: %s\n"
+"%s"
+msgstr ""
+
+#: Variables/__init__.py:277
+msgid ""
+"Error writing options to file: %s\n"
+"%s"
 msgstr ""
 
 #: Warnings.py:206
@@ -488,6 +1943,373 @@ msgstr ""
 
 #: Warnings.py:211
 msgid "Can not disable mandataory warning: '%s'\n"
+msgstr ""
+
+#: compat/__init__.py:218
+msgid "Cannot move a directory '%s' into itself '%s'."
+msgstr "'%s' dizini kendi içine '%s' taşınamıyor."
+
+#: compat/_scons_hashlib.py:47
+msgid "unsupported hash type"
+msgstr "desteklenmemiş karışık tür"
+
+#: compat/_scons_optparse.py:131
+msgid "option %s: %s"
+msgstr "seçenek %s: %s"
+
+#: compat/_scons_optparse.py:154
+msgid "no such option: %s"
+msgstr "böyle bir seçenek yok: %s"
+
+#: compat/_scons_optparse.py:165
+msgid "ambiguous option: %s (%s?)"
+msgstr "bulanık seçenek: %s (%s?)"
+
+#: compat/_scons_optparse.py:244
+msgid "invalid metavar delimiter for short options: %r"
+msgstr ""
+
+#: compat/_scons_optparse.py:250
+msgid "invalid metavar delimiter for long options: %r"
+msgstr ""
+
+#: compat/_scons_optparse.py:259
+msgid "Indent decreased below 0."
+msgstr "Girinti 0 ın altına düşürüldü."
+
+#: compat/_scons_optparse.py:263 compat/_scons_optparse.py:266
+msgid "subclasses must implement"
+msgstr "altsınıflar "
+
+#: compat/_scons_optparse.py:390
+msgid "Usage: %s\n"
+msgstr "Kullanım: %s\n"
+
+#: compat/_scons_optparse.py:409
+msgid "Usage"
+msgstr "Kullanım"
+
+#: compat/_scons_optparse.py:446
+msgid "integer"
+msgstr "tam sayı"
+
+#: compat/_scons_optparse.py:447
+msgid "long integer"
+msgstr "uzun tam sayı"
+
+#: compat/_scons_optparse.py:448
+msgid "floating-point"
+msgstr "ondalık-noktası"
+
+#: compat/_scons_optparse.py:449
+msgid "complex"
+msgstr "karışık"
+
+#: compat/_scons_optparse.py:457
+msgid "option %s: invalid %s value: %r"
+msgstr "seçenek %s: geçersiz %s değer: %r"
+
+#: compat/_scons_optparse.py:465
+#, fuzzy
+msgid "option %s: invalid choice: %r (choose from %s)"
+msgstr "seçenek %s: geçersiz tercih: %r (% seçin)"
+
+#: compat/_scons_optparse.py:613
+msgid "at least one option string must be supplied"
+msgstr "en az bir seçenek dizgisi sağlanmalı"
+
+#: compat/_scons_optparse.py:620
+msgid "invalid option string %r: must be at least two characters long"
+msgstr "geçersiz seçenek dizgisi %r en az iki karakter uzunluğunda olmalı"
+
+#: compat/_scons_optparse.py:625
+#, fuzzy
+msgid ""
+"invalid short option string %r: must be of the form -x, (x any non-dash char)"
+msgstr "geçersiz kısa seçenek dizgisi %r: -x formunda olmalı, (x )"
+
+#: compat/_scons_optparse.py:632
+msgid "invalid long option string %r: must start with --, followed by non-dash"
+msgstr "geçersiz uzun seçenek dizgisi %r: -- ile başlamalı, tireyle bitmeyen"
+
+#: compat/_scons_optparse.py:651
+msgid "invalid keyword arguments: %s"
+msgstr "geçersiz klavye parametreleri: %s"
+
+#: compat/_scons_optparse.py:661
+msgid "invalid action: %r"
+msgstr "gçersiz eylem: %r"
+
+#: compat/_scons_optparse.py:688
+msgid "invalid option type: %r"
+msgstr "geçersiz seçenek türü: %r"
+
+#: compat/_scons_optparse.py:691
+msgid "must not supply a type for action %r"
+msgstr ""
+
+#: compat/_scons_optparse.py:697
+msgid "must supply a list of choices for type 'choice'"
+msgstr "'tercih' türü için bir tercihler listesi sağlanmalı"
+
+#: compat/_scons_optparse.py:700
+msgid "choices must be a list of strings ('%s' supplied)"
+msgstr "tercihler dizgeler listesi olmalı ('%s' sağlandı)"
+
+#: compat/_scons_optparse.py:704
+msgid "must not supply choices for type %r"
+msgstr "%r  türü için tercihler sağlanmamalı"
+
+#: compat/_scons_optparse.py:733
+msgid "'nargs' must not be supplied for action %r"
+msgstr "%r eylemi için 'nargs' sağlanmamalı"
+
+#: compat/_scons_optparse.py:744
+msgid "callback_args, if supplied, must be a tuple: not %r"
+msgstr "callback_args, eğer sağlandıysa, bir demet olmalı: %r değil"
+
+#: compat/_scons_optparse.py:749
+msgid "callback_kwargs, if supplied, must be a dict: not %r"
+msgstr "callback_kwargs, eğer sağlandıysa, bir sözlük olmalı: %r değil"
+
+#: compat/_scons_optparse.py:754
+msgid "callback supplied (%r) for non-callback option"
+msgstr "geridönüş sağlandı (%r)"
+
+#: compat/_scons_optparse.py:758
+msgid "callback_args supplied for non-callback option"
+msgstr ""
+
+#: compat/_scons_optparse.py:761
+msgid "callback_kwargs supplied for non-callback option"
+msgstr ""
+
+#: compat/_scons_optparse.py:844
+msgid "unknown action %r"
+msgstr "bilinmeyen eylem %r"
+
+#: compat/_scons_optparse.py:916
+msgid "invalid update mode: %r"
+msgstr "geçersiz güncel kip: %r"
+
+#: compat/_scons_optparse.py:995
+msgid "invalid conflict_resolution value %r"
+msgstr "geçersiz conflict_resolution değeri %r"
+
+#: compat/_scons_optparse.py:1027
+msgid "conflicting option string(s): %s"
+msgstr "çakışan seçenek dizgi(leri): %s"
+
+#: compat/_scons_optparse.py:1050
+msgid "not an Option instance: %r"
+msgstr "Option örneği değil: %r"
+
+#: compat/_scons_optparse.py:1052 compat/_scons_optparse.py:1365
+msgid "invalid arguments"
+msgstr "geçersiz parametreler"
+
+#: compat/_scons_optparse.py:1090
+msgid "no such option %r"
+msgstr "böyle bir seçenek yok %r"
+
+#: compat/_scons_optparse.py:1279
+msgid "show this help message and exit"
+msgstr "bu yardım mesajını göster ve çık"
+
+#: compat/_scons_optparse.py:1284
+msgid "show program's version number and exit"
+msgstr "programın sürüm numarasını göster ve çık"
+
+#: compat/_scons_optparse.py:1307
+msgid "%prog [options]"
+msgstr "%prog [options]"
+
+#: compat/_scons_optparse.py:1361
+msgid "not an OptionGroup instance: %r"
+msgstr "OptionGroup örneği değil: %r"
+
+#: compat/_scons_optparse.py:1363
+msgid "invalid OptionGroup (wrong parser)"
+msgstr "geçersiz OptionGroup (hatalı ayrıştırıcı)"
+
+#: compat/_scons_optparse.py:1602
+msgid "%s: error: %s\n"
+msgstr "%s: hata: %s\n"
+
+#: compat/_scons_optparse.py:1645
+msgid "Options"
+msgstr "Seçenekler"
+
+#: compat/_scons_sets.py:96
+msgid "BaseSet is an abstract class.  Use Set or ImmutableSet."
+msgstr "BaseSet soyut bir sınıf.  Set yada ImmutableSet kullanın."
+
+#: compat/_scons_sets.py:134
+msgid "can't compare sets using cmp()"
+msgstr "cmp() kullanarak setleri karşılaştıramıyor"
+
+#: compat/_scons_sets.py:345
+msgid "Binary operation only permitted between sets"
+msgstr "İkili işlemlere sadece setler arasında izin verilir"
+
+#: compat/_scons_sets.py:443
+#, fuzzy
+msgid "Can't hash a Set, only an ImmutableSet."
+msgstr "Bir Set sağlanamıyor,"
+
+#: compat/_scons_sets15.py:70
+msgid "Object %s is not a member of the set."
+msgstr "Nesne %s setin bir üyesi değil."
+
+#: compat/_scons_shlex.py:78
+#, fuzzy
+msgid "shlex: reading from %s, line %d"
+msgstr "shlex: okunuyor %s, satır %d"
+
+#: compat/_scons_shlex.py:84
+msgid "shlex: pushing token "
+msgstr "shlex: pushing token "
+
+#: compat/_scons_shlex.py:97
+msgid "shlex: pushing to file %s"
+msgstr ""
+
+#: compat/_scons_shlex.py:99
+msgid "shlex: pushing to stream %s"
+msgstr ""
+
+#: compat/_scons_shlex.py:106
+msgid "shlex: popping to %s, line %d"
+msgstr ""
+
+#: compat/_scons_shlex.py:115
+msgid "shlex: popping token "
+msgstr ""
+
+#: compat/_scons_shlex.py:137
+msgid "shlex: token="
+msgstr ""
+
+#: compat/_scons_shlex.py:139
+msgid "shlex: token=EOF"
+msgstr ""
+
+#: compat/_scons_shlex.py:150
+msgid "shlex: in state"
+msgstr ""
+
+#: compat/_scons_shlex.py:151
+msgid "I see character:"
+msgstr "Karakteri görüyorum:"
+
+#: compat/_scons_shlex.py:161
+msgid "shlex: I see whitespace in whitespace state"
+msgstr ""
+
+#: compat/_scons_shlex.py:192
+msgid "shlex: I see EOF in quotes state"
+msgstr ""
+
+#: compat/_scons_shlex.py:194
+msgid "No closing quotation"
+msgstr ""
+
+#: compat/_scons_shlex.py:211
+msgid "shlex: I see EOF in escape state"
+msgstr ""
+
+#: compat/_scons_shlex.py:213
+msgid "No escaped character"
+msgstr "Kaçırılmış karakter yok"
+
+#: compat/_scons_shlex.py:227
+msgid "shlex: I see whitespace in word state"
+msgstr "shlex: "
+
+#: compat/_scons_shlex.py:253
+msgid "shlex: I see punctuation in word state"
+msgstr ""
+
+#: compat/_scons_shlex.py:265
+msgid "shlex: raw token="
+msgstr ""
+
+#: compat/_scons_shlex.py:267
+msgid "shlex: raw token=EOF"
+msgstr ""
+
+#: compat/_scons_subprocess.py:374
+msgid "Command '%s' returned non-zero exit status %d"
+msgstr ""
+
+#: compat/_scons_subprocess.py:601
+msgid "bufsize must be an integer"
+msgstr ""
+
+#: compat/_scons_subprocess.py:605
+msgid "preexec_fn is not supported on Windows platforms"
+msgstr ""
+
+#: compat/_scons_subprocess.py:608
+msgid "close_fds is not supported on Windows platforms"
+msgstr ""
+
+#: compat/_scons_subprocess.py:613
+msgid "startupinfo is only supported on Windows platforms"
+msgstr ""
+
+#: compat/_scons_subprocess.py:616
+msgid "creationflags is only supported on Windows platforms"
+msgstr ""
+
+#: compat/_scons_subprocess.py:792
+msgid ""
+"Cannot locate w9xpopen.exe, which is needed for Popen to work with your "
+"shell or platform."
+msgstr ""
+
+#: compat/_scons_subprocess.py:1135
+msgid "Unknown child exit status!"
+msgstr ""
+
+#: compat/_scons_subprocess.py:1235
+msgid "Process list:"
+msgstr "İşlem listesi:"
+
+#: compat/_scons_subprocess.py:1248
+msgid "Looking for 'hda'..."
+msgstr ""
+
+#: compat/_scons_subprocess.py:1257
+msgid "Trying a weird file..."
+msgstr ""
+
+#: compat/_scons_subprocess.py:1262
+msgid "The file didn't exist.  I thought so..."
+msgstr "Dosya mevcut değil. Bence..."
+
+#: compat/_scons_subprocess.py:1263
+msgid "Child traceback:"
+msgstr ""
+
+#: compat/_scons_subprocess.py:1266
+msgid "Error"
+msgstr "Hata"
+
+#: compat/_scons_subprocess.py:1268
+msgid "Gosh.  No error.\n"
+msgstr ""
+
+#: compat/_scons_subprocess.py:1275
+msgid "Looking for 'PROMPT' in set output..."
+msgstr ""
+
+#: compat/_scons_subprocess.py:1283
+msgid "Executing calc..."
+msgstr ""
+
+#: compat/_scons_textwrap.py:227
+msgid "invalid width %r (must be > 0)"
 msgstr ""
 
 #: cpp.py:208
@@ -502,8 +2324,8 @@ msgstr ""
 msgid "Read-only database: %s"
 msgstr "Sadece-okunabilir veritabanı: %s"
 
-#: dblite.py:147
 # ,
+#: dblite.py:147
 msgid "key `%s' must be a string but is %s"
 msgstr ""
 
@@ -538,4 +2360,3 @@ msgstr "cPickle istisnası alındı."
 #: dblite.py:238
 msgid "[Errno 2] No such file or directory: 'tmp.dblite'"
 msgstr "[Errno 2] Böyle bir dosya yada dizin yok: 'tmp.dblite'"
-

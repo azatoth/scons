@@ -130,7 +130,7 @@ class Variables:
 
         if not SCons.Util.is_String(key) or \
            not SCons.Environment.is_valid_construction_var(key):
-            raise SCons.Errors.UserError, _("Illegal Variables.Add() key `%s')" % str(key)
+            raise SCons.Errors.UserError, _("Illegal Variables.Add() key `%s'") % str(key)
 
         self._do_add(key, help, default, validator, converter)
 

@@ -1087,7 +1087,7 @@ class OptionContainer:
         if option is None:
             option = self._long_opt.get(opt_str)
         if option is None:
-            raise ValueError(_("no such option %r" % opt_str))
+            raise ValueError(_("no such option %r") % opt_str)
 
         for opt in option._short_opts:
             del self._short_opt[opt]
