@@ -43,7 +43,7 @@ from SCons.Node.FS import _my_normcase
 from SCons.Tool.JavaCommon import parse_java_file
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 def classname(path):
     """Turn a string (path name) into a Java class name."""

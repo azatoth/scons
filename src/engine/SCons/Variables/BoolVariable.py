@@ -42,7 +42,7 @@ import string
 
 import SCons.Errors
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 __true_strings  = ('y', 'yes', 'true', 't', '1', 'on' , 'all' )
 __false_strings = ('n', 'no', 'false', 'f', '0', 'off', 'none')

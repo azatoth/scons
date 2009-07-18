@@ -31,7 +31,7 @@ import os
 import SCons.Errors
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 from SCons.Tool.MSCommon.common import debug, \
                                        read_reg, \

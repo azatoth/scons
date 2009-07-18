@@ -34,7 +34,7 @@ import sys
 
 import SCons.Action
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 cache_enabled = True
 cache_debug = False

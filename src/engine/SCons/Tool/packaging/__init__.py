@@ -33,7 +33,7 @@ from SCons.Variables import *
 from SCons.Errors import *
 from SCons.Util import is_List, make_path_relative
 from SCons.Warnings import warn, Warning
-from SCons.i18n import *
+from SCons.i18n import _
 
 import os, imp
 import SCons.Defaults

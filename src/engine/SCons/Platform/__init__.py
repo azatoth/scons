@@ -54,7 +54,7 @@ import SCons.Errors
 import SCons.Subst
 import SCons.Tool
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 def platform_default():
     """Return the platform string for our execution environment.

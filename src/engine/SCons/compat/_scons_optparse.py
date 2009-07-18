@@ -71,7 +71,7 @@ import sys, os
 import types
 import textwrap
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 def _repr(self):
     return "<%s at 0x%x: %s>" % (self.__class__.__name__, id(self), self)

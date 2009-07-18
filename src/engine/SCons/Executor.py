@@ -36,7 +36,7 @@ import UserList
 from SCons.Debug import logInstanceCreation
 import SCons.Errors
 import SCons.Memoize
-from SCons.i18n import *
+from SCons.i18n import _
 
 class Batch:
     """Remembers exact association between targets

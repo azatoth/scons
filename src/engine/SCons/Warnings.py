@@ -34,7 +34,7 @@ import sys
 
 import SCons.Errors
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 
 class Warning(SCons.Errors.UserError):

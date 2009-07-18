@@ -50,7 +50,7 @@ import SCons.Scanner.D
 import SCons.Scanner.LaTeX
 import SCons.Scanner.Prog
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 DefaultToolpath=[]
 

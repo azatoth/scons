@@ -11,7 +11,7 @@ import os.path
 import sys
 #from collections import deque
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 class deque:
     def __init__(self):

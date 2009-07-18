@@ -47,7 +47,7 @@ import string
 import sys
 import time
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 try:
     import codecs

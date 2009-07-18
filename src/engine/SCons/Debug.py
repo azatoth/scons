@@ -35,7 +35,7 @@ import os
 import string
 import sys
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 # Recipe 14.10 from the Python Cookbook.
 try:

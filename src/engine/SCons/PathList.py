@@ -39,7 +39,7 @@ import SCons.Memoize
 import SCons.Node
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 #
 # Variables to specify the different types of entries in a PathList object:

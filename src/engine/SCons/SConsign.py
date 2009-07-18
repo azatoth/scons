@@ -36,7 +36,7 @@ import os.path
 import SCons.dblite
 import SCons.Warnings
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 def corrupt_dblite_warning(filename):
     SCons.Warnings.warn(SCons.Warnings.CorruptSConsignWarning,

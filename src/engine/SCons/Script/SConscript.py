@@ -54,7 +54,7 @@ import traceback
 import types
 import UserList
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 # The following variables used to live in this module.  Some
 # SConscript files out there may have referred to them directly as

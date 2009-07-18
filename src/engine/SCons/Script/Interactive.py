@@ -93,7 +93,7 @@ import shlex
 import string
 import sys
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 try:
     import readline

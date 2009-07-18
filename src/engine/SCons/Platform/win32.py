@@ -41,7 +41,7 @@ import tempfile
 from SCons.Platform.posix import exitvalmap
 from SCons.Platform import TempFileMunge
 import SCons.Util
-from SCons.i18n import *
+from SCons.i18n import _
 
 
 try:

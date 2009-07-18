@@ -43,7 +43,7 @@ import SCons.Defaults
 import SCons.Tool
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 # This is what we search for to find mingw:
 key_program = 'mingw32-gcc'

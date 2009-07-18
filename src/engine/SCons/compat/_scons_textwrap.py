@@ -7,7 +7,7 @@
 
 __revision__ = "$Id: textwrap.py,v 1.32.8.2 2004/05/13 01:48:15 gward Exp $"
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 import string, re
 

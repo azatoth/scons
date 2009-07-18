@@ -44,7 +44,7 @@ import SCons.Scanner
 import SCons.Tool
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 class ToolQtWarning(SCons.Warnings.Warning):
     pass

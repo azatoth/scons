@@ -37,7 +37,7 @@ from SCons.Tool.install import copyFunc
 
 copyToBuilder, copyAsBuilder = None, None
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 def copyto_emitter(target, source, env):
     """ changes the path of the source to be under the target (which

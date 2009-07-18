@@ -34,7 +34,7 @@ import re
 
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 logfile = os.environ.get('SCONS_MSCOMMON_DEBUG')
 if logfile:

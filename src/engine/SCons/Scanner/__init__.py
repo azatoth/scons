@@ -35,7 +35,7 @@ import string
 import SCons.Node.FS
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 
 

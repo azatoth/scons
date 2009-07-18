@@ -34,7 +34,7 @@ selection method.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 import math, sys, os.path, glob, string, re
 

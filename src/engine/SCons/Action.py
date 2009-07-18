@@ -113,7 +113,7 @@ import SCons.Executor
 import SCons.Util
 import SCons.Subst
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 # we use these a lot, so try to optimize them
 is_String = SCons.Util.is_String

@@ -35,7 +35,7 @@ import os
 import signal
 
 import SCons.Errors
-from SCons.i18n import *
+from SCons.i18n import _
 
 
 # The default stack size (in kilobytes) of the threads used to execute

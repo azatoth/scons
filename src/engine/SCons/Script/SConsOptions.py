@@ -29,7 +29,7 @@ import string
 import sys
 import textwrap
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 try:
     no_hyphen_re = re.compile(r'(\s+|(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w))')

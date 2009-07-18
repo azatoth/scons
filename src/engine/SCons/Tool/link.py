@@ -40,7 +40,7 @@ import SCons.Warnings
 
 from SCons.Tool.FortranCommon import isfortran
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 cplusplus = __import__('c++', globals(), locals(), [])
 

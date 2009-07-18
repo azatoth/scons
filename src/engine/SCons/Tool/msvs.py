@@ -49,7 +49,7 @@ import SCons.Script.SConscript
 import SCons.Util
 import SCons.Warnings
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 from MSCommon import detect_msvs, merge_default_version
 

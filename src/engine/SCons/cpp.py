@@ -31,7 +31,7 @@ SCons C Pre-Processor module
 # This module doesn't use anything from SCons by name, but we import SCons
 # here to pull in zip() from the SCons.compat layer for early Pythons.
 import SCons
-from SCons.i18n import *
+from SCons.i18n import _
 
 import os
 import re

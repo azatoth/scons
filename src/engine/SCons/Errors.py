@@ -31,7 +31,7 @@ and user errors in SCons.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import SCons.Util
-from SCons.i18n import *
+from SCons.i18n import _
 
 import exceptions
 

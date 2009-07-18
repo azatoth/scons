@@ -44,7 +44,7 @@ import SCons.Tool.msvc
 import SCons.Tool.msvs
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 from MSCommon import merge_default_version, detect_msvs
 

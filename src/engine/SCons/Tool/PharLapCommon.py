@@ -38,7 +38,7 @@ import SCons.Util
 import re
 import string
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 def getPharLapPath():
     """Reads the registry to find the installed path of the Phar Lap ETS

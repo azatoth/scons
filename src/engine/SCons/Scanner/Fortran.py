@@ -38,7 +38,7 @@ import SCons.Scanner
 import SCons.Util
 import SCons.Warnings
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 class F90Scanner(SCons.Scanner.Classic):
     """

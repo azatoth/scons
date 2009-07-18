@@ -8,7 +8,7 @@ import os
 import types
 import __builtin__
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 keep_all_files = 00000
 ignore_corrupt_dbfiles = 0

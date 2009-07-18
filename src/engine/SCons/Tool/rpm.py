@@ -46,7 +46,7 @@ import SCons.Util
 import SCons.Action
 import SCons.Defaults
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 def get_cmd(source, env):
     tar_file_with_included_specfile = source

@@ -121,7 +121,7 @@ This collected caching logic nicely, but had two drawbacks:
 
 import new
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 # A flag controlling whether or not we actually use memoization.
 use_memoizer = None

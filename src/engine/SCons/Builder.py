@@ -113,7 +113,7 @@ import SCons.Node.FS
 import SCons.Util
 import SCons.Warnings
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 class _Null:
     pass

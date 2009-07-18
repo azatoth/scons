@@ -33,7 +33,7 @@ import SCons
 from SCons.Action import Action
 from SCons.Builder import Builder
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 from xml.dom.minidom import *
 from xml.sax.saxutils import escape

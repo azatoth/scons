@@ -37,7 +37,7 @@ import SCons.Environment
 import SCons.Errors
 import SCons.Util
 import SCons.Warnings
-from SCons.i18n import *
+from SCons.i18n import _
 
 from BoolVariable import BoolVariable  # okay
 from EnumVariable import EnumVariable  # okay

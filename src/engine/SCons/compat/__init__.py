@@ -62,7 +62,7 @@ rest of our code will find our pre-loaded compatibility module.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 
 def import_as(module, name):

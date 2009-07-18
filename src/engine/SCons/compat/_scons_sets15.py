@@ -16,7 +16,7 @@
 
 import string
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 class Set:
     """The set class. It can contain mutable objects."""

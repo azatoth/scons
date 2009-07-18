@@ -37,7 +37,7 @@ get an AttributeError, but at least they'll know where to start looking.
 import SCons.Util
 import SCons.Warnings
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 msg = _('The SCons.Sig module no longer exists.\n' \
       '    Remove the following "import SCons.Sig" line to eliminate this warning:')

@@ -39,7 +39,7 @@ import SCons.Errors
 
 from SCons.Util import is_String, is_Sequence
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 # Indexed by the SUBST_* constants below.
 _strconv = [SCons.Util.to_String_for_subst,

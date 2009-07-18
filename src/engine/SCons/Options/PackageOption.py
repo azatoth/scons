@@ -33,7 +33,7 @@ and will then be removed entirely (some day).
 import SCons.Variables
 import SCons.Warnings
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 warned = False
 

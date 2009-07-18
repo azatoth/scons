@@ -48,7 +48,7 @@ import SCons.Util
 import SCons.Warnings
 import SCons.Scanner.RC
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 from MSCommon import merge_default_version, detect_msvs
 

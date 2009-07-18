@@ -36,7 +36,7 @@ import SCons.Builder
 from SCons.Environment import OverrideEnvironment
 from SCons.Tool.packaging import stripinstallbuilder, src_targz
 from SCons.Errors import UserError
-from SCons.i18n import *
+from SCons.i18n import _
 
 def package(env, target, source, PACKAGEROOT, NAME, VERSION,
             PACKAGEVERSION, DESCRIPTION, SUMMARY, X_RPM_GROUP, LICENSE,

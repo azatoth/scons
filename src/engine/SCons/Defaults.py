@@ -53,7 +53,7 @@ import SCons.Environment
 import SCons.PathList
 import SCons.Subst
 import SCons.Tool
-from SCons.i18n import *
+from SCons.i18n import _
 
 # A placeholder for a default Environment (for fetching source files
 # from source code management systems and the like).  This must be

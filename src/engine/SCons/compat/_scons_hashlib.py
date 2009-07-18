@@ -33,7 +33,7 @@ the underlying md5 module isn't available.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 import md5
 import string

@@ -68,7 +68,7 @@ import SCons.Warnings
 
 import SCons.Script.Interactive
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 def fetch_win32_parallel_msg():
     # A subsidiary function that exists solely to isolate this import

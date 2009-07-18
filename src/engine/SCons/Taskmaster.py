@@ -60,7 +60,7 @@ import SCons.Errors
 import SCons.Node
 import SCons.Warnings
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 StateString = SCons.Node.StateString
 NODE_NO_STATE = SCons.Node.no_state

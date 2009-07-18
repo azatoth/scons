@@ -42,7 +42,7 @@ import select
 
 import SCons.Util
 from SCons.Platform import TempFileMunge
-from SCons.i18n import *
+from SCons.i18n import _
 
 exitvalmap = {
     2 : 127,

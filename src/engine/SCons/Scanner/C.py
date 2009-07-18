@@ -35,7 +35,7 @@ import SCons.Util
 
 import SCons.cpp
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 class SConsCPPScanner(SCons.cpp.PreProcessor):
     """

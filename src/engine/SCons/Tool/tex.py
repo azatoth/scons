@@ -44,7 +44,7 @@ import SCons.Node.FS
 import SCons.Util
 import SCons.Scanner.LaTeX
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 Verbose = False
 

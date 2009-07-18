@@ -54,7 +54,7 @@ what's tested is actually `z in y'.
 # - Raymond Hettinger added a number of speedups and other
 #   improvements.
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 from __future__ import generators
 try:

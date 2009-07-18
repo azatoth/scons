@@ -38,7 +38,7 @@ import stat
 
 import SCons.Action
 from SCons.Util import make_path_relative
-from SCons.i18n import *
+from SCons.i18n import _
 
 #
 # We keep track of *all* installed files.

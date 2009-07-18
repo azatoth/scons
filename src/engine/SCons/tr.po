@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tr\n"
 "POT-Creation-Date: 2009-07-17 03:45+EEST\n"
-"PO-Revision-Date: 2009-07-16 03:45+0300\n"
+"PO-Revision-Date: 2009-07-18 20:59+0300\n"
 "Last-Translator: Tuba Şahin <nestanka@gmail.com>\n"
 "Language-Team:  <tr@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -109,8 +109,7 @@ msgid "You must not specify both an action and a generator."
 msgstr "Aynı anda eylem ve üretici belirtmemelisiniz."
 
 #: Builder.py:270
-msgid ""
-"Supplied emitter '%s' does not appear to refer to an Environment variable"
+msgid "Supplied emitter '%s' does not appear to refer to an Environment variable"
 msgstr ""
 
 #: Builder.py:294 Environment.py:2037
@@ -132,13 +131,11 @@ msgid ""
 msgstr "Aynı hedef için farklı eylemlerle iki çevre belirtilmiş: %s"
 
 #: Builder.py:309
-msgid ""
-"Two different builders (%s and %s) were specified for the same target: %s"
+msgid "Two different builders (%s and %s) were specified for the same target: %s"
 msgstr "Aynı hedef için iki farklı derleyici (%s ve %s) belirtilmiş: %s"
 
 #: Builder.py:313
-msgid ""
-"Two different target lists have a target in common: %s  (from %s and from %s)"
+msgid "Two different target lists have a target in common: %s  (from %s and from %s)"
 msgstr ""
 "İki farklı hedef listesi ortak bir hedef içeriyor: %s  (%s listesi ve %s "
 "listesi)"
@@ -152,8 +149,7 @@ msgstr ""
 "ve %s kaynağından)"
 
 #: Builder.py:321
-msgid ""
-"More than one source given for single-source builder: targets=%s sources=%s"
+msgid "More than one source given for single-source builder: targets=%s sources=%s"
 msgstr ""
 "Tek-kaynak derleyicisi için verilen birden fazla kaynak: hedefler=%s "
 "kaynaklar=%s"
@@ -225,8 +221,7 @@ msgstr "ayrılan değişkenleri ihmal etme girişimi "
 
 #: Environment.py:141
 #, fuzzy
-msgid ""
-"`$%s' will be reserved in a future release and setting it will become ignored"
+msgid "`$%s' will be reserved in a future release and setting it will become ignored"
 msgstr "`$%s' bir sonraki sürümde ayrılacak ve "
 
 #: Environment.py:429 Environment.py:2197
@@ -236,10 +231,8 @@ msgstr "Yasal olmayan yapılandurma değişkeni"
 
 #: Environment.py:1332
 #, fuzzy
-msgid ""
-"The env.Copy() method is deprecated; use the env.Clone() method instead."
-msgstr ""
-"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+msgid "The env.Copy() method is deprecated; use the env.Clone() method instead."
+msgstr "The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
 
 #: Environment.py:1372 Environment.py:2063 Environment.py:2099
 msgid "MD5 signatures are not available in this version of Python."
@@ -489,46 +482,40 @@ msgstr "`%s' yeniden derleniyor çünkü"
 msgid ""
 "The BoolOption() function is deprecated; use the BoolVariable() function "
 "instead."
-msgstr ""
-"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+msgstr "The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
 
 #: Options/EnumOption.py:43
 #, fuzzy
 msgid ""
 "The EnumOption() function is deprecated; use the EnumVariable() function "
 "instead."
-msgstr ""
-"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+msgstr "The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
 
 #: Options/ListOption.py:43
 #, fuzzy
 msgid ""
 "The ListOption() function is deprecated; use the ListVariable() function "
 "instead."
-msgstr ""
-"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+msgstr "The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
 
 #: Options/PackageOption.py:43
 #, fuzzy
 msgid ""
 "The PackageOption() function is deprecated; use the PackageVariable() "
 "function instead."
-msgstr ""
-"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+msgstr "The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
 
 #: Options/PathOption.py:44
 #, fuzzy
 msgid ""
 "The PathOption() function is deprecated; use the PathVariable() function "
 "instead."
-msgstr ""
-"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+msgstr "The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
 
 #: Options/__init__.py:50
 #, fuzzy
 msgid "The Options class is deprecated; use the Variables class instead."
-msgstr ""
-"The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+msgstr "The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
 
 #: Platform/__init__.py:115
 msgid "No platform named '%s'"
@@ -605,8 +592,7 @@ msgid "Caught exception while building \"%s\":\n"
 msgstr "\"%s\" derlenirken istisna yakalandı:\n"
 
 #: SConf.py:302
-msgid ""
-"Building \"%s\" failed in a previous run and all its sources are up to date."
+msgid "Building \"%s\" failed in a previous run and all its sources are up to date."
 msgstr ""
 "\"%s\" derlemesi bir önceki çalışmada başarısız oldu ve bütün kaynakları "
 "güncel."
@@ -661,13 +647,11 @@ msgid "Ignoring corrupt sconsign entry : %s (%s)\n"
 msgstr "Bozuk sconsign girdisi yoksayılıyor : %s (%s)\n"
 
 #: Scanner/C.py:104 Scanner/LaTeX.py:330 Scanner/__init__.py:381
-msgid ""
-"No dependency generated for file: %s (included from: %s) -- file not found"
+msgid "No dependency generated for file: %s (included from: %s) -- file not found"
 msgstr ""
 
 #: Scanner/Fortran.py:123
-msgid ""
-"No dependency generated for file: %s (referenced by: %s) -- file not found"
+msgid "No dependency generated for file: %s (referenced by: %s) -- file not found"
 msgstr ""
 
 #: Script/Interactive.py:136
@@ -825,8 +809,7 @@ msgid "Use scons -H for help about command-line options."
 msgstr ""
 
 #: Script/Main.py:1097
-msgid ""
-"scons: *** No targets specified and no Default() targets found.  Stop.\n"
+msgid "scons: *** No targets specified and no Default() targets found.  Stop.\n"
 msgstr ""
 
 #: Script/Main.py:1127
@@ -1023,8 +1006,7 @@ msgid "Controls Configure subsystem: %s."
 msgstr ""
 
 #: Script/SConsOptions.py:589
-msgid ""
-"Search up directory tree for SConstruct,       build all Default() targets."
+msgid "Search up directory tree for SConstruct,       build all Default() targets."
 msgstr ""
 
 #: Script/SConsOptions.py:619
@@ -1419,8 +1401,7 @@ msgid "No Windows registry module was found"
 msgstr ""
 
 #: Tool/PharLapCommon.py:67
-msgid ""
-"Cannot find Phar Lap ETS path in the registry.  Is it installed properly?"
+msgid "Cannot find Phar Lap ETS path in the registry.  Is it installed properly?"
 msgstr ""
 
 #: Tool/PharLapCommon.py:84
@@ -1485,8 +1466,7 @@ msgid "Intel compiler: Invalid ABI %s, valid values are %s"
 msgstr ""
 
 #: Tool/intelc.py:162
-msgid ""
-"%s was not found in the registry, for Intel compiler version %s, abi='%s'"
+msgid "%s was not found in the registry, for Intel compiler version %s, abi='%s'"
 msgstr ""
 
 #: Tool/intelc.py:170
@@ -1643,8 +1623,7 @@ msgid ""
 msgstr ""
 
 #: Tool/msvs.py:1239 Tool/msvs.py:1243
-msgid ""
-"buildtarget can be a string, a node, a list of strings or nodes, or None"
+msgid "buildtarget can be a string, a node, a list of strings or nodes, or None"
 msgstr ""
 
 #: Tool/msvs.py:1255 Tool/msvs.py:1259
@@ -1939,11 +1918,11 @@ msgstr ""
 
 #: Warnings.py:206
 msgid "No warning type: '%s'\n"
-msgstr ""
+msgstr "Uyarı türü yok: '%s'\n"
 
 #: Warnings.py:211
 msgid "Can not disable mandataory warning: '%s'\n"
-msgstr ""
+msgstr "Zorunlu uyarılar etkisizleştirilemiyor: '%s'\n"
 
 #: compat/__init__.py:218
 msgid "Cannot move a directory '%s' into itself '%s'."
@@ -2024,8 +2003,7 @@ msgstr "geçersiz seçenek dizgisi %r en az iki karakter uzunluğunda olmalı"
 
 #: compat/_scons_optparse.py:625
 #, fuzzy
-msgid ""
-"invalid short option string %r: must be of the form -x, (x any non-dash char)"
+msgid "invalid short option string %r: must be of the form -x, (x any non-dash char)"
 msgstr "geçersiz kısa seçenek dizgisi %r: -x formunda olmalı, (x )"
 
 #: compat/_scons_optparse.py:632
@@ -2038,7 +2016,7 @@ msgstr "geçersiz klavye parametreleri: %s"
 
 #: compat/_scons_optparse.py:661
 msgid "invalid action: %r"
-msgstr "gçersiz eylem: %r"
+msgstr "geçersiz eylem: %r"
 
 #: compat/_scons_optparse.py:688
 msgid "invalid option type: %r"
@@ -2046,7 +2024,7 @@ msgstr "geçersiz seçenek türü: %r"
 
 #: compat/_scons_optparse.py:691
 msgid "must not supply a type for action %r"
-msgstr ""
+msgstr "%r eylem için bir tür sağlanmamalı"
 
 #: compat/_scons_optparse.py:697
 msgid "must supply a list of choices for type 'choice'"
@@ -2073,6 +2051,7 @@ msgid "callback_kwargs, if supplied, must be a dict: not %r"
 msgstr "callback_kwargs, eğer sağlandıysa, bir sözlük olmalı: %r değil"
 
 #: compat/_scons_optparse.py:754
+#,fuzzy
 msgid "callback supplied (%r) for non-callback option"
 msgstr "geridönüş sağlandı (%r)"
 
@@ -2081,8 +2060,9 @@ msgid "callback_args supplied for non-callback option"
 msgstr ""
 
 #: compat/_scons_optparse.py:761
+#, fuzzy
 msgid "callback_kwargs supplied for non-callback option"
-msgstr ""
+msgstr "callback_kwargs geridönüş seçeneği için sağlandı"
 
 #: compat/_scons_optparse.py:844
 msgid "unknown action %r"
@@ -2168,7 +2148,7 @@ msgstr "shlex: okunuyor %s, satır %d"
 
 #: compat/_scons_shlex.py:84
 msgid "shlex: pushing token "
-msgstr "shlex: pushing token "
+msgstr ""
 
 #: compat/_scons_shlex.py:97
 msgid "shlex: pushing to file %s"
@@ -2188,11 +2168,11 @@ msgstr ""
 
 #: compat/_scons_shlex.py:137
 msgid "shlex: token="
-msgstr ""
+msgstr "shlex: dizgecik="
 
 #: compat/_scons_shlex.py:139
 msgid "shlex: token=EOF"
-msgstr ""
+msgstr "shlex: dizgecik=EOF"
 
 #: compat/_scons_shlex.py:150
 msgid "shlex: in state"
@@ -2212,7 +2192,7 @@ msgstr ""
 
 #: compat/_scons_shlex.py:194
 msgid "No closing quotation"
-msgstr ""
+msgstr "Tırnak kapatılmamış"
 
 #: compat/_scons_shlex.py:211
 msgid "shlex: I see EOF in escape state"
@@ -2224,7 +2204,7 @@ msgstr "Kaçırılmış karakter yok"
 
 #: compat/_scons_shlex.py:227
 msgid "shlex: I see whitespace in word state"
-msgstr "shlex: "
+msgstr ""
 
 #: compat/_scons_shlex.py:253
 msgid "shlex: I see punctuation in word state"
@@ -2232,57 +2212,57 @@ msgstr ""
 
 #: compat/_scons_shlex.py:265
 msgid "shlex: raw token="
-msgstr ""
+msgstr "shlex: ham dizgecik="
 
 #: compat/_scons_shlex.py:267
 msgid "shlex: raw token=EOF"
-msgstr ""
+msgstr "shlex: ham dizgecik=EOF"
 
 #: compat/_scons_subprocess.py:374
 msgid "Command '%s' returned non-zero exit status %d"
-msgstr ""
+msgstr "'%s'komutu sıfır dışında bir çıkış durumu döndürdü %d"
 
 #: compat/_scons_subprocess.py:601
 msgid "bufsize must be an integer"
-msgstr ""
+msgstr "Tampon bellek büyüklüğü tam sayı olmalı"
 
 #: compat/_scons_subprocess.py:605
 msgid "preexec_fn is not supported on Windows platforms"
-msgstr ""
+msgstr "preexec_fn Windows platformlarında desteklenmiyor"
 
 #: compat/_scons_subprocess.py:608
 msgid "close_fds is not supported on Windows platforms"
-msgstr ""
+msgstr "close_fds  Windows platformlarında desteklenmiyor"
 
 #: compat/_scons_subprocess.py:613
 msgid "startupinfo is only supported on Windows platforms"
-msgstr ""
+msgstr "startupinfo sadece Windows platformlarında destekleniyor"
 
 #: compat/_scons_subprocess.py:616
 msgid "creationflags is only supported on Windows platforms"
-msgstr ""
+msgstr "creationflags sadece Windows platformlarında destekli"
 
 #: compat/_scons_subprocess.py:792
 msgid ""
 "Cannot locate w9xpopen.exe, which is needed for Popen to work with your "
 "shell or platform."
-msgstr ""
+msgstr "Sizin kabuğunuzda veya platformunuzda Popen çalışması için gerekli w9xpopen.exe bulunamıyor."
 
 #: compat/_scons_subprocess.py:1135
 msgid "Unknown child exit status!"
-msgstr ""
+msgstr "Bilinmeyen alt uygulama çıkış durumu!"
 
 #: compat/_scons_subprocess.py:1235
 msgid "Process list:"
-msgstr "İşlem listesi:"
+msgstr "Süreç listesi:"
 
 #: compat/_scons_subprocess.py:1248
 msgid "Looking for 'hda'..."
-msgstr ""
+msgstr "'hda' aranıyor..."
 
 #: compat/_scons_subprocess.py:1257
 msgid "Trying a weird file..."
-msgstr ""
+msgstr "Garip bir dosya deneniyor..."
 
 #: compat/_scons_subprocess.py:1262
 msgid "The file didn't exist.  I thought so..."
@@ -2290,7 +2270,7 @@ msgstr "Dosya mevcut değil. Bence..."
 
 #: compat/_scons_subprocess.py:1263
 msgid "Child traceback:"
-msgstr ""
+msgstr "Alt uygulama geri izleme verisi"
 
 #: compat/_scons_subprocess.py:1266
 msgid "Error"
@@ -2298,27 +2278,27 @@ msgstr "Hata"
 
 #: compat/_scons_subprocess.py:1268
 msgid "Gosh.  No error.\n"
-msgstr ""
+msgstr "Hata yok.\n"
 
 #: compat/_scons_subprocess.py:1275
 msgid "Looking for 'PROMPT' in set output..."
-msgstr ""
+msgstr "Çıktıda 'PROMPT' aranıyor..."
 
 #: compat/_scons_subprocess.py:1283
 msgid "Executing calc..."
-msgstr ""
+msgstr "calc çalıştırılıyor..."
 
 #: compat/_scons_textwrap.py:227
 msgid "invalid width %r (must be > 0)"
-msgstr ""
+msgstr "geçersiz genişlik %r (0'dan büyük olmalı)"
 
 #: cpp.py:208
 msgid "Incorrect number of arguments to `%s'"
-msgstr ""
+msgstr "`%s' için hatalı sayıda parametre"
 
 #: dblite.py:17
 msgid "Warning: Discarding corrupt database:"
-msgstr ""
+msgstr "Uyarı: Bozuk veritabanı siliniyor:"
 
 #: dblite.py:139
 msgid "Read-only database: %s"
@@ -2327,11 +2307,11 @@ msgstr "Sadece-okunabilir veritabanı: %s"
 # ,
 #: dblite.py:147
 msgid "key `%s' must be a string but is %s"
-msgstr ""
+msgstr "`%s' anahtar string olmalı ama %s"
 
 #: dblite.py:149
 msgid "value `%s' must be a string but is %s"
-msgstr ""
+msgstr "`%s' değeri string olmalı ama %s"
 
 #: dblite.py:198
 msgid "Read-only database: tmp.dblite"
@@ -2360,3 +2340,4 @@ msgstr "cPickle istisnası alındı."
 #: dblite.py:238
 msgid "[Errno 2] No such file or directory: 'tmp.dblite'"
 msgstr "[Errno 2] Böyle bir dosya yada dizin yok: 'tmp.dblite'"
+

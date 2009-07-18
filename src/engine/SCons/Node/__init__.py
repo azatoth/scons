@@ -55,7 +55,7 @@ import SCons.Memoize
 import SCons.Util
 
 from SCons.Debug import Trace
-from SCons.i18n import *
+from SCons.i18n import _
 
 def classname(obj):
     return string.split(str(obj.__class__), '.')[-1]

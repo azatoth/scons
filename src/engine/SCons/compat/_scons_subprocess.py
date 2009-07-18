@@ -360,7 +360,7 @@ import string
 import types
 import traceback
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 # Exception classes used by this module.
 class CalledProcessError(Exception):

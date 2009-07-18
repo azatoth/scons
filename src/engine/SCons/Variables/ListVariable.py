@@ -59,7 +59,7 @@ import UserList
 
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 class _ListVariable(UserList.UserList):
     def __init__(self, initlist=[], allowedElems=[]):

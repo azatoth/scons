@@ -58,7 +58,7 @@ import string
 
 import SCons.Errors
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 __enable_strings  = ('1', 'yes', 'true',  'on', 'enable', 'search')
 __disable_strings = ('0', 'no',  'false', 'off', 'disable')

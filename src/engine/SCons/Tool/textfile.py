@@ -55,7 +55,7 @@ from SCons.Node import Node
 from SCons.Node.Python import Value
 from SCons.Util import is_String, is_Sequence, is_Dict
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 def _do_subst(node, subs):
     """

@@ -40,7 +40,7 @@ import types
 from UserDict import UserDict
 from UserList import UserList
 from UserString import UserString
-from SCons.i18n import *
+from SCons.i18n import _
 
 # Don't "from types import ..." these because we need to get at the
 # types module later to look for UnicodeType.

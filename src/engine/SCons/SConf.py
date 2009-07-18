@@ -47,7 +47,7 @@ import SCons.Warnings
 import SCons.Conftest
 
 from SCons.Debug import Trace
-from SCons.i18n import *
+from SCons.i18n import _
 
 # Turn off the Conftest error logging
 SCons.Conftest.LogInputFiles = 0

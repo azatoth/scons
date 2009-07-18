@@ -34,7 +34,7 @@ import SCons.Errors
 from SCons.Tool.MSCommon.common import debug, read_reg
 import SCons.Util
 
-from SCons.i18n import *
+from SCons.i18n import _
 
 # SDK Checks. This is of course a mess as everything else on MS platforms. Here
 # is what we do to detect the SDK:
