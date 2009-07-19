@@ -457,9 +457,9 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
                     pass
                 SCons.Warnings.enableWarningClass(ICLLicenseDirWarning)
                 SCons.Warnings.warn(ICLLicenseDirWarning,
-                                    _("Intel license dir was not found.")
-                                    _("  Tried using the INTEL_LICENSE_FILE environment variable (%s), the registry (%s) and the default path (%s).")
-                                    _("  Using the default path as a last resort.")
+                                    _("Intel license dir was not found."
+                                    "  Tried using the INTEL_LICENSE_FILE environment variable (%s), the registry (%s) and the default path (%s)."
+                                    "  Using the default path as a last resort.")
                                         % (envlicdir, reglicdir, defaultlicdir))
         env['ENV']['INTEL_LICENSE_FILE'] = licdir
 

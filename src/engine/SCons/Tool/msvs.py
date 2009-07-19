@@ -1274,7 +1274,7 @@ def projectEmitter(target, source, env):
                     else:
                         raise SCons.Errors.InternalError, _("name must be a string or a list of strings")
             else:
-                raise SCons.Errors.InternalError, _"variant must be a string or a list of strings")
+                raise SCons.Errors.InternalError, _("variant must be a string or a list of strings")
         else:
             raise SCons.Errors.InternalError, _("variant must be specified")
 

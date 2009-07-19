@@ -432,7 +432,7 @@ class Task:
             # A node can only be in the pending_children set if it has
             # some waiting_parents.
             if t.waiting_parents:
-                if T: T.write(self.trace_message('Task.postprocess() %s removing' % t))
+                if T: T.write(self.trace_message('Task.postprocess()', t, _('removing')))
                 pending_children.discard(t)
             for p in t.waiting_parents:
                 parents[p] = parents.get(p, 0) + 1
@@ -449,7 +449,7 @@ class Task:
 
         for p, subtract in parents.items():
             p.ref_count = p.ref_count - subtract
-            if T: T.write(self.trace_message('Task.postprocess() %s adjusted parent ref count') % p)
+            if T: T.write(self.trace_message('Task.postprocess()', p, _('adjusted parent ref count')))
             if p.ref_count == 0:
                 self.tm.candidates.append(p)
 

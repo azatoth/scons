@@ -44,6 +44,8 @@ import string
 import sys
 import UserList
 
+from SCons.i18n import _
+
 # Special chicken-and-egg handling of the "--debug=memoizer" flag:
 #
 # SCons.Memoize contains a metaclass implementation that affects how

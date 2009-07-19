@@ -1415,7 +1415,7 @@ class Dir(Base):
 
     def diskcheck_match(self):
         diskcheck_match(self, self.isfile,
-                        _("File %s found where directory expected.")
+                        _("File %s found where directory expected."))
 
     def __clearRepositoryCache(self, duplicate=None):
         """Called when we change the repository(ies) for a directory.

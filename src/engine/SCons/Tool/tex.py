@@ -234,7 +234,8 @@ def InternalLaTeXAuxAction(XXXLaTeXAction, target = None, source= None, env=None
         new_md5 = filenode.get_csig()
 
         if saved_hashes[suffix] == new_md5:
-            if Verbose_("file %s not changed") % (targetbase+suffix)
+            if Verbose:
+                print _("file %s not changed") % (targetbase+suffix)
             return False        # unchanged
         saved_hashes[suffix] = new_md5
         must_rerun_latex = True
