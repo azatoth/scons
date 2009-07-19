@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tr\n"
 "POT-Creation-Date: 2009-07-17 03:45+EEST\n"
-"PO-Revision-Date: 2009-07-18 20:59+0300\n"
+"PO-Revision-Date: 2009-07-19 14:45+0300\n"
 "Last-Translator: Tuba Şahin <nestanka@gmail.com>\n"
 "Language-Team:  <tr@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -478,11 +478,10 @@ msgid "rebuilding `%s' because"
 msgstr "`%s' yeniden derleniyor çünkü"
 
 #: Options/BoolOption.py:43
-#, fuzzy
 msgid ""
 "The BoolOption() function is deprecated; use the BoolVariable() function "
 "instead."
-msgstr "The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kullanın."
+msgstr "BoolOption() methodu onaylanmamış; yerine BoolVariable() methodunu kullanın."
 
 #: Options/EnumOption.py:43
 #, fuzzy
@@ -1576,7 +1575,7 @@ msgstr ""
 
 #: Tool/msvs.py:330 Tool/msvs.py:928
 msgid "Adding '"
-msgstr ""
+msgstr "Ekleniyor '"
 
 #: Tool/msvs.py:543 Tool/msvs.py:852 Tool/msvs.py:1081 Tool/msvs.py:1184
 #: Tool/msvs.py:1200
@@ -1624,39 +1623,39 @@ msgstr ""
 
 #: Tool/msvs.py:1239 Tool/msvs.py:1243
 msgid "buildtarget can be a string, a node, a list of strings or nodes, or None"
-msgstr ""
+msgstr "buildtarget bir dizge, düğüm, bir dizge veya düğüm listesi olabilir ya da boş bırakılabilir"
 
 #: Tool/msvs.py:1255 Tool/msvs.py:1259
 msgid "outdir can be a string, a node, a list of strings or nodes, or None"
-msgstr ""
+msgstr "outdir bir dizge ,düğüm. bir dizge veya düğüm listesi olabilir ya da boş bırakılabilir"
 
 #: Tool/msvs.py:1265 Tool/msvs.py:1328
 msgid "name must be a string"
-msgstr ""
+msgstr "isim bir dizge olmalı"
 
 #: Tool/msvs.py:1275 Tool/msvs.py:1338
 msgid "name must be a string or a list of strings"
-msgstr ""
+msgstr "isim bir dizge yada bir dizge listesi olmalı"
 
 #: Tool/msvs.py:1279 Tool/msvs.py:1342
 msgid "variant must be specified"
-msgstr ""
+msgstr "değişken belirlenmeli"
 
 #: Tool/msvs.py:1290 Tool/msvs.py:1292
 msgid " must be a string or a list of strings"
-msgstr ""
+msgstr "dizge yada bir dizge listesi olmalı"
 
 #: Tool/msvs.py:1340
 msgid "variant must be a string or a list of strings"
-msgstr ""
+msgstr "değişken dizge yada bir dizge listesi olmalı"
 
 #: Tool/msvs.py:1348
 msgid "slnguid must be a string"
-msgstr ""
+msgstr "slnguid string olmalı"
 
 #: Tool/packaging/__init__.py:62
 msgid "No tags given."
-msgstr ""
+msgstr "Hiçbir etiket verilmemiş."
 
 #: Tool/packaging/__init__.py:95
 msgid "No source for Package() given"
@@ -1750,23 +1749,23 @@ msgstr ""
 
 #: Tool/rpm.py:91
 msgid "got %s but expected %s"
-msgstr ""
+msgstr "%s alındı ama beklenen %s"
 
 #: Tool/tex.py:138
 msgid " searching for '%s' with extensions: "
-msgstr ""
+msgstr " '%s' uzantıları ile birlikte aranıyor: "
 
 #: Tool/tex.py:143 Tool/tex.py:157
 msgid " look for '%s'"
-msgstr ""
+msgstr "'%s' aranıyor"
 
 #: Tool/tex.py:146 Tool/tex.py:161
 msgid " found '%s'"
-msgstr ""
+msgstr "'%s' bulundu"
 
 #: Tool/tex.py:164
 msgid " did not find '%s'"
-msgstr ""
+msgstr "'%s' bulunamadı"
 
 #: Tool/tex.py:242
 msgid "file %s changed, rerunning Latex, new hash = "
@@ -1802,7 +1801,7 @@ msgstr ""
 
 #: Tool/tex.py:342
 msgid "reached max number of retries on Latex ,"
-msgstr ""
+msgstr "Latex "
 
 #: Tool/tex.py:348
 #, fuzzy
@@ -1811,43 +1810,43 @@ msgstr "%s eylemi %s eylemine eklenemiyor."
 
 #: Tool/tex.py:432
 msgid " scanning "
-msgstr ""
+msgstr " taranıyor "
 
 #: Tool/tex.py:442
 msgid "files included by '%s': "
-msgstr ""
+msgstr "'%s' tarafından içerilen dosyalar: "
 
 #: Tool/tex.py:451
 msgid " done scanning "
-msgstr ""
+msgstr "tarama tamamlandı"
 
 #: Tool/tex.py:539
 msgid "search path "
-msgstr ""
+msgstr "araştırma yolu"
 
 #: Tool/textfile.py:85
 msgid "unexpected type/class for LINESEPARATOR: %s"
-msgstr ""
+msgstr "LINESEPARATOR için beklenmeyen tür/sınıf: %s"
 
 #: Tool/textfile.py:98
 msgid "SUBST_DICT must be dict or sequence"
-msgstr ""
+msgstr "SUBST_DICT sözlük yada sıra olmalı"
 
 #: Tool/textfile.py:113
 msgid "Can't write target file %s"
-msgstr ""
+msgstr "Hedef %s dosyasına yazılamıyor"
 
 #: Tool/textfile.py:123
 msgid "Creating '%s'"
-msgstr ""
+msgstr "Oluşturuluyor '%s'"
 
 #: Tool/textfile.py:135
 msgid "Only one target file allowed"
-msgstr ""
+msgstr "Sadece bir hedef dosyasına izin verilir"
 
 #: Util.py:1096
 msgid "dictionary is empty"
-msgstr ""
+msgstr "sözlük boş"
 
 #: Variables/BoolVariable.py:65
 msgid "Invalid value for boolean option: %s"
@@ -1858,38 +1857,36 @@ msgid "Invalid value for boolean option %s: %s"
 msgstr ""
 
 #: Variables/EnumVariable.py:53
-#, fuzzy
 msgid "Invalid value for option %s: %s"
-msgstr "geçersiz seçenek türü: %r"
+msgstr "Seçenekler için geçersiz değer: %r"
 
 #: Variables/ListVariable.py:105
-#, fuzzy
 msgid "Invalid value(s) for option: %s"
-msgstr "gçersiz eylem: %r"
+msgstr "Seçenekler için geçersiz değer(ler): %r"
 
 #: Variables/ListVariable.py:126
 msgid "allowed names: %s"
-msgstr ""
+msgstr "izin verilen isimler: %s"
 
 #: Variables/PackageVariable.py:87
 msgid "Path does not exist for option %s: %s"
-msgstr ""
+msgstr "%s seçeneği için yol bulunmuyor: %s"
 
 #: Variables/PathVariable.py:92
 msgid "Directory path for option %s is a file: %s"
-msgstr ""
+msgstr "%s seçeneği için klasör yolu bir dosya: %s"
 
 #: Variables/PathVariable.py:94
 msgid "Directory path for option %s does not exist: %s"
-msgstr ""
+msgstr "%s seçeneği için klasör yolu bulunamıyor: %s"
 
 #: Variables/PathVariable.py:101
 msgid "Path for option %s is a file, not a directory: %s"
-msgstr ""
+msgstr "%s seçeneği için yol bir dosya, klasör değil: %s"
 
 #: Variables/PathVariable.py:110
 msgid "File path for option %s is a directory: %s"
-msgstr ""
+msgstr "%s seçeneği için dosya yolu bir klasör: %s"
 
 #: Variables/PathVariable.py:112
 msgid "File path for option %s does not exist: %s"
@@ -1897,12 +1894,11 @@ msgstr ""
 
 #: Variables/PathVariable.py:118
 msgid "Path for option %s does not exist: %s"
-msgstr ""
+msgstr "%s seçeneği için yol bulunmuyor: %s"
 
 #: Variables/__init__.py:133
-#, fuzzy
 msgid "Illegal Variables.Add() key `%s'"
-msgstr "Yasal olmayan yapılandurma değişkeni"
+msgstr "Yasal olmayan yapılandırma değişkeni"
 
 #: Variables/__init__.py:215
 msgid ""
