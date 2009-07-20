@@ -1325,8 +1325,8 @@ for p in [ scons ]:
             env.Depends(scan_exe_dir, standalone_exe)
         env.AlwaysBuild(scan_exe_dir)
 
-        inst_script_in = os.path.join(str(build_dir_installer), 'scons_installer.nsi.in')
-        env.Command(inst_script_in, '#installer/scons_installer.nsi.in', Copy('$TARGET', '$SOURCE'))
+        inst_script_in = os.path.join(str(build_dir_installer), 'scons_binary_installer.nsi.in')
+        env.Command(inst_script_in, '#installer/scons_binary_installer.nsi.in', Copy('$TARGET', '$SOURCE'))
 
         def scons_standalone_files_install():
             files = env.Glob(os.path.join(str(build_dir_exe), '*.??*'), strings = 1)
@@ -1346,11 +1346,11 @@ for p in [ scons ]:
                 directives.append("  Delete $%s" % (f))
             return string.join(directives, '\n')
 
-        inst_filename = string.join([project, version], '-') + '.exe'
+        inst_filename = string.join([project, 'binary', version], '-') + '.exe'
 
         subst_dict = [
                         ('@INSTALLER_NAME@'                   , string.join([project, version])),
-                        ('@INSTALLER_FILE@'                   , 'scons_installer.exe'),
+                        ('@INSTALLER_FILE@'                   , 'scons_binary_installer.exe'),
                         ('@SCONS_STANDALONE_FILES_INSTALL@'   , scons_standalone_files_install),
                         ('@UNINSTALLER_FILE@'                 , string.join(['uninstall', project, version], '-') + '.exe'),
                         ('@SCONS_STANDALONE_FILES_UNINSTALL@' , scons_standalone_files_uninstall),
