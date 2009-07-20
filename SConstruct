@@ -1277,6 +1277,8 @@ for p in [ scons ]:
             for entry in dir_contents:
                 new_node = env.Entry(entry)
                 env.Depends(new_node, target)
+				if os.path.isdir(entry):
+						scan_dir(target, entry, env)
         
         env.Append(BUILDERS={'ScanDir':Builder(action=scan_dir)})
         
@@ -1347,6 +1349,7 @@ for p in [ scons ]:
             return string.join(directives, '\n')
 
         inst_filename = string.join([project, 'binary', version], '-') + '.exe'
+		license_file = env.SCons_revision(os.path.join(inst_dir, 'LICENSE.txt'), '#LICENSE')
 
         subst_dict = [
                         ('@INSTALLER_NAME@'                   , string.join([project, version])),
@@ -1355,7 +1358,7 @@ for p in [ scons ]:
                         ('@UNINSTALLER_FILE@'                 , string.join(['uninstall', project, version], '-') + '.exe'),
                         ('@SCONS_STANDALONE_FILES_UNINSTALL@' , scons_standalone_files_uninstall),
                         ('@INSTDIR@'                          , 'INSTDIR'),
-                        ('@LICENSE_DATA@'                     , os.path.join('..', 'scons', 'LICENSE.txt')),
+                        ('@LICENSE_DATA@'                     , os.path.join('LICENSE.txt')),
                         ('@INSTALL_DIR_REG_KEY@'              , string.join(['Software', project, version], '\\\\')),
                         ('@PRODUCT_NAME@'                     , project),
                         ('@UNINSTALL_DISPLAY_NAME@'           , 'SCons: A software construction tool'),
@@ -1374,6 +1377,99 @@ for p in [ scons ]:
         env.Command(test_installer_dir, inst, commands)
         env.Install('$TEST_INSTALLER_DIR', inst)
         env.Alias('installer', inst)
+		
+		if whereis(jw):
+			inst_script = 'scons_full_installer.nsi'
+			inst_script_input = os.path.join(build_dir, '..', 'installer', 'scons_full_installer.nsi.in')
+			inst_dir = os.path.join(build_dir, 'installer')
+			inst_script_temp = os.path.join(inst_dir, inst_script + '.in')
+			inst_filename = string.join([project, 'full', version], '-') + '.exe'
+
+			commands = [
+                        Delete(inst_dir),
+                        Mkdir(inst_dir),
+                        Copy(inst_script_temp, inst_script_input)
+                        ]
+			cmd_node = env.Command(inst_script_temp, inst_script_input, commands)
+
+			doc_dir_scan = env.ScanDir('DummyDocTarget', env.Dir(os.path.join(build_dir, 'doc'))
+			env.Depends(doc_dir_scan, 'doc')
+			env.AlwaysBuild(doc_dir_scan)
+    
+			def find_all_files(directory, exp):
+				files = env.Glob(os.path.join(build, directory, exp), strings = 1)
+				directives = []
+				for file in files:
+					f = os.path.join('..', '..', file)
+					f = string.replace(f, '\\', '\\\\')
+					directives.append("    File %s" % (f))
+				return string.join(directives, '\n')
+    
+			def find_all_uninstall_files(directory, exp):
+				files = env.Glob(os.path.join(build, directory, exp), strings = 1)
+				directives = []
+				for file in files:
+					f = "@INSTDIR@\\doc\\%s" % (os.path.basename(file))
+					f = string.replace(f, '\\', '\\\\')
+					directives.append("  Delete $%s" % (f))
+				return string.join(directives, '\n')
+    
+			def find_html_users_guide():
+				return find_all_files('HTML', 'scons-user.html')
+			def find_html_users_guide_uninstall():
+				return find_all_uninstall_files('HTML', 'scons-user.html')
+			def find_html_man_pages():
+				return find_all_files('HTML', '*-man.html')
+			def find_html_man_pages_uninstall():
+				return find_all_uninstall_files('HTML', '*-man.html')
+			def find_html_api_reference():
+				return find_all_files(os.path.join('HTML', 'scons-api'), '*.*')
+			def find_html_api_reference_uninstall():
+				directives = find_all_uninstall_files(os.path.join('HTML', 'scons-api'), '*.*').split('\n')
+				return string.join(map(lambda x: x.replace('@\\\\doc\\\\', '@\\\\doc\\\\api\\\\'), directives), '\n')
+        
+			def find_pdf_users_guide():
+				return find_all_files('PDF', 'scons-user.pdf')
+			def find_pdf_users_guide_uninstall():
+				return find_all_uninstall_files('PDF', 'scons-user.pdf')
+			def find_pdf_api_reference():
+				return find_all_files('PDF', 'scons-api.pdf')
+			def find_pdf_api_reference_uninstall():
+				return find_all_uninstall_files('PDF', 'scons-api.pdf')
+
+			subst_dict_full = [
+								('@INSTALLER_NAME@'                   , string.join([project, version])),
+								('@INSTALLER_FILE@'                   , 'scons_full_installer.exe'),
+								('@SCONS_STANDALONE_FILES_INSTALL@'   , scons_standalone_files_install),
+								('@UNINSTALLER_FILE@'                 , string.join(['uninstall', project, version], '-') + '.exe'),
+								('@SCONS_STANDALONE_FILES_UNINSTALL@' , scons_standalone_files_uninstall),
+								('@LICENSE_DATA@'                     , os.path.join('LICENSE.txt')),
+								('@INSTALL_DIR_REG_KEY@'              , string.join(['Software', project, version], '\\\\')),
+								('@PRODUCT_NAME@'                     , project),
+								('@UNINSTALL_DISPLAY_NAME@'           , 'SCons: A software construction tool'),
+								('@HTML_USERS_GUIDE_FILES@', find_html_users_guide),
+								('@HTML_USERS_GUIDE_FILES_UNINSTALL@', find_html_users_guide_uninstall),
+								('@HTML_MAN_PAGES_FILES@', find_html_man_pages),
+								('@HTML_MAN_PAGES_FILES_UNINSTALL@', find_html_man_pages_uninstall),
+								('@HTML_API_REFERENCE_FILES@', find_html_api_reference),
+								('@HTML_API_REFERENCE_FILES_UNINSTALL@', find_html_api_reference_uninstall),
+								('@PDF_USERS_GUIDE_FILES@', find_pdf_users_guide),
+								('@PDF_USERS_GUIDE_FILES_UNINSTALL@', find_pdf_users_guide_uninstall),
+								('@PDF_API_REFERENCE_FILES@', find_pdf_api_reference),
+								('@PDF_API_REFERENCE_FILES_UNINSTALL@', find_pdf_api_reference_uninstall),
+								('@INSTDIR@', 'INSTDIR'),
+                        ]
+    
+			inst_script_node = env.Substfile(inst_script_temp, SUBST_DICT = subst_dict)
+			env.Depends(inst_script_node, doc_dir_scan)
+    
+			inst = env.NSISInstaller(inst_script_node)
+			env.Depends(inst, license_file)
+			env.Depends(inst, tar_deps)
+			env.Local(inst)
+			final_installer = env.InstallAs(os.path.join(env['DISTDIR'], inst_filename), inst)
+    
+			Alias('installer', final_installer)
         
         # Experimental code for using PyInstaller to build binary SCons
         # def pyinstaller_hook_builder(target, source, env):
@@ -1414,7 +1510,7 @@ for p in [ scons ]:
 #
 #
 #
-Export('build_dir', 'env', 'project', 'version', 'SCons_revision')
+Export('build_dir', 'env')
 
 SConscript('QMTest/SConscript')
 
