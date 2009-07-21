@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tr\n"
 "POT-Creation-Date: 2009-07-17 03:45+EEST\n"
-"PO-Revision-Date: 2009-07-19 14:45+0300\n"
+"PO-Revision-Date: 2009-07-22 02:32+0300\n"
 "Last-Translator: Tuba Şahin <nestanka@gmail.com>\n"
 "Language-Team:  <tr@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -331,7 +331,7 @@ msgstr ""
 
 #: Node/FS.py:597
 msgid "A directory must be provided"
-msgstr ""
+msgstr "Bir klasör sağlanmalı"
 
 #: Node/FS.py:625
 msgid "Tried to lookup %s '%s' as a %s."
@@ -339,7 +339,7 @@ msgstr ""
 
 #: Node/FS.py:915
 msgid "No such file or directory: '%s'"
-msgstr ""
+msgstr "Böyle bir dosya ve ya klasör yok: '%s'"
 
 #: Node/FS.py:995
 msgid "rel_path() could not disambiguate File/Dir"
@@ -347,11 +347,11 @@ msgstr ""
 
 #: Node/FS.py:1299
 msgid "Source directory cannot be under variant directory."
-msgstr ""
+msgstr "Kaynak klasörü değişken klasörünün içinde olamaz."
 
 #: Node/FS.py:1303
 msgid "'%s' already has a source directory: '%s'."
-msgstr ""
+msgstr "'%s' zaten bir kaynak klasörüne sahip: '%s'."
 
 #: Node/FS.py:1325
 msgid "building associated VariantDir targets: %s"
@@ -367,27 +367,27 @@ msgstr ""
 
 #: Node/FS.py:2744
 msgid "No drive `%s' for target `%s'."
-msgstr ""
+msgstr "`%s' hedefi için sürücü yok `%s'."
 
 #: Node/FS.py:2763
 msgid "Cannot duplicate `%s' in `%s': %s."
-msgstr ""
+msgstr "`%s' `%s' içerisine kopyalanamıyor: %s."
 
 #: Node/FS.py:3162
 msgid "looking for '%s' in '%s' ...\n"
-msgstr ""
+msgstr "'%s' '%s' içerisinde aranıyor ...\n"
 
 #: Node/FS.py:3166
 msgid "... FOUND '%s' in '%s'\n"
-msgstr ""
+msgstr "... '%s' '%s' içerisinde BULUNDU\n"
 
 #: Node/__init__.py:354
 msgid "Explicit dependency `%s' not found, needed by target `%s'."
-msgstr ""
+msgstr "Net bağımlılık `%s' bulunamadı, `%s' hedefi gerekli."
 
 #: Node/__init__.py:359
 msgid "Implicit dependency `%s' not found, needed by target `%s'."
-msgstr ""
+msgstr "Saklı bağımlılık bulunamadı`%s', `%s' hedefi tarafından gerekli."
 
 #: Node/__init__.py:839
 msgid ""
@@ -417,15 +417,15 @@ msgstr ""
 
 #: Node/__init__.py:1059
 msgid ": %s changed"
-msgstr ""
+msgstr ": %s değişti"
 
 #: Node/__init__.py:1067
 msgid ": bactsig %s != newsig %s"
-msgstr ""
+msgstr ": bactsig %s != newsig %s"
 
 #: Node/__init__.py:1071
 msgid ": up to date"
-msgstr ""
+msgstr ": güncel"
 
 #: Node/__init__.py:1180
 msgid "building `%s' because it doesn't exist\n"
@@ -439,35 +439,35 @@ msgstr ""
 msgid ""
 "Cannot explain why `%s' is being rebuilt: No previous build information "
 "found\n"
-msgstr ""
+msgstr "`%s' nin neden yeniden derlendiği açıklanamıyor: Bir önceki derleme hakkında bilgi bulunamadı\n"
 
 #: Node/__init__.py:1222
 msgid "`%s' is no longer a dependency\n"
-msgstr ""
+msgstr "`%s' artık bağımlı değil\n"
 
 #: Node/__init__.py:1227
 msgid "`%s' is a new dependency\n"
-msgstr ""
+msgstr "`%s' yeni bir bağımlılık\n"
 
 #: Node/__init__.py:1232
 msgid "the dependency order changed:\n"
-msgstr ""
+msgstr "bağımlılık sırası değiştirildi:\n"
 
 #: Node/__init__.py:1233
 msgid "%sold: %s\n"
-msgstr ""
+msgstr "%seski: %s\n"
 
 #: Node/__init__.py:1234
 msgid "%snew: %s\n"
-msgstr ""
+msgstr "%syeni: %s\n"
 
 #: Node/__init__.py:1243
 msgid "the contents of the build action changed\n"
-msgstr ""
+msgstr "derleme eyleminin içeriği değiştirildi\n"
 
 #: Node/__init__.py:1246
 msgid "the build action changed:\n"
-msgstr ""
+msgstr "derleme eylemi değiştirildi:\n"
 
 #: Node/__init__.py:1251
 msgid "rebuilding `%s' for unknown reasons\n"
@@ -518,25 +518,24 @@ msgstr "The env.Copy() methodu onaylanmamış; yerine env.Clone() methodunu kull
 
 #: Platform/__init__.py:115
 msgid "No platform named '%s'"
-msgstr ""
+msgstr "'%s' isimli bir platform yok"
 
 #: Platform/__init__.py:219
 msgid " for command line:\n"
-msgstr ""
+msgstr "komut satırı için:\n"
 
 #: Platform/__init__.py:219
 msgid "Using tempfile "
-msgstr ""
+msgstr "Geçici dosya kullanılıyor "
 
 #: Platform/posix.py:84 Platform/posix.py:171 Platform/win32.py:138
 #: Platform/win32.py:162 Script/Interactive.py:365
-#, fuzzy
 msgid "scons: %s: %s\n"
-msgstr "seçenek %s: %s"
+msgstr "scons: %s: %s\n"
 
 #: Platform/win32.py:57
 msgid "you do not seem to have the pywin32 extensions installed;\n"
-msgstr ""
+msgstr "Sizin pywin32 uzantılarını kurmadığınız gözüküyor;\n"
 
 #: Platform/win32.py:58 Platform/win32.py:62
 msgid "\tparallel (-j) builds may not work reliably with open Python files."
@@ -544,19 +543,19 @@ msgstr ""
 
 #: Platform/win32.py:61
 msgid "your pywin32 extensions do not support file handle operations;\n"
-msgstr ""
+msgstr "pywin uzantılarınız dosya işleyicileri desteklemiyor;\n"
 
 #: Platform/win32.py:102 Platform/win32.py:177
 msgid "scons: Could not find command interpreter, is it in your PATH?\n"
-msgstr ""
+msgstr "scons: Komut yorumlayıcısını bulamıyor, PATH içinde olduğundan emin misiniz?\n"
 
 #: Platform/win32.py:136
 msgid "scons: unknown OSError exception code %d - %s: %s\n"
-msgstr ""
+msgstr "scons: bilinmeyen OSError istisna kodu %d - %s: %s\n"
 
 #: Platform/win32.py:172
 msgid "scons: unknown OSError exception code %d - '%s': %s\n"
-msgstr ""
+msgstr "scons: bilinmeyen OSError istisna kodu %d - %s: %s\n"
 
 #: SConf.py:83
 msgid "SCons.SConf.SetCacheMode: Unknown mode "
@@ -647,7 +646,7 @@ msgstr "Bozuk sconsign girdisi yoksayılıyor : %s (%s)\n"
 
 #: Scanner/C.py:104 Scanner/LaTeX.py:330 Scanner/__init__.py:381
 msgid "No dependency generated for file: %s (included from: %s) -- file not found"
-msgstr ""
+msgstr "Dosya için hiçbir bağımlılık oluşturulamadı: %s ()"
 
 #: Scanner/Fortran.py:123
 msgid "No dependency generated for file: %s (referenced by: %s) -- file not found"
@@ -660,11 +659,11 @@ msgstr "bilinmeyen eylem %r"
 
 #: Script/Interactive.py:221
 msgid "scons: Clearing cached node information ..."
-msgstr ""
+msgstr "scons: Önbellek düğüm bilgisi temizleniyor ..."
 
 #: Script/Interactive.py:271
 msgid "scons: done clearing node information."
-msgstr ""
+msgstr "scons: düğüm bilgisinin temizlenmesi tamamlandı."
 
 #: Script/Main.py:175
 #, fuzzy
@@ -673,7 +672,7 @@ msgstr "\"%s\" güncel."
 
 #: Script/Main.py:191
 msgid "Command execution time: %f seconds\n"
-msgstr ""
+msgstr "Komut çalıştırma zamanı: %f saniye\n"
 
 #: Script/Main.py:215
 #, fuzzy
@@ -687,15 +686,15 @@ msgstr "Kaynaktan nasıl hedef yaratılacağı bilinmiyor `%s'"
 
 #: Script/Main.py:220
 msgid "  Stop."
-msgstr ""
+msgstr "  Dur"
 
 #: Script/Main.py:230
 msgid "scons: Nothing to be done for `%s'."
-msgstr ""
+msgstr "scons: `%s' için yapılacak hiç birşey yok."
 
 #: Script/Main.py:269
 msgid "scons: *** [%s] %s\n"
-msgstr ""
+msgstr "scons: *** [%s] %s\n"
 
 #: Script/Main.py:283
 msgid "scons: internal stack trace:\n"
@@ -703,41 +702,43 @@ msgstr ""
 
 #: Script/Main.py:318 Script/Main.py:330 Script/Main.py:349 Script/Main.py:370
 msgid "Removed "
-msgstr ""
+msgstr "Kaldırıldı "
 
 #: Script/Main.py:335
 msgid "Removed directory "
-msgstr ""
+msgstr "Kaldırılan klasör"
 
 #: Script/Main.py:337
 msgid "Path '%s' exists but isn't a file or directory."
-msgstr ""
+msgstr "'%s' yolu mevcut ama bir dosya ya da klasör değil."
 
 #: Script/Main.py:342 Script/Main.py:367
 msgid "scons: Could not remove '%s':"
-msgstr ""
+msgstr "scons: Kaldırılamıyor '%s':"
 
 #: Script/Main.py:515
 msgid "Object counts:\n"
-msgstr ""
+msgstr "Nesne sayıları:\n"
 
 #: Script/Main.py:536
 msgid "Memory %-32s %12d\n"
-msgstr ""
+msgstr "Hafıza %-32 %12d\n"
 
 #: Script/Main.py:584 Script/Main.py:596 Script/Main.py:604
 msgid "File \"%s\", line %d, in %s\n"
-msgstr ""
+msgstr "Dosya \"%s\", satır %d, in %s\n"
 
 #: Script/Main.py:595 Script/Main.py:603
 msgid ""
 "\n"
 "scons: warning: %s\n"
 msgstr ""
+"\n"
+"scons: uyarı: %s\n"
 
 #: Script/Main.py:610
 msgid "internal error"
-msgstr ""
+msgstr "dahili hata"
 
 #: Script/Main.py:646
 msgid "--debug=count is not supported when running SCons\n"
@@ -749,11 +750,11 @@ msgstr ""
 
 #: Script/Main.py:692
 msgid "site dir %s not found."
-msgstr ""
+msgstr "site dir %s bulunamadı."
 
 #: Script/Main.py:718
 msgid "cannot import site_init.py: missing SCons.Script module %s"
-msgstr ""
+msgstr "site_init.py içeri aktarılamıyor: kayıp SCons.Script modülü %s"
 
 #: Script/Main.py:726
 msgid "*** Error loading site_init file %s:\n"
@@ -761,39 +762,39 @@ msgstr ""
 
 #: Script/Main.py:732
 msgid "*** cannot import site init file %s:\n"
-msgstr ""
+msgstr "*** site init dosyası içeri aktarılamıyor %s:\n"
 
 #: Script/Main.py:813
 msgid "Could not change directory to %s\n"
-msgstr ""
+msgstr "Klasör %s  değiştirilemiyor\n"
 
 #: Script/Main.py:828
 msgid "scons: Entering directory `%s'"
-msgstr ""
+msgstr "scons: Klasöre giriliyor`%s'"
 
 #: Script/Main.py:857
 msgid "No SConstruct file found."
-msgstr ""
+msgstr "SConstruct dosyası bulunamadı."
 
 #: Script/Main.py:921
 msgid "before reading SConscript files:"
-msgstr ""
+msgstr "SConscript dosyalarını okumadan önce:"
 
 #: Script/Main.py:926
 msgid "scons: Reading SConscript files ..."
-msgstr ""
+msgstr "scons: SConscript dosyaları okunuyor ..."
 
 #: Script/Main.py:938
 msgid "scons: *** %s  Stop.\n"
-msgstr ""
+msgstr "scons: *** %s  Dur.\n"
 
 #: Script/Main.py:944
 msgid "scons: done reading SConscript files."
-msgstr ""
+msgstr "scons: SConscript dosyalarının okunması tamamlandı."
 
 #: Script/Main.py:946
 msgid "after reading SConscript files:"
-msgstr ""
+msgstr "SConscript dosyalarını okuduktan sonra:"
 
 #: Script/Main.py:964
 msgid "Support for pre-2.2 Python (%s) is deprecated.\n"
@@ -801,11 +802,11 @@ msgstr ""
 
 #: Script/Main.py:965
 msgid "    If this will cause hardship, contact dev@scons.tigris.org."
-msgstr ""
+msgstr "    Eğer bu zor olacaksa, dev@scons.tigris.org ile iletişim kurunuz."
 
 #: Script/Main.py:989
 msgid "Use scons -H for help about command-line options."
-msgstr ""
+msgstr "Komut-satırı seçenekleri için scons-H kullanınız."
 
 #: Script/Main.py:1097
 msgid "scons: *** No targets specified and no Default() targets found.  Stop.\n"
@@ -813,42 +814,39 @@ msgstr ""
 
 #: Script/Main.py:1127
 msgid "Building targets ..."
-msgstr ""
+msgstr "Hedefler derleniyor ..."
 
 #: Script/Main.py:1128
 msgid "done building targets."
-msgstr ""
+msgstr "hedeflerin derlenmesi tamamlandı."
 
 #: Script/Main.py:1130
 msgid "done building targets (errors occurred during build)."
-msgstr ""
+msgstr "hedeflerin derlenmesi tamamlandı (derlenme sırasında hatalar oluştu)."
 
 #: Script/Main.py:1132
 msgid "building terminated because of errors."
-msgstr ""
+msgstr "derleme hatalar yüzünden sonlandırıldı."
 
 #: Script/Main.py:1138
 msgid "Cleaning targets ..."
-msgstr ""
+msgstr "Hedefler temizleniyor ..."
 
 #: Script/Main.py:1139
 msgid "done cleaning targets."
-msgstr ""
+msgstr "hedeflerin temizlenmesi tamamlandı."
 
 #: Script/Main.py:1141
 msgid "done cleaning targets (errors occurred during clean)."
-msgstr ""
+msgstr "hedeflerin temizlenmesi tamamlandı(temizleme sırasında hatalar oluştu)."
 
 #: Script/Main.py:1143
 msgid "cleaning terminated because of errors."
-msgstr ""
+msgstr "temizleme hatalar yüzünden sonlandırıldı."
 
 #: Script/Main.py:1183
-#, fuzzy
 msgid "parallel builds are unsupported by this version of Python;\n"
-msgstr ""
-"Yığın boyutu ayarı Python un bu sürümünde desteklenmiyor:\n"
-"    "
+msgstr "Paralel derlemeler Python un bu sürümünde desteklenmiyor;\n"
 
 #: Script/Main.py:1184
 msgid "\tignoring -j or num_jobs option.\n"
@@ -856,46 +854,43 @@ msgstr ""
 
 #: Script/Main.py:1190
 msgid "before building targets:"
-msgstr ""
+msgstr "hedefleri derlemeden önce: "
 
 #: Script/Main.py:1201
-#, fuzzy
 msgid "scons: Build interrupted.\n"
-msgstr "Derleme kesildi."
+msgstr "scons: Derleme kesildi.\n"
 
 #: Script/Main.py:1208 Script/Main.py:1210 Script/Main.py:1216
 msgid "scons: "
-msgstr ""
+msgstr "scons: "
 
 #: Script/Main.py:1213
-#, fuzzy
 msgid "scons: writing .sconsign file."
-msgstr "Bozuk .sconsign dosyası yoksayılıyor: %s"
+msgstr "scons: .sconsign dosyası yazılıyor."
 
 #: Script/Main.py:1219
 msgid "after building targets:"
-msgstr ""
+msgstr "hedefler derlendikten sonra:"
 
 #: Script/Main.py:1220
 msgid "build"
-msgstr ""
+msgstr "derleme"
 
 #: Script/Main.py:1220
 msgid "post-"
-msgstr ""
+msgstr "post-"
 
 #: Script/Main.py:1273
 msgid "scons: *** SCons version %s does not run under Python version %s.\n"
-msgstr ""
+msgstr "scons: *** %s SCons sürümü Python'un bu sürümünde çalışmıyor %s.\n"
 
 #: Script/Main.py:1277
 msgid "SCons by Steven Knight et al.:\n"
 msgstr ""
 
 #: Script/Main.py:1301
-#, fuzzy
 msgid "scons: Build interrupted."
-msgstr "Derleme kesildi."
+msgstr "scons: Derleme kesildi."
 
 #: Script/Main.py:1329
 msgid "Memoizer (memory cache) hits and misses:"
@@ -903,55 +898,52 @@ msgstr ""
 
 #: Script/Main.py:1348
 msgid "Total build time: %f seconds"
-msgstr ""
+msgstr "Toplam derleme süresi: %f saniye"
 
 #: Script/Main.py:1349
 msgid "Total SConscript file execution time: %f seconds"
-msgstr ""
+msgstr "SConscript dosyasının toplam çalışma süresi: %s saniye"
 
 #: Script/Main.py:1350
 msgid "Total SCons execution time: %f seconds"
-msgstr ""
+msgstr "SCons toplam çalışma süresi: %f saniye"
 
 #: Script/Main.py:1351
 msgid "Total command execution time: %f seconds"
-msgstr ""
+msgstr "Toplam komut çalışma süresi: %f saniye"
 
 #: Script/SConsOptions.py:137
 msgid "This option is not settable from a SConscript file: %s"
-msgstr ""
+msgstr "Bu seçenek SConscript dosyasından ayarlanamaz: %s"
 
 #: Script/SConsOptions.py:145
 msgid "A positive integer is required: %s"
-msgstr ""
+msgstr "Pozitif bir tamsayı gerekli: %s"
 
 #: Script/SConsOptions.py:150 Script/SConsOptions.py:175
 #: Script/SConsOptions.py:180
 msgid "An integer is required: %s"
-msgstr ""
+msgstr "Bir tamsayı gerekli: %s"
 
 #: Script/SConsOptions.py:155
 msgid "A string is required: %s"
-msgstr ""
+msgstr "Bir dizgi gerekli: %s"
 
 #: Script/SConsOptions.py:157
-#, fuzzy
 msgid "Not a valid duplication style: %s"
-msgstr "geçersiz seçenek türü: %r"
+msgstr "Geçersiz kopyalama stili: %s"
 
 #: Script/SConsOptions.py:165
-#, fuzzy
 msgid "Not a valid diskcheck value: %s"
-msgstr "seçenek %s: geçersiz %s değer: %r"
+msgstr "Geçersiz disk denetimi değeri: %s"
 
 #: Script/SConsOptions.py:227 compat/_scons_optparse.py:724
 msgid "'const' must not be supplied for action %r"
 msgstr "%r eylemi için 'const' sağlanmamalı"
 
 #: Script/SConsOptions.py:272
-#, fuzzy
 msgid "SCons error: %s\n"
-msgstr "%s: hata: %s\n"
+msgstr "SCons hata: %s\n"
 
 #: Script/SConsOptions.py:321 compat/_scons_optparse.py:1517
 #: compat/_scons_optparse.py:1556
@@ -974,23 +966,23 @@ msgstr "Kullanım: %s\n"
 
 #: Script/SConsOptions.py:500
 msgid "usage: scons [OPTION] [TARGET] ..."
-msgstr ""
+msgstr "kullanım: scons [SEÇENEK] [HEDEF] ..."
 
 #: Script/SConsOptions.py:535
 msgid "Ignored for compatibility."
-msgstr ""
+msgstr "Uyumluluk için görmezden geliniyor."
 
 #: Script/SConsOptions.py:540
 msgid "Remove specified targets and dependencies."
-msgstr ""
+msgstr "Belirlenmiş hedefler ve bağımlılıklar kaldırıldı."
 
 #: Script/SConsOptions.py:546
 msgid "Change to DIR before doing anything."
-msgstr ""
+msgstr "Birşey yapmadan önce dizini değiştir."
 
 #: Script/SConsOptions.py:553
 msgid "Print CacheDir debug info to FILE."
-msgstr ""
+msgstr "Önbellek dizininin hata ayıklama çıktısını FILE'a yazdır."
 
 #: Script/SConsOptions.py:564
 msgid "Copy already-built targets into the CacheDir."
@@ -1010,27 +1002,27 @@ msgstr ""
 
 #: Script/SConsOptions.py:619
 msgid "Warning:  %s is not a valid debug type"
-msgstr ""
+msgstr "Uyarı: %s geçeli bir hata ayıklama türü değil"
 
 #: Script/SConsOptions.py:620
 msgid "Print various types of debugging information: %s."
-msgstr ""
+msgstr "Değişik türdeki hata ayıklama bilgilerini yazdır: %s"
 
 #: Script/SConsOptions.py:633
 msgid "Warning: `%s' is not a valid diskcheck type"
-msgstr ""
+msgstr "Uyarı: `% geçerli disk denetleme türü değil"
 
 #: Script/SConsOptions.py:640
 msgid "Enable specific on-disk checks."
-msgstr ""
+msgstr "Belirli disk denetimini etkinleştir."
 
 #: Script/SConsOptions.py:645
 msgid "`%s' is not a valid duplication style."
-msgstr ""
+msgstr "`%s' geçerli bir kopyalama stili değil."
 
 #: Script/SConsOptions.py:651
 msgid "Set the preferred duplication methods. Must be one of "
-msgstr ""
+msgstr "Tercih edilen kopyalama methotlarını ayarlayınız. Biri olmalı "
 
 #: Script/SConsOptions.py:664
 msgid "Read FILE as the top-level SConstruct file."
@@ -1038,7 +1030,7 @@ msgstr ""
 
 #: Script/SConsOptions.py:669
 msgid "Print defined help message, or this one."
-msgstr ""
+msgstr "Tanımlanan yardım mesajını ve ya şunu yazdıe."
 
 #: Script/SConsOptions.py:673
 #, fuzzy
@@ -1047,7 +1039,7 @@ msgstr "bu yardım mesajını göster ve çık"
 
 #: Script/SConsOptions.py:678
 msgid "Ignore errors from build actions."
-msgstr ""
+msgstr "Derleme eylemlerinden hataları görmezden gel."
 
 #: Script/SConsOptions.py:684
 msgid "Search DIR for imported Python modules."
@@ -1107,11 +1099,11 @@ msgstr ""
 
 #: Script/SConsOptions.py:767
 msgid "Build dependencies in random order."
-msgstr ""
+msgstr "Bağımlılıkları rasgele bir sırada derle."
 
 #: Script/SConsOptions.py:772
 msgid "Don't print commands."
-msgstr ""
+msgstr "Komutları yazdırma."
 
 #: Script/SConsOptions.py:778
 msgid "Use DIR instead of the usual site_scons dir."
@@ -1152,7 +1144,7 @@ msgstr "programın sürüm numarasını göster ve çık"
 
 #: Script/SConsOptions.py:851
 msgid "Enable or disable warnings."
-msgstr ""
+msgstr "Uyarıları etkinleştir ve ya etkisizleştir."
 
 #: Script/SConsOptions.py:858
 msgid "Search REPOSITORY for source and target files."
@@ -1180,11 +1172,11 @@ msgstr ""
 
 #: Script/SConscript.py:397
 msgid "Invalid SConscript usage - no parameters"
-msgstr ""
+msgstr "Geçersiz SConscript kullanımı - parametre yok"
 
 #: Script/SConscript.py:419
 msgid "Invalid SConscript() usage - too many arguments"
-msgstr ""
+msgstr "Geçersiz SConscript kullanımı - çok fazla parametre"
 
 #: Script/SConscript.py:431
 msgid ""
@@ -1225,13 +1217,12 @@ msgid "%s `%s' trying to evaluate `%s'"
 msgstr ""
 
 #: Subst.py:245
-#, fuzzy
 msgid "NodeList has no attribute: %s"
-msgstr "`"
+msgstr "NodeList'in hiçbir özelliği yok: %s"
 
 #: Taskmaster.py:170
 msgid "Task.prepare()"
-msgstr ""
+msgstr "Task.prepare()"
 
 #: Taskmaster.py:209
 msgid ""
