@@ -1110,7 +1110,7 @@ for p in [ scons ]:
         commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY sdist --formats=%s" %  \
                             string.join(distutils_formats, ','))
 
-    commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY bdist_wininst")
+    commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY bdist_wininst --plat-name win32")
 
     env.Command(distutils_targets, build_src_files, commands)
 
@@ -1349,7 +1349,7 @@ for p in [ scons ]:
             return string.join(directives, '\n')
 
         inst_filename = string.join([project, 'binary', version], '-') + '.exe'
-        license_file = env.SCons_revision(os.path.join(inst_dir, 'LICENSE.txt'), '#LICENSE')
+        license_file = env.SCons_revision(os.path.join(str(build_dir_installer), 'LICENSE.txt'), '#LICENSE')
 
         subst_dict = [
                         ('@INSTALLER_NAME@'                   , string.join([project, version])),
@@ -1368,6 +1368,8 @@ for p in [ scons ]:
         inst = env.NSISInstaller(inst_script)
         env.Depends(inst, standalone_exe)
         env.Depends(inst, scan_exe_dir)
+        env.Depends(inst, license_file)
+        inst_binary = inst
         
         inst = env.InstallAs(os.path.join(env['DISTDIR'], inst_filename), inst)
         commands = [
@@ -1378,7 +1380,7 @@ for p in [ scons ]:
         env.Install('$TEST_INSTALLER_DIR', inst)
         env.Alias('installer', inst)
         
-        if whereis(jw):
+        if whereis('jw'):
             inst_script = 'scons_full_installer.nsi'
             inst_script_input = os.path.join(build_dir, '..', 'installer', 'scons_full_installer.nsi.in')
             inst_dir = os.path.join(build_dir, 'installer')
@@ -1386,18 +1388,17 @@ for p in [ scons ]:
             inst_filename = string.join([project, 'full', version], '-') + '.exe'
 
             commands = [
-                        Delete(inst_dir),
                         Mkdir(inst_dir),
                         Copy(inst_script_temp, inst_script_input)
                         ]
             cmd_node = env.Command(inst_script_temp, inst_script_input, commands)
 
-            doc_dir_scan = env.ScanDir('DummyDocTarget', env.Dir(os.path.join(build_dir, 'doc'))
+            doc_dir_scan = env.ScanDir('DummyDocTarget', env.Dir(os.path.join(build_dir, 'doc')))
             env.Depends(doc_dir_scan, 'doc')
             env.AlwaysBuild(doc_dir_scan)
     
             def find_all_files(directory, exp):
-                files = env.Glob(os.path.join(build, directory, exp), strings = 1)
+                files = env.Glob(os.path.join(build_dir, 'doc', directory, exp), strings = 1)
                 directives = []
                 for file in files:
                     f = os.path.join('..', '..', file)
@@ -1406,7 +1407,7 @@ for p in [ scons ]:
                 return string.join(directives, '\n')
     
             def find_all_uninstall_files(directory, exp):
-                files = env.Glob(os.path.join(build, directory, exp), strings = 1)
+                files = env.Glob(os.path.join(build_dir, 'doc', directory, exp), strings = 1)
                 directives = []
                 for file in files:
                     f = "@INSTDIR@\\doc\\%s" % (os.path.basename(file))
@@ -1457,6 +1458,8 @@ for p in [ scons ]:
                                 ('@PDF_USERS_GUIDE_FILES_UNINSTALL@'   , find_pdf_users_guide_uninstall),
                                 ('@PDF_API_REFERENCE_FILES@'           , find_pdf_api_reference),
                                 ('@PDF_API_REFERENCE_FILES_UNINSTALL@' , find_pdf_api_reference_uninstall),
+                                ('@LOCAL_ZIP_FILES@'                   , 'File ' + str(dist_local_zip)),
+                                ('@LOCAL_ZIP_FILES_UNINSTALL@'         , 'Delete $@INSTDIR@\\' + os.path.basename(str(dist_local_zip))),
                                 ('@INSTDIR@'                           , 'INSTDIR'),
 							  ]
     
@@ -1465,7 +1468,8 @@ for p in [ scons ]:
     
             inst = env.NSISInstaller(inst_script_node)
             env.Depends(inst, license_file)
-            env.Depends(inst, tar_deps)
+            env.Depends(inst, 'doc')
+            env.Depends(inst, dist_local_zip)
             env.Local(inst)
             final_installer = env.InstallAs(os.path.join(env['DISTDIR'], inst_filename), inst)
     

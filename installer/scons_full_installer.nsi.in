@@ -28,9 +28,9 @@ SetCompressor lzma
 ##########################################################################
 # Installer pages
 ##########################################################################
-Name "@DOC_INSTALLER_NAME@"
+Name "@INSTALLER_NAME@"
 
-OutFile "@DOC_INSTALLER_FILE@"
+OutFile "@INSTALLER_FILE@"
 
 Var StartMenuFolder
 
@@ -110,8 +110,9 @@ FunctionEnd
 # Installation types
 ##########################################################################
 InstType "Full"
-InstType "HTML only"
-InstType "PDF only"
+InstType "HTML Documentation"
+InstType "PDF Documentation"
+InstType "Binary"
 
 ##########################################################################
 # Installer sections
@@ -137,6 +138,7 @@ SectionEnd
 Section "SCons Executable" SconsExe
 
   SectionIn 1
+  SectionIn 4
 
   SetOutPath $INSTDIR
 
@@ -147,6 +149,7 @@ SectionEnd
 Section "Add to $$PATH" AddToPath
 
   SectionIn 1
+  SectionIn 4
 
   ${EnvVarUpdate} $0 "PATH" "A" $RegHive $INSTDIR
 
@@ -232,6 +235,12 @@ SectionGroup /e "PDF Documentation" PdfDocs
   SectionEnd
 SectionGroupEnd
 
+Section "Local version of SCons (zipped)" LocalZip
+  SectionIn 1
+
+  @LOCAL_ZIP_FILES@
+SectionEnd
+
 ##########################################################################
 # Installer l10n
 ##########################################################################
@@ -247,6 +256,8 @@ LangString DESC_PdfApiReference  ${LANG_ENGLISH} "API reference for the SCons en
 LangString DESC_SconsExe  ${LANG_ENGLISH} "The stand-alone SCons executable."
 LangString DESC_AddToPath ${LANG_ENGLISH} "Add the installation directory to the path."
 
+LangString DESC_LocalZip ${LAND_ENGLISH} "Standalone source version of SCons (zipped)."
+
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${HtmlDocs}  $(DESC_HtmlDocs)
   !insertmacro MUI_DESCRIPTION_TEXT ${HtmlUsersGuide}  $(DESC_HtmlUsersGuide)
@@ -257,6 +268,7 @@ LangString DESC_AddToPath ${LANG_ENGLISH} "Add the installation directory to the
   !insertmacro MUI_DESCRIPTION_TEXT ${PdfApiReference}  $(DESC_PdfApiReference)
   !insertmacro MUI_DESCRIPTION_TEXT ${SconsExe}  $(DESC_SconsExe)
   !insertmacro MUI_DESCRIPTION_TEXT ${AddToPath} $(DESC_AddToPath)
+  !insertmacro MUI_DESCRIPTION_TEXT ${LocalZip} ${DESC_LocalZip)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ##########################################################################
@@ -323,6 +335,8 @@ Section "Uninstall"
 @PDF_API_REFERENCE_FILES_UNINSTALL@
 
 @SCONS_STANDALONE_FILES_UNINSTALL@
+
+@LOCAL_ZIP_FILES_UNINSTALL@
 
   RMDir $INSTDIR
   
