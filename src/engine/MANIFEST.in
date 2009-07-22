@@ -22,6 +22,7 @@ SCons/Environment.py
 SCons/Errors.py
 SCons/Executor.py
 SCons/Job.py
+SCons/i18n.py
 SCons/exitfuncs.py
 SCons/Memoize.py
 SCons/Node/__init__.py
