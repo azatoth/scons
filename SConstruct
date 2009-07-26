@@ -1192,6 +1192,13 @@ for file in files:
     Local(sp)
 
 #
+# Locale files
+#
+Export('build_dir', 'env', 'whereis')
+
+SConscript('i18n/SConscript')
+
+#
 # Documentation.
 #
 Export('build_dir', 'env', 'whereis')

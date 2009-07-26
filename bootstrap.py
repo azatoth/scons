@@ -181,10 +181,14 @@ def find(file, search=search):
 
 scons_py = os.path.join('src', 'script', 'scons.py')
 src_engine = os.path.join('src', 'engine')
+po_dir = "i18n"
 MANIFEST_in = find(os.path.join(src_engine, 'MANIFEST.in'))
+PO_MANIFEST_in = find(os.path.join(po_dir, 'MANIFEST.in'))
 
 files = [ scons_py ] + map(lambda x: os.path.join(src_engine, x[:-1]),
                            open(MANIFEST_in).readlines())
+
+po_files = map(lambda x: os.path.join(po_dir, x[:-1]), open(PO_MANIFEST_in).readlines())
 
 for file in files:
     src = find(file)
@@ -196,6 +200,19 @@ for file in files:
         try: os.unlink(dst)
         except: pass
         open(dst, 'wb').write( open(src, 'rb').read() )
+
+# install po files
+for file in po_files:
+    # filename format like: lang.po
+    lang = file[:-3]
+    dst = os.path.join(bootstrap_dir, os.path.join("src", "%s.mo" % lang))
+    if must_copy(dst, src):
+        dir = os.path.split(dst)[0]
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
+        try: os.unlink(dst)
+        except: pass
+        os.system("msgfmt %s.po -o %s" % (lang, dst))
 
 if update_only:
     sys.exit(0)
