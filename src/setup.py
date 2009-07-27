@@ -37,6 +37,10 @@ man_pages = [
     'scons-time.1',
 ]
 
+locales = [
+    'tr',
+]
+
 (head, tail) = os.path.split(sys.argv[0])
 
 if head:
@@ -360,6 +364,10 @@ class install_data(_install_data):
             Installed.append(msg)
         else:
             self.data_files = []
+
+        for locale in locales:
+            dst = os.path.join("share", "locale", locale, "LC_MESSAGES")
+            self.data_files.append( (dst, ["i18n/%s/scons.mo" % locale] ) )
 
 description = "Open Source next-generation build tool."
 

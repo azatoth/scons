@@ -33,19 +33,14 @@ Import('build_dir', 'env', 'whereis')
 
 env = env.Clone()
 
-build = os.path.join(build_dir, 'src', 'i18n')
-
 msgfmt = whereis('msgfmt')
 
 po_dir = "i18n"
 po_files = [x[:-1] for x in open( "MANIFEST.in" ).readlines()]
 
-if not os.path.isdir(build):
-    os.makedirs( build )
-
-locale_dir = "/usr/share/locale"
-
 for file in po_files:
     lang = file[:-3]
-    os.system("%s %s -o %s/%s.mo" % (msgfmt, file, build, lang))
-    env.Alias("install", env.InstallAs( os.path.join(locale_dir, lang, "LC_MESSAGES", "scons.mo"), os.path.join( build, "%s.mo" % lang ) ))
+    dst = os.path.join(build_dir, 'scons', 'i18n', lang)
+    if not os.path.isdir(dst):
+        os.makedirs( dst )
+    os.system("%s %s -o %s/scons.mo" % (msgfmt, file, dst))
