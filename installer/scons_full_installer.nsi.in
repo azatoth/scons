@@ -62,6 +62,7 @@ Var StartMenuFolder
 # L10n support
 ##########################################################################
 !insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "German"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -117,6 +118,39 @@ InstType "Binary"
 ##########################################################################
 # Installer sections
 ##########################################################################
+LangString SEC_SconsExe ${LANG_ENGLISH} "SCons Executable"
+LangString SEC_SconsExe ${LANG_GERMAN} "SCons (Programm)"
+
+LangString SEC_AddToPath ${LANG_ENGLISH} "Add to path"
+LangString SEC_AddToPath ${LANG_GERMAN} "Zum Pfad Hinzufügen"
+
+LangString SEC_HtmlDocs ${LANG_ENGLISH} "HTML Documentation"
+LangString SEC_HtmlDocs ${LANG_GERMAN} "HTML-Dokumentation"
+
+LangString SEC_HtmlUsersGuide ${LANG_ENGLISH} "User's Guide"
+LangString SEC_HtmlUsersGuide ${LANG_GERMAN} "Benutzerhandbuch"
+
+LangString SEC_HtmlManpages ${LANG_ENGLISH} "Man Pages"
+LangString SEC_HtmlManpages ${LANG_GERMAN} "Manual-Seiten"
+
+LangString SEC_HtmlApiReference ${LANG_ENGLISH} "API Reference"
+LangString SEC_HtmlApiReference ${LANG_GERMAN} "API-Referenz"
+
+LangString SEC_PdfDocs ${LANG_ENGLISH} "PDF Documentation"
+LangString SEC_PdfDocs ${LANG_GERMAN} "PDF-Dokumentation"
+
+LangString SEC_PdfUsersGuide ${LANG_ENGLISH} "User's Guide"
+LangString SEC_PdfUsersGuide ${LANG_GERMAN} "Benutzerhandbuch"
+
+LangString SEC_PdfApiReference ${LANG_ENGLISH} "API Reference"
+LangString SEC_PdfApiReference ${LANG_GERMAN} "API-Referenz"
+
+LangString SEC_LocalZip ${LANG_ENGLISH} "SCons source code"
+LangString SEC_LocalZip ${LANG_GERMAN} "SCons-Quellcode"
+
+LangString SEC_PythonModule ${LANG_ENGLISH} "Python modules"
+LangString SEC_PythonModule ${LANG_GERMAN} "Python-Module"
+
 Section
   SetOutPath $INSTDIR
   
@@ -135,7 +169,7 @@ Section
   !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@DOC_PRODUCT_NAME@" "QuietUninstallString" "$\"$INSTDIR\@DOC_UNINSTALLER_FILE@$\" /S"
 SectionEnd
 
-Section "SCons Executable" SconsExe
+Section !$(SEC_SconsExe) SconsExe
 
   SectionIn 1
   SectionIn 4
@@ -146,7 +180,7 @@ Section "SCons Executable" SconsExe
 
 SectionEnd
 
-Section "Add to $$PATH" AddToPath
+Section $(SEC_AddToPath) AddToPath
 
   SectionIn 1
   SectionIn 4
@@ -155,8 +189,8 @@ Section "Add to $$PATH" AddToPath
 
 SectionEnd
 
-SectionGroup /e "HTML Documentation" HtmlDocs
-  Section "User's Guide" HtmlUsersGuide
+SectionGroup /e $(SEC_HtmlDocs) HtmlDocs
+  Section $(SEC_HtmlUsersGuide) HtmlUsersGuide
     SectionIn 1
     SectionIn 2
     
@@ -170,7 +204,7 @@ SectionGroup /e "HTML Documentation" HtmlDocs
 
     SetOutPath $INSTDIR
   SectionEnd
-  Section "Man Pages" HtmlManpages
+  Section $(SEC_HtmlManPages) HtmlManpages
     SectionIn 1
     SectionIn 2
     
@@ -186,7 +220,7 @@ SectionGroup /e "HTML Documentation" HtmlDocs
 
     SetOutPath $INSTDIR
   SectionEnd
-  Section "API Reference" HtmlApiReference
+  Section $(SEC_HtmlApiReference) HtmlApiReference
     SectionIn 1
     SectionIn 2
     
@@ -203,8 +237,8 @@ SectionGroup /e "HTML Documentation" HtmlDocs
   SectionEnd
 SectionGroupEnd
 
-SectionGroup /e "PDF Documentation" PdfDocs
-  Section "User's Guide" PdfUsersGuide
+SectionGroup /e $(SEC_PdfDocs) PdfDocs
+  Section $(SEC_PdfUsersGuide) PdfUsersGuide
     SectionIn 1
     SectionIn 3
     
@@ -218,7 +252,7 @@ SectionGroup /e "PDF Documentation" PdfDocs
 
     SetOutPath $INSTDIR
   SectionEnd
-  Section "API Reference" PdfApiReference
+  Section $(SEC_PdfApiReference) PdfApiReference
     SectionIn 1
     SectionIn 3
     
@@ -235,28 +269,56 @@ SectionGroup /e "PDF Documentation" PdfDocs
   SectionEnd
 SectionGroupEnd
 
-Section "Local version of SCons (zipped)" LocalZip
+Section $(SEC_LocalZip) LocalZip
   SectionIn 1
 
   @LOCAL_ZIP_FILES@
+SectionEnd
+
+Section $(SEC_PythonModule) PythonModule
+  SectionIn 1
+  
+  @PYTHON_MODULES_FILES@
+
+  BringToFront
 SectionEnd
 
 ##########################################################################
 # Installer l10n
 ##########################################################################
 LangString DESC_HtmlDocs  ${LANG_ENGLISH} "SCons documentation in HTML format."
+LangString DESC_HtmlDocs  ${LANG_GERMAN} "SCons-Dokumentation im HTML-Format."
+
 LangString DESC_HtmlUsersGuide  ${LANG_ENGLISH} "SCons user's guide."
+LangString DESC_HtmlUsersGuide  ${LANG_GERMAN} "SCons Benutzerhandbuch."
+
 LangString DESC_HtmlManPages  ${LANG_ENGLISH} "Manual pages for scons (1), scons-time (1), and sconsign (1)."
+LangString DESC_HtmlManPages  ${LANG_GERMAN} "Manual-Seiten für scons (1), scons-time (1) und sconsign (1)."
+
 LangString DESC_HtmlApiReference  ${LANG_ENGLISH} "API reference for the SCons engine."
+LangString DESC_HtmlApiReference  ${LANG_GERMAN} "API-Referenz für die SCons-Engine."
+
 
 LangString DESC_PdfDocs  ${LANG_ENGLISH} "SCons documentation in PDF format."
+LangString DESC_PdfDocs  ${LANG_GERMAN} "SCons-Dokumentation im PDF-Format."
+
 LangString DESC_PdfUsersGuide  ${LANG_ENGLISH} "SCons user's guide."
+LangString DESC_PdfUsersGuide  ${LANG_GERMAN} "SCons Benutzerhandbuch."
+
 LangString DESC_PdfApiReference  ${LANG_ENGLISH} "API reference for the SCons engine."
+LangString DESC_PdfApiReference  ${LANG_GERMAN} "API-Referenz für die SCons-Engine."
 
 LangString DESC_SconsExe  ${LANG_ENGLISH} "The stand-alone SCons executable."
-LangString DESC_AddToPath ${LANG_ENGLISH} "Add the installation directory to the path."
+LangString DESC_SconsExe  ${LANG_GERMAN} "Eigenständig ausführbare Version von SCons."
 
-LangString DESC_LocalZip ${LAND_ENGLISH} "Standalone source version of SCons (zipped)."
+LangString DESC_AddToPath ${LANG_ENGLISH} "Add the installation directory to the path."
+LangString DESC_AddToPath ${LANG_GERMAN} "Fügt das Installationsverzeichnis zum Pfad hinzu."
+
+LangString DESC_LocalZip ${LANG_ENGLISH} "SCons source code (zipped)."
+LangString DESC_LocalZip ${LANG_GERMAN} "SCons-Quellcode (im Zip-Format)."
+
+LangString DESC_PythonModule ${LANG_ENGLISH} "SCons scripts and engine for Python."
+LangString DESC_PythonModule ${LANG_GERMAN} "SCons-Skripte und -Engine für Python."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${HtmlDocs}  $(DESC_HtmlDocs)
@@ -268,7 +330,8 @@ LangString DESC_LocalZip ${LAND_ENGLISH} "Standalone source version of SCons (zi
   !insertmacro MUI_DESCRIPTION_TEXT ${PdfApiReference}  $(DESC_PdfApiReference)
   !insertmacro MUI_DESCRIPTION_TEXT ${SconsExe}  $(DESC_SconsExe)
   !insertmacro MUI_DESCRIPTION_TEXT ${AddToPath} $(DESC_AddToPath)
-  !insertmacro MUI_DESCRIPTION_TEXT ${LocalZip} ${DESC_LocalZip)
+  !insertmacro MUI_DESCRIPTION_TEXT ${LocalZip} $(DESC_LocalZip)
+  !insertmacro MUI_DESCRIPTION_TEXT ${PythonModule} $(DESC_PythonModule)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ##########################################################################
@@ -323,7 +386,19 @@ FunctionEnd
 ##########################################################################
 # Uninstaller sections
 ##########################################################################
-Section "Uninstall"
+LangString SEC_Uninstall ${LANG_ENGLISH} "Uninstall"
+LangString SEC_Uninstall ${LANG_GERMAN} "Deinstallieren"
+
+LangString SEC_UnRemoveFromPath ${LANG_ENGLISH} "Remove from path"
+LangString SEC_UnRemoveFromPath ${LANG_GERMAN} "Aus dem Pfad entfernen"
+
+LangString SEC_UnRemoveFromRegistry ${LANG_ENGLISH} "Remove from Registry"
+LangString SEC_UnRemoveFromRegistry ${LANG_GERMAN} "Aus der Registry entfernen"
+
+LangString SEC_UnRemovePythonModules ${LANG_ENGLISH} "Remove Python modules"
+LangString SEC_UnRemovePythonModules ${LANG_GERMAN} "Python-Module entfernen"
+
+Section "un.$(SEC_Uninstall)" Uninstall
 
   Delete $INSTDIR\@UNINSTALLER_FILE@
 
@@ -338,6 +413,10 @@ Section "Uninstall"
 
 @LOCAL_ZIP_FILES_UNINSTALL@
 
+@PYTHON_MODULES_FILES_UNINSTALL@
+
+  RMDir $INSTDIR\doc\api
+  RMDir $INSTDIR\doc
   RMDir $INSTDIR
   
   !insertmacro MUI_STARTMENU_GETFOLDER "Application" $StartMenuFolder
@@ -362,18 +441,43 @@ Section "Uninstall"
 
 SectionEnd
 
-Section "un.RemoveFromPath"
+Section "un.$(SEC_UnRemoveFromPath)" UnRemoveFromPath
 
   ${un.EnvVarUpdate} $0 "PATH" "R" $RegHive $INSTDIR
 
 SectionEnd
 
-Section /o "un.RemoveFromRegistry"
+Section /o "un.$(SEC_UnRemoveFromRegistry)" UnRemoveFromRegistry
 
     DeleteRegKey HKCU "@INSTALL_DIR_REG_KEY@"
     !insertmacro MultiUserDeleteRegKey "@INSTALL_DIR_REG_KEY@"
 
 SectionEnd
+
+Section /o "un.$(SEC_UnRemovePythonModules)" UnRemovePythonModules
+SectionEnd
+
+##########################################################################
+# Uninstaller l10n
+##########################################################################
+LangString DESC_Uninstall  ${LANG_ENGLISH} "Uninstall SCons."
+LangString DESC_Uninstall  ${LANG_GERMAN} "SCons deinstallieren."
+
+LangString DESC_UnRemoveFromPath  ${LANG_ENGLISH} "Remove the SCons directory from path."
+LangString DESC_UnRemoveFromPath  ${LANG_GERMAN} "Entfernt das Installationsverzeichnis aus dem Pfad."
+
+LangString DESC_UnRemoveFromRegistry  ${LANG_ENGLISH} "Remove all SCons registry entries."
+LangString DESC_UnRemoveFromRegistry  ${LANG_GERMAN} "Entfernt alle SCons-Registry-Einträge."
+
+LangString DESC_UnRemovePythonModules  ${LANG_ENGLISH} "To remove the Python modules, use the Windows Control Panel."
+LangString DESC_UnRemovePythonModules  ${LANG_GERMAN} "Verwenden sie die Systemsteuerung, um die Python-Module zu entfernen."
+
+!insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${Uninstall}  $(DESC_Uninstall)
+  !insertmacro MUI_DESCRIPTION_TEXT ${UnRemoveFromPath}  $(DESC_UnRemoveFromPath)
+  !insertmacro MUI_DESCRIPTION_TEXT ${UnRemoveFromRegistry}  $(DESC_UnRemoveFromRegistry)
+  !insertmacro MUI_DESCRIPTION_TEXT ${UnRemovePythonModules}  $(DESC_UnRemovePythonModules)
+!insertmacro MUI_UNFUNCTION_DESCRIPTION_END
 
 ##########################################################################
 # Uninstaller functions
@@ -382,5 +486,7 @@ Function un.onInit
 
   !insertmacro MUI_UNGETLANGUAGE
   !insertmacro MULTIUSER_UNINIT
+
+  SectionSetFlags ${UnRemovePythonModules} ${SF_RO}
   
 FunctionEnd

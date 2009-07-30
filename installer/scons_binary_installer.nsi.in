@@ -62,6 +62,7 @@ Var StartMenuFolder
 # L10n support
 ##########################################################################
 !insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "German"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -114,7 +115,13 @@ InstType "Full"
 ##########################################################################
 # Installer sections
 ##########################################################################
-Section "SCons Executable" SconsExe
+LangString SEC_SconsExe ${LANG_ENGLISH} "SCons Executable"
+LangString SEC_SconsExe ${LANG_GERMAN} "SCons (Programm)"
+
+LangString SEC_AddToPath ${LANG_ENGLISH} "Add to path"
+LangString SEC_AddToPath ${LANG_GERMAN} "Zum Pfad Hinzufügen"
+
+Section !$(SEC_SConsExe) SconsExe
 
   SectionIn 1
 
@@ -138,7 +145,7 @@ Section "SCons Executable" SconsExe
 
 SectionEnd
 
-Section "Add to $$PATH" AddToPath
+Section $(SEC_AddToPath) AddToPath
 
   SectionIn 1
 
@@ -150,7 +157,10 @@ SectionEnd
 # Installer l10n
 ##########################################################################
 LangString DESC_SconsExe  ${LANG_ENGLISH} "The stand-alone SCons executable."
+LangString DESC_SconsExe  ${LANG_GERMAN} "Eigenständig ausführbare Version von SCons."
+
 LangString DESC_AddToPath ${LANG_ENGLISH} "Add the installation directory to the path."
+LangString DESC_AddToPath ${LANG_GERMAN} "Fügt das Installationsverzeichnis zum Pfad hinzu."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SconsExe}  $(DESC_SconsExe)
@@ -209,7 +219,17 @@ FunctionEnd
 ##########################################################################
 # Uninstaller sections
 ##########################################################################
-Section "Uninstall"
+LangString SEC_Uninstall ${LANG_ENGLISH} "Uninstall"
+LangString SEC_Uninstall ${LANG_GERMAN} "Deinstallieren"
+
+LangString SEC_UnRemoveFromPath ${LANG_ENGLISH} "Remove from path"
+LangString SEC_UnRemoveFromPath ${LANG_GERMAN} "Aus dem Pfad entfernen"
+
+LangString SEC_UnRemoveFromRegistry ${LANG_ENGLISH} "Remove from Registry"
+LangString SEC_UnRemoveFromRegistry ${LANG_GERMAN} "Aus der Registry entfernen"
+
+
+Section "un.$(SEC_Uninstall)" Uninstall
 
   Delete $INSTDIR\@UNINSTALLER_FILE@
 
@@ -227,18 +247,36 @@ Section "Uninstall"
 
 SectionEnd
 
-Section "un.RemoveFromPath"
+Section "un.$(SEC_UnRemoveFromPath)" UnRemoveFromPath
 
   ${un.EnvVarUpdate} $0 "PATH" "R" $RegHive $INSTDIR
 
 SectionEnd
 
-Section /o "un.RemoveFromRegistry"
+Section /o "un.$(SEC_UnRemoveFromRegistry)" UnRemoveFromRegistry
 
     DeleteRegKey HKCU "@INSTALL_DIR_REG_KEY@"
     !insertmacro MultiUserDeleteRegKey "@INSTALL_DIR_REG_KEY@"
 
 SectionEnd
+
+##########################################################################
+# Uninstaller l10n
+##########################################################################
+LangString DESC_Uninstall  ${LANG_ENGLISH} "Uninstall SCons."
+LangString DESC_Uninstall  ${LANG_GERMAN} "SCons deinstallieren."
+
+LangString DESC_UnRemoveFromPath  ${LANG_ENGLISH} "Remove the SCons directory from path."
+LangString DESC_UnRemoveFromPath  ${LANG_GERMAN} "Entfernt das Installationsverzeichnis aus dem Pfad."
+
+LangString DESC_UnRemoveFromRegistry  ${LANG_ENGLISH} "Remove all SCons registry entries."
+LangString DESC_UnRemoveFromRegistry  ${LANG_GERMAN} "Entfernt alle SCons-Registry-Einträge."
+
+!insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${Uninstall}  $(DESC_Uninstall)
+  !insertmacro MUI_DESCRIPTION_TEXT ${UnRemoveFromPath}  $(DESC_UnRemoveFromPath)
+  !insertmacro MUI_DESCRIPTION_TEXT ${UnRemoveFromRegistry}  $(DESC_UnRemoveFromRegistry)
+!insertmacro MUI_UNFUNCTION_DESCRIPTION_END
 
 ##########################################################################
 # Uninstaller functions

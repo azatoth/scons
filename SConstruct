@@ -1110,7 +1110,12 @@ for p in [ scons ]:
         commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY sdist --formats=%s" %  \
                             string.join(distutils_formats, ','))
 
-    commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY bdist_wininst --plat-name win32")
+    python_version = os.popen("%s --version 2>&1" % python).readlines()
+    major, minor, unused = python_version[0].split()[1].split('.')
+    if int(major) >= 3 or (int(major) == 2 and int(minor) >= 6):
+        commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY bdist_wininst --plat-name=win32")
+    else:
+        commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY bdist_wininst")
 
     env.Command(distutils_targets, build_src_files, commands)
 
@@ -1460,6 +1465,8 @@ for p in [ scons ]:
                                 ('@PDF_API_REFERENCE_FILES_UNINSTALL@' , find_pdf_api_reference_uninstall),
                                 ('@LOCAL_ZIP_FILES@'                   , 'File ' + str(dist_local_zip)),
                                 ('@LOCAL_ZIP_FILES_UNINSTALL@'         , 'Delete $@INSTDIR@\\' + os.path.basename(str(dist_local_zip))),
+                                ('@PYTHON_MODULES_FILES@'              , string.join(['File ' + str(win32_exe), 'ExecWait $@INSTDIR@\\' + os.path.basename(str(win32_exe))], '\n')),
+                                ('@PYTHON_MODULES_FILES_UNINSTALL@'    , 'Delete $@INSTDIR@\\' + os.path.basename(str(win32_exe))),
                                 ('@INSTDIR@'                           , 'INSTDIR'),
 							  ]
     
@@ -1470,6 +1477,7 @@ for p in [ scons ]:
             env.Depends(inst, license_file)
             env.Depends(inst, 'doc')
             env.Depends(inst, dist_local_zip)
+            env.Depends(inst, win32_exe)
             env.Local(inst)
             final_installer = env.InstallAs(os.path.join(env['DISTDIR'], inst_filename), inst)
     
