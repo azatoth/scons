@@ -54,6 +54,7 @@ import SCons.Node.Alias
 import SCons.Node.FS
 import SCons.Node.Python
 import SCons.Platform
+import SCons.SConf
 import SCons.SConsign
 import SCons.Subst
 import SCons.Tool
@@ -119,7 +120,11 @@ reserved_construction_var_names = [
     'UNCHANGED_TARGETS',
 ]
 
-future_reserved_construction_var_names = []
+future_reserved_construction_var_names = [
+    #'HOST_OS',
+    #'HOST_ARCH',
+    #'HOST_CPU',
+    ]
 
 def copy_non_reserved_keywords(dict):
     result = semi_deepcopy(dict)
@@ -959,6 +964,14 @@ class Base(SubstitutionEnvironment):
             platform = SCons.Platform.Platform(platform)
         self._dict['PLATFORM'] = str(platform)
         platform(self)
+        
+        self._dict['HOST_OS']      = self._dict.get('HOST_OS',None)
+        self._dict['HOST_ARCH']    = self._dict.get('HOST_ARCH',None)
+        
+        # Now set defaults for TARGET_{OS|ARCH}
+        self._dict['TARGET_OS']      = self._dict.get('HOST_OS',None)
+        self._dict['TARGET_ARCH']    = self._dict.get('HOST_ARCH',None)
+        
 
         # Apply the passed-in and customizable variables to the
         # environment before calling the tools, because they may use

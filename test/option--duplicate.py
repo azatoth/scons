@@ -29,7 +29,6 @@ SConscript settable option.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import sys
 import os
 import stat
 import TestSCons
@@ -56,17 +55,23 @@ copy = 1 # should always work
 
 bss = test.workpath('build/SConscript')
 
-# On some Windows file systems, the link count of a copied file is 0.
-if sys.platform == "win32":
-    nl_copy_alternative = 0
-else:
-    nl_copy_alternative = 1
-
-criterion = {
+criterion_hardlinks = {
     'hard'      : lambda nl, islink: nl == 2 and not islink,
     'soft'      : lambda nl, islink: nl == 1 and islink,
-    'copy'      : lambda nl, islink: (nl == 1 or nl == nl_copy_alternative) and not islink,
+    'copy'      : lambda nl, islink: nl == 1 and not islink,
 }
+
+criterion_no_hardlinks = {
+    'hard'      : lambda nl, islink: not islink,
+    'soft'      : lambda nl, islink: islink,
+    'copy'      : lambda nl, islink: not islink,
+}
+
+# On systems without hard linking, it doesn't make sense to check ST_NLINK
+if hard:
+    criterion = criterion_hardlinks
+else:
+    criterion = criterion_no_hardlinks
 
 description = {
     'hard'      : 'a hard link',

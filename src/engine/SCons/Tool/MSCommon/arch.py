@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -24,46 +23,39 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-"""
-Validate that we can set the LATEX string to our own utility, that
-the produced .dvi, .aux and .log files get removed by the -c option,
-and that we can use this to wrap calls to the real latex utility.
+__doc__ = """Module to define supported Windows chip architectures.
 """
 
-import TestSCons
-
-_python_ = TestSCons._python_
-
-test = TestSCons.TestSCons()
-
-latex = test.where_is('latex')
-
-if not latex:
-    test.skip_test('could not find latex; skipping test\n')
-
-test.write('SConstruct', """
 import os
-ENV = { 'PATH' : os.environ['PATH'] }
-foo = Environment(ENV = ENV)
-foo.DVI(target = 'foo.dvi', source = 'foo.ltx')
-""" % locals())
 
-test.write('foo.ltx', r"""
-\documentclass{letter}
-\begin{document}
-This is the foo.ltx file.
-\end{document}
-""")
+class ArchDefinition:
+    """
+    A class for defining architecture-specific settings and logic.
+    """
+    def __init__(self, arch, synonyms=[]):
+        self.arch = arch
+        self.synonyms = synonyms
 
-test.run(arguments = '--dry-run', stdout = test.wrap_stdout("""\
-cd . && latex -interaction=nonstopmode -recorder foo.ltx ...
-"""), stderr = None)
+SupportedArchitectureList = [
+    ArchitectureDefinition(
+        'x86',
+        ['i386', 'i486', 'i586', 'i686'],
+    ),
 
+    ArchitectureDefinition(
+        'x86_64',
+        ['AMD64', 'amd64', 'em64t', 'EM64T', 'x86_64'],
+    ),
 
-test.pass_test()
+    ArchitectureDefinition(
+        'ia64',
+        ['IA64'],
+    ),
+]
 
-# Local Variables:
-# tab-width:4
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=4 shiftwidth=4:
+SupportedArchitectureMap = {}
+for a in SupportedArchitectureList:
+    SupportedArchitectureMap[a.arch] = a
+    for s in a.synonyms:
+        SupportedArchitectureMap[s] = a
+
