@@ -89,17 +89,17 @@ class _PathVariableClass:
         """Validator to check if Path is a directory."""
         if not os.path.isdir(val):
             if os.path.isfile(val):
-                m = _('Directory path for option %s is a file: %s')
+                m = _('Directory path for option %(key)s is a file: %(val)s')
             else:
-                m = _('Directory path for option %s does not exist: %s')
-            raise SCons.Errors.UserError(m % (key, val))
+                m = _('Directory path for option %(key)s does not exist: %(val)s')
+            raise SCons.Errors.UserError(m % {"key":key, "val":val})
 
     def PathIsDirCreate(self, key, val, env):
         """Validator to check if Path is a directory,
            creating it if it does not exist."""
         if os.path.isfile(val):
-            m = _('Path for option %s is a file, not a directory: %s')
-            raise SCons.Errors.UserError(m % (key, val))
+            m = _('Path for option %(key)s is a file, not a directory: %(val)s')
+            raise SCons.Errors.UserError(m % {"key":key, "val":val})
         if not os.path.isdir(val):
             os.makedirs(val)
 
@@ -107,16 +107,16 @@ class _PathVariableClass:
         """validator to check if Path is a file"""
         if not os.path.isfile(val):
             if os.path.isdir(val):
-                m = _('File path for option %s is a directory: %s')
+                m = _('File path for option %(key)s is a directory: %(val)s')
             else:
-                m = _('File path for option %s does not exist: %s')
-            raise SCons.Errors.UserError(m % (key, val))
+                m = _('File path for option %(key)s does not exist: %(val)s')
+            raise SCons.Errors.UserError(m % {"key":key, "val":val})
 
     def PathExists(self, key, val, env):
         """validator to check if Path exists"""
         if not os.path.exists(val):
-            m = _('Path for option %s does not exist: %s')
-            raise SCons.Errors.UserError(m % (key, val))
+            m = _('Path for option %(key)s does not exist: %(val)s')
+            raise SCons.Errors.UserError(m % {"key":key, "val":val})
 
     def __call__(self, key, help, default, validator=None):
         # NB: searchfunc is currenty undocumented and unsupported

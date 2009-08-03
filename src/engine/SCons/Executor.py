@@ -393,8 +393,8 @@ class Executor:
         """
         for s in self.get_all_sources():
             if s.missing():
-                msg = _("Source `%s' not found, needed by target `%s'.")
-                raise SCons.Errors.StopError, msg % (s, self.batches[0].targets[0])
+                msg = _("Source `%(source)s' not found, needed by target `%(targets)s'.")
+                raise SCons.Errors.StopError, msg % {"source":s, "targets":self.batches[0].targets[0]}
 
     def add_pre_action(self, action):
         self.pre_actions.append(action)

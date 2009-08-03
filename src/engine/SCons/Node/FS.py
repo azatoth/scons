@@ -127,10 +127,10 @@ class EntryProxyAttributeError(AttributeError):
         self.attribute = attribute
     def __str__(self):
         entry = self.entry_proxy.get()
-        fmt = _("%s instance %s has no attribute %s")
-        return fmt % (entry.__class__.__name__,
-                      repr(entry.name),
-                      repr(self.attribute))
+        fmt = _("%(class_name)s instance %(entry_name)s has no attribute %(attribute)s")
+        return fmt % {"class_name":entry.__class__.__name__,
+                      "entry_name":repr(entry.name),
+                      "attribute":repr(self.attribute)}
 
 # The max_drift value:  by default, use a cached signature value for
 # any file that's been untouched for more than two days.
@@ -300,7 +300,7 @@ def LinkFunc(target, source, env):
 
 Link = SCons.Action.Action(LinkFunc, None)
 def LocalString(target, source, env):
-    return _('Local copy of %s from %s') % (target[0], source[0])
+    return _('Local copy of %(target)s from %(source)s') % {"target":target[0], "source":source[0]}
 
 LocalCopy = SCons.Action.Action(LinkFunc, LocalString)
 
@@ -622,8 +622,8 @@ class Base(SCons.Node.Node):
         """
         if isinstance(self, klass) or klass is Entry:
             return
-        raise TypeError, _("Tried to lookup %s '%s' as a %s.") %\
-              (self.__class__.__name__, self.path, klass.__name__)
+        raise TypeError, _("Tried to lookup %(class_name)s '%(path)s' as a %(klass_name)s.") %\
+                {"class_name":self.__class__.__name__, "path":self.path, "klass_name":klass.__name__}
 
     def get_dir(self):
         return self.dir
@@ -1300,7 +1300,7 @@ class FS(LocalFS):
         if variant_dir.srcdir:
             if variant_dir.srcdir == src_dir:
                 return # We already did this.
-            raise SCons.Errors.UserError, _("'%s' already has a source directory: '%s'.")%(variant_dir, variant_dir.srcdir)
+            raise SCons.Errors.UserError, _("'%(dir)s' already has a source directory: '%(src_dir)s'.")%{"dir":variant_dir, "src_dir":variant_dir.srcdir}
         variant_dir.link(src_dir, duplicate)
 
     def Repository(self, *dirs):
@@ -2741,7 +2741,7 @@ class File(Base):
                 try:
                     self._createDir()
                 except SCons.Errors.StopError, drive:
-                    desc = _("No drive `%s' for target `%s'.") % (drive, self)
+                    desc = _("No drive `%(drive)s' for target `%(target)s'.") % {"drive":drive, "target":self}
                     raise SCons.Errors.StopError, desc
 
     #
@@ -2760,7 +2760,7 @@ class File(Base):
         Unlink(self, None, None)
         e = Link(self, src, None)
         if isinstance(e, SCons.Errors.BuildError):
-            desc = _("Cannot duplicate `%s' in `%s': %s.") % (src.path, self.dir.path, e.errstr)
+            desc = _("Cannot duplicate `%(src_path)s' in `%(dir_path)s': %(errstr)s.") % {"src_path":src.path, "dir_path":self.dir.path, "errstr":e.errstr}
             raise SCons.Errors.StopError, desc
         self.linked = 1
         # The Link() action may or may not have actually
@@ -3159,11 +3159,11 @@ class FileFinder:
         result = None
         for dir in paths:
             if verbose:
-                verbose(_("looking for '%s' in '%s' ...\n") % (filename, dir))
+                verbose(_("looking for '%(file)s' in '%(dir)s' ...\n") % {"file":filename, "dir":dir})
             node, d = dir.srcdir_find_file(filename)
             if node:
                 if verbose:
-                    verbose(_("... FOUND '%s' in '%s'\n") % (filename, d))
+                    verbose(_("... FOUND '%(file)s' in '%(d)s'\n") % {"file":filename, "d":d})
                 result = node
                 break
 

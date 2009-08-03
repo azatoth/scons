@@ -857,8 +857,8 @@ class Taskmaster:
                     # count so we can be put back on the list for
                     # re-evaluation when they've all finished.
                     node.ref_count =  node.ref_count + child.add_to_waiting_parents(node)
-                    if T: T.write(self.trace_message(_('     adjusted ref count: %s, child %s') %
-                                  (self.trace_node(node), repr(str(child)))))
+                    if T: T.write(self.trace_message(_('     adjusted ref count: %(node)s, child %(child)s') %
+                        {"node":self.trace_node(node), "child":repr(str(child))}))
 
                 if T:
                     for pc in children_pending:
@@ -1016,8 +1016,8 @@ class Taskmaster:
                 desc = desc + "  " + string.join(map(str, cycle), " -> ") + "\n"
             else:
                 desc = desc + \
-                    _("  Internal Error: no cycle found for node %s (%s) in state %s\n") %  \
-                    (node, repr(node), StateString[node.get_state()])
+                    _("  Internal Error: no cycle found for node %(node1)s (%(node2)s) in state %(state)s\n") %  \
+                    {"node1":node, "node2":repr(node), "state":StateString[node.get_state()]}
 
         raise SCons.Errors.UserError, desc
 

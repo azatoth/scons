@@ -1496,7 +1496,7 @@ class Base(SubstitutionEnvironment):
         if only_one:
             targets = reduce(lambda x, y: x+y, map(lambda p: p[0], tdlist))
             if len(targets) > 1:
-                raise SCons.Errors.UserError, _("More than one dependency target found in `%s':  %s") % (filename, targets)
+                raise SCons.Errors.UserError, _("More than one dependency target found in `%(filename)s':  %(targets)s") % {"filename":filename, "targets":targets}
         for target, depends in tdlist:
             self.Depends(target, depends)
 

@@ -153,10 +153,10 @@ class Tool:
                         setattr(SCons.Tool, self.name, module)
                         return module
                     except ImportError, e:
-                        m = _("No tool named '%s': %s") % (self.name, e)
+                        m = _("No tool named '%(name)s': %(e)s") % {"name":self.name, "e":e}
                         raise SCons.Errors.EnvironmentError, m
             except ImportError, e:
-                m = _("No tool named '%s': %s") % (self.name, e)
+                m = _("No tool named '%(name)s': %(e)s") % {"name":self.name, "e":e}
                 raise SCons.Errors.EnvironmentError, m
 
     def __call__(self, env, *args, **kw):

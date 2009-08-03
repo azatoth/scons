@@ -50,7 +50,7 @@ from SCons.i18n import _
 def _validator(key, val, env, vals):
     if not val in vals:
         raise SCons.Errors.UserError(
-            _('Invalid value for option %s: %s') % (key, val))
+                _('Invalid value for option %(key)s: %(val)s') % {"key":key, "val":val})
 
 
 def EnumVariable(key, help, default, allowed_values, map={}, ignorecase=0):

@@ -75,8 +75,8 @@ class shlex:
         self.filestack = deque()
         self.source = None
         if self.debug:
-            print _('shlex: reading from %s, line %d') \
-                  % (self.instream, self.lineno)
+            print _('shlex: reading from %(instream)s, line %(lineno)d') \
+                    % {"instream":self.instream, "lineno":self.lineno}
 
     def push_token(self, tok):
         "Push a token onto the stack popped by the get_token method"
@@ -103,8 +103,8 @@ class shlex:
         self.instream.close()
         (self.infile, self.instream, self.lineno) = self.filestack.popleft()
         if self.debug:
-            print _('shlex: popping to %s, line %d') \
-                  % (self.instream, self.lineno)
+            print _('shlex: popping to %(instream)s, line %(lineno)d') \
+                    % {"instream":self.instream, "lineno":self.lineno}
         self.state = ' '
 
     def get_token(self):

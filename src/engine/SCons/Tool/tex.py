@@ -346,7 +346,7 @@ def InternalLaTeXAuxAction(XXXLaTeXAction, target = None, source= None, env=None
     # rename Latex's output to what the target name is
     if not (str(target[0]) == resultfilename  and  os.path.exists(resultfilename)):
         if os.path.exists(resultfilename):
-            print _("move %s to %s") % (resultfilename, str(target[0]), )
+            print _("move %(result)s to %(target)s") % {"result":resultfilename, "target":str(target[0])}
             shutil.move(resultfilename,str(target[0]))
 
     # Original comment (when TEXPICTS was not restored):

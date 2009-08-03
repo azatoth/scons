@@ -73,7 +73,7 @@ def _validator(key, val, env):
     """
     if not env[key] in (True, False):
         raise SCons.Errors.UserError(
-            _('Invalid value for boolean option %s: %s') % (key, env[key]))
+                _('Invalid value for boolean option %(key1)s: %(key2)s') % {"key1":key, "key2":env[key]})
 
 
 def BoolVariable(key, help, default):

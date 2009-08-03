@@ -327,7 +327,7 @@ class LaTeX(SCons.Scanner.Base):
                 # likely refer to system-level files
                 if include[0] != 'usepackage':
                     SCons.Warnings.warn(SCons.Warnings.DependencyWarning,
-                                        _("No dependency generated for file: %s (included from: %s) -- file not found") % (i, node))
+                                _("No dependency generated for file: %(i)s (included from: %(node)s) -- file not found") % {"i":i, "node":node})
             else:
                 sortkey = self.sort_key(n)
                 nodes.append((sortkey, n))

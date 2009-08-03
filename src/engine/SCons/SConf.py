@@ -109,7 +109,7 @@ def _createConfigH(target, source, env):
     t.close()
 
 def _stringConfigH(target, source, env):
-    return _("scons: Configure: creating ") + str(target[0])
+    return _("scons: Configure: creating %s") % str(target[0])
 
 def CreateConfigHBuilder(env):
     """Called just before the building targets phase begins."""
@@ -211,7 +211,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
     """
     def display(self, message):
         if sconf_global.logstream:
-            sconf_global.logstream.write("scons: Configure: " + message + "\n")
+            sconf_global.logstream.write(_("scons: Configure: %s\n") % message)
 
     def display_cached_string(self, bi):
         """
@@ -704,8 +704,8 @@ class SConfBase:
             tb = traceback.extract_stack()[-3-self.depth]
             old_fs_dir = SConfFS.getcwd()
             SConfFS.chdir(SConfFS.Top, change_os_dir=0)
-            self.logstream.write('file %s,line %d:\n\tConfigure(confdir = %s)\n' %
-                                 (tb[0], tb[1], str(self.confdir)) )
+            self.logstream.write(_('file %(file)s,line %(line)d:\n\tConfigure(confdir = %(confdir)s)\n') %
+                                {"file":tb[0], "line":tb[1], "confdir":str(self.confdir)} )
             SConfFS.chdir(old_fs_dir)
         else:
             self.logstream = None
@@ -796,7 +796,7 @@ class CheckContext:
         elif type(res) == types.StringType:
             text = res
         else:
-            raise TypeError, _("Expected string, int or bool, got ") + str(type(res))
+            raise TypeError, _("Expected string, int or bool, got %s") % str(type(res))
 
         if self.did_show_result == 0:
             # Didn't show result yet, do it now.
@@ -872,7 +872,7 @@ class CheckContext:
             msg = "(cached) " + msg
             self.sconf.cached = 0
         progress_display(msg, append_newline=0)
-        self.Log("scons: Configure: " + msg + "\n")
+        self.Log(_("scons: Configure: %s\n") % msg)
 
     def Log(self, msg):
         if self.sconf.logstream is not None:

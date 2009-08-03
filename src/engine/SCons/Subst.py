@@ -56,7 +56,7 @@ def SetAllowableExceptions(*excepts):
 
 def raise_exception(exception, target, s):
     name = exception.__class__.__name__
-    msg = _("%s `%s' trying to evaluate `%s'") % (name, exception, s)
+    msg = _("%(name)s `%(exception)s' trying to evaluate `%(s)s'") % {"name":name, "exception":exception, "s":s}
     if target:
         raise SCons.Errors.BuildError, (target[0], msg)
     else:

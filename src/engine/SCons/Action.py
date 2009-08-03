@@ -301,7 +301,7 @@ def _actionAppend(act1, act2):
     a1 = Action(act1)
     a2 = Action(act2)
     if a1 is None or a2 is None:
-        raise TypeError, _("Cannot append %s to %s") % (type(act1), type(act2))
+        raise TypeError, _("Cannot append %(act1)s to %(act2)s") % {"act1":type(act1), "act2":type(act2)}
     if isinstance(a1, ListAction):
         if isinstance(a2, ListAction):
             return ListAction(a1.list + a2.list)
@@ -535,7 +535,7 @@ class _ActionAction(ActionBase):
                 source = executor.get_all_sources()
             t = string.join(map(str, target), ' and ')
             l = string.join(self.presub_lines(env), '\n  ')
-            out = _("Building %s with action:\n  %s\n") % (t, l)
+            out = _("Building %(t)s with action:\n  %(l)s\n") % {"t":t, "l":l}
             sys.stdout.write(out)
         cmd = None
         if show and self.strfunction:
@@ -884,7 +884,7 @@ class CommandGeneratorAction(ActionBase):
                  show=_null, execute=_null, chdir=_null, executor=None):
         act = self._generate(target, source, env, 0, executor)
         if act is None:
-            raise UserError(_("While building `%s': Cannot deduce file extension from source files: %s") % (repr(map(str, target)), repr(map(str, source))))
+            raise UserError(_("While building `%(target)s': Cannot deduce file extension from source files: %(source)s") % {"target":repr(map(str, target)), "source":repr(map(str, source))})
         return act(target, source, env, exitstatfunc, presub,
                    show, execute, chdir, executor)
 
@@ -944,7 +944,7 @@ class LazyAction(CommandGeneratorAction, CommandAction):
         #TODO(1.5) gen_cmd = Action(c, **self.gen_kw)
         gen_cmd = apply(Action, (c,), self.gen_kw)
         if not gen_cmd:
-            raise SCons.Errors.UserError(_("$%s value %s cannot be used to create an Action.") % (self.var, repr(c)))
+            raise SCons.Errors.UserError(_("$%(var)s value %(value)s cannot be used to create an Action.") % {"var":self.var, "value":repr(c)})
         return gen_cmd
 
     def _generate(self, target, source, env, for_signature, executor=None):

@@ -371,7 +371,7 @@ class CalledProcessError(Exception):
         self.returncode = returncode
         self.cmd = cmd
     def __str__(self):
-        return _("Command '%s' returned non-zero exit status %d") % (self.cmd, self.returncode)
+        return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
 
 
 if mswindows:

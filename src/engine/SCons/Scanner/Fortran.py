@@ -120,7 +120,7 @@ class F90Scanner(SCons.Scanner.Classic):
 
             if n is None:
                 SCons.Warnings.warn(SCons.Warnings.DependencyWarning,
-                                    _("No dependency generated for file: %s (referenced by: %s) -- file not found") % (i, node))
+                                    _("No dependency generated for file: %(i)s (referenced by: %(node)s) -- file not found") % {"i":i, "node":node})
             else:
                 sortkey = self.sort_key(dep)
                 nodes.append((sortkey, n))

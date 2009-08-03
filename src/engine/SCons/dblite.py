@@ -144,9 +144,9 @@ class dblite:
   def __setitem__(self, key, value):
     self._check_writable()
     if (not is_string(key)):
-      raise TypeError, _("key `%s' must be a string but is %s") % (key, type(key))
+        raise TypeError, _("key `%(key)s' must be a string but is %(type)s") % {"key":key, "type":type(key)}
     if (not is_string(value)):
-      raise TypeError, _("value `%s' must be a string but is %s") % (value, type(value))
+        raise TypeError, _("value `%(value)s' must be a string but is %(type)s") % {"value":value, "type":type(value)}
     self._dict[key] = value
     self._needs_sync = 0001
 

@@ -158,22 +158,22 @@ class DictCmdGenerator(SCons.Util.Selector):
             for src in map(str, source):
                 my_ext = match_splitext(src, suffixes)[1]
                 if ext and my_ext != ext:
-                    raise UserError(_("While building `%s' from `%s': Cannot build multiple sources with different extensions: %s, %s") % (repr(map(str, target)), src, ext, my_ext))
+                    raise UserError(_("While building `%(target)s' from `%(source)s': Cannot build multiple sources with different extensions: %(ext)s, %(myext)s") % {"target":repr(map(str, target)), "source":src, "ext":ext, "my_ext":my_ext)}
                 ext = my_ext
         else:
             ext = match_splitext(str(source[0]), self.src_suffixes())[1]
 
         if not ext:
             #return ext
-            raise UserError(_("While building `%s': Cannot deduce file extension from source files: %s") % (repr(map(str, target)), repr(map(str, source))))
+            raise UserError(_("While building `%(target)s': Cannot deduce file extension from source files: %(source)s") % {"target":repr(map(str, target)), "source":repr(map(str, source))})
 
         try:
             ret = SCons.Util.Selector.__call__(self, env, source, ext)
         except KeyError, e:
             raise UserError(_("Ambiguous suffixes after environment substitution: %s == %s == %s") % (e[0], e[1], e[2]))
         if ret is None:
-            raise UserError(_("While building `%s' from `%s': Don't know how to build from a source file with suffix `%s'.  Expected a suffix in this list: %s.") % \
-                            (repr(map(str, target)), repr(map(str, source)), ext, repr(self.keys())))
+            raise UserError(_("While building `%(target)s' from `%(source)s': Don't know how to build from a source file with suffix `%(ext)s'.  Expected a suffix in this list: %(keys)s.") % \
+                    {"target":repr(map(str, target)), "source":repr(map(str, source)), "ext":ext, "keys":repr(self.keys())})
         return ret
 
 class CallableSelector(SCons.Util.Selector):
@@ -235,7 +235,7 @@ class OverrideWarner(UserDict.UserDict):
         for k in self.keys():
             if misleading_keywords.has_key(k):
                 alt = misleading_keywords[k]
-                msg = _("Did you mean to use `%s' instead of `%s'?") % (alt, k)
+                msg = _("Did you mean to use `%(alt)s' instead of `%(k)s'?") % {"alt":alt, "k":k}
                 SCons.Warnings.warn(SCons.Warnings.MisleadingKeywordsWarning, msg)
         self.already_warned = 1
 
@@ -299,26 +299,26 @@ def _node_errors(builder, env, tlist, slist):
                 contents = action.get_contents(tlist, slist, env)
 
                 if t_contents == contents:
-                    msg = _("Two different environments were specified for target %s,\n\tbut they appear to have the same action: %s") % (t, action.genstring(tlist, slist, t.env))
+                    msg = _("Two different environments were specified for target %(t)s,\n\tbut they appear to have the same action: %(action)s") % {"t":t, "action":action.genstring(tlist, slist, t.env)}
                     SCons.Warnings.warn(SCons.Warnings.DuplicateEnvironmentWarning, msg)
                 else:
                     msg = _("Two environments with different actions were specified for the same target: %s") % t
                     raise UserError, msg
             if builder.multi:
                 if t.builder != builder:
-                    msg = _("Two different builders (%s and %s) were specified for the same target: %s") % (t.builder.get_name(env), builder.get_name(env), t)
+                    msg = _("Two different builders (%(builder1)s and %(builder2)s) were specified for the same target: %(t)s") % {"builder1":t.builder.get_name(env), "builder2":builder.get_name(env), "t":t}
                     raise UserError, msg
                 # TODO(batch):  list constructed each time!
                 if t.get_executor().get_all_targets() != tlist:
-                    msg = _("Two different target lists have a target in common: %s  (from %s and from %s)") % (t, map(str, t.get_executor().get_all_targets()), map(str, tlist))
+                    msg = _("Two different target lists have a target in common: %(t)s  (from %(tlist1)s and from %(tlist2)s)") % {"t":t, "tlist1":map(str, t.get_executor().get_all_targets()), "tlist2":map(str, tlist)}
                     raise UserError, msg
             elif t.sources != slist:
-                msg = _("Multiple ways to build the same target were specified for: %s  (from %s and from %s)") % (t, map(str, t.sources), map(str, slist))
+                msg = _("Multiple ways to build the same target were specified for: %(t)s  (from %(slist1)s and from %(slist2)s)") % {"t":t, "slist1":map(str, t.sources), "slist2":map(str, slist)}
                 raise UserError, msg
 
     if builder.single_source:
         if len(slist) > 1:
-            raise UserError, _("More than one source given for single-source builder: targets=%s sources=%s") % (map(str,tlist), map(str,slist))
+            raise UserError, _("More than one source given for single-source builder: targets=%(tlist)s sources=%(slist)s") % {"tlist":map(str,tlist), "slist":map(str,slist)}
 
 class EmitterProxy:
     """This is a callable class that can act as a
@@ -574,9 +574,9 @@ class BuilderBase:
 
         if executor is None:
             if not self.action:
-                fmt = _("Builder %s must have an action to build %s.")
-                raise UserError, fmt % (self.get_name(env or self.env),
-                                        map(str,tlist))
+                fmt = _("Builder %(builder)s must have an action to build %(tlist)s.")
+                raise UserError, fmt % {"builder":self.get_name(env or self.env),
+                                        "tlist":map(str,tlist)}
             key = self.action.batch_key(env or self.env, tlist, slist)
             if key:
                 try:

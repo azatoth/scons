@@ -73,8 +73,8 @@ def checkMocIncluded(target, source, env):
     if not moc in includes:
         SCons.Warnings.warn(
             GeneratedMocFileNotIncluded,
-            _("Generated moc file '%s' is not included by '%s'") %
-            (str(moc), str(cpp)))
+            _("Generated moc file '%(moc)s' is not included by '%(cpp)s'") %
+            {"moc":str(moc), "cpp":str(cpp)})
 
 def find_file(filename, paths, node_factory):
     for dir in paths:
@@ -150,7 +150,7 @@ class _Automoc:
                 h = find_file(hname, (cpp.get_dir(),), env.File)
                 if h:
                     if debug:
-                        print _("scons: qt: Scanning '%s' (header of '%s')") % (str(h), str(cpp))
+                        print _("scons: qt: Scanning '%(h)s' (header of '%(cpp)s')") % {"h":str(h), "cpp":str(cpp)}
                     #h_contents = comment.sub('', h.get_text_contents())
                     h_contents = h.get_text_contents()
                     break
@@ -163,14 +163,14 @@ class _Automoc:
                 out_sources.append(moc_o)
                 #moc_cpp.target_scanner = SCons.Defaults.CScan
                 if debug:
-                    print _("scons: qt: found Q_OBJECT macro in '%s', moc'ing to '%s'") % (str(h), str(moc_cpp))
+                    print _("scons: qt: found Q_OBJECT macro in '%(h)s', moc'ing to '%(cpp)s'") % {"h":str(h), "cpp":str(moc_cpp)}
             if cpp and q_object_search.search(cpp_contents):
                 # cpp file with Q_OBJECT macro found -> add moc
                 # (to be included in cpp)
                 moc = env.Moc(cpp)
                 env.Ignore(moc, moc)
                 if debug:
-                    print _("scons: qt: found Q_OBJECT macro in '%s', moc'ing to '%s'") % (str(cpp), str(moc))
+                    print _("scons: qt: found Q_OBJECT macro in '%(cpp)s', moc'ing to '%(moc)s'") % {"cpp":str(cpp), "moc":str(moc)}
                 #moc.source_scanner = SCons.Defaults.CScan
         # restore the original env attributes (FIXME)
         objBuilder.env = objBuilderEnv

@@ -128,7 +128,7 @@ class OptionError (OptParseError):
 
     def __str__(self):
         if self.option_id:
-            return _("option %s: %s") % (self.option_id, self.msg)
+            return _("option %(oid)s: %(msg)s") % {"oid":self.option_id, "msg":self.msg}
         else:
             return self.msg
 
@@ -162,8 +162,8 @@ class AmbiguousOptionError (BadOptionError):
         self.possibilities = possibilities
 
     def __str__(self):
-        return (_("ambiguous option: %s (%s?)")
-                % (self.opt_str, string.join(self.possibilities, ", ")))
+        return (_("ambiguous option: %(ostr)s (%(popt)s?)")
+                % {"ostr":self.opt_str, "popt":string.join(self.possibilities, ", ")})
 
 
 class HelpFormatter:
@@ -454,7 +454,7 @@ def check_builtin(option, opt, value):
         return cvt(value)
     except ValueError:
         raise OptionValueError(
-            _("option %s: invalid %s value: %r") % (opt, what, value))
+                _("option %(opt)s: invalid %(what)s value: %(value)r") % {"opt":opt, "what":what, "value":value})
 
 def check_choice(option, opt, value):
     if value in option.choices:
@@ -462,8 +462,8 @@ def check_choice(option, opt, value):
     else:
         choices = string.join(map(repr, option.choices), ", ")
         raise OptionValueError(
-            _("option %s: invalid choice: %r (choose from %s)")
-            % (opt, value, choices))
+            _("option %(opt)s: invalid choice: %(value)r (choose from %(choices)s)")
+            % {"opt":opt, "value":value, "choices":choices})
 
 # Not supplying a default is different from a default of None,
 # so we need an explicit "not supplied" value.
@@ -1516,8 +1516,8 @@ class OptionParser (OptionContainer):
                 if nargs == 1:
                     self.error(_("%s option requires an argument") % opt)
                 else:
-                    self.error(_("%s option requires %d arguments")
-                               % (opt, nargs))
+                    self.error(_("%(opt)s option requires %(nargs)d arguments")
+                               % {"opt":opt, "nargs":nargs})
             elif nargs == 1:
                 value = rargs.pop(0)
             else:
@@ -1555,8 +1555,8 @@ class OptionParser (OptionContainer):
                     if nargs == 1:
                         self.error(_("%s option requires an argument") % opt)
                     else:
-                        self.error(_("%s option requires %d arguments")
-                                   % (opt, nargs))
+                        self.error(_("%(opt)s option requires %(nargs)d arguments")
+                                % {"opt":opt, "nargs":nargs})
                 elif nargs == 1:
                     value = rargs.pop(0)
                 else:
@@ -1599,7 +1599,7 @@ class OptionParser (OptionContainer):
         should either exit or raise an exception.
         """
         self.print_usage(sys.stderr)
-        self.exit(2, _("%s: error: %s\n") % (self.get_prog_name(), msg))
+        self.exit(2, _("%(name)s: error: %(msg)s\n") % {"name":self.get_prog_name(), "msg":msg})
 
     def get_usage(self):
         if self.usage:

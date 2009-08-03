@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2009-07-17 03:51+EEST\n"
+"POT-Creation-Date: 2009-08-02 14:53+EEST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 
 
 #: Action.py:304
-msgid "Cannot append %s to %s"
+msgid "Cannot append %(act1)s to %(act2)s"
 msgstr ""
 
 #: Action.py:333
@@ -29,8 +29,8 @@ msgstr ""
 
 #: Action.py:538
 msgid ""
-"Building %s with action:\n"
-"  %s\n"
+"Building %(t)s with action:\n"
+"  %(l)s\n"
 msgstr ""
 
 #: Action.py:690
@@ -54,11 +54,11 @@ msgid "Object returned from command generator: %s cannot be used to create an Ac
 msgstr ""
 
 #: Action.py:887 Builder.py:168
-msgid "While building `%s': Cannot deduce file extension from source files: %s"
+msgid "While building `%(target)s': Cannot deduce file extension from source files: %(source)s"
 msgstr ""
 
 #: Action.py:947
-msgid "$%s value %s cannot be used to create an Action."
+msgid "$%(var)s value %(value)s cannot be used to create an Action."
 msgstr ""
 
 #: Action.py:992
@@ -70,7 +70,7 @@ msgid "%s(target, source, env)"
 msgstr ""
 
 #: Builder.py:161
-msgid "While building `%s' from `%s': Cannot build multiple sources with different extensions: %s, %s"
+msgid "While building `%(target)s' from `%(source)s': Cannot build multiple sources with different extensions: %(ext)s, %(myext)s"
 msgstr ""
 
 #: Builder.py:173
@@ -78,11 +78,11 @@ msgid "Ambiguous suffixes after environment substitution: %s == %s == %s"
 msgstr ""
 
 #: Builder.py:175
-msgid "While building `%s' from `%s': Don't know how to build from a source file with suffix `%s'.  Expected a suffix in this list: %s."
+msgid "While building `%(target)s' from `%(source)s': Don't know how to build from a source file with suffix `%(ext)s'.  Expected a suffix in this list: %(keys)s."
 msgstr ""
 
 #: Builder.py:238
-msgid "Did you mean to use `%s' instead of `%s'?"
+msgid "Did you mean to use `%(alt)s' instead of `%(k)s'?"
 msgstr ""
 
 #: Builder.py:247
@@ -99,8 +99,8 @@ msgstr ""
 
 #: Builder.py:302
 msgid ""
-"Two different environments were specified for target %s,\n"
-"\tbut they appear to have the same action: %s"
+"Two different environments were specified for target %(t)s,\n"
+"\tbut they appear to have the same action: %(action)s"
 msgstr ""
 
 #: Builder.py:305
@@ -108,19 +108,19 @@ msgid "Two environments with different actions were specified for the same targe
 msgstr ""
 
 #: Builder.py:309
-msgid "Two different builders (%s and %s) were specified for the same target: %s"
+msgid "Two different builders (%(builder1)s and %(builder2)s) were specified for the same target: %(t)s"
 msgstr ""
 
 #: Builder.py:313
-msgid "Two different target lists have a target in common: %s  (from %s and from %s)"
+msgid "Two different target lists have a target in common: %(t)s  (from %(tlist1)s and from %(tlist2)s)"
 msgstr ""
 
 #: Builder.py:316
-msgid "Multiple ways to build the same target were specified for: %s  (from %s and from %s)"
+msgid "Multiple ways to build the same target were specified for: %(t)s  (from %(slist1)s and from %(slist2)s)"
 msgstr ""
 
 #: Builder.py:321
-msgid "More than one source given for single-source builder: targets=%s sources=%s"
+msgid "More than one source given for single-source builder: targets=%(tlist)s sources=%(slist)s"
 msgstr ""
 
 #: Builder.py:394
@@ -144,17 +144,17 @@ msgid "Do not know how to create a target from source `%s'"
 msgstr ""
 
 #: Builder.py:577
-msgid "Builder %s must have an action to build %s."
+msgid "Builder %(builder)s must have an action to build %(tlist)s."
 msgstr ""
 
 #: CacheDir.py:50
 msgid ""
-"CacheRetrieve(%s):  %s not in cache\n"
+"CacheRetrieve(%(t)s):  %(cachefile)s not in cache\n"
 msgstr ""
 
 #: CacheDir.py:52
 msgid ""
-"CacheRetrieve(%s):  retrieving from %s\n"
+"CacheRetrieve(%(t)s):  retrieving from %(cachefile)s\n"
 msgstr ""
 
 #: CacheDir.py:68
@@ -163,16 +163,16 @@ msgstr ""
 
 #: CacheDir.py:90
 msgid ""
-"CachePush(%s):  %s already exists in cache\n"
+"CachePush(%(t)s):  %(cachefile)s already exists in cache\n"
 msgstr ""
 
 #: CacheDir.py:93
 msgid ""
-"CachePush(%s):  pushing to %s\n"
+"CachePush(%(t)s):  pushing to %(cachefile)s\n"
 msgstr ""
 
 #: CacheDir.py:96
-msgid "Unable to copy %s to cache. Cache file is %s"
+msgid "Unable to copy %(t)s to cache. Cache file is %(cachefile)s"
 msgstr ""
 
 #: CacheDir.py:133
@@ -180,7 +180,7 @@ msgid "No hashlib or MD5 module available, CacheDir() not supported"
 msgstr ""
 
 #: Defaults.py:124
-msgid "Source file: %s is static and is not compatible with shared target: %s"
+msgid "Source file: %(src)s is static and is not compatible with shared target: %(t)s"
 msgstr ""
 
 #: Environment.py:130 Environment.py:136
@@ -204,7 +204,7 @@ msgid "MD5 signatures are not available in this version of Python."
 msgstr ""
 
 #: Environment.py:1499
-msgid "More than one dependency target found in `%s':  %s"
+msgid "More than one dependency target found in `%(filename)s':  %(targets)s"
 msgstr ""
 
 #: Environment.py:2055
@@ -240,7 +240,7 @@ msgid "Executor must have an action."
 msgstr ""
 
 #: Executor.py:396
-msgid "Source `%s' not found, needed by target `%s'."
+msgid "Source `%(source)s' not found, needed by target `%(targets)s'."
 msgstr ""
 
 #: Job.py:52
@@ -260,7 +260,7 @@ msgid ""
 msgstr ""
 
 #: Memoize.py:147
-msgid "    %7d hits %7d misses    %s()"
+msgid "    %(hit)7d hits %(miss)7d misses    %(name)s()"
 msgstr ""
 
 #: Memoize.py:234
@@ -276,7 +276,7 @@ msgid "memoization is not supported in this version of Python (%s)"
 msgstr ""
 
 #: Node/FS.py:130
-msgid "%s instance %s has no attribute %s"
+msgid "%(class_name)s instance %(entry_name)s has no attribute %(attribute)s"
 msgstr ""
 
 #: Node/FS.py:261
@@ -284,7 +284,7 @@ msgid "The argument of set_duplicate should be in Valid_Duplicates"
 msgstr ""
 
 #: Node/FS.py:303
-msgid "Local copy of %s from %s"
+msgid "Local copy of %(target)s from %(source)s"
 msgstr ""
 
 #: Node/FS.py:597
@@ -292,7 +292,7 @@ msgid "A directory must be provided"
 msgstr ""
 
 #: Node/FS.py:625
-msgid "Tried to lookup %s '%s' as a %s."
+msgid "Tried to lookup %(class_name)s '%(path)s' as a %(klass_name)s."
 msgstr ""
 
 #: Node/FS.py:915
@@ -308,7 +308,7 @@ msgid "Source directory cannot be under variant directory."
 msgstr ""
 
 #: Node/FS.py:1303
-msgid "'%s' already has a source directory: '%s'."
+msgid "'%(dir)s' already has a source directory: '%(src_dir)s'."
 msgstr ""
 
 #: Node/FS.py:1325
@@ -324,21 +324,21 @@ msgid "Directory %s found where file expected."
 msgstr ""
 
 #: Node/FS.py:2744
-msgid "No drive `%s' for target `%s'."
+msgid "No drive `%(drive)s' for target `%(target)s'."
 msgstr ""
 
 #: Node/FS.py:2763
-msgid "Cannot duplicate `%s' in `%s': %s."
+msgid "Cannot duplicate `%(src_path)s' in `%(dir_path)s': %(errstr)s."
 msgstr ""
 
 #: Node/FS.py:3162
 msgid ""
-"looking for '%s' in '%s' ...\n"
+"looking for '%(file)s' in '%(dir)s' ...\n"
 msgstr ""
 
 #: Node/FS.py:3166
 msgid ""
-"... FOUND '%s' in '%s'\n"
+"... FOUND '%(file)s' in '%(d)s'\n"
 msgstr ""
 
 #: Node/__init__.py:354
@@ -368,11 +368,11 @@ msgid ""
 msgstr ""
 
 #: Node/__init__.py:1036
-msgid "changed(%s [%s], %s)"
+msgid "changed(%(self)s [%(name)s], %(node)s)"
 msgstr ""
 
 #: Node/__init__.py:1054
-msgid ": old %s new %s"
+msgid ": old %(then)s new %(children)s"
 msgstr ""
 
 #: Node/__init__.py:1059
@@ -380,7 +380,7 @@ msgid ": %s changed"
 msgstr ""
 
 #: Node/__init__.py:1067
-msgid ": bactsig %s != newsig %s"
+msgid ": bactsig %(bactsig)s != newsig %(newsig)s"
 msgstr ""
 
 #: Node/__init__.py:1071
@@ -415,16 +415,8 @@ msgstr ""
 #: Node/__init__.py:1232
 msgid ""
 "the dependency order changed:\n"
-msgstr ""
-
-#: Node/__init__.py:1233
-msgid ""
-"%sold: %s\n"
-msgstr ""
-
-#: Node/__init__.py:1234
-msgid ""
-"%snew: %s\n"
+"%(space)sold: %(old)s\n"
+"%(space)snew: %(new)s\n"
 msgstr ""
 
 #: Node/__init__.py:1243
@@ -432,9 +424,21 @@ msgid ""
 "the contents of the build action changed\n"
 msgstr ""
 
+#: Node/__init__.py:1244
+msgid "action: "
+msgstr ""
+
 #: Node/__init__.py:1246
 msgid ""
 "the build action changed:\n"
+msgstr ""
+
+#: Node/__init__.py:1247
+msgid "old: "
+msgstr ""
+
+#: Node/__init__.py:1248
+msgid "new: "
 msgstr ""
 
 #: Node/__init__.py:1251
@@ -483,24 +487,21 @@ msgstr ""
 msgid "Using tempfile "
 msgstr ""
 
-#: Platform/posix.py:84 Platform/posix.py:171 Platform/win32.py:138
-#: Platform/win32.py:162 Script/Interactive.py:365
+#: Platform/posix.py:84 Platform/posix.py:171 Platform/win32.py:162
 msgid ""
-"scons: %s: %s\n"
+"scons: %(l)s: %(e)s\n"
 msgstr ""
 
 #: Platform/win32.py:57
 msgid ""
 "you do not seem to have the pywin32 extensions installed;\n"
-msgstr ""
-
-#: Platform/win32.py:58 Platform/win32.py:62
-msgid "\tparallel (-j) builds may not work reliably with open Python files."
+"\tparallel (-j) builds may not work reliably with open Python files."
 msgstr ""
 
 #: Platform/win32.py:61
 msgid ""
 "your pywin32 extensions do not support file handle operations;\n"
+"\tparallel (-j) builds may not work reliably with open Python files."
 msgstr ""
 
 #: Platform/win32.py:102 Platform/win32.py:177
@@ -510,12 +511,17 @@ msgstr ""
 
 #: Platform/win32.py:136
 msgid ""
-"scons: unknown OSError exception code %d - %s: %s\n"
+"scons: unknown OSError exception code %(e0)d - %(cmd)s: %(e1)s\n"
+msgstr ""
+
+#: Platform/win32.py:138
+msgid ""
+"scons: %(cmd)s: %(e)s\n"
 msgstr ""
 
 #: Platform/win32.py:172
 msgid ""
-"scons: unknown OSError exception code %d - '%s': %s\n"
+"scons: unknown OSError exception code %(e0)d - '%(cmd)s': %(e1)s\n"
 msgstr ""
 
 #: SConf.py:83
@@ -523,7 +529,7 @@ msgid "SCons.SConf.SetCacheMode: Unknown mode "
 msgstr ""
 
 #: SConf.py:112
-msgid "scons: Configure: creating "
+msgid "scons: Configure: creating %s"
 msgstr ""
 
 #: SConf.py:139
@@ -536,6 +542,11 @@ msgstr ""
 
 #: SConf.py:148
 msgid "\"%s\" is not yet built and cache is forced."
+msgstr ""
+
+#: SConf.py:214 SConf.py:875
+msgid ""
+"scons: Configure: %s\n"
 msgstr ""
 
 #: SConf.py:223
@@ -576,6 +587,12 @@ msgstr ""
 msgid "error: no result"
 msgstr ""
 
+#: SConf.py:707
+msgid ""
+"file %(file)s,line %(line)d:\n"
+"\tConfigure(confdir = %(confdir)s)\n"
+msgstr ""
+
 #: SConf.py:727
 msgid "Finish may be called only once!"
 msgstr ""
@@ -589,7 +606,7 @@ msgid "no"
 msgstr ""
 
 #: SConf.py:799
-msgid "Expected string, int or bool, got "
+msgid "Expected string, int or bool, got %s"
 msgstr ""
 
 #: SConf.py:827
@@ -602,15 +619,19 @@ msgstr ""
 
 #: SConsign.py:214
 msgid ""
-"Ignoring corrupt sconsign entry : %s (%s)\n"
+"Ignoring corrupt sconsign entry : %(tpath)s (%(e)s)\n"
 msgstr ""
 
-#: Scanner/C.py:104 Scanner/LaTeX.py:330 Scanner/__init__.py:381
-msgid "No dependency generated for file: %s (included from: %s) -- file not found"
+#: Scanner/C.py:104
+msgid "No dependency generated for file: %(included)s (included from: %(includer)s) -- file not found"
 msgstr ""
 
 #: Scanner/Fortran.py:123
-msgid "No dependency generated for file: %s (referenced by: %s) -- file not found"
+msgid "No dependency generated for file: %(i)s (referenced by: %(node)s) -- file not found"
+msgstr ""
+
+#: Scanner/LaTeX.py:330 Scanner/__init__.py:381
+msgid "No dependency generated for file: %(i)s (included from: %(node)s) -- file not found"
 msgstr ""
 
 #: Script/Interactive.py:136
@@ -623,6 +644,11 @@ msgstr ""
 
 #: Script/Interactive.py:271
 msgid "scons: done clearing node information."
+msgstr ""
+
+#: Script/Interactive.py:365
+msgid ""
+"scons: %s: %s\n"
 msgstr ""
 
 #: Script/Main.py:175
@@ -924,8 +950,7 @@ msgstr ""
 msgid "%s option requires an argument"
 msgstr ""
 
-#: Script/SConsOptions.py:323 compat/_scons_optparse.py:1519
-#: compat/_scons_optparse.py:1558
+#: Script/SConsOptions.py:323
 msgid "%s option requires %d arguments"
 msgstr ""
 
@@ -1167,7 +1192,7 @@ msgstr ""
 msgid "Import of non-existent variable '%s'"
 msgstr ""
 
-#: Script/__init__.py:369
+#: Script/__init__.py:371
 msgid "%s = _SConscript.DefaultEnvironmentCall(%s)"
 msgstr ""
 
@@ -1178,7 +1203,7 @@ msgid ""
 msgstr ""
 
 #: Subst.py:59
-msgid "%s `%s' trying to evaluate `%s'"
+msgid "%(name)s `%(exception)s' trying to evaluate `%(s)s'"
 msgstr ""
 
 #: Subst.py:245
@@ -1193,6 +1218,14 @@ msgstr ""
 msgid ""
 "Direct use of the Taskmaster.Task class will be deprecated\n"
 "\tin a future release."
+msgstr ""
+
+#: Taskmaster.py:435
+msgid "removing"
+msgstr ""
+
+#: Taskmaster.py:452
+msgid "adjusted parent ref count"
 msgstr ""
 
 #: Taskmaster.py:734
@@ -1217,7 +1250,7 @@ msgid ""
 msgstr ""
 
 #: Taskmaster.py:860
-msgid "     adjusted ref count: %s, child %s"
+msgid "     adjusted ref count: %(node)s, child %(child)s"
 msgstr ""
 
 #: Taskmaster.py:865
@@ -1247,7 +1280,7 @@ msgstr ""
 
 #: Taskmaster.py:1019
 msgid ""
-"  Internal Error: no cycle found for node %s (%s) in state %s\n"
+"  Internal Error: no cycle found for node %(node1)s (%(node2)s) in state %(state)s\n"
 msgstr ""
 
 #: Tool/FortranCommon.py:65
@@ -1377,18 +1410,18 @@ msgid "No module named %s"
 msgstr ""
 
 #: Tool/__init__.py:156 Tool/__init__.py:159
-msgid "No tool named '%s': %s"
+msgid "No tool named '%(name)s': %(e)s"
 msgstr ""
 
 #: Tool/filesystem.py:54
 msgid ""
 "\n"
-"target: %s\n"
-"source: %s"
+"target: %(target)s\n"
+"source: %(source)s"
 msgstr ""
 
 #: Tool/install.py:58
-msgid "cannot overwrite non-directory `%s' with a directory `%s'"
+msgid "cannot overwrite non-directory `%(dest)s' with a directory `%(src)s'"
 msgstr ""
 
 #: Tool/install.py:77
@@ -1396,11 +1429,11 @@ msgid "Missing INSTALL construction variable."
 msgstr ""
 
 #: Tool/install.py:80
-msgid "Installing source %s into target %s: target and source lists must have same length."
+msgid "Installing source %(src)s into target %(t)s: target and source lists must have same length."
 msgstr ""
 
 #: Tool/install.py:97
-msgid "Install %s: \"%s\" as \"%s\""
+msgid "Install %(type)s: \"%(source)s\" as \"%(target)s\""
 msgstr ""
 
 #: Tool/install.py:139
@@ -1416,15 +1449,15 @@ msgid "A directory under which all installed files will be placed."
 msgstr ""
 
 #: Tool/intelc.py:123
-msgid "Intel compiler: Invalid ABI %s, valid values are %s"
+msgid "Intel compiler: Invalid ABI %(abi)s, valid values are %(keys)s"
 msgstr ""
 
 #: Tool/intelc.py:162
-msgid "%s was not found in the registry, for Intel compiler version %s, abi='%s'"
+msgid "%(k)s was not found in the registry, for Intel compiler version %(version)s, abi='%(abi)s'"
 msgstr ""
 
 #: Tool/intelc.py:170
-msgid "%s\\%s was not found in the registry."
+msgid "%(k)s\\%(value)s was not found in the registry."
 msgstr ""
 
 #: Tool/intelc.py:219
@@ -1443,39 +1476,27 @@ msgid "Can't find Intel compiler in %s"
 msgstr ""
 
 #: Tool/intelc.py:281
-msgid "Can't find version %s Intel compiler in %s (abi='%s')"
+msgid "Can't find version %(version)s Intel compiler in %(top)s (abi='%(abi)s')"
 msgstr ""
 
 #: Tool/intelc.py:318
-msgid "Invalid Intel compiler version %s: "
-msgstr ""
-
-#: Tool/intelc.py:319
-msgid "installed versions are %s"
+msgid "Invalid Intel compiler version %(version)s: installed versions are %(vlist)s"
 msgstr ""
 
 #: Tool/intelc.py:355
-msgid "Failed to find Intel compiler for version='%s', abi='%s'"
+msgid "Failed to find Intel compiler for version='%(version)s', abi='%(abi)s'"
 msgstr ""
 
 #: Tool/intelc.py:362
-msgid "Can't find Intel compiler top dir for version='%s', abi='%s'"
+msgid "Can't find Intel compiler top dir for version='%(version)s', abi='%(abi)s'"
 msgstr ""
 
 #: Tool/intelc.py:367
-msgid "Intel C compiler: using version %s (%g), abi %s, in '%s'"
+msgid "Intel C compiler: using version %(version)s (%(linux_version)g), abi %(abi)s, in '%(topdir)s'"
 msgstr ""
 
 #: Tool/intelc.py:460
-msgid "Intel license dir was not found."
-msgstr ""
-
-#: Tool/intelc.py:461
-msgid "  Tried using the INTEL_LICENSE_FILE environment variable (%s), the registry (%s) and the default path (%s)."
-msgstr ""
-
-#: Tool/intelc.py:462
-msgid "  Using the default path as a last resort."
+msgid "Intel license dir was not found.  Tried using the INTEL_LICENSE_FILE environment variable (%(env)s), the registry (%(reg)s) and the default path (%(def)s).  Using the default path as a last resort."
 msgstr ""
 
 #: Tool/javac.py:68 Tool/javac.py:94
@@ -1485,17 +1506,8 @@ msgstr ""
 #: Tool/link.py:55
 msgid ""
 "Using $CXX to link Fortran and C++ code together.\n"
-"\t"
-msgstr ""
-
-#: Tool/link.py:56
-msgid ""
-"This may generate a buggy executable if the '%s'\n"
-"\t"
-msgstr ""
-
-#: Tool/link.py:57
-msgid "compiler does not know how to deal with Fortran runtimes."
+"\tThis may generate a buggy executable if the '%s'\n"
+"\tcompiler does not know how to deal with Fortran runtimes."
 msgstr ""
 
 #: Tool/mingw.py:78 Tool/mslink.py:108 Tool/mwld.py:89
@@ -1530,14 +1542,8 @@ msgstr ""
 msgid "Adding '"
 msgstr ""
 
-#: Tool/msvs.py:543 Tool/msvs.py:852 Tool/msvs.py:1081 Tool/msvs.py:1184
-#: Tool/msvs.py:1200
-msgid "\" for writing:"
-msgstr ""
-
-#: Tool/msvs.py:543 Tool/msvs.py:852 Tool/msvs.py:1081 Tool/msvs.py:1184
-#: Tool/msvs.py:1200
-msgid "Unable to open \""
+#: Tool/msvs.py:543 Tool/msvs.py:852
+msgid "Unable to open \"%(dspabs)s\" for writing: %(detail)s"
 msgstr ""
 
 #: Tool/msvs.py:866
@@ -1556,8 +1562,17 @@ msgstr ""
 msgid "'Release') to create an MSVS Solution File."
 msgstr ""
 
+#: Tool/msvs.py:1081
+msgid "Unable to open \"%(dswfile)s\" for writing: %(detail)s"
+msgstr ""
+
 #: Tool/msvs.py:1130
-msgid "Unable to open %s for writing: %s"
+msgid "Unable to open %(dswfile)s for writing: %(detail)s"
+msgstr ""
+
+#: Tool/msvs.py:1184 Tool/msvs.py:1200
+msgid ""
+"Unable to open \"%(dspfile)s\" for writing %(detail)s \n"
 msgstr ""
 
 #: Tool/msvs.py:1187
@@ -1590,16 +1605,16 @@ msgstr ""
 msgid "name must be a string or a list of strings"
 msgstr ""
 
+#: Tool/msvs.py:1277 Tool/msvs.py:1340
+msgid "variant must be a string or a list of strings"
+msgstr ""
+
 #: Tool/msvs.py:1279 Tool/msvs.py:1342
 msgid "variant must be specified"
 msgstr ""
 
 #: Tool/msvs.py:1290 Tool/msvs.py:1292
 msgid " must be a string or a list of strings"
-msgstr ""
-
-#: Tool/msvs.py:1340
-msgid "variant must be a string or a list of strings"
 msgstr ""
 
 #: Tool/msvs.py:1348
@@ -1667,7 +1682,7 @@ msgid "\"%s\" package field for RPM is missing."
 msgstr ""
 
 #: Tool/qt.py:76
-msgid "Generated moc file '%s' is not included by '%s'"
+msgid "Generated moc file '%(moc)s' is not included by '%(cpp)s'"
 msgstr ""
 
 #: Tool/qt.py:135
@@ -1679,15 +1694,19 @@ msgid "scons: qt: '%s' is no cxx file. Discarded."
 msgstr ""
 
 #: Tool/qt.py:153
-msgid "scons: qt: Scanning '%s' (header of '%s')"
+msgid "scons: qt: Scanning '%(h)s' (header of '%(cpp)s')"
 msgstr ""
 
 #: Tool/qt.py:158
 msgid "scons: qt: no header for '%s'."
 msgstr ""
 
-#: Tool/qt.py:166 Tool/qt.py:173
-msgid "scons: qt: found Q_OBJECT macro in '%s', moc'ing to '%s'"
+#: Tool/qt.py:166
+msgid "scons: qt: found Q_OBJECT macro in '%(h)s', moc'ing to '%(cpp)s'"
+msgstr ""
+
+#: Tool/qt.py:173
+msgid "scons: qt: found Q_OBJECT macro in '%(cpp)s', moc'ing to '%(moc)s'"
 msgstr ""
 
 #: Tool/qt.py:197
@@ -1696,10 +1715,6 @@ msgstr ""
 
 #: Tool/qt.py:202
 msgid "Could not detect qt, using empty QTDIR"
-msgstr ""
-
-#: Tool/rpm.py:91
-msgid "got %s but expected %s"
 msgstr ""
 
 #: Tool/tex.py:138
@@ -1718,59 +1733,63 @@ msgstr ""
 msgid " did not find '%s'"
 msgstr ""
 
-#: Tool/tex.py:242
+#: Tool/tex.py:238
+msgid "file %s not changed"
+msgstr ""
+
+#: Tool/tex.py:243
 msgid "file %s changed, rerunning Latex, new hash = "
 msgstr ""
 
-#: Tool/tex.py:280
+#: Tool/tex.py:281
 msgid "Need to run bibtex"
 msgstr ""
 
-#: Tool/tex.py:292
+#: Tool/tex.py:293
 msgid "Need to run makeindex"
 msgstr ""
 
-#: Tool/tex.py:309
+#: Tool/tex.py:310
 msgid "Need to run makeindex for nomenclature"
 msgstr ""
 
-#: Tool/tex.py:319
+#: Tool/tex.py:320
 msgid "Need to run makeindex for glossary"
 msgstr ""
 
-#: Tool/tex.py:329
+#: Tool/tex.py:330
 msgid "rerun Latex due to latex or package rerun warning"
 msgstr ""
 
-#: Tool/tex.py:334
+#: Tool/tex.py:335
 msgid "rerun Latex due to 'Rerun to get citations correct' warning"
 msgstr ""
 
-#: Tool/tex.py:339
+#: Tool/tex.py:340
 msgid "rerun Latex due to undefined references or citations"
 msgstr ""
 
-#: Tool/tex.py:342
+#: Tool/tex.py:343
 msgid "reached max number of retries on Latex ,"
 msgstr ""
 
-#: Tool/tex.py:348
-msgid "move %s to %s"
+#: Tool/tex.py:349
+msgid "move %(result)s to %(target)s"
 msgstr ""
 
-#: Tool/tex.py:432
+#: Tool/tex.py:433
 msgid " scanning "
 msgstr ""
 
-#: Tool/tex.py:442
+#: Tool/tex.py:443
 msgid "files included by '%s': "
 msgstr ""
 
-#: Tool/tex.py:451
+#: Tool/tex.py:452
 msgid " done scanning "
 msgstr ""
 
-#: Tool/tex.py:539
+#: Tool/tex.py:540
 msgid "search path "
 msgstr ""
 
@@ -1803,11 +1822,11 @@ msgid "Invalid value for boolean option: %s"
 msgstr ""
 
 #: Variables/BoolVariable.py:76
-msgid "Invalid value for boolean option %s: %s"
+msgid "Invalid value for boolean option %(key1)s: %(key2)s"
 msgstr ""
 
 #: Variables/EnumVariable.py:53
-msgid "Invalid value for option %s: %s"
+msgid "Invalid value for option %(key)s: %(val)s"
 msgstr ""
 
 #: Variables/ListVariable.py:105
@@ -1819,31 +1838,31 @@ msgid "allowed names: %s"
 msgstr ""
 
 #: Variables/PackageVariable.py:87
-msgid "Path does not exist for option %s: %s"
+msgid "Path does not exist for option %(key)s: %(val)s"
 msgstr ""
 
 #: Variables/PathVariable.py:92
-msgid "Directory path for option %s is a file: %s"
+msgid "Directory path for option %(key)s is a file: %(val)s"
 msgstr ""
 
 #: Variables/PathVariable.py:94
-msgid "Directory path for option %s does not exist: %s"
+msgid "Directory path for option %(key)s does not exist: %(val)s"
 msgstr ""
 
 #: Variables/PathVariable.py:101
-msgid "Path for option %s is a file, not a directory: %s"
+msgid "Path for option %(key)s is a file, not a directory: %(val)s"
 msgstr ""
 
 #: Variables/PathVariable.py:110
-msgid "File path for option %s is a directory: %s"
+msgid "File path for option %(key)s is a directory: %(val)s"
 msgstr ""
 
 #: Variables/PathVariable.py:112
-msgid "File path for option %s does not exist: %s"
+msgid "File path for option %(key)s does not exist: %(val)s"
 msgstr ""
 
 #: Variables/PathVariable.py:118
-msgid "Path for option %s does not exist: %s"
+msgid "Path for option %(key)s does not exist: %(val)s"
 msgstr ""
 
 #: Variables/__init__.py:133
@@ -1852,14 +1871,14 @@ msgstr ""
 
 #: Variables/__init__.py:215
 msgid ""
-"Error converting option: %s\n"
-"%s"
+"Error converting option: %(key)s\n"
+"%(x)s"
 msgstr ""
 
 #: Variables/__init__.py:277
 msgid ""
-"Error writing options to file: %s\n"
-"%s"
+"Error writing options to file: %(filename)s\n"
+"%(x)s"
 msgstr ""
 
 #: Warnings.py:206
@@ -1873,7 +1892,7 @@ msgid ""
 msgstr ""
 
 #: compat/__init__.py:218
-msgid "Cannot move a directory '%s' into itself '%s'."
+msgid "Cannot move a directory '%(src)s' into itself '%(dst)s'."
 msgstr ""
 
 #: compat/_scons_hashlib.py:47
@@ -1881,7 +1900,7 @@ msgid "unsupported hash type"
 msgstr ""
 
 #: compat/_scons_optparse.py:131
-msgid "option %s: %s"
+msgid "option %(oid)s: %(msg)s"
 msgstr ""
 
 #: compat/_scons_optparse.py:154
@@ -1889,7 +1908,7 @@ msgid "no such option: %s"
 msgstr ""
 
 #: compat/_scons_optparse.py:165
-msgid "ambiguous option: %s (%s?)"
+msgid "ambiguous option: %(ostr)s (%(popt)s?)"
 msgstr ""
 
 #: compat/_scons_optparse.py:244
@@ -1934,11 +1953,11 @@ msgid "complex"
 msgstr ""
 
 #: compat/_scons_optparse.py:457
-msgid "option %s: invalid %s value: %r"
+msgid "option %(opt)s: invalid %(what)s value: %(value)r"
 msgstr ""
 
 #: compat/_scons_optparse.py:465
-msgid "option %s: invalid choice: %r (choose from %s)"
+msgid "option %(opt)s: invalid choice: %(value)r (choose from %(choices)s)"
 msgstr ""
 
 #: compat/_scons_optparse.py:613
@@ -2057,9 +2076,13 @@ msgstr ""
 msgid "invalid OptionGroup (wrong parser)"
 msgstr ""
 
+#: compat/_scons_optparse.py:1519 compat/_scons_optparse.py:1558
+msgid "%(opt)s option requires %(nargs)d arguments"
+msgstr ""
+
 #: compat/_scons_optparse.py:1602
 msgid ""
-"%s: error: %s\n"
+"%(name)s: error: %(msg)s\n"
 msgstr ""
 
 #: compat/_scons_optparse.py:1645
@@ -2087,7 +2110,7 @@ msgid "Object %s is not a member of the set."
 msgstr ""
 
 #: compat/_scons_shlex.py:78
-msgid "shlex: reading from %s, line %d"
+msgid "shlex: reading from %(instream)s, line %(lineno)d"
 msgstr ""
 
 #: compat/_scons_shlex.py:84
@@ -2103,7 +2126,7 @@ msgid "shlex: pushing to stream %s"
 msgstr ""
 
 #: compat/_scons_shlex.py:106
-msgid "shlex: popping to %s, line %d"
+msgid "shlex: popping to %(instream)s, line %(lineno)d"
 msgstr ""
 
 #: compat/_scons_shlex.py:115
@@ -2160,10 +2183,6 @@ msgstr ""
 
 #: compat/_scons_shlex.py:267
 msgid "shlex: raw token=EOF"
-msgstr ""
-
-#: compat/_scons_subprocess.py:374
-msgid "Command '%s' returned non-zero exit status %d"
 msgstr ""
 
 #: compat/_scons_subprocess.py:601
@@ -2248,11 +2267,11 @@ msgid "Read-only database: %s"
 msgstr ""
 
 #: dblite.py:147
-msgid "key `%s' must be a string but is %s"
+msgid "key `%(key)s' must be a string but is %(type)s"
 msgstr ""
 
 #: dblite.py:149
-msgid "value `%s' must be a string but is %s"
+msgid "value `%(value)s' must be a string but is %(type)s"
 msgstr ""
 
 #: dblite.py:198

@@ -54,12 +54,12 @@ try:
     win32con.HANDLE_FLAG_INHERIT
 except ImportError:
     parallel_msg = \
-        _("you do not seem to have the pywin32 extensions installed;\n") + \
-        _("\tparallel (-j) builds may not work reliably with open Python files.")
+        _("you do not seem to have the pywin32 extensions installed;\n"
+        "\tparallel (-j) builds may not work reliably with open Python files.")
 except AttributeError:
     parallel_msg = \
-        _("your pywin32 extensions do not support file handle operations;\n") + \
-        _("\tparallel (-j) builds may not work reliably with open Python files.")
+        _("your pywin32 extensions do not support file handle operations;\n"
+        "\tparallel (-j) builds may not work reliably with open Python files.")
 else:
     parallel_msg = None
 
@@ -133,9 +133,9 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
             try:
                 ret = exitvalmap[e[0]]
             except KeyError:
-                sys.stderr.write(_("scons: unknown OSError exception code %d - %s: %s\n") % (e[0], cmd, e[1]))
+                sys.stderr.write(_("scons: unknown OSError exception code %(e0)d - %(cmd)s: %(e1)s\n") % {"e0":e[0], "cmd":cmd, "e1":e[1]})
             if stderr is not None:
-                stderr.write(_("scons: %s: %s\n") % (cmd, e[1]))
+                stderr.write(_("scons: %(cmd)s: %(e)s\n") % {"cmd":cmd, "e":e[1]})
         # copy child output from tempfiles to our streams
         # and do clean up stuff
         if stdout is not None and stdoutRedirected == 0:
@@ -159,7 +159,7 @@ def exec_spawn(l, env):
     except OSError, e:
         try:
             result = exitvalmap[e[0]]
-            sys.stderr.write(_("scons: %s: %s\n") % (l[0], e[1]))
+            sys.stderr.write(_("scons: %(l)s: %(e)s\n") % {"l":l[0], "e":e[1]})
         except KeyError:
             result = 127
             if len(l) > 2:
@@ -169,7 +169,7 @@ def exec_spawn(l, env):
                     command = l[0]
             else:
                 command = l[0]
-            sys.stderr.write(_("scons: unknown OSError exception code %d - '%s': %s\n") % (e[0], command, e[1]))
+            sys.stderr.write(_("scons: unknown OSError exception code %(e0)d - '%(cmd)s': %(e1)s\n") % {"e0":e[0], "cmd":command, "e1":e[1]})
     return result
 
 def spawn(sh, escape, cmd, args, env):

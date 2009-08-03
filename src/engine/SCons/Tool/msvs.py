@@ -540,7 +540,7 @@ class _GenerateV6DSP(_DSPGenerator):
         try:
             self.file = open(self.dspabs,'w')
         except IOError, detail:
-            raise SCons.Errors.InternalError, _('Unable to open "') + self.dspabs + _('" for writing:') + str(detail)
+            raise SCons.Errors.InternalError, _('Unable to open "%(dspabs)s" for writing: %(detail)s') % {"dspabs":self.dspabs, "detail":str(detail)}
         else:
             self.PrintHeader()
             self.PrintProject()
@@ -849,7 +849,7 @@ class _GenerateV7DSP(_DSPGenerator):
         try:
             self.file = open(self.dspabs,'w')
         except IOError, detail:
-            raise SCons.Errors.InternalError, _('Unable to open "') + self.dspabs + _('" for writing:') + str(detail)
+            raise SCons.Errors.InternalError, _('Unable to open "%(dspabs)s" for writing: %(detail)s') % {"dspabs":self.dspabs, "detail":str(detail)}
         else:
             self.PrintHeader()
             self.PrintProject()
@@ -1078,7 +1078,7 @@ class _GenerateV7DSW(_DSWGenerator):
         try:
             self.file = open(self.dswfile,'w')
         except IOError, detail:
-            raise SCons.Errors.InternalError, _('Unable to open "') + self.dswfile + _('" for writing:') + str(detail)
+            raise SCons.Errors.InternalError, _('Unable to open "%(dswfile)s" for writing: %(detail)s') % {"dswfile":self.dswfile, "detail":str(detail)}
         else:
             self.PrintSolution()
             self.file.close()
@@ -1127,7 +1127,7 @@ class _GenerateV6DSW(_DSWGenerator):
         try:
             self.file = open(self.dswfile,'w')
         except IOError, detail:
-            raise SCons.Errors.InternalError, _('Unable to open %s for writing: %s') % (self.dswfile, str(detail))
+            raise SCons.Errors.InternalError, _('Unable to open %(dswfile)s for writing: %(detail)s') % {"dswfile":self.dswfile, "detail":str(detail)}
         else:
             self.PrintWorkspace()
             self.file.close()
@@ -1181,7 +1181,7 @@ def GenerateProject(target, source, env):
         try:
             bdsp = open(str(builddspfile), "w+")
         except IOError, detail:
-            print _('Unable to open "') + str(dspfile) + _('" for writing:'),detail,'\n'
+            print _('Unable to open "%(dspfile)s" for writing %(detail)s \n') % {"dspfile":str(dspfile), "detail":detail}
             raise
 
         bdsp.write(_("This is just a placeholder file.\nThe real project file is here:\n%s\n") % dspfile.get_abspath())
@@ -1197,7 +1197,7 @@ def GenerateProject(target, source, env):
             try:
                 bdsw = open(str(builddswfile), "w+")
             except IOError, detail:
-                print _('Unable to open "') + str(dspfile) + _('" for writing:'),detail,'\n'
+                print _('Unable to open "%(dspfile)s" for writing %(detail)s \n') % {"dspfile":str(dspfile), "detail":detail}
                 raise
 
             bdsw.write(_("This is just a placeholder file.\nThe real workspace file is here:\n%s\n") % dswfile.get_abspath())

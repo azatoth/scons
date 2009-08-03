@@ -144,8 +144,8 @@ class Counter:
         self.miss = 0
         CounterList.append(self)
     def display(self):
-        fmt = _("    %7d hits %7d misses    %s()")
-        print fmt % (self.hit, self.miss, self.name)
+        fmt = _("    %(hit)7d hits %(miss)7d misses    %(name)s()")
+        print fmt % {"hit":self.hit, "miss":self.miss, "name":self.name}
     def __cmp__(self, other):
         try:
             return cmp(self.name, other.name)

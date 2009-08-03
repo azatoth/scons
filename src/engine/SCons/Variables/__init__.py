@@ -212,7 +212,7 @@ class Variables:
                     except TypeError:
                         env[option.key] = option.converter(value, env)
                 except ValueError, x:
-                    raise SCons.Errors.UserError, _('Error converting option: %s\n%s')%(option.key, x)
+                    raise SCons.Errors.UserError, _('Error converting option: %(key)s\n%(x)s')%{"key":option.key, "x":x}
 
 
         # Finally validate the values:
@@ -274,7 +274,7 @@ class Variables:
                 fh.close()
 
         except IOError, x:
-            raise SCons.Errors.UserError, _('Error writing options to file: %s\n%s') % (filename, x)
+            raise SCons.Errors.UserError, _('Error writing options to file: %(filename)s\n%(x)s') % {"filename":filename, "x":x}
 
     def GenerateHelpText(self, env, sort=None):
         """

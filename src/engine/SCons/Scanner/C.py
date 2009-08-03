@@ -101,9 +101,9 @@ class SConsCPPScannerWrapper:
                               dict = dictify_CPPDEFINES(env))
         result = cpp(node)
         for included, includer in cpp.missing:
-            fmt = _("No dependency generated for file: %s (included from: %s) -- file not found")
+            fmt = _("No dependency generated for file: %(included)s (included from: %(includer)s) -- file not found")
             SCons.Warnings.warn(SCons.Warnings.DependencyWarning,
-                                fmt % (included, includer))
+                    fmt % {"included":included, "includer":includer})
         return result
 
     def recurse_nodes(self, nodes):

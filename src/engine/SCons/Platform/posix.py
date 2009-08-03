@@ -81,7 +81,7 @@ def exec_fork(l, env):
             os.execvpe(l[0], l, env)
         except OSError, e:
             exitval = exitvalmap.get(e[0], e[0])
-            sys.stderr.write(_("scons: %s: %s\n") % (l[0], e[1]))
+            sys.stderr.write(_("scons: %(l)s: %(e)s\n") % {"l":l[0], "e":e[1]})
         os._exit(exitval)
     else:
         # Parent process.
@@ -168,7 +168,7 @@ def exec_piped_fork(l, env, stdout, stderr):
             os.execvpe(l[0], l, env)
         except OSError, e:
             exitval = exitvalmap.get(e[0], e[0])
-            stderr.write(_("scons: %s: %s\n") % (l[0], e[1]))
+            stderr.write(_("scons: %(l)s: %(e)s\n") % {"l":l[0], "e":e[1]})
         os._exit(exitval)
     else:
         # Parent process

@@ -55,7 +55,7 @@ def copyFunc(dest, source, env):
     if os.path.isdir(source):
         if os.path.exists(dest):
             if not os.path.isdir(dest):
-                raise SCons.Errors.UserError, _("cannot overwrite non-directory `%s' with a directory `%s'") % (str(dest), str(source))
+                raise SCons.Errors.UserError, _("cannot overwrite non-directory `%(dest)s' with a directory `%(src)s'") % {"dest":str(dest), "src":str(source)}
         else:
             parent = os.path.split(dest)[0]
             if not os.path.exists(parent):
@@ -77,7 +77,7 @@ def installFunc(target, source, env):
         raise SCons.Errors.UserError(_('Missing INSTALL construction variable.'))
 
     assert len(target)==len(source), \
-           _("Installing source %s into target %s: target and source lists must have same length.")%(map(str, source), map(str, target))
+            _("Installing source %(src)s into target %(t)s: target and source lists must have same length.") % {"src":map(str, source), "t":map(str, target)}
     for t,s in zip(target,source):
         if install(t.get_path(),s.get_path(),env):
             return 1
@@ -94,7 +94,7 @@ def stringFunc(target, source, env):
         type = 'directory'
     else:
         type = 'file'
-    return _('Install %s: "%s" as "%s"') % (type, source, target)
+    return _('Install %(type)s: "%(source)s" as "%(target)s"') % {"type":type, "source":source, "target":target}
 
 #
 # Emitter functions

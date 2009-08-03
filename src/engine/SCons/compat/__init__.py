@@ -215,7 +215,7 @@ except AttributeError:
         except OSError:
             if os.path.isdir(src):
                 if shutil.destinsrc(src, dst):
-                    raise Error, _("Cannot move a directory '%s' into itself '%s'.") % (src, dst)
+                    raise Error, _("Cannot move a directory '%(src)s' into itself '%(dst)s'.") % {"src":src, "dst":dst}
                 shutil.copytree(src, dst, symlinks=True)
                 shutil.rmtree(src)
             else:

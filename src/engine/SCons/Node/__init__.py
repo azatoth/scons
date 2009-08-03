@@ -1033,7 +1033,7 @@ class Node:
         the content signature of an #included .h file) is updated.
         """
         t = 0
-        if t: Trace(_('changed(%s [%s], %s)') % (self, classname(self), node))
+        if t: Trace(_('changed(%(self)s [%(name)s], %(node)s)') % {"self":self, "name":classname(self), "node":node})
         if node is None:
             node = self
 
@@ -1051,7 +1051,7 @@ class Node:
             # entries to equal the new dependency list, for the benefit
             # of the loop below that updates node information.
             then.extend([None] * diff)
-            if t: Trace(_(': old %s new %s') % (len(then), len(children)))
+            if t: Trace(_(': old %(then)s new %(children)s') % {"then":len(then), "children":len(children)})
             result = True
 
         for child, prev_ni in izip(children, then):
@@ -1064,7 +1064,7 @@ class Node:
             import SCons.Util
             newsig = SCons.Util.MD5signature(contents)
             if bi.bactsig != newsig:
-                if t: Trace(_(': bactsig %s != newsig %s') % (bi.bactsig, newsig))
+                if t: Trace(_(': bactsig %(bactsig)s != newsig %(newsig)s') % {"bactsig":bi.bactsig, "newsig":newsig})
                 result = True
 
         if not result:
@@ -1229,9 +1229,9 @@ class Node:
                 lines.append("`%s' changed\n" % stringify(k))
 
         if len(lines) == 0 and old_bkids != new_bkids:
-            lines.append(_("the dependency order changed:\n") +
-                         _("%sold: %s\n") % (' '*15, map(stringify, old_bkids)) +
-                         _("%snew: %s\n") % (' '*15, map(stringify, new_bkids)))
+            lines.append(_("the dependency order changed:\n"
+                         "%(space)sold: %(old)s\n"
+                         "%(space)snew: %(new)s\n") % {"space":' '*15, "old":map(stringify, old_bkids), "new":map(stringify, new_bkids)})
 
         if len(lines) == 0:
             def fmt_with_title(title, strlines):
@@ -1241,11 +1241,11 @@ class Node:
             if old.bactsig != new.bactsig:
                 if old.bact == new.bact:
                     lines.append(_("the contents of the build action changed\n") +
-                                 fmt_with_title('action: ', new.bact))
+                                 fmt_with_title(_('action: '), new.bact))
                 else:
                     lines.append(_("the build action changed:\n") +
-                                 fmt_with_title('old: ', old.bact) +
-                                 fmt_with_title('new: ', new.bact))
+                                 fmt_with_title(_('old: '), old.bact) +
+                                 fmt_with_title(_('new: '), new.bact))
 
         if len(lines) == 0:
             return _("rebuilding `%s' for unknown reasons\n") % self
