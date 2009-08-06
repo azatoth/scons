@@ -10,6 +10,9 @@ If all you want to do is install and run SCons, it will be easier for you
 to download and install the scons-{version}.tar.gz or scons-{version}.zip
 package rather than to work with the packaging logic in this tree.
 
+If you're running Windows, you might also be interested in the
+scons-binary-{version} and scons-full-{version} installers.
+
 To the extent that this tree is about building SCons packages, the *full*
 development cycle is not just to test the code directly, but to package
 SCons, unpack the package, "install" SCons in a test subdirectory,
@@ -97,6 +100,9 @@ In this case, your options are:
         Install the distutils according to the instructions on the page.
         You can then proceed to the next section to install SCons from
         this package.
+
+The stand-alone Windows binaries have no additional requirements and can
+be installed even if no version of Python is present.
 
 
 INSTALLATION
@@ -233,6 +239,9 @@ specify an alternate installation location, such as your home directory:
 This will install SCons in the appropriate locations relative to
 $HOME--that is, the scons script itself $HOME/bin and the associated
 library in $HOME/lib/scons, for example.
+
+If you downloaded one of the full or binary installers, all you need to
+do is run it.
 
 
 MAKING CHANGES
@@ -539,6 +548,8 @@ following packages will be built:
         build/dist/scons-src-1.2.0.tar.gz
         build/dist/scons-src-1.2.0.zip
         build/dist/scons_1.2.0-1_all.deb
+        build/dist/scons-binary-1.2.0.exe
+        build/dist/scons-full-1.2.0.exe
 
 The SConstruct file is supposed to be smart enough to avoid trying to
 build packages for which you don't have the proper utilities installed.
@@ -648,6 +659,9 @@ HOWTO/
         Documentation of SCons administrative procedures (making a
         change, releasing a new version).  Maybe other administrative
         stuff in the future.
+
+installer/
+        Support files for building the stand-alone binaries and installers.
 
 LICENSE
         A copy of the copyright and terms under which SCons is

@@ -1288,7 +1288,7 @@ for p in [ scons ]:
         env.Append(BUILDERS={'ScanDir':Builder(action=scan_dir)})
         
         def wine_sanity_check(target, source, env):
-            # At the moment, pyInstaller doesn't pick up dll dependencies under wine, so we check for them here
+            # At the moment, cxFreeze doesn't pick up dll dependencies under wine, so we check for them here
             python_dll = glob.glob(os.path.join(str(source[0]), 'python*.dll'))
             
             if (len(python_dll) == 0) and (installer_python != python):
