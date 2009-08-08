@@ -67,7 +67,7 @@
 
     Because &SCons; is written in Python,
     you must obviously have Python installed on your system
-    to use &SCons;.
+    to use &SCons;, unless you are using the stand-alone binaries for Windows.
     Before you try to install Python,
     you should check to see if Python is already
     available on your system  by typing
@@ -278,7 +278,12 @@
       (usually by clicking on its icon in Windows Explorer).
       These will take you through a small
       sequence of windows that will install
-      &SCons; on your system.
+      &SCons; on your system. Note that this installer will only install
+      the Python scripts and modules. If you want to install the stand-alone
+      binaries, download the <filename>scons-binary-__VERSION__.exe</filename>
+      file. There is also a full installer that includes binaries,
+      documentation, and the Python modules. The full installer is called
+      <filename>scons-full-__VERSION__.exe</filename>.
 
       <!--
       Things are a little more complicated

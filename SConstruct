@@ -657,6 +657,7 @@ scons_script = {
                             'scons'             : 'scons.py',
                             'sconsign'          : 'sconsign.py',
                             'scons-time'        : 'scons-time.py',
+                            'scons-frontend'    : 'scons-frontend.py',
                            },
 
         'buildermap'    : {},
@@ -665,6 +666,7 @@ scons_script = {
                             'scons-' + version,
                             'sconsign-' + version,
                             'scons-time-' + version,
+                            'scons-frontend-' + version,
                           ],
 
         'explicit_deps' : {
@@ -722,7 +724,7 @@ scons = {
                            },
 }
 
-scripts = ['scons', 'sconsign', 'scons-time']
+scripts = ['scons', 'sconsign', 'scons-time', 'scons-frontend']
 
 src_deps = []
 src_files = []
@@ -1266,7 +1268,7 @@ for p in [ scons ]:
         env.Depends(exe_setup_py, init_script_copy)
         
         exe_targets = []
-        exe_scripts = ['scons', 'sconsign']
+        exe_scripts = ['scons', 'sconsign', 'scons-frontend']
         for script in exe_scripts:
             exe_targets.append(os.path.join(str(build_dir_exe), script + '.exe'))
         
@@ -1277,6 +1279,8 @@ for p in [ scons ]:
         env.Depends(standalone_exe, build_src_files)
         
         def scan_dir(target, source, env):
+            print "Source:", str(source[0])
+            print "Target:", str(target[0])
             dir_contents = glob.glob(os.path.join(str(source[0]), '*.*'))
             
             for entry in dir_contents:
@@ -1302,6 +1306,22 @@ for p in [ scons ]:
                 pywintypes_dll = os.path.join(wine_root, 'drive_c', 'windows', 'system32', 'pywintypes' + os.path.dirname(wine_python)[-2:] + '.dll')
                 if os.path.isfile(pywintypes_dll):
                     env.Execute(Copy(str(source[0]), pywintypes_dll))
+            
+            tcl_dll = glob.glob(os.path.join(source[0]), 'tcl??.dll')
+            
+            if (len(tcl_dll) == 0) and (installer_python != python):
+                tcl_dll = os.path.join(os.path.dirname(wine_python), 'DLLs', 'tcl??.dll')
+                
+                if os.path.isfile(tcl_dll):
+                    env.Execute(Copy(str(source[0]), tcl_dll))
+            
+            tk_dll = glob.glob(os.path.join(source[0]), 'tk??.dll')
+            
+            if (len(tk_dll) == 0) and (installer_python != python):
+                tk_dll = os.path.join(os.path.dirname(wine_python), 'DLLs', 'tk??.dll')
+                
+                if os.path.isfile(tk_dll):
+                    env.Execute(Copy(str(source[0]), tk_dll))
 
             # For Python 2.6, we also copy the C runtime library and its manifest
             if os.path.dirname(wine_python)[-2:] == "26":

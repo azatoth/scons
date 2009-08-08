@@ -124,6 +124,9 @@ LangString SEC_SconsExe ${LANG_GERMAN} "SCons (Programm)"
 LangString SEC_AddToPath ${LANG_ENGLISH} "Add to path"
 LangString SEC_AddToPath ${LANG_GERMAN} "Zum Pfad Hinzufügen"
 
+LangString SEC_AddToContextMenu ${LANG_ENGLISH} "Add frontend to context menu"
+LangString SEC_AddToContextMenu ${LANG_GERMAN} "Frontend zum Kontextmenü hinzufügen"
+
 LangString SEC_HtmlDocs ${LANG_ENGLISH} "HTML Documentation"
 LangString SEC_HtmlDocs ${LANG_GERMAN} "HTML-Dokumentation"
 
@@ -164,9 +167,9 @@ Section
   !insertmacro MUI_STARTMENU_WRITE_END
   
   # For details, see http://nsis.sourceforge.net/Add_uninstall_information_to_Add/Remove_Programs  
-  !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@DOC_PRODUCT_NAME@" "DisplayName" "@DOC_UNINSTALL_DISPLAY_NAME@"
-  !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@DOC_PRODUCT_NAME@" "UninstallString" "$\"$INSTDIR\@DOC_UNINSTALLER_FILE@$\""
-  !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@DOC_PRODUCT_NAME@" "QuietUninstallString" "$\"$INSTDIR\@DOC_UNINSTALLER_FILE@$\" /S"
+  !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@PRODUCT_NAME@" "DisplayName" "@UNINSTALL_DISPLAY_NAME@"
+  !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@PRODUCT_NAME@" "UninstallString" "$\"$INSTDIR\@UNINSTALLER_FILE@$\""
+  !insertmacro MultiUserWriteRegStr "Software\Microsoft\Windows\CurrentVersion\Uninstall\@PRODUCT_NAME@" "QuietUninstallString" "$\"$INSTDIR\@UNINSTALLER_FILE@$\" /S"
 SectionEnd
 
 Section !$(SEC_SconsExe) SconsExe
@@ -178,6 +181,9 @@ Section !$(SEC_SconsExe) SconsExe
 
 @SCONS_STANDALONE_FILES_INSTALL@
 
+  File /r tcl
+  File /r tk
+
 SectionEnd
 
 Section $(SEC_AddToPath) AddToPath
@@ -187,6 +193,18 @@ Section $(SEC_AddToPath) AddToPath
 
   ${EnvVarUpdate} $0 "PATH" "A" $RegHive $INSTDIR
 
+SectionEnd
+
+Section $(SEC_AddToContextMenu) AddToContextMenu
+
+    SectionIn 1
+    SectionIn 4
+    
+    !insertmacro MultiUserWriteRegStr "Software\Classes\*\shell\scons_frontend" "" "SCons Frontend"
+    !insertmacro MultiUserWriteRegStr "Software\Classes\*\shell\scons_frontend\command" "" "$INSTDIR\scons-frontend.exe %1"
+    !insertmacro MultiUserWriteRegStr "Software\Classes\Directory\shell\scons_frontend" "" "SCons Frontend"
+    !insertmacro MultiUserWriteRegStr "Software\Classes\Directory\shell\scons_frontend\command" "" "$INSTDIR\scons-frontend.exe %1"
+    
 SectionEnd
 
 SectionGroup /e $(SEC_HtmlDocs) HtmlDocs
@@ -314,6 +332,9 @@ LangString DESC_SconsExe  ${LANG_GERMAN} "Eigenständig ausführbare Version von S
 LangString DESC_AddToPath ${LANG_ENGLISH} "Add the installation directory to the path."
 LangString DESC_AddToPath ${LANG_GERMAN} "Fügt das Installationsverzeichnis zum Pfad hinzu."
 
+LangString DESC_AddToContextMenu ${LANG_ENGLISH} "Add the frontend to directory and file context menus."
+LangString DESC_AddToContextMenu ${LANG_GERMAN} "Fügt das Frontend zum Kontextmenü von Dateien und Ordnern hinzu."
+
 LangString DESC_LocalZip ${LANG_ENGLISH} "SCons source code (zipped)."
 LangString DESC_LocalZip ${LANG_GERMAN} "SCons-Quellcode (im Zip-Format)."
 
@@ -330,6 +351,7 @@ LangString DESC_PythonModule ${LANG_GERMAN} "SCons-Skripte und -Engine für Pytho
   !insertmacro MUI_DESCRIPTION_TEXT ${PdfApiReference}  $(DESC_PdfApiReference)
   !insertmacro MUI_DESCRIPTION_TEXT ${SconsExe}  $(DESC_SconsExe)
   !insertmacro MUI_DESCRIPTION_TEXT ${AddToPath} $(DESC_AddToPath)
+  !insertmacro MUI_DESCRIPTION_TEXT ${AddToContextMenu} $(DESC_AddToContextMenu)
   !insertmacro MUI_DESCRIPTION_TEXT ${LocalZip} $(DESC_LocalZip)
   !insertmacro MUI_DESCRIPTION_TEXT ${PythonModule} $(DESC_PythonModule)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
@@ -415,6 +437,9 @@ Section "un.$(SEC_Uninstall)" Uninstall
 
 @PYTHON_MODULES_FILES_UNINSTALL@
 
+  RMDIR /r "$INSTDIR\tcl"
+  RMDIR /r "$INSTDIR\tk"
+
   RMDir $INSTDIR\doc\api
   RMDir $INSTDIR\doc
   RMDir $INSTDIR
@@ -437,7 +462,10 @@ Section "un.$(SEC_Uninstall)" Uninstall
   
   RMDir "$SMPROGRAMS\$StartMenuFolder"
   
-  !insertmacro MultiUserDeleteRegKey "Software\Microsoft\Windows\CurrentVersion\Uninstall\@DOC_PRODUCT_NAME@"
+  !insertmacro MultiUserDeleteRegKey "Software\Microsoft\Windows\CurrentVersion\Uninstall\@PRODUCT_NAME@"
+  
+  !insertmacro MultiUserDeleteRegKey "Software\Classes\*\shell\scons_frontend"
+  !insertmacro MultiUserDeleteRegKey "Software\Classes\Directory\shell\scons_frontend"
 
 SectionEnd
 
@@ -479,6 +507,9 @@ LangString DESC_UnRemovePythonModules  ${LANG_GERMAN} "Verwenden sie die Systems
   !insertmacro MUI_DESCRIPTION_TEXT ${UnRemovePythonModules}  $(DESC_UnRemovePythonModules)
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_END
 
+LangString UninstallMode ${LANG_ENGLISH} "Perform system-wide uninstall?"
+LangString UninstallMode ${LANG_GERMAN} "Systemweite Deinstallation durchführen?"
+
 ##########################################################################
 # Uninstaller functions
 ##########################################################################
@@ -488,5 +519,12 @@ Function un.onInit
   !insertmacro MULTIUSER_UNINIT
 
   SectionSetFlags ${UnRemovePythonModules} ${SF_RO}
+  
+  ${if} $MultiUser.InstallMode == "AllUsers"
+    MessageBox MB_YESNO $(UninstallMode) IDYES skip IDNO switchmode
+    switchmode:
+      Call un.MultiUser.InstallMode.CurrentUser
+    skip:
+  ${endif}
   
 FunctionEnd

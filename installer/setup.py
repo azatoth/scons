@@ -29,6 +29,7 @@ import stat
 import string
 import sys
 import cx_Freeze
+import glob
 
 Version = "__VERSION__"
 
@@ -49,6 +50,11 @@ scripts = [
     '../scons/script/scons',
     '../scons/script/sconsign',
     #'../scons/script/scons-time', # scons-time needs refactoring before it can be run stand-alone
+]
+
+includes = [
+            (glob.glob(os.path.join(os.path.dirname(sys.executable), 'tcl', 'tcl?.?'))[0], '../tcl'),
+            (glob.glob(os.path.join(os.path.dirname(sys.executable), 'tcl', 'tk?.?'))[0], '../tk'),
 ]
 
 arguments = {
@@ -87,6 +93,7 @@ build_options = dict(
                         path = path,
                         init_script = os.path.abspath('standalone_init.py'),
                         create_shared_zip = 1,
+                        include_files = includes,
                     )
 
 arguments['options'] = dict(build_exe = build_options)
@@ -95,6 +102,8 @@ executables = []
     
 for script in scripts:
     executables.append(cx_Freeze.Executable(script))
+
+executables.append(cx_Freeze.Executable('../scons/script/scons-frontend', base = 'Win32GUI'))
 
 arguments['executables'] = executables
     
