@@ -37,6 +37,7 @@ __date__ = "__DATE__"
 __developer__ = "__DEVELOPER__"
 
 import Tkinter
+import Tix
 import tkFileDialog
 import sys
 import os
@@ -192,11 +193,66 @@ else:
                     return f
         return None
 
+class OptionsBridge():
+    def __init__(self):
+        self.options = {}
+        self.options_string = Tkinter.StringVar()
+        
+        self._create_option('help', '-h', 'Help (-h)')        
+        self._create_option('help_options', '-H', 'Help options (-H)')
+        self._create_option('debug', '--debug=', 'Debug (--debug=TYPE)')
+        self._create_option('clean', '-c', 'Clean (-c)')
+        self._create_option('profile', '--profile=', 'Profile (--profile=FILE)')
+        self._create_option('repository', '--repository=', 'Repository (--repository=REPOSITORY)')
+        self._create_option('taskmastertrace', '--taskmastertrace=', 'Task master trace (--taskmastertrace=FILE)')
+        self._create_option('tree', '--tree=', 'Tree (--tree=OPTIONS)')
+        self._create_option('warn', '--warn=', 'Warn (--warn=WARNING-SPEC)')
+        self._create_option('file', '--file=', 'SConstruct file (--file=FILE)')
+        self._create_option('ignore_errors', '-i', 'Ignore errors (-i)')
+        self._create_option('include_dir', '--include-dir=', 'Python module directory (--include-dir=DIR)')
+        self._create_option('jobs', '--jobs=', 'Jobs (--jobs=N)')
+        self._create_option('keep_going', '-k', 'Keep going (-k)')
+        self._create_option('dry_run', '-n', 'Dry run (-n)')
+        self._create_option('Q', '-Q', 'Supress progress messages (-Q)')
+        self._create_option('random', '--random', 'Random (--random)')
+        self._create_option('silent', '--silent', 'Silent (--silent)')
+        self._create_option('version', '-v', 'Version (-v)')
+        self._create_option('additional', '', 'Additional options:')
+        
+        self.option_changed()
+    
+    def _create_option(self, name, cmd_line, description):
+        self.options[name] = Tkinter.IntVar()
+        self.options[name].cmd_line = cmd_line
+        self.options[name].parameter = Tkinter.StringVar()
+        self.options[name].parameter.set('')
+        self.options[name].description = description
+    
+    def option_changed(self):
+        new_cmd_line = ''
+        
+        for key in self.options.keys():
+            if self.options[key].get() == 1:
+                if self.options[key].parameter.get() == '':
+                    new_cmd_line = new_cmd_line + self.options[key].cmd_line + ' '
+                else:
+                    new_cmd_line = new_cmd_line + self.options[key].cmd_line + self.options[key].parameter.get() + ' '
+        
+        self.options_string.set(new_cmd_line)
+    
+    def clear_options(self):
+        for var in self.options.values():
+            var.set(0)
+        self.options_string.set('')
+        
+
 class FrontendWindow():
     def __init__(self, title = None):
-        self.root = Tkinter.Tk()
+        self.root = Tix.Tk()
         self.root.title(title)
-        self.root.minsize(640,480)
+        self.root.minsize(750,500)
+        
+        self.options_bridge = OptionsBridge()
         
         self.create_window(self.root)
     
@@ -215,8 +271,9 @@ class FrontendWindow():
         pathframe = Tkinter.Frame(master, borderwidth = frame_border_width, relief = Tkinter.GROOVE)
         pathframe.grid(row = 0, sticky = Tkinter.N + Tkinter.W + Tkinter.E)
         
-        optionframe = Tkinter.Frame(master, borderwidth = frame_border_width, relief = Tkinter.GROOVE)
+        optionframe = Tkinter.Frame(master, borderwidth = frame_border_width, relief = Tkinter.GROOVE, height = 150)
         optionframe.grid(row = 1, sticky = Tkinter.N + Tkinter.S + Tkinter.W + Tkinter.E)
+        optionframe.pack_propagate(0)
         
         outputframe = Tkinter.Frame(master, borderwidth = frame_border_width, relief = Tkinter.GROOVE)
         outputframe.grid(row = 2, sticky = Tkinter.N + Tkinter.S + Tkinter.W + Tkinter.E)
@@ -230,6 +287,7 @@ class FrontendWindow():
         Tkinter.Label(pathframe, text = "SCons:").grid(row = 0, sticky = Tkinter.W)
         Tkinter.Label(pathframe, text = "SConstruct directory:").grid(row = 1, sticky = Tkinter.W)
         Tkinter.Label(pathframe, text = "Options:").grid(row = 2, sticky = Tkinter.W)
+        Tkinter.Label(pathframe, text = "Targets:").grid(row = 3, sticky = Tkinter.W)
         
         self.SConsPath = Tkinter.StringVar(value = whereis('scons'))
         self.eSCons = Tkinter.Entry(pathframe, textvariable = self.SConsPath)
@@ -239,15 +297,65 @@ class FrontendWindow():
         self.eSConstruct = Tkinter.Entry(pathframe, textvariable = self.SConstructPath)
         self.eSConstruct.grid(row = 1, column = 1, sticky = Tkinter.W + Tkinter.E)
         
-        self.OptionsString = Tkinter.StringVar()
-        self.eOptions = Tkinter.Entry(pathframe, textvariable = self.OptionsString)
+        self.OptionsString = self.options_bridge.options_string
+        self.eOptions = Tkinter.Entry(pathframe, textvariable = self.OptionsString, state = 'readonly')
         self.eOptions.grid(row = 2, column = 1, sticky = Tkinter.W + Tkinter.E)
+        
+        self.TargetsString = Tkinter.StringVar()
+        self.eTargets = Tkinter.Entry(pathframe, textvariable = self.TargetsString)
+        self.eTargets.grid(row = 3, column = 1, sticky = Tkinter.W + Tkinter.E)
         
         Tkinter.Button(pathframe, text = "Select...", padx = button_pad_x, pady = button_pad_y, command = self.select_scons).grid(row = 0, column = 2, sticky = Tkinter.E + Tkinter.W)
         Tkinter.Button(pathframe, text = "Select...", padx = button_pad_x, pady = button_pad_y, command = self.select_sconstruct_dir).grid(row = 1, column = 2, sticky = Tkinter.E + Tkinter.W)
         Tkinter.Button(pathframe, text = "Clear", padx = button_pad_x, pady = button_pad_y, command = self.clear_options).grid(row = 2, column = 2, sticky = Tkinter.E + Tkinter.W)
+        Tkinter.Button(pathframe, text = "Clear", padx = button_pad_x, pady = button_pad_y, command = self.clear_targets).grid(row = 3, column = 2, sticky = Tkinter.E + Tkinter.W)
         
         pathframe.columnconfigure(1, weight = 1)
+
+        #
+        # Option frame
+        #
+        
+        notebook = Tix.NoteBook(optionframe)
+        notebook.pack(fill = Tix.BOTH, expand = 1)
+        
+        p_options = notebook.add('options', label = 'Options')
+        #p_values = notebook.add('values', label = 'Values')
+        
+        w_options = Tix.ScrolledWindow(p_options, scrollbar='auto')
+        w_options.pack(fill = Tix.BOTH, expand = 1)
+        
+        ob = self.options_bridge
+        
+        def create_option(name, row, column, parameter):
+            Tkinter.Checkbutton(w_options.window, text = ob.options[name].description, variable = ob.options[name], command = ob.option_changed).grid(row = row, column = 2 * column, sticky = Tkinter.W)
+            if parameter == 1:
+                Tkinter.Entry(w_options.window, textvariable = ob.options[name].parameter).grid(row = row, column = 2 * column + 1, sticky = Tkinter.W + Tkinter.E)
+
+        create_option('help',           0,  0, 0)
+        create_option('help_options',   1,  0, 0)
+        create_option('clean',          2,  0, 0)
+        create_option('ignore_errors',  3,  0, 0)
+        create_option('keep_going',     4,  0, 0)
+        create_option('dry_run',        5,  0, 0)
+        create_option('Q',              6,  0, 0)
+        create_option('silent',         7,  0, 0)
+        create_option('version',        8,  0, 0)
+        create_option('random',         9,  0, 0)
+
+        create_option('file',               0,  1, 1)
+        create_option('jobs',               1,  1, 1)
+        create_option('repository',         2,  1, 1)
+        create_option('include_dir',        3,  1, 1)
+        create_option('tree',               4,  1, 1)
+        create_option('warn',               5,  1, 1)
+        create_option('debug',              6,  1, 1)
+        create_option('profile',            7,  1, 1)
+        create_option('taskmastertrace',    8,  1, 1)
+        create_option('additional',         9,  1, 1)
+        
+        w_options.window.columnconfigure(3, weight = 1)
+        w_options.window.rowconfigure(99, weight = 1)
         
         #
         # Output frame
@@ -276,10 +384,14 @@ class FrontendWindow():
         buttonframe.columnconfigure(1, weight = 1)
         
         master.columnconfigure(0, weight = 1)
-        master.rowconfigure(2, weight = 1)
+        #master.rowconfigure(1, weight = 1)
+        master.rowconfigure(2, weight = 3)
 
     def clear_options(self):
-        self.OptionsString.set("")
+        self.options_bridge.clear_options()
+        
+    def clear_targets(self):
+        self.TargetsString.set('')
         
     def run(self):
         self.root.mainloop()
@@ -291,13 +403,16 @@ class FrontendWindow():
         if sconstruct_path == '':
             return
         
+        self.options_bridge.option_changed()
         options = self.OptionsString.get()
-        process = subprocess.Popen(string.join([scons,options]), stdout = subprocess.PIPE, stderr = subprocess.PIPE, cwd = sconstruct_path)
+        targets = self.TargetsString.get()
+        cmd_line = string.join([scons,options,'--',targets])
+        process = subprocess.Popen(cmd_line, stdout = subprocess.PIPE, stderr = subprocess.PIPE, cwd = sconstruct_path)
         
         self.tOutput.config(state = Tkinter.NORMAL)
         self.tOutput.delete('1.0', Tkinter.END)
         self.tOutput.insert(Tkinter.INSERT, "Running SCons in directory %s\n" % sconstruct_path)
-        self.tOutput.insert(Tkinter.INSERT, "Command line: %s %s\n\n" % (scons, options))
+        self.tOutput.insert(Tkinter.INSERT, "Command line: %s\n\n" % cmd_line)
         self.tOutput.config(state = Tkinter.DISABLED)
         
         while process.poll() == None:
@@ -319,11 +434,68 @@ class FrontendWindow():
             self.SConstructPath.set(sconstruct_dir)
 
 
+def run_test_options_bridge():
+    class MockIntVar():
+        def __init__(self):
+            self.value = 0
+        def set(self, value):
+            self.value = value
+        def get(self):
+            return self.value
+    def MockIntVarFactory():
+        return MockIntVar()
+    Tkinter.IntVar = MockIntVarFactory
+    
+    class MockStringVar():
+        def __init__(self):
+            self.value = ''
+        def set(self, value):
+            self.value = value
+        def get(self):
+            return self.value
+    def MockStringVarFactory():
+        return MockStringVar()
+    Tkinter.StringVar = MockStringVarFactory
+
+    bridge = OptionsBridge()
+    
+    assert bridge.options_string.get() == '', bridge.options_string.get()
+    
+    bridge.options['version'].set(1)
+    assert bridge.options_string.get() == '', bridge.options_string.get()
+    
+    bridge.option_changed()
+    assert bridge.options_string.get() == '-v ', bridge.options_string.get()
+    
+    bridge.clear_options()
+    assert bridge.options_string.get() == '', bridge.options_string.get()
+    
+    bridge.options['include_dir'].parameter.set('bar')
+    bridge.options['include_dir'].set(1)
+    bridge.option_changed()
+    assert bridge.options_string.get() == '--include-dir=bar ', bridge.options_string.get()
+    
+    return 0
+            
 if __name__ == "__main__":
-    window = FrontendWindow(title = "SCons frontend (__VERSION__)")
-    if len(sys.argv) == 2:
-        if os.path.isdir(sys.argv[1]):
-            window.SConstructPath.set(os.path.abspath(sys.argv[1]))
-        elif os.path.isfile(sys.argv[1]):
-            window.SConstructPath.set(os.path.split(os.path.abspath(sys.argv[1]))[0])
-    window.run()
+    if len(sys.argv) == 3:
+        if  sys.argv[1] == 'test':
+            if sys.argv[2] == 'options-bridge':
+                result = run_test_options_bridge()
+                sys.exit(result)
+            elif sys.argv[2] == 'create-window':
+                window = FrontendWindow(title = '')
+                sys.exit(0)
+            else:
+                sys.stderr.writelines('Unknown test option: ' + sys.argv[2])
+                sys.exit(1)
+    else:
+        window = FrontendWindow(title = "SCons frontend (__VERSION__)")    
+        if len(sys.argv) == 2:
+            if os.path.isdir(sys.argv[1]):
+                window.SConstructPath.set(os.path.abspath(sys.argv[1]))
+            elif os.path.isfile(sys.argv[1]):
+                window.SConstructPath.set(os.path.split(os.path.abspath(sys.argv[1]))[0])
+        else:
+            window.SConstructPath.set(os.getcwd())
+        window.run()

@@ -1307,21 +1307,19 @@ for p in [ scons ]:
                 if os.path.isfile(pywintypes_dll):
                     env.Execute(Copy(str(source[0]), pywintypes_dll))
             
-            tcl_dll = glob.glob(os.path.join(source[0]), 'tcl??.dll')
+            tcl_dll = glob.glob(os.path.join(str(source[0]), 'tcl??.dll'))
             
             if (len(tcl_dll) == 0) and (installer_python != python):
-                tcl_dll = os.path.join(os.path.dirname(wine_python), 'DLLs', 'tcl??.dll')
-                
-                if os.path.isfile(tcl_dll):
-                    env.Execute(Copy(str(source[0]), tcl_dll))
+                tcl_dll = glob.glob(os.path.join(os.path.dirname(wine_python), 'DLLs', 'tcl??.dll'))
+                if len(tcl_dll) == 1:
+                    env.Execute(Copy(str(source[0]), tcl_dll[0]))
             
-            tk_dll = glob.glob(os.path.join(source[0]), 'tk??.dll')
+            tk_dll = glob.glob(os.path.join(str(source[0]), 'tk??.dll'))
             
             if (len(tk_dll) == 0) and (installer_python != python):
-                tk_dll = os.path.join(os.path.dirname(wine_python), 'DLLs', 'tk??.dll')
-                
-                if os.path.isfile(tk_dll):
-                    env.Execute(Copy(str(source[0]), tk_dll))
+                tk_dll = glob.glob(os.path.join(os.path.dirname(wine_python), 'DLLs', 'tk??.dll'))
+                if len(tk_dll) == 1:
+                    env.Execute(Copy(str(source[0]), tk_dll[0]))
 
             # For Python 2.6, we also copy the C runtime library and its manifest
             if os.path.dirname(wine_python)[-2:] == "26":
