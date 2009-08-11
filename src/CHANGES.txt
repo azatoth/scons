@@ -10,6 +10,14 @@
 
 RELEASE X.X.X - XXX
 
+  From William Deegan:
+    - Final merge from vs_revamp branch to main
+
+    - Added definition and usage of HOST_OS, HOST_ARCH, TARGET_OS, 
+      TARGET_ARCH, currently only defined/used by Visual Studio
+      Compilers. This will be rolled out to other platforms/tools
+      in the future.
+
   From Lukas Erlinghagen:
 
     - Have AddOption() remove variables from the list of
@@ -20,6 +28,10 @@ RELEASE X.X.X - XXX
   From Hartmut Goebel:
 
     - Textfile builder.
+
+  From Jared Grubb:
+
+    - use "is/is not" in comparisons with None instead of "==" or "!=".
 
   From Jim Hunziker:
 
@@ -67,7 +79,16 @@ RELEASE X.X.X - XXX
 
     - Add $SWIGDIRECTORSUFFIX and $SWIGVERSION construction variables.
 
+  From Rob Managan:
 
+    - Add -recorder flag to Latex commands and updated internals to
+      use the output to find files TeX creates. This allows the MiKTeX
+      installations to find the created files
+
+    - Notify user of Latex errors that would get buried in the 
+      Latex output
+
+    - Remove LATEXSUFFIXES from environments that don't initialize Tex.
 
 RELEASE 1.2.0.d20090223 - Mon, 23 Feb 2009 08:41:06 -0800
 
