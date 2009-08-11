@@ -34,7 +34,7 @@ test = TestCommon.TestCommon(workdir = '', interpreter = sys.executable)
 try:
     test.program_set(os.path.join(os.environ['SCONS_SCRIPT_DIR'], 'scons-frontend.py'))
 except KeyError:
-    test.skip('Cannot find SCons script directory, skipping test.')
+    test.skip_test('Cannot find SCons script directory, skipping test.')
 
 test.run('test options-bridge')
 

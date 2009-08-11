@@ -34,18 +34,18 @@ test = TestCommon.TestCommon(workdir = '', interpreter = sys.executable)
 try:
     test.program_set(os.path.join(os.environ['SCONS_SCRIPT_DIR'], 'scons-frontend.py'))
 except KeyError:
-    test.skip('Cannot find SCons script directory, skipping test.')
+    test.skip_test('Cannot find SCons script directory, skipping test.')
 
 try:
     import Tkinter
     import _tkinter
 except ImportError:
-    test.skip('Cannot import Tkinter modules, skipping test.')
+    test.skip_test('Cannot import Tkinter modules, skipping test.')
 
 try:
     dummy = Tkinter.Tk()
 except _tkinter.TclError:
-    test.skip('Cannot create top level window, skipping test.')
+    test.skip_test('Cannot create top level window, skipping test.')
     
 test.run('test create-window')
 
