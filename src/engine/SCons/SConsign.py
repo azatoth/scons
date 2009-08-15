@@ -211,7 +211,7 @@ class DB(Base):
                 raise
             except Exception, e:
                 SCons.Warnings.warn(SCons.Warnings.CorruptSConsignWarning,
-                                   _("Ignoring corrupt sconsign entry : %(tpath)s (%(e)s)\n")%{"tpath":self.dir.tpath, "e":e)}
+                                   _("Ignoring corrupt sconsign entry : %(tpath)s (%(e)s)\n")%{"tpath":self.dir.tpath, "e":e})
             for key, entry in self.entries.items():
                 entry.convert_from_sconsign(dir, key)
 

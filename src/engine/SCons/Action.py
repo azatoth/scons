@@ -1030,7 +1030,7 @@ class FunctionAction(_ActionAction):
         name = self.function_name()
         if name == 'ActionCaller':
             return str(self.execfunction)
-        return _("%s(target, source, env)") % name
+        return "%s(target, source, env)" % name
 
     def execute(self, target, source, env, executor=None):
         exc_info = (None,None,None)

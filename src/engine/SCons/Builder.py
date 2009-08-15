@@ -158,7 +158,7 @@ class DictCmdGenerator(SCons.Util.Selector):
             for src in map(str, source):
                 my_ext = match_splitext(src, suffixes)[1]
                 if ext and my_ext != ext:
-                    raise UserError(_("While building `%(target)s' from `%(source)s': Cannot build multiple sources with different extensions: %(ext)s, %(myext)s") % {"target":repr(map(str, target)), "source":src, "ext":ext, "my_ext":my_ext)}
+                    raise UserError(_("While building `%(target)s' from `%(source)s': Cannot build multiple sources with different extensions: %(ext)s, %(my_ext)s") % {"target":repr(map(str, target)), "source":src, "ext":ext, "my_ext":my_ext})
                 ext = my_ext
         else:
             ext = match_splitext(str(source[0]), self.src_suffixes())[1]

@@ -148,7 +148,7 @@ class CacheDir:
                 self.debugFP = None
             self.current_cache_debug = cache_debug
         if self.debugFP:
-            self.debugFP.write(fmt % {"t":target, "cachefile":os.path.split(cachefile)[1])}
+            self.debugFP.write(fmt % {"t":target, "cachefile":os.path.split(cachefile)[1]})
 
     def is_enabled(self):
         return (cache_enabled and not self.path is None)
