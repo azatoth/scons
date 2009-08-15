@@ -1,7 +1,97 @@
-This branch is used to develop the "Installer" project for Google's Summer of Code (GSoC) 2009.
+# __COPYRIGHT__
 
-Features:
+
+THIS BRANCH
+===========
+
+is used to develop the "Installer" project for Google's Summer of Code (GSoC) 2009.
+
+
+FEATURES
+========
 
 - Stand-alone version of SCons that does not depend on a Python installation
-- Installer with support for SCons, the SCons engine, documentation, adding SCons to the $PATH, and uninstallation
 - GUI front-end to SCons for users that are not comfortable with working on the command line
+- Installer with support for SCons, the SCons engine, documentation, adding SCons to the $PATH, and uninstallation
+
+
+STAND-ALONE BINARIES
+====================
+
+This branch includes support for building stand-alone binaries of SCons and SConsign. Those binaries can be run on systems without a Python installation. All dependencies, both binary and pythonic, are included in the binarie's directory. However, dependencies that are considered to be part of the system are not included. Depending on the version of Python and cx_Freeze that were used to build the binaries, that might include the C runtime libraries. More information on this can be found below.
+
+The binaries generally behave just like the Python scripts, but there are some differences you should be aware of when using them:
+
+- SConscripts shouldn't rely on sys.executable being a Python interpreter. SCons.Util.python_interpreter_command() should be used instead. This function will return sys.executable when the Python version of SCons is used, and the first Python interpreter found in the path when the binary version is used. If no Python interpreter is found, it returns None. SConscripts that rely on external Python scripts should check for this case.
+
+- Microsoft Visual Studio project files created by this version of SCons (both in script and binary form) will default to running 'scons' as the build command instead of the Python invokation used in earlier versions. The optional 'scons_executable' parameter has been added to the MSVSProject builder to change this behaviour (i.e.: provide an absolute path to the SCons binary to be used).
+
+- The binaries can import additional Python modules. By default, they will only search their own directory and the library.zip file therein. However, the PYTHONPATH environment variable is used as well, so you need to add all necessary module directories to this variable in order to use them with the binaries. The binaries can only import modules that are compatible with their bundled version of Python (currently: 2.6.2). If your SConscripts rely on modules that need a different version of Python, you should use that version and run the Python scripts instead of the binaries.
+
+
+GUI FRONT-END
+=============
+
+The front-end provides a GUI interface to SCons. It can be integrated into the Explorer context menu of directories and files.
+
+The GUI consists of three areas: the overview area, the options area, and the output area.
+
+The overview area contains text fields for the SCons executable to be run, the directory to run SCons in, the command line options passed to SCons, and the targets to be built.
+The 'SCons' field defaults to the first SCons executable found in the path; the 'Select...' button displays a file selection dialog to choose another one.
+The 'SConstruct directory' field can be set by passing a directory or file name to the frontend on the command line; the 'Select...' button displays a directory selection dialog. If no command line option was given, this field defaults to the current working directory.
+The 'Options' field shows which command line options will be passed to SCons. They can be selected from the options area. The 'Clear' button deselects all options.
+The 'Targets' field can be used to specify targets to be built.
+
+The options area provides a tab for command line options, and another one for build variables.
+The 'Options' tab allows you to select some commonly-used command line options. The options in the left column are simple switches, while the options in the right column require an additional parameter. The final option in the right column allows you to pass less common options to SCons.
+The 'Variables' tab contains a list of the command line build variables that are currently set, and an entry interface to set, edit, and delete variables.
+Changing variables and (de-)selecting options will also update the 'Options' field in the overview area.
+If a file name was passed to the frontend on the command line, the 'File' option will automatically be set to this.
+
+The output area shows the output of SCons, errors are shown in red. Below the output window, there are buttons to run the build, and to exit the frontend.
+
+When started from a file's or directory's context menu, the frontend will default to that file or directory as the SConstruct directory and 'File' option.
+
+THE INSTALLERS
+==============
+
+This branch can build two new installers: a binaries-only version, and a full installer.
+
+The binaries-only installer will have a file name like 'scons-binary-VERSION.exe'. It contains stand-alone binaries of SCons, SConscript, and the frontend, their dependencies, %PATH% and context menu integration, and an uninstaller. In contrast to the full installer, it can be built on Windows, provided all necessary tools are available.
+
+The full installer additionally includes the man pages in HTML format, the user's guide and API reference in HTML and PDF format, the installer for the SCons Python modules, and a zipped copy of scons-local. Note that the uninstaller will not remove the Python modules; these can be uninstalled from the Windows Control Panel. The full installer depends on the documentation and can thus only be built on Linux.
+
+Both installers include support for a localized interface (currently available in English and German) and for non-privileged installations. When run by a user with admin level privileges, the user can choose between a per-machine installation and an installation for his user account only. When run by a non-admin user, the installer will default to a per-user installation.
+
+BUILDING THIS BRANCH
+====================
+
+This branch cannot currently be built with older versions of SCons since its SConstruct file uses SCons.Util.python_interpreter_command(). You should run the bootstrap script instead.
+
+Building on Windows
+...................
+
+In order to build this branch on Windows, you need:
+- Python 2.4 or later (Python 3.x is not supported yet)
+- Python Win32 extensions
+- a current version of cx_Freeze (http://cx-freeze.sourceforge.net/)
+- a current version of NSIS (http://nsis.sourceforge.net/)
+
+Once you have all necessary tools, open a command line window, change to the directory this branch was checked out to, and run 'python bootstrap.py'. This will perform the standard SCons build as well as build the binaries-only installer. Note that this installer will _not_ include the C runtime dll, so the binaries might not work on target systems out of the box, depending on which Python version was used to build it.
+
+Building on Linux
+.................
+
+In order to build this branch on Linux, you need:
+- Python
+- All tools to build the documentation (at the least, all tools to build it in HTML and PDF format)
+- NSIS (http://nsis.sourceforge.net/)
+- Wine (http://www.winehq.org/)
+   - Python 2.4 or later, installed under Wine. If your version of Python cannot find the C runtime (msvcr90.dll), copy this file and its manifest from the 'installer' directory to the directory you installed Python into (usually $HOME/.wine/drive_c/Pythonxx/)
+   - Python Win32 extensions, installed under Wine
+   - cx_Freeze (http://cx-freeze.sourceforge.net/), installed under Wine
+
+Once you have all necessary tools, open a command line window, change to the directory this branch was checked out to, and run 'python bootstrap.py'. This will perform the standard SCons build as well as build the installers. In contrast to the Windows build, the installers _will_ include the C runtime dll and manifest.
+
+--
+Lukas Erlinghagen

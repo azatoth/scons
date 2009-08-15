@@ -39,6 +39,7 @@ __developer__ = "__DEVELOPER__"
 import Tkinter
 import Tix
 import tkFileDialog
+import tkMessageBox
 import sys
 import os
 import os.path
@@ -197,6 +198,9 @@ class OptionsBridge():
     def __init__(self):
         self.options = {}
         self.options_string = Tkinter.StringVar()
+        self.sKey = Tkinter.StringVar()
+        self.sValue = Tkinter.StringVar()
+        self.lVariables = None
         
         self._create_option('help', '-h', 'Help (-h)')        
         self._create_option('help_options', '-H', 'Help options (-H)')
@@ -238,12 +242,57 @@ class OptionsBridge():
                 else:
                     new_cmd_line = new_cmd_line + self.options[key].cmd_line + self.options[key].parameter.get() + ' '
         
+        if self.lVariables is not None:
+            for variable in self.lVariables.listbox.get(0, Tkinter.END):
+                new_cmd_line = new_cmd_line + variable + ' '
+        
         self.options_string.set(new_cmd_line)
     
     def clear_options(self):
         for var in self.options.values():
             var.set(0)
-        self.options_string.set('')
+        
+        if self.lVariables.listbox.size() > 0 and tkMessageBox.askyesno("Clear options", "Remove build variables as well?"):
+            self.lVariables.listbox.delete(0, Tkinter.END)
+        
+        self.option_changed()
+        
+    def set_variable(self):
+        new_variable = self.sKey.get()
+        new_value = self.sValue.get()
+        
+        for index in range(0, self.lVariables.listbox.size()):
+            variable = self.lVariables.listbox.get(index)
+            if variable.find('=') != -1:
+                variable = variable[:variable.find('=')]
+            if variable == new_variable:
+                self.lVariables.listbox.delete(index)
+                self.lVariables.listbox.insert(index, "%s=%s" % (new_variable, new_value))
+                self.lVariables.listbox.see(index)
+                return
+
+        self.lVariables.listbox.insert(Tkinter.END, "%s=%s" % (new_variable, new_value))
+        self.lVariables.listbox.see(Tkinter.END)
+        
+        self.option_changed()
+
+    def edit_variable(self):
+        selection = self.lVariables.listbox.curselection()
+        if len(selection) > 0:
+            key_value = self.lVariables.listbox.get(selection[0])
+            i = key_value.find('=')
+            if i != -1:
+                self.sKey.set(key_value[:i])
+                self.sValue.set(key_value[i+1:])
+            else:
+                self.sKey.set(key_value)
+                self.sValue.set('')
+
+    def delete_variable(self):
+        selection = self.lVariables.listbox.curselection()
+        if len(selection) > 0:
+            self.lVariables.listbox.delete(selection[0])
+            self.option_changed()
         
 
 class FrontendWindow():
@@ -320,7 +369,7 @@ class FrontendWindow():
         notebook.pack(fill = Tix.BOTH, expand = 1)
         
         p_options = notebook.add('options', label = 'Options')
-        #p_values = notebook.add('values', label = 'Values')
+        p_values = notebook.add('values', label = 'Values')
         
         w_options = Tix.ScrolledWindow(p_options, scrollbar='auto')
         w_options.pack(fill = Tix.BOTH, expand = 1)
@@ -357,6 +406,27 @@ class FrontendWindow():
         w_options.window.columnconfigure(3, weight = 1)
         w_options.window.rowconfigure(99, weight = 1)
         
+        self.options_bridge.lVariables = Tix.ScrolledListBox(p_values, height = 10)
+        self.options_bridge.lVariables.grid(row = 0, column = 0, rowspan = 4, sticky = Tkinter.W + Tkinter.E + Tkinter.S + Tkinter.N)
+        self.options_bridge.lVariables.listbox.configure(selectmode = Tkinter.SINGLE)
+        
+        Tkinter.Label(p_values, text = "Variable:").grid(row = 0, column = 1, sticky = Tkinter.W)
+        
+        self.sKey = Tkinter.StringVar()
+        Tkinter.Entry(p_values, textvariable = self.options_bridge.sKey).grid(row = 0, column = 2, columnspan = 2)
+        
+        Tkinter.Label(p_values, text = "Value:").grid(row = 1, column = 1, sticky = Tkinter.W)
+        
+        self.sValue = Tkinter.StringVar()
+        Tkinter.Entry(p_values, textvariable = self.options_bridge.sValue).grid(row = 1, column = 2, columnspan = 2)
+        
+        Tkinter.Button(p_values, text = "Set", padx = button_pad_x, pady = button_pad_y, command = self.options_bridge.set_variable).grid(row = 2, column = 1, sticky = Tkinter.W + Tkinter.E)
+        Tkinter.Button(p_values, text = "Edit", padx = button_pad_x, pady = button_pad_y, command = self.options_bridge.edit_variable).grid(row = 2, column = 2, sticky = Tkinter.W + Tkinter.E)
+        Tkinter.Button(p_values, text = "Delete", padx = button_pad_x, pady = button_pad_y, command = self.options_bridge.delete_variable).grid(row = 2, column = 3, sticky = Tkinter.W + Tkinter.E)
+        
+        p_values.rowconfigure(3, weight = 1)
+        p_values.columnconfigure(0, weight = 1)
+        
         #
         # Output frame
         #
@@ -389,16 +459,16 @@ class FrontendWindow():
 
     def clear_options(self):
         self.options_bridge.clear_options()
-        
+
     def clear_targets(self):
         self.TargetsString.set('')
-        
+
     def run(self):
         self.root.mainloop()
-        
+
     def run_scons(self):
         scons = self.SConsPath.get()
-        
+
         sconstruct_path = self.SConstructPath.get()
         if sconstruct_path == '':
             return
@@ -406,7 +476,8 @@ class FrontendWindow():
         self.options_bridge.option_changed()
         options = self.OptionsString.get()
         targets = self.TargetsString.get()
-        cmd_line = string.join([scons,options,'--',targets])
+        variables = string.join(self.options_bridge.lVariables.listbox.get(0, Tkinter.END))
+        cmd_line = string.join([scons, options, targets, variables, '--'])
         process = subprocess.Popen(cmd_line, stdout = subprocess.PIPE, stderr = subprocess.PIPE, cwd = sconstruct_path)
         
         self.tOutput.config(state = Tkinter.NORMAL)
@@ -496,6 +567,11 @@ if __name__ == "__main__":
                 window.SConstructPath.set(os.path.abspath(sys.argv[1]))
             elif os.path.isfile(sys.argv[1]):
                 window.SConstructPath.set(os.path.split(os.path.abspath(sys.argv[1]))[0])
+                window.options_bridge.options['file'].parameter.set(os.path.split(os.path.abspath(sys.argv[1]))[1])
+                window.options_bridge.options['file'].set(1)
+                window.options_bridge.option_changed()
+            else:
+                window.SConstructPath.set(os.getcwd())
         else:
             window.SConstructPath.set(os.getcwd())
         window.run()
