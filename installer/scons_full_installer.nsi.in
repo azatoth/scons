@@ -164,7 +164,6 @@ Section
   !insertmacro MUI_STARTMENU_WRITE_BEGIN "Application"
   CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
   CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" $INSTDIR\@UNINSTALLER_FILE@
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SCons Frontend.lnk" "$INSTDIR\scons-frontend.exe"
   !insertmacro MUI_STARTMENU_WRITE_END
   
   # For details, see http://nsis.sourceforge.net/Add_uninstall_information_to_Add/Remove_Programs  
@@ -184,6 +183,11 @@ Section !$(SEC_SconsExe) SconsExe
 
   File /r tcl
   File /r tk
+  File /r Tix*
+  
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN "Application"
+  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SCons Frontend.lnk" "$INSTDIR\scons-frontend.exe"
+  !insertmacro MUI_STARTMENU_WRITE_END
 
 SectionEnd
 

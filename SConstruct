@@ -264,9 +264,6 @@ packaging_flavors = [
 
     ('local-zip',       "A .zip file for dropping into other software " +
                         "for local use."),
-
-    ('installer',       "A Windows installer, containing the stand-alone " +
-                        "version of SCons."),
 ]
 
 test_deb_dir          = os.path.join(build_dir, "test-deb")
@@ -277,7 +274,6 @@ test_local_tar_gz_dir = os.path.join(build_dir, "test-local-tar-gz")
 test_zip_dir          = os.path.join(build_dir, "test-zip")
 test_src_zip_dir      = os.path.join(build_dir, "test-src-zip")
 test_local_zip_dir    = os.path.join(build_dir, "test-local-zip")
-test_installer_dir    = os.path.join(build_dir, "test-installer")
 
 unpack_tar_gz_dir     = os.path.join(build_dir, "unpack-tar-gz")
 unpack_zip_dir        = os.path.join(build_dir, "unpack-zip")
@@ -304,7 +300,10 @@ runtest.py -p option to run tests against what's been actually packaged:
 
 """)
 
-aliases = packaging_flavors + [('doc', 'The SCons documentation.')]
+aliases = packaging_flavors +[
+            ('doc', 'The SCons documentation.'),
+            ('w32inst', "Windows installers, containing the stand-alone version of SCons, documentation, etc."),
+            ]
 aliases.sort()
 
 for alias, help_text in aliases:
@@ -474,7 +473,6 @@ env = Environment(
                    TEST_SRC_ZIP_DIR    = test_src_zip_dir,
                    TEST_TAR_GZ_DIR     = test_tar_gz_dir,
                    TEST_ZIP_DIR        = test_zip_dir,
-                   TEST_INSTALLER_DIR  = test_installer_dir,
 
                    UNPACK_TAR_GZ_DIR   = unpack_tar_gz_dir,
                    UNPACK_ZIP_DIR      = unpack_zip_dir,
@@ -1395,15 +1393,9 @@ for p in [ scons ]:
         inst_binary = inst
         
         inst = env.InstallAs(os.path.join(env['DISTDIR'], inst_filename), inst)
-        commands = [
-                    Delete('$TEST_INSTALLER_DIR'),
-                    Mkdir('$TEST_INSTALLER_DIR'),
-                   ]
-        env.Command(test_installer_dir, inst, commands)
-        env.Install('$TEST_INSTALLER_DIR', inst)
-        env.Alias('installer', inst)
+        env.Alias('w32inst', inst)
         
-        if whereis('jw'):
+        if whereis('jw') and whereis('man2html') and whereis('epydoc'):
             inst_script = 'scons_full_installer.nsi'
             inst_script_input = os.path.join(build_dir, '..', 'installer', 'scons_full_installer.nsi.in')
             inst_dir = os.path.join(build_dir, 'installer')
@@ -1499,7 +1491,7 @@ for p in [ scons ]:
             env.Local(inst)
             final_installer = env.InstallAs(os.path.join(env['DISTDIR'], inst_filename), inst)
     
-            Alias('installer', final_installer)
+            Alias('w32inst', final_installer)
         
         # Experimental code for using PyInstaller to build binary SCons
         # def pyinstaller_hook_builder(target, source, env):

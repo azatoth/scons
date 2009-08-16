@@ -1,22 +1,38 @@
 # __COPYRIGHT__
 
 
-THIS BRANCH
-===========
+CONTENTS
+========
+
+1. This branch
+2. Features
+3. Stand-alone binaries
+4. GUI frontend
+5. The installers
+  5a. Installer manifest
+  5b. Uninstaller
+6. The NSIS Builder
+7. Building this branch
+  7a. Building on Windows
+  7b. Building on Linux
+
+
+1. THIS BRANCH
+==============
 
 is used to develop the "Installer" project for Google's Summer of Code (GSoC) 2009.
 
 
-FEATURES
-========
+2. FEATURES
+===========
 
 - Stand-alone version of SCons that does not depend on a Python installation
 - GUI front-end to SCons for users that are not comfortable with working on the command line
 - Installer with support for SCons, the SCons engine, documentation, adding SCons to the $PATH, and uninstallation
 
 
-STAND-ALONE BINARIES
-====================
+3. STAND-ALONE BINARIES
+=======================
 
 This branch includes support for building stand-alone binaries of SCons and SConsign. Those binaries can be run on systems without a Python installation. All dependencies, both binary and pythonic, are included in the binarie's directory. However, dependencies that are considered to be part of the system are not included. Depending on the version of Python and cx_Freeze that were used to build the binaries, that might include the C runtime libraries. More information on this can be found below.
 
@@ -29,10 +45,10 @@ The binaries generally behave just like the Python scripts, but there are some d
 - The binaries can import additional Python modules. By default, they will only search their own directory and the library.zip file therein. However, the PYTHONPATH environment variable is used as well, so you need to add all necessary module directories to this variable in order to use them with the binaries. The binaries can only import modules that are compatible with their bundled version of Python (currently: 2.6.2). If your SConscripts rely on modules that need a different version of Python, you should use that version and run the Python scripts instead of the binaries.
 
 
-GUI FRONT-END
-=============
+4. GUI FRONTEND
+===============
 
-The front-end provides a GUI interface to SCons. It can be integrated into the Explorer context menu of directories and files.
+The frontend provides a GUI interface to SCons. It can be integrated into the Explorer context menu of directories and files.
 
 The GUI consists of three areas: the overview area, the options area, and the output area.
 
@@ -52,8 +68,8 @@ The output area shows the output of SCons, errors are shown in red. Below the ou
 
 When started from a file's or directory's context menu, the frontend will default to that file or directory as the SConstruct directory and 'File' option.
 
-THE INSTALLERS
-==============
+5. THE INSTALLERS
+=================
 
 This branch can build two new installers: a binaries-only version, and a full installer.
 
@@ -63,29 +79,85 @@ The full installer additionally includes the man pages in HTML format, the user'
 
 Both installers include support for a localized interface (currently available in English and German) and for non-privileged installations. When run by a user with admin level privileges, the user can choose between a per-machine installation and an installation for his user account only. When run by a non-admin user, the installer will default to a per-user installation.
 
-BUILDING THIS BRANCH
-====================
+5a. Installer Manifest
+......................
+
+This section provides an overview over the actions each component will perform
+
+- Always
+  - Files in the installation directory
+    - Uninstaller
+  - Changes to the Start menu
+    - Create a Start menu folder if the user wanted to have one
+    - Add a link to the uninstaller
+  - Changes to the registry
+    - Save the installation mode
+    - Save the installer's language
+    - Save the selected name of the Start menu folder
+    - Add the uninstaller to the Control Panel
+- "SCons Executable"
+  - Files in the installation directory
+    - SCons binaries
+    - Dependencies of the binaries
+    - Tcl, Tk, and Tix folders
+  - Changes to the Start menu
+    - Add a link to the frontend
+- "Add to path"
+  - Changes to the registry
+    - Add the installation directory to the PATH registry value
+- "Add to context menu"
+  - Changes to the registry
+    - Add the frontend to the context menu of files and directories
+- Documentation sections
+  - Files in the installation directory
+    - The respective document
+  - Changes to the Start menu
+    - Add a link to the document or the corresponding index page
+- "SCons source code"
+  - Files in the installation directory
+    - scons-local-VERSION.zip
+- "Python modules"
+  - Files in the installation directory
+    - scons-win32-VERSION.exe
+  - Executes that file
+
+5b. Uninstaller
+...............
+
+The uninstaller will remove all the files installed by the corresponding installer, remove itself from the Control Panel, remove the Start menu entries, the context menu entries, and the versioned registry key.
+
+6. THE NSIS BUILDER
+===================
+
+In order to create the installers themselves, the NSIS builder, originally written by Mike Elkins in January 2004 and placed in the wiki, was extended and included into the SCons core.
+
+The syntax is NSISInstaller(input_file.nsi). The target name is inferred from the OutFile directive in the input file. If none can be found, the input file name is assumed to be the target name.
+
+The builder handles both the !addincludedir and !include directives and updates the dependency graph accodingly. The NSIS_DEFINES build variable can be used to pass additional defines to makensis, and the NSIS_FLAGS variable holds command line options for makensis.
+
+7. BUILDING THIS BRANCH
+=======================
 
 This branch cannot currently be built with older versions of SCons since its SConstruct file uses SCons.Util.python_interpreter_command(). You should run the bootstrap script instead.
 
-Building on Windows
-...................
+7a. Building on Windows
+.......................
 
 In order to build this branch on Windows, you need:
 - Python 2.4 or later (Python 3.x is not supported yet)
 - Python Win32 extensions
 - a current version of cx_Freeze (http://cx-freeze.sourceforge.net/)
-- a current version of NSIS (http://nsis.sourceforge.net/)
+- NSIS 2.38 or later (http://nsis.sourceforge.net/)
 
 Once you have all necessary tools, open a command line window, change to the directory this branch was checked out to, and run 'python bootstrap.py'. This will perform the standard SCons build as well as build the binaries-only installer. Note that this installer will _not_ include the C runtime dll, so the binaries might not work on target systems out of the box, depending on which Python version was used to build it.
 
-Building on Linux
-.................
+7b. Building on Linux
+.....................
 
 In order to build this branch on Linux, you need:
 - Python
 - All tools to build the documentation (at the least, all tools to build it in HTML and PDF format)
-- NSIS (http://nsis.sourceforge.net/)
+- NSIS 2.38 or later (http://nsis.sourceforge.net/)
 - Wine (http://www.winehq.org/)
    - Python 2.4 or later, installed under Wine. If your version of Python cannot find the C runtime (msvcr90.dll), copy this file and its manifest from the 'installer' directory to the directory you installed Python into (usually $HOME/.wine/drive_c/Pythonxx/)
    - Python Win32 extensions, installed under Wine

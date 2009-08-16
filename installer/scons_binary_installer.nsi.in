@@ -134,6 +134,7 @@ Section !$(SEC_SConsExe) SconsExe
 
   File /r tcl
   File /r tk
+  File /r Tix*
 
   WriteUninstaller $INSTDIR\@UNINSTALLER_FILE@
   

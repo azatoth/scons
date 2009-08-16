@@ -52,9 +52,13 @@ scripts = [
     #'../scons/script/scons-time', # scons-time needs refactoring before it can be run stand-alone
 ]
 
+
+Tix_directory = glob.glob(os.path.join(os.path.dirname(sys.executable), 'tcl', 'Tix*'))[0]
+
 includes = [
             (glob.glob(os.path.join(os.path.dirname(sys.executable), 'tcl', 'tcl?.?'))[0], '../tcl'),
             (glob.glob(os.path.join(os.path.dirname(sys.executable), 'tcl', 'tk?.?'))[0], '../tk'),
+            (Tix_directory, '../' + os.path.split(Tix_directory)[1]),
 ]
 
 arguments = {
@@ -76,6 +80,7 @@ arguments = {
                           "SCons.Tool.MSCommon",
                           "SCons.Tool.packaging",
                           "SCons.Variables",
+                          "Tix",
                          ],
     'package_dir'      : {'' : os.path.join('..', 'scons', 'engine')},
     'scripts'          : scripts,

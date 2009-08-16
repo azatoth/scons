@@ -44,6 +44,7 @@ import sys
 import os
 import os.path
 import string
+import stat
 
 ##############################################################################
 # BEGIN STANDARD SCons SCRIPT HEADER
