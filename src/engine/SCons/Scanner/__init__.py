@@ -352,16 +352,13 @@ class Classic(Current):
     def scan(self, node, path=()):
 
         # cache the includes list in node so we only scan it once:
-        if node.includes != None:
+        if node.includes is not None:
             includes = node.includes
         else:
             includes = self.find_include_names (node)
             # Intern the names of the include files. Saves some memory
             # if the same header is included many times.
-            try:
-                node.includes = map(intern, includes)
-            except TypeError:
-                node.includes = includes
+            node.includes = map(SCons.Util.silent_intern, includes)
 
         # This is a hand-coded DSU (decorate-sort-undecorate, or
         # Schwartzian transform) pattern.  The sort key is the raw name
@@ -405,7 +402,8 @@ class ClassicCPP(Classic):
 
         n = SCons.Node.FS.find_file(include[1], paths)
 
-        return n, intern(include[1])
+        i = SCons.Util.silent_intern(include[1])
+        return n, i
 
     def sort_key(self, include):
         return SCons.Node.FS._my_normcase(string.join(include))

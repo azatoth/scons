@@ -58,7 +58,7 @@ for arg in sys.argv[1:]:
         write_args(profile, sys.argv)
         break
 sys.stdout.write('SCONS_LIB_DIR = ' + os.environ['SCONS_LIB_DIR'] + '\\n')
-execfile('SConstruct')
+exec(open('SConstruct', 'rU').read())
 """
 
 aegis_py = """\

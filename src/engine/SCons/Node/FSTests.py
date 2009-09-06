@@ -611,7 +611,7 @@ class BaseTestCase(_tempdirTestCase):
 
         e1 = fs.Entry('e1')
         s = e1.stat()
-        assert not s is None, s
+        assert s is not None, s
 
         e2 = fs.Entry('e2')
         s = e2.stat()
@@ -1386,7 +1386,7 @@ class FSTestCase(_tempdirTestCase):
 
         f = fs.File('does_not_exist')
         r = f.remove()
-        assert r == None, r
+        assert r is None, r
 
         test.write('exists', "exists\n")
         f = fs.File('exists')
@@ -2179,8 +2179,8 @@ class GlobTestCase(_tempdirTestCase):
 
         # Make entries on disk that will not have Nodes, so we can verify
         # the behavior of looking for things on disk.
-        self.test.write('disk-aaa', "disk-aaa\n")
         self.test.write('disk-bbb', "disk-bbb\n")
+        self.test.write('disk-aaa', "disk-aaa\n")
         self.test.write('disk-ccc', "disk-ccc\n")
         self.test.write('#disk-hash', "#disk-hash\n")
         self.test.subdir('disk-sub')
@@ -2489,12 +2489,18 @@ class GlobTestCase(_tempdirTestCase):
         join = os.path.join
         # At least sometimes this should return out-of-order items
         # if Glob doesn't sort.
+        # It's not a very good test though since it depends on the
+        # order returned by glob, which might already be sorted.
         g = self.fs.Glob('disk-sub/*', strings=True)
         expect = [
             os.path.join('disk-sub', 'disk-ddd'),
             os.path.join('disk-sub', 'disk-eee'),
             os.path.join('disk-sub', 'disk-fff'),
         ]
+        assert g == expect, str(g) + " is not sorted, but should be!"
+
+        g = self.fs.Glob('disk-*', strings=True)
+        expect = [ 'disk-aaa', 'disk-bbb', 'disk-ccc', 'disk-sub' ]
         assert g == expect, str(g) + " is not sorted, but should be!"
 
 

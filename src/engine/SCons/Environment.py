@@ -54,6 +54,7 @@ import SCons.Node.Alias
 import SCons.Node.FS
 import SCons.Node.Python
 import SCons.Platform
+import SCons.SConf
 import SCons.SConsign
 import SCons.Subst
 import SCons.Tool
@@ -119,7 +120,11 @@ reserved_construction_var_names = [
     'UNCHANGED_TARGETS',
 ]
 
-future_reserved_construction_var_names = []
+future_reserved_construction_var_names = [
+    #'HOST_OS',
+    #'HOST_ARCH',
+    #'HOST_CPU',
+    ]
 
 def copy_non_reserved_keywords(dict):
     result = semi_deepcopy(dict)
@@ -245,9 +250,9 @@ class BuilderWrapper(MethodWrapper):
         if source is _null:
             source = target
             target = None
-        if not target is None and not SCons.Util.is_List(target):
+        if target is not None and not SCons.Util.is_List(target):
             target = [target]
-        if not source is None and not SCons.Util.is_List(source):
+        if source is not None and not SCons.Util.is_List(source):
             source = [source]
         return apply(MethodWrapper.__call__, (self, target, source) + args, kw)
 
@@ -457,9 +462,9 @@ class SubstitutionEnvironment:
                 n = None
                 for l in lookup_list:
                     n = l(v)
-                    if not n is None:
+                    if n is not None:
                         break
-                if not n is None:
+                if n is not None:
                     if SCons.Util.is_String(n):
                         # n = self.subst(n, raw=1, **kw)
                         kw['raw'] = 1
@@ -896,9 +901,6 @@ class Base(SubstitutionEnvironment):
     Environment.
     """
 
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
-
     memoizer_counters = []
 
     #######################################################################
@@ -962,6 +964,14 @@ class Base(SubstitutionEnvironment):
             platform = SCons.Platform.Platform(platform)
         self._dict['PLATFORM'] = str(platform)
         platform(self)
+        
+        self._dict['HOST_OS']      = self._dict.get('HOST_OS',None)
+        self._dict['HOST_ARCH']    = self._dict.get('HOST_ARCH',None)
+        
+        # Now set defaults for TARGET_{OS|ARCH}
+        self._dict['TARGET_OS']      = self._dict.get('HOST_OS',None)
+        self._dict['TARGET_ARCH']    = self._dict.get('HOST_ARCH',None)
+        
 
         # Apply the passed-in and customizable variables to the
         # environment before calling the tools, because they may use
@@ -1037,7 +1047,7 @@ class Base(SubstitutionEnvironment):
         """
         name = default
         try:
-            is_node = issubclass(factory, SCons.Node.Node)
+            is_node = issubclass(factory, SCons.Node.FS.Base)
         except TypeError:
             # The specified factory isn't a Node itself--it's
             # most likely None, or possibly a callable.
@@ -1825,7 +1835,7 @@ class Base(SubstitutionEnvironment):
 
     def CacheDir(self, path):
         import SCons.CacheDir
-        if not path is None:
+        if path is not None:
             path = self.subst(path)
         self._CacheDir_path = path
 
@@ -2016,7 +2026,7 @@ class Base(SubstitutionEnvironment):
         return apply(SCons.Scanner.Base, nargs, nkw)
 
     def SConsignFile(self, name=".sconsign", dbm_module=None):
-        if not name is None:
+        if name is not None:
             name = self.subst(name)
             if not os.path.isabs(name):
                 name = os.path.join(str(self.fs.SConstruct_dir), name)
@@ -2175,9 +2185,6 @@ class OverrideEnvironment(Base):
     be proxied because they need *this* object's methods to fetch the
     values from the overrides dictionary.
     """
-
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
 
     def __init__(self, subject, overrides={}):
         if __debug__: logInstanceCreation(self, 'Environment.OverrideEnvironment')

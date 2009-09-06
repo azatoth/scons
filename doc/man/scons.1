@@ -3000,6 +3000,14 @@ Clean('dist', env.Program('hello', 'hello.c'))
 Clean(['foo', 'bar'], 'something_else_to_clean')
 .EE
 
+In this example,
+installing the project creates a subdirectory for the documentation.
+This statement causes the subdirectory to be removed
+if the project is deinstalled.
+.ES
+Clean(docdir, os.path.join(docdir, projectname))
+.EE
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI Command( target ", " source ", " action ", [" key = val ", ...])"
@@ -3513,7 +3521,7 @@ print env.Dump('CCCOM')
 .IP
 will print:
 .ES
-\&'$CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES'
+\&'$CC -c -o $TARGET $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS $SOURCES'
 .EE
 
 .ES
@@ -3661,9 +3669,10 @@ so subsequent calls to
 will over-write previous exports that have the same name.
 Multiple variable names can be passed to
 .BR Export ()
-as separate arguments or as a list. A dictionary can be used to map
-variables to a different name when exported. Both local variables and
-global variables can be exported.
+as separate arguments or as a list.
+Keyword arguments can be used to provide names and their values.
+A dictionary can be used to map variables to a different name when exported.
+Both local variables and global variables can be exported.
 
 Examples:
 
@@ -3679,7 +3688,10 @@ Export("env", "package")
 # Make env and package available for all SConscript files:
 Export(["env", "package"])
 
-# Make env available using the name debug:.
+# Make env available using the name debug:
+Export(debug = env)
+
+# Make env available using the name debug:
 Export({"debug":env})
 .EE
 
@@ -4176,6 +4188,8 @@ uses Unix shell style metacharacters for matching:
 .EE
 
 .IP
+If the first character of a filename is a dot,
+it must be matched explicitly.
 Character matches do
 .I not
 span directory separators.
@@ -4247,10 +4261,11 @@ not the original
 .B SConscript
 directory.)
 
-Example:
+Examples:
 
 .ES
 Program('foo', Glob('*.c'))
+Zip('/tmp/everything', Glob('.??*') + Glob('*'))
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -7174,8 +7189,8 @@ will be displayed to the user, e.g. 'Checking for library X...'
 
 Usually called after the check is done.
 .I res
-can be either an integer or a string. In the former case, 'ok' (res != 0)
-or 'failed' (res == 0) is displayed to the user, in the latter case the
+can be either an integer or a string. In the former case, 'yes' (res != 0)
+or 'no' (res == 0) is displayed to the user, in the latter case the
 given string is displayed.
 
 .TP

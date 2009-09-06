@@ -1,6 +1,7 @@
 """SCons.Tool.pdftex
 
 Tool-specific initialization for pdftex.
+Generates .pdf files from .tex files
 
 There normally shouldn't be any need to import this module directly.
 It will usually be imported through the generic SCons.Tool.Tool()
@@ -53,8 +54,12 @@ def PDFTeXLaTeXFunction(target = None, source= None, env=None):
     program."""
     if SCons.Tool.tex.is_LaTeX(source):
         result = PDFLaTeXAuxAction(target,source,env)
+        if result != 0:
+            print env['PDFLATEX']," returned an error, check the log file"
     else:
         result = PDFTeXAction(target,source,env)
+        if result != 0:
+            print env['PDFTEX']," returned an error, check the log file"
     return result
 
 PDFTeXLaTeXAction = None
@@ -74,6 +79,8 @@ def generate(env):
         PDFTeXLaTeXAction = SCons.Action.Action(PDFTeXLaTeXFunction,
                               strfunction=SCons.Tool.tex.TeXLaTeXStrFunction)
 
+    env.AppendUnique(LATEXSUFFIXES=SCons.Tool.LaTeXSuffixes)
+
     import pdf
     pdf.generate(env)
 
@@ -85,15 +92,7 @@ def generate(env):
     # so pdftex is the default for no source suffix
     pdf.generate2(env)
 
-    env['PDFTEX']      = 'pdftex'
-    env['PDFTEXFLAGS'] = SCons.Util.CLVar('-interaction=nonstopmode')
-    env['PDFTEXCOM']   = 'cd ${TARGET.dir} && $PDFTEX $PDFTEXFLAGS ${SOURCE.file}'
-
-    # Duplicate from latex.py.  If latex.py goes away, then this is still OK.
-    env['PDFLATEX']      = 'pdflatex'
-    env['PDFLATEXFLAGS'] = SCons.Util.CLVar('-interaction=nonstopmode')
-    env['PDFLATEXCOM']   = 'cd ${TARGET.dir} && $PDFLATEX $PDFLATEXFLAGS ${SOURCE.file}'
-    env['LATEXRETRIES']  = 3
+    SCons.Tool.tex.generate_common(env)
 
 def exists(env):
     return env.Detect('pdftex')

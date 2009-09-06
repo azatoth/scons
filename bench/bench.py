@@ -87,7 +87,7 @@ if len(args) != 1:
     sys.exit(1)
 
 
-execfile(args[0])
+exec(open(args[0], 'rU').read())
 
 
 try:

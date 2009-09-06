@@ -25,63 +25,68 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import TestSCons
+import sys
+
+"""
+Verify site_scons/site_init.py file can define a tool, and it shows up
+automatically in the SCons.Script namespace.
+"""
 
 test = TestSCons.TestSCons()
 
-test.subdir('dir1', 'dir2', 'dir3', 'dir4', 'dir5')
+test.subdir('site_scons')
+
+if sys.platform == 'win32':
+    cat_cmd='type'
+else:
+    cat_cmd='cat'
+
+test.write(['site_scons', 'site_init.py'], """
+def TOOL_FOO(env):
+      env['FOO'] = '%s'
+      bld = Builder(action = '$FOO ${SOURCE} > ${TARGET}',
+				      suffix = '.tgt')
+      env.Append(BUILDERS = {'Foo' : bld})
+
+"""%cat_cmd)
 
 test.write('SConstruct', """
-env = Environment()
-SConscript('dir1/SConscript')
-SConscriptChdir(1)
-SConscript('dir2/SConscript')
-SConscriptChdir(0)
-SConscript('dir3/SConscript')
-env.SConscriptChdir(1)
-SConscript('dir4/SConscript')
-env.SConscriptChdir(0)
-SConscript('dir5/SConscript')
+e=Environment(tools=['default', TOOL_FOO])
+e.Foo(target='foo.out', source='SConstruct')
 """)
 
-test.write(['dir1', 'SConscript'], """
-execfile("create_test.py")
+test.run(arguments = '-Q .',
+         stdout = """%s SConstruct > foo.out\n"""%cat_cmd)
+
+
+"""
+Test errors in site_scons/site_init.py.
+"""
+
+test = TestSCons.TestSCons()
+
+test.subdir('site_scons')
+
+test.write(['site_scons', 'site_init.py'], """
+raise Exception("Huh?")
 """)
 
-test.write(['dir2', 'SConscript'], """
-execfile("create_test.py")
+test.write('SConstruct', """
+e=Environment(tools=['default', TOOL_FOO])
+e.Foo(target='foo.out', source='SConstruct')
 """)
 
-test.write(['dir3', 'SConscript'], """
-import os.path
-name = os.path.join('dir3', 'create_test.py')
-execfile(name)
-""")
+test.run(arguments = '-Q .',
+         stdout = "",
+         stderr = """.*Error loading site_init file.*Huh\?.*""",
+         status=2,
+         match=TestSCons.match_re_dotall)
 
-test.write(['dir4', 'SConscript'], """
-execfile("create_test.py")
-""")
 
-test.write(['dir5', 'SConscript'], """
-import os.path
-name = os.path.join('dir5', 'create_test.py')
-execfile(name)
-""")
-
-for dir in ['dir1', 'dir2', 'dir3','dir4', 'dir5']:
-    test.write([dir, 'create_test.py'], r"""
-f = open("test.txt", "ab")
-f.write("This is the %s test.\n")
-f.close()
-""" % dir)
-
-test.run(arguments=".", stderr=None)
-
-test.fail_test(test.read(['dir1', 'test.txt']) != "This is the dir1 test.\n")
-test.fail_test(test.read(['dir2', 'test.txt']) != "This is the dir2 test.\n")
-test.fail_test(test.read('test.txt') != "This is the dir3 test.\nThis is the dir5 test.\n")
-test.fail_test(test.read(['dir4', 'test.txt']) != "This is the dir4 test.\n")
 
 test.pass_test()
+
+# end of file
 
 # Local Variables:
 # tab-width:4

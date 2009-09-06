@@ -625,13 +625,13 @@ class UtilTestCase(unittest.TestCase):
 
         s = Selector({'.d' : 'DDD', '.e' : 'EEE'})
         ret = s(env, [])
-        assert ret == None, ret
+        assert ret is None, ret
         ret = s(env, [MyNode('foo.d')])
         assert ret == 'DDD', ret
         ret = s(env, [MyNode('bar.e')])
         assert ret == 'EEE', ret
         ret = s(env, [MyNode('bar.x')])
-        assert ret == None, ret
+        assert ret is None, ret
         s[None] = 'XXX'
         ret = s(env, [MyNode('bar.x')])
         assert ret == 'XXX', ret
@@ -694,6 +694,16 @@ bling
             'bling bling \\ bling\n',
             'bling\n',
         ], lines
+
+    def test_intern(self):
+        s1 = silent_intern("spam")
+        # Python 1.5 and 3.x do not have a unicode() built-in
+        if sys.version[0] == '2': 
+            s2 = silent_intern(unicode("unicode spam"))
+        s3 = silent_intern(42)
+        s4 = silent_intern("spam")
+        assert id(s1) == id(s4)
+
 
 class MD5TestCase(unittest.TestCase):
 

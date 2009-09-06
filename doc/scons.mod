@@ -27,6 +27,9 @@
 <!ENTITY Cons           "<application>Cons</application>">
 <!ENTITY cp             "<application>cp</application>">
 <!ENTITY csh            "<application>csh</application>">
+<!ENTITY f77            "<application>f77</application>">
+<!ENTITY f90            "<application>f90</application>">
+<!ENTITY f95            "<application>f95</application>">
 <!ENTITY gas            "<application>gas</application>">
 <!ENTITY gcc            "<application>gcc</application>">
 <!ENTITY g77            "<application>g77</application>">
@@ -384,7 +387,9 @@
 <!ENTITY SharedObject "<function>SharedObject</function>">
 <!ENTITY StaticLibrary "<function>StaticLibrary</function>">
 <!ENTITY StaticObject "<function>StaticObject</function>">
+<!ENTITY Substfile "<function>Substfile</function>">
 <!ENTITY Tar "<function>Tar</function>">
+<!ENTITY Textfile "<function>Textfile</function>">
 <!ENTITY VariantDir "<function>VariantDir</function>">
 <!ENTITY Zip "<function>Zip</function>">
 

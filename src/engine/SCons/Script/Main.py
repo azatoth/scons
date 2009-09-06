@@ -207,7 +207,12 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
         t = self.targets[0]
         if self.top and not t.has_builder() and not t.side_effect:
             if not t.exists():
-                errstr="Do not know how to make target `%s'." % t
+                def classname(obj):
+                    return string.split(str(obj.__class__), '.')[-1]
+                if classname(t) in ('File', 'Dir', 'Entry'):
+                    errstr="Do not know how to make %s target `%s' (%s)." % (classname(t), t, t.abspath)
+                else: # Alias or Python or ...
+                    errstr="Do not know how to make %s target `%s'." % (classname(t), t)
                 sys.stderr.write("scons: *** " + errstr)
                 if not self.options.keep_going:
                     sys.stderr.write("  Stop.")
@@ -693,20 +698,41 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
     site_tools_dir = os.path.join(site_dir, site_tools_dirname)
     if os.path.exists(site_init_file):
         import imp
+        # TODO(2.4): turn this into try:-except:-finally:
         try:
-            fp, pathname, description = imp.find_module(site_init_modname,
-                                                        [site_dir])
             try:
-                imp.load_module(site_init_modname, fp, pathname, description)
-            finally:
-                if fp:
-                    fp.close()
-        except ImportError, e:
-            sys.stderr.write("Can't import site init file '%s': %s\n"%(site_init_file, e))
-            raise
-        except Exception, e:
-            sys.stderr.write("Site init file '%s' raised exception: %s\n"%(site_init_file, e))
-            raise
+                fp, pathname, description = imp.find_module(site_init_modname,
+                                                            [site_dir])
+                # Load the file into SCons.Script namespace.  This is
+                # opaque and clever; m is the module object for the
+                # SCons.Script module, and the exec ... in call executes a
+                # file (or string containing code) in the context of the
+                # module's dictionary, so anything that code defines ends
+                # up adding to that module.  This is really short, but all
+                # the error checking makes it longer.
+                try:
+                    m = sys.modules['SCons.Script']
+                except Exception, e:
+                    fmt = 'cannot import site_init.py: missing SCons.Script module %s'
+                    raise SCons.Errors.InternalError, fmt % repr(e)
+                try:
+                    # This is the magic.
+                    exec fp in m.__dict__
+                except KeyboardInterrupt:
+                    raise
+                except Exception, e:
+                    fmt = '*** Error loading site_init file %s:\n'
+                    sys.stderr.write(fmt % repr(site_init_file))
+                    raise
+            except KeyboardInterrupt:
+                raise
+            except ImportError, e:
+                fmt = '*** cannot import site init file %s:\n'
+                sys.stderr.write(fmt % repr(site_init_file))
+                raise
+        finally:
+            if fp:
+                fp.close()
     if os.path.exists(site_tools_dir):
         SCons.Tool.DefaultToolpath.append(os.path.abspath(site_tools_dir))
 
@@ -868,7 +894,7 @@ def _main(parser):
     targets = []
     xmit_args = []
     for a in parser.largs:
-        if a[0] == '-':
+        if a[:1] == '-':
             continue
         if '=' in a:
             xmit_args.append(a)
@@ -885,9 +911,9 @@ def _main(parser):
     # module will no longer work.  This affects the behavior during
     # --interactive mode.  --interactive should only be used when stdin and
     # stdout refer to a tty.
-    if not sys.stdout.isatty():
+    if not hasattr(sys.stdout, 'isatty') or not sys.stdout.isatty():
         sys.stdout = SCons.Util.Unbuffered(sys.stdout)
-    if not sys.stderr.isatty():
+    if not hasattr(sys.stderr, 'isatty') or not sys.stderr.isatty():
         sys.stderr = SCons.Util.Unbuffered(sys.stderr)
 
     memory_stats.append('before reading SConscript files:')
@@ -1075,14 +1101,14 @@ def _build_targets(fs, options, targets, target_top):
         else:
             node = None
             # Why would ltop be None? Unfortunately this happens.
-            if ltop == None: ltop = ''
+            if ltop is None: ltop = ''
             # Curdir becomes important when SCons is called with -u, -C,
             # or similar option that changes directory, and so the paths
             # of targets given on the command line need to be adjusted.
             curdir = os.path.join(os.getcwd(), str(ltop))
             for lookup in SCons.Node.arg2nodes_lookups:
                 node = lookup(x, curdir=curdir)
-                if node != None:
+                if node is not None:
                     break
             if node is None:
                 node = fs.Entry(x, directory=ltop, create=1)

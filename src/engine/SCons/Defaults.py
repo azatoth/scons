@@ -237,7 +237,7 @@ Mkdir = ActionFactory(mkdir_func,
 def move_func(dest, src):
     SCons.Node.FS.invalidate_node_memos(dest)
     SCons.Node.FS.invalidate_node_memos(src)
-    os.rename(src, dest)
+    shutil.move(src, dest)
 
 Move = ActionFactory(move_func,
                      lambda dest, src: 'Move("%s", "%s")' % (dest, src),
@@ -273,7 +273,7 @@ def _concat(prefix, list, suffix, env, f=lambda x: x, target=None, source=None):
         return list
 
     l = f(SCons.PathList.PathList(list).subst_path(env, target, source))
-    if not l is None:
+    if l is not None:
         list = l
 
     return _concat_ixes(prefix, list, suffix, env)
@@ -367,9 +367,9 @@ def _stripixes(prefix, list, suffix, stripprefixes, stripsuffixes, env, c=None):
 
     return c(prefix, stripped, suffix, env)
 
-def _defines(prefix, defs, suffix, env, c=_concat_ixes):
-    """A wrapper around _concat_ixes that turns a list or string
-    into a list of C preprocessor command-line definitions.
+def processDefines(defs):
+    """process defines, resolving strings, lists, dictionaries, into a list of
+    strings
     """
     if SCons.Util.is_List(defs):
         l = []
@@ -396,7 +396,14 @@ def _defines(prefix, defs, suffix, env, c=_concat_ixes):
                 l.append(str(k) + '=' + str(v))
     else:
         l = [str(defs)]
-    return c(prefix, env.subst_path(l), suffix, env)
+    return l
+
+def _defines(prefix, defs, suffix, env, c=_concat_ixes):
+    """A wrapper around _concat_ixes that turns a list or string
+    into a list of C preprocessor command-line definitions.
+    """
+
+    return c(prefix, env.subst_path(processDefines(defs)), suffix, env)
     
 class NullCmdGenerator:
     """This is a callable class that can be used in place of other
@@ -456,7 +463,7 @@ ConstructionEnvironment = {
     'DSUFFIXES'     : SCons.Tool.DSuffixes,
     'ENV'           : {},
     'IDLSUFFIXES'   : SCons.Tool.IDLSuffixes,
-    'LATEXSUFFIXES' : SCons.Tool.LaTeXSuffixes,
+#    'LATEXSUFFIXES' : SCons.Tool.LaTeXSuffixes, # moved to the TeX tools generate functions
     '_concat'       : _concat,
     '_defines'      : _defines,
     '_stripixes'    : _stripixes,

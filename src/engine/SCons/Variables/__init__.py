@@ -95,6 +95,14 @@ class Variables:
         option.converter = converter
 
         self.options.append(option)
+        
+        # options might be added after the 'unknown' dict has been set up,
+        # so we remove the key and all its aliases from that dict
+        for alias in list(option.aliases) + [ option.key ]:
+          # TODO(1.5)
+          #if alias in self.unknown:
+          if alias in self.unknown.keys():
+            del self.unknown[alias]
 
     def keys(self):
         """
@@ -166,7 +174,7 @@ class Variables:
                     sys.path.insert(0, dir)
                 try:
                     values['__name__'] = filename
-                    execfile(filename, {}, values)
+                    exec open(filename, 'rU').read() in {}, values
                 finally:
                     if dir:
                         del sys.path[0]
@@ -179,7 +187,7 @@ class Variables:
         for arg, value in args.items():
             added = False
             for option in self.options:
-                if arg in option.aliases + [ option.key ]:
+                if arg in list(option.aliases) + [ option.key ]:
                     values[option.key] = value
                     added = True
             if not added:
