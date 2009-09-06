@@ -57,6 +57,14 @@ RELEASE 1.2.0.d20090223 - Mon, 23 Feb 2009 08:41:06 -0800
         fatal errors when anyone tries to use them.
 
   Please note the following important changes since release 1.2.0:
+    --  Visual Studio/Visual C++ support has been change significantly
+
+        Support for HOST_OS,HOST_ARCH,TARGET_OS, TARGET_ARCH has been
+        added to allow specifying different target arch than the host 
+        system. This is only supported for Visual Studio/Visual C++
+        at this time.
+
+    --  Support for Latex glosseries and acronyms has been added
 
     --  VISUAL C/C++ PRECOMPILED HEADERS WILL BE REBUILT
 
