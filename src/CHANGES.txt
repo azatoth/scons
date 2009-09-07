@@ -8,7 +8,7 @@
 
 
 
-RELEASE X.X.X - XXX
+RELEASE 1.2.0.d20090905 - Sat, 05 Sep 2009 19:11:39 -0700
 
   From William Deegan:
     - Final merge from vs_revamp branch to main

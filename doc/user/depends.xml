@@ -350,7 +350,7 @@
          % <userinput>touch -t 198901010000 hello.c</userinput>
          % <userinput>scons -Q hello</userinput>
          cc -o hello.o -c hello.c
-         cc -o hello hello.o
+         scons: `hello' is up to date.
       </screen>
 
       <para>
@@ -1647,14 +1647,15 @@
 
     <screen>
       % <userinput>scons -Q</userinput>
-      cc -o hello.o -c hello.c
       cc -o version.o -c version.c
+      cc -o hello.o -c hello.c
       cc -o hello version.o hello.o
       % <userinput>scons -Q</userinput>
       scons: `.' is up to date.
       % <userinput>edit hello.c</userinput>
           [CHANGE THE CONTENTS OF hello.c]
       % <userinput>scons -Q</userinput>
+      cc -o version.o -c version.c
       cc -o hello.o -c hello.c
       cc -o hello version.o hello.o
       % <userinput>scons -Q</userinput>

@@ -951,8 +951,15 @@ environment, of directory names, suffixes, etc.
       <screen>
          % <userinput>scons -Q</userinput>
          
-         scons: *** Two environments with different actions were specified for the same target: foo.o
-         File "/home/my/project/SConstruct", line 6, in &lt;module&gt;
+         scons: warning: Two different environments were specified for target foo.o,
+         	but they appear to have the same action: CCCom(target, source, env)
+         File "/home/my/project/SConstruct", line 6, in ?
+         
+         scons: warning: Two different environments were specified for target foo,
+         	but they appear to have the same action: Cat(target, source, env)
+         File "/home/my/project/SConstruct", line 6, in ?
+         cc -o foo.o -c -g foo.c
+         cc -o foo foo.o
       </screen>
 
       <para>
