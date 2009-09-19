@@ -625,8 +625,8 @@ class SConfBase:
         ok = self.TryLink(text, extension)
         if( ok ):
             prog = self.lastTarget
-            pname = str(prog)
-            output = SConfFS.File(pname+'.out')
+            pname = prog.path
+            output = self.confdir.File(os.path.basename(pname)+'.out')
             node = self.env.Command(output, prog, [ [ pname, ">", "${TARGET}"] ])
             ok = self.BuildNodes(node)
             if ok:
@@ -948,18 +948,22 @@ def CheckHeader(context, header, include_quotes = '<>', language = None):
 
 def CheckCC(context):
     res = SCons.Conftest.CheckCC(context)
+    context.did_show_result = 1
     return not res
 
 def CheckCXX(context):
     res = SCons.Conftest.CheckCXX(context)
+    context.did_show_result = 1
     return not res
 
 def CheckSHCC(context):
     res = SCons.Conftest.CheckSHCC(context)
+    context.did_show_result = 1
     return not res
 
 def CheckSHCXX(context):
     res = SCons.Conftest.CheckSHCXX(context)
+    context.did_show_result = 1
     return not res
 
 # Bram: Make this function obsolete?  CheckHeader() is more generic.

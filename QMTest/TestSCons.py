@@ -17,7 +17,6 @@ attributes defined in this subclass.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import os.path
 import re
 import string
 import sys
@@ -176,11 +175,11 @@ def unsupported_python_version(version=sys.version_info):
     return version < (1, 5, 2)
 
 def deprecated_python_version(version=sys.version_info):
-    return version < (2, 2, 0)
+    return version < (2, 4, 0)
 
 if deprecated_python_version():
     msg = r"""
-scons: warning: Support for pre-2.2 Python (%s) is deprecated.
+scons: warning: Support for pre-2.4 Python (%s) is deprecated.
     If this will cause hardship, contact dev@scons.tigris.org.
 """
 
@@ -244,8 +243,12 @@ class TestSCons(TestCommon):
         # control character output on FC8
         # TERM can cause test failures due to control chars in prompts etc.
         os.environ['TERM'] = 'dumb'
+        
+        self.ignore_python_version=kw.get('ignore_python_version',1)
+        if kw.get('ignore_python_version',-1) != -1:
+            del kw['ignore_python_version']
 
-        if deprecated_python_version():
+        if self.ignore_python_version and deprecated_python_version():
             sconsflags = os.environ.get('SCONSFLAGS')
             if sconsflags:
                 sconsflags = [sconsflags]
@@ -340,6 +343,26 @@ class TestSCons(TestCommon):
                "scons: %sing targets ...\n" % cap + \
                build_str + \
                term
+
+    def run(self, *args, **kw):
+        """
+        Add the --warn=no-python-version option to SCONSFLAGS every
+        command so test scripts don't have to filter out Python version
+        deprecation warnings.
+        """
+        save_sconsflags = os.environ.get('SCONSFLAGS')
+        if self.ignore_python_version and deprecated_python_version():
+            if save_sconsflags:
+                sconsflags = [save_sconsflags]
+            else:
+                sconsflags = []
+            sconsflags = sconsflags + ['--warn=no-python-version']
+            os.environ['SCONSFLAGS'] = string.join(sconsflags)
+        try:
+            result = apply(TestCommon.run, (self,)+args, kw)
+        finally:
+            sconsflags = save_sconsflags
+        return result
 
     def up_to_date(self, options = None, arguments = None, read_str = "", **kw):
         s = ""
@@ -523,10 +546,18 @@ class TestSCons(TestCommon):
 
 
     def java_where_java_home(self,version=None):
-        import os.path
-        jar=self.java_where_jar(version)
-        home=os.path.normpath('%s/..'%jar)
-        return home
+        if sys.platform[:6] == 'darwin':
+            if version is None:
+                home = '/System/Library/Frameworks/JavaVM.framework/Home'
+            else:
+                home = '/System/Library/Frameworks/JavaVM.framework/Versions/%s/Home' % version
+        else:
+            jar = self.java_where_jar(version)
+            home = os.path.normpath('%s/..'%jar)
+        if os.path.isdir(home):
+            return home
+        print("Could not determine JAVA_HOME: %s is not a directory" % home)
+        self.fail_test()
 
     def java_where_jar(self, version=None):
         ENV = self.java_ENV(version)

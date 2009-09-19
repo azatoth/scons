@@ -25,51 +25,25 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify the behavior of our check for unsupported or deprecated versions
-of Python.
+Verify that Configure contexts work with SConstruct/SConscript structure
 """
 
 import os
-import re
-import string
 
-import TestCmd
 import TestSCons
 
-test = TestSCons.TestSCons(match = TestCmd.match_re_dotall,ignore_python_version=0)
+test = TestSCons.TestSCons()
 
-test.write('SConstruct', "\n")
+test.write('SConstruct', """\
+SConscript('SConscript', build_dir='build', src='.')
+""")
 
-test.write('SetOption-deprecated', "SetOption('warn', 'no-deprecated')\n")
+test.write('SConscript', """\
+env = Environment()
+config = env.Configure(conf_dir='sconf', log_file='config.log')
+config.TryRun("int main() {}", ".c")
+config.Finish()
+""")
 
-test.write('SetOption-python', "SetOption('warn', ['no-python-version'])\n")
-
-if TestSCons.unsupported_python_version():
-
-    error = "scons: \*\*\* SCons version \S+ does not run under Python version %s."
-    error = error % re.escape(TestSCons.python_version_string()) + "\n"
-    test.run(arguments = '-Q', status = 1, stderr = error)
-
-else:
-
-    if TestSCons.deprecated_python_version():
-
-        test.run(arguments = '-Q', stderr = TestSCons.deprecated_python_expr)
-
-    else:
-
-        test.run(arguments = '-Q')
-
-    test.run(arguments = '-Q --warn=no-deprecated')
-
-    test.run(arguments = '-f SetOption-deprecated -Q')
-
-    test.run(arguments = '-f SetOption-python -Q')
-
+test.run()
 test.pass_test()
-
-# Local Variables:
-# tab-width:4
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=4 shiftwidth=4:
