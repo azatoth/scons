@@ -1655,7 +1655,6 @@
       % <userinput>edit hello.c</userinput>
           [CHANGE THE CONTENTS OF hello.c]
       % <userinput>scons -Q</userinput>
-      cc -o version.o -c version.c
       cc -o hello.o -c hello.c
       cc -o hello version.o hello.o
       % <userinput>scons -Q</userinput>

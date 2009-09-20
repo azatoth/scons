@@ -8,7 +8,7 @@
 
 
 
-RELEASE 1.2.0.d20090905 - Sat, 05 Sep 2009 19:11:39 -0700
+RELEASE 1.2.0.d20090919 - Sat, 19 Sep 2009 19:11:39 -0700
 
   From David Cournapeau:
     - Fixed tryRun when sconf directory is in a variant dir.
