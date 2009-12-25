@@ -22,26 +22,33 @@
 #
 
 """
-scons-time.py configuration file for the "hundred" timing test.
+This configuration is for timing how we handle the NxM interaction when
+we build a lot of targets from a lot of source files.
+
+We create a list of $TARGET_COUNT target files that will each be built by
+copying a file from a corresponding list of $TARGET_COUNT source files.
+The source files themselves are each built by a Python function action
+that's the equivalent of "echo contents > $TARGET".
 """
 
-archive_list = [ 'SConstruct' ]
-subdir = '.'
+import TestSCons
 
-import sys
-sys.path.insert(0, '..')
-import SCons_Bars
+# Full-build time of just under 10 seconds on ubuntu-timings slave,
+# as determined by bin/calibrate.py on 9 December 2009:
+#
+# run   1:   3.124:  TARGET_COUNT=50
+# run   2:  11.936:  TARGET_COUNT=160
+# run   3:   9.175:  TARGET_COUNT=134
+# run   4:  10.489:  TARGET_COUNT=146
+# run   5:   9.798:  TARGET_COUNT=139
+# run   6:   9.695:  TARGET_COUNT=139
+# run   7:   9.670:  TARGET_COUNT=139
 
-revs = [
-    1220,   # Use WeakValueDicts in the Memoizer to reduce memory use.
-    1307,   # Move signature Node tranlation of rel_paths into the class.
-    1435,   # Fix Debug.caller() directory separators.
-    1477,   # Delay disambiguation of Node.FS.Entry into File/Dir.
-    1655,   # Reduce unnecessary calls to Node.FS.disambiguate().
-    1703,   # Lobotomize Memoizer.
-    1727,   # Cache Executor methods, reduce calls when scanning.
-    2380,   # The Big Signature Refactoring hits branches/core.
-]
+test = TestSCons.TimeSCons(variables={'TARGET_COUNT':139})
 
-vertical_bars = SCons_Bars.Release_Bars.gnuplot(labels=True) + \
-                SCons_Bars.Revision_Bars.gnuplot(labels=False, revs=revs)
+for t in xrange(test.variables['TARGET_COUNT']):
+    open('source_%04d' % t, 'wb' ).write('contents\n')
+
+test.main()
+
+test.pass_test()

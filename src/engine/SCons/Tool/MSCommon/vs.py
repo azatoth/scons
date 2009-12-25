@@ -68,11 +68,11 @@ class VisualStudio:
 
     def find_vs_dir_by_vc(self):
         SCons.Tool.MSCommon.vc.get_installed_vcs()
-        ivc = SCons.Tool.MSCommon.vc.InstalledVCMap.get(self.vc_version)
-        if not ivc:
+        dir = SCons.Tool.MSCommon.vc.find_vc_pdir(self.vc_version)
+        if not dir:
             debug('find_vs_dir():  no installed VC %s' % self.vc_version)
             return None
-        return ivc.get_vc_dir()[:-len(ivc.vc_subdir)]
+        return dir
         
     def find_vs_dir_by_reg(self):
         root = 'Software\\'
@@ -457,10 +457,11 @@ def merge_default_version(env):
     version = get_default_version(env)
     arch = get_default_arch(env)
 
+def msvs_setup_env(env):
+    batfilename = msvs.get_batch_file()
     msvs = get_vs_by_version(version)
     if msvs is None:
         return
-    batfilename = msvs.get_batch_file()
 
     # XXX: I think this is broken. This will silently set a bogus tool instead
     # of failing, but there is no other way with the current scons tool

@@ -21,12 +21,23 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+# TODO:
+#   * supported arch for versions: for old versions of batch file without
+#     argument, giving bogus argument cannot be detected, so we have to hardcode
+#     this here
+#   * print warning when msvc version specified but not found
+#   * find out why warning do not print
+#   * test on 64 bits XP +  VS 2005 (and VS 6 if possible)
+#   * SDK
+#   * Assembly
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 __doc__ = """Module for Visual C/C++ detection and configuration.
 """
+import SCons.compat
 
 import os
+import platform
 
 import SCons.Warnings
 
@@ -34,315 +45,323 @@ import common
 
 debug = common.debug
 
-class VisualC:
-    """
-    An base class for finding installed versions of Visual C/C++.
-    """
-    def __init__(self, version, **kw):
-        self.version = version
-        self.__dict__.update(kw)
-        self._cache = {}
+class VisualCException(Exception):
+    pass
 
-    def vcbin_arch(self):
-        if common.is_win64():
-            result = {
-                'x86_64' : ['amd64', r'BIN\x86_amd64'],
-                'ia64'   : [r'BIN\ia64'],
-            }.get(target_arch, [])
+class UnsupportedVersion(VisualCException):
+    pass
+
+class UnsupportedArch(VisualCException):
+    pass
+
+class MissingConfiguration(VisualCException):
+    pass
+
+class NoVersionFound(VisualCException):
+    pass
+
+class BatchFileExecutionError(VisualCException):
+    pass
+
+# Dict to 'canonalize' the arch
+_ARCH_TO_CANONICAL = {
+    "x86": "x86",
+    "amd64": "amd64",
+    "i386": "x86",
+    "emt64": "amd64",
+    "x86_64": "amd64",
+    "itanium": "ia64",
+    "ia64": "ia64",
+}
+
+# Given a (host, target) tuple, return the argument for the bat file. Both host
+# and targets should be canonalized.
+_HOST_TARGET_ARCH_TO_BAT_ARCH = {
+    ("x86", "x86"): "x86",
+    ("x86", "amd64"): "x86_amd64",
+    ("amd64", "amd64"): "amd64",
+    ("amd64", "x86"): "x86",
+    ("x86", "ia64"): "x86_ia64"
+}
+
+def get_host_target(env):
+    host_platform = env.get('HOST_ARCH')
+    if not host_platform:
+        host_platform = platform.machine()
+        # TODO(2.5):  the native Python platform.machine() function returns
+        # '' on all Python versions before 2.6, after which it also uses
+        # PROCESSOR_ARCHITECTURE.
+        if not host_platform:
+            host_platform = os.environ.get('PROCESSOR_ARCHITECTURE', '')
+    target_platform = env.get('TARGET_ARCH')
+    if not target_platform:
+        target_platform = host_platform
+
+    try:
+        host = _ARCH_TO_CANONICAL[host_platform]
+    except KeyError, e:
+        msg = "Unrecognized host architecture %s"
+        raise ValueError(msg % repr(host_platform))
+
+    try:
+        target = _ARCH_TO_CANONICAL[target_platform]
+    except KeyError, e:
+        raise ValueError("Unrecognized target architecture %s" % target_platform)
+
+    return (host, target)
+
+_VCVER = ["10.0", "9.0", "8.0", "7.1", "7.0", "6.0"]
+
+_VCVER_TO_PRODUCT_DIR = {
+        '10.0': [
+            r'Microsoft\VisualStudio\10.0\Setup\VC\ProductDir'],
+        '9.0': [
+            r'Microsoft\VisualStudio\9.0\Setup\VC\ProductDir',
+            r'Microsoft\VCExpress\9.0\Setup\VC\ProductDir'],
+        '8.0': [
+            r'Microsoft\VisualStudio\8.0\Setup\VC\ProductDir',
+            r'Microsoft\VCExpress\8.0\Setup\VC\ProductDir'],
+        '7.1': [
+            r'Microsoft\VisualStudio\7.1\Setup\VC\ProductDir'],
+        '7.0': [
+            r'Microsoft\VisualStudio\7.0\Setup\VC\ProductDir'],
+        '6.0': [
+            r'Microsoft\VisualStudio\6.0\Setup\Microsoft Visual C++\ProductDir']
+}
+
+def msvc_version_to_maj_min(msvc_version):
+    t = msvc_version.split(".")
+    if not len(t) == 2:
+        raise ValueError("Unrecognized version %s" % msvc_version)
+    try:
+        maj = int(t[0])
+        min = int(t[1])
+        return maj, min
+    except ValueError, e:
+        raise ValueError("Unrecognized version %s" % msvc_version)
+
+def is_host_target_supported(host_target, msvc_version):
+    """Return True if the given (host, target) tuple is supported given the
+    msvc version.
+
+    Parameters
+    ----------
+    host_target: tuple
+        tuple of (canonalized) host-target, e.g. ("x86", "amd64") for cross
+        compilation from 32 bits windows to 64 bits.
+    msvc_version: str
+        msvc version (major.minor, e.g. 10.0)
+
+    Note
+    ----
+    This only check whether a given version *may* support the given (host,
+    target), not that the toolchain is actually present on the machine.
+    """
+    # We assume that any Visual Studio version supports x86 as a target
+    if host_target[1] != "x86":
+        maj, min = msvc_version_to_maj_min(msvc_version)
+        if maj < 8:
+            return False
+
+    return True
+
+def find_vc_pdir(msvc_version):
+    """Try to find the product directory for the given
+    version.
+
+    Note
+    ----
+    If for some reason the requested version could not be found, an
+    exception which inherits from VisualCException will be raised."""
+    root = 'Software\\'
+    if common.is_win64():
+        root = root + 'Wow6432Node\\'
+    try:
+        hkeys = _VCVER_TO_PRODUCT_DIR[msvc_version]
+    except KeyError:
+        debug("Unknown version of MSVC: %s" % msvc_version)
+        raise UnsupportedVersion("Unknown version %s" % msvc_version)
+
+    for key in hkeys:
+        key = root + key
+        try:
+            comps = common.read_reg(key)
+        except WindowsError, e:
+            debug('find_vc_dir(): no VC registry key %s' % repr(key))
         else:
-            result = {
-                'x86_64' : ['x86_amd64'],
-                'ia64'   : ['x86_ia64'],
-            }.get(target_arch, [])
-        # TODO(1.5)
-        #return ';'.join(result)
-        return string.join(result, ';')
-
-    # Support for searching for an appropriate .bat file.
-    # The map is indexed by (target_architecture, host_architecture).
-    # Entries where the host_architecture is None specify the
-    # cross-platform "default" .bat file if there isn't sn entry
-    # specific to the current host architecture.
-
-    batch_file_map = {
-        ('x86_64', 'x86_64') : [
-            r'bin\amd64\vcvarsamd64.bat',
-            r'bin\x86_amd64\vcvarsx86_amd64.bat',
-        ],
-        ('x86_64', 'x86') : [
-            r'bin\x86_amd64\vcvarsx86_amd64.bat',
-        ],
-        ('ia64', 'ia64') : [
-            r'bin\ia64\vcvarsia64.bat',
-            r'bin\x86_ia64\vcvarsx86_ia64.bat',
-        ],
-        ('ia64', None) : [
-            r'bin\x86_ia64\vcvarsx86_ia64.bat',
-        ],
-        ('x86', None) : [
-            r'bin\vcvars32.bat',
-        ],
-    }
-
-    def find_batch_file(self, target_architecture, host_architecture):
-        key = (target_architecture, host_architecture)
-        potential_batch_files = self.batch_file_map.get(key)
-        if not potential_batch_files:
-            key = (target_architecture, None)
-            potential_batch_files = self.batch_file_map.get(key)
-        if potential_batch_files:
-            product_dir = self.get_vc_dir()
-            for batch_file in potential_batch_files:
-                bf = os.path.join(product_dir, batch_file)
-                if os.path.isfile(bf):
-                    return bf
-        return None
-
-    def find_vc_dir(self):
-        root = 'Software\\'
-        if common.is_win64():
-            root = root + 'Wow6432Node\\'
-        for key in self.hkeys:
-            key = root + key
-            try:
-                comps = common.read_reg(key)
-            except WindowsError, e:
-                debug('find_vc_dir(): no VC registry key %s' % repr(key))
+            debug('find_vc_dir(): found VC in registry: %s' % comps)
+            if os.path.exists(comps):
+                return comps
             else:
-                debug('find_vc_dir(): found VC in registry: %s' % comps)
-                if os.path.exists(comps):
-                    return comps
-                else:
-                    debug('find_vc_dir(): reg says dir is %s, but it does not exist. (ignoring)'\
-                              % comps)
-                    return None
+                debug('find_vc_dir(): reg says dir is %s, but it does not exist. (ignoring)'\
+                          % comps)
+                raise MissingConfiguration("registry dir %s not found on the filesystem" % comps)
+    return None
+
+def find_batch_file(msvc_version):
+    pdir = find_vc_pdir(msvc_version)
+    if pdir is None:
+        raise NoVersionFound("No version of Visual Studio found")
+
+    vernum = float(msvc_version)
+    if 7 <= vernum < 8:
+        pdir = os.path.join(pdir, os.pardir, "Common7", "Tools")
+        batfilename = os.path.join(pdir, "vsvars32.bat")
+    elif vernum < 7:
+        pdir = os.path.join(pdir, "Bin")
+        batfilename = os.path.join(pdir, "vcvars32.bat")
+    else: # >= 8
+        batfilename = os.path.join(pdir, "vcvarsall.bat")
+
+    if os.path.exists(batfilename):
+        return batfilename
+    else:
+        debug("Not found: %s" % batfilename)
         return None
 
-    #
+__INSTALLED_VCS_RUN = None
 
-    def get_batch_file(self, target_architecture, host_architecture):
-        try:
-            return self._cache['batch_file']
-        except KeyError:
-            batch_file = self.find_batch_file(target_architecture, host_architecture)
-            self._cache['batch_file'] = batch_file
-            return batch_file
+def cached_get_installed_vcs():
+    global __INSTALLED_VCS_RUN
 
-    def get_vc_dir(self):
-        try:
-            return self._cache['vc_dir']
-        except KeyError:
-            vc_dir = self.find_vc_dir()
-            self._cache['vc_dir'] = vc_dir
-            return vc_dir
-        
-    def reset(self):
-        self._cache={}
-        
+    if __INSTALLED_VCS_RUN is None:
+        ret = get_installed_vcs()
+        __INSTALLED_VCS_RUN = ret
 
-# The list of supported Visual C/C++ versions we know how to detect.
-#
-# The first VC found in the list is the one used by default if there
-# are multiple VC installed.  Barring good reasons to the contrary,
-# this means we should list VC with from most recent to oldest.
-#
-# If you update this list, update the documentation in Tool/vc.xml.
-SupportedVCList = [
-    VisualC('9.0',
-            hkeys=[
-                r'Microsoft\VisualStudio\9.0\Setup\VC\ProductDir',
-                r'Microsoft\VCExpress\9.0\Setup\VC\ProductDir',
-            ],
-            default_install=r'Microsoft Visual Studio 9.0\VC',
-            common_tools_var='VS90COMNTOOLS',
-            vc_subdir=r'\VC',
-            batch_file_base='vcvars',
-            supported_arch=['x86', 'x86_64', 'ia64'],
-            atlmc_include_subdir = [r'ATLMFC\INCLUDE'],
-            atlmfc_lib_subdir = {
-                'x86'       : r'ATLMFC\LIB',
-                'x86_64'    : r'ATLMFC\LIB\amd64',
-                'ia64'      : r'ATLMFC\LIB\ia64',
-            },
-            crt_lib_subdir = {
-                'x86_64'    : r'LIB\amd64',
-                'ia64'      : r'LIB\ia64',
-            },
-    ),
-    VisualC('8.0',
-            hkeys=[
-                r'Microsoft\VisualStudio\8.0\Setup\VC\ProductDir',
-                r'Microsoft\VCExpress\8.0\Setup\VC\ProductDir',
-            ],
-            default_install=r'%s\Microsoft Visual Studio 8\VC',
-            common_tools_var='VS80COMNTOOLS',
-            vc_subdir=r'\VC',
-            batch_file_base='vcvars',
-            supported_arch=['x86', 'x86_64', 'ia64'],
-            atlmc_include_subdir = [r'ATLMFC\INCLUDE'],
-            atlmfc_lib_subdir = {
-                'x86'       : r'ATLMFC\LIB',
-                'x86_64'    : r'ATLMFC\LIB\amd64',
-                'ia64'      : r'ATLMFC\LIB\ia64',
-            },
-            crt_lib_subdir = {
-                'x86_64'    : r'LIB\amd64',
-                'ia64'      : r'LIB\ia64',
-            },
-    ),
-    VisualC('7.1',
-            hkeys=[
-                r'Microsoft\VisualStudio\7.1\Setup\VC\ProductDir',
-            ],
-            default_install=r'%s\Microsoft Visual Studio 7.1.NET 2003\VC7',
-            common_tools_var='VS71COMNTOOLS',
-            vc_subdir=r'\VC7',
-            batch_file_base='vcvars',
-            supported_arch=['x86'],
-            atlmc_include_subdir = [r'ATLMFC\INCLUDE'],
-            atlmfc_lib_subdir = {
-                'x86' : r'ATLMFC\LIB',
-            },
-    ),
-    VisualC('7.0',
-            hkeys=[
-                r'Microsoft\VisualStudio\7.0\Setup\VC\ProductDir',
-            ],
-            default_install=r'%s\Microsoft Visual Studio .NET\VC7',
-            common_tools_var='VS70COMNTOOLS',
-            vc_subdir=r'\VC7',
-            batch_file_base='vcvars',
-            supported_arch=['x86'],
-            atlmc_include_subdir = [r'ATLMFC\INCLUDE'],
-            atlmfc_lib_subdir = {
-                'x86' : r'ATLMFC\LIB',
-            },
-    ),
-    VisualC('6.0',
-            hkeys=[
-                r'Microsoft\VisualStudio\6.0\Setup\Microsoft Visual C++\ProductDir',
-            ],
-            default_install=r'%s\Microsoft Visual Studio\VC98',
-            common_tools_var='VS60COMNTOOLS',
-            vc_subdir=r'\VC98',
-            batch_file_base='vcvars',
-            supported_arch=['x86'],
-            atlmc_include_subdir = [r'ATL\INCLUDE', r'MFC\INCLUDE'],
-            atlmfc_lib_subdir = {
-                'x86' : r'MFC\LIB',
-            },
-    ),
-]
-
-SupportedVCMap = {}
-for vc in SupportedVCList:
-    SupportedVCMap[vc.version] = vc
-
-
-# Finding installed versions of Visual C/C++ isn't cheap, because it goes
-# not only to the registry but also to the disk to sanity-check that there
-# is, in fact, something installed there and that the registry entry isn't
-# just stale.  Find this information once, when requested, and cache it.
-
-InstalledVCList = None
-InstalledVCMap  = None
+    return __INSTALLED_VCS_RUN
 
 def get_installed_vcs():
-    global InstalledVCList
-    global InstalledVCMap
-    if InstalledVCList is None:
-        InstalledVCList = []
-        InstalledVCMap = {}
-        for vc in SupportedVCList:
-            debug('trying to find VC %s' % vc.version)
-            if vc.get_vc_dir():
-                debug('found VC %s' % vc.version)
-                InstalledVCList.append(vc)
-                InstalledVCMap[vc.version] = vc
-    return InstalledVCList
+    installed_versions = []
+    for ver in _VCVER:
+        debug('trying to find VC %s' % ver)
+        try:
+            if find_vc_pdir(ver):
+                debug('found VC %s' % ver)
+                installed_versions.append(ver)
+            else:
+                debug('find_vc_pdir return None for ver %s' % ver)
+        except VisualCException, e:
+            debug('did not find VC %s: caught exception %s' % (ver, str(e)))
+    return installed_versions
 
+def reset_installed_vcs():
+    """Make it try again to find VC.  This is just for the tests."""
+    __INSTALLED_VCS_RUN = None
 
-def set_vc_by_version(env, msvc):
-    if not SupportedVCMap.has_key(msvc):
-        msg = "VC version %s is not supported" % repr(msvc)
-        raise SCons.Errors.UserError, msg
-    get_installed_vcs()
-    vc = InstalledVCMap.get(msvc)
-    if not vc:
-        msg = "VC version %s is not installed" % repr(msvc)
-        raise SCons.Errors.UserError, msg
-    set_vc_by_directory(env, vc.get_vc_dir())
+def script_env(script, args=None):
+    stdout = common.get_output(script, args)
+    # Stupid batch files do not set return code: we take a look at the
+    # beginning of the output for an error message instead
+    olines = stdout.splitlines()
+    if olines[0].startswith("The specified configuration type is missing"):
+        raise BatchFileExecutionError("\n".join(olines[:2]))
 
-# New stuff
-
-def script_env(script):
-    stdout = common.get_output(script)
     return common.parse_output(stdout)
 
-def msvc_setup_env(env):
-    debug('msvc_setup_env()')
-    installed_vcs = get_installed_vcs()
-    debug('InstalledVCMap:%s'%InstalledVCMap)
+def get_default_version(env):
+    debug('get_default_version()')
+
     msvc_version = env.get('MSVC_VERSION')
+    msvs_version = env.get('MSVS_VERSION')
+
+    if msvs_version and not msvc_version:
+        SCons.Warnings.warn(
+                SCons.Warnings.DeprecatedWarning,
+                "MSVS_VERSION is deprecated: please use MSVC_VERSION instead ")
+        return msvs_version
+    elif msvc_version and msvs_version:
+        if not msvc_version == msvs_version:
+            SCons.Warnings.warn(
+                    SCons.Warnings.VisualVersionMismatch,
+                    "Requested msvc version (%s) and msvs version (%s) do " \
+                    "not match: please use MSVC_VERSION only to request a " \
+                    "visual studio version, MSVS_VERSION is deprecated" \
+                    % (msvc_version, msvs_version))
+        return msvs_version
     if not msvc_version:
+        installed_vcs = cached_get_installed_vcs()
+        debug('installed_vcs:%s' % installed_vcs)
         if not installed_vcs:
             msg = 'No installed VCs'
             debug('msv %s\n' % repr(msg))
             SCons.Warnings.warn(SCons.Warnings.VisualCMissingWarning, msg)
-            return
-        msvc = installed_vcs[0]
-        msvc_version = msvc.version
-        env['MSVC_VERSION'] = msvc_version
+            return None
+        msvc_version = installed_vcs[0]
         debug('msvc_setup_env: using default installed MSVC version %s\n' % repr(msvc_version))
-    else:
-        msvc = InstalledVCMap.get(msvc_version)
-        debug('msvc_setup_env: using specified MSVC version %s\n' % repr(msvc_version))
-        if not msvc:
-            msg = 'VC version %s not installed' % msvc_version
-            debug('msv %s\n' % repr(msg))
-            SCons.Warnings.warn(SCons.Warnings.VisualCMissingWarning, msg)
-            return
 
-    host_platform = env.get('HOST_ARCH')
-    if not host_platform:
-      #host_platform = get_default_host_platform()
-      host_platform = 'x86'
-    target_platform = env.get('TARGET_ARCH')
-    if not target_platform:
-      target_platform = host_platform
+    return msvc_version
+
+def msvc_setup_env_once(env):
+    try:
+        has_run  = env["MSVC_SETUP_RUN"]
+    except KeyError:
+        has_run = False
+
+    if not has_run:
+        msvc_setup_env(env)
+        env["MSVC_SETUP_RUN"] = True
+
+def msvc_setup_env(env):
+    debug('msvc_setup_env()')
+
+    version = get_default_version(env)
+    if version is None:
+        warn_msg = "No version of Visual Studio compiler found - C/C++ " \
+                   "compilers most likely not set correctly"
+        SCons.Warnings.warn(SCons.Warnings.VisualCMissingWarning, warn_msg)
+        return None
+    debug('msvc_setup_env: using specified MSVC version %s\n' % repr(version))
+
+    # XXX: we set-up both MSVS version for backward
+    # compatibility with the msvs tool
+    env['MSVC_VERSION'] = version
+    env['MSVS_VERSION'] = version
+    env['MSVS'] = {}
+
+    try:
+        script = find_batch_file(version)
+    except VisualCException, e:
+        msg = str(e)
+        debug('Caught exception while looking for batch file (%s)' % msg)
+        warn_msg = "VC version %s not installed.  " + \
+                   "C/C++ compilers are most likely not set correctly.\n" + \
+                   " Installed versions are: %s"
+        warn_msg = warn_msg % (version, cached_get_installed_vcs())
+        SCons.Warnings.warn(SCons.Warnings.VisualCMissingWarning, warn_msg)
+        return None
 
     use_script = env.get('MSVC_USE_SCRIPT', True)
     if SCons.Util.is_String(use_script):
         debug('use_script 1 %s\n' % repr(use_script))
         d = script_env(use_script)
     elif use_script:
-        script = msvc.get_batch_file(target_platform, host_platform)
-        debug('use_script 2 %s target_platform:%s host_platform:%s\n' % (repr(script),target_platform,host_platform))
-        d = script_env(script)
+        host_platform, target_platform = get_host_target(env)
+        host_target = (host_platform, target_platform)
+        if not is_host_target_supported(host_target, version):
+            warn_msg = "host, target = %s not supported for MSVC version %s" % \
+                (host_target, version)
+            SCons.Warnings.warn(SCons.Warnings.VisualCMissingWarning, warn_msg)
+        arg = _HOST_TARGET_ARCH_TO_BAT_ARCH[host_target]
+        debug('use_script 2 %s, args:%s\n' % (repr(script), arg))
+        try:
+            d = script_env(script, args=arg)
+        except BatchFileExecutionError, e:
+            msg = "MSVC error while executing %s with args %s (error was %s)" % \
+                  (script, arg, str(e))
+            raise SCons.Errors.UserError(msg)
     else:
-        debug('msvc.get_default_env()\n')
-        d = msvc.get_default_env()
+        debug('MSVC_USE_SCRIPT set to False')
+        warn_msg = "MSVC_USE_SCRIPT set to False, assuming environment " \
+                   "set correctly."
+        SCons.Warnings.warn(SCons.Warnings.VisualCMissingWarning, warn_msg)
+        return None
 
     for k, v in d.items():
         env.PrependENVPath(k, v, delete_existing=True)
-      
+
 def msvc_exists(version=None):
-    vcs = get_installed_vcs()
+    vcs = cached_get_installed_vcs()
     if version is None:
         return len(vcs) > 0
-    return InstalledVCMap.has_key(version)
+    return version in vcs
     
-    
-def reset_installed_vcs():
-    global InstalledVCList
-    global InstalledVCMap
-    InstalledVCList = None
-    InstalledVCMap  = None
-    for vc in SupportedVCList:
-        vc.reset()
-
-# Local Variables:
-# tab-width:4
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=4 shiftwidth=4:

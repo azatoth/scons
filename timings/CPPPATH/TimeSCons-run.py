@@ -19,26 +19,37 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
 
 """
-scons-time.py configuration file for the "CPPPATH" timing test.
+This configuration times searching long lists of CPPPATH directories.
+
+We create $DIR_COUNT on-disk directories.  A single checked-in .h file
+exists in the 'include' directory.  The SConstruct sets CPPPATH to a
+list of Dir Nodes for the created directories, followed by 'include'.
+A checked-in .c file #includes the .h file to be found in the last
+directory in the list.
 """
 
-archive_list = [ 'SConstruct' ]
-subdir = '.'
+import TestSCons
 
-import sys
-sys.path.insert(0, '..')
-import SCons_Bars
+# Full-build time of just under 10 seconds on ubuntu-timings slave,
+# as determined by bin/calibrate.py on 9 December 2009:
+#
+# run   1:   2.235:  DIR_COUNT=50
+# run   2:   3.976:  DIR_COUNT=223
+# run   3:   7.353:  DIR_COUNT=560
+# run   4:   9.569:  DIR_COUNT=761
+# run   5:   9.353:  DIR_COUNT=761
+# run   6:   9.972:  DIR_COUNT=813
+# run   7:   9.930:  DIR_COUNT=813
+# run   8:   9.983:  DIR_COUNT=813
 
-revs = [
-    1224,   # Don't create a Node for every file we try to find during scan.
-    1349,   # More efficient checking for on-disk file entries.
-    1407,   # Use a Dir scanner instead of a hard-coded method.
-    1433,   # Remove unnecessary creation of RCS and SCCS Node.Dir nodes.
-    1703,   # Lobotomize Memoizer.
-    2380,   # The Big Signature Refactoring hits branches/core.
-]
+test = TestSCons.TimeSCons(variables={'DIR_COUNT':813})
 
-vertical_bars = SCons_Bars.Release_Bars.gnuplot(labels=True) + \
-                SCons_Bars.Revision_Bars.gnuplot(labels=False, revs=revs)
+for d in xrange(test.variables['DIR_COUNT']):
+    test.subdir('inc_%04d' % d)
+
+test.main()
+
+test.pass_test()

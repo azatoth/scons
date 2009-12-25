@@ -577,9 +577,9 @@ class TestSConsMSVS(TestSCons):
             # doesn't fill it in when packaging SCons.
             input = """\
 import SCons
+import SCons.Tool.MSCommon
 print "self.scons_version =", repr(SCons.__%s__)
-env = Environment();
-print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
+print "self._msvs_versions =", str(SCons.Tool.MSCommon.query_versions())
 """ % 'version'
         
             self.run(arguments = '-n -q -Q -f -', stdin = input)
@@ -644,6 +644,24 @@ print "self._msvs_versions =", str(env['MSVS']['VERSIONS'])
         if not msvs:
             return None
         return msvs.get_executable()
+
+    def run(self, *args, **kw):
+        """
+        Suppress MSVS deprecation warnings.
+        """
+        save_sconsflags = os.environ.get('SCONSFLAGS')
+        if save_sconsflags:
+            sconsflags = [save_sconsflags]
+        else:
+            sconsflags = []
+        sconsflags = sconsflags + ['--warn=no-deprecated']
+        os.environ['SCONSFLAGS'] = string.join(sconsflags)
+        try:
+            result = apply(TestSCons.run, (self,)+args, kw)
+            pass
+        finally:
+            sconsflags = save_sconsflags
+        return result
 
 # Local Variables:
 # tab-width:4
