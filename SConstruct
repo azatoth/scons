@@ -45,7 +45,7 @@ import sys
 import tempfile
 
 project = 'scons'
-default_version = '1.2.0.d20091224'
+default_version = '1.2.0'
 copyright = "Copyright (c) %s The SCons Foundation" % copyright_years
 
 platform = distutils.util.get_platform()
@@ -152,6 +152,7 @@ if not revision and svn:
                 result = result + '[MODIFIED]'
             return result
 
+
 checkpoint = ARGUMENTS.get('CHECKPOINT', '')
 if checkpoint:
     if checkpoint == 'd':
@@ -160,6 +161,7 @@ if checkpoint:
     elif checkpoint == 'r':
         checkpoint = 'r' + revision
     version = version + '.' + checkpoint
+
 
 build_id = ARGUMENTS.get('BUILD_ID')
 if build_id is None:
@@ -706,6 +708,7 @@ for p in [ scons ]:
     #
     pkg = p['pkg']
     pkg_version = "%s-%s" % (pkg, version)
+
 
     src = 'src'
     if p.has_key('src_subdir'):

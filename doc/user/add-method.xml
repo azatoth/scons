@@ -110,6 +110,18 @@
 
   <screen>
     C:\><userinput>scons -Q</userinput>
+    
+    scons: warning: No installed VCs
+    File "&lt;stdin&gt;", line 67, in __call__
+    
+    scons: warning: No version of Visual Studio compiler found - C/C++ compilers most likely not set correctly
+    File "&lt;stdin&gt;", line 67, in __call__
+    
+    scons: warning: No installed VCs
+    File "&lt;stdin&gt;", line 67, in __call__
+    
+    scons: warning: No version of Visual Studio compiler found - C/C++ compilers most likely not set correctly
+    File "&lt;stdin&gt;", line 67, in __call__
     rc /fores.res res.rc
     cl /Fotest_stuff.obj /c test_stuff.c /nologo
     link /nologo /OUT:tests\test_stuff.exe test_stuff.obj res.res
