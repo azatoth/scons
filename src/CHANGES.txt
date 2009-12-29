@@ -8,7 +8,7 @@
 
 
 
-RELEASE 1.2.0.d20091224 - Thu, 24 Dec 2009 17:20:55 -08000
+RELEASE X.X.X - XXX
 
   From Jim Randall:
     - Fixed temp filename race condition on Windows with long cmd lines.
@@ -539,19 +539,6 @@ RELEASE 1.0.1 - Sat, 06 Sep 2008 07:29:34 -0700
 
     - Escape parentheses that appear within variable names when spawning
       command lines using os.system().
-
-
-
-RELEASE 1.0.0.d20080826 - Tue, 26 Aug 2008 09:12:40 -0700
-
-  From Gary Oberbrunner:
-
-    - Make Glob() sort the returned list of Files or Nodes
-      to prevent spurious rebuilds.
-
-  From Ian P. Cardenas:
-
-    - Fix Glob() polluting LIBPATH by returning copy of list
 
 
 

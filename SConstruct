@@ -9,7 +9,7 @@
 copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009'
 
 # This gets inserted into the man pages to reflect the month of release.
-month_year = 'December 2009'
+month_year = 'February 2009'
 
 #
 # __COPYRIGHT__
@@ -152,7 +152,6 @@ if not revision and svn:
                 result = result + '[MODIFIED]'
             return result
 
-
 checkpoint = ARGUMENTS.get('CHECKPOINT', '')
 if checkpoint:
     if checkpoint == 'd':
@@ -161,7 +160,6 @@ if checkpoint:
     elif checkpoint == 'r':
         checkpoint = 'r' + revision
     version = version + '.' + checkpoint
-
 
 build_id = ARGUMENTS.get('BUILD_ID')
 if build_id is None:
@@ -708,7 +706,6 @@ for p in [ scons ]:
     #
     pkg = p['pkg']
     pkg_version = "%s-%s" % (pkg, version)
-
 
     src = 'src'
     if p.has_key('src_subdir'):

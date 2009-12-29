@@ -723,7 +723,8 @@
        % <userinput>scons -Q debug=0</userinput>
        scons: `.' is up to date.
        % <userinput>scons -Q debug=1</userinput>
-       scons: `.' is up to date.
+       cc -o prog.o -c -g prog.c
+       cc -o prog prog.o
        % <userinput>scons -Q debug=1</userinput>
        scons: `.' is up to date.
     </screen>
@@ -807,7 +808,7 @@
        % <userinput>scons -Q define=FOO</userinput>
        cc -o prog.o -c -DFOO prog.c
        % <userinput>scons -Q define=FOO define=BAR</userinput>
-       scons: `.' is up to date.
+       cc -o prog.o -c -DFOO -DBAR prog.c
     </screen>
 
     <para>
@@ -1189,7 +1190,7 @@
           
           scons: *** Error converting option: RELEASE
           Invalid value for boolean option: bad_value
-          File "/home/my/project/SConstruct", line 4, in ?
+          File "/home/my/project/SConstruct", line 4, in &lt;module&gt;
         </screen>
 
       </section>
@@ -1234,9 +1235,9 @@
           % <userinput>scons -Q COLOR=red foo.o</userinput>
           cc -o foo.o -c -DCOLOR="red" foo.c
           % <userinput>scons -Q COLOR=blue foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DCOLOR="blue" foo.c
           % <userinput>scons -Q COLOR=green foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DCOLOR="green" foo.c
         </screen>
 
         <para>
@@ -1252,7 +1253,7 @@
           % <userinput>scons -Q COLOR=magenta foo.o</userinput>
           
           scons: *** Invalid value for option COLOR: magenta
-          File "/home/my/project/SConstruct", line 5, in ?
+          File "/home/my/project/SConstruct", line 5, in &lt;module&gt;
         </screen>
 
         <para>
@@ -1308,15 +1309,15 @@
           % <userinput>scons -Q COLOR=Red foo.o</userinput>
           
           scons: *** Invalid value for option COLOR: Red
-          File "/home/my/project/SConstruct", line 5, in ?
+          File "/home/my/project/SConstruct", line 5, in &lt;module&gt;
           % <userinput>scons -Q COLOR=BLUE foo.o</userinput>
           
           scons: *** Invalid value for option COLOR: BLUE
-          File "/home/my/project/SConstruct", line 5, in ?
+          File "/home/my/project/SConstruct", line 5, in &lt;module&gt;
           % <userinput>scons -Q COLOR=nAvY foo.o</userinput>
           
           scons: *** Invalid value for option COLOR: nAvY
-          File "/home/my/project/SConstruct", line 5, in ?
+          File "/home/my/project/SConstruct", line 5, in &lt;module&gt;
         </screen>
 
         <para>
@@ -1350,11 +1351,11 @@
           % <userinput>scons -Q COLOR=Red foo.o</userinput>
           cc -o foo.o -c -DCOLOR="Red" foo.c
           % <userinput>scons -Q COLOR=BLUE foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DCOLOR="BLUE" foo.c
           % <userinput>scons -Q COLOR=nAvY foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DCOLOR="blue" foo.c
           % <userinput>scons -Q COLOR=green foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DCOLOR="green" foo.c
         </screen>
 
         <para>
@@ -1394,9 +1395,9 @@
           % <userinput>scons -Q COLOR=Red foo.o</userinput>
           cc -o foo.o -c -DCOLOR="red" foo.c
           % <userinput>scons -Q COLOR=nAvY foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DCOLOR="blue" foo.c
           % <userinput>scons -Q COLOR=GREEN foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DCOLOR="green" foo.c
         </screen>
 
       </section>
@@ -1437,7 +1438,7 @@
           % <userinput>scons -Q COLORS=red,blue foo.o</userinput>
           cc -o foo.o -c -DCOLORS="red blue" foo.c
           % <userinput>scons -Q COLORS=blue,green,red foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DCOLORS="blue green red" foo.c
         </screen>
 
         <para>
@@ -1454,7 +1455,7 @@
           % <userinput>scons -Q COLORS=all foo.o</userinput>
           cc -o foo.o -c -DCOLORS="red green blue" foo.c
           % <userinput>scons -Q COLORS=none foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DCOLORS="" foo.c
         </screen>
 
         <para>
@@ -1469,7 +1470,7 @@
           
           scons: *** Error converting option: COLORS
           Invalid value(s) for option: magenta
-          File "/home/my/project/SConstruct", line 5, in ?
+          File "/home/my/project/SConstruct", line 5, in &lt;module&gt;
         </screen>
 
       </section>
@@ -1526,7 +1527,7 @@
           % <userinput>scons -Q CONFIG=/does/not/exist foo.o</userinput>
           
           scons: *** Path for option CONFIG does not exist: /does/not/exist
-          File "/home/my/project/SConstruct", line 6, in ?
+          File "/home/my/project/SConstruct", line 6, in &lt;module&gt;
         </screen>
 
         <para>
@@ -1656,11 +1657,11 @@
           % <userinput>scons -Q foo.o</userinput>
           cc -o foo.o -c -DPACKAGE="/opt/location" foo.c
           % <userinput>scons -Q PACKAGE=/usr/local/location foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DPACKAGE="/usr/local/location" foo.c
           % <userinput>scons -Q PACKAGE=yes foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DPACKAGE="True" foo.c
           % <userinput>scons -Q PACKAGE=no foo.o</userinput>
-          scons: `foo.o' is up to date.
+          cc -o foo.o -c -DPACKAGE="False" foo.c
         </screen>
 
       </section>
