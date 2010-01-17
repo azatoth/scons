@@ -57,14 +57,35 @@ RELEASE 1.2.0.d20091224 - Thu, 24 Dec 2009 17:20:55 -0800
         fatal errors when anyone tries to use them.
 
   Please note the following important changes since release 1.2.0:
-    --  Visual Studio/Visual C++ support has been change significantly
+
+    --  Support for Latex glosseries and acronyms has been added
+
+    --  MICROSOFT VISUAL STUDIO VERSION/ARCH DETECTION HAS CHANGED
+
+        The way SCons detects Visual Studio on Windows has changed in
+        1.3.  By default, it should now use the latest installed
+        Visual Studio version on your machine, and compile for 32 or
+        64 bits according to whether your OS is 32 or 64 bits (32/64
+        bit python makes no difference).
+
+	Two new variables control Visual Studio: MSVC_VERSION and
+	TARGET_ARCH.  These variables ONLY take effect when passed to
+	the Environment() constructor; setting them later has no
+	effect.  To use a non-default Visual Studio version, set
+	MSVC_VERSION to e.g. "8.0" or "7.1".  Setting it to "xxx" (or
+	any nonexistent value) will make it print out the valid
+	versions on your system.  To use a non-default architecture,
+	set TARGET_ARCH to "x86" or "x86_64" (various synonyms are
+	accepted).
+
+	Note that if you use MSVS_VERSION to build Visual Studio
+	projects from your SConstructs, MSVS_VERSION must be set to
+	the same version as MSVC_VERSION.
 
         Support for HOST_OS,HOST_ARCH,TARGET_OS, TARGET_ARCH has been
         added to allow specifying different target arch than the host 
         system. This is only supported for Visual Studio/Visual C++
         at this time.
-
-    --  Support for Latex glosseries and acronyms has been added
 
     --  VISUAL C/C++ PRECOMPILED HEADERS WILL BE REBUILT
 
@@ -87,6 +108,9 @@ RELEASE 1.2.0.d20091224 - Thu, 24 Dec 2009 17:20:55 -0800
         This relink is normal and will occur because the command lines for
         these tools have been redefined to remove unnecessary nested $(
         and $) character strings.
+
+    --  MSVS_USE_MFC_DIRS and MSVS_IGNORE_IDE_PATHS are obsoleted and
+        have no effect.
 
   Please note the following important changes since release 1.1.0:
 
