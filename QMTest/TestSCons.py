@@ -50,9 +50,9 @@ from TestCommon import __all__
 # here provides some independent verification that what we packaged
 # conforms to what we expect.
 
-default_version = '1.2.0.d20091224'
+default_version = '1.2.0'
 
-copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009'
+copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010'
 
 # In the checked-in source, the value of SConsVersion in the following
 # line must remain "__ VERSION __" (without the spaces) so the built
