@@ -85,8 +85,12 @@ Sub-chapter 2
 """)
 
 #test.run(arguments = '.')
-test.run(arguments = '.', stderr=None, stdout=None)
-#test.run(arguments = 'build/main.pdf', stderr=None, stdout=None)
+#test.run(arguments = '.', stderr=None, stdout=None)
+
+# next line tests that side effect nodes get disambiguated 
+# and their directories created in a variantDir before 
+# the builder tries to populate them and fails
+test.run(arguments = 'build/main.pdf', stderr=None, stdout=None)
 
 test.must_exist(['build', 'main.aux'])
 test.must_exist(['build', 'main.fls'])
