@@ -253,6 +253,24 @@ except ImportError:
 
 import sys
 try:
+    sys.intern
+except AttributeError:
+    # Pre-2.6 Python has no sys.intern() function.
+    import __builtin__
+    try:
+        sys.intern = __builtin__.intern
+    except AttributeError:
+        # Pre-2.x Python has no builtin intern() function.
+        def intern(x):
+           return x
+        sys.intern = intern
+        del intern
+try:
+    sys.maxsize
+except AttributeError:
+    # Pre-2.6 Python has no sys.maxsize attribute
+    sys.maxsize = sys.maxint
+try:
     sys.version_info
 except AttributeError:
     # Pre-1.6 Python has no sys.version_info
