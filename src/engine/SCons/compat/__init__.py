@@ -183,6 +183,15 @@ except ImportError:
     import_as('_scons_platform', 'platform')
 
 
+try:
+    import queue
+except ImportError:
+    # Before Python 3.0, the 'queue' module was named 'Queue'.
+    import imp
+    file, filename, suffix_mode_type = imp.find_module('Queue')
+    imp.load_module('queue', file, filename, suffix_mode_type)
+
+
 import shlex
 try:
     shlex.split
