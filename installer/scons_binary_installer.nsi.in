@@ -135,6 +135,9 @@ Section !$(SEC_SConsExe) SconsExe
   File /r tcl
   File /r tk
   File /r Tix*
+  
+  File vc9redist_x86.exe
+  ExecWait '"$INSTDIR\vc9redist_x86" /q'
 
   WriteUninstaller $INSTDIR\@UNINSTALLER_FILE@
   

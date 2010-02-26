@@ -185,6 +185,9 @@ Section !$(SEC_SconsExe) SconsExe
   File /r tk
   File /r Tix*
   
+  File vc9redist_x86.exe
+  ExecWait '"$INSTDIR\vc9redist_x86" /q'
+  
   !insertmacro MUI_STARTMENU_WRITE_BEGIN "Application"
   CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SCons Frontend.lnk" "$INSTDIR\scons-frontend.exe"
   !insertmacro MUI_STARTMENU_WRITE_END

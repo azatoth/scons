@@ -44,7 +44,7 @@ import SCons.Tool.msvc
 import SCons.Tool.msvs
 import SCons.Util
 
-from MSCommon import merge_default_version, msvs_exists
+from MSCommon import msvc_setup_env_once, msvc_exists
 
 def pdbGenerator(env, target, source, for_signature):
     try:
@@ -238,8 +238,9 @@ def generate(env):
     env['REGSVRFLAGS'] = '/s '
     env['REGSVRCOM'] = '$REGSVR $REGSVRFLAGS ${TARGET.windows}'
 
-    # Set-up ms tools paths for default version
-    merge_default_version(env)
+    # Set-up ms tools paths
+    msvc_setup_env_once(env)
+
 
     # Loadable modules are on Windows the same as shared libraries, but they
     # are subject to different build parameters (LDMODULE* variables).
@@ -256,7 +257,7 @@ def generate(env):
     env['LDMODULECOM'] = compositeLdmodAction
 
 def exists(env):
-    return msvs_exists()
+    return msvc_exists()
 
 # Local Variables:
 # tab-width:4

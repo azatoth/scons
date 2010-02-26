@@ -29,9 +29,11 @@ Test a list of tests to run in a file specified with the -f option.
 """
 
 import os.path
+import re
 
 import TestRuntest
 
+pythonstring = TestRuntest.pythonstring
 test_fail_py = os.path.join('test', 'fail.py')
 test_no_result_py = os.path.join('test', 'no_result.py')
 test_pass_py = os.path.join('test', 'pass.py')
@@ -53,27 +55,16 @@ test.write('t.txt', """\
 %(test_pass_py)s
 """ % locals())
 
-# NOTE:  The "test/fail.py : FAIL" and "test/pass.py : PASS" lines both
-# have spaces at the end.
-
-expect = """%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" %(test_pass_py)s
---- TEST RESULTS -------------------------------------------------------------
-
-  %(test_pass_py)s                                  : PASS    
-
---- TESTS THAT DID NOT PASS --------------------------------------------------
-
-  None.
-
-
---- STATISTICS ---------------------------------------------------------------
-
-       1        tests total
-
-       1 (100%%) tests PASS
+expect_stdout = """\
+%(pythonstring)s -tt %(test_pass_py)s
+PASSING TEST STDOUT
 """ % locals()
 
-test.run(arguments = '-f t.txt', stdout = expect)
+expect_stderr = """\
+PASSING TEST STDERR
+"""
+
+test.run(arguments='-f t.txt', stdout=expect_stdout, stderr=expect_stderr)
 
 test.pass_test()
 

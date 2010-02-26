@@ -30,12 +30,13 @@ Test a combination of a passing test, failing test, and no-result
 test with no argument on the command line.
 """
 
-import os.path
+import os
 
 import TestRuntest
 
 test = TestRuntest.TestRuntest()
 
+pythonstring = TestRuntest.pythonstring
 test_fail_py = os.path.join('test', 'fail.py')
 test_no_result_py = os.path.join('test', 'no_result.py')
 test_pass_py = os.path.join('test', 'pass.py')
@@ -49,43 +50,31 @@ test.write_no_result_test(['test', 'no_result.py'])
 
 test.write_passing_test(['test', 'pass.py'])
 
-# NOTE:  The "test/fail.py : FAIL" and "test/pass.py : PASS" lines both
-# have spaces at the end.
+expect_stdout = """\
+%(pythonstring)s -tt %(test_fail_py)s
+FAILING TEST STDOUT
+%(pythonstring)s -tt %(test_no_result_py)s
+NO RESULT TEST STDOUT
+%(pythonstring)s -tt %(test_pass_py)s
+PASSING TEST STDOUT
 
-expect = r"""%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" test
---- TEST RESULTS -------------------------------------------------------------
+Failed the following test:
+\t%(test_fail_py)s
 
-  %(test_fail_py)s                                  : FAIL    
-
-    FAILING TEST STDOUT
-
-    FAILING TEST STDERR
-
-  %(test_no_result_py)s                             : NO_RESULT
-
-    NO RESULT TEST STDOUT
-
-    NO RESULT TEST STDERR
-
-  %(test_pass_py)s                                  : PASS    
-
---- TESTS THAT DID NOT PASS --------------------------------------------------
-
-  %(test_fail_py)s                                  : FAIL    
-
-  %(test_no_result_py)s                             : NO_RESULT
-
-
---- STATISTICS ---------------------------------------------------------------
-
-       3        tests total
-
-       1 ( 33%%) tests PASS
-       1 ( 33%%) tests FAIL
-       1 ( 33%%) tests NO_RESULT
+NO RESULT from the following test:
+\t%(test_no_result_py)s
 """ % locals()
 
-test.run(arguments = 'test', status = 1, stdout = expect)
+expect_stderr = """\
+FAILING TEST STDERR
+NO RESULT TEST STDERR
+PASSING TEST STDERR
+"""
+
+test.run(arguments='test',
+         status=1,
+         stdout=expect_stdout,
+         stderr=expect_stderr)
 
 test.pass_test()
 

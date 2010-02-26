@@ -22,27 +22,34 @@
 #
 
 """
-scons-time.py configuration file for the "JTimer" timing test.
+This configuration times searching long lists of CPPPATH directories.
+
+We create $DIR_COUNT on-disk directories.  A single checked-in .h file
+exists in the 'include' directory.  The SConstruct sets CPPPATH to a
+list of Dir Nodes for the created directories, followed by 'include'.
+A checked-in .c file #includes the .h file to be found in the last
+directory in the list.
 """
 
-archive_list = [ 'SConstruct' ]
-subdir = '.'
-targets = '-j2'
+import TestSCons
 
-import sys
-sys.path.insert(0, '..')
-import SCons_Bars
+# Full-build time of just under 10 seconds on ubuntu-timings slave,
+# as determined by bin/calibrate.py on 9 December 2009:
+#
+# run   1:   2.235:  DIR_COUNT=50
+# run   2:   3.976:  DIR_COUNT=223
+# run   3:   7.353:  DIR_COUNT=560
+# run   4:   9.569:  DIR_COUNT=761
+# run   5:   9.353:  DIR_COUNT=761
+# run   6:   9.972:  DIR_COUNT=813
+# run   7:   9.930:  DIR_COUNT=813
+# run   8:   9.983:  DIR_COUNT=813
 
-revs = [
-    1261,   # Fix -j re-scanning built files for implicit deps.
-    1307,   # Move signature Node tranlation of rel_paths into the class.
-    1407,   # Use a Dir scanner instead of a hard-coded method.
-    1435,   # Don't prep .sconsign dependencies until needed.
-    1468,   # Use waiting-Node reference counts to speed up Taskmaster.
-    1703,   # Lobotomize Memoizer.
-    1706,   # Fix _doLookup value-cache misspellings.
-    2380,   # The Big Signature Refactoring hits branches/core.
-]
+test = TestSCons.TimeSCons(variables={'DIR_COUNT':813})
 
-vertical_bars = SCons_Bars.Release_Bars.gnuplot(labels=True) + \
-                SCons_Bars.Revision_Bars.gnuplot(labels=False, revs=revs)
+for d in xrange(test.variables['DIR_COUNT']):
+    test.subdir('inc_%04d' % d)
+
+test.main()
+
+test.pass_test()

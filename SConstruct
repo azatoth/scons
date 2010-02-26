@@ -6,10 +6,10 @@
 
 # When this gets changed, you must also change the copyright_years string
 # in QMTest/TestSCons.py so the test scripts look for the right string.
-copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009'
+copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010'
 
 # This gets inserted into the man pages to reflect the month of release.
-month_year = 'February 2009'
+month_year = 'January 2010'
 
 #
 # __COPYRIGHT__
@@ -748,7 +748,10 @@ for p in [ scons ]:
     platform_zip = os.path.join(build,
                                 'dist',
                                 "%s.%s.zip" % (pkg_version, platform))
-    win32_exe = os.path.join(build, 'dist', "%s.win32.exe" % pkg_version)
+    if platform == "win-amd64":
+        win32_exe = os.path.join(build, 'dist', "%s.win-amd64.exe" % pkg_version)
+    else:
+        win32_exe = os.path.join(build, 'dist', "%s.win32.exe" % pkg_version)
 
     #
     # Update the environment with the relevant information
@@ -1251,10 +1254,12 @@ for p in [ scons ]:
         build_dir_exe = env.Dir(os.path.join(str(build_dir_installer), pkg + '-exe'))
         exe_init_script = env.File('#installer/standalone_init.py')
         exe_setup_py = env.File(os.path.join(str(build_dir_installer), 'setup.py'))
+        vc_redist = env.File('#installer/vc9redist_x86.exe')
         
         commands = [
                     Mkdir(build_dir_exe),
                     Copy(build_dir_installer, exe_init_script),
+                    Copy(build_dir_installer, vc_redist),
                    ]
         init_script_copy = env.Command(
                                         os.path.join(str(build_dir_installer), 'standalone_init.py'),
@@ -1320,20 +1325,20 @@ for p in [ scons ]:
                     env.Execute(Copy(str(source[0]), tk_dll[0]))
 
             # For Python 2.6, we also copy the C runtime library and its manifest
-            if os.path.dirname(wine_python)[-2:] == "26":
-                msvc_runtime = os.path.join(os.path.dirname(wine_python), 'msvcr90.dll')
-                if os.path.isfile(msvc_runtime):
-                    env.Execute(Copy(str(source[0]), msvc_runtime))
-                else:
-                    print 'Error:', msvc_runtime , 'not found'
-                    return 1
+            #~ if os.path.dirname(wine_python)[-2:] == "26":
+                #~ msvc_runtime = os.path.join(os.path.dirname(wine_python), 'msvcr90.dll')
+                #~ if os.path.isfile(msvc_runtime):
+                    #~ env.Execute(Copy(str(source[0]), msvc_runtime))
+                #~ else:
+                    #~ print 'Error:', msvc_runtime , 'not found'
+                    #~ return 1
 
-                msvc_manifest = os.path.join(os.path.dirname(wine_python), 'Microsoft.VC90.CRT.manifest')
-                if os.path.isfile(msvc_manifest):
-                    env.Execute(Copy(str(source[0]), msvc_manifest))
-                else:
-                    print 'Error:', msvc_manifest , 'not found'
-                    return 1
+                #~ msvc_manifest = os.path.join(os.path.dirname(wine_python), 'Microsoft.VC90.CRT.manifest')
+                #~ if os.path.isfile(msvc_manifest):
+                    #~ env.Execute(Copy(str(source[0]), msvc_manifest))
+                #~ else:
+                    #~ print 'Error:', msvc_manifest , 'not found'
+                    #~ return 1
         
         env.Append(BUILDERS={'wineSanityCheck':Builder(action=wine_sanity_check)})
         

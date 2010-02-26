@@ -30,7 +30,7 @@ Test how we handle a no-results test specified on the command line.
 
 import TestRuntest
 
-import os.path
+pythonstring = TestRuntest.pythonstring
 
 test = TestRuntest.TestRuntest()
 
@@ -40,28 +40,19 @@ test.subdir('test')
 
 test.write_no_result_test(['test', 'no_result.py'])
 
-expect = r"""%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" test/no_result.py
---- TEST RESULTS -------------------------------------------------------------
-
-  test/no_result.py                             : NO_RESULT
-
-    NO RESULT TEST STDOUT
-
-    NO RESULT TEST STDERR
-
---- TESTS THAT DID NOT PASS --------------------------------------------------
-
-  test/no_result.py                             : NO_RESULT
-
-
---- STATISTICS ---------------------------------------------------------------
-
-       1        tests total
-
-       1 (100%%) tests NO_RESULT
+expect_stdout = """\
+%(pythonstring)s -tt test/no_result.py
+NO RESULT TEST STDOUT
 """ % locals()
 
-test.run(arguments = 'test/no_result.py', status = 1, stdout = expect)
+expect_stderr = """\
+NO RESULT TEST STDERR
+"""
+
+test.run(arguments='test/no_result.py',
+         status=2,
+         stdout=expect_stdout,
+         stderr=expect_stderr)
 
 test.pass_test()
 

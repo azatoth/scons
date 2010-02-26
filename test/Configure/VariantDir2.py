@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -21,27 +22,28 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
 """
-scons-time.py configuration file for the "hundred" timing test.
+Verify that Configure contexts work with SConstruct/SConscript structure
 """
 
-archive_list = [ 'SConstruct' ]
-subdir = '.'
+import os
 
-import sys
-sys.path.insert(0, '..')
-import SCons_Bars
+import TestSCons
 
-revs = [
-    1220,   # Use WeakValueDicts in the Memoizer to reduce memory use.
-    1307,   # Move signature Node tranlation of rel_paths into the class.
-    1435,   # Fix Debug.caller() directory separators.
-    1477,   # Delay disambiguation of Node.FS.Entry into File/Dir.
-    1655,   # Reduce unnecessary calls to Node.FS.disambiguate().
-    1703,   # Lobotomize Memoizer.
-    1727,   # Cache Executor methods, reduce calls when scanning.
-    2380,   # The Big Signature Refactoring hits branches/core.
-]
+test = TestSCons.TestSCons()
 
-vertical_bars = SCons_Bars.Release_Bars.gnuplot(labels=True) + \
-                SCons_Bars.Revision_Bars.gnuplot(labels=False, revs=revs)
+test.write('SConstruct', """\
+SConscript('SConscript', build_dir='build', src='.')
+""")
+
+test.write('SConscript', """\
+env = Environment()
+config = env.Configure(conf_dir='sconf', log_file='config.log')
+config.TryRun("int main() {}", ".c")
+config.Finish()
+""")
+
+test.run()
+test.pass_test()

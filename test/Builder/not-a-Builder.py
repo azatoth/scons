@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -19,26 +20,42 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-scons-time.py configuration file for the "CPPPATH" timing test.
+Test the error when trying to configure a Builder with a non-Builder object.
 """
 
-archive_list = [ 'SConstruct' ]
-subdir = '.'
+import TestSCons
 
-import sys
-sys.path.insert(0, '..')
-import SCons_Bars
+test = TestSCons.TestSCons()
 
-revs = [
-    1224,   # Don't create a Node for every file we try to find during scan.
-    1349,   # More efficient checking for on-disk file entries.
-    1407,   # Use a Dir scanner instead of a hard-coded method.
-    1433,   # Remove unnecessary creation of RCS and SCCS Node.Dir nodes.
-    1703,   # Lobotomize Memoizer.
-    2380,   # The Big Signature Refactoring hits branches/core.
-]
+SConstruct_path = test.workpath('SConstruct')
 
-vertical_bars = SCons_Bars.Release_Bars.gnuplot(labels=True) + \
-                SCons_Bars.Revision_Bars.gnuplot(labels=False, revs=revs)
+test.write(SConstruct_path, """\
+def mkdir(env, target, source):
+    return None
+mkdir = 1
+env = Environment(BUILDERS={'mkdir': 1})
+env.mkdir(env.Dir('src'), None)
+""")
+
+expect_stderr = """\
+
+scons: *** 1 is not a Builder.
+""" + test.python_file_line(SConstruct_path, 4)
+
+test.run(arguments='.',
+         stderr=expect_stderr,
+         status=2)
+
+
+test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -431,7 +431,7 @@ def python_version_unsupported(version=sys.version_info):
     return version < (1, 5, 2)
 
 def python_version_deprecated(version=sys.version_info):
-    return version < (2, 2, 0)
+    return version < (2, 4, 0)
 
 
 # Global variables
@@ -776,6 +776,8 @@ def _main(parser):
                          SCons.Warnings.MisleadingKeywordsWarning,
                          SCons.Warnings.ReservedVariableWarning,
                          SCons.Warnings.StackSizeWarning,
+                         SCons.Warnings.VisualVersionMismatch,
+                         SCons.Warnings.VisualCMissingWarning,
                        ]
 
     for warning in default_warnings:
@@ -804,16 +806,13 @@ def _main(parser):
     # want to start everything, which means first handling any relevant
     # options that might cause us to chdir somewhere (-C, -D, -U, -u).
     if options.directory:
-        cdir = _create_path(options.directory)
-        try:
-            os.chdir(cdir)
-        except OSError:
-            sys.stderr.write("Could not change directory to %s\n" % cdir)
+        script_dir = os.path.abspath(_create_path(options.directory))
+    else:
+        script_dir = os.getcwd()
 
     target_top = None
     if options.climb_up:
         target_top = '.'  # directory to prepend to targets
-        script_dir = os.getcwd()  # location of script
         while script_dir and not _SConstruct_exists(script_dir,
                                                     options.repository,
                                                     options.file):
@@ -822,9 +821,13 @@ def _main(parser):
                 target_top = os.path.join(last_part, target_top)
             else:
                 script_dir = ''
-        if script_dir and script_dir != os.getcwd():
-            display("scons: Entering directory `%s'" % script_dir)
+
+    if script_dir and script_dir != os.getcwd():
+        display("scons: Entering directory `%s'" % script_dir)
+        try:
             os.chdir(script_dir)
+        except OSError:
+            sys.stderr.write("Could not change directory to %s\n" % script_dir)
 
     # Now that we're in the top-level SConstruct directory, go ahead
     # and initialize the FS object that represents the file system,
@@ -959,7 +962,7 @@ def _main(parser):
     # warning about deprecated Python versions--delayed until here
     # in case they disabled the warning in the SConscript files.
     if python_version_deprecated():
-        msg = "Support for pre-2.2 Python (%s) is deprecated.\n" + \
+        msg = "Support for pre-2.4 Python (%s) is deprecated.\n" + \
               "    If this will cause hardship, contact dev@scons.tigris.org."
         SCons.Warnings.warn(SCons.Warnings.PythonVersionWarning,
                             msg % python_version_string())

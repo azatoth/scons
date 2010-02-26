@@ -29,15 +29,16 @@ Verify that we find tests under the src/ tree only if they end
 with *Tests.py.
 """
 
-import os.path
+import os
 
 import TestRuntest
 
-test = TestRuntest.TestRuntest(verbose=1)
+test = TestRuntest.TestRuntest()
 
 test.subdir(['src'],
             ['src', 'suite'])
 
+pythonstring = TestRuntest.pythonstring
 src_passTests_py = os.path.join('src', 'passTests.py')
 src_suite_passTests_py = os.path.join('src', 'suite', 'passTests.py')
 qmtest_basename = os.path.basename(test.where_is('qmtest'))
@@ -50,29 +51,19 @@ test.write_passing_test(['src', 'suite', 'pass.py'])
 
 test.write_passing_test(['src', 'suite', 'passTests.py'])
 
-# NOTE:  The "test/pass.py : PASS" and "test/passTests.py : PASS" lines
-# both have spaces at the end.
-
-expect = r"""%(qmtest_basename)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" src
---- TEST RESULTS -------------------------------------------------------------
-
-  %(src_passTests_py)s                              : PASS    
-
-  %(src_suite_passTests_py)s                        : PASS    
-
---- TESTS THAT DID NOT PASS --------------------------------------------------
-
-  None.
-
-
---- STATISTICS ---------------------------------------------------------------
-
-       2        tests total
-
-       2 (100%%) tests PASS
+expect_stdout = """\
+%(pythonstring)s -tt %(src_passTests_py)s
+PASSING TEST STDOUT
+%(pythonstring)s -tt %(src_suite_passTests_py)s
+PASSING TEST STDOUT
 """ % locals()
 
-test.run(arguments = 'src', stdout = expect)
+expect_stderr = """\
+PASSING TEST STDERR
+PASSING TEST STDERR
+""" % locals()
+
+test.run(arguments='src', stdout=expect_stdout, stderr=expect_stderr)
 
 test.pass_test()
 

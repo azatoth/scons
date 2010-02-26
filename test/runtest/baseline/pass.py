@@ -28,9 +28,12 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test how we handle a passing test specified on the command line.
 """
 
+import os
+
 import TestRuntest
 
-import os.path
+pythonstring = TestRuntest.pythonstring
+test_pass_py = os.path.join('test', 'pass.py')
 
 test = TestRuntest.TestRuntest()
 
@@ -40,24 +43,18 @@ test.subdir('test')
 
 test.write_passing_test(['test', 'pass.py'])
 
-# NOTE:  The "test/pass.py   : PASS" line has spaces at the end.
-
-expect = r"""%(qmtest_basename)s run --output baseline.qmr --format none --result-stream="scons_tdb.AegisBaselineStream" test/pass.py
---- TEST RESULTS -------------------------------------------------------------
-
-  test/pass.py                                  : PASS    
-
---- TESTS WITH UNEXPECTED OUTCOMES -------------------------------------------
-
-  test/pass.py                                  : PASS    
-
-
---- STATISTICS ---------------------------------------------------------------
-
-       1 (100%%) tests unexpected PASS
+expect_stdout = """\
+%(pythonstring)s -tt %(test_pass_py)s
+PASSING TEST STDOUT
 """ % locals()
 
-test.run(arguments = '-b . test/pass.py', stdout = expect)
+expect_stderr = """\
+PASSING TEST STDERR
+"""
+
+test.run(arguments='-b . test',
+         stdout=expect_stdout,
+         stderr=expect_stderr)
 
 test.pass_test()
 
