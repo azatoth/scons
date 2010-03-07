@@ -20,7 +20,7 @@ more effectively, please sign up for the scons-users mailing list at:
 
 
 
-RELEASE 1.2.0.d20100306 - Sat, 06 Mar 2010 16:18:33 -0800
+RELEASE 1.2.0.d20100117 - Sun, 17 Jan 2010 14:26:59 -0800
 
   Please consult the CHANGES.txt file for a list of specific changes
   since last release.
@@ -58,8 +58,6 @@ RELEASE 1.2.0.d20100306 - Sat, 06 Mar 2010 16:18:33 -0800
 
   Please note the following important changes since release 1.2.0:
 
-    --  Support for Latex glosseries and acronyms has been added
-
     --  MICROSOFT VISUAL STUDIO VERSION/ARCH DETECTION HAS CHANGED
 
         The way SCons detects Visual Studio on Windows has changed in
@@ -95,6 +93,8 @@ RELEASE 1.2.0.d20100306 - Sat, 06 Mar 2010 16:18:33 -0800
         added to allow specifying different target arch than the host 
         system. This is only supported for Visual Studio/Visual C++
         at this time.
+
+    --  Support for Latex glossaries and acronyms has been added
 
     --  VISUAL C/C++ PRECOMPILED HEADERS WILL BE REBUILT
 
