@@ -8,7 +8,7 @@
 
 
 
-RELEASE X.X.X - XXX
+RELEASE 1.2.0.d20100306 - Sat, 06 Mar 2010 16:18:33 -0800
 
   From Luca Falavigna:
 
