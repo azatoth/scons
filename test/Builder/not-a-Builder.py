@@ -25,54 +25,32 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test a combination of a passing test, failing test, and no-result
-test with no argument on the command line.
+Test the error when trying to configure a Builder with a non-Builder object.
 """
 
-import os
+import TestSCons
 
-import TestRuntest
+test = TestSCons.TestSCons()
 
-pythonstring = TestRuntest.pythonstring
-test_fail_py = os.path.join('test', 'fail.py')
-test_no_result_py = os.path.join('test', 'no_result.py')
-test_pass_py = os.path.join('test', 'pass.py')
+SConstruct_path = test.workpath('SConstruct')
 
-test = TestRuntest.TestRuntest()
-
-test.subdir('test')
-
-test.write_failing_test(['test', 'fail.py'])
-
-test.write_no_result_test(['test', 'no_result.py'])
-
-test.write_passing_test(['test', 'pass.py'])
-
-expect_stdout = """\
-%(pythonstring)s -tt %(test_fail_py)s
-FAILING TEST STDOUT
-%(pythonstring)s -tt %(test_no_result_py)s
-NO RESULT TEST STDOUT
-%(pythonstring)s -tt %(test_pass_py)s
-PASSING TEST STDOUT
-
-Failed the following test:
-\t%(test_fail_py)s
-
-NO RESULT from the following test:
-\t%(test_no_result_py)s
-""" % locals()
+test.write(SConstruct_path, """\
+def mkdir(env, target, source):
+    return None
+mkdir = 1
+env = Environment(BUILDERS={'mkdir': 1})
+env.mkdir(env.Dir('src'), None)
+""")
 
 expect_stderr = """\
-FAILING TEST STDERR
-NO RESULT TEST STDERR
-PASSING TEST STDERR
-"""
 
-test.run(arguments='-b . test',
-         status=1,
-         stdout=expect_stdout,
-         stderr=expect_stderr)
+scons: *** 1 is not a Builder.
+""" + test.python_file_line(SConstruct_path, 4)
+
+test.run(arguments='.',
+         stderr=expect_stderr,
+         status=2)
+
 
 test.pass_test()
 

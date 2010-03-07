@@ -102,6 +102,25 @@ class SDKDefinition:
             sdk_dir = self.find_sdk_dir()
             self._sdk_dir = sdk_dir
             return sdk_dir
+        
+    def get_sdk_vc_script(self,host_arch, target_arch):
+        """ Return the script to initialize the VC compiler installed by SDK
+        """
+
+        if (host_arch == 'amd64' and target_arch == 'x86'):
+            # No cross tools needed compiling 32 bits on 64 bit machine
+            host_arch=target_arch
+        
+        arch_string=target_arch
+        if (host_arch != target_arch):
+            arch_string='%s_%s'%(host_arch,target_arch)
+            
+        debug("sdk.py: get_sdk_vc_script():arch_string:%s host_arch:%s target_arch:%s"%(arch_string,
+                                                           host_arch,
+                                                           target_arch))
+        file=self.vc_setup_scripts.get(arch_string,None)
+        debug("sdk.py: get_sdk_vc_script():file:%s"%file)
+        return file
 
 class WindowsSDK(SDKDefinition):
     """
@@ -121,6 +140,27 @@ class PlatformSDK(SDKDefinition):
         apply(SDKDefinition.__init__, (self,)+args, kw)
         self.hkey_data = self.uuid
 
+#
+# The list of VC initialization scripts installed by the SDK
+# These should be tried if the vcvarsall.bat TARGET_ARCH fails
+preSDK61VCSetupScripts = { 'x86'      : r'bin\vcvars32.bat',
+                           'amd64'    : r'bin\vcvarsamd64.bat',
+                           'x86_amd64': r'bin\vcvarsx86_amd64.bat',
+                           'x86_ia64' : r'bin\vcvarsx86_ia64.bat',
+                           'ia64'     : r'bin\vcvarsia64.bat'}
+
+SDK61VCSetupScripts = {'x86'      : r'bin\vcvars32.bat',
+                       'amd64'    : r'bin\amd64\vcvarsamd64.bat',
+                       'x86_amd64': r'bin\x86_amd64\vcvarsx86_amd64.bat',
+                       'x86_ia64' : r'bin\x86_ia64\vcvarsx86_ia64.bat',
+                       'ia64'     : r'bin\ia64\vcvarsia64.bat'}
+
+SDK70VCSetupScripts =    { 'x86'      : r'bin\vcvars32.bat',
+                           'amd64'    : r'bin\vcvars64.bat',
+                           'x86_amd64': r'bin\vcvarsx86_amd64.bat',
+                           'x86_ia64' : r'bin\vcvarsx86_ia64.bat',
+                           'ia64'     : r'bin\vcvarsia64.bat'}
+
 # The list of support SDKs which we know how to detect.
 #
 # The first SDK found in the list is the one used by default if there
@@ -129,6 +169,16 @@ class PlatformSDK(SDKDefinition):
 #
 # If you update this list, update the documentation in Tool/mssdk.xml.
 SupportedSDKList = [
+    WindowsSDK('7.0',
+               sanity_check_file=r'bin\SetEnv.Cmd',
+               include_subdir='include',
+               lib_subdir={
+                   'x86'       : ['lib'],
+                   'x86_64'    : [r'lib\x64'],
+                   'ia64'      : [r'lib\ia64'],
+               },
+               vc_setup_scripts = SDK70VCSetupScripts,
+              ),
     WindowsSDK('6.1',
                sanity_check_file=r'bin\SetEnv.Cmd',
                include_subdir='include',
@@ -137,6 +187,7 @@ SupportedSDKList = [
                    'x86_64'    : [r'lib\x64'],
                    'ia64'      : [r'lib\ia64'],
                },
+               vc_setup_scripts = SDK61VCSetupScripts,
               ),
 
     WindowsSDK('6.0A',
@@ -147,22 +198,26 @@ SupportedSDKList = [
                    'x86_64'    : [r'lib\x64'],
                    'ia64'      : [r'lib\ia64'],
                },
+               vc_setup_scripts = preSDK61VCSetupScripts,
               ),
 
     WindowsSDK('6.0',
                sanity_check_file=r'bin\gacutil.exe',
                include_subdir='include',
                lib_subdir='lib',
+               vc_setup_scripts = preSDK61VCSetupScripts,
               ),
 
     PlatformSDK('2003R2',
                 sanity_check_file=r'SetEnv.Cmd',
-                uuid="D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1"
+                uuid="D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1",
+                vc_setup_scripts = preSDK61VCSetupScripts,
                ),
 
     PlatformSDK('2003R1',
                 sanity_check_file=r'SetEnv.Cmd',
                 uuid="8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3",
+                vc_setup_scripts = preSDK61VCSetupScripts,
                ),
 ]
 
@@ -186,9 +241,9 @@ def get_installed_sdks():
         InstalledSDKList = []
         InstalledSDKMap = {}
         for sdk in SupportedSDKList:
-            debug('trying to find SDK %s' % sdk.version)
+            debug('MSCommon/sdk.py: trying to find SDK %s' % sdk.version)
             if sdk.get_sdk_dir():
-                debug('found SDK %s' % sdk.version)
+                debug('MSCommon/sdk.py:found SDK %s' % sdk.version)
                 InstalledSDKList.append(sdk)
                 InstalledSDKMap[sdk.version] = sdk
     return InstalledSDKList
@@ -203,6 +258,7 @@ SDKEnvironmentUpdates = {}
 
 def set_sdk_by_directory(env, sdk_dir):
     global SDKEnvironmentUpdates
+    debug('set_sdk_by_directory: Using dir:%s'%sdk_dir)
     try:
         env_tuple_list = SDKEnvironmentUpdates[sdk_dir]
     except KeyError:
@@ -264,12 +320,13 @@ def get_default_sdk():
     return InstalledSDKList[0]
 
 def mssdk_setup_env(env):
-    debug('msvs_setup_env()')
+    debug('mssdk_setup_env()')
     if env.has_key('MSSDK_DIR'):
         sdk_dir = env['MSSDK_DIR']
         if sdk_dir is None:
             return
         sdk_dir = env.subst(sdk_dir)
+        debug('mssdk_setup_env: Using MSSDK_DIR:%s'%sdk_dir)
     elif env.has_key('MSSDK_VERSION'):
         sdk_version = env['MSSDK_VERSION']
         if sdk_version is None:
@@ -278,6 +335,7 @@ def mssdk_setup_env(env):
         sdk_version = env.subst(sdk_version)
         mssdk = get_sdk_by_version(sdk_version)
         sdk_dir = mssdk.get_sdk_dir()
+        debug('mssdk_setup_env: Using MSSDK_VERSION:%s'%sdk_dir)
     elif env.has_key('MSVS_VERSION'):
         msvs_version = env['MSVS_VERSION']
         debug('Getting MSVS_VERSION from env:%s'%msvs_version)
@@ -298,11 +356,13 @@ def mssdk_setup_env(env):
             if not mssdk:
                 return
         sdk_dir = mssdk.get_sdk_dir()
+        debug('mssdk_setup_env: Using MSVS_VERSION:%s'%sdk_dir)
     else:
         mssdk = get_default_sdk()
         if not mssdk:
             return
         sdk_dir = mssdk.get_sdk_dir()
+        debug('mssdk_setup_env: not using any env values. sdk_dir:%s'%sdk_dir)
 
     set_sdk_by_directory(env, sdk_dir)
 

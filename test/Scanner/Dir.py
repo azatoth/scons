@@ -25,54 +25,55 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Test a combination of a passing test, failing test, and no-result
-test with no argument on the command line.
+Verify that a simple scanner that returns Dir nodes works correctly.
+
+Submitted as tigris.org issue #2534.
 """
 
-import os
+import TestSCons
 
-import TestRuntest
+test = TestSCons.TestSCons()
 
-pythonstring = TestRuntest.pythonstring
-test_fail_py = os.path.join('test', 'fail.py')
-test_no_result_py = os.path.join('test', 'no_result.py')
-test_pass_py = os.path.join('test', 'pass.py')
+test.subdir(['src'])
 
-test = TestRuntest.TestRuntest()
+test.write(['SConstruct'], """\
+env = Environment()
+Export('env')
 
-test.subdir('test')
+env.VariantDir('build', 'src')
+env.SConscript('build/SConscript.py')
+""")
 
-test.write_failing_test(['test', 'fail.py'])
+test.write(['src', 'SConscript.py'], """\
+Import('env')
 
-test.write_no_result_test(['test', 'no_result.py'])
+def myscanner(node, env, path):
+    return [ env.Dir('#/install/dir2') ] # Gives error
 
-test.write_passing_test(['test', 'pass.py'])
+def mybuilder(target, source, env):
+    env.Execute(Copy(target[0], source[0]))
+    return None
 
-expect_stdout = """\
-%(pythonstring)s -tt %(test_fail_py)s
-FAILING TEST STDOUT
-%(pythonstring)s -tt %(test_no_result_py)s
-NO RESULT TEST STDOUT
-%(pythonstring)s -tt %(test_pass_py)s
-PASSING TEST STDOUT
+env['BUILDERS']['MyBuilder'] = env.Builder(action=mybuilder, source_scanner=env.Scanner(function=myscanner))
 
-Failed the following test:
-\t%(test_fail_py)s
+out = env.MyBuilder('outfile1', 'infile1')
 
-NO RESULT from the following test:
-\t%(test_no_result_py)s
-""" % locals()
+env.Install('#/install/dir1', out)
+env.Install('#/install/dir2','infile2')
+""")
 
-expect_stderr = """\
-FAILING TEST STDERR
-NO RESULT TEST STDERR
-PASSING TEST STDERR
-"""
+test.write(['src', 'infile1'], """\
+src/infile1
+""")
 
-test.run(arguments='-b . test',
-         status=1,
-         stdout=expect_stdout,
-         stderr=expect_stderr)
+test.write(['src', 'infile2'], """\
+src/infile2
+""")
+
+test.run(arguments = '.')
+
+test.must_match(['install', 'dir1', 'outfile1'], "src/infile1\n")
+test.must_match(['install', 'dir2', 'infile2'], "src/infile2\n")
 
 test.pass_test()
 

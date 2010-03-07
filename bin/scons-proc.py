@@ -2,8 +2,8 @@
 #
 # Process a list of Python and/or XML files containing SCons documentation.
 #
-# This script creates formatted lists of the Builders, Tools or
-# construction variables documented in the specified XML files.
+# This script creates formatted lists of the Builders, functions, Tools
+# or construction variables documented in the specified XML files.
 #
 # Dependening on the options, the lists are output in either
 # DocBook-formatted generated XML files containing the summary text
@@ -24,9 +24,11 @@ base_sys_path = [os.getcwd() + '/build/test-tar-gz/lib/scons'] + sys.path
 
 helpstr = """\
 Usage: scons-proc.py [--man|--xml]
-                     [-b file(s)] [-t file(s)] [-v file(s)] [infile ...]
+                     [-b file(s)] [-f file(s)] [-t file(s)] [-v file(s)]
+                     [infile ...]
 Options:
   -b file(s)        dump builder information to the specified file(s)
+  -f file(s)        dump function information to the specified file(s)
   -t file(s)        dump tool information to the specified file(s)
   -v file(s)        dump variable information to the specified file(s)
   --man             print info in man page format, each -[btv] argument
@@ -36,11 +38,12 @@ Options:
 """
 
 opts, args = getopt.getopt(sys.argv[1:],
-                           "b:ht:v:",
+                           "b:f:ht:v:",
                            ['builders=', 'help',
                             'man', 'xml', 'tools=', 'variables='])
 
 buildersfiles = None
+functionsfiles = None
 output_type = '--xml'
 toolsfiles = None
 variablesfiles = None
@@ -48,6 +51,8 @@ variablesfiles = None
 for o, a in opts:
     if o in ['-b', '--builders']:
         buildersfiles = a
+    elif o in ['-f', '--functions']:
+        functionsfiles = a
     elif o in ['-h', '--help']:
         sys.stdout.write(helpstr)
         sys.exit(0)
@@ -122,9 +127,7 @@ Link_Entities_Header = """\
 
 class SCons_XML:
     def __init__(self, entries, **kw):
-        values = entries.values()
-        values.sort()
-        self.values = values
+        self.values = entries
         for k, v in kw.items():
             setattr(self, k, v)
     def fopen(self, name):
@@ -143,10 +146,10 @@ class SCons_XML_to_XML(SCons_XML):
         f = self.fopen(filename)
         for v in self.values:
             f.write('\n<varlistentry id="%s%s">\n' %
-                        (self.prefix, self.idfunc(v.name)))
-            for term in self.termfunc(v.name):
+                        (v.prefix, v.idfunc()))
+            for term in v.termfunc():
                 f.write('<term><%s>%s</%s></term>\n' %
-                        (self.tag, term, self.tag))
+                        (v.tag, term, v.tag))
             f.write('<listitem>\n')
             for chunk in v.summary.body:
                 f.write(str(chunk))
@@ -163,44 +166,40 @@ class SCons_XML_to_XML(SCons_XML):
             f.write('</listitem>\n')
             f.write('</varlistentry>\n')
     def write_mod(self, filename):
+        description = self.values[0].description
         if not filename:
             return
         f = self.fopen(filename)
         f.write(Warning)
         f.write('\n')
-        f.write(Regular_Entities_Header % self.description)
+        f.write(Regular_Entities_Header % description)
         f.write('\n')
         for v in self.values:
             f.write('<!ENTITY %s%s "<%s>%s</%s>">\n' %
-                        (self.prefix, self.idfunc(v.name),
-                         self.tag, self.entityfunc(v.name), self.tag))
+                        (v.prefix, v.idfunc(),
+                         v.tag, v.entityfunc(), v.tag))
         f.write('\n')
         f.write(Warning)
         f.write('\n')
-        f.write(Link_Entities_Header % self.description)
+        f.write(Link_Entities_Header % description)
         f.write('\n')
         for v in self.values:
             f.write('<!ENTITY %slink-%s \'<link linkend="%s%s"><%s>%s</%s></link>\'>\n' %
-                        (self.prefix, self.idfunc(v.name),
-                         self.prefix, self.idfunc(v.name),
-                         self.tag, self.entityfunc(v.name), self.tag))
+                        (v.prefix, v.idfunc(),
+                         v.prefix, v.idfunc(),
+                         v.tag, v.entityfunc(), v.tag))
         f.write('\n')
         f.write(Warning)
 
 class SCons_XML_to_man(SCons_XML):
-    def mansep(self):
-        return ['\n']
-    def initial_chunks(self, name):
-        return [name]
     def write(self, filename):
         if not filename:
             return
         f = self.fopen(filename)
         chunks = []
         for v in self.values:
-            chunks.extend(self.mansep())
-            for n in self.initial_chunks(v.name):
-                chunks.append('.IP %s\n' % n)
+            chunks.extend(v.mansep())
+            chunks.extend(v.initial_chunks())
             chunks.extend(map(str, v.summary.body))
 
         body = ''.join(chunks)
@@ -210,27 +209,127 @@ class SCons_XML_to_man(SCons_XML):
         body = string.replace(body, '<para>\n', '')
         body = string.replace(body, '<para>', '\n')
         body = string.replace(body, '</para>\n', '')
-        body = re.sub('\.EE\n\n+(?!\.IP)', '.EE\n.IP\n', body)
+
+        body = string.replace(body, '<variablelist>\n', '.RS 10\n')
+        body = re.compile(r'<varlistentry>\n<term>([^<]*)</term>\n<listitem>\n').sub(r'.HP 6\n.B \1\n', body)
+        body = string.replace(body, '</listitem>\n', '')
+        body = string.replace(body, '</varlistentry>\n', '')
+        body = string.replace(body, '</variablelist>\n', '.RE\n')
+
+        body = re.sub(r'\.EE\n\n+(?!\.IP)', '.EE\n.IP\n', body)
+        body = string.replace(body, '\n.IP\n\'\\"', '\n\n\'\\"')
         body = re.sub('&(scons|SConstruct|SConscript|jar);', r'\\fB\1\\fP', body)
         body = string.replace(body, '&Dir;', r'\fBDir\fP')
         body = string.replace(body, '&target;', r'\fItarget\fP')
         body = string.replace(body, '&source;', r'\fIsource\fP')
         body = re.sub('&b(-link)?-([^;]*);', r'\\fB\2\\fP()', body)
         body = re.sub('&cv(-link)?-([^;]*);', r'$\2', body)
-        body = re.sub(r'<(command|envar|filename|literal|option)>([^<]*)</\1>',
+        body = re.sub('&f(-link)?-([^;]*);', r'\\fB\2\\fP()', body)
+        body = re.sub(r'<(command|envar|filename|function|literal|option)>([^<]*)</\1>',
                       r'\\fB\2\\fP', body)
         body = re.sub(r'<(classname|emphasis|varname)>([^<]*)</\1>',
                       r'\\fI\2\\fP', body)
+        body = re.compile(r'^\\f([BI])([^\\]* [^\\]*)\\fP\s*$', re.M).sub(r'.\1 "\2"', body)
         body = re.compile(r'^\\f([BI])(.*)\\fP\s*$', re.M).sub(r'.\1 \2', body)
-        body = re.compile(r'^\\f([BI])(.*)\\fP(\S+)', re.M).sub(r'.\1R \2 \3', body)
+        body = re.compile(r'^\\f([BI])(.*)\\fP(\S+)$', re.M).sub(r'.\1R \2 \3', body)
+        body = re.compile(r'^(\S+)\\f([BI])(.*)\\fP$', re.M).sub(r'.R\2 \1 \3', body)
         body = string.replace(body, '&lt;', '<')
         body = string.replace(body, '&gt;', '>')
         body = re.sub(r'\\([^f])', r'\\\\\1', body)
         body = re.compile("^'\\\\\\\\", re.M).sub("'\\\\", body)
+        body = re.compile(r'^\.([BI]R?) --', re.M).sub(r'.\1 \-\-', body)
         body = re.compile(r'^\.([BI]R?) -', re.M).sub(r'.\1 \-', body)
-        body = re.compile(r'^\.([BI]R?) (\S+)\\\\(\S+)', re.M).sub(r'.\1 "\2\\\\\\\\\2"', body)
+        body = re.compile(r'^\.([BI]R?) (\S+)\\\\(\S+)$', re.M).sub(r'.\1 "\2\\\\\\\\\2"', body)
         body = re.compile(r'\\f([BI])-', re.M).sub(r'\\f\1\-', body)
         f.write(body)
+
+class Proxy:
+    def __init__(self, subject):
+        """Wrap an object as a Proxy object"""
+        self.__subject = subject
+
+    def __getattr__(self, name):
+        """Retrieve an attribute from the wrapped object.  If the named
+           attribute doesn't exist, AttributeError is raised"""
+        return getattr(self.__subject, name)
+
+    def get(self):
+        """Retrieve the entire wrapped object"""
+        return self.__subject
+
+    def __cmp__(self, other):
+        if issubclass(other.__class__, self.__subject.__class__):
+            return cmp(self.__subject, other)
+        return cmp(self.__dict__, other.__dict__)
+
+class Builder(Proxy):
+    description = 'builder'
+    prefix = 'b-'
+    tag = 'function'
+    def idfunc(self):
+        return self.name
+    def termfunc(self):
+        return ['%s()' % self.name, 'env.%s()' % self.name]
+    def entityfunc(self):
+        return self.name
+    def mansep(self):
+        return ['\n', "'\\" + '"'*69 + '\n']
+    def initial_chunks(self):
+        return [ '.IP %s\n' % t for t in self.termfunc() ]
+
+class Function(Proxy):
+    description = 'function'
+    prefix = 'f-'
+    tag = 'function'
+    def idfunc(self):
+        return self.name
+    def termfunc(self):
+        return ['%s()' % self.name, 'env.%s()' % self.name]
+    def entityfunc(self):
+        return self.name
+    def mansep(self):
+        return ['\n', "'\\" + '"'*69 + '\n']
+    def initial_chunks(self):
+        try:
+            x = self.arguments
+        except AttributeError:
+            x = '()'
+        result = []
+        if self.global_signature != "0":
+            result.append('.TP\n.RI %s%s\n' % (self.name, x))
+        if self.env_signature != "0":
+            result.append('.TP\n.IR env .%s%s\n' % (self.name, x))
+        return result
+
+class Tool(Proxy):
+    description = 'tool'
+    prefix = 't-'
+    tag = 'literal'
+    def idfunc(self):
+        return string.replace(self.name, '+', 'X')
+    def termfunc(self):
+        return [self.name]
+    def entityfunc(self):
+        return self.name
+    def mansep(self):
+        return ['\n']
+    def initial_chunks(self):
+        return ['.IP %s\n' % self.name]
+
+class Variable(Proxy):
+    description = 'construction variable'
+    prefix = 'cv-'
+    tag = 'envar'
+    def idfunc(self):
+        return self.name
+    def termfunc(self):
+        return [self.name]
+    def entityfunc(self):
+        return '$' + self.name
+    def mansep(self):
+        return ['\n']
+    def initial_chunks(self):
+        return ['.IP %s\n' % self.name]
 
 if output_type == '--man':
     processor_class = SCons_XML_to_man
@@ -241,39 +340,19 @@ else:
     sys.exit(1)
 
 if buildersfiles:
-    g = processor_class(h.builders,
-            description = 'builder',
-            prefix = 'b-',
-            tag = 'function',
-            idfunc = lambda x: x,
-            termfunc = lambda x: [x+'()', 'env.'+x+'()'],
-            entityfunc = lambda x: x)
-
-    g.mansep = lambda: ['\n', "'\\" + '"'*69 + '\n']
-    g.initial_chunks = lambda n: [n+'()', 'env.'+n+'()']
-
+    g = processor_class([ Builder(b) for b in sorted(h.builders.values()) ])
     g.write(buildersfiles)
 
-if toolsfiles:
-    g = processor_class(h.tools,
-            description = 'tool',
-            prefix = 't-',
-            tag = 'literal',
-            idfunc = lambda x: string.replace(x, '+', 'X'),
-            termfunc = lambda x: [x],
-            entityfunc = lambda x: x)
+if functionsfiles:
+    g = processor_class([ Function(b) for b in sorted(h.functions.values()) ])
+    g.write(functionsfiles)
 
+if toolsfiles:
+    g = processor_class([ Tool(t) for t in sorted(h.tools.values()) ])
     g.write(toolsfiles)
 
 if variablesfiles:
-    g = processor_class(h.cvars,
-            description = 'construction variable',
-            prefix = 'cv-',
-            tag = 'envar',
-            idfunc = lambda x: x,
-            termfunc = lambda x: [x],
-            entityfunc = lambda x: '$'+x)
-
+    g = processor_class([ Variable(v) for v in sorted(h.cvars.values()) ])
     g.write(variablesfiles)
 
 # Local Variables:
