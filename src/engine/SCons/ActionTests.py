@@ -192,7 +192,7 @@ _null = SCons.Action._null
 def test_varlist(pos_call, str_call, cmd, cmdstrfunc, **kw):
     def call_action(a, pos_call=pos_call, str_call=str_call, kw=kw):
         #FUTURE a = SCons.Action.Action(*a, **kw)
-        a = apply(SCons.Action.Action, a, kw)
+        a = SCons.Action.Action(*a, **kw)
         # returned object must provide these entry points
         assert hasattr(a, '__call__')
         assert hasattr(a, 'get_contents')
@@ -228,7 +228,7 @@ def test_positional_args(pos_callback, cmd, **kw):
     """Test that Action() returns the expected type and that positional args work.
     """
     #FUTURE act = SCons.Action.Action(cmd, **kw)
-    act = apply(SCons.Action.Action, (cmd,), kw)
+    act = SCons.Action.Action(cmd, **kw)
     pos_callback(act)
     assert act.varlist is (), act.varlist
 
@@ -236,7 +236,7 @@ def test_positional_args(pos_callback, cmd, **kw):
         # only valid cmdstrfunc is None
         def none(a): pass
         #FUTURE test_varlist(pos_callback, none, cmd, None, **kw)
-        apply(test_varlist, (pos_callback, none, cmd, None), kw)
+        test_varlist(pos_callback, none, cmd, None, **kw)
     else:
         # _ActionAction should have set these
         assert hasattr(act, 'strfunction')
@@ -250,25 +250,25 @@ def test_positional_args(pos_callback, cmd, **kw):
             assert hasattr(a, 'strfunction')
             assert a.cmdstr == 'cmdstr', a.cmdstr
         #FUTURE test_varlist(pos_callback, cmdstr, cmd, 'cmdstr', **kw)
-        apply(test_varlist, (pos_callback, cmdstr, cmd, 'cmdstr'), kw)
+        test_varlist(pos_callback, cmdstr, cmd, 'cmdstr', **kw)
 
         def fun(): pass
         def strfun(a, fun=fun):
             assert a.strfunction is fun, a.strfunction
             assert a.cmdstr == _null, a.cmdstr
         #FUTURE test_varlist(pos_callback, strfun, cmd, fun, **kw)
-        apply(test_varlist, (pos_callback, strfun, cmd, fun), kw)
+        test_varlist(pos_callback, strfun, cmd, fun, **kw)
 
         def none(a):
             assert hasattr(a, 'strfunction')
             assert a.cmdstr is None, a.cmdstr
         #FUTURE test_varlist(pos_callback, none, cmd, None, **kw)
-        apply(test_varlist, (pos_callback, none, cmd, None), kw)
+        test_varlist(pos_callback, none, cmd, None, **kw)
 
         """Test handling of bad cmdstrfunc arguments """
         try:
             #FUTURE a = SCons.Action.Action(cmd, [], **kw)
-            a = apply(SCons.Action.Action, (cmd, []), kw)
+            a = SCons.Action.Action(cmd, [], **kw)
         except SCons.Errors.UserError, e:
             s = str(e)
             m = 'Invalid command display variable'

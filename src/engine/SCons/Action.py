@@ -353,7 +353,7 @@ def _do_create_action(act, kw):
 
     if is_List(act):
         #TODO(1.5) return CommandAction(act, **kw)
-        return apply(CommandAction, (act,), kw)
+        return CommandAction(act, **kw)
 
     if callable(act):
         try:
@@ -380,7 +380,7 @@ def _do_create_action(act, kw):
         commands = str(act).split('\n')
         if len(commands) == 1:
             #TODO(1.5) return CommandAction(commands[0], **kw)
-            return apply(CommandAction, (commands[0],), kw)
+            return CommandAction(commands[0], **kw)
         # The list of string commands may include a LazyAction, so we
         # reprocess them via _do_create_list_action.
         return _do_create_list_action(commands, kw)
@@ -654,7 +654,7 @@ def _subproc(env, cmd, error = 'ignore', **kw):
 
     try:
         #FUTURE return subprocess.Popen(cmd, **kw)
-        return apply(subprocess.Popen, (cmd,), kw)
+        return subprocess.Popen(cmd, **kw)
     except EnvironmentError, e:
         if error == 'raise': raise
         # return a dummy Popen instance that only returns error
@@ -684,7 +684,7 @@ class CommandAction(_ActionAction):
         if __debug__: logInstanceCreation(self, 'Action.CommandAction')
 
         #TODO(1.5) _ActionAction.__init__(self, **kw)
-        apply(_ActionAction.__init__, (self,), kw)
+        _ActionAction.__init__(self, **kw)
         if is_List(cmd):
             if filter(is_List, cmd):
                 raise TypeError, "CommandAction should be given only " \
@@ -859,7 +859,7 @@ class CommandGeneratorAction(ActionBase):
                              env=env,
                              for_signature=for_signature)
         #TODO(1.5) gen_cmd = Action(ret, **self.gen_kw)
-        gen_cmd = apply(Action, (ret,), self.gen_kw)
+        gen_cmd = Action(ret, **self.gen_kw)
         if not gen_cmd:
             raise SCons.Errors.UserError("Object returned from command generator: %s cannot be used to create an Action." % repr(ret))
         return gen_cmd
@@ -929,7 +929,7 @@ class LazyAction(CommandGeneratorAction, CommandAction):
     def __init__(self, var, kw):
         if __debug__: logInstanceCreation(self, 'Action.LazyAction')
         #FUTURE CommandAction.__init__(self, '${'+var+'}', **kw)
-        apply(CommandAction.__init__, (self, '${'+var+'}'), kw)
+        CommandAction.__init__(self, '${'+var+'}', **kw)
         self.var = SCons.Util.to_String(var)
         self.gen_kw = kw
 
@@ -945,7 +945,7 @@ class LazyAction(CommandGeneratorAction, CommandAction):
         else:
             c = ''
         #TODO(1.5) gen_cmd = Action(c, **self.gen_kw)
-        gen_cmd = apply(Action, (c,), self.gen_kw)
+        gen_cmd = Action(c, **self.gen_kw)
         if not gen_cmd:
             raise SCons.Errors.UserError("$%s value %s cannot be used to create an Action." % (self.var, repr(c)))
         return gen_cmd
@@ -957,7 +957,7 @@ class LazyAction(CommandGeneratorAction, CommandAction):
         args = (self, target, source, env) + args
         c = self.get_parent_class(env)
         #TODO(1.5) return c.__call__(*args, **kw)
-        return apply(c.__call__, args, kw)
+        return c.__call__(*args, **kw)
 
     def get_presig(self, target, source, env):
         c = self.get_parent_class(env)
@@ -986,7 +986,7 @@ class FunctionAction(_ActionAction):
                 self.funccontents = _object_contents(execfunction)
 
         #TODO(1.5) _ActionAction.__init__(self, **kw)
-        apply(_ActionAction.__init__, (self,), kw)
+        _ActionAction.__init__(self, **kw)
 
     def function_name(self):
         try:
@@ -1215,17 +1215,17 @@ class ActionCaller:
         args = self.subst_args(target, source, env)
         kw = self.subst_kw(target, source, env)
         #TODO(1.5) return self.parent.actfunc(*args, **kw)
-        return apply(self.parent.actfunc, args, kw)
+        return self.parent.actfunc(*args, **kw)
 
     def strfunction(self, target, source, env):
         args = self.subst_args(target, source, env)
         kw = self.subst_kw(target, source, env)
         #TODO(1.5) return self.parent.strfunc(*args, **kw)
-        return apply(self.parent.strfunc, args, kw)
+        return self.parent.strfunc(*args, **kw)
 
     def __str__(self):
         #TODO(1.5) return self.parent.strfunc(*self.args, **self.kw)
-        return apply(self.parent.strfunc, self.args, self.kw)
+        return self.parent.strfunc(*self.args, **self.kw)
 
 class ActionFactory:
     """A factory class that will wrap up an arbitrary function

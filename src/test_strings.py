@@ -46,7 +46,7 @@ test = TestCmd.TestCmd()
 scons_version = TestSCons.SConsVersion
 
 def build_path(*args):
-    return apply(os.path.join, ('build',)+args)
+    return os.path.join('build', *args)
 
 build_scons     = build_path('scons')
 build_local     = build_path('scons-local', 'scons-local-'+scons_version)

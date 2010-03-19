@@ -1433,7 +1433,7 @@ class FSTestCase(_tempdirTestCase):
         test.subdir('sub', ['sub', 'dir'])
 
         def drive_workpath(drive, dirs, test=test):
-            x = apply(test.workpath, dirs)
+            x = test.workpath(*dirs)
             drive, path = os.path.splitdrive(x)
             return 'X:' + path
 
@@ -1577,7 +1577,7 @@ class FSTestCase(_tempdirTestCase):
         d1 = fs.Dir('d1')
         d2 = d1.Dir('d2')
         dirs = os.path.normpath(d2.abspath).split(os.sep)
-        above_path = apply(os.path.join, ['..']*len(dirs) + ['above'])
+        above_path = os.path.join(*['..']*len(dirs) + ['above'])
         above = d2.Dir(above_path)
 
     def test_rel_path(self):
@@ -2247,7 +2247,7 @@ class GlobTestCase(_tempdirTestCase):
         strings_kwargs = copy.copy(kwargs)
         strings_kwargs['strings'] = True
         for input, string_expect, node_expect in cases:
-            r = apply(self.fs.Glob, (input,), strings_kwargs)
+            r = self.fs.Glob(input, **strings_kwargs)
             r.sort()
             assert r == string_expect, "Glob(%s, strings=True) expected %s, got %s" % (input, string_expect, r)
 
@@ -2258,7 +2258,7 @@ class GlobTestCase(_tempdirTestCase):
         # Verify those by running the list through str() before comparing
         # them with the expected list of strings.
         for input, string_expect, node_expect in cases:
-            r = apply(self.fs.Glob, (input,), kwargs)
+            r = self.fs.Glob(input, **kwargs)
             if node_expect:
                 r.sort(lambda a,b: cmp(a.path, b.path))
                 result = []

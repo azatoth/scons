@@ -123,7 +123,7 @@ class Variables:
         """
 
         if SCons.Util.is_List(key) or type(key) == type(()):
-            apply(self._do_add, key)
+            self._do_add(*key)
             return
 
         if not SCons.Util.is_String(key) or \
@@ -148,7 +148,7 @@ class Variables:
             )
         """
         for o in optlist:
-            apply(self._do_add, o)
+            self._do_add(*o)
 
 
     def Update(self, env, args=None):

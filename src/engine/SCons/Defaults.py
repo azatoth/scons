@@ -87,7 +87,7 @@ def DefaultEnvironment(*args, **kw):
     global _default_env
     if not _default_env:
         import SCons.Util
-        _default_env = apply(SCons.Environment.Environment, args, kw)
+        _default_env = SCons.Environment.Environment(*args, **kw)
         if SCons.Util.md5:
             _default_env.Decider('MD5')
         else:
@@ -449,7 +449,7 @@ class Variable_Method_Caller:
                 v = frame.f_locals[variable]
                 if v:
                     method = getattr(v, self.method)
-                    return apply(method, args, kw)
+                    return method(*args, **kw)
             frame = frame.f_back
         return None
 

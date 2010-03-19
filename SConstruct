@@ -832,7 +832,7 @@ for p in [ scons ]:
     # Now go through and arrange to create whatever packages we can.
     #
     build_src_files = map(lambda x, b=build: os.path.join(b, x), src_files)
-    apply(Local, build_src_files, {})
+    Local(*build_src_files)
 
     distutils_formats = []
 
@@ -1241,7 +1241,7 @@ if sfiles:
 
         env.Command(b_psv_stamp, src_deps + b_ps_files, cmds)
 
-        apply(Local, b_ps_files, {})
+        Local(*b_ps_files)
 
         if gzip:
 

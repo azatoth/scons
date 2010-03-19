@@ -116,7 +116,7 @@ def buildAndlinkAgainst(builder, target, source,  method, lib, libname, **kw):
     kw['target'] = target
     kw['source'] = source
     kw['LIBS'] = LIBS
-    build = apply(builder, (), kw)
+    build = builder(**kw)
 
     # Check that the build target depends on at least one of the
     # library target.
@@ -194,7 +194,7 @@ except AttributeError:
     pass
 
 for i in range(200):
-  apply(prog, tests[i])
+  prog(*tests[i])
 
 """)
 

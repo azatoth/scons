@@ -76,7 +76,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION, DESCRIPTION,
         target=[ "%s_%s_%s.ipk"%(NAME, VERSION, buildarchitecture) ]
 
     # now apply the Ipkg builder
-    return apply(bld, [env, target, specfile], kw)
+    return bld(*[env, target, specfile], **kw)
 
 def gen_ipk_dir(proot, source, env, kw):
     # make sure the packageroot is a Dir object.
@@ -98,7 +98,7 @@ def gen_ipk_dir(proot, source, env, kw):
     spec_target.append(control.File('preinst'))
 
     # apply the builder to the specfile targets
-    apply(s_bld, [env, spec_target, source], kw)
+    s_bld(*[env, spec_target, source], **kw)
 
     # the packageroot directory does now contain the specfiles.
     return proot

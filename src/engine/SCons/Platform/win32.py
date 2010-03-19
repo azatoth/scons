@@ -66,14 +66,14 @@ else:
     _builtin_open = __builtin__.open
     
     def _scons_file(*args, **kw):
-        fp = apply(_builtin_file, args, kw)
+        fp = _builtin_file(*args, **kw)
         win32api.SetHandleInformation(msvcrt.get_osfhandle(fp.fileno()),
                                       win32con.HANDLE_FLAG_INHERIT,
                                       0)
         return fp
 
     def _scons_open(*args, **kw):
-        fp = apply(_builtin_open, args, kw)
+        fp = _builtin_open(*args, **kw)
         win32api.SetHandleInformation(msvcrt.get_osfhandle(fp.fileno()),
                                       win32con.HANDLE_FLAG_INHERIT,
                                       0)

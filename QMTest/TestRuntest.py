@@ -125,7 +125,7 @@ class TestRuntest(TestCommon):
             del kw['noqmtest']
 
         orig_cwd = os.getcwd()
-        apply(TestCommon.__init__, [self], kw)
+        TestCommon.__init__(*[self], **kw)
   
         if not noqmtest:
             qmtest = self.where_is('qmtest')

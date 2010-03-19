@@ -173,7 +173,7 @@ class TestEnvironmentFixture:
             kw['BUILDERS'] = {'Object' : static_obj}
             static_obj.add_action('.cpp', 'fake action')
             
-        env = apply(Environment, args, kw)
+        env = Environment(*args, **kw)
         return env
 
 class SubstitutionTestCase(unittest.TestCase):
@@ -3926,9 +3926,9 @@ class NoSubstitutionProxyTestCase(unittest.TestCase,TestEnvironmentFixture):
 
         args = ('$XXX $TARGET $SOURCE $YYY',)
         kw = {'target' : DummyNode('ttt'), 'source' : DummyNode('sss')}
-        x = apply(env.subst_target_source, args, kw)
+        x = env.subst_target_source(*args, **kw)
         assert x == 'x ttt sss y', x
-        x = apply(proxy.subst_target_source, args, kw)
+        x = proxy.subst_target_source(*args, **kw)
         assert x == ' ttt sss ', x
 
 class EnvironmentVariableTestCase(unittest.TestCase):

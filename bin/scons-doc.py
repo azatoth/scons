@@ -229,7 +229,7 @@ class Curry:
         else:
             kw = kwargs or self.kwargs
 
-        return apply(self.fun, self.pending + args, kw)
+        return self.fun(*self.pending + args, **kw)
 
 def Str(target, source, env, cmd=""):
     result = []
@@ -382,7 +382,7 @@ filter_tools = string.split('%(tools)s')
 if filter_tools:
     toollist = filter(lambda x, ft=filter_tools: x[0] in ft, toollist)
 
-toollist = map(lambda t: apply(ToolSurrogate, t), toollist)
+toollist = map(lambda t: ToolSurrogate(*t), toollist)
 
 toollist.append('install')
 

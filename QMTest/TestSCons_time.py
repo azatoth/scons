@@ -184,7 +184,7 @@ class TestSCons_time(TestCommon):
         if not kw.has_key('workdir'):
             kw['workdir'] = ''
 
-        apply(TestCommon.__init__, [self], kw)
+        TestCommon.__init__(*[self], **kw)
 
         # Now that the testing object has been set up, check if we should
         # skip the test due to the Python version.  We need to be able to
@@ -246,7 +246,7 @@ class TestSCons_time(TestCommon):
             tempdir = realpath(tempdir)
 
         args = (tempdir, 'scons-time-',) + args
-        x = apply(os.path.join, args)
+        x = os.path.join(*args)
         x = re.escape(x)
         x = x.replace('time\\-', 'time\\-[^%s]*' % sep)
         return x

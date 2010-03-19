@@ -47,7 +47,7 @@ class TestSConsign(TestSCons):
             os.chdir(script_dir)
         self.script_dir = os.getcwd()
 
-        apply(TestSCons.__init__, (self,)+args, kw)
+        TestSCons.__init__(self, *args, **kw)
 
         self.my_kw = {
             'interpreter' : python,     # imported from TestSCons
@@ -80,7 +80,7 @@ class TestSConsign(TestSCons):
 
     def run_sconsign(self, *args, **kw):
         kw.update(self.my_kw)
-        return apply(self.run, args, kw)
+        return self.run(*args, **kw)
 
 # Local Variables:
 # tab-width:4

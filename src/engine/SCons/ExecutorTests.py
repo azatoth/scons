@@ -38,7 +38,7 @@ class MyEnvironment:
     def Override(self, overrides):
         d = self._dict.copy()
         d.update(overrides)
-        return apply(MyEnvironment, (), d)
+        return MyEnvironment(**d)
     def _update(self, dict):
         self._dict.update(dict)
 
@@ -47,7 +47,7 @@ class MyAction:
         self.actions = actions
     def __call__(self, target, source, env, **kw):
         for action in self.actions:
-            apply(action, (target, source, env), kw)
+            action(target, source, env, **kw)
     def genstring(self, target, source, env):
         return ' '.join(['GENSTRING'] + map(str, self.actions) + target + source)
     def get_contents(self, target, source, env):
@@ -78,7 +78,7 @@ class MyNode:
                                            [],
                                            [self],
                                            ['s1', 's2'])
-        apply(executor, (self), {})
+        executor(self)
     def get_env_scanner(self, env, kw):
         return MyScanner('dep-')
     def get_implicit_deps(self, env, scanner, path):

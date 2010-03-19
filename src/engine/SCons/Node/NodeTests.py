@@ -124,7 +124,7 @@ class Environment:
     def Override(self, overrides):
         d = self._dict.copy()
         d.update(overrides)
-        return apply(Environment, (), d)
+        return Environment(**d)
     def _update(self, dict):
         self._dict.update(dict)
     def get_factory(self, factory):

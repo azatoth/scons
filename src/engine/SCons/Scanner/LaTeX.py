@@ -230,7 +230,7 @@ class LaTeX(SCons.Scanner.Base):
         kw['scan_check'] = LaTeXScanCheck(suffixes)
         kw['name'] = name
 
-        apply(SCons.Scanner.Base.__init__, (self,) + args, kw)
+        SCons.Scanner.Base.__init__(self, *args, **kw)
 
     def _latex_names(self, include):
         filename = include[1]

@@ -169,7 +169,7 @@ class CountValue(Counter):
             self.hit = self.hit + 1
         else:
             self.miss = self.miss + 1
-        return apply(self.underlying_method, args, kw)
+        return self.underlying_method(*args, **kw)
 
 class CountDict(Counter):
     """
@@ -199,12 +199,12 @@ class CountDict(Counter):
         except KeyError:
             self.miss = self.miss + 1
         else:
-            key = apply(self.keymaker, args, kw)
+            key = self.keymaker(*args, **kw)
             if memo_dict.has_key(key):
                 self.hit = self.hit + 1
             else:
                 self.miss = self.miss + 1
-        return apply(self.underlying_method, args, kw)
+        return self.underlying_method(*args, **kw)
 
 class Memoizer:
     """Object which performs caching of method calls for its 'primary'

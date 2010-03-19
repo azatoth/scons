@@ -193,7 +193,7 @@ def Java(env, target, source, *args, **kw):
                 b = env.JavaClassFile
             else:
                 b = env.JavaClassDir
-        result.extend(apply(b, (t, s) + args, kw))
+        result.extend(b(t, s, *args, **kw))
 
     return result
 

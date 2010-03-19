@@ -272,7 +272,7 @@ def Builder(**kw):
         elif SCons.Util.is_List(emitter):
             kw['emitter'] = ListEmitter(emitter)
 
-    result = apply(BuilderBase, (), kw)
+    result = BuilderBase(**kw)
 
     if not composite is None:
         result = CompositeBuilder(result, composite)

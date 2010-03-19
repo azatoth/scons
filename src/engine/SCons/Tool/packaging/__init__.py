@@ -153,7 +153,7 @@ def Package(env, target=None, source=None, **kw):
     try:
         for packager in packagers:
             t=[target.pop(0)]
-            t=apply(packager.package, [env,t,source], kw)
+            t=packager.package(*[env,t,source], **kw)
             targets.extend(t)
 
         assert( len(target) == 0 )

@@ -178,7 +178,7 @@ class Tool:
             self.options(opts)
             opts.Update(env)
 
-        apply(self.generate, ( env, ) + args, kw)
+        self.generate(env, *args, **kw)
 
     def __str__(self):
         return self.name
@@ -474,7 +474,7 @@ class ToolInitializerMethod:
         builder = self.get_builder(env)
         if builder is None:
             return [], []
-        return apply(builder, args, kw)
+        return builder(*args, **kw)
 
 class ToolInitializer:
     """
@@ -530,9 +530,9 @@ class ToolInitializer:
 def Initializers(env):
     ToolInitializer(env, ['install'], ['_InternalInstall', '_InternalInstallAs'])
     def Install(self, *args, **kw):
-        return apply(self._InternalInstall, args, kw)
+        return self._InternalInstall(*args, **kw)
     def InstallAs(self, *args, **kw):
-        return apply(self._InternalInstallAs, args, kw)
+        return self._InternalInstallAs(*args, **kw)
     env.AddMethod(Install)
     env.AddMethod(InstallAs)
 

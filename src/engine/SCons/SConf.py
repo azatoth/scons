@@ -243,7 +243,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
                 def excepthook(type, value, tb):
                     traceback.print_tb(tb)
                     print type, value
-            apply(excepthook, self.exc_info())
+            excepthook(*self.exc_info())
         return SCons.Taskmaster.Task.failed(self)
 
     def collect_node_states(self):
@@ -642,7 +642,7 @@ class SConfBase:
                 raise (SCons.Errors.UserError,
                        "Test called after sconf.Finish()")
             context = CheckContext(self.sconf)
-            ret = apply(self.test, (context,) +  args, kw)
+            ret = self.test(context, *args, **kw)
             if self.sconf.config_h is not None:
                 self.sconf.config_h_text = self.sconf.config_h_text + context.config_h
             context.Result("error: no result")
@@ -801,19 +801,19 @@ class CheckContext:
             self.did_show_result = 1
 
     def TryBuild(self, *args, **kw):
-        return apply(self.sconf.TryBuild, args, kw)
+        return self.sconf.TryBuild(*args, **kw)
 
     def TryAction(self, *args, **kw):
-        return apply(self.sconf.TryAction, args, kw)
+        return self.sconf.TryAction(*args, **kw)
 
     def TryCompile(self, *args, **kw):
-        return apply(self.sconf.TryCompile, args, kw)
+        return self.sconf.TryCompile(*args, **kw)
 
     def TryLink(self, *args, **kw):
-        return apply(self.sconf.TryLink, args, kw)
+        return self.sconf.TryLink(*args, **kw)
 
     def TryRun(self, *args, **kw):
-        return apply(self.sconf.TryRun, args, kw)
+        return self.sconf.TryRun(*args, **kw)
 
     def __getattr__( self, attr ):
         if( attr == 'env' ):
@@ -886,7 +886,7 @@ def SConf(*args, **kw):
                 del kw[bt]
             except KeyError:
                 pass
-        return apply(SConfBase, args, kw)
+        return SConfBase(*args, **kw)
     else:
         return SCons.Util.Null()
 

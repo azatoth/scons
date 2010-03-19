@@ -341,7 +341,7 @@ class Executor:
         for act in self.get_action_list():
             #args = (self.get_all_targets(), self.get_all_sources(), env)
             args = ([], [], env)
-            status = apply(act, args, kw)
+            status = act(*args, **kw)
             if isinstance(status, SCons.Errors.BuildError):
                 status.executor = self
                 raise status

@@ -371,7 +371,7 @@ class Node:
 
         """
         try:
-            apply(self.get_executor(), (self,), kw)
+            self.get_executor()(self, **kw)
         except SCons.Errors.BuildError, e:
             e.node = self
             raise

@@ -47,7 +47,7 @@ class Curry:
         else:
             kw = kwargs or self.kwargs
 
-        return apply(self.fun, self.pending + args, kw)
+        return self.fun(*self.pending + args, **kw)
 
 def Str(target, source, env, cmd=""):
     result = []
@@ -81,7 +81,7 @@ ToolList = {
 }
 
 platform = ARGUMENTS['platform']
-tools = map(lambda t: apply(ToolSurrogate, t), ToolList[platform])
+tools = map(lambda t: ToolSurrogate(*t), ToolList[platform])
 
 env = Environment(tools=tools, PROGSUFFIX='.exe', OBJSUFFIX='.obj')
 env.Program('foo.c')

@@ -204,7 +204,7 @@ class TestCase:
 
     def failIf(self, expr, msg=None):
         "Fail the test if the expression is true."
-        apply(self.assert_,(not expr,msg))
+        self.assert_(not expr,msg)
 
     def assertRaises(self, excClass, callableObj, *args, **kwargs):
         """Assert that an exception of class excClass is thrown
@@ -215,7 +215,7 @@ class TestCase:
            unexpected exception.
         """
         try:
-            apply(callableObj, args, kwargs)
+            callableObj(*args, **kwargs)
         except excClass:
             return
         else:
@@ -428,7 +428,7 @@ class _WritelnDecorator:
         return getattr(self.stream,attr)
 
     def writeln(self, *args):
-        if args: apply(self.write, args)
+        if args: self.write(*args)
         self.write(self.linesep)
 
  
@@ -467,7 +467,7 @@ class _JUnitTextTestResult(TestResult):
                                 (len(errors), errFlavour))
         i = 1
         for test,error in errors:
-            errString = "".join(apply(traceback.format_exception,error))
+            errString = "".join(traceback.format_exception(*error))
             self.stream.writeln("%i) %s" % (i, test))
             self.stream.writeln(errString)
             i = i + 1
@@ -566,7 +566,7 @@ class _VerboseTextTestResult(TestResult):
             self.stream.writeln(separator1)
         self.stream.writeln("\t%s" % flavour)
         self.stream.writeln(separator2)
-        for line in apply(traceback.format_exception, err):
+        for line in traceback.format_exception(*err):
             for l in line.split("\n")[:-1]:
                 self.stream.writeln("\t%s" % l)
         self.stream.writeln(separator1)

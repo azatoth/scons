@@ -144,7 +144,7 @@ ProgressObject = SCons.Util.Null()
 
 def Progress(*args, **kw):
     global ProgressObject
-    ProgressObject = apply(Progressor, args, kw)
+    ProgressObject = Progressor(*args, **kw)
 
 # Task control.
 #
@@ -470,7 +470,7 @@ OptionsParser = FakeOptionParser()
 def AddOption(*args, **kw):
     if not kw.has_key('default'):
         kw['default'] = None
-    result = apply(OptionsParser.add_local_option, args, kw)
+    result = OptionsParser.add_local_option(*args, **kw)
     return result
 
 def GetOption(name):

@@ -339,7 +339,7 @@ def run_it(title, init):
       s['num'] = iterations
       s['title'] = title
       s['init'] = init
-      apply(times,(),s)
+      times(**s)
 
 print 'Environment __setitem__ benchmark using',
 print 'Python', sys.version.split()[0],

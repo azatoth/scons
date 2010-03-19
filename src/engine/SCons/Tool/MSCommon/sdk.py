@@ -124,7 +124,7 @@ class WindowsSDK(SDKDefinition):
     """
     HKEY_FMT = r'Software\Microsoft\Microsoft SDKs\Windows\v%s\InstallationFolder'
     def __init__(self, *args, **kw):
-        apply(SDKDefinition.__init__, (self,)+args, kw)
+        SDKDefinition.__init__(self, *args, **kw)
         self.hkey_data = self.version
 
 class PlatformSDK(SDKDefinition):
@@ -133,7 +133,7 @@ class PlatformSDK(SDKDefinition):
     """
     HKEY_FMT = r'Software\Microsoft\MicrosoftSDK\InstalledSDKS\%s\Install Dir'
     def __init__(self, *args, **kw):
-        apply(SDKDefinition.__init__, (self,)+args, kw)
+        SDKDefinition.__init__(self, *args, **kw)
         self.hkey_data = self.uuid
 
 #

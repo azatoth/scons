@@ -172,7 +172,7 @@ class Curry:
         else:
             kw = kwargs or self.kwargs
 
-        return apply(self.fun, self.pending + args, kw)
+        return self.fun(*self.pending + args, **kw)
 
 def Str(target, source, env, cmd=""):
     result = []
@@ -210,7 +210,7 @@ ToolList = {
                  ('mslink', 'LINKCOM', Cat)]
 }
 
-tools = map(lambda t: apply(ToolSurrogate, t), ToolList[platform])
+tools = map(lambda t: ToolSurrogate(*t), ToolList[platform])
 
 SCons.Defaults.ConstructionEnvironment.update({
     'PLATFORM' : platform,

@@ -125,7 +125,7 @@ class Environment:
     def get(self, key, value=None):
         return self.d.get(key, value)
     def Override(self, overrides):
-        env = apply(Environment, (), self.d)
+        env = Environment(**self.d)
         env.d.update(overrides)
         env.scanner = self.scanner
         return env

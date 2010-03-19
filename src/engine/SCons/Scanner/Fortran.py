@@ -74,7 +74,7 @@ class F90Scanner(SCons.Scanner.Classic):
         kw['skeys'] = suffixes
         kw['name'] = name
 
-        apply(SCons.Scanner.Current.__init__, (self,) + args, kw)
+        SCons.Scanner.Current.__init__(self, *args, **kw)
 
     def scan(self, node, env, path=()):
 

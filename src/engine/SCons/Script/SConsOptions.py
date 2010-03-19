@@ -356,7 +356,7 @@ class SConsOptionParser(optparse.OptionParser):
             group = self.add_option_group(group)
             self.local_option_group = group
 
-        result = apply(group.add_option, args, kw)
+        result = group.add_option(*args, **kw)
 
         if result:
             # The option was added succesfully.  We now have to add the

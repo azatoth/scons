@@ -414,7 +414,7 @@ arguments = {
                           'build_scripts'   : build_scripts}
 }
 
-apply(distutils.core.setup, (), arguments)
+distutils.core.setup(**arguments)
 
 if Installed:
     print '\n'.join(Installed)

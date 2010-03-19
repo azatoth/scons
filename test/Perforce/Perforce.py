@@ -37,7 +37,7 @@ import TestSCons
 
 class TestPerforce(TestSCons.TestSCons):
     def __init__(self, *args, **kw):
-        apply(TestSCons.TestSCons.__init__, (self,)+args, kw)
+        TestSCons.TestSCons.__init__(self, *args, **kw)
 
         self.p4d = None
 
@@ -111,7 +111,7 @@ class TestPerforce(TestSCons.TestSCons):
             args = args[1:]
         kw['arguments'] = ' '.join(self.p4portflags + [arguments])
         kw['program'] = self.p4path
-        return apply(self.run, args, kw)
+        return self.run(*args, **kw)
 
     def substitute(self, s, **kw):
         kw = kw.copy()

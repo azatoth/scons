@@ -656,7 +656,7 @@ print "self._msvs_versions =", str(SCons.Tool.MSCommon.query_versions())
         sconsflags = sconsflags + ['--warn=no-deprecated']
         os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
         try:
-            result = apply(TestSCons.run, (self,)+args, kw)
+            result = TestSCons.run(self, *args, **kw)
         finally:
             os.environ['SCONSFLAGS'] = save_sconsflags or ''
         return result

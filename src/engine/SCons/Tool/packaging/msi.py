@@ -511,7 +511,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
 
     # put the arguments into the env and call the specfile builder.
     env['msi_spec'] = kw
-    specfile = apply( wxs_builder, [env, target, source], kw )
+    specfile = wxs_builder(* [env, target, source], **kw)
 
     # now call the WiX Tool with the built specfile added as a source.
     msifile  = env.WiX(target, specfile)

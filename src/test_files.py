@@ -46,7 +46,7 @@ except KeyError:
     cwd = os.getcwd()
 
 def build_path(*args):
-    return apply(os.path.join, (cwd, 'build',) + args)
+    return os.path.join(cwd, 'build', *args)
 
 build_scons_tar_gz  = build_path('unpack-tar-gz', 'scons-'+test.scons_version)
 build_scons_zip     = build_path('unpack-zip', 'scons-'+test.scons_version)

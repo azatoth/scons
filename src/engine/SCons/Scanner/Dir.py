@@ -35,14 +35,14 @@ def DirScanner(**kw):
     directories for on-disk files"""
     kw['node_factory'] = SCons.Node.FS.Entry
     kw['recursive'] = only_dirs
-    return apply(SCons.Scanner.Base, (scan_on_disk, "DirScanner"), kw)
+    return SCons.Scanner.Base(scan_on_disk, "DirScanner", **kw)
 
 def DirEntryScanner(**kw):
     """Return a prototype Scanner instance for "scanning"
     directory Nodes for their in-memory entries"""
     kw['node_factory'] = SCons.Node.FS.Entry
     kw['recursive'] = None
-    return apply(SCons.Scanner.Base, (scan_in_memory, "DirEntryScanner"), kw)
+    return SCons.Scanner.Base(scan_in_memory, "DirEntryScanner", **kw)
 
 skip_entry = {}
 

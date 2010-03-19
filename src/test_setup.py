@@ -116,7 +116,7 @@ class MyTestSCons(TestSCons.TestSCons):
         kw['chdir'] = scons_version
         kw['program'] = python
         kw['stderr'] = None
-        return apply(TestSCons.TestSCons.run, (self,)+args, kw)
+        return TestSCons.TestSCons.run(self, *args, **kw)
 
     def remove(self, dir):
         try: shutil.rmtree(dir)

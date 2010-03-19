@@ -126,9 +126,8 @@ class NodeList(UserList):
         return iter(self.data)
 
     def __call__(self, *args, **kwargs):
-        result = map(lambda x, args=args, kwargs=kwargs: apply(x,
-                                                               args,
-                                                               kwargs),
+        result = map(lambda x, args=args, kwargs=kwargs: x(*args,
+                                                               **kwargs),
                      self.data)
         return self.__class__(result)
 
@@ -1401,8 +1400,7 @@ class UniqueList(UserList):
         UserList.reverse(self)
     def sort(self, *args, **kwds):
         self.__make_unique()
-        #return UserList.sort(self, *args, **kwds)
-        return apply(UserList.sort, (self,)+args, kwds)
+        return UserList.sort(self, *args, **kwds)
     def extend(self, other):
         UserList.extend(self, other)
         self.unique = False
@@ -1604,8 +1602,7 @@ class Null:
     """ Null objects always and reliably "do nothing." """
     def __new__(cls, *args, **kwargs):
         if not '_inst' in vars(cls):
-            #cls._inst = type.__new__(cls, *args, **kwargs)
-            cls._inst = apply(type.__new__, (cls,) + args, kwargs)
+            cls._inst = type.__new__(cls, *args, **kwargs)
         return cls._inst
     def __init__(self, *args, **kwargs):
         pass

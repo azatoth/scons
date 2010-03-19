@@ -92,7 +92,7 @@ def scanxml(node, env, target):
                 if tail == 'doc':
                     break
                 a = [tail] + a
-            file = apply(os.path.join, a, {})
+            file = os.path.join(*a)
         includes.append(file)
 
     return includes

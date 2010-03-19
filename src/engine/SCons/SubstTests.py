@@ -241,7 +241,7 @@ class SubstTestCase(unittest.TestCase):
             input, expect = cases[:2]
             expect = convert(expect)
             try:
-                result = apply(function, (input, env), kwargs)
+                result = function(input, env, **kwargs)
             except Exception, e:
                 fmt = "    input %s generated %s (%s)"
                 print fmt % (repr(input), e.__class__.__name__, repr(e))

@@ -458,7 +458,7 @@ class SConsEnvironment(SCons.Environment.Base):
         if not SCons.Script.sconscript_reading:
             raise SCons.Errors.UserError, "Calling Configure from Builders is not supported."
         kw['_depth'] = kw.get('_depth', 0) + 1
-        return apply(SCons.Environment.Base.Configure, (self,)+args, kw)
+        return SCons.Environment.Base.Configure(self, *args, **kw)
 
     def Default(self, *targets):
         SCons.Script._Set_Default_Targets(self, targets)
@@ -549,7 +549,7 @@ class SConsEnvironment(SCons.Environment.Base):
 
         files, exports = self._get_SConscript_filenames(ls, subst_kw)
         subst_kw['exports'] = exports
-        return apply(_SConscript, [self.fs,] + files, subst_kw)
+        return _SConscript(*[self.fs,] + files, **subst_kw)
 
     def SConscriptChdir(self, flag):
         global sconscript_chdir
@@ -568,7 +568,7 @@ def Configure(*args, **kw):
     if not SCons.Script.sconscript_reading:
         raise SCons.Errors.UserError, "Calling Configure from Builders is not supported."
     kw['_depth'] = 1
-    return apply(SCons.SConf.SConf, args, kw)
+    return SCons.SConf.SConf(*args, **kw)
 
 # It's very important that the DefaultEnvironmentCall() class stay in this
 # file, with the get_calling_namespaces() function, the compute_exports()
@@ -612,7 +612,7 @@ class DefaultEnvironmentCall:
     def __call__(self, *args, **kw):
         env = self.factory()
         method = getattr(env, self.method_name)
-        return apply(method, args, kw)
+        return method(*args, **kw)
 
 
 def BuildDefaultGlobals():

@@ -216,7 +216,7 @@ class TestCommon(TestCmd):
         calling the base class initialization, and then changing directory
         to the workdir.
         """
-        apply(TestCmd.__init__, [self], kw)
+        TestCmd.__init__(*[self], **kw)
         os.chdir(self.workdir)
 
     def must_be_writable(self, *files):
@@ -226,7 +226,7 @@ class TestCommon(TestCmd):
         them.  Exits FAILED if any of the files does not exist or is
         not writable.
         """
-        files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
+        files = map(lambda x: is_List(x) and os.path.join(*x) or x, files)
         existing, missing = separate_files(files)
         unwritable = filter(lambda x, iw=is_writable: not iw(x), existing)
         if missing:
@@ -312,7 +312,7 @@ class TestCommon(TestCmd):
         pathname will be constructed by concatenating them.  Exits FAILED
         if any of the files does not exist.
         """
-        files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
+        files = map(lambda x: is_List(x) and os.path.join(*x) or x, files)
         missing = filter(lambda x: not os.path.exists(x), files)
         if missing:
             print "Missing files: `%s'" % "', `".join(missing)
@@ -384,7 +384,7 @@ class TestCommon(TestCmd):
         which case the pathname will be constructed by concatenating them.
         Exits FAILED if any of the files exists.
         """
-        files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
+        files = map(lambda x: is_List(x) and os.path.join(*x) or x, files)
         existing = filter(os.path.exists, files)
         if existing:
             print "Unexpected files exist: `%s'" % "', `".join(existing)
@@ -398,7 +398,7 @@ class TestCommon(TestCmd):
         them.  Exits FAILED if any of the files does not exist or is
         writable.
         """
-        files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
+        files = map(lambda x: is_List(x) and os.path.join(*x) or x, files)
         existing, missing = separate_files(files)
         writable = filter(is_writable, existing)
         if missing:
@@ -457,9 +457,8 @@ class TestCommon(TestCmd):
                 else:
                     arguments = options + " " + arguments
         try:
-            return apply(TestCmd.start,
-                         (self, program, interpreter, arguments, universal_newlines),
-                         kw)
+            return TestCmd.start(self, program, interpreter, arguments, universal_newlines,
+                         **kw)
         except KeyboardInterrupt:
             raise
         except Exception, e:
@@ -495,7 +494,7 @@ class TestCommon(TestCmd):
                         command.  A value of None means don't
                         test exit status.
         """
-        apply(TestCmd.finish, (self, popen,), kw)
+        TestCmd.finish(self, popen, **kw)
         match = kw.get('match', self.match)
         self._complete(self.stdout(), stdout,
                        self.stderr(), stderr, status, match)
@@ -537,7 +536,7 @@ class TestCommon(TestCmd):
             del kw['match']
         except KeyError:
             match = self.match
-        apply(TestCmd.run, [self], kw)
+        TestCmd.run(*[self], **kw)
         self._complete(self.stdout(), stdout,
                        self.stderr(), stderr, status, match)
 

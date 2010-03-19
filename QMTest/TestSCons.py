@@ -267,7 +267,7 @@ class TestSCons(TestCommon):
             sconsflags = sconsflags + ['--warn=no-python-version']
             os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
 
-        apply(TestCommon.__init__, [self], kw)
+        TestCommon.__init__(*[self], **kw)
 
         import SCons.Node.FS
         if SCons.Node.FS.default_fs is None:
@@ -283,7 +283,7 @@ class TestSCons(TestCommon):
         if not ENV is None:
             kw['ENV'] = ENV
         try:
-            return apply(SCons.Environment.Environment, args, kw)
+            return SCons.Environment.Environment(*args, **kw)
         except (SCons.Errors.UserError, SCons.Errors.InternalError):
             return None
 
@@ -377,7 +377,7 @@ class TestSCons(TestCommon):
                                                   '--warn=no-visual-c-missing')]
         os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
         try:
-            result = apply(TestCommon.run, (self,)+args, kw)
+            result = TestCommon.run(self, *args, **kw)
         finally:
             sconsflags = save_sconsflags
         return result
@@ -394,7 +394,7 @@ class TestSCons(TestCommon):
         # up-to-date output is okay.
         kw['stdout'] = re.escape(stdout) + '.*'
         kw['match'] = self.match_re_dotall
-        apply(self.run, [], kw)
+        self.run(**kw)
 
     def not_up_to_date(self, options = None, arguments = None, **kw):
         """Asserts that none of the targets listed in arguments is
@@ -411,7 +411,7 @@ class TestSCons(TestCommon):
         stdout = re.escape(self.wrap_stdout(build_str='ARGUMENTSGOHERE'))
         kw['stdout'] = stdout.replace('ARGUMENTSGOHERE', s)
         kw['match'] = self.match_re_dotall
-        apply(self.run, [], kw)
+        self.run(**kw)
 
     def option_not_yet_implemented(self, option, arguments=None, **kw):
         """
@@ -429,7 +429,7 @@ class TestSCons(TestCommon):
                 kw['arguments'] = option + ' ' + arguments
         # TODO(1.5)
         #return self.run(**kw)
-        return apply(self.run, (), kw)
+        return self.run(**kw)
 
     def diff_substr(self, expect, actual, prelen=20, postlen=40):
         i = 0
@@ -770,7 +770,7 @@ else:
 
     def Qt_create_SConstruct(self, place):
         if type(place) is type([]):
-            place = apply(test.workpath, place)
+            place = test.workpath(*place)
         self.write(place, """\
 if ARGUMENTS.get('noqtdir', 0): QTDIR=None
 else: QTDIR=r'%s'
@@ -966,7 +966,7 @@ print py_ver
         """
         if not kw.has_key('stdin'):
             kw['stdin'] = True
-        return apply(TestCommon.start, (self,) + args, kw)
+        return TestCommon.start(self, *args, **kw)
 
     def wait_for(self, fname, timeout=10.0, popen=None):
         """
@@ -1060,7 +1060,7 @@ class TimeSCons(TestSCons):
 
         # TODO(1.5)
         #TestSCons.__init__(self, *args, **kw)
-        apply(TestSCons.__init__, (self,)+args, kw)
+        TestSCons.__init__(self, *args, **kw)
 
         # TODO(sgk):    better way to get the script dir than sys.argv[0]
         test_dir = os.path.dirname(sys.argv[0])
@@ -1095,16 +1095,16 @@ class TimeSCons(TestSCons):
         if self.calibrate:
             # TODO(1.5)
             #self.calibration(*args, **kw)
-            apply(self.calibration, args, kw)
+            self.calibration(*args, **kw)
         else:
             self.uptime()
             # TODO(1.5)
             #self.startup(*args, **kw)
             #self.full(*args, **kw)
             #self.null(*args, **kw)
-            apply(self.startup, args, kw)
-            apply(self.full, args, kw)
-            apply(self.null, args, kw)
+            self.startup(*args, **kw)
+            self.full(*args, **kw)
+            self.null(*args, **kw)
 
     def trace(self, graph, name, value, units, sort=None):
         fmt = "TRACE: graph=%s name=%s value=%s units=%s"
@@ -1124,7 +1124,7 @@ class TimeSCons(TestSCons):
         for name, args in stats.items():
             # TODO(1.5)
             #self.trace(name, trace, *args)
-            apply(self.trace, (name, trace), args)
+            self.trace(name, trace, **args)
 
     def uptime(self):
         try:
@@ -1165,7 +1165,7 @@ class TimeSCons(TestSCons):
         kw['status'] = None
         # TODO(1.5)
         #self.run(*args, **kw)
-        apply(self.run, args, kw)
+        self.run(*args, **kw)
         sys.stdout.write(self.stdout())
         stats = self.collect_stats(self.stdout())
         # Delete the time-commands, since no commands are ever
@@ -1179,7 +1179,7 @@ class TimeSCons(TestSCons):
         """
         # TODO(1.5)
         #self.run(*args, **kw)
-        apply(self.run, args, kw)
+        self.run(*args, **kw)
         sys.stdout.write(self.stdout())
         stats = self.collect_stats(self.stdout())
         self.report_traces('full', stats)
@@ -1187,9 +1187,9 @@ class TimeSCons(TestSCons):
         #self.trace('full-memory', 'initial', **stats['memory-initial'])
         #self.trace('full-memory', 'prebuild', **stats['memory-prebuild'])
         #self.trace('full-memory', 'final', **stats['memory-final'])
-        apply(self.trace, ('full-memory', 'initial'), stats['memory-initial'])
-        apply(self.trace, ('full-memory', 'prebuild'), stats['memory-prebuild'])
-        apply(self.trace, ('full-memory', 'final'), stats['memory-final'])
+        self.trace('full-memory', 'initial', **stats['memory-initial'])
+        self.trace('full-memory', 'prebuild', **stats['memory-prebuild'])
+        self.trace('full-memory', 'final', **stats['memory-final'])
 
     def calibration(self, *args, **kw):
         """
@@ -1199,7 +1199,7 @@ class TimeSCons(TestSCons):
         """
         # TODO(1.5)
         #self.run(*args, **kw)
-        apply(self.run, args, kw)
+        self.run(*args, **kw)
         if self.variables:
             for variable, value in self.variables.items():
                 sys.stdout.write('VARIABLE: %s=%s\n' % (variable, value))
@@ -1215,7 +1215,7 @@ class TimeSCons(TestSCons):
         #self.up_to_date(arguments='.', **kw)
         kw = kw.copy()
         kw['arguments'] = '.'
-        apply(self.up_to_date, (), kw)
+        self.up_to_date(**kw)
         sys.stdout.write(self.stdout())
         stats = self.collect_stats(self.stdout())
         # time-commands should always be 0.0 on a null build, because
@@ -1230,9 +1230,9 @@ class TimeSCons(TestSCons):
         #self.trace('null-memory', 'initial', **stats['memory-initial'])
         #self.trace('null-memory', 'prebuild', **stats['memory-prebuild'])
         #self.trace('null-memory', 'final', **stats['memory-final'])
-        apply(self.trace, ('null-memory', 'initial'), stats['memory-initial'])
-        apply(self.trace, ('null-memory', 'prebuild'), stats['memory-prebuild'])
-        apply(self.trace, ('null-memory', 'final'), stats['memory-final'])
+        self.trace('null-memory', 'initial', **stats['memory-initial'])
+        self.trace('null-memory', 'prebuild', **stats['memory-prebuild'])
+        self.trace('null-memory', 'final', **stats['memory-final'])
 
     def elapsed_time(self):
         """
@@ -1254,7 +1254,7 @@ class TimeSCons(TestSCons):
         try:
             # TODO(1.5)
             #result = TestSCons.run(self, *args, **kw)
-            result = apply(TestSCons.run, (self,)+args, kw)
+            result = TestSCons.run(self, *args, **kw)
         finally:
             self.endTime = time.time()
         return result

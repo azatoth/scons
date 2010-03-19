@@ -101,7 +101,7 @@ def apply_tools(env, tools, toolpath):
         if SCons.Util.is_List(tool) or type(tool)==type(()):
             toolname = tool[0]
             toolargs = tool[1] # should be a dict of kw args
-            tool = apply(env.Tool, [toolname], toolargs)
+            tool = env.Tool(toolname, **toolargs)
         else:
             env.Tool(tool)
 
@@ -217,7 +217,7 @@ class MethodWrapper:
 
     def __call__(self, *args, **kwargs):
         nargs = (self.object,) + args
-        return apply(self.method, nargs, kwargs)
+        return self.method(*nargs, **kwargs)
 
     def clone(self, new_object):
         """
@@ -253,7 +253,7 @@ class BuilderWrapper(MethodWrapper):
             target = [target]
         if source is not None and not SCons.Util.is_List(source):
             source = [source]
-        return apply(MethodWrapper.__call__, (self, target, source) + args, kw)
+        return MethodWrapper.__call__(self, target, source, *args, **kw)
 
     def __repr__(self):
         return '<BuilderWrapper %s>' % repr(self.name)
@@ -286,7 +286,7 @@ class BuilderWrapper(MethodWrapper):
     # future, so leave it for now.
     #def execute(self, **kw):
     #    kw['env'] = self.env
-    #    apply(self.builder.execute, (), kw)
+    #    self.builder.execute(**kw)
 
 class BuilderDict(UserDict):
     """This is a dictionary-like class used by an Environment to hold
@@ -467,7 +467,7 @@ class SubstitutionEnvironment:
                     if SCons.Util.is_String(n):
                         # n = self.subst(n, raw=1, **kw)
                         kw['raw'] = 1
-                        n = apply(self.subst, (n,), kw)
+                        n = self.subst(n, **kw)
                         if node_factory:
                             n = node_factory(n)
                     if SCons.Util.is_List(n):
@@ -477,7 +477,7 @@ class SubstitutionEnvironment:
                 elif node_factory:
                     # v = node_factory(self.subst(v, raw=1, **kw))
                     kw['raw'] = 1
-                    v = node_factory(apply(self.subst, (v,), kw))
+                    v = node_factory(self.subst(v, **kw))
                     if SCons.Util.is_List(v):
                         nodes.extend(v)
                     else:
@@ -583,7 +583,7 @@ class SubstitutionEnvironment:
         if not SCons.Util.is_List(command): kw['shell'] = True
         # run constructed command
         #TODO(1.5) p = SCons.Action._subproc(self, command, **kw)
-        p = apply(SCons.Action._subproc, (self, command), kw)
+        p = SCons.Action._subproc(self, command, **kw)
         out,err = p.communicate()
         status = p.wait()
         if err:
@@ -803,7 +803,7 @@ class SubstitutionEnvironment:
         if not SCons.Util.is_Dict(args):
             args = self.ParseFlags(args)
         if not unique:
-            apply(self.Append, (), args)
+            self.Append(**args)
             return self
         for key, value in args.items():
             if not value:
@@ -862,9 +862,9 @@ class SubstitutionEnvironment:
 #             if not pathval:
 #                 continue
 #             if prepend:
-#                 apply(self.PrependENVPath, (pathname, pathval))
+#                 self.PrependENVPath(pathname, pathval)
 #             else:
-#                 apply(self.AppendENVPath, (pathname, pathval))
+#                 self.AppendENVPath(pathname, pathval)
 
 
 # Used by the FindSourceFiles() method, below.
@@ -980,7 +980,7 @@ class Base(SubstitutionEnvironment):
             # old "options" keyword.
             variables = kw['options']
             del kw['options']
-        apply(self.Replace, (), kw)
+        self.Replace(**kw)
         keys = kw.keys()
         if variables:
             keys = keys + variables.keys()
@@ -1323,12 +1323,12 @@ class Base(SubstitutionEnvironment):
         new = {}
         for key, value in kw.items():
             new[key] = SCons.Subst.scons_subst_once(value, self, key)
-        apply(clone.Replace, (), new)
+        clone.Replace(**new)
 
         apply_tools(clone, tools, toolpath)
 
         # apply them again in case the tools overwrote them
-        apply(clone.Replace, (), new)        
+        clone.Replace(**new)        
 
         # Finally, apply any flags to be merged in
         if parse_flags: clone.MergeFlags(parse_flags)
@@ -1342,7 +1342,7 @@ class Base(SubstitutionEnvironment):
             msg = "The env.Copy() method is deprecated; use the env.Clone() method instead."
             SCons.Warnings.warn(SCons.Warnings.DeprecatedCopyWarning, msg)
             _warn_copy_deprecated = False
-        return apply(self.Clone, args, kw)
+        return self.Clone(*args, **kw)
 
     def _changed_build(self, dependency, target, prev_ni):
         if dependency.changed_state(target, prev_ni):
@@ -1688,7 +1688,7 @@ class Base(SubstitutionEnvironment):
         for k in kw.keys():
             if self._dict.has_key(k):
                 del kw[k]
-        apply(self.Replace, (), kw)
+        self.Replace(**kw)
 
     def _find_toolpath_dir(self, tp):
         return self.fs.Dir(self.subst(tp)).srcnode().abspath
@@ -1699,7 +1699,7 @@ class Base(SubstitutionEnvironment):
             if toolpath is None:
                 toolpath = self.get('toolpath', [])
             toolpath = map(self._find_toolpath_dir, toolpath)
-            tool = apply(SCons.Tool.Tool, (tool, toolpath), kw)
+            tool = SCons.Tool.Tool(tool, toolpath, **kw)
         tool(self)
 
     def WhereIs(self, prog, path=None, pathext=None, reject=[]):
@@ -1739,7 +1739,7 @@ class Base(SubstitutionEnvironment):
             return a
         nargs = map(subst_string, args)
         nkw = self.subst_kw(kw)
-        return apply(SCons.Action.Action, nargs, nkw)
+        return SCons.Action.Action(*nargs, **nkw)
 
     def AddPreAction(self, files, action):
         nodes = self.arg2nodes(files, self.fs.Entry)
@@ -1792,7 +1792,7 @@ class Base(SubstitutionEnvironment):
             'multi'             : 1,
             'is_explicit'       : None,
         })
-        bld = apply(SCons.Builder.Builder, (), nkw)
+        bld = SCons.Builder.Builder(**nkw)
 
         # Apply the Builder separately to each target so that the Aliases
         # stay separate.  If we did one "normal" Builder call with the
@@ -1809,7 +1809,7 @@ class Base(SubstitutionEnvironment):
                 b = bld
             else:
                 nkw['action'] = b.action + action
-                b = apply(SCons.Builder.Builder, (), nkw)
+                b = SCons.Builder.Builder(**nkw)
             t.convert()
             result.extend(b(self, t, t.sources + source))
         return result
@@ -1826,11 +1826,11 @@ class Base(SubstitutionEnvironment):
         if kw.has_key('build_dir'):
             kw['variant_dir'] = kw['build_dir']
             del kw['build_dir']
-        return apply(self.VariantDir, args, kw)
+        return self.VariantDir(*args, **kw)
 
     def Builder(self, **kw):
         nkw = self.subst_kw(kw)
-        return apply(SCons.Builder.Builder, [], nkw)
+        return SCons.Builder.Builder(**nkw)
 
     def CacheDir(self, path):
         import SCons.CacheDir
@@ -1858,7 +1858,7 @@ class Base(SubstitutionEnvironment):
             nkw['custom_tests'] = self.subst_kw(nkw['custom_tests'])
         except KeyError:
             pass
-        return apply(SCons.SConf.SConf, nargs, nkw)
+        return SCons.SConf.SConf(*nargs, **nkw)
 
     def Command(self, target, source, action, **kw):
         """Builds the supplied target files from the supplied
@@ -1873,8 +1873,8 @@ class Base(SubstitutionEnvironment):
         try: bkw['source_scanner'] = kw['source_scanner']
         except KeyError: pass
         else: del kw['source_scanner']
-        bld = apply(SCons.Builder.Builder, (), bkw)
-        return apply(bld, (self, target, source), kw)
+        bld = SCons.Builder.Builder(**bkw)
+        return bld(self, target, source, **kw)
 
     def Depends(self, target, dependency):
         """Explicity specify that 'target's depend on 'dependency'."""
@@ -1891,9 +1891,9 @@ class Base(SubstitutionEnvironment):
         if SCons.Util.is_Sequence(s):
             result=[]
             for e in s:
-                result.append(apply(self.fs.Dir, (e,) + args, kw))
+                result.append(self.fs.Dir(e, *args, **kw))
             return result
-        return apply(self.fs.Dir, (s,) + args, kw)
+        return self.fs.Dir(s, *args, **kw)
 
     def NoClean(self, *targets):
         """Tags a target so that it will not be cleaned by -c"""
@@ -1920,17 +1920,17 @@ class Base(SubstitutionEnvironment):
         if SCons.Util.is_Sequence(s):
             result=[]
             for e in s:
-                result.append(apply(self.fs.Entry, (e,) + args, kw))
+                result.append(self.fs.Entry(e, *args, **kw))
             return result
-        return apply(self.fs.Entry, (s,) + args, kw)
+        return self.fs.Entry(s, *args, **kw)
 
     def Environment(self, **kw):
-        return apply(SCons.Environment.Environment, [], self.subst_kw(kw))
+        return SCons.Environment.Environment(**self.subst_kw(kw))
 
     def Execute(self, action, *args, **kw):
         """Directly execute an action through an Environment
         """
-        action = apply(self.Action, (action,) + args, kw)
+        action = self.Action(action, *args, **kw)
         result = action([], [], self)
         if isinstance(result, SCons.Errors.BuildError):
             errstr = result.errstr
@@ -1948,9 +1948,9 @@ class Base(SubstitutionEnvironment):
         if SCons.Util.is_Sequence(s):
             result=[]
             for e in s:
-                result.append(apply(self.fs.File, (e,) + args, kw))
+                result.append(self.fs.File(e, *args, **kw))
             return result
-        return apply(self.fs.File, (s,) + args, kw)
+        return self.fs.File(s, *args, **kw)
 
     def FindFile(self, file, dirs):
         file = self.subst(file)
@@ -2003,7 +2003,7 @@ class Base(SubstitutionEnvironment):
 
     def Repository(self, *dirs, **kw):
         dirs = self.arg2nodes(list(dirs), self.fs.Dir)
-        apply(self.fs.Repository, dirs, kw)
+        self.fs.Repository(*dirs, **kw)
 
     def Requires(self, target, prerequisite):
         """Specify that 'prerequisite' must be built before 'target',
@@ -2022,7 +2022,7 @@ class Base(SubstitutionEnvironment):
                 arg = self.subst(arg)
             nargs.append(arg)
         nkw = self.subst_kw(kw)
-        return apply(SCons.Scanner.Base, nargs, nkw)
+        return SCons.Scanner.Base(*nargs, **nkw)
 
     def SConsignFile(self, name=".sconsign", dbm_module=None):
         if name is not None:
@@ -2310,13 +2310,13 @@ def NoSubstitutionProxy(subject):
             nkw = kwargs.copy()
             nkw['gvars'] = {}
             self.raw_to_mode(nkw)
-            return apply(SCons.Subst.scons_subst_list, nargs, nkw)
+            return SCons.Subst.scons_subst_list(*nargs, **nkw)
         def subst_target_source(self, string, *args, **kwargs):
             nargs = (string, self,) + args
             nkw = kwargs.copy()
             nkw['gvars'] = {}
             self.raw_to_mode(nkw)
-            return apply(SCons.Subst.scons_subst, nargs, nkw)
+            return SCons.Subst.scons_subst(*nargs, **nkw)
     return _NoSubstitutionProxy(subject)
 
 # Local Variables:

@@ -104,7 +104,7 @@ def timer(func, *args, **kw):
     results = []
     for i in range(Runs):
         start = Now()
-        apply(func, args, kw)
+        func(*args, **kw)
         finish = Now()
         results.append((finish - start) / Iterations)
     return results
@@ -119,7 +119,7 @@ for func in FunctionList:
     print func.__name__ + d + ':'
 
     for label, args, kw in Data:
-        r = apply(timer, (func,)+args, kw)
+        r = timer(func, *args, **kw)
         display(label, r)
 
 # Local Variables:
