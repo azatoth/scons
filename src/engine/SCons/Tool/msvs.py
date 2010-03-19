@@ -39,7 +39,6 @@ import ntpath
 import os
 import pickle
 import re
-import string
 import sys
 
 import SCons.Builder
@@ -57,23 +56,10 @@ from SCons.Defaults import processDefines
 # DSP/DSW/SLN/VCPROJ files.
 ##############################################################################
 
-def _hexdigest(s):
-    """Return a string as a string of hex characters.
-    """
-    # NOTE:  This routine is a method in the Python 2.0 interface
-    # of the native md5 module, but we want SCons to operate all
-    # the way back to at least Python 1.5.2, which doesn't have it.
-    h = string.hexdigits
-    r = ''
-    for c in s:
-        i = ord(c)
-        r = r + h[(i >> 4) & 0xF] + h[i & 0xF]
-    return r
-
 def xmlify(s):
-    s = string.replace(s, "&", "&amp;") # do this first
-    s = string.replace(s, "'", "&apos;")
-    s = string.replace(s, '"', "&quot;")
+    s = s.replace("&", "&amp;") # do this first
+    s = s.replace("'", "&apos;")
+    s = s.replace('"', "&quot;")
     return s
 
 external_makefile_guid = '{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}'
@@ -88,9 +74,7 @@ def _generateGUID(slnfile, name):
     # the generated file has a consistent GUID even if we generate
     # it on a non-Windows platform.
     m.update(ntpath.normpath(str(slnfile)) + str(name))
-    # TODO(1.5)
-    #solution = m.hexdigest().upper()
-    solution = string.upper(_hexdigest(m.digest()))
+    solution = m.hexdigest().upper()
     # convert most of the signature to GUID form (discard the rest)
     solution = "{" + solution[:8] + "-" + solution[8:12] + "-" + solution[12:16] + "-" + solution[16:20] + "-" + solution[20:32] + "}"
     return solution
@@ -308,7 +292,7 @@ class _DSPGenerator:
         for n in sourcenames:
             # TODO(1.5):
             #self.sources[n].sort(lambda a, b: cmp(a.lower(), b.lower()))
-            self.sources[n].sort(lambda a, b: cmp(string.lower(a), string.lower(b)))
+            self.sources[n].sort(lambda a, b: cmp(a.lower(), b.lower()))
 
         def AddConfig(self, variant, buildtarget, outdir, runfile, cmdargs, dspfile=dspfile):
             config = Config()
@@ -409,7 +393,7 @@ class _GenerateV6DSP(_DSPGenerator):
                                 '# PROP %sUse_Debug_Libraries ' % (base, base))
                 # TODO(1.5):
                 #if kind.lower().find('debug') < 0:
-                if string.find(string.lower(kind), 'debug') < 0:
+                if kind.lower().find('debug') < 0:
                     self.file.write('0\n')
                 else:
                     self.file.write('1\n')
@@ -462,7 +446,7 @@ class _GenerateV6DSP(_DSPGenerator):
         cats = categories.keys()
         # TODO(1.5):
         #cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
-        cats.sort(lambda a, b: cmp(string.lower(a), string.lower(b)))
+        cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
         for kind in cats:
             if not self.sources[kind]:
                 continue # skip empty groups
@@ -470,7 +454,7 @@ class _GenerateV6DSP(_DSPGenerator):
             self.file.write('# Begin Group "' + kind + '"\n\n')
             # TODO(1.5)
             #typelist = categories[kind].replace('|', ';')
-            typelist = string.replace(categories[kind], '|', ';')
+            typelist = categories[kind].replace('|', ';')
             self.file.write('# PROP Default_Filter "' + typelist + '"\n')
 
             for file in self.sources[kind]:
@@ -495,7 +479,7 @@ class _GenerateV6DSP(_DSPGenerator):
         while line:
             # TODO(1.5):
             #if line.find("# End Project") > -1:
-            if string.find(line, "# End Project") > -1:
+            if line.find("# End Project") > -1:
                 break
             line = dspfile.readline()
 
@@ -690,8 +674,8 @@ class _GenerateV7DSP(_DSPGenerator):
             # TODO(1.5)
             #preprocdefs = xmlify(';'.join(self.env.get('CPPDEFINES', [])))
             #includepath = xmlify(';'.join(self.env.get('CPPPATH', [])))
-            preprocdefs = xmlify(string.join(processDefines(self.env.get('CPPDEFINES', [])), ';'))
-            includepath = xmlify(string.join(self.env.get('CPPPATH', []), ';'))
+            preprocdefs = xmlify(';'.join(processDefines(self.env.get('CPPDEFINES', []))))
+            includepath = xmlify(';'.join(self.env.get('CPPPATH', [])))
 
             if not env_has_buildtarget:
                 del self.env['MSVSBUILDTARGET']
@@ -721,7 +705,7 @@ class _GenerateV7DSP(_DSPGenerator):
         sorteditems = hierarchy.items()
         # TODO(1.5):
         #sorteditems.sort(lambda a, b: cmp(a[0].lower(), b[0].lower()))
-        sorteditems.sort(lambda a, b: cmp(string.lower(a[0]), string.lower(b[0])))
+        sorteditems.sort(lambda a, b: cmp(a[0].lower(), b[0].lower()))
 
         # First folders, then files
         for key, value in sorteditems:
@@ -754,7 +738,7 @@ class _GenerateV7DSP(_DSPGenerator):
         cats = categories.keys()
         # TODO(1.5)
         #cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
-        cats.sort(lambda a, b: cmp(string.lower(a), string.lower(b)))
+        cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
         cats = filter(lambda k, s=self: s.sources[k], cats)
         for kind in cats:
             if len(cats) > 1:
@@ -805,7 +789,7 @@ class _GenerateV7DSP(_DSPGenerator):
         while line:
             # TODO(1.5)
             #if line.find('<!-- SCons Data:') > -1:
-            if string.find(line, '<!-- SCons Data:') > -1:
+            if line.find('<!-- SCons Data:') > -1:
                 break
             line = dspfile.readline()
 
@@ -996,7 +980,7 @@ class _GenerateV7DSW(_DSWGenerator):
             dspfile_base = os.path.basename(self.dspfile)
             slnguid = self.slnguid
             scc_provider = env.get('MSVS_SCC_PROVIDER', '')
-            scc_provider = string.replace(scc_provider, ' ', r'\u0020')
+            scc_provider = scc_provider.replace(' ', r'\u0020')
             scc_project_name = env.get('MSVS_SCC_PROJECT_NAME', '')
             # scc_aux_path = env.get('MSVS_SCC_AUX_PATH', '')
             scc_local_path = env.get('MSVS_SCC_LOCAL_PATH', '')

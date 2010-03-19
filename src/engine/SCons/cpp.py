@@ -34,7 +34,6 @@ import SCons
 
 import os
 import re
-import string
 
 #
 # First "subsystem" of regular expressions that we set up:
@@ -99,7 +98,7 @@ l = map(lambda x, o=override: o.get(x, x), Table.keys())
 # a list of tuples, one for each preprocessor line.  The preprocessor
 # directive will be the first element in each tuple, and the rest of
 # the line will be the second element.
-e = '^\s*#\s*(' + string.join(l, '|') + ')(.*)$'
+e = '^\s*#\s*(' + '|'.join(l) + ')(.*)$'
 
 # And last but not least, compile the expression.
 CPP_Expression = re.compile(e, re.M)
@@ -139,7 +138,7 @@ l.sort(lambda a, b: cmp(len(b), len(a)))
 
 # Turn the list of keys into one regular expression that will allow us
 # to substitute all of the operators at once.
-expr = string.join(map(re.escape, l), '|')
+expr = '|'.join(map(re.escape, l))
 
 # ...and compile the expression.
 CPP_to_Python_Ops_Expression = re.compile(expr)
@@ -192,7 +191,7 @@ class FunctionEvaluator:
         self.name = name
         self.args = function_arg_separator.split(args)
         try:
-            expansion = string.split(expansion, '##')
+            expansion = expansion.split('##')
         except (AttributeError, TypeError):
             # Python 1.5 throws TypeError if "expansion" isn't a string,
             # later versions throw AttributeError.
@@ -218,7 +217,7 @@ class FunctionEvaluator:
             if not s in self.args:
                 s = repr(s)
             parts.append(s)
-        statement = string.join(parts, ' + ')
+        statement = ' + '.join(parts)
 
         return eval(statement, globals(), locals)
 
@@ -363,7 +362,7 @@ class PreProcessor:
         eval()ing it in the C preprocessor namespace we use to
         track #define values.
         """
-        t = CPP_to_Python(string.join(t[1:]))
+        t = CPP_to_Python(' '.join(t[1:]))
         try: return eval(t, self.cpp_namespace)
         except (NameError, TypeError): return 0
 

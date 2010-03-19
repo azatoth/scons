@@ -48,7 +48,6 @@ my_shell = test.workpath('my_shell.py')
 test.write(my_shell, """\
 #!%(python)s
 import os
-import string
 import sys
 cmd = sys.argv[2]
 def stripquote(s):
@@ -56,7 +55,7 @@ def stripquote(s):
        s[0] == "'" and s[-1] == "'":
         s = s[1:-1]
     return s
-args = string.split(stripquote(sys.argv[2]))
+args = stripquote(sys.argv[2]).split()
 args = map(stripquote, args)
 ofp = open(args[2], 'wb')
 for f in args[3:] + ['extra.txt']:

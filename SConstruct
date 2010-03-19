@@ -40,7 +40,6 @@ import os
 import os.path
 import re
 import stat
-import string
 import sys
 import tempfile
 
@@ -60,7 +59,7 @@ def whereis(file):
     exts = ['']
     if platform == "win32":
         exts += ['.exe']
-    for dir in string.split(os.environ['PATH'], os.pathsep):
+    for dir in os.environ['PATH'].split(os.pathsep):
         f = os.path.join(dir, file)
         for ext in exts:
             f_ext = f + ext
@@ -106,7 +105,7 @@ if not developer:
 build_system = ARGUMENTS.get('BUILD_SYSTEM')
 if not build_system:
     import socket
-    build_system = string.split(socket.gethostname(), '.')[0]
+    build_system = socket.gethostname().split('.')[0]
 
 version = ARGUMENTS.get('VERSION', '')
 if not version:
@@ -365,16 +364,16 @@ def SCons_revision(target, source, env):
     # Note:  We construct the __*__ substitution strings here
     # so that they don't get replaced when this file gets
     # copied into the tree for packaging.
-    contents = string.replace(contents, '__BUILD'     + '__', env['BUILD'])
-    contents = string.replace(contents, '__BUILDSYS'  + '__', env['BUILDSYS'])
-    contents = string.replace(contents, '__COPYRIGHT' + '__', env['COPYRIGHT'])
-    contents = string.replace(contents, '__DATE'      + '__', env['DATE'])
-    contents = string.replace(contents, '__DEVELOPER' + '__', env['DEVELOPER'])
-    contents = string.replace(contents, '__FILE'      + '__', str(source[0]))
-    contents = string.replace(contents, '__MONTH_YEAR'+ '__', env['MONTH_YEAR'])
-    contents = string.replace(contents, '__REVISION'  + '__', env['REVISION'])
-    contents = string.replace(contents, '__VERSION'   + '__', env['VERSION'])
-    contents = string.replace(contents, '__NULL'      + '__', '')
+    contents = contents.replace('__BUILD'     + '__', env['BUILD'])
+    contents = contents.replace('__BUILDSYS'  + '__', env['BUILDSYS'])
+    contents = contents.replace('__COPYRIGHT' + '__', env['COPYRIGHT'])
+    contents = contents.replace('__DATE'      + '__', env['DATE'])
+    contents = contents.replace('__DEVELOPER' + '__', env['DEVELOPER'])
+    contents = contents.replace('__FILE'      + '__', str(source[0]))
+    contents = contents.replace('__MONTH_YEAR'+ '__', env['MONTH_YEAR'])
+    contents = contents.replace('__REVISION'  + '__', env['REVISION'])
+    contents = contents.replace('__VERSION'   + '__', env['VERSION'])
+    contents = contents.replace('__NULL'      + '__', '')
     open(t, 'wb').write(contents)
     os.chmod(t, os.stat(s)[0])
 
@@ -910,21 +909,9 @@ for p in [ scons ]:
         env.Command(ebuild, os.path.join('gentoo', 'scons.ebuild.in'), SCons_revision)
         def Digestify(target, source, env):
             import md5
-            def hexdigest(s):
-                """Return a signature as a string of hex characters.
-                """
-                # NOTE:  This routine is a method in the Python 2.0 interface
-                # of the native md5 module, but we want SCons to operate all
-                # the way back to at least Python 1.5.2, which doesn't have it.
-                h = string.hexdigits
-                r = ''
-                for c in s:
-                    i = ord(c)
-                    r = r + h[(i >> 4) & 0xF] + h[i & 0xF]
-                return r
             src = source[0].rfile()
             contents = open(str(src)).read()
-            sig = hexdigest(md5.new(contents).digest())
+            sig = md5.new(contents).hexdigest()
             bytes = os.stat(str(src))[6]
             open(str(target[0]), 'w').write("MD5 %s %s %d\n" % (sig,
                                                                 src.name,
@@ -1010,12 +997,12 @@ for p in [ scons ]:
             maintain multiple lists.
             """
             c = open(str(source[0]), 'rb').read()
-            c = string.replace(c, '__VERSION' + '__', env['VERSION'])
-            c = string.replace(c, '__RPM_FILES' + '__', env['RPM_FILES'])
+            c = c.replace('__VERSION' + '__', env['VERSION'])
+            c = c.replace('__RPM_FILES' + '__', env['RPM_FILES'])
             open(str(target[0]), 'wb').write(c)
 
         rpm_files.sort()
-        rpm_files_str = string.join(rpm_files, "\n") + "\n"
+        rpm_files_str = "\n".join(rpm_files) + "\n"
         rpm_spec_env = env.Clone(RPM_FILES = rpm_files_str)
         rpm_spec_action = Action(spec_function, varlist=['RPM_FILES'])
         rpm_spec_env.Command(specfile, specfile_in, rpm_spec_action)
@@ -1084,7 +1071,7 @@ for p in [ scons ]:
             commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY bdist_dumb -f %s" % format)
 
         commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY sdist --formats=%s" %  \
-                            string.join(distutils_formats, ','))
+                            ','.join(distutils_formats))
 
     commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY bdist_wininst")
 

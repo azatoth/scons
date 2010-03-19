@@ -28,8 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test explicit checkouts from local SCCS files.
 """
 
-import string
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -93,7 +91,7 @@ test.write(['sub', 'eee.in'], "checked-out sub/eee.in\n")
 
 test.run(arguments = '.', stderr = None)
 
-lines = string.split("""
+lines = """
 sccs get -e SConscript
 sccs get -e aaa.in
 cat(["aaa.out"], ["aaa.in"])
@@ -107,7 +105,7 @@ cat(["sub/eee.out"], ["sub/eee.in"])
 sccs get -e fff.in
 cat(["sub/fff.out"], ["sub/fff.in"])
 cat(["sub/all"], ["sub/ddd.out", "sub/eee.out", "sub/fff.out"])
-""", '\n')
+""".split('\n')
 
 test.must_contain_all_lines(test.stdout(), lines)
 

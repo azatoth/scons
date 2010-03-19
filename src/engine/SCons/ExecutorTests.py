@@ -23,7 +23,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
 import sys
 import unittest
 
@@ -50,9 +49,9 @@ class MyAction:
         for action in self.actions:
             apply(action, (target, source, env), kw)
     def genstring(self, target, source, env):
-        return string.join(['GENSTRING'] + map(str, self.actions) + target + source)
+        return ' '.join(['GENSTRING'] + map(str, self.actions) + target + source)
     def get_contents(self, target, source, env):
-        return string.join(self.actions + target + source)
+        return ' '.join(self.actions + target + source)
     def get_implicit_deps(self, target, source, env):
         return []
 

@@ -29,7 +29,6 @@ Verify that the Install() Builder works
 """
 
 import os.path
-import string
 import time
 
 import TestSCons
@@ -44,7 +43,7 @@ f3_out = test.workpath('work', 'export', 'f3.out')
 f4_out = test.workpath('work', 'export', 'f4.out')
 f5_txt = test.workpath('outside', 'f5.txt')
 f6_txt = test.workpath('outside', 'f6.txt')
-f6_sep = string.replace(f6_txt, os.sep, '/')
+f6_sep = f6_txt.replace(os.sep, '/')
 
 _SUBDIR_f4_out = os.path.join('$SUBDIR', 'f4.out')
 

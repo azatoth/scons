@@ -46,7 +46,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import copy
 from itertools import chain, izip
-import string
 import UserList
 
 from SCons.Debug import logInstanceCreation
@@ -57,7 +56,7 @@ import SCons.Util
 from SCons.Debug import Trace
 
 def classname(obj):
-    return string.split(str(obj.__class__), '.')[-1]
+    return str(obj.__class__).split('.')[-1]
 
 # Node states
 #
@@ -1234,9 +1233,9 @@ class Node:
 
         if len(lines) == 0:
             def fmt_with_title(title, strlines):
-                lines = string.split(strlines, '\n')
+                lines = strlines.split('\n')
                 sep = '\n' + ' '*(15 + len(title))
-                return ' '*15 + title + string.join(lines, sep) + '\n'
+                return ' '*15 + title + sep.join(lines) + '\n'
             if old.bactsig != new.bactsig:
                 if old.bact == new.bact:
                     lines.append("the contents of the build action changed\n" +
@@ -1254,7 +1253,7 @@ class Node:
             return "%s %s"  % (preamble, lines[0])
         else:
             lines = ["%s:\n" % preamble] + lines
-            return string.join(lines, ' '*11)
+            return ( ' '*11).join(lines)
 
 try:
     [].extend(UserList.UserList([]))

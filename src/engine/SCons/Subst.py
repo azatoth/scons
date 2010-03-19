@@ -30,7 +30,6 @@ SCons string substitution.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import re
-import string
 import types
 import UserList
 import UserString
@@ -399,7 +398,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
     handles separating command lines into lists of arguments, so see
     that function if that's what you're looking for.
     """
-    if type(strSubst) == types.StringType and string.find(strSubst, '$') < 0:
+    if type(strSubst) == types.StringType and strSubst.find('$') < 0:
         return strSubst
 
     class StringSubber:
@@ -438,7 +437,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
                     return s
                 else:
                     key = s[1:]
-                    if key[0] == '{' or string.find(key, '.') >= 0:
+                    if key[0] == '{' or key.find('.') >= 0:
                         if key[0] == '{':
                             key = key[1:-1]
                         try:
@@ -472,7 +471,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
                     # are probably more the exception than the norm,
                     # so it should be tolerable for now.
                     lv = lvars.copy()
-                    var = string.split(key, '.')[0]
+                    var = key.split('.')[0]
                     lv[var] = ''
                     return self.substitute(s, lv)
             elif is_Sequence(s):
@@ -523,7 +522,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
                     if len(result) == 1:
                         result = result[0]
                     else:
-                        result = string.join(map(str, result), '')
+                        result = ''.join(map(str, result))
                 return result
             else:
                 return self.expand(args, lvars)
@@ -571,7 +570,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
         if mode != SUBST_RAW:
             # Compress strings of white space characters into
             # a single space.
-            result = string.strip(_space_sep.sub(' ', result))
+            result = _space_sep.sub(' ', result).strip()
     elif is_Sequence(result):
         remove = _list_remove[mode]
         if remove:
@@ -653,7 +652,7 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
                     self.close_strip('$)')
                 else:
                     key = s[1:]
-                    if key[0] == '{' or string.find(key, '.') >= 0:
+                    if key[0] == '{' or key.find('.') >= 0:
                         if key[0] == '{':
                             key = key[1:-1]
                         try:
@@ -680,7 +679,7 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
                     # string for the value of the variable name
                     # we just expanded.
                     lv = lvars.copy()
-                    var = string.split(key, '.')[0]
+                    var = key.split('.')[0]
                     lv[var] = ''
                     self.substitute(s, lv, 0)
                     self.this_word()
@@ -870,7 +869,7 @@ def scons_subst_once(strSubst, env, key):
 
     We do this with some straightforward, brute-force code here...
     """
-    if type(strSubst) == types.StringType and string.find(strSubst, '$') < 0:
+    if type(strSubst) == types.StringType and strSubst.find('$') < 0:
         return strSubst
 
     matchlist = ['$' + key, '${' + key + '}']
@@ -880,7 +879,7 @@ def scons_subst_once(strSubst, env, key):
         if a in matchlist:
             a = val
         if is_Sequence(a):
-            return string.join(map(str, a))
+            return ' '.join(map(str, a))
         else:
             return str(a)
 

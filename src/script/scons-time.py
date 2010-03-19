@@ -41,7 +41,6 @@ import os
 import os.path
 import re
 import shutil
-import string
 import sys
 import tempfile
 import time
@@ -539,7 +538,7 @@ class SConsTimer:
 
         for file in files:
             base = os.path.splitext(file)[0]
-            run, index = string.split(base, '-')[-2:]
+            run, index = base.split('-')[-2:]
 
             run = int(run)
             index = int(index)

@@ -25,7 +25,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import re
-import string
 import sys
 import types
 import unittest
@@ -1293,7 +1292,7 @@ class NodeListTestCase(unittest.TestCase):
         # New-style classes report as "object"; classic classes report
         # as "instance"...
         r = re.sub("object", "instance", r)
-        l = string.join(["<MyNode instance at 0x>"]*3, ", ")
+        l = ", ".join(["<MyNode instance at 0x>"]*3)
         assert r == '[%s]' % l, r
 
 

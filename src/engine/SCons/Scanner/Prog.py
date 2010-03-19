@@ -23,8 +23,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
-
 import SCons.Node
 import SCons.Node.FS
 import SCons.Scanner
@@ -53,7 +51,7 @@ def scan(node, env, libpath = ()):
         # There are no LIBS in this environment, so just return a null list:
         return []
     if SCons.Util.is_String(libs):
-        libs = string.split(libs)
+        libs = libs.split()
     else:
         libs = SCons.Util.flatten(libs)
 

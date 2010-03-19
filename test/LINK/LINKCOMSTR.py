@@ -29,8 +29,6 @@ Test that the $LINKCOMSTR construction variable allows you to customize
 the displayed linker string.
 """
 
-import string
-
 import TestSCons
 
 _python_ = TestSCons._python_

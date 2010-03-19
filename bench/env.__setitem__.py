@@ -6,7 +6,6 @@
 
 import os.path
 import re
-import string
 import sys
 import timeit
 
@@ -324,7 +323,7 @@ common_import_variables = ['do_it'] + class_names
 
 common_imports = """
 from __main__ import %s
-""" % string.join(common_import_variables, ', ')
+""" % ', '.join(common_import_variables)
 
 # The test data (lists of variable names) that we'll use for the runs.
 
@@ -343,7 +342,7 @@ def run_it(title, init):
       apply(times,(),s)
 
 print 'Environment __setitem__ benchmark using',
-print 'Python', string.split(sys.version)[0],
+print 'Python', sys.version.split()[0],
 print 'on', sys.platform, os.name
 
 run_it('Results for re-adding an existing variable name 100 times:',

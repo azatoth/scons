@@ -36,7 +36,6 @@ import fnmatch
 import os
 import os.path
 import re
-import string
 
 import TestCmd
 import TestSCons
@@ -263,12 +262,12 @@ for collector in check_list:
 
 if missing_strings:
     print "Found the following files with missing strings:"
-    print "\t" + string.join(missing_strings, "\n\t")
+    print "\t" + "\n\t".join(missing_strings)
     test.fail_test(1)
 
 if not_built:
     print "Cannot check all strings, the following have apparently not been built:"
-    print "\t" + string.join(not_built, "\n\t")
+    print "\t" + "\n\t".join(not_built)
     test.no_result(1)
 
 test.pass_test()

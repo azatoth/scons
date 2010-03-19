@@ -24,7 +24,6 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
-import string
 import sys
 import types
 import unittest
@@ -156,7 +155,7 @@ class ProgramScannerTestCase3(unittest.TestCase):
     def runTest(self):
         env = DummyEnvironment(LIBPATH=[test.workpath("d1/d2"),
                                         test.workpath("d1")],
-                               LIBS=string.split('l2 l3'))
+                               LIBS='l2 l3'.split())
         s = SCons.Scanner.Prog.ProgramScanner()
         path = s.path(env)
         deps = s(DummyNode('dummy'), env, path)
@@ -171,7 +170,7 @@ class ProgramScannerTestCase5(unittest.TestCase):
                 else:
                     return arg
         env = SubstEnvironment(LIBPATH=[ "$blah" ],
-                               LIBS=string.split('l2 l3'))
+                               LIBS='l2 l3'.split())
         s = SCons.Scanner.Prog.ProgramScanner()
         path = s.path(env)
         deps = s(DummyNode('dummy'), env, path)
@@ -239,7 +238,7 @@ def suite():
                 def runTest(self):
                     env = DummyEnvironment(LIBPATH=[test.workpath("d1/d2"),
                                                     test.workpath("d1")],
-                                           LIBS=string.split(u'l2 l3'))
+                                           LIBS=u'l2 l3'.split())
                     s = SCons.Scanner.Prog.ProgramScanner()
                     path = s.path(env)
                     deps = s(DummyNode('dummy'), env, path)

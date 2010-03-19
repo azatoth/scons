@@ -29,8 +29,6 @@ Test that the $ASPPCOMSTR construction variable allows you to customize
 the displayed assembler string.
 """
 
-import string
-
 import TestSCons
 
 _python_ = TestSCons._python_

@@ -28,7 +28,6 @@ __doc__ = """
 
 import os
 import re
-import string
 
 from common import read_reg, debug
 
@@ -64,8 +63,8 @@ def query_versions():
             # since version numbers aren't really floats...
             aa = a[1:]
             bb = b[1:]
-            aal = string.split(aa, '.')
-            bbl = string.split(bb, '.')
+            aal = aa.split('.')
+            bbl = bb.split('.')
             # sequence comparison in python is lexicographical
             # which is exactly what we want.
             # Note we sort backwards so the highest version is first.

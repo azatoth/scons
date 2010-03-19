@@ -35,15 +35,14 @@ __version__ = "$ Revision: 1.23 $"[11:-2]
 import time
 import sys
 import traceback
-import string
 import os
 
 ##############################################################################
 # A platform-specific concession to help the code work for JPython users
 ##############################################################################
 
-plat = string.lower(sys.platform)
-_isJPython = string.find(plat, 'java') >= 0 or string.find(plat, 'jdk') >= 0
+plat = sys.platform.lower()
+_isJPython = plat.find('java') >= 0 or plat.find('jdk') >= 0
 del plat
 
 
@@ -149,7 +148,7 @@ class TestCase:
         the specified test method's docstring.
         """
         doc = self.__testMethod.__doc__
-        return doc and string.strip(string.split(doc, "\n")[0]) or None
+        return doc and doc.split("\n")[0].strip() or None
 
     def id(self):
         return "%s.%s" % (self.__class__, self.__testMethod.__name__)
@@ -326,7 +325,7 @@ class FunctionTestCase(TestCase):
     def shortDescription(self):
         if self.__description is not None: return self.__description
         doc = self.__testFunc.__doc__
-        return doc and string.strip(string.split(doc, "\n")[0]) or None
+        return doc and doc.split("\n")[0].strip() or None
 
 
 
@@ -376,18 +375,18 @@ def createTestInstance(name, module=None):
         -- returns result of calling makeSuite(ListTestCase, prefix="check")
     """
           
-    spec = string.split(name, ':')
+    spec = name.split(':')
     if len(spec) > 2: raise ValueError, "illegal test name: %s" % name
     if len(spec) == 1:
         testName = spec[0]
         caseName = None
     else:
         testName, caseName = spec
-    parts = string.split(testName, '.')
+    parts = testName.split('.')
     if module is None:
         if len(parts) < 2:
             raise ValueError, "incomplete test name: %s" % name
-        constructor = __import__(string.join(parts[:-1],'.'))
+        constructor = __import__('.'.join(parts[:-1]))
         parts = parts[1:]
     else:
         constructor = module
@@ -468,7 +467,7 @@ class _JUnitTextTestResult(TestResult):
                                 (len(errors), errFlavour))
         i = 1
         for test,error in errors:
-            errString = string.join(apply(traceback.format_exception,error),"")
+            errString = "".join(apply(traceback.format_exception,error))
             self.stream.writeln("%i) %s" % (i, test))
             self.stream.writeln(errString)
             i = i + 1
@@ -568,7 +567,7 @@ class _VerboseTextTestResult(TestResult):
         self.stream.writeln("\t%s" % flavour)
         self.stream.writeln(separator2)
         for line in apply(traceback.format_exception, err):
-            for l in string.split(line,"\n")[:-1]:
+            for l in line.split("\n")[:-1]:
                 self.stream.writeln("\t%s" % l)
         self.stream.writeln(separator1)
 
@@ -635,7 +634,7 @@ Examples:
                  argv=None, testRunner=None):
         if type(module) == type(''):
             self.module = __import__(module)
-            for part in string.split(module,'.')[1:]:
+            for part in module.split('.')[1:]:
                 self.module = getattr(self.module, part)
         else:
             self.module = module

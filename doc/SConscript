@@ -27,7 +27,6 @@
 
 import os.path
 import re
-import string
 
 Import('build_dir', 'env', 'whereis')
 
@@ -444,12 +443,12 @@ for man_1 in man_page_list:
         def strip_to_first_html_tag(target, source, env):
             t = str(target[0])
             contents = open(t).read()
-            contents = contents[string.find(contents, '<HTML>'):]
+            contents = contents[contents.find('<HTML>'):]
             open(t, 'w').write(contents)
             return 0
 
         cmds = [
-            "( cd %s/man && cp %s .. )" % (build, string.join(man_i_files)),
+            "( cd %s/man && cp %s .. )" % (build, ' '.join(man_i_files)),
             "( cd ${SOURCE.dir} && man2html ${SOURCE.file} ) > $TARGET",
             Action(strip_to_first_html_tag),
         ]
@@ -470,11 +469,11 @@ else:
     e = os.path.join('#src', 'engine')
     manifest_in = File(os.path.join(e, 'MANIFEST.in')).rstr()
     sources = map(lambda x: x[:-1], open(manifest_in).readlines())
-    sources = filter(lambda x: string.find(x, 'Optik') == -1, sources)
-    sources = filter(lambda x: string.find(x, 'Platform') == -1, sources)
-    sources = filter(lambda x: string.find(x, 'Tool') == -1, sources)
+    sources = filter(lambda x: x.find('Optik') == -1, sources)
+    sources = filter(lambda x: x.find('Platform') == -1, sources)
+    sources = filter(lambda x: x.find('Tool') == -1, sources)
     # XXX
-    sources = filter(lambda x: string.find(x, 'Options') == -1, sources)
+    sources = filter(lambda x: x.find('Options') == -1, sources)
 
     e = os.path.join(build, '..', 'scons', 'engine')
     sources = map(lambda x, e=e: os.path.join(e, x), sources)
@@ -519,7 +518,7 @@ else:
 # for easy distribution to the web site.
 #
 if tar_deps:
-    tar_list = string.join(map(lambda x, b=build+'/': string.replace(x, b, ''),
+    tar_list = ' '.join(map(lambda x, b=build+'/': x.replace(b, ''),
                            tar_list))
     t = env.Command(dist_doc_tar_gz, tar_deps,
                 "tar cf${TAR_HFLAG} - -C %s %s | gzip > $TARGET" % (build, tar_list))

@@ -25,7 +25,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
-import string
 import sys
 import time
 import unittest
@@ -445,7 +444,7 @@ class VariantDirTestCase(unittest.TestCase):
                 self.have['copy'] = copy
 
                 self.links_to_be_called = []
-                for link in string.split(self.duplicate, '-'):
+                for link in self.duplicate.split('-'):
                     if self.have[link]:
                         self.links_to_be_called.append(link)
 
@@ -817,7 +816,7 @@ class FileBuildInfoTestCase(_tempdirTestCase):
             'actionsig [action]',
         ]
 
-        expect = string.join(expect_lines, '\n')
+        expect = '\n'.join(expect_lines)
         format = bi1.format()
         assert format == expect, (repr(expect), repr(format))
 
@@ -921,12 +920,12 @@ class FSTestCase(_tempdirTestCase):
         drive, path = os.path.splitdrive(os.getcwd())
 
         def _do_Dir_test(lpath, path_, abspath_, up_path_, sep, fileSys=fs, drive=drive):
-            dir = fileSys.Dir(string.replace(lpath, '/', sep))
+            dir = fileSys.Dir(lpath.replace('/', sep))
 
             if os.sep != '/':
-                path_ = string.replace(path_, '/', os.sep)
-                abspath_ = string.replace(abspath_, '/', os.sep)
-                up_path_ = string.replace(up_path_, '/', os.sep)
+                path_ = path_.replace('/', os.sep)
+                abspath_ = abspath_.replace('/', os.sep)
+                up_path_ = up_path_.replace('/', os.sep)
 
             def strip_slash(p, drive=drive):
                 if p[-1] == os.sep and len(p) > 1:
@@ -937,7 +936,7 @@ class FSTestCase(_tempdirTestCase):
             path = strip_slash(path_)
             abspath = strip_slash(abspath_)
             up_path = strip_slash(up_path_)
-            name = string.split(abspath, os.sep)[-1]
+            name = abspath.split(os.sep)[-1]
 
             assert dir.name == name, \
                    "dir.name %s != expected name %s" % \
@@ -978,7 +977,7 @@ class FSTestCase(_tempdirTestCase):
             Dir_test('#',           './',          sub_dir,           sub)
 
             try:
-                f2 = fs.File(string.join(['f1', 'f2'], sep), directory = d1)
+                f2 = fs.File(sep.join(['f1', 'f2']), directory = d1)
             except TypeError, x:
                 assert str(x) == ("Tried to lookup File '%s' as a Dir." %
                                   d1_f1), x
@@ -986,7 +985,7 @@ class FSTestCase(_tempdirTestCase):
                 raise
 
             try:
-                dir = fs.Dir(string.join(['d1', 'f1'], sep))
+                dir = fs.Dir(sep.join(['d1', 'f1']))
             except TypeError, x:
                 assert str(x) == ("Tried to lookup File '%s' as a Dir." %
                                   d1_f1), x
@@ -1051,7 +1050,7 @@ class FSTestCase(_tempdirTestCase):
         assert built_it
 
         def match(path, expect):
-            expect = string.replace(expect, '/', os.sep)
+            expect = expect.replace('/', os.sep)
             assert path == expect, "path %s != expected %s" % (path, expect)
 
         e1 = fs.Entry("d1")
@@ -1466,11 +1465,11 @@ class FSTestCase(_tempdirTestCase):
             seps = seps + ['/']
 
         def _do_Dir_test(lpath, path_, up_path_, sep, fileSys=fs):
-            dir = fileSys.Dir(string.replace(lpath, '/', sep))
+            dir = fileSys.Dir(lpath.replace('/', sep))
 
             if os.sep != '/':
-                path_ = string.replace(path_, '/', os.sep)
-                up_path_ = string.replace(up_path_, '/', os.sep)
+                path_ = path_.replace('/', os.sep)
+                up_path_ = up_path_.replace('/', os.sep)
 
             def strip_slash(p):
                 if p[-1] == os.sep and len(p) > 3:
@@ -1478,7 +1477,7 @@ class FSTestCase(_tempdirTestCase):
                 return p
             path = strip_slash(path_)
             up_path = strip_slash(up_path_)
-            name = string.split(path, os.sep)[-1]
+            name = path.split(os.sep)[-1]
 
             assert dir.name == name, \
                    "dir.name %s != expected name %s" % \
@@ -1577,7 +1576,7 @@ class FSTestCase(_tempdirTestCase):
 
         d1 = fs.Dir('d1')
         d2 = d1.Dir('d2')
-        dirs = string.split(os.path.normpath(d2.abspath), os.sep)
+        dirs = os.path.normpath(d2.abspath).split(os.sep)
         above_path = apply(os.path.join, ['..']*len(dirs) + ['above'])
         above = d2.Dir(above_path)
 
@@ -1757,7 +1756,7 @@ class DirTestCase(_tempdirTestCase):
         s = self.fs.Dir(os.path.join('d', 'sub'))
 
         #TODO(1.5) files = d.get_contents().split('\n')
-        files = string.split(d.get_contents(), '\n')
+        files = d.get_contents().split('\n')
 
         assert e.get_contents() == '', e.get_contents()
         assert e.get_text_contents() == '', e.get_text_contents()

@@ -32,7 +32,6 @@ This creates a hash of global Aliases (dummy targets).
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
 import UserDict
 
 import SCons.Errors
@@ -96,7 +95,7 @@ class Alias(SCons.Node.Node):
         """The contents of an alias is the concatenation
         of the content signatures of all its sources."""
         childsigs = map(lambda n: n.get_csig(), self.children())
-        return string.join(childsigs, '')
+        return ''.join(childsigs)
 
     def sconsign(self):
         """An Alias is not recorded in .sconsign files"""

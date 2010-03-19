@@ -26,7 +26,6 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
-import string
 
 fmt = "%-16s  %5s  %7s  %9s  %11s  %11s"
 

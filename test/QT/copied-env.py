@@ -28,8 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test Qt with a copied construction environment.
 """
 
-import string
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -68,10 +66,10 @@ void aaa(void)
 
 test.run()
 
-moc_MyForm = filter(lambda x: string.find(x, 'moc_MyForm') != -1,
-                    string.split(test.stdout(), '\n'))
+moc_MyForm = filter(lambda x: x.find('moc_MyForm') != -1,
+                    test.stdout().split('\n'))
 
-MYLIB_IMPL = filter(lambda x: string.find(x, 'MYLIB_IMPL') != -1, moc_MyForm)
+MYLIB_IMPL = filter(lambda x: x.find('MYLIB_IMPL') != -1, moc_MyForm)
 
 if not MYLIB_IMPL:
     print "Did not find MYLIB_IMPL on moc_MyForm compilation line:"

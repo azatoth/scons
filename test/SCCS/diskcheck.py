@@ -29,7 +29,6 @@ Test transparent checkouts from SCCS files in an SCCS subdirectory.
 """
 
 import os.path
-import string
 
 import TestSCons
 
@@ -107,7 +106,7 @@ test.run(status=2, stderr=expect)
 
 test.run(arguments = '--diskcheck=sccs', stderr = None)
 
-lines = string.split("""
+lines = """
 sccs get SConscript
 sccs get aaa.in
 cat(["aaa.out"], ["aaa.in"])
@@ -121,7 +120,7 @@ cat(["sub/eee.out"], ["sub/eee.in"])
 sccs get fff.in
 cat(["sub/fff.out"], ["sub/fff.in"])
 cat(["sub/all"], ["sub/ddd.out", "sub/eee.out", "sub/fff.out"])
-""", '\n')
+""".split('\n')
 
 test.must_contain_all_lines(test.stdout(), lines)
 

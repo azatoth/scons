@@ -37,7 +37,6 @@ class GlobalActFunc:
 import os
 import re
 import StringIO
-import string
 import sys
 import types
 import unittest
@@ -273,7 +272,7 @@ def test_positional_args(pos_callback, cmd, **kw):
         except SCons.Errors.UserError, e:
             s = str(e)
             m = 'Invalid command display variable'
-            assert string.find(s, m) != -1, 'Unexpected string:  %s' % s
+            assert s.find(m) != -1, 'Unexpected string:  %s' % s
         else:
             raise Exception, "did not catch expected UserError"
 
@@ -490,7 +489,7 @@ class _ActionActionTestCase(unittest.TestCase):
         except SCons.Errors.UserError, e:
             s = str(e)
             m = 'Cannot have both strfunction and cmdstr args to Action()'
-            assert string.find(s, m) != -1, 'Unexpected string:  %s' % s
+            assert s.find(m) != -1, 'Unexpected string:  %s' % s
         else:
             raise Exception, "did not catch expected UserError"
 

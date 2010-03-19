@@ -30,7 +30,6 @@ This module implements the dependency scanner for Fortran code.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import re
-import string
 
 import SCons.Node
 import SCons.Node.FS
@@ -99,7 +98,7 @@ class F90Scanner(SCons.Scanner.Classic):
 
             # Convert module name to a .mod filename
             suffix = env.subst('$FORTRANMODSUFFIX')
-            modules = map(lambda x, s=suffix: string.lower(x) + s, modules)
+            modules = map(lambda x, s=suffix: x.lower() + s, modules)
             # Remove unique items from the list
             mods_and_includes = SCons.Util.unique(includes+modules)
             node.includes = mods_and_includes

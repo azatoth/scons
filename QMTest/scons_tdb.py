@@ -156,7 +156,7 @@ def get_sys_values():
     result = map(lambda k: (k, getattr(sys, k, _null)), sys_attributes)
     result = filter(lambda t: not t[1] is _null, result)
     result = map(lambda t: t[0] + '=' + repr(t[1]), result)
-    return string.join(result, '\n ')
+    return '\n '.join(result)
 
 module_attributes = [
     '__version__',
@@ -171,7 +171,7 @@ def get_module_info(module):
     result = map(lambda k: (k, getattr(module, k, _null)), module_attributes)
     result = filter(lambda t: not t[1] is _null, result)
     result = map(lambda t: t[0] + '=' + repr(t[1]), result)
-    return string.join(result, '\n ')
+    return '\n '.join(result)
 
 environ_keys = [
    'PATH',
@@ -217,7 +217,7 @@ def get_environment():
     result = map(lambda k: (k, os.environ.get(k, _null)), environ_keys)
     result = filter(lambda t: not t[1] is _null, result)
     result = map(lambda t: t[0] + '-' + t[1], result)
-    return string.join(result, '\n ')
+    return '\n '.join(result)
 
 class SConsXMLResultStream(XMLResultStream):
     def __init__(self, *args, **kw):
@@ -400,7 +400,7 @@ class AegisBatchStream(FileResultStream):
         file_names.sort()
         for file_name in file_names:
             exit_status = self._outcomes[file_name]
-            file_name = string.replace(file_name, '\\', '/')
+            file_name = file_name.replace('\\', '/')
             self.file.write('    { file_name = "%s";\n' % file_name)
             self.file.write('      exit_status = %s; },\n' % exit_status)
         self.file.write('];\n')

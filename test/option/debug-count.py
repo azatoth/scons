@@ -28,7 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test that the --debug=count option works.
 """
 
-import string
 import re
 
 import TestSCons
@@ -77,7 +76,7 @@ for args in ['-h --debug=count', '--debug=count']:
 
     if missing:
         print "Missing the following object lines from '%s' output:" % args
-        print "\t", string.join(missing)
+        print "\t", ' '.join(missing)
         print "STDOUT =========="
         print stdout
         test.fail_test(1)

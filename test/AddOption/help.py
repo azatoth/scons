@@ -29,8 +29,6 @@ Verify the help text when the AddOption() function is used (and when
 it's not).
 """
 
-import string
-
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -56,27 +54,27 @@ expected_lines = [
 ]
 
 test.run(arguments = '-h')
-lines = string.split(test.stdout(), '\n')
+lines = test.stdout().split('\n')
 missing = filter(lambda e, l=lines: not e in l, expected_lines)
 
 if missing:
     print "====== STDOUT:"
     print test.stdout()
     print "====== Missing the following lines in the above AddOption() help output:"
-    print string.join(missing, "\n")
+    print "\n".join(missing)
     test.fail_test()
 
 test.unlink('SConstruct')
 
 test.run(arguments = '-h')
-lines = string.split(test.stdout(), '\n')
+lines = test.stdout().split('\n')
 unexpected = filter(lambda e, l=lines: e in l, expected_lines)
 
 if unexpected:
     print "====== STDOUT:"
     print test.stdout()
     print "====== Unexpected lines in the above non-AddOption() help output:"
-    print string.join(unexpected, "\n")
+    print "\n".join(unexpected)
     test.fail_test()
 
 test.pass_test()

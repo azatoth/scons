@@ -38,7 +38,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
-import string
 import sys
 import time
 import traceback
@@ -107,7 +106,7 @@ class Progressor:
             self.func = obj
         elif SCons.Util.is_List(obj):
             self.func = self.spinner
-        elif string.find(obj, self.target_string) != -1:
+        elif obj.find(self.target_string) != -1:
             self.func = self.replace_string
         else:
             self.func = self.string
@@ -132,7 +131,7 @@ class Progressor:
         self.write(self.obj)
 
     def replace_string(self, node):
-        self.write(string.replace(self.obj, self.target_string, str(node)))
+        self.write(self.obj.replace(self.target_string, str(node)))
 
     def __call__(self, node):
         self.count = self.count + 1
@@ -208,7 +207,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
         if self.top and not t.has_builder() and not t.side_effect:
             if not t.exists():
                 def classname(obj):
-                    return string.split(str(obj.__class__), '.')[-1]
+                    return str(obj.__class__).split('.')[-1]
                 if classname(t) in ('File', 'Dir', 'Entry'):
                     errstr="Do not know how to make %s target `%s' (%s)." % (classname(t), t, t.abspath)
                 else: # Alias or Python or ...
@@ -262,7 +261,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
         node = buildError.node
         if not SCons.Util.is_List(node):
                 node = [ node ]
-        nodename = string.join(map(str, node), ', ')
+        nodename = ', '.join(map(str, node))
 
         errfmt = "scons: *** [%s] %s\n"
         sys.stderr.write(errfmt % (nodename, buildError))
@@ -425,7 +424,7 @@ class TreePrinter:
 
 
 def python_version_string():
-    return string.split(sys.version)[0]
+    return sys.version.split()[0]
 
 def python_version_unsupported(version=sys.version_info):
     return version < (1, 5, 2)
@@ -514,8 +513,8 @@ class CountStats(Stats):
         pre = ["   "]
         post = ["   %s\n"]
         l = len(self.stats)
-        fmt1 = string.join(pre + [' %7s']*l + post, '')
-        fmt2 = string.join(pre + [' %7d']*l + post, '')
+        fmt1 = ''.join(pre + [' %7s']*l + post)
+        fmt2 = ''.join(pre + [' %7d']*l + post)
         labels = self.labels[:l]
         labels.append(("", "Class"))
         self.outfp.write(fmt1 % tuple(map(lambda x: x[0], labels)))
@@ -563,7 +562,7 @@ def find_deepest_user_frame(tb):
     # of SCons:
     for frame in tb:
         filename = frame[0]
-        if string.find(filename, os.sep+'SCons'+os.sep) == -1:
+        if filename.find(os.sep+'SCons'+os.sep) == -1:
             return frame
     return tb[0]
 
@@ -1224,7 +1223,7 @@ def _build_targets(fs, options, targets, target_top):
 
 def _exec_main(parser, values):
     sconsflags = os.environ.get('SCONSFLAGS', '')
-    all_args = string.split(sconsflags) + sys.argv[1:]
+    all_args = sconsflags.split() + sys.argv[1:]
 
     options, args = parser.parse_args(all_args, values)
 
@@ -1285,7 +1284,7 @@ def main():
         pass 
     parts.append(version_string("engine", SCons))
     parts.append("__COPYRIGHT__")
-    version = string.join(parts, '')
+    version = ''.join(parts)
 
     import SConsOptions
     parser = SConsOptions.Parser(version)

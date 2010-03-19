@@ -29,7 +29,6 @@ Test the FindInstalledFiles() and the FindSourceFiles() functions.
 """
 
 import os.path
-import string
 import TestSCons
 
 python = TestSCons.python
@@ -56,8 +55,8 @@ print oth_files
 bin_f1 = os.path.join('bin', 'f1')
 bin_f2 = os.path.join('bin', 'f2')
 
-bin__f1 = string.replace(bin_f1, '\\', '\\\\')
-bin__f2 = string.replace(bin_f2, '\\', '\\\\')
+bin__f1 = bin_f1.replace('\\', '\\\\')
+bin__f2 = bin_f2.replace('\\', '\\\\')
 
 expect_read = """\
 ['SConstruct', 'f1', 'f2', 'f3']

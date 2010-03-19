@@ -19,7 +19,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import os
 import os.path
 import re
-import string
 import shutil
 import sys
 
@@ -39,7 +38,7 @@ if re.search('\s', python):
     pythonstring = _python_
 else:
     pythonstring = python
-pythonstring = string.replace(pythonstring, '\\', '\\\\')
+pythonstring = pythonstring.replace('\\', '\\\\')
 
 
 failing_test_template = """\
@@ -141,7 +140,7 @@ class TestRuntest(TestCommon):
         dirs = [os.environ.get('SCONS_RUNTEST_DIR', orig_cwd)]
         
         spe = os.environ.get('SCONS_SOURCE_PATH_EXECUTABLE', orig_cwd)
-        for d in string.split(spe, os.pathsep):
+        for d in spe.split(os.pathsep):
             dirs.append(os.path.join(d, 'build'))
             dirs.append(d)
 

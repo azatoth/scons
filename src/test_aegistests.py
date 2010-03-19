@@ -35,7 +35,6 @@ name of this script doesn't end in *Tests.py.
 import os
 import popen2
 import re
-import string
 import sys
 
 import TestSCons
@@ -57,7 +56,7 @@ else:
 
 output = get_stdout('aegis -list -unformatted pf') +\
          get_stdout('aegis -list -unformatted cf')
-lines = string.split(output, '\n')[:-1]
+lines = output.split('\n')[:-1]
 sources = filter(lambda x: x[:7] == 'source ', lines)
 
 re1 = re.compile(r' src/.*Tests\.py')
@@ -71,7 +70,7 @@ test_files = filter(filename_is_a_test, sources)
 
 if test_files:
     sys.stderr.write("Found the following files with test names not marked as Aegis tests:\n")
-    sys.stderr.write('\t' + string.join(test_files, '\n\t') + '\n')
+    sys.stderr.write('\t' + '\n\t'.join(test_files) + '\n')
     test.fail_test(1)
 
 test.pass_test()

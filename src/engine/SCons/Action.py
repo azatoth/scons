@@ -103,7 +103,6 @@ import cPickle
 import dis
 import os
 import re
-import string
 import sys
 import subprocess
 
@@ -153,7 +152,7 @@ else:
             else:
                 result.append(c)
                 i = i+1
-        return string.join(result, '')
+        return ''.join(result)
 
 strip_quotes = re.compile('^[\'"](.*)[\'"]$')
 
@@ -249,19 +248,19 @@ def _code_contents(code):
     # Note that we also always ignore the first entry of co_consts
     # which contains the function doc string. We assume that the
     # function does not access its doc string.
-    contents.append(',(' + string.join(map(_object_contents,code.co_consts[1:]),',') + ')')
+    contents.append(',(' + ','.join(map(_object_contents,code.co_consts[1:])) + ')')
 
     # The code contents depends on the variable names used to
     # accessed global variable, as changing the variable name changes
     # the variable actually accessed and therefore changes the
     # function result.
-    contents.append(',(' + string.join(map(_object_contents,code.co_names),',') + ')')
+    contents.append(',(' + ','.join(map(_object_contents,code.co_names)) + ')')
 
 
     # The code contents depends on its actual code!!!
     contents.append(',(' + str(remove_set_lineno_codes(code.co_code)) + ')')
 
-    return string.join(contents, '')
+    return ''.join(contents)
 
 
 def _function_contents(func):
@@ -271,7 +270,7 @@ def _function_contents(func):
 
     # The function contents depends on the value of defaults arguments
     if func.func_defaults:
-        contents.append(',(' + string.join(map(_object_contents,func.func_defaults),',') + ')')
+        contents.append(',(' + ','.join(map(_object_contents,func.func_defaults)) + ')')
     else:
         contents.append(',()')
 
@@ -287,9 +286,9 @@ def _function_contents(func):
         xxx = map(lambda x: _object_contents(x.cell_contents), closure)
     except AttributeError:
         xxx = []
-    contents.append(',(' + string.join(xxx, ',') + ')')
+    contents.append(',(' + ','.join(xxx) + ')')
 
-    return string.join(contents, '')
+    return ''.join(contents)
 
 
 def _actionAppend(act1, act2):
@@ -378,7 +377,7 @@ def _do_create_action(act, kw):
             # like a function or a CommandGenerator in that variable
             # instead of a string.
             return LazyAction(var, kw)
-        commands = string.split(str(act), '\n')
+        commands = str(act).split('\n')
         if len(commands) == 1:
             #TODO(1.5) return CommandAction(commands[0], **kw)
             return apply(CommandAction, (commands[0],), kw)
@@ -434,7 +433,7 @@ class ActionBase:
         if is_String(vl): vl = (vl,)
         for v in vl:
             result.append(env.subst('${'+v+'}'))
-        return string.join(result, '')
+        return ''.join(result)
 
     def __add__(self, other):
         return _actionAppend(self, other)
@@ -450,7 +449,7 @@ class ActionBase:
         # and CommandGeneratorAction will use this env
         # when it calls its _generate method.
         self.presub_env = env
-        lines = string.split(str(self), '\n')
+        lines = str(self).split('\n')
         self.presub_env = None      # don't need this any more
         return lines
 
@@ -534,8 +533,8 @@ class _ActionAction(ActionBase):
             if executor:
                 target = executor.get_all_targets()
                 source = executor.get_all_sources()
-            t = string.join(map(str, target), ' and ')
-            l = string.join(self.presub_lines(env), '\n  ')
+            t = ' and '.join(map(str, target))
+            l = '\n  '.join(self.presub_lines(env))
             out = "Building %s with action:\n  %s\n" % (t, l)
             sys.stdout.write(out)
         cmd = None
@@ -590,7 +589,7 @@ def _string_from_cmd_list(cmd_list):
         if ' ' in arg or '\t' in arg:
             arg = '"' + arg + '"'
         cl.append(arg)
-    return string.join(cl)
+    return ' '.join(cl)
 
 # A fiddlin' little function that has an 'import SCons.Environment' which
 # can't be moved to the top level without creating an import loop.  Since
@@ -642,7 +641,7 @@ def _subproc(env, cmd, error = 'ignore', **kw):
             # because that's a pretty common list-like value to stick
             # in an environment variable:
             value = SCons.Util.flatten_sequence(value)
-            new_env[key] = string.join(map(str, value), os.pathsep)
+            new_env[key] = os.pathsep.join(map(str, value))
         else:
             # It's either a string or something else.  If it's a string,
             # we still want to call str() because it might be a *Unicode*
@@ -694,7 +693,7 @@ class CommandAction(_ActionAction):
 
     def __str__(self):
         if is_List(self.cmd_list):
-            return string.join(map(str, self.cmd_list), ' ')
+            return ' '.join(map(str, self.cmd_list))
         return str(self.cmd_list)
 
     def process(self, target, source, env, executor=None):
@@ -771,7 +770,7 @@ class CommandAction(_ActionAction):
                     # path list, because that's a pretty common list-like
                     # value to stick in an environment variable:
                     value = flatten_sequence(value)
-                    ENV[key] = string.join(map(str, value), os.pathsep)
+                    ENV[key] = os.pathsep.join(map(str, value))
                 else:
                     # If it isn't a string or a list, then we just coerce
                     # it to a string, which is the proper way to handle
@@ -806,7 +805,7 @@ class CommandAction(_ActionAction):
         from SCons.Subst import SUBST_SIG
         cmd = self.cmd_list
         if is_List(cmd):
-            cmd = string.join(map(str, cmd))
+            cmd = ' '.join(map(str, cmd))
         else:
             cmd = str(cmd)
         if executor:
@@ -1018,7 +1017,7 @@ class FunctionAction(_ActionAction):
                 else:
                     s = str_for_display()
                 return s
-            return '[' + string.join(map(quote, a), ", ") + ']'
+            return '[' + ", ".join(map(quote, a)) + ']'
         try:
             strfunc = self.execfunction.strfunction
         except AttributeError:
@@ -1108,13 +1107,12 @@ class ListAction(ActionBase):
         self.targets = '$TARGETS'
 
     def genstring(self, target, source, env):
-        return string.join(map(lambda a, t=target, s=source, e=env:
+        return '\n'.join(map(lambda a, t=target, s=source, e=env:
                                   a.genstring(t, s, e),
-                               self.list),
-                           '\n')
+                               self.list))
 
     def __str__(self):
-        return string.join(map(str, self.list), '\n')
+        return '\n'.join(map(str, self.list))
 
     def presub_lines(self, env):
         return SCons.Util.flatten_sequence(
@@ -1125,10 +1123,9 @@ class ListAction(ActionBase):
 
         Simple concatenation of the signatures of the elements.
         """
-        return string.join(map(lambda x, t=target, s=source, e=env:
+        return "".join(map(lambda x, t=target, s=source, e=env:
                                       x.get_contents(t, s, e),
-                               self.list),
-                           "")
+                               self.list))
 
     def __call__(self, target, source, env, exitstatfunc=_null, presub=_null,
                  show=_null, execute=_null, chdir=_null, executor=None):

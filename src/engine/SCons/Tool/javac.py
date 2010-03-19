@@ -35,7 +35,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
-import string
 
 import SCons.Action
 import SCons.Builder
@@ -45,7 +44,7 @@ import SCons.Util
 
 def classname(path):
     """Turn a string (path name) into a Java class name."""
-    return string.replace(os.path.normpath(path), os.sep, '.')
+    return os.path.normpath(path).replace(os.sep, '.')
 
 def emit_java_classes(target, source, env):
     """Create and return lists of source java files
@@ -156,8 +155,8 @@ class pathopt:
         if self.default:
             path = path + [ env[self.default] ]
         if path:
-            return [self.opt, string.join(path, os.pathsep)]
-            #return self.opt + " " + string.join(path, os.pathsep)
+            return [self.opt, os.pathsep.join(path)]
+            #return self.opt + " " + os.pathsep.join(path)
         else:
             return []
             #return ""

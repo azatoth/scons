@@ -30,7 +30,6 @@ This module implements the dependency scanner for LaTeX code.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
-import string
 import re
 
 import SCons.Scanner
@@ -64,7 +63,7 @@ def modify_env_var(env, var, abspath):
         else:
             # Split at os.pathsep to convert into absolute path
             #TODO(1.5) env.PrependENVPath(var, [os.path.abspath(p) for p in str(env[var]).split(os.pathsep)])
-            env.PrependENVPath(var, map(lambda p: os.path.abspath(p), string.split(str(env[var]), os.pathsep)))
+            env.PrependENVPath(var, map(lambda p: os.path.abspath(p), str(env[var]).split(os.pathsep)))
     except KeyError:
         pass
 
@@ -75,7 +74,7 @@ def modify_env_var(env, var, abspath):
     if SCons.Util.is_List(env['ENV'][var]):
         # TODO(1.5)
         #env['ENV'][var] = os.pathsep.join(env['ENV'][var])
-        env['ENV'][var] = string.join(env['ENV'][var], os.pathsep)
+        env['ENV'][var] = os.pathsep.join(env['ENV'][var])
     # Append the trailing os.pathsep character here to catch the case with no env[var]
     env['ENV'][var] = env['ENV'][var] + os.pathsep
 
@@ -303,7 +302,7 @@ class LaTeX(SCons.Scanner.Base):
             split_includes = []
             for include in includes:
                 inc_type = noopt_cre.sub('', include[0])
-                inc_list = string.split(include[1],',')
+                inc_list = include[1].split(',')
                 for j in range(len(inc_list)):
                     split_includes.append( (inc_type, inc_list[j]) )
             #

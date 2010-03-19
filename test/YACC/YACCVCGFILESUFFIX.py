@@ -39,7 +39,6 @@ test = TestSCons.TestSCons()
 test.write('myyacc.py', """\
 import getopt
 import os.path
-import string
 import sys
 vcg = None
 opts, args = getopt.getopt(sys.argv[1:], 'go:')
@@ -55,7 +54,7 @@ for f in args:
 outfile.close()
 if vcg:
     base, ext = os.path.splitext(args[0])
-    open(base+'.vcgsuffix', 'wb').write(string.join(sys.argv)+'\\n')
+    open(base+'.vcgsuffix', 'wb').write(" ".join(sys.argv)+'\\n')
 sys.exit(0)
 """)
 

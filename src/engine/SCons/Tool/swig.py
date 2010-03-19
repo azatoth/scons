@@ -35,7 +35,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
 import re
-import string
 import subprocess
 
 import SCons.Action
@@ -72,7 +71,7 @@ def _find_modules(src):
 
     for m in matches:
         mnames.append(m[2])
-        directors = directors or string.find(m[0], 'directors') >= 0
+        directors = directors or m[0].find('directors') >= 0
     return mnames, directors
 
 def _add_director_header_targets(target, env):

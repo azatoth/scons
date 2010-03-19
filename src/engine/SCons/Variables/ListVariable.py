@@ -54,7 +54,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 __all__ = ['ListVariable',]
 
-import string
 import UserList
 
 import SCons.Util
@@ -85,7 +84,7 @@ class _ListVariable(UserList.UserList):
         if self.data == self.allowedElems:
             return 'all'
         else:
-            return string.join(self, ',')
+            return ','.join(self)
     def prepare_to_store(self):
         return self.__str__()
 
@@ -97,12 +96,12 @@ def _converter(val, allowedElems, mapdict):
     elif val == 'all':
         val = allowedElems
     else:
-        val = filter(None, string.split(val, ','))
+        val = filter(None, val.split(','))
         val = map(lambda v, m=mapdict: m.get(v, v), val)
         notAllowed = filter(lambda v, aE=allowedElems: not v in aE, val)
         if notAllowed:
             raise ValueError("Invalid value(s) for option: %s" %
-                             string.join(notAllowed, ','))
+                             ','.join(notAllowed))
     return _ListVariable(val, allowedElems)
 
 
@@ -122,12 +121,11 @@ def ListVariable(key, help, default, names, map={}):
     A 'package list' option may either be 'all', 'none' or a list of
     package names (separated by space).
     """
-    names_str = 'allowed names: %s' % string.join(names, ' ')
+    names_str = 'allowed names: %s' % ' '.join(names)
     if SCons.Util.is_List(default):
-        default = string.join(default, ',')
-    help = string.join(
-        (help, '(all|none|comma-separated list of names)', names_str),
-        '\n    ')
+        default = ','.join(default)
+    help = '\n    '.join(
+        (help, '(all|none|comma-separated list of names)', names_str))
     return (key, help, default,
             None, #_validator,
             lambda val, elems=names, m=map: _converter(val, elems, m))

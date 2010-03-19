@@ -25,7 +25,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
-import string
 import StringIO
 import sys
 import types
@@ -101,7 +100,7 @@ if os.sep == '/':
         return str
 else:
     def cvt(str):
-        return string.replace(str, '/', os.sep)
+        return str.replace('/', os.sep)
 
 class SubstTestCase(unittest.TestCase):
     class MyNode(DummyNode):

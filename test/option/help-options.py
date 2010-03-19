@@ -29,7 +29,6 @@ Verify behavior of the -H and --help-options options.
 """
 
 import re
-import string
 
 import TestSCons
 
@@ -53,13 +52,13 @@ test.must_contain_all_lines(test.stdout(), expect)
 ignored_re = re.compile('.*Ignored for compatibility\\.\n', re.S)
 stdout = ignored_re.sub('', test.stdout())
 
-lines = string.split(stdout, '\n')
+lines = stdout.split('\n')
 lines = filter(lambda x: x[:3] == '  -', lines)
 lines = map(lambda x: x[3:], lines)
 lines = map(lambda x: x[0] == '-' and x[1:] or x, lines)
-options = map(lambda x: string.split(x)[0], lines)
+options = map(lambda x: x.split()[0], lines)
 options = map(lambda x: x[-1] == ',' and x[:-1] or x, options)
-lowered = map(lambda x: string.lower(x), options)
+lowered = map(lambda x: x.lower(), options)
 sorted = lowered[:]
 sorted.sort()
 if lowered != sorted:

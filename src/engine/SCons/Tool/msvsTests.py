@@ -24,7 +24,6 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import string
 import sys
 import TestCmd
 import unittest
@@ -39,7 +38,7 @@ from SCons.Tool.MSCommon.common import debug
 from SCons.Tool.MSCommon import get_default_version, \
                                 query_versions
 
-regdata_6a = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio]
+regdata_6a = r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio]
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0]
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0\ServicePacks]
 "sp3"=""
@@ -49,9 +48,9 @@ regdata_6a = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudi
 "ProductDir"="C:\Program Files\Microsoft Visual Studio\MSDN98\98VSa\1033"
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0\Setup\Microsoft Visual C++]
 "ProductDir"="C:\Program Files\Microsoft Visual Studio\VC98"
-''','\n')
+'''.split('\n')
 
-regdata_6b = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio]
+regdata_6b = r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio]
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0]
 "InstallDir"="C:\VS6\Common\IDE\IDE98"
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0\ServicePacks]
@@ -68,9 +67,9 @@ regdata_6b = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudi
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0\Setup\Microsoft VSEE Client]
 "ProductDir"="C:\VS6\Common\Tools"
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\6.0\Setup\Visual Studio 98]
-''','\n')
+'''.split('\n')
 
-regdata_7 = string.split(r'''
+regdata_7 = r'''
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\7.0]
 "InstallDir"="C:\Program Files\Microsoft Visual Studio .NET\Common7\IDE\"
 "Source Directories"="C:\Program Files\Microsoft Visual Studio .NET\Vc7\crt\;C:\Program Files\Microsoft Visual Studio .NET\Vc7\atlmfc\src\mfc\;C:\Program Files\Microsoft Visual Studio .NET\Vc7\atlmfc\src\atl\"
@@ -134,9 +133,9 @@ regdata_7 = string.split(r'''
 "Include Dirs"="$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(VCInstallDir)PlatformSDK\include\prerelease;$(VCInstallDir)PlatformSDK\include;$(FrameworkSDKDir)include"
 "Source Dirs"="$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src"
 "Reference Dirs"=""
-''','\n')
+'''.split('\n')
 
-regdata_7_1 = string.split(r'''
+regdata_7_1 = r'''
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\7.1]
 @=""
 "Source Directories"="C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\crt\src\;C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\atlmfc\src\mfc\;C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\atlmfc\src\atl\"
@@ -240,9 +239,9 @@ regdata_7_1 = string.split(r'''
 "VCManagedWrapperGeneratorTool"=""
 "VCAuxiliaryManagedWrapperGeneratorTool"=""
 "VCPrimaryInteropTool"=""
-''','\n')
+'''.split('\n')
 
-regdata_8exp = string.split(r'''
+regdata_8exp = r'''
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VCExpress\8.0]
 "CLR Version"="v2.0.50727"
 "ApplicationID"="VCExpress"
@@ -284,9 +283,9 @@ regdata_8exp = string.split(r'''
 "VCXMLDataGeneratorTool"="*.xsd"
 "VCManifestTool"="*.manifest"
 "VCXDCMakeTool"="*.xdc"
-''','\n')
+'''.split('\n')
 
-regdata_80 = string.split(r'''
+regdata_80 = r'''
 [HKEY_LOCAL_MACHINE\Software\Microsoft\VisualStudio\8.0]
 "CLR Version"="v2.0.50727"
 "ApplicationID"="VisualStudio"
@@ -346,13 +345,13 @@ regdata_80 = string.split(r'''
 "VCXMLDataGeneratorTool"="*.xsd"
 "VCManifestTool"="*.manifest"
 "VCXDCMakeTool"="*.xdc"
-''','\n')
+'''.split('\n')
 
-regdata_cv = string.split(r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion]
+regdata_cv = r'''[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion]
 "ProgramFilesDir"="C:\Program Files"
 "CommonFilesDir"="C:\Program Files\Common Files"
 "MediaPath"="C:\WINDOWS\Media"
-''','\n')
+'''.split('\n')
 
 
 regdata_none = []
@@ -428,8 +427,8 @@ class RegNode:
             raise SCons.Util.RegError
 
     def addKey(self,name,sep = '\\'):
-        if string.find(name, sep) != -1:
-            keyname, subkeys = string.split(name, sep, 1)
+        if name.find(sep) != -1:
+            keyname, subkeys = name.split(sep, 1)
         else:
             keyname = name
             subkeys = ""

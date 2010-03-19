@@ -114,7 +114,7 @@ def Package(env, target=None, source=None, **kw):
 
     PACKAGETYPE=kw['PACKAGETYPE']
     if not is_List(PACKAGETYPE):
-        PACKAGETYPE=string.split(PACKAGETYPE, ',')
+        PACKAGETYPE=PACKAGETYPE.split(',')
 
     # load the needed packagers.
     def load_packager(type):

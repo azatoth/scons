@@ -33,7 +33,6 @@ import copy
 import os
 import os.path
 import re
-import string
 import sys
 import types
 
@@ -59,11 +58,11 @@ if _altsep is None and sys.platform == 'win32':
     # My ActivePython 2.0.1 doesn't set os.altsep!  What gives?
     _altsep = '/'
 if _altsep:
-    def rightmost_separator(path, sep, _altsep=_altsep):
-        rfind = string.rfind
-        return max(rfind(path, sep), rfind(path, _altsep))
+    def rightmost_separator(path, sep):
+        return max(path.rfind(sep), path.rfind(_altsep))
 else:
-    rightmost_separator = string.rfind
+    def rightmost_separator(path, sep):
+        return path.rfind(sep)
 
 # First two from the Python Cookbook, just for completeness.
 # (Yeah, yeah, YAGNI...)
@@ -88,7 +87,7 @@ def containsOnly(str, set):
 def splitext(path):
     "Same as os.path.splitext() but faster."
     sep = rightmost_separator(path, os.sep)
-    dot = string.rfind(path, '.')
+    dot = path.rfind('.')
     # An ext is only real if it has at least one non-digit char
     if dot > sep and not containsOnly(path[dot:], "0123456789."):
         return path[:dot],path[dot:]
@@ -104,7 +103,7 @@ def updrive(path):
     """
     drive, rest = os.path.splitdrive(path)
     if drive:
-        path = string.upper(drive) + rest
+        path = drive.upper() + rest
     return path
 
 class NodeList(UserList):
@@ -121,7 +120,7 @@ class NodeList(UserList):
         return len(self.data) != 0
 
     def __str__(self):
-        return string.join(map(str, self.data))
+        return ' '.join(map(str, self.data))
 
     def __iter__(self):
         return iter(self.data)
@@ -278,10 +277,10 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
     children = child_func(root)
 
     if prune and visited.has_key(rname) and children:
-        print string.join(tags + margins + ['+-[', rname, ']'], '')
+        print ''.join(tags + margins + ['+-[', rname, ']'])
         return
 
-    print string.join(tags + margins + ['+-', rname], '')
+    print ''.join(tags + margins + ['+-', rname])
 
     visited[rname] = 1
 
@@ -426,7 +425,7 @@ except TypeError:
 
     def to_String_for_subst(s):
         if is_Sequence( s ):
-            return string.join( map(to_String_for_subst, s) )
+            return ' '.join( map(to_String_for_subst, s) )
 
         return to_String( s )
 
@@ -543,7 +542,7 @@ else:
             return str(s)
 
     def to_String_for_subst(s, 
-                            isinstance=isinstance, join=string.join, str=str, to_String=to_String,
+                            isinstance=isinstance, str=str, to_String=to_String,
                             BaseStringTypes=BaseStringTypes, SequenceTypes=SequenceTypes,
                             UserString=UserString):
                             
@@ -554,7 +553,7 @@ else:
             l = []
             for e in s:
                 l.append(to_String_for_subst(e))
-            return join( s )
+            return ' '.join( s )
         elif isinstance(s, UserString):
             # s.data can only be either a unicode or a regular
             # string. Please see the UserString initializer.
@@ -766,16 +765,16 @@ if sys.platform == 'win32':
             except KeyError:
                 return None
         if is_String(path):
-            path = string.split(path, os.pathsep)
+            path = path.split(os.pathsep)
         if pathext is None:
             try:
                 pathext = os.environ['PATHEXT']
             except KeyError:
                 pathext = '.COM;.EXE;.BAT;.CMD'
         if is_String(pathext):
-            pathext = string.split(pathext, os.pathsep)
+            pathext = pathext.split(os.pathsep)
         for ext in pathext:
-            if string.lower(ext) == string.lower(file[-len(ext):]):
+            if ext.lower() == file[-len(ext):].lower():
                 pathext = ['']
                 break
         if not is_List(reject) and not is_Tuple(reject):
@@ -801,11 +800,11 @@ elif os.name == 'os2':
             except KeyError:
                 return None
         if is_String(path):
-            path = string.split(path, os.pathsep)
+            path = path.split(os.pathsep)
         if pathext is None:
             pathext = ['.exe', '.cmd']
         for ext in pathext:
-            if string.lower(ext) == string.lower(file[-len(ext):]):
+            if ext.lower() == file[-len(ext):].lower():
                 pathext = ['']
                 break
         if not is_List(reject) and not is_Tuple(reject):
@@ -832,7 +831,7 @@ else:
             except KeyError:
                 return None
         if is_String(path):
-            path = string.split(path, os.pathsep)
+            path = path.split(os.pathsep)
         if not is_List(reject) and not is_Tuple(reject):
             reject = [reject]
         for d in path:
@@ -881,11 +880,11 @@ def PrependPath(oldpath, newpath, sep = os.pathsep,
     is_list = 1
     paths = orig
     if not is_List(orig) and not is_Tuple(orig):
-        paths = string.split(paths, sep)
+        paths = paths.split(sep)
         is_list = 0
 
     if is_String(newpath):
-        newpaths = string.split(newpath, sep)
+        newpaths = newpath.split(sep)
     elif not is_List(newpath) and not is_Tuple(newpath):
         newpaths = [ newpath ]  # might be a Dir
     else:
@@ -934,7 +933,7 @@ def PrependPath(oldpath, newpath, sep = os.pathsep,
     if is_list:
         return paths
     else:
-        return string.join(paths, sep)
+        return sep.join(paths)
 
 def AppendPath(oldpath, newpath, sep = os.pathsep, 
                delete_existing=1, canonicalize=None):
@@ -962,11 +961,11 @@ def AppendPath(oldpath, newpath, sep = os.pathsep,
     is_list = 1
     paths = orig
     if not is_List(orig) and not is_Tuple(orig):
-        paths = string.split(paths, sep)
+        paths = paths.split(sep)
         is_list = 0
 
     if is_String(newpath):
-        newpaths = string.split(newpath, sep)
+        newpaths = newpath.split(sep)
     elif not is_List(newpath) and not is_Tuple(newpath):
         newpaths = [ newpath ]  # might be a Dir
     else:
@@ -1015,13 +1014,13 @@ def AppendPath(oldpath, newpath, sep = os.pathsep,
     if is_list:
         return paths
     else:
-        return string.join(paths, sep)
+        return sep.join(paths)
 
 if sys.platform == 'cygwin':
     def get_native_path(path):
         """Transforms an absolute path into a native path for the system.  In
         Cygwin, this converts from a Cygwin path to a Windows one."""
-        return string.replace(os.popen('cygpath -w ' + path).read(), '\n', '')
+        return os.popen('cygpath -w ' + path).read().replace('\n', '')
 else:
     def get_native_path(path):
         """Transforms an absolute path into a native path for the system.
@@ -1034,7 +1033,7 @@ def Split(arg):
     if is_List(arg) or is_Tuple(arg):
         return arg
     elif is_String(arg):
-        return string.split(arg)
+        return arg.split()
     else:
         return [arg]
 
@@ -1057,7 +1056,7 @@ class CLVar(UserList):
     def __coerce__(self, other):
         return (self, CLVar(other))
     def __str__(self):
-        return string.join(self.data)
+        return ' '.join(self.data)
 
 # A dictionary that preserves the order in which items are added.
 # Submitted by David Benjamin to ActiveState's Python Cookbook web site:
@@ -1304,7 +1303,7 @@ class LogicalLines:
             else:
                 result.append(line)
                 break
-        return string.join(result, '')
+        return ''.join(result)
 
     def readlines(self):
         result = []
@@ -1568,7 +1567,7 @@ def MD5collect(signatures):
     if len(signatures) == 1:
         return signatures[0]
     else:
-        return MD5signature(string.join(signatures, ', '))
+        return MD5signature(', '.join(signatures))
 
 
 

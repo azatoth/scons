@@ -40,7 +40,6 @@ test = TestSCons.TestSCons()
 test.write('myyacc.py', """\
 import getopt
 import os.path
-import string
 import sys
 opts, args = getopt.getopt(sys.argv[1:], 'do:')
 for o, a in opts:
@@ -52,7 +51,7 @@ for f in args:
         outfile.write(l)
 outfile.close()
 base, ext = os.path.splitext(args[0])
-open(base+'.hsuffix', 'wb').write(string.join(sys.argv)+'\\n')
+open(base+'.hsuffix', 'wb').write(" ".join(sys.argv)+'\\n')
 sys.exit(0)
 """)
 

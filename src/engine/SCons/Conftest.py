@@ -101,7 +101,6 @@ Autoconf-like configuration support; low level implementation of tests.
 #
 
 import re
-import string
 from types import IntType
 
 #
@@ -636,7 +635,7 @@ return 0;
 """ % (call or "")
 
     if call:
-        i = string.find(call, "\n")
+        i = call.find("\n")
         if i > 0:
             calltext = call[:i] + ".."
         elif call[-1] == ';':
@@ -723,7 +722,7 @@ def _Have(context, key, have, comment = None):
              Give "have" as is should appear in the header file, include quotes
              when desired and escape special characters!
     """
-    key_up = string.upper(key)
+    key_up = key.upper()
     key_up = re.sub('[^A-Z0-9_]', '_', key_up)
     context.havedict[key_up] = have
     if have == 1:
@@ -755,7 +754,7 @@ def _LogFailed(context, text, msg):
     """
     if LogInputFiles:
         context.Log("Failed program was:\n")
-        lines = string.split(text, '\n')
+        lines = text.split('\n')
         if len(lines) and lines[-1] == '':
             lines = lines[:-1]              # remove trailing empty line
         n = 1

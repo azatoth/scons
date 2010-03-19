@@ -30,7 +30,6 @@ customizable variables to an SCons build.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
-import string
 import sys
 
 import SCons.Environment
@@ -297,7 +296,7 @@ class Variables:
             return self.FormatVariableHelpText(env, opt.key, opt.help, opt.default, actual, opt.aliases)
         lines = filter(None, map(format, options))
 
-        return string.join(lines, '')
+        return ''.join(lines)
 
     format  = '\n%s: %s\n    default: %s\n    actual: %s\n'
     format_ = '\n%s: %s\n    default: %s\n    actual: %s\n    aliases: %s\n'

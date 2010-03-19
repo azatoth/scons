@@ -96,7 +96,6 @@ import copy
 import os
 import os.path
 import stat
-import string
 import sys
 import types
 import UserList
@@ -134,7 +133,7 @@ elif sys.platform == 'cygwin':
     lib_suffix   = '.a'
     dll_prefix   = ''
     dll_suffix   = '.dll'
-elif string.find(sys.platform, 'irix') != -1:
+elif sys.platform.find('irix') != -1:
     exe_suffix   = ''
     obj_suffix   = '.o'
     shobj_suffix = '.o'
@@ -143,7 +142,7 @@ elif string.find(sys.platform, 'irix') != -1:
     lib_suffix   = '.a'
     dll_prefix   = 'lib'
     dll_suffix   = '.so'
-elif string.find(sys.platform, 'darwin') != -1:
+elif sys.platform.find('darwin') != -1:
     exe_suffix   = ''
     obj_suffix   = '.o'
     shobj_suffix = '.os'
@@ -152,7 +151,7 @@ elif string.find(sys.platform, 'darwin') != -1:
     lib_suffix   = '.a'
     dll_prefix   = 'lib'
     dll_suffix   = '.dylib'
-elif string.find(sys.platform, 'sunos') != -1:
+elif sys.platform.find('sunos') != -1:
     exe_suffix   = ''
     obj_suffix   = '.o'
     shobj_suffix = '.os'
@@ -231,16 +230,16 @@ class TestCommon(TestCmd):
         existing, missing = separate_files(files)
         unwritable = filter(lambda x, iw=is_writable: not iw(x), existing)
         if missing:
-            print "Missing files: `%s'" % string.join(missing, "', `")
+            print "Missing files: `%s'" % "', `".join(missing)
         if unwritable:
-            print "Unwritable files: `%s'" % string.join(unwritable, "', `")
+            print "Unwritable files: `%s'" % "', `".join(unwritable)
         self.fail_test(missing + unwritable)
 
     def must_contain(self, file, required, mode = 'rb'):
         """Ensures that the specified file contains the required text.
         """
         file_contents = self.read(file, mode)
-        contains = (string.find(file_contents, required) != -1)
+        contains = (file_contents.find(required) != -1)
         if not contains:
             print "File `%s' does not contain required string." % file
             print self.banner('Required string ')
@@ -261,7 +260,7 @@ class TestCommon(TestCmd):
         for lines in the output.
         """
         if find is None:
-            find = lambda o, l: string.find(o, l) != -1
+            find = lambda o, l: o.find(l) != -1
         missing = []
         for line in lines:
             if not find(output, line):
@@ -289,7 +288,7 @@ class TestCommon(TestCmd):
         for lines in the output.
         """
         if find is None:
-            find = lambda o, l: string.find(o, l) != -1
+            find = lambda o, l: o.find(l) != -1
         for line in lines:
             if find(output, line):
                 return
@@ -316,7 +315,7 @@ class TestCommon(TestCmd):
         files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
         missing = filter(lambda x: not os.path.exists(x), files)
         if missing:
-            print "Missing files: `%s'" % string.join(missing, "', `")
+            print "Missing files: `%s'" % "', `".join(missing)
             self.fail_test(missing)
 
     def must_match(self, file, expect, mode = 'rb'):
@@ -339,7 +338,7 @@ class TestCommon(TestCmd):
         """Ensures that the specified file doesn't contain the banned text.
         """
         file_contents = self.read(file, mode)
-        contains = (string.find(file_contents, banned) != -1)
+        contains = (file_contents.find(banned) != -1)
         if contains:
             print "File `%s' contains banned string." % file
             print self.banner('Banned string ')
@@ -360,7 +359,7 @@ class TestCommon(TestCmd):
         for lines in the output.
         """
         if find is None:
-            find = lambda o, l: string.find(o, l) != -1
+            find = lambda o, l: o.find(l) != -1
         unexpected = []
         for line in lines:
             if find(output, line):
@@ -388,7 +387,7 @@ class TestCommon(TestCmd):
         files = map(lambda x: is_List(x) and apply(os.path.join, x) or x, files)
         existing = filter(os.path.exists, files)
         if existing:
-            print "Unexpected files exist: `%s'" % string.join(existing, "', `")
+            print "Unexpected files exist: `%s'" % "', `".join(existing)
             self.fail_test(existing)
 
 
@@ -403,9 +402,9 @@ class TestCommon(TestCmd):
         existing, missing = separate_files(files)
         writable = filter(is_writable, existing)
         if missing:
-            print "Missing files: `%s'" % string.join(missing, "', `")
+            print "Missing files: `%s'" % "', `".join(missing)
         if writable:
-            print "Writable files: `%s'" % string.join(writable, "', `")
+            print "Writable files: `%s'" % "', `".join(writable)
         self.fail_test(missing + writable)
 
     def _complete(self, actual_stdout, expected_stdout,

@@ -19,7 +19,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import os
 import re
 import shutil
-import string
 import sys
 import time
 
@@ -123,7 +122,7 @@ def gccFortranLibs():
         stderr = p.stderr
 
     for l in stderr.readlines():
-        list = string.split(l)
+        list = l.split()
         if len(list) > 3 and list[:2] == ['gcc', 'version']:
             if list[2][:3] in ('4.1','4.2','4.3'):
                 libs = ['gfortranbegin']
@@ -148,7 +147,7 @@ if sys.platform == 'win32':
     fortran_lib = gccFortranLibs()
 elif sys.platform == 'cygwin':
     fortran_lib = gccFortranLibs()
-elif string.find(sys.platform, 'irix') != -1:
+elif sys.platform.find('irix') != -1:
     fortran_lib = ['ftn']
 else:
     fortran_lib = gccFortranLibs()
@@ -161,7 +160,7 @@ file_expr = r"""File "[^"]*", line \d+, in .+
 # re.escape escapes too much.
 def re_escape(str):
     for c in ['.', '[', ']', '(', ')', '*', '+', '?']:  # Not an exhaustive list.
-        str = string.replace(str, c, '\\' + c)
+        str = str.replace(c, '\\' + c)
     return str
 
 
@@ -170,12 +169,12 @@ try:
     sys.version_info
 except AttributeError:
     # Pre-1.6 Python has no sys.version_info
-    version_string = string.split(sys.version)[0]
-    version_ints = map(int, string.split(version_string, '.'))
+    version_string = sys.version.split()[0]
+    version_ints = map(int, version_string.split('.'))
     sys.version_info = tuple(version_ints + ['final', 0])
 
 def python_version_string():
-    return string.split(sys.version)[0]
+    return sys.version.split()[0]
 
 def python_minor_version_string():
     return sys.version[:3]
@@ -266,7 +265,7 @@ class TestSCons(TestCommon):
             else:
                 sconsflags = []
             sconsflags = sconsflags + ['--warn=no-python-version']
-            os.environ['SCONSFLAGS'] = string.join(sconsflags)
+            os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
 
         apply(TestCommon.__init__, [self], kw)
 
@@ -307,7 +306,7 @@ class TestSCons(TestCommon):
             return None
         result = env.WhereIs(prog)
         if norm and os.sep != '/':
-            result = string.replace(result, os.sep, '/')
+            result = result.replace(os.sep, '/')
         return result
 
     def detect_tool(self, tool, prog=None, ENV=None):
@@ -376,7 +375,7 @@ class TestSCons(TestCommon):
         # support the --warn=no-visual-c-missing warning.)
         sconsflags = sconsflags + [os.environ.get('TESTSCONS_SCONSFLAGS',
                                                   '--warn=no-visual-c-missing')]
-        os.environ['SCONSFLAGS'] = string.join(sconsflags)
+        os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
         try:
             result = apply(TestCommon.run, (self,)+args, kw)
         finally:
@@ -385,7 +384,7 @@ class TestSCons(TestCommon):
 
     def up_to_date(self, options = None, arguments = None, read_str = "", **kw):
         s = ""
-        for arg in string.split(arguments):
+        for arg in arguments.split():
             s = s + "scons: `%s' is up to date.\n" % arg
             if options:
                 arguments = options + " " + arguments
@@ -403,14 +402,14 @@ class TestSCons(TestCommon):
         This function is most useful in conjunction with the -n option.
         """
         s = ""
-        for arg in string.split(arguments):
+        for arg in arguments.split():
             s = s + "(?!scons: `%s' is up to date.)" % re.escape(arg)
             if options:
                 arguments = options + " " + arguments
         s = '('+s+'[^\n]*\n)*'
         kw['arguments'] = arguments
         stdout = re.escape(self.wrap_stdout(build_str='ARGUMENTSGOHERE'))
-        kw['stdout'] = string.replace(stdout, 'ARGUMENTSGOHERE', s)
+        kw['stdout'] = stdout.replace('ARGUMENTSGOHERE', s)
         kw['match'] = self.match_re_dotall
         apply(self.run, [], kw)
 
@@ -461,9 +460,9 @@ class TestSCons(TestCommon):
         places, abstracting out the version difference.
         """
         exec 'import traceback; x = traceback.format_stack()[-1]'
-        x = string.lstrip(x)
-        x = string.replace(x, '<string>', file)
-        x = string.replace(x, 'line 1,', 'line %s,' % line)
+        x = x.lstrip()
+        x = x.replace('<string>', file)
+        x = x.replace('line 1,', 'line %s,' % line)
         return x
 
     def normalize_pdf(self, s):
@@ -486,12 +485,12 @@ class TestSCons(TestCommon):
             end_marker = 'endstream\nendobj'
 
             encoded = []
-            b = string.find(s, begin_marker, 0)
+            b = s.find(begin_marker, 0)
             while b != -1:
                 b = b + len(begin_marker)
-                e = string.find(s, end_marker, b)
+                e = s.find(end_marker, b)
                 encoded.append((b, e))
-                b = string.find(s, begin_marker, e + len(end_marker))
+                b = s.find(begin_marker, e + len(end_marker))
 
             x = 0
             r = []
@@ -507,7 +506,7 @@ class TestSCons(TestCommon):
                 r.append(d)
                 x = e
             r.append(s[x:])
-            s = string.join(r, '')
+            s = ''.join(r)
 
         return s
 
@@ -553,7 +552,7 @@ class TestSCons(TestCommon):
             ]
             java_path = self.paths(patterns) + [env['ENV']['PATH']]
 
-        env['ENV']['PATH'] = string.join(java_path, os.pathsep)
+        env['ENV']['PATH'] = os.pathsep.join(java_path)
         return env['ENV']
 
     def java_where_includes(self,version=None):
@@ -634,7 +633,7 @@ class TestSCons(TestCommon):
                  stderr=None,
                  status=None)
         if version:
-            if string.find(self.stderr(), 'javac %s' % version) == -1:
+            if self.stderr().find('javac %s' % version) == -1:
                 fmt = "Could not find javac for Java version %s, skipping test(s).\n"
                 self.skip_test(fmt % version)
         else:
@@ -673,7 +672,6 @@ class TestSCons(TestCommon):
         self.write([dir, 'bin', 'mymoc.py'], """\
 import getopt
 import sys
-import string
 import re
 # -w and -z are fake options used in test/QT/QTFLAGS.py
 cmd_opts, args = getopt.getopt(sys.argv[1:], 'io:wz', [])
@@ -687,11 +685,11 @@ for opt, arg in cmd_opts:
 output.write("/* mymoc.py%s */\\n" % opt_string)
 for a in args:
     contents = open(a, 'rb').read()
-    a = string.replace(a, '\\\\', '\\\\\\\\')
+    a = a.replace('\\\\', '\\\\\\\\')
     subst = r'{ my_qt_symbol( "' + a + '\\\\n" ); }'
     if impl:
         contents = re.sub( r'#include.*', '', contents )
-    output.write(string.replace(contents, 'Q_OBJECT', subst))
+    output.write(contents.replace('Q_OBJECT', subst))
 output.close()
 sys.exit(0)
 """)
@@ -700,7 +698,6 @@ sys.exit(0)
 import os.path
 import re
 import sys
-import string
 output_arg = 0
 impl_arg = 0
 impl = None
@@ -845,7 +842,7 @@ SConscript( sconscript )
             lastEnd = 0
             logfile = self.read(self.workpath(logfile))
             if (doCheckLog and
-                string.find( logfile, "scons: warning: The stored build "
+                logfile.find( "scons: warning: The stored build "
                              "information has an unexpected class." ) >= 0):
                 self.fail_test()
             sconf_dir = sconf_dir
@@ -957,7 +954,7 @@ print os.path.join(sys.prefix, 'lib', py_ver, 'config')
 print py_ver
 """)
 
-        return [python] + string.split(string.strip(self.stdout()), '\n')
+        return [python] + self.stdout().strip().split('\n')
 
     def start(self, *args, **kw):
         """

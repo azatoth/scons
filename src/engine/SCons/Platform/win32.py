@@ -34,7 +34,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
-import string
 import sys
 import tempfile
 
@@ -109,11 +108,11 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
         stderrRedirected = 0
         for arg in args:
             # are there more possibilities to redirect stdout ?
-            if (string.find( arg, ">", 0, 1 ) != -1 or
-                string.find( arg, "1>", 0, 2 ) != -1):
+            if (arg.find( ">", 0, 1 ) != -1 or
+                arg.find( "1>", 0, 2 ) != -1):
                 stdoutRedirected = 1
             # are there more possibilities to redirect stderr ?
-            if string.find( arg, "2>", 0, 2 ) != -1:
+            if arg.find( "2>", 0, 2 ) != -1:
                 stderrRedirected = 1
 
         # redirect output of non-redirected streams to our tempfiles
@@ -124,7 +123,7 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
 
         # actually do the spawn
         try:
-            args = [sh, '/C', escape(string.join(args)) ]
+            args = [sh, '/C', escape(' '.join(args)) ]
             ret = os.spawnve(os.P_WAIT, sh, args, env)
         except OSError, e:
             # catch any error
@@ -162,7 +161,7 @@ def exec_spawn(l, env):
             result = 127
             if len(l) > 2:
                 if len(l[2]) < 1000:
-                    command = string.join(l[0:3])
+                    command = ' '.join(l[0:3])
                 else:
                     command = l[0]
             else:
@@ -174,7 +173,7 @@ def spawn(sh, escape, cmd, args, env):
     if not sh:
         sys.stderr.write("scons: Could not find command interpreter, is it in your PATH?\n")
         return 127
-    return exec_spawn([sh, '/C', escape(string.join(args))], env)
+    return exec_spawn([sh, '/C', escape(' '.join(args))], env)
 
 # Windows does not allow special characters in file names anyway, so no
 # need for a complex escape function, we will just quote the arg, except

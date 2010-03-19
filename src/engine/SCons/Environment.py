@@ -40,7 +40,6 @@ import os
 import sys
 import re
 import shlex
-import string
 from UserDict import UserDict
 
 import SCons.Action
@@ -563,7 +562,7 @@ class SubstitutionEnvironment:
                         # We have an object plus a string, or multiple
                         # objects that we need to smush together.  No choice
                         # but to make them into a string.
-                        p = string.join(map(SCons.Util.to_String_for_subst, p), '')
+                        p = ''.join(map(SCons.Util.to_String_for_subst, p))
             else:
                 p = s(p)
             r.append(p)
@@ -678,11 +677,11 @@ class SubstitutionEnvironment:
 
             # utility function to deal with -D option
             def append_define(name, dict = dict):
-                t = string.split(name, '=')
+                t = name.split('=')
                 if len(t) == 1:
                     dict['CPPDEFINES'].append(name)
                 else:
-                    dict['CPPDEFINES'].append([t[0], string.join(t[1:], '=')])
+                    dict['CPPDEFINES'].append([t[0], '='.join(t[1:])])
 
             # Loop through the flags and add them to the appropriate option.
             # This tries to strike a balance between checking for all possible
@@ -1097,7 +1096,7 @@ class Base(SubstitutionEnvironment):
             for scanner in scanners:
                 for k in scanner.get_skeys(self):
                     if k and self['PLATFORM'] == 'win32':
-                        k = string.lower(k)
+                        k = k.lower()
                     result[k] = scanner
 
         self._memo['_gsm'] = result
@@ -1108,7 +1107,7 @@ class Base(SubstitutionEnvironment):
         """Find the appropriate scanner given a key (usually a file suffix).
         """
         if skey and self['PLATFORM'] == 'win32':
-            skey = string.lower(skey)
+            skey = skey.lower()
         return self._gsm().get(skey)
 
     def scanner_map_delete(self, kw=None):
@@ -1469,7 +1468,7 @@ class Base(SubstitutionEnvironment):
                 return env.MergeFlags(cmd, unique)
             function = parse_conf
         if SCons.Util.is_List(command):
-            command = string.join(command)
+            command = ' '.join(command)
         command = self.subst(command)
         return function(self, self.backtick(command))
 
@@ -1495,7 +1494,7 @@ class Base(SubstitutionEnvironment):
         tdlist = []
         for line in lines:
             try:
-                target, depends = string.split(line, ':', 1)
+                target, depends = line.split(':', 1)
             except (AttributeError, TypeError, ValueError):
                 # Python 1.5.2 throws TypeError if line isn't a string,
                 # Python 2.x throws AttributeError because it tries
@@ -1503,7 +1502,7 @@ class Base(SubstitutionEnvironment):
                 # if the line doesn't split into two or more elements.
                 pass
             else:
-                tdlist.append((string.split(target), string.split(depends)))
+                tdlist.append((target.split(), depends.split()))
         if only_one:
             targets = reduce(lambda x, y: x+y, map(lambda p: p[0], tdlist))
             if len(targets) > 1:
@@ -2092,7 +2091,7 @@ class Base(SubstitutionEnvironment):
         if SCons.Util.is_List(arg):
             return map(self.subst, arg)
         elif SCons.Util.is_String(arg):
-            return string.split(self.subst(arg))
+            return self.subst(arg).split()
         else:
             return [self.subst(arg)]
 

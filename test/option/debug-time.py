@@ -25,7 +25,6 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import TestSCons
-import string
 import re
 import time
 
@@ -153,7 +152,7 @@ outside of the 15%% tolerance.
 """ % locals())
 
 if failures or warnings:
-    print string.join([test.stdout()] + failures + warnings, '\n')
+    print '\n'.join([test.stdout()] + failures + warnings)
 if failures:
     test.fail_test(1)
 
@@ -190,7 +189,7 @@ outside of the 1%% tolerance.
 """ % locals())
 
 if failures:
-    print string.join([test.stdout()] + failures, '\n')
+    print '\n'.join([test.stdout()] + failures)
     test.fail_test(1)
 
 test.run(arguments = "-j4 --debug=time . SLEEP=1")

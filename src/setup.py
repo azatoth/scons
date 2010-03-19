@@ -26,7 +26,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import os
 import os.path
 import stat
-import string
 import sys
 
 Version = "__VERSION__"
@@ -198,7 +197,7 @@ def get_scons_prefix(libdir, is_win32):
         if head == os.sep:
             break
         head, tail = os.path.split(head)
-        if string.lower(tail)[:6] == "python":
+        if tail.lower()[:6] == "python":
             # Found the Python library directory...
             if is_win32:
                 # ...on Win32 systems, "scons" goes in the directory:
@@ -418,7 +417,7 @@ arguments = {
 apply(distutils.core.setup, (), arguments)
 
 if Installed:
-    print string.join(Installed, '\n')
+    print '\n'.join(Installed)
 
 # Local Variables:
 # tab-width:4

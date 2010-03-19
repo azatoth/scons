@@ -161,7 +161,6 @@ sys.path = libs + sys.path
 
 import cPickle
 import imp
-import string
 import whichdb
 
 import SCons.SConsign
@@ -182,7 +181,7 @@ whichdb.whichdb = my_whichdb
 
 def my_import(mname):
     if '.' in mname:
-        i = string.rfind(mname, '.')
+        i = mname.rfind('.')
         parent = my_import(mname[:i])
         fp, pathname, description = imp.find_module(mname[i+1:],
                                                     parent.__path__)
@@ -241,7 +240,7 @@ def map_bkids(entry, name):
         result.append(nodeinfo_string(bkids[i], bkidsigs[i], "        "))
     if result == []:
         return None
-    return string.join(result, "\n        ")
+    return "\n        ".join(result)
 
 map_field = {
     'action'    : map_action,
@@ -277,7 +276,7 @@ def nodeinfo_raw(name, ninfo, prefix=""):
         l.append('%s: %s' % (repr(k), repr(d.get(k))))
     if '\n' in name:
         name = repr(name)
-    return name + ': {' + string.join(l, ', ') + '}'
+    return name + ': {' + ', '.join(l) + '}'
 
 def nodeinfo_cooked(name, ninfo, prefix=""):
     try:
@@ -292,7 +291,7 @@ def nodeinfo_cooked(name, ninfo, prefix=""):
         sep = '\n    ' + prefix
     else:
         sep = ' '
-    return string.join(outlist, sep)
+    return sep.join(outlist)
 
 nodeinfo_string = nodeinfo_cooked
 

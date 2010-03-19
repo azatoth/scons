@@ -72,7 +72,6 @@ import os
 import os.path
 import re
 import sgmllib
-import string
 import sys
 
 sys.path.append(os.path.join(os.getcwd(), 'etc'))
@@ -156,7 +155,6 @@ Prompt = {
 # command output.
 
 Stdin = """\
-import string
 import SCons.Defaults
 
 platform = '%s'
@@ -179,8 +177,8 @@ class Curry:
 def Str(target, source, env, cmd=""):
     result = []
     for cmd in env.subst_list(cmd, target=target, source=source):
-        result.append(string.join(map(str, cmd)))
-    return string.join(result, '\\n')
+        result.append(" ".join(map(str, cmd)))
+    return '\\n'.join(result)
 
 class ToolSurrogate:
     def __init__(self, tool, variable, func):
@@ -294,7 +292,7 @@ class MySGML(sgmllib.SGMLParser):
                     i = len(f.data) - 1
                     while f.data[i] == ' ':
                         i = i - 1
-                    output = string.replace(f.data[:i+1], '__ROOT__', '')
+                    output = f.data[:i+1].replace('__ROOT__', '')
                     sys.stdout.write(output)
             if e.data and e.data[0] == '\n':
                 e.data = e.data[1:]
@@ -408,20 +406,19 @@ class MySGML(sgmllib.SGMLParser):
             i = 0
             while f.data[i] == '\n':
                 i = i + 1
-            lines = string.split(f.data[i:], '\n')
+            lines = f.data[i:].split('\n')
             i = 0
             while lines[0][i] == ' ':
                 i = i + 1
             lines = map(lambda l, i=i: l[i:], lines)
-            path = string.replace(f.name, '__ROOT__', t.workpath('ROOT'))
+            path = f.name.replace('__ROOT__', t.workpath('ROOT'))
             dir, name = os.path.split(f.name)
             if dir:
                 dir = t.workpath('WORK', dir)
                 if not os.path.exists(dir):
                     os.makedirs(dir)
-            content = string.join(lines, '\n')
-            content = string.replace(content,
-                                     '__ROOT__',
+            content = '\n'.join(lines)
+            content = content.replace('__ROOT__',
                                      t.workpath('ROOT'))
             t.write(t.workpath('WORK', f.name), content)
         i = len(o.prefix)
@@ -431,19 +428,19 @@ class MySGML(sgmllib.SGMLParser):
         p = o.prefix[i:]
         for c in o.commandlist:
             sys.stdout.write(p + Prompt[o.os])
-            d = string.replace(c.data, '__ROOT__', '')
+            d = c.data.replace('__ROOT__', '')
             sys.stdout.write('<userinput>' + d + '</userinput>\n')
-            e = string.replace(c.data, '__ROOT__', t.workpath('ROOT'))
-            args = string.split(e)[1:]
+            e = c.data.replace('__ROOT__', t.workpath('ROOT'))
+            args = e.split()[1:]
             os.environ['SCONS_LIB_DIR'] = scons_lib_dir
             t.run(interpreter = sys.executable,
                   program = scons_py,
-                  arguments = '-f - ' + string.join(args),
+                  arguments = '-f - ' + ' '.join(args),
                   chdir = t.workpath('WORK'),
                   stdin = Stdin % o.os)
-            out = string.replace(t.stdout(), t.workpath('ROOT'), '')
+            out = t.stdout().replace(t.workpath('ROOT'), '')
             if out:
-                lines = string.split(out, '\n')
+                lines = out.split('\n')
                 if lines:
                     while lines[-1] == '':
                         lines = lines[:-1]

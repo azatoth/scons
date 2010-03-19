@@ -30,7 +30,6 @@ Nodes.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
 import UserList
 
 from SCons.Debug import logInstanceCreation
@@ -408,7 +407,7 @@ class Executor:
         env = self.get_build_env()
         get = lambda action, t=self.get_all_targets(), s=self.get_all_sources(), e=env: \
                      action.genstring(t, s, e)
-        return string.join(map(get, self.get_action_list()), "\n")
+        return "\n".join(map(get, self.get_action_list()))
 
 
     def __str__(self):
@@ -433,7 +432,7 @@ class Executor:
         env = self.get_build_env()
         get = lambda action, t=self.get_all_targets(), s=self.get_all_sources(), e=env: \
                      action.get_contents(t, s, e)
-        result = string.join(map(get, self.get_action_list()), "")
+        result = "".join(map(get, self.get_action_list()))
         self._memo['get_contents'] = result
         return result
 

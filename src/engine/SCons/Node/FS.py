@@ -43,7 +43,6 @@ import os.path
 import re
 import shutil
 import stat
-import string
 import sys
 import time
 
@@ -260,7 +259,7 @@ def set_duplicate(duplicate):
                                            "should be in Valid_Duplicates")
     global Link_Funcs
     Link_Funcs = []
-    for func in string.split(duplicate,'-'):
+    for func in duplicate.split('-'):
         if link_dict[func]:
             Link_Funcs.append(link_dict[func])
 
@@ -373,7 +372,7 @@ if os.path.normcase("TeSt") == os.path.normpath("TeSt") and not _is_cygwin:
         return x
 else:
     def _my_normcase(x):
-        return string.upper(x)
+        return x.upper()
 
 
 
@@ -497,7 +496,7 @@ class EntryProxy(SCons.Util.Proxy):
             return self
         else:
             entry = self.get()
-            r = string.replace(entry.get_path(), os.sep, '/')
+            r = entry.get_path().replace(os.sep, '/')
             return SCons.Subst.SpecialAttrWrapper(r, entry.name + "_posix")
 
     def __get_windows_path(self):
@@ -507,7 +506,7 @@ class EntryProxy(SCons.Util.Proxy):
             return self
         else:
             entry = self.get()
-            r = string.replace(entry.get_path(), os.sep, '\\')
+            r = entry.get_path().replace(os.sep, '\\')
             return SCons.Subst.SpecialAttrWrapper(r, entry.name + "_windows")
 
     def __get_srcnode(self):
@@ -754,7 +753,7 @@ class Base(SCons.Node.Node):
         except ValueError: pass
         else: path_elems = path_elems[i+1:]
         path_elems = map(lambda n: n.name, path_elems)
-        return string.join(path_elems, os.sep)
+        return os.sep.join(path_elems)
 
     def set_src_builder(self, builder):
         """Set the source code builder for this node."""
@@ -1249,7 +1248,7 @@ class FS(LocalFS):
             root = directory.root
 
         if os.sep != '/':
-            p = string.replace(p, os.sep, '/')
+            p = p.replace(os.sep, '/')
         return root._lookup_abs(p, fsclass, create)
 
     def Entry(self, name, directory = None, create = 1):
@@ -1332,7 +1331,7 @@ class FS(LocalFS):
             tail = [dir.name] + tail
             dir = dir.up()
         if targets:
-            message = fmt % string.join(map(str, targets))
+            message = fmt % ' '.join(map(str, targets))
         return targets, message
 
     def Glob(self, pathname, ondisk=True, source=True, strings=False, cwd=None):
@@ -1576,7 +1575,7 @@ class Dir(Base):
             path_elems = ['..'] * (len(self.path_elements) - i) \
                          + map(lambda n: n.name, other.path_elements[i:])
              
-            result = string.join(path_elems, os.sep)
+            result = os.sep.join(path_elems)
 
         memo_dict[other] = result
 
@@ -1687,7 +1686,7 @@ class Dir(Base):
         sorted_children.sort(name_cmp)
         for node in sorted_children:
             contents.append('%s %s\n' % (node.get_csig(), node.name))
-        return string.join(contents, '')
+        return ''.join(contents)
 
     def get_csig(self):
         """Compute the content signature for Directory nodes. In
@@ -2200,7 +2199,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
                 except AttributeError:
                     s = str(n)
                 else:
-                    s = string.replace(s, os.sep, '/')
+                    s = s.replace(os.sep, '/')
                 return s
         for attr in ['bsources', 'bdepends', 'bimplicit']:
             try:
@@ -2249,9 +2248,9 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
         bkidsigs = self.bsourcesigs + self.bdependsigs + self.bimplicitsigs
         for bkid, bkidsig in izip(bkids, bkidsigs):
             result.append(str(bkid) + ': ' +
-                          string.join(bkidsig.format(names=names), ' '))
+                          ' '.join(bkidsig.format(names=names)))
         result.append('%s [%s]' % (self.bactsig, self.bact))
-        return string.join(result, '\n')
+        return '\n'.join(result)
 
 class File(Base):
     """A class for files in a file system.

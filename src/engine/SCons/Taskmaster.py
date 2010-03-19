@@ -52,7 +52,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 from itertools import chain
 import operator
-import string
 import sys
 import traceback
 
@@ -1017,7 +1016,7 @@ class Taskmaster:
         desc = 'Found dependency cycle(s):\n'
         for node, cycle in nclist:
             if cycle:
-                desc = desc + "  " + string.join(map(str, cycle), " -> ") + "\n"
+                desc = desc + "  " + " -> ".join(map(str, cycle)) + "\n"
             else:
                 desc = desc + \
                     "  Internal Error: no cycle found for node %s (%s) in state %s\n" %  \

@@ -27,7 +27,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import TestSCons
 
 import os
-import string
 
 test = TestSCons.TestSCons()
 
@@ -63,8 +62,8 @@ test.run(arguments = '.')
 textparts = ['lalala', '42',
              'Goethe', 'Schiller',
              'tanteratei']
-foo1Text  = string.join(textparts, os.linesep)
-foo2Text  = string.join(textparts, '|*')
+foo1Text  = os.linesep.join(textparts)
+foo2Text  = '|*'.join(textparts)
 foo1aText = foo1Text + os.linesep
 foo2aText = foo2Text + '|*'
 
@@ -142,7 +141,7 @@ line3a = 'This line has %subst% substitutions'
 line3b = 'This line has many substitutions'
 
 def matchem(file, lines):
-    lines = string.join(lines, os.linesep)
+    lines = os.linesep.join(lines)
     test.must_match(file, lines)
 
 matchem('text.txt', [line1, line2a, line3a])

@@ -30,7 +30,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import re
-import string
 import StringIO
 import sys
 import traceback
@@ -96,7 +95,7 @@ sconf_global = None   # current sconf object
 
 def _createConfigH(target, source, env):
     t = open(str(target[0]), "w")
-    defname = re.sub('[^A-Za-z0-9_]', '_', string.upper(str(target[0])))
+    defname = re.sub('[^A-Za-z0-9_]', '_', str(target[0]).upper())
     t.write("""#ifndef %(DEFNAME)s_SEEN
 #define %(DEFNAME)s_SEEN
 
@@ -153,8 +152,7 @@ def _createSource( target, source, env ):
     fd.close()
 def _stringSource( target, source, env ):
     return (str(target[0]) + ' <-\n  |' +
-            string.replace( source[0].get_contents(),
-                            '\n', "\n  |" ) )
+            source[0].get_contents().replace( '\n', "\n  |" ) )
 
 # python 2.2 introduces types.BooleanType
 BooleanTypes = [types.IntType]
@@ -222,8 +220,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
               "The stored build information has an unexpected class: %s" % bi.__class__)
         else:
             self.display("The original builder output was:\n" +
-                         string.replace("  |" + str(bi.string),
-                                        "\n", "\n  |"))
+                         ("  |" + str(bi.string)).replace("\n", "\n  |"))
 
     def failed(self):
         # check, if the reason was a ConfigureDryRunError or a
@@ -465,7 +462,7 @@ class SConfBase:
         lines.append(define_str)
         lines.append('')
 
-        self.config_h_text = self.config_h_text + string.join(lines, '\n')
+        self.config_h_text = self.config_h_text + '\n'.join(lines)
 
     def BuildNodes(self, nodes):
         """
@@ -933,7 +930,7 @@ def createIncludesFromHeaders(headers, leaveLast, include_quotes = '""'):
     for s in headers:
         l.append("#include %s%s%s\n"
                  % (include_quotes[0], s, include_quotes[1]))
-    return string.join(l, ''), lastHeader
+    return ''.join(l), lastHeader
 
 def CheckHeader(context, header, include_quotes = '<>', language = None):
     """

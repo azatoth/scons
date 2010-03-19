@@ -35,7 +35,6 @@ test = TestSCons.TestSCons()
 
 test.write('SConstruct', """
 import os.path
-import string
 def cat(target, source, env):
     fp = open(str(target[0]), 'wb')
     for s in map(str, source):
@@ -43,7 +42,7 @@ def cat(target, source, env):
 Cat = Builder(action=cat)
 def Wrapper(env, target, source):
     if not target:
-        target = [string.replace(str(source[0]), '.in', '.wout')]
+        target = [str(source[0]).replace('.in', '.wout')]
     t1 = 't1-'+str(target[0])
     source = 's-'+str(source[0])
     env.Cat(t1, source)

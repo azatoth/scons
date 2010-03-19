@@ -30,7 +30,6 @@ Stuff for processing Fortran, common to all fortran dialects.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import re
-import string
 import os.path
 
 import SCons.Action
@@ -73,7 +72,7 @@ def _fortranEmitter(target, source, env):
     # Convert module name to a .mod filename
     suffix = env.subst('$FORTRANMODSUFFIX', target=target, source=source)
     moddir = env.subst('$FORTRANMODDIR', target=target, source=source)
-    modules = map(lambda x, s=suffix: string.lower(x) + s, modules)
+    modules = map(lambda x, s=suffix: x.lower() + s, modules)
     for m in modules:
        target.append(env.fs.File(m, moddir))
     return (target, source)
@@ -91,8 +90,8 @@ def ComputeFortranSuffixes(suffixes, ppsuffixes):
     pre-processed. Both should be sequences, not strings."""
     assert len(suffixes) > 0
     s = suffixes[0]
-    sup = string.upper(s)
-    upper_suffixes = map(string.upper, suffixes)
+    sup = s.upper()
+    upper_suffixes = [_.upper() for _ in suffixes]
     if SCons.Util.case_sensitive_suffixes(s, sup):
         ppsuffixes.extend(upper_suffixes)
     else:

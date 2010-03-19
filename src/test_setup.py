@@ -34,7 +34,6 @@ name of this script doesn't end in *Tests.py.
 import os
 import os.path
 import shutil
-import string
 import sys
 
 try: WindowsError
@@ -124,7 +123,7 @@ class MyTestSCons(TestSCons.TestSCons):
         except (OSError, WindowsError): pass
 
     def stdout_lines(self):
-        return string.split(self.stdout(), '\n')
+        return self.stdout().split('\n')
 
 
     def lib_line(self, lib):
@@ -321,8 +320,7 @@ test.must_have_installed(test.man_page_paths())
 other_prefix = test.workpath('other-prefix')
 test.subdir(other_prefix)
 test.run(arguments = 'setup.py install --prefix=%s' % other_prefix)
-test.fail_test(string.find(test.stderr(),
-                           "you'll have to change the search path yourself")
+test.fail_test(test.stderr().find("you'll have to change the search path yourself")
                != -1)
 
 # All done.

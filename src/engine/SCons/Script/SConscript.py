@@ -48,7 +48,6 @@ import SCons.Util
 import os
 import os.path
 import re
-import string
 import sys
 import traceback
 import types
@@ -145,7 +144,7 @@ def Return(*vars, **kw):
     try:
         fvars = SCons.Util.flatten(vars)
         for var in fvars:
-            for v in string.split(var):
+            for v in var.split():
                 retval.append(call_stack[-1].globals[v])
     except KeyError, x:
         raise SCons.Errors.UserError, "Return of non-existent variable '%s'"%x
@@ -369,7 +368,7 @@ class SConsEnvironment(SCons.Environment.Base):
 
         This is complicated by the fact that a version string can be
         something like 3.2b1."""
-        version = string.split(string.split(version_string, ' ')[0], '.')
+        version = version_string.split(' ')[0].split('.')
         v_major = int(version[0])
         v_minor = int(re.match('\d+', version[1]).group())
         if len(version) >= 3:
@@ -484,7 +483,7 @@ class SConsEnvironment(SCons.Environment.Base):
         except AttributeError:
             python_ver = self._get_major_minor_revision(sys.version)[:2]
         if python_ver < (major, minor):
-            v = string.split(sys.version, " ", 1)[0]
+            v = sys.version.split(" ", 1)[0]
             print "Python %d.%d or greater required, but you have Python %s" %(major,minor,v)
             sys.exit(2)
 

@@ -1841,9 +1841,7 @@ and a same-named environment method
 that split a single string
 into a list, separated on
 strings of white-space characters.
-(These are similar to the
-string.split() method
-from the standard Python library,
+(These are similar to the split() member function of Python strings
 but work even if the input isn't a string.)
 
 Like all Python arguments,
@@ -1862,7 +1860,7 @@ env.Program('bar', env.Split('bar.c foo.c'))
 env.Program(source =  ['bar.c', 'foo.c'], target = 'bar')
 env.Program(target = 'bar', Split('bar.c foo.c'))
 env.Program(target = 'bar', env.Split('bar.c foo.c'))
-env.Program('bar', source = string.split('bar.c foo.c'))
+env.Program('bar', source = 'bar.c foo.c'.split())
 .EE
 
 Target and source file names

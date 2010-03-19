@@ -32,7 +32,6 @@ needed by most users.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import string
 import sys
 import time
 
@@ -60,7 +59,7 @@ def string_to_classes(s):
         c.sort()
         return c
     else:
-        return string.split(s)
+        return s.split()
 
 def fetchLoggedInstances(classes="*"):
     classnames = string_to_classes(classes)
@@ -94,7 +93,7 @@ if sys.platform[:5] == "linux":
     # Linux doesn't actually support memory usage stats from getrusage().
     def memory():
         mstr = open('/proc/self/stat').read()
-        mstr = string.split(mstr)[22]
+        mstr = mstr.split()[22]
         return int(mstr)
 else:
     try:
@@ -176,14 +175,14 @@ shorten_list = [
 
 if os.sep != '/':
    def platformize(t):
-       return (string.replace(t[0], '/', os.sep), t[1])
+       return (t[0].replace('/', os.sep), t[1])
    shorten_list = map(platformize, shorten_list)
    del platformize
 
 def func_shorten(func_tuple):
     f = func_tuple[0]
     for t in shorten_list:
-        i = string.find(f, t[0])
+        i = f.find(t[0])
         if i >= 0:
             if t[1]:
                 i = i + len(t[0])

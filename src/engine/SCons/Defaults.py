@@ -41,7 +41,6 @@ import os.path
 import errno
 import shutil
 import stat
-import string
 import time
 import types
 import sys
@@ -165,7 +164,7 @@ def get_paths_str(dest):
         elem_strs = []
         for element in dest:
             elem_strs.append('"' + str(element) + '"')
-        return '[' + string.join(elem_strs, ', ') + ']'
+        return '[' + ', '.join(elem_strs) + ']'
     else:
         return '"' + str(dest) + '"'
 

@@ -34,8 +34,6 @@ selection method.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
-
 import SCons.Defaults
 from SCons.Scanner.Fortran import FortranScan
 from FortranCommon import add_all_to_env
@@ -75,7 +73,7 @@ def generate(env):
         for dialect in ['F77', 'F90', 'FORTRAN', 'F95']:
             for var in ['%sCOM' % dialect, '%sPPCOM' % dialect,
                         'SH%sCOM' % dialect, 'SH%sPPCOM' % dialect]:
-                env[var] = string.replace(env[var], '-o $TARGET', '-object:$TARGET')
+                env[var] = env[var].replace('-o $TARGET', '-object:$TARGET')
         env['FORTRANMODDIRPREFIX'] = "/module:"
     else:
         env['FORTRANMODDIRPREFIX'] = "-module "

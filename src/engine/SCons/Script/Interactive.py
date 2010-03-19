@@ -90,7 +90,6 @@ import copy
 import os
 import re
 import shlex
-import string
 import sys
 
 try:
@@ -134,7 +133,7 @@ class SConsInteractiveCmd(cmd.Cmd):
         print "*** Unknown command: %s" % argv[0]
 
     def onecmd(self, line):
-        line = string.strip(line)
+        line = line.strip()
         if not line:
             print self.lastcmd
             return self.emptyline()
@@ -144,7 +143,7 @@ class SConsInteractiveCmd(cmd.Cmd):
         elif line[0] == '?':
             line = 'help ' + line[1:]
         if os.sep == '\\':
-            line = string.replace(line, '\\', '\\\\')
+            line = line.replace('\\', '\\\\')
         argv = shlex.split(line)
         argv[0] = self.synonyms.get(argv[0], argv[0])
         if not argv[0]:
@@ -307,7 +306,7 @@ class SConsInteractiveCmd(cmd.Cmd):
 
     def _strip_initial_spaces(self, s):
         #lines = s.split('\n')
-        lines = string.split(s, '\n')
+        lines = s.split('\n')
         spaces = re.match(' *', lines[0]).group(0)
         #def strip_spaces(l):
         #    if l.startswith(spaces):
@@ -319,7 +318,7 @@ class SConsInteractiveCmd(cmd.Cmd):
                 l = l[len(spaces):]
             return l
         lines = map(strip_spaces, lines)
-        return string.join(lines, '\n')
+        return '\n'.join(lines)
 
     def do_exit(self, argv):
         """\

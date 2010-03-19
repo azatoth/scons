@@ -32,8 +32,6 @@ under the covers).
 Note that using BuildDir() does not yet print a deprecation warning.
 """
 
-import string
-
 import TestSCons
 
 _exe = TestSCons._exe
@@ -191,9 +189,9 @@ test.write(['work1', 'src', 'f4h.in'], r"""
 def blank_output(err):
     if not err:
         return 1
-    stderrlines = filter(lambda l: l, string.split(err, '\n'))
+    stderrlines = filter(lambda l: l, err.split('\n'))
     msg = "warning: tempnam() possibly used unsafely"
-    stderrlines = filter(lambda l, msg=msg: string.find(l, msg) == -1,
+    stderrlines = filter(lambda l, msg=msg: l.find(msg) == -1,
                          stderrlines)
     return len(stderrlines) == 0
 

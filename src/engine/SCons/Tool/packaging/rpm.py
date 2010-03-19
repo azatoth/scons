@@ -29,7 +29,6 @@ The rpm packager.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import string
 
 import SCons.Builder
 
@@ -83,7 +82,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     # if no "SOURCE_URL" tag is given add a default one.
     if not kw.has_key('SOURCE_URL'):
         #kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
-        kw['SOURCE_URL']=string.replace(str(target[0])+".tar.gz", '.rpm', '')
+        kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
 
     # mangle the source and target list for the rpmbuild
     env = OverrideEnvironment(env, kw)
@@ -107,16 +106,16 @@ def collectintargz(target, source, env):
     # find the .spec file for rpm and add it since it is not necessarily found
     # by the FindSourceFiles function.
     #sources.extend( [s for s in source if str(s).rfind('.spec')!=-1] )
-    spec_file = lambda s: string.rfind(str(s), '.spec') != -1
+    spec_file = lambda s: str(s).rfind('.spec') != -1
     sources.extend( filter(spec_file, source) )
 
     # as the source contains the url of the source package this rpm package
     # is built from, we extract the target name
     #tarball = (str(target[0])+".tar.gz").replace('.rpm', '')
-    tarball = string.replace(str(target[0])+".tar.gz", '.rpm', '')
+    tarball = (str(target[0])+".tar.gz").replace('.rpm', '')
     try:
         #tarball = env['SOURCE_URL'].split('/')[-1]
-        tarball = string.split(env['SOURCE_URL'], '/')[-1]
+        tarball = env['SOURCE_URL'].split('/')[-1]
     except KeyError, e:
         raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
 

@@ -24,7 +24,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
 import StringIO
 import sys
 
@@ -96,8 +95,8 @@ expect = [
 test.must_contain_all_lines(test.stdout(), expect)
 
 expect = 'Memory before reading SConscript files'
-lines = string.split(test.stdout(), '\n')
-memory_lines = filter(lambda l, e=expect: string.find(l, e) != -1, lines)
+lines = test.stdout().split('\n')
+memory_lines = filter(lambda l, e=expect: l.find(e) != -1, lines)
 
 test.fail_test(len(memory_lines) != 1)
 

@@ -34,7 +34,6 @@ import TestSCons
 test = TestSCons.TestSCons()
 
 test.write('SConstruct', """\
-import string
 class Curry:
     def __init__(self, fun, *args, **kwargs):
         self.fun = fun
@@ -53,8 +52,8 @@ class Curry:
 def Str(target, source, env, cmd=""):
     result = []
     for cmd in env.subst_list(cmd, target=target, source=source):
-        result.append(string.join(map(str, cmd)))
-    return string.join(result, '\\n')
+        result.append(" ".join(map(str, cmd)))
+    return '\\n'.join(result)
 
 class ToolSurrogate:
     def __init__(self, tool, variable, func):

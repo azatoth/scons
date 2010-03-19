@@ -13,7 +13,6 @@
 import getopt
 import os.path
 import re
-import string
 import StringIO
 import sys
 import xml.sax
@@ -134,7 +133,7 @@ class SCons_XML:
 
 class SCons_XML_to_XML(SCons_XML):
     def write(self, files):
-        gen, mod = string.split(files, ',')
+        gen, mod = files.split(',')
         g.write_gen(gen)
         g.write_mod(mod)
     def write_gen(self, filename):
@@ -204,17 +203,17 @@ class SCons_XML_to_man(SCons_XML):
             chunks.extend(map(str, v.summary.body))
 
         body = ''.join(chunks)
-        body = string.replace(body, '<programlisting>', '.ES')
-        body = string.replace(body, '</programlisting>', '.EE')
-        body = string.replace(body, '\n</para>\n<para>\n', '\n\n')
-        body = string.replace(body, '<para>\n', '')
-        body = string.replace(body, '<para>', '\n')
-        body = string.replace(body, '</para>\n', '')
+        body = body.replace('<programlisting>', '.ES')
+        body = body.replace('</programlisting>', '.EE')
+        body = body.replace('\n</para>\n<para>\n', '\n\n')
+        body = body.replace('<para>\n', '')
+        body = body.replace('<para>', '\n')
+        body = body.replace('</para>\n', '')
         body = re.sub('\.EE\n\n+(?!\.IP)', '.EE\n.IP\n', body)
         body = re.sub('&(scons|SConstruct|SConscript|jar);', r'\\fB\1\\fP', body)
-        body = string.replace(body, '&Dir;', r'\fBDir\fP')
-        body = string.replace(body, '&target;', r'\fItarget\fP')
-        body = string.replace(body, '&source;', r'\fIsource\fP')
+        body = body.replace('&Dir;', r'\fBDir\fP')
+        body = body.replace('&target;', r'\fItarget\fP')
+        body = body.replace('&source;', r'\fIsource\fP')
         body = re.sub('&b(-link)?-([^;]*);', r'\\fB\2\\fP()', body)
         body = re.sub('&cv(-link)?-([^;]*);', r'$\2', body)
         body = re.sub(r'<(command|envar|filename|literal|option)>([^<]*)</\1>',
@@ -223,8 +222,8 @@ class SCons_XML_to_man(SCons_XML):
                       r'\\fI\2\\fP', body)
         body = re.compile(r'^\\f([BI])(.*)\\fP\s*$', re.M).sub(r'.\1 \2', body)
         body = re.compile(r'^\\f([BI])(.*)\\fP(\S+)', re.M).sub(r'.\1R \2 \3', body)
-        body = string.replace(body, '&lt;', '<')
-        body = string.replace(body, '&gt;', '>')
+        body = body.replace('&lt;', '<')
+        body = body.replace('&gt;', '>')
         body = re.sub(r'\\([^f])', r'\\\\\1', body)
         body = re.compile("^'\\\\\\\\", re.M).sub("'\\\\", body)
         body = re.compile(r'^\.([BI]R?) -', re.M).sub(r'.\1 \-', body)
@@ -259,7 +258,7 @@ if toolsfiles:
             description = 'tool',
             prefix = 't-',
             tag = 'literal',
-            idfunc = lambda x: string.replace(x, '+', 'X'),
+            idfunc = lambda x: x.replace('+', 'X'),
             termfunc = lambda x: [x],
             entityfunc = lambda x: x)
 

@@ -32,7 +32,6 @@ on port 1666, as well as that of course a client must be present.
 """
 
 import os
-import string
 
 import TestSCons
 
@@ -78,7 +77,7 @@ class TestPerforce(TestSCons.TestSCons):
             try:
                 spawnv = os.spawnv
             except AttributeError:
-                os.system(string.join(args))
+                os.system(' '.join(args))
             else:
                 spawnv(os.P_NOWAIT, self.p4d, args)
                 self.sleep(2)
@@ -102,7 +101,7 @@ class TestPerforce(TestSCons.TestSCons):
                 # is already clear.
                 pass
 
-        self.portflag = string.join(self.p4portflags)
+        self.portflag = ' '.join(self.p4portflags)
 
     def p4(self, *args, **kw):
         try:
@@ -110,7 +109,7 @@ class TestPerforce(TestSCons.TestSCons):
         except KeyError:
             arguments = args[0]
             args = args[1:]
-        kw['arguments'] = string.join(self.p4portflags + [arguments])
+        kw['arguments'] = ' '.join(self.p4portflags + [arguments])
         kw['program'] = self.p4path
         return apply(self.run, args, kw)
 
@@ -209,7 +208,7 @@ os.environ["PWD"] = test.workpath('import')
 paths = [ 'aaa.in', 'bbb.in', 'ccc.in',
           'sub/ddd.in', 'sub/eee.in', 'sub/fff.in', 'sub/SConscript' ]
 paths = map(os.path.normpath, paths)
-args = '-c testclient1 add -t binary %s' % string.join(paths)
+args = '-c testclient1 add -t binary %s' % ' '.join(paths)
 test.p4(args, chdir='import')
 
 changespec = test.substitute("""

@@ -17,7 +17,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
-import string
 import sys
 
 from TestCommon import *
@@ -196,14 +195,14 @@ class TestSCons_time(TestCommon):
         try:
             import __future__
         except ImportError:
-            version = string.split(sys.version)[0]
+            version = sys.version.split()[0]
             msg = 'scons-time does not work on Python version %s\n' % version
             self.skip_test(msg)
 
         try:
             eval('[x for x in [1, 2]]')
         except SyntaxError:
-            version = string.split(sys.version)[0]
+            version = sys.version.split()[0]
             msg = 'scons-time does not work on Python version %s\n' % version
             self.skip_test(msg)
 
@@ -249,7 +248,7 @@ class TestSCons_time(TestCommon):
         args = (tempdir, 'scons-time-',) + args
         x = apply(os.path.join, args)
         x = re.escape(x)
-        x = string.replace(x, 'time\\-', 'time\\-[^%s]*' % sep)
+        x = x.replace('time\\-', 'time\\-[^%s]*' % sep)
         return x
 
     def write_fake_aegis_py(self, name):

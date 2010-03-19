@@ -25,7 +25,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import copy
 import os
-import string
 import StringIO
 import sys
 import TestCmd
@@ -132,7 +131,7 @@ class Scanner:
 class CLVar(UserList.UserList):
     def __init__(self, seq):
         if type(seq) == type(''):
-            seq = string.split(seq)
+            seq = seq.split()
         UserList.UserList.__init__(self, seq)
     def __add__(self, other):
         return UserList.UserList.__add__(self, CLVar(other))
@@ -1124,7 +1123,7 @@ env4.builder1.env, env3)
         assert s == [s1, s1, None, s3, s3], s
 
         # Verify behavior of case-insensitive suffix matches on Windows.
-        uc_suffixes = map(string.upper, suffixes)
+        uc_suffixes = [_.upper() for _ in suffixes]
 
         env = Environment(SCANNERS = [s1, s2, s3],
                           PLATFORM = 'linux')
@@ -1233,7 +1232,7 @@ env4.builder1.env, env3)
                 path = drive + path
             path = os.path.normpath(path)
             drive, path = os.path.splitdrive(path)
-            return string.lower(drive) + path
+            return drive.lower() + path
 
         env = dict.TestEnvironment(LIBS = [ 'foo', 'bar', 'baz' ],
                           LIBLINKPREFIX = 'foo',
@@ -2513,21 +2512,21 @@ def generate(env):
                           test.workpath('sub2'),
                           test.workpath('sub3'),
                           test.workpath('sub4'),
-                        ] + string.split(env_path, os.pathsep)
+                        ] + env_path.split(os.pathsep)
 
         pathdirs_1243 = [ test.workpath('sub1'),
                           test.workpath('sub2'),
                           test.workpath('sub4'),
                           test.workpath('sub3'),
-                        ] + string.split(env_path, os.pathsep)
+                        ] + env_path.split(os.pathsep)
 
-        path = string.join(pathdirs_1234, os.pathsep)
+        path = os.pathsep.join(pathdirs_1234)
         env = self.TestEnvironment(ENV = {'PATH' : path})
         wi = env.WhereIs('xxx.exe')
         assert wi == test.workpath(sub3_xxx_exe), wi
         wi = env.WhereIs('xxx.exe', pathdirs_1243)
         assert wi == test.workpath(sub4_xxx_exe), wi
-        wi = env.WhereIs('xxx.exe', string.join(pathdirs_1243, os.pathsep))
+        wi = env.WhereIs('xxx.exe', os.pathsep.join(pathdirs_1243))
         assert wi == test.workpath(sub4_xxx_exe), wi
 
         wi = env.WhereIs('xxx.exe', reject = sub3_xxx_exe)
@@ -2535,13 +2534,13 @@ def generate(env):
         wi = env.WhereIs('xxx.exe', pathdirs_1243, reject = sub3_xxx_exe)
         assert wi == test.workpath(sub4_xxx_exe), wi
 
-        path = string.join(pathdirs_1243, os.pathsep)
+        path = os.pathsep.join(pathdirs_1243)
         env = self.TestEnvironment(ENV = {'PATH' : path})
         wi = env.WhereIs('xxx.exe')
         assert wi == test.workpath(sub4_xxx_exe), wi
         wi = env.WhereIs('xxx.exe', pathdirs_1234)
         assert wi == test.workpath(sub3_xxx_exe), wi
-        wi = env.WhereIs('xxx.exe', string.join(pathdirs_1234, os.pathsep))
+        wi = env.WhereIs('xxx.exe', os.pathsep.join(pathdirs_1234))
         assert wi == test.workpath(sub3_xxx_exe), wi
 
         if sys.platform == 'win32':
@@ -2552,13 +2551,13 @@ def generate(env):
             assert wi == test.workpath(sub4_xxx_exe), wi
 
             wi = env.WhereIs('xxx', path = pathdirs_1234, pathext = '.BAT;.EXE')
-            assert string.lower(wi) == string.lower(test.workpath(sub3_xxx_exe)), wi
+            assert wi.lower() == test.workpath(sub3_xxx_exe).lower(), wi
 
             # Test that we return a normalized path even when
             # the path contains forward slashes.
             forward_slash = test.workpath('') + '/sub3'
             wi = env.WhereIs('xxx', path = forward_slash, pathext = '.EXE')
-            assert string.lower(wi) == string.lower(test.workpath(sub3_xxx_exe)), wi
+            assert wi.lower() == test.workpath(sub3_xxx_exe).lower(), wi
 
 
 

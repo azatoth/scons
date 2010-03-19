@@ -30,7 +30,6 @@ The Scanner package for the SCons software construction utility.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import re
-import string
 
 import SCons.Node.FS
 import SCons.Util
@@ -408,7 +407,7 @@ class ClassicCPP(Classic):
         return n, i
 
     def sort_key(self, include):
-        return SCons.Node.FS._my_normcase(string.join(include))
+        return SCons.Node.FS._my_normcase(' '.join(include))
 
 # Local Variables:
 # tab-width:4
