@@ -953,11 +953,9 @@ class LazyAction(CommandGeneratorAction, CommandAction):
     def _generate(self, target, source, env, for_signature, executor=None):
         return self._generate_cache(env)
 
-    def __call__(self, target, source, env, *args, **kw):
-        args = (self, target, source, env) + args
-        c = self.get_parent_class(env)
-        #TODO(1.5) return c.__call__(*args, **kw)
-        return c.__call__(*args, **kw)
+    def __call__(self, *args, **kw):
+        c = self.get_parent_class(args[2])  # args[2] is env
+        return c.__call__(self, *args, **kw)
 
     def get_presig(self, target, source, env):
         c = self.get_parent_class(env)
