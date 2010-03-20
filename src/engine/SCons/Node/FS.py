@@ -1326,7 +1326,7 @@ class FS(LocalFS):
                 if start_dir.is_under(bd):
                     # If already in the build-dir location, don't reflect
                     return [orig], fmt % str(orig)
-                p = os.path.join(*[bd.path] + tail)
+                p = os.path.join(bd.path, *tail)
                 targets.append(self.Entry(p))
             tail = [dir.name] + tail
             dir = dir.up()
@@ -1621,7 +1621,7 @@ class Dir(Base):
         """A null "builder" for directories."""
         global MkdirBuilder
         if self.builder is not MkdirBuilder:
-            SCons.Node.Node.build(*[self,], **kw)
+            SCons.Node.Node.build(self, **kw)
 
     #
     #

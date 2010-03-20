@@ -184,7 +184,7 @@ class TestSCons_time(TestCommon):
         if not kw.has_key('workdir'):
             kw['workdir'] = ''
 
-        TestCommon.__init__(*[self], **kw)
+        TestCommon.__init__(self, **kw)
 
         # Now that the testing object has been set up, check if we should
         # skip the test due to the Python version.  We need to be able to

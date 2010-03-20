@@ -91,7 +91,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     target, source = collectintargz(target, source, env)
 
     # now call the rpm builder to actually build the packet.
-    return bld(*[env, target, source], **kw)
+    return bld(env, target, source, **kw)
 
 def collectintargz(target, source, env):
     """ Puts all source files into a tar.gz file. """

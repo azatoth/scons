@@ -216,7 +216,7 @@ class TestCommon(TestCmd):
         calling the base class initialization, and then changing directory
         to the workdir.
         """
-        TestCmd.__init__(*[self], **kw)
+        TestCmd.__init__(self, **kw)
         os.chdir(self.workdir)
 
     def must_be_writable(self, *files):
@@ -536,7 +536,7 @@ class TestCommon(TestCmd):
             del kw['match']
         except KeyError:
             match = self.match
-        TestCmd.run(*[self], **kw)
+        TestCmd.run(self, **kw)
         self._complete(self.stdout(), stdout,
                        self.stderr(), stderr, status, match)
 

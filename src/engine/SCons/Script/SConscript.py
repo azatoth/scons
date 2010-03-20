@@ -549,7 +549,7 @@ class SConsEnvironment(SCons.Environment.Base):
 
         files, exports = self._get_SConscript_filenames(ls, subst_kw)
         subst_kw['exports'] = exports
-        return _SConscript(*[self.fs,] + files, **subst_kw)
+        return _SConscript(self.fs, *files, **subst_kw)
 
     def SConscriptChdir(self, flag):
         global sconscript_chdir

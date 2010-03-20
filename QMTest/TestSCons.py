@@ -267,7 +267,7 @@ class TestSCons(TestCommon):
             sconsflags = sconsflags + ['--warn=no-python-version']
             os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
 
-        TestCommon.__init__(*[self], **kw)
+        TestCommon.__init__(self, **kw)
 
         import SCons.Node.FS
         if SCons.Node.FS.default_fs is None:
