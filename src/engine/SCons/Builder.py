@@ -97,6 +97,7 @@ There are the following methods for internal use within this module:
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -120,8 +121,7 @@ _null = _Null
 
 def match_splitext(path, suffixes = []):
     if suffixes:
-        matchsuf = filter(lambda S,path=path: path[-len(S):] == S,
-                          suffixes)
+        matchsuf = [S for S in suffixes if path[-len(S):] == S]
         if matchsuf:
             suf = max(map(None, map(len, matchsuf), matchsuf))[1]
             return [path[:-len(suf)], path[-len(suf):]]
@@ -493,7 +493,7 @@ class BuilderBase:
             except IndexError:
                 tlist = []
             else:
-                splitext = lambda S,self=self,env=env: self.splitext(S,env)
+                splitext = lambda S: self.splitext(S,env)
                 tlist = [ t_from_s(pre, suf, splitext) ]
         else:
             target = self._adjustixes(target, pre, suf, self.ensure_suffix)
@@ -658,9 +658,7 @@ class BuilderBase:
             src_suffix = []
         elif not SCons.Util.is_List(src_suffix):
             src_suffix = [ src_suffix ]
-        adjust = lambda suf, s=self: \
-                        callable(suf) and suf or s.adjust_suffix(suf)
-        self.src_suffix = map(adjust, src_suffix)
+        self.src_suffix = map(lambda suf: callable(suf) and suf or self.adjust_suffix(suf), src_suffix)
 
     def get_src_suffix(self, env):
         """Get the first src_suffix in the list of src_suffixes."""
@@ -723,7 +721,7 @@ class BuilderBase:
         lengths = list(set(map(len, src_suffixes)))
 
         def match_src_suffix(name, src_suffixes=src_suffixes, lengths=lengths):
-            node_suffixes = map(lambda l, n=name: n[-l:], lengths)
+            node_suffixes = map(lambda l: name[-l:], lengths)
             for suf in src_suffixes:
                 if suf in node_suffixes:
                     return suf
@@ -749,8 +747,7 @@ class BuilderBase:
                     # target, then filter out any sources that this
                     # Builder isn't capable of building.
                     if len(tlist) > 1:
-                        mss = lambda t, m=match_src_suffix: m(t.name)
-                        tlist = filter(mss, tlist)
+                        tlist = [t for t in tlist if match_src_suffix(t.name)]
                     result.extend(tlist)
             else:
                 result.append(s)
@@ -819,7 +816,7 @@ class BuilderBase:
                 return memo_dict[memo_key]
             except KeyError:
                 pass
-        suffixes = map(lambda x, s=self, e=env: e.subst(x), self.src_suffix)
+        suffixes = map(lambda x: env.subst(x), self.src_suffix)
         memo_dict[memo_key] = suffixes
         return suffixes
 

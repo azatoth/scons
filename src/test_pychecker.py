@@ -21,6 +21,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -65,7 +66,7 @@ src_engine_ = os.path.join(src_engine, '')
 MANIFEST = os.path.join(src_engine, 'MANIFEST.in')
 files = open(MANIFEST).read().split()
 
-files = filter(lambda f: f[-3:] == '.py', files)
+files = [f for f in files if f[-3:] == '.py']
 
 ignore = [
     'SCons/compat/__init__.py',

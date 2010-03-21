@@ -21,6 +21,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -76,7 +77,7 @@ except IOError:
     test.skip_test('%s does not exist; skipping test.\n' % MANIFEST)
 else:
     files = fp.read().split()
-    files = filter(lambda f: f[-3:] == '.py', files)
+    files = [f for f in files if f[-3:] == '.py']
 
 # some regexps to parse the python files
 tryexc_pat = re.compile(

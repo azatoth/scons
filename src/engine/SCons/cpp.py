@@ -90,7 +90,7 @@ del op_list
 override = {
     'if'                        : 'if(?!def)',
 }
-l = map(lambda x, o=override: o.get(x, x), Table.keys())
+l = map(lambda x: override.get(x, x), Table.keys())
 
 
 # Turn the list of expressions into one big honkin' regular expression
@@ -125,7 +125,7 @@ CPP_to_Python_Ops_Dict = {
     '\r'        : '',
 }
 
-CPP_to_Python_Ops_Sub = lambda m, d=CPP_to_Python_Ops_Dict: d[m.group(0)]
+CPP_to_Python_Ops_Sub = lambda m: CPP_to_Python_Ops_Dict[m.group(0)]
 
 # We have to sort the keys by length so that longer expressions
 # come *before* shorter expressions--in particular, "!=" must
@@ -291,8 +291,7 @@ class PreProcessor:
         global CPP_Expression, Table
         contents = line_continuations.sub('', contents)
         cpp_tuples = CPP_Expression.findall(contents)
-        return  map(lambda m, t=Table:
-                           (m[0],) + t[m[0]].match(m[1]).groups(),
+        return  map(lambda m: (m[0],) + Table[m[0]].match(m[1]).groups(),
                     cpp_tuples)
 
     def __call__(self, file):

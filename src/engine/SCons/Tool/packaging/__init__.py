@@ -25,6 +25,7 @@ SCons Packaging Tool.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -174,7 +175,7 @@ def Package(env, target=None, source=None, **kw):
         args.remove('source')
         # now remove any args for which we have a value in kw.
         #args=[x for x in args if not kw.has_key(x)]
-        args=filter(lambda x, kw=kw: not kw.has_key(x), args)
+        args=[x for x in args if not kw.has_key(x)]
 
         if len(args)==0:
             raise # must be a different error, so reraise
@@ -236,8 +237,8 @@ def copy_attr(f1, f2):
     """
     #pattrs = [x for x in dir(f1) if not hasattr(f2, x) and\
     #                                x.startswith('PACKAGING_')]
-    copyit = lambda x, f2=f2: not hasattr(f2, x) and x[:10] == 'PACKAGING_'
-    pattrs = filter(copyit, dir(f1))
+    copyit = lambda x: not hasattr(f2, x) and x[:10] == 'PACKAGING_'
+    pattrs = list(filter(copyit, dir(f1)))
     for attr in pattrs:
         setattr(f2, attr, getattr(f1, attr))
 def putintopackageroot(target, source, env, pkgroot, honor_install_location=1):
@@ -291,7 +292,7 @@ def stripinstallbuilder(target, source, env):
             (file.builder.name=="InstallBuilder" or\
              file.builder.name=="InstallAsBuilder"))
 
-    if len(filter(has_no_install_location, source)):
+    if len(list(filter(has_no_install_location, source))):
         warn(Warning, "there are files to package which have no\
         InstallBuilder attached, this might lead to irreproducible packages")
 

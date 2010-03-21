@@ -21,6 +21,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -72,7 +73,7 @@ for args in ['-h --debug=count', '--debug=count']:
     test.run(arguments = args)
     stdout = test.stdout()
 
-    missing = filter(lambda o: find_object_count(o, stdout) is None, objects)
+    missing = [o for o in objects if find_object_count(o, stdout) is None]
 
     if missing:
         print "Missing the following object lines from '%s' output:" % args

@@ -197,7 +197,7 @@ class SConsOption(optparse.Option):
             if self.nargs in (1, '?'):
                 return self.check_value(opt, value)
             else:
-                return tuple(map(lambda v, o=opt, s=self: s.check_value(o, v), value))
+                return tuple(map(lambda v: self.check_value(opt, v), value))
 
     def process(self, opt, value, values, parser):
 

@@ -30,8 +30,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-
 from __future__ import nested_scopes
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -176,13 +176,13 @@ class Gnuplotter(Plotter):
         result = []
         for line in self.lines:
             result.extend(line.get_x_values())
-        return filter(lambda r: not r is None, result)
+        return [r for r in result if not r is None]
 
     def get_all_y_values(self):
         result = []
         for line in self.lines:
             result.extend(line.get_y_values())
-        return filter(lambda r: not r is None, result)
+        return [r for r in result if not r is None]
 
     def get_min_x(self):
         try:
@@ -576,8 +576,8 @@ class SConsTimer:
         and returns the next run number after the largest it finds.
         """
         x = re.compile(re.escape(prefix) + '-([0-9]+).*')
-        matches = map(lambda e, x=x: x.match(e), os.listdir(dir))
-        matches = filter(None, matches)
+        matches = map(lambda e: x.match(e), os.listdir(dir))
+        matches = [_f for _f in matches if _f]
         if not matches:
             return 0
         run_numbers = map(lambda m: int(m.group(1)), matches)
@@ -963,7 +963,7 @@ class SConsTimer:
 
         if self.chdir:
             os.chdir(self.chdir)
-            logfile_path = lambda x, c=self.chdir: os.path.join(c, x)
+            logfile_path = lambda x: os.path.join(self.chdir, x)
 
         if not args:
 
@@ -1083,7 +1083,7 @@ class SConsTimer:
 
         if self.chdir:
             os.chdir(self.chdir)
-            logfile_path = lambda x, c=self.chdir: os.path.join(c, x)
+            logfile_path = lambda x: os.path.join(self.chdir, x)
 
         if not args:
 
@@ -1461,7 +1461,7 @@ class SConsTimer:
 
         if self.chdir:
             os.chdir(self.chdir)
-            logfile_path = lambda x, c=self.chdir: os.path.join(c, x)
+            logfile_path = lambda x: os.path.join(self.chdir, x)
 
         if not args:
 

@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -222,7 +223,7 @@ class SConsInteractiveCmd(cmd.Cmd):
         def get_unseen_children(node, parent, seen_nodes=seen_nodes):
             def is_unseen(node, seen_nodes=seen_nodes):
                 return not seen_nodes.has_key(node)
-            return filter(is_unseen, node.children(scan=1))
+            return list(filter(is_unseen, node.children(scan=1)))
 
         def add_to_seen_nodes(node, parent, seen_nodes=seen_nodes):
             seen_nodes[node] = 1

@@ -32,6 +32,7 @@ that can be used by scripts or modules looking for the canonical default.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -1914,8 +1915,7 @@ class Dir(Base):
         names.remove('.')
         names.remove('..')
         func(arg, self, names)
-        select_dirs = lambda n, e=entries: isinstance(e[n], Dir)
-        for dirname in filter(select_dirs, names):
+        for dirname in [n for n in names if isinstance(entries[n], Dir)]:
             entries[dirname].walk(func, arg)
 
     def glob(self, pathname, ondisk=True, source=False, strings=False):
@@ -1963,7 +1963,7 @@ class Dir(Base):
         for dir in list:
             r = dir._glob1(basename, ondisk, source, strings)
             if strings:
-                r = map(lambda x, d=str(dir): os.path.join(d, x), r)
+                r = map(lambda x: os.path.join(str(dir), x), r)
             result.extend(r)
         result.sort(lambda a, b: cmp(str(a), str(b)))
         return result
@@ -1990,8 +1990,8 @@ class Dir(Base):
             # the dir.entries dictionary are normalized (that is, all upper
             # case) on case-insensitive systems like Windows.
             #node_names = [ v.name for k, v in dir.entries.items() if k not in ('.', '..') ]
-            entry_names = filter(lambda n: n not in ('.', '..'), dir.entries.keys())
-            node_names = map(lambda n, e=dir.entries: e[n].name, entry_names)
+            entry_names = [n for n in dir.entries.keys() if n not in ('.', '..')]
+            node_names = map(lambda n: dir.entries[n].name, entry_names)
             names.extend(node_names)
             if not strings:
                 # Make sure the working directory (self) actually has
@@ -2014,7 +2014,7 @@ class Dir(Base):
                     # after we exit this loop.
                     if pattern[0] != '.':
                         #disk_names = [ d for d in disk_names if d[0] != '.' ]
-                        disk_names = filter(lambda x: x[0] != '.', disk_names)
+                        disk_names = [x for x in disk_names if x[0] != '.']
                     disk_names = fnmatch.filter(disk_names, pattern)
                     dirEntry = dir.Entry
                     for name in disk_names:
@@ -2030,14 +2030,14 @@ class Dir(Base):
         names = set(names)
         if pattern[0] != '.':
             #names = [ n for n in names if n[0] != '.' ]
-            names = filter(lambda x: x[0] != '.', names)
+            names = [x for x in names if x[0] != '.']
         names = fnmatch.filter(names, pattern)
 
         if strings:
             return names
 
         #return [ self.entries[_my_normcase(n)] for n in names ]
-        return map(lambda n, e=self.entries:  e[_my_normcase(n)], names)
+        return map(lambda n:  self.entries[_my_normcase(n)], names)
 
 class RootDir(Dir):
     """A class for the root directory of a file system.
@@ -2287,7 +2287,7 @@ class File(Base):
         directory of this file."""
         # TODO(1.5)
         # return [self.Dir(p) for p in pathlist]
-        return map(lambda p, s=self: s.Dir(p), pathlist)
+        return map(lambda p: self.Dir(p), pathlist)
 
     def File(self, name):
         """Create a file node named 'name' relative to
@@ -3116,8 +3116,8 @@ class FileFinder:
         if verbose and not callable(verbose):
             if not SCons.Util.is_String(verbose):
                 verbose = "find_file"
-            verbose = '  %s: ' % verbose
-            verbose = lambda s, v=verbose: sys.stdout.write(v + s)
+            _verbose = '  %s: ' % verbose
+            verbose = lambda s: sys.stdout.write(_verbose + s)
 
         filedir, filename = os.path.split(filename)
         if filedir:
@@ -3152,7 +3152,7 @@ class FileFinder:
             #paths = filter(None, map(filedir_lookup, paths))
 
             self.default_filedir = filedir
-            paths = filter(None, map(self.filedir_lookup, paths))
+            paths = [_f for _f in map(self.filedir_lookup, paths) if _f]
 
         result = None
         for dir in paths:

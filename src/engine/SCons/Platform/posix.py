@@ -92,7 +92,7 @@ def _get_env_command(sh, escape, cmd, args, env):
     s = ' '.join(args)
     if env:
         l = ['env', '-'] + \
-            map(lambda t, e=escape: e(t[0])+'='+e(t[1]), env.items()) + \
+            map(lambda t: escape(t[0])+'='+escape(t[1]), env.items()) + \
             [sh, '-c', escape(s)]
         s = ' '.join(l)
     return s

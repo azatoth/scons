@@ -65,7 +65,7 @@ env = Environment(tools = ['javac', 'rmic'],
                   RMIC = r'%s')
 classes = env.Java(target = 'classes', source = 'src')
 # Brute-force removal of the "Hello" class.
-classes = filter(lambda c: str(c).find('Hello') == -1, classes)
+classes = [c for c in classes if str(c).find('Hello') == -1]
 env.RMIC(target = 'outdir', source = classes)
 """ % (javac, rmic))
 
@@ -333,7 +333,7 @@ env = Environment(tools = ['javac', 'rmic'],
                   RMIC = r'%s')
 classes = env.Java(target = 'classes', source = 'src')
 # Brute-force removal of the "Hello" class.
-classes = filter(lambda c: str(c).find('Hello') == -1, classes)
+classes = [c for c in classes if str(c).find('Hello') == -1]
 rmi_classes = env.RMIC(target = 'outdir', source = classes)
 Local(rmi_classes)
 """ % (javac, rmic))

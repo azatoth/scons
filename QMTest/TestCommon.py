@@ -87,6 +87,7 @@ The TestCommon module also provides the following variables
 # PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS,
 # AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
 __revision__ = "TestCommon.py 0.37.D001 2010/01/11 16:55:50 knight"
@@ -228,7 +229,7 @@ class TestCommon(TestCmd):
         """
         files = map(lambda x: is_List(x) and os.path.join(*x) or x, files)
         existing, missing = separate_files(files)
-        unwritable = filter(lambda x, iw=is_writable: not iw(x), existing)
+        unwritable = [x for x in existing if not is_writable(x)]
         if missing:
             print "Missing files: `%s'" % "', `".join(missing)
         if unwritable:
@@ -313,7 +314,7 @@ class TestCommon(TestCmd):
         if any of the files does not exist.
         """
         files = map(lambda x: is_List(x) and os.path.join(*x) or x, files)
-        missing = filter(lambda x: not os.path.exists(x), files)
+        missing = [x for x in files if not os.path.exists(x)]
         if missing:
             print "Missing files: `%s'" % "', `".join(missing)
             self.fail_test(missing)
@@ -385,7 +386,7 @@ class TestCommon(TestCmd):
         Exits FAILED if any of the files exists.
         """
         files = map(lambda x: is_List(x) and os.path.join(*x) or x, files)
-        existing = filter(os.path.exists, files)
+        existing = list(filter(os.path.exists, files))
         if existing:
             print "Unexpected files exist: `%s'" % "', `".join(existing)
             self.fail_test(existing)
@@ -400,7 +401,7 @@ class TestCommon(TestCmd):
         """
         files = map(lambda x: is_List(x) and os.path.join(*x) or x, files)
         existing, missing = separate_files(files)
-        writable = filter(is_writable, existing)
+        writable = list(filter(is_writable, existing))
         if missing:
             print "Missing files: `%s'" % "', `".join(missing)
         if writable:

@@ -37,7 +37,7 @@ test.write("wrapper.py",
 """import os
 import sys
 open('%s', 'wb').write("wrapper.py\\n")
-args = filter(lambda s: s != 'fake_link_flag', sys.argv[1:])
+args = [s for s in sys.argv[1:] if s != 'fake_link_flag']
 os.system(" ".join(args))
 """ % test.workpath('wrapper.out').replace('\\', '\\\\'))
 

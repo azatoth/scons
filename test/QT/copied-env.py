@@ -21,6 +21,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -66,10 +67,9 @@ void aaa(void)
 
 test.run()
 
-moc_MyForm = filter(lambda x: x.find('moc_MyForm') != -1,
-                    test.stdout().split('\n'))
+moc_MyForm = [x for x in test.stdout().split('\n') if x.find('moc_MyForm') != -1]
 
-MYLIB_IMPL = filter(lambda x: x.find('MYLIB_IMPL') != -1, moc_MyForm)
+MYLIB_IMPL = [x for x in moc_MyForm if x.find('MYLIB_IMPL') != -1]
 
 if not MYLIB_IMPL:
     print "Did not find MYLIB_IMPL on moc_MyForm compilation line:"

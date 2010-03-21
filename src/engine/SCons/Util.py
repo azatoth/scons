@@ -126,13 +126,11 @@ class NodeList(UserList):
         return iter(self.data)
 
     def __call__(self, *args, **kwargs):
-        result = map(lambda x, args=args, kwargs=kwargs: x(*args,
-                                                               **kwargs),
-                     self.data)
+        result = map(lambda x: x(*args, **kwargs), self.data)
         return self.__class__(result)
 
     def __getattr__(self, name):
-        result = map(lambda x, n=name: getattr(x, n), self.data)
+        result = map(lambda x: getattr(x, name), self.data)
         return self.__class__(result)
 
 

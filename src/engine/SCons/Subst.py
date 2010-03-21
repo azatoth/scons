@@ -26,6 +26,7 @@ SCons string substitution.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -49,7 +50,7 @@ AllowableExceptions = (IndexError, NameError)
 
 def SetAllowableExceptions(*excepts):
     global AllowableExceptions
-    AllowableExceptions = filter(None, excepts)
+    AllowableExceptions = [_f for _f in excepts if _f]
 
 def raise_exception(exception, target, s):
     name = exception.__class__.__name__
@@ -343,7 +344,7 @@ _regex_remove = [ _rm, None, _remove ]
 
 def _rm_list(list):
     #return [ l for l in list if not l in ('$(', '$)') ]
-    return filter(lambda l: not l in ('$(', '$)'), list)
+    return [l for l in list if not l in ('$(', '$)')]
 
 def _remove_list(list):
     result = []
@@ -618,9 +619,9 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
             self.gvars = gvars
 
             if self.mode == SUBST_RAW:
-                self.add_strip = lambda x, s=self: s.append(x)
+                self.add_strip = lambda x: self.append(x)
             else:
-                self.add_strip = lambda x, s=self: None
+                self.add_strip = lambda x: None
             self.in_strip = None
             self.next_line()
 

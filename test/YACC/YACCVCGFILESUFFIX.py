@@ -49,7 +49,7 @@ for o, a in opts:
         outfile = open(a, 'wb')
 for f in args:
     infile = open(f, 'rb')
-    for l in filter(lambda l: l != '/*yacc*/\\n', infile.readlines()):
+    for l in [l for l in infile.readlines() if l != '/*yacc*/\\n']:
         outfile.write(l)
 outfile.close()
 if vcg:

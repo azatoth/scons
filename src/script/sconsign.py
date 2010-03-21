@@ -23,6 +23,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -283,10 +284,9 @@ def nodeinfo_cooked(name, ninfo, prefix=""):
         field_list = ninfo.field_list
     except AttributeError:
         field_list = []
-    f = lambda x, ni=ninfo, v=Verbose: field(x, ni, v)
     if '\n' in name:
         name = repr(name)
-    outlist = [name+':'] + filter(None, map(f, field_list))
+    outlist = [name+':'] + [_f for _f in map(lambda x: field(x, ninfo, Verbose), field_list) if _f]
     if Verbose:
         sep = '\n    ' + prefix
     else:

@@ -72,7 +72,7 @@ def _fortranEmitter(target, source, env):
     # Convert module name to a .mod filename
     suffix = env.subst('$FORTRANMODSUFFIX', target=target, source=source)
     moddir = env.subst('$FORTRANMODDIR', target=target, source=source)
-    modules = map(lambda x, s=suffix: x.lower() + s, modules)
+    modules = map(lambda x: x.lower() + suffix, modules)
     for m in modules:
        target.append(env.fs.File(m, moddir))
     return (target, source)

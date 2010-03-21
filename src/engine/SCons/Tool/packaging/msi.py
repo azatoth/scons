@@ -25,6 +25,7 @@ The msi packager.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -65,7 +66,7 @@ def convert_to_id(s, id_set):
     charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYabcdefghijklmnopqrstuvwxyz0123456789_.'
     if s[0] in '0123456789.':
         s += '_'+s
-    id = filter( lambda c : c in charset, s )
+    id = [c for c in s if c in charset]
 
     # did we already generate an id for this file?
     try:
@@ -109,7 +110,7 @@ def gen_dos_short_file_name(file, filename_set):
 
     # strip forbidden characters.
     forbidden = '."/[]:;=, '
-    fname = filter( lambda c : c not in forbidden, fname )
+    fname = [c for c in fname if c not in forbidden]
 
     # check if we already generated a filename with the same number:
     # thisis1.txt, thisis2.txt etc.
@@ -296,9 +297,11 @@ def build_wxsfile_file_section(root, files, NAME, VERSION, VENDOR, filename_set,
         upper_dir = ''
 
         # walk down the xml tree finding parts of the directory
-        dir_parts = filter( lambda d: d != '', dir_parts )
+        dir_parts = [d for d in dir_parts if d != '']
         for d in dir_parts[:]:
-            already_created = filter( lambda c: c.nodeName == 'Directory' and c.attributes['LongName'].value == escape(d), Directory.childNodes ) 
+            already_created = [c for c in Directory.childNodes
+                               if c.nodeName == 'Directory'
+                               and c.attributes['LongName'].value == escape(d)] 
 
             if already_created != []:
                 Directory = already_created[0]

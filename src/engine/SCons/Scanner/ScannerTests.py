@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -280,7 +281,7 @@ class BaseTestCase(unittest.TestCase):
                         "recursive = 1 didn't return all nodes: %s" % n)
 
         def odd_only(nodes):
-            return filter(lambda n: n % 2, nodes)
+            return [n for n in nodes if n % 2]
         s = SCons.Scanner.Base(function = self.func, recursive = odd_only)
         n = s.recurse_nodes(nodes)
         self.failUnless(n == [1, 3],

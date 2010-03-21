@@ -84,11 +84,11 @@
 # you can find the appropriate code in the 0.04 version of this script,
 # rather than reinventing that wheel.)
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 import getopt
 import glob
 import os
-import os.path
 import re
 import stat
 import sys
@@ -580,11 +580,11 @@ if old_pythonpath:
 tests = []
 
 def find_Tests_py(tdict, dirname, names):
-    for n in filter(lambda n: n[-8:] == "Tests.py", names):
+    for n in [n for n in names if n[-8:] == "Tests.py"]:
         tdict[os.path.join(dirname, n)] = 1
 
 def find_py(tdict, dirname, names):
-    tests = filter(lambda n: n[-3:] == ".py", names)
+    tests = [n for n in names if n[-3:] == ".py"]
     try:
         excludes = open(os.path.join(dirname,".exclude_tests")).readlines()
     except (OSError, IOError):
@@ -594,7 +594,7 @@ def find_py(tdict, dirname, names):
             exclude = exclude.split('#' , 1)[0]
             exclude = exclude.strip()
             if not exclude: continue
-            tests = filter(lambda n, ex = exclude: n != ex, tests)
+            tests = [n for n in tests if n != exclude]
     for n in tests:
         tdict[os.path.join(dirname, n)] = 1
 
@@ -626,7 +626,7 @@ if args:
                     tests.append(path)
 elif testlistfile:
     tests = open(testlistfile, 'r').readlines()
-    tests = filter(lambda x: x[0] != '#', tests)
+    tests = [x for x in tests if x[0] != '#']
     tests = map(lambda x: x[:-1], tests)
 elif all and not qmtest:
     # Find all of the SCons functional tests in the local directory
@@ -777,9 +777,9 @@ if len(tests) > 0:
     tests[0].total_time = time_func() - total_start_time
     print_time_func("Total execution time for all tests: %.1f seconds\n", tests[0].total_time)
 
-passed = filter(lambda t: t.status == 0, tests)
-fail = filter(lambda t: t.status == 1, tests)
-no_result = filter(lambda t: t.status == 2, tests)
+passed = [t for t in tests if t.status == 0]
+fail = [t for t in tests if t.status == 1]
+no_result = [t for t in tests if t.status == 2]
 
 if len(tests) != 1 and execute_tests:
     if passed and print_passed_summary:

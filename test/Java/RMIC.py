@@ -117,7 +117,7 @@ bar_classes = bar.Java(target = 'class2', source = 'com/sub/bar')
 # XXX This is kind of a Python brute-force way to do what Ant
 # does with its "excludes" attribute.  We should probably find
 # a similar friendlier way to do this.
-bar_classes = filter(lambda c: str(c).find('Hello') == -1, bar_classes)
+bar_classes = [c for c in bar_classes if str(c).find('Hello') == -1]
 bar.RMIC(target = Dir('outdir2'), source = bar_classes)
 """ % locals() )
 

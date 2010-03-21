@@ -29,6 +29,7 @@ QMTest classes to support SCons' testing and Aegis-inspired workflow.
 
 Thanks to Stefan Seefeld for the initial code.
 """
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 ########################################################################
 # Imports
@@ -154,7 +155,7 @@ sys_attributes = [
 def get_sys_values():
     sys_attributes.sort()
     result = map(lambda k: (k, getattr(sys, k, _null)), sys_attributes)
-    result = filter(lambda t: not t[1] is _null, result)
+    result = [t for t in result if not t[1] is _null]
     result = map(lambda t: t[0] + '=' + repr(t[1]), result)
     return '\n '.join(result)
 
@@ -169,7 +170,7 @@ module_attributes = [
 def get_module_info(module):
     module_attributes.sort()
     result = map(lambda k: (k, getattr(module, k, _null)), module_attributes)
-    result = filter(lambda t: not t[1] is _null, result)
+    result = [t for t in result if not t[1] is _null]
     result = map(lambda t: t[0] + '=' + repr(t[1]), result)
     return '\n '.join(result)
 
@@ -215,7 +216,7 @@ environ_keys = [
 def get_environment():
     environ_keys.sort()
     result = map(lambda k: (k, os.environ.get(k, _null)), environ_keys)
-    result = filter(lambda t: not t[1] is _null, result)
+    result = [t for t in result if not t[1] is _null]
     result = map(lambda t: t[0] + '-' + t[1], result)
     return '\n '.join(result)
 

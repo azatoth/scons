@@ -277,7 +277,7 @@ def main(args=None):
         return 1
     best = min(r)
     if verbose:
-        print "raw times:", ' '.join(map(lambda x, p=precision: "%.*g" % (p, x), r))
+        print "raw times:", ' '.join(map(lambda x: "%.*g" % (precision, x), r))
     print "%d loops," % number,
     usec = best * 1e6 / number
     if usec < 1000:

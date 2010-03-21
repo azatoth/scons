@@ -30,6 +30,7 @@ selection method.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -739,7 +740,7 @@ class _GenerateV7DSP(_DSPGenerator):
         # TODO(1.5)
         #cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
         cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
-        cats = filter(lambda k, s=self: s.sources[k], cats)
+        cats = [k for k in cats if self.sources[k]]
         for kind in cats:
             if len(cats) > 1:
                 self.file.write('\t\t<Filter\n'
@@ -758,7 +759,7 @@ class _GenerateV7DSP(_DSPGenerator):
                 cp = os.path.dirname( os.path.commonprefix(s) )
                 if cp and s[0][len(cp)] == os.sep:
                     # +1 because the filename starts after the separator
-                    sources = map(lambda s, l=len(cp)+1: s[l:], sources)
+                    sources = map(lambda s: s[len(cp)+1:], sources)
                     commonprefix = cp
             elif len(sources) == 1:
                 commonprefix = os.path.dirname( sources[0] )

@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -57,7 +58,7 @@ def query_versions():
         contents = os.listdir(froot)
 
         l = re.compile('v[0-9]+.*')
-        versions = filter(lambda e, l=l: l.match(e), contents)
+        versions = [e for e in contents if l.match(e)]
 
         def versrt(a,b):
             # since version numbers aren't really floats...

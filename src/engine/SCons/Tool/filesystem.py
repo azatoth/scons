@@ -44,7 +44,7 @@ def copyto_emitter(target, source, env):
     n_target = []
 
     for t in target:
-        n_target = n_target + map( lambda s, t=t: t.File( str( s ) ), source )
+        n_target = n_target + map( lambda s: t.File( str( s ) ), source )
 
     return (n_target, source)
 

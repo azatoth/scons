@@ -33,6 +33,7 @@ it goes here.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -413,7 +414,7 @@ class TreePrinter:
         return node.all_children()
     def get_derived_children(self, node):
         children = node.all_children(None)
-        return filter(lambda x: x.has_builder(), children)
+        return [x for x in children if x.has_builder()]
     def display(self, t):
         if self.derived:
             func = self.get_derived_children
@@ -1086,7 +1087,7 @@ def _build_targets(fs, options, targets, target_top):
                         # or not a file, so go ahead and keep it as a default
                         # target and let the engine sort it out:
                         return 1                
-                d = filter(check_dir, SCons.Script.DEFAULT_TARGETS)
+                d = list(filter(check_dir, SCons.Script.DEFAULT_TARGETS))
                 SCons.Script.DEFAULT_TARGETS[:] = d
                 target_top = None
                 lookup_top = None
@@ -1121,7 +1122,7 @@ def _build_targets(fs, options, targets, target_top):
                 node = None
         return node
 
-    nodes = filter(None, map(Entry, targets))
+    nodes = [_f for _f in map(Entry, targets) if _f]
 
     task_class = BuildTask      # default action is to build targets
     opening_message = "Building targets ..."

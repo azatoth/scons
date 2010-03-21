@@ -3,6 +3,7 @@
 #
 # See the README file for an overview of how SCons is built and tested.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 # When this gets changed, you must also change the copyright_years string
 # in QMTest/TestSCons.py so the test scripts look for the right string.
@@ -136,7 +137,7 @@ if not revision and hg:
             revision = b.group(1) + ':' + revision
         def generate_build_id(revision):
             result = revision
-            if filter(lambda l: l[0] in 'AMR!', hg_status_lines):
+            if [l for l in hg_status_lines if l[0] in 'AMR!']:
                 result = result + '[MODIFIED]'
             return result
 
@@ -147,7 +148,7 @@ if not revision and svn:
         revision = m.group(1)
         def generate_build_id(revision):
             result = 'r' + revision
-            if filter(lambda l: l[0] in 'ACDMR', svn_status_lines):
+            if [l for l in svn_status_lines if l[0] in 'ACDMR']:
                 result = result + '[MODIFIED]'
             return result
 
@@ -768,7 +769,7 @@ for p in [ scons ]:
             MANIFEST_in_list.append(MANIFEST_in)
             files = map(lambda x: x[:-1], open(MANIFEST_in).readlines())
             raw_files.extend(files)
-            src_files.extend(map(lambda x, s=ssubdir: os.path.join(s, x), files))
+            src_files.extend(map(lambda x: os.path.join(subdir, x), files))
             for f in files:
                 r = os.path.join(sp['rpm_dir'], f)
                 rpm_files.append(r)
@@ -777,7 +778,7 @@ for p in [ scons ]:
             for f in sp.get('extra_rpm_files', []):
                 r = os.path.join(sp['rpm_dir'], f)
                 rpm_files.append(r)
-            files = map(lambda x, i=isubdir: os.path.join(i, x), files)
+            files = map(lambda x: os.path.join(isubdir, x), files)
             dst_files.extend(files)
             for k, f in sp['filemap'].items():
                 if f:
@@ -831,7 +832,7 @@ for p in [ scons ]:
     #
     # Now go through and arrange to create whatever packages we can.
     #
-    build_src_files = map(lambda x, b=build: os.path.join(b, x), src_files)
+    build_src_files = map(lambda x: os.path.join(build, x), src_files)
     Local(*build_src_files)
 
     distutils_formats = []
@@ -869,8 +870,8 @@ for p in [ scons ]:
         # but that gives heartburn to Cygwin's tar, so work around it
         # with separate zcat-tar-rm commands.
         #
-        unpack_tar_gz_files = map(lambda x, u=unpack_tar_gz_dir, pv=pkg_version:
-                                         os.path.join(u, pv, x),
+        unpack_tar_gz_files = map(lambda x: os.path.join(unpack_tar_gz_dir,
+                                                         pkg_version, x),
                                   src_files)
         env.Command(unpack_tar_gz_files, dist_tar_gz, [
                     Delete(os.path.join(unpack_tar_gz_dir, pkg_version)),
@@ -892,7 +893,7 @@ for p in [ scons ]:
         # like this because we put a preamble in it that will chdir()
         # to the directory in which setup.py exists.
         #
-        dfiles = map(lambda x, d=test_tar_gz_dir: os.path.join(d, x), dst_files)
+        dfiles = map(lambda x: os.path.join(test_tar_gz_dir, x), dst_files)
         env.Command(dfiles, unpack_tar_gz_files, [
             Delete(os.path.join(unpack_tar_gz_dir, pkg_version, 'build')),
             Delete("$TEST_TAR_GZ_DIR"),
@@ -938,8 +939,8 @@ for p in [ scons ]:
         # Unpack the zip archive created by the distutils into
         # build/unpack-zip/scons-{version}.
         #
-        unpack_zip_files = map(lambda x, u=unpack_zip_dir, pv=pkg_version:
-                                      os.path.join(u, pv, x),
+        unpack_zip_files = map(lambda x: os.path.join(unpack_zip_dir,
+                                                      pkg_version, x),
                                src_files)
 
         env.Command(unpack_zip_files, dist_zip, [
@@ -960,7 +961,7 @@ for p in [ scons ]:
         # like this because we put a preamble in it that will chdir()
         # to the directory in which setup.py exists.
         #
-        dfiles = map(lambda x, d=test_zip_dir: os.path.join(d, x), dst_files)
+        dfiles = map(lambda x: os.path.join(test_zip_dir, x), dst_files)
         env.Command(dfiles, unpack_zip_files, [
             Delete(os.path.join(unpack_zip_dir, pkg_version, 'build')),
             Delete("$TEST_ZIP_DIR"),
@@ -1023,7 +1024,7 @@ for p in [ scons ]:
         AddPostAction(dist_noarch_rpm, Chmod(dist_noarch_rpm, 0644))
         AddPostAction(dist_src_rpm, Chmod(dist_src_rpm, 0644))
 
-        dfiles = map(lambda x, d=test_rpm_dir: os.path.join(d, 'usr', x),
+        dfiles = map(lambda x: os.path.join(test_rpm_dir, 'usr', x),
                      dst_files)
         env.Command(dfiles,
                     dist_noarch_rpm,
@@ -1047,7 +1048,7 @@ for p in [ scons ]:
             if s[:len(old)] == old:
                 s = new + s[len(old):]
             return os.path.join('usr', s)
-        dfiles = map(lambda x, t=test_deb_dir: os.path.join(t, x),
+        dfiles = map(lambda x: os.path.join(test_deb_dir, x),
                      map(xxx, dst_files))
         env.Command(dfiles,
                     deb,
@@ -1104,11 +1105,11 @@ for p in [ scons ]:
         local_script = os.path.join(build_dir_local, script)
         commands.append(Move(local_script + '.py', local_script))
 
-    rf = filter(lambda x: not x in scripts, raw_files)
-    rf = map(lambda x, slv=s_l_v: os.path.join(slv, x), rf)
+    rf = [x for x in raw_files if not x in scripts]
+    rf = map(lambda x: os.path.join(s_l_v, x), rf)
     for script in scripts:
         rf.append("%s.py" % script)
-    local_targets = map(lambda x, s=build_dir_local: os.path.join(s, x), rf)
+    local_targets = map(lambda x: os.path.join(build_dir_local, x), rf)
 
     env.Command(local_targets, build_src_files, commands)
 
@@ -1127,8 +1128,7 @@ for p in [ scons ]:
                     local_targets,
                     "cd %s && tar czf $( ${TARGET.abspath} $) *" % build_dir_local)
 
-        unpack_targets = map(lambda x, d=test_local_tar_gz_dir:
-                                    os.path.join(d, x),
+        unpack_targets = map(lambda x: os.path.join(test_local_tar_gz_dir, x),
                              rf)
         commands = [Delete(test_local_tar_gz_dir),
                     Mkdir(test_local_tar_gz_dir),
@@ -1140,9 +1140,7 @@ for p in [ scons ]:
         env.Command(dist_local_zip, local_targets, zipit,
                     CD = build_dir_local, PSV = '.')
 
-        unpack_targets = map(lambda x, d=test_local_zip_dir:
-                                    os.path.join(d, x),
-                             rf)
+        unpack_targets = map(lambda x: os.path.join(test_local_zip_dir, x), rf)
         commands = [Delete(test_local_zip_dir),
                     Mkdir(test_local_zip_dir),
                     unzipit]
@@ -1195,12 +1193,12 @@ SConscript('doc/SConscript')
 
 sfiles = None
 if hg_status_lines:
-    slines = filter(lambda l: l[0] in 'ACM', hg_status_lines)
+    slines = [l for l in hg_status_lines if l[0] in 'ACM']
     sfiles = map(lambda l: l.split()[-1], slines)
 elif svn_status_lines:
-    slines = filter(lambda l: l[0] in ' MA', svn_status_lines)
+    slines = [l for l in svn_status_lines if l[0] in ' MA']
     sentries = map(lambda l: l.split()[-1], slines)
-    sfiles = filter(os.path.isfile, sentries)
+    sfiles = list(filter(os.path.isfile, sentries))
 else:
    "Not building in a Mercurial or Subversion tree; skipping building src package."
 
@@ -1215,7 +1213,7 @@ if sfiles:
     ]
 
     for p in remove_patterns:
-        sfiles = filter(lambda s, p=p: not fnmatch.fnmatch(s, p), sfiles)
+        sfiles = [s for s in sfiles if not fnmatch.fnmatch(s, p)]
 
     if sfiles:
         ps = "%s-src" % project
@@ -1232,7 +1230,7 @@ if sfiles:
         for file in sfiles:
             env.SCons_revision(os.path.join(b_ps, file), file)
 
-        b_ps_files = map(lambda x, d=b_ps: os.path.join(d, x), sfiles)
+        b_ps_files = map(lambda x: os.path.join(b_ps, x), sfiles)
         cmds = [
             Delete(b_psv),
             Copy(b_psv, b_ps),
@@ -1251,8 +1249,8 @@ if sfiles:
             #
             # Unpack the archive into build/unpack/scons-{version}.
             #
-            unpack_tar_gz_files = map(lambda x, u=unpack_tar_gz_dir, psv=psv:
-                                             os.path.join(u, psv, x),
+            unpack_tar_gz_files = map(lambda x: os.path.join(unpack_tar_gz_dir,
+                                                             psv, x),
                                       sfiles)
 
             #
@@ -1282,7 +1280,7 @@ if sfiles:
             # like this because we put a preamble in it that will chdir()
             # to the directory in which setup.py exists.
             #
-            dfiles = map(lambda x, d=test_src_tar_gz_dir: os.path.join(d, x),
+            dfiles = map(lambda x: os.path.join(test_src_tar_gz_dir, x),
                             dst_files)
             scons_lib_dir = os.path.join(unpack_tar_gz_dir, psv, 'src', 'engine')
             ENV = env.Dictionary('ENV').copy()
@@ -1316,8 +1314,8 @@ if sfiles:
             #
             # Unpack the archive into build/unpack/scons-{version}.
             #
-            unpack_zip_files = map(lambda x, u=unpack_zip_dir, psv=psv:
-                                             os.path.join(u, psv, x),
+            unpack_zip_files = map(lambda x: os.path.join(unpack_zip_dir,
+                                                          psv, x),
                                       sfiles)
 
             env.Command(unpack_zip_files, src_zip, [
@@ -1338,8 +1336,7 @@ if sfiles:
             # like this because we put a preamble in it that will chdir()
             # to the directory in which setup.py exists.
             #
-            dfiles = map(lambda x, d=test_src_zip_dir: os.path.join(d, x),
-                            dst_files)
+            dfiles = map(lambda x: os.path.join(test_src_zip_dir, x), dst_files)
             scons_lib_dir = os.path.join(unpack_zip_dir, psv, 'src', 'engine')
             ENV = env.Dictionary('ENV').copy()
             ENV['SCONS_LIB_DIR'] = scons_lib_dir

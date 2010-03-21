@@ -21,6 +21,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -55,7 +56,7 @@ expected_lines = [
 
 test.run(arguments = '-h')
 lines = test.stdout().split('\n')
-missing = filter(lambda e, l=lines: not e in l, expected_lines)
+missing = [e for e in expected_lines if e not in lines]
 
 if missing:
     print "====== STDOUT:"
@@ -68,7 +69,7 @@ test.unlink('SConstruct')
 
 test.run(arguments = '-h')
 lines = test.stdout().split('\n')
-unexpected = filter(lambda e, l=lines: e in l, expected_lines)
+unexpected = [e for e in expected_lines if e in lines]
 
 if unexpected:
     print "====== STDOUT:"

@@ -25,6 +25,7 @@ The rpm packager.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -101,13 +102,13 @@ def collectintargz(target, source, env):
 
     # filter out the target we are building the source list for.
     #sources = [s for s in sources if not (s in target)]
-    sources = filter(lambda s, t=target: not (s in t), sources)
+    sources = [s for s in sources if s not in target]
 
     # find the .spec file for rpm and add it since it is not necessarily found
     # by the FindSourceFiles function.
     #sources.extend( [s for s in source if str(s).rfind('.spec')!=-1] )
     spec_file = lambda s: str(s).rfind('.spec') != -1
-    sources.extend( filter(spec_file, source) )
+    sources.extend( list(filter(spec_file, source)) )
 
     # as the source contains the url of the source package this rpm package
     # is built from, we extract the target name
@@ -336,7 +337,7 @@ class SimpleTagCompiler:
 
         str = ""
         #domestic = [ (k,v) for k,v in replacements if not is_international(k) ]
-        domestic = filter(lambda t, i=is_international: not i(t[0]), replacements)
+        domestic = [t for t in replacements if not is_international(t[0])]
         for key, replacement in domestic:
             try:
                 str = str + replacement % values[key]
@@ -345,12 +346,12 @@ class SimpleTagCompiler:
                     raise e
 
         #international = [ (k,v) for k,v in replacements if is_international(k) ]
-        international = filter(lambda t, i=is_international: i(t[0]), replacements)
+        international = [t for t in replacements if is_international(t[0])]
         for key, replacement in international:
             try:
                 #int_values_for_key = [ (get_country_code(k),v) for k,v in values.items() if strip_country_code(k) == key ]
-                x = filter(lambda t,key=key,s=strip_country_code: s(t[0]) == key, values.items())
-                int_values_for_key = map(lambda t,g=get_country_code: (g(t[0]),t[1]), x)
+                x = [t for t in values.items() if strip_country_code(t[0]) == key]
+                int_values_for_key = map(lambda t: (get_country_code(t[0]),t[1]), x)
                 for v in int_values_for_key:
                     str = str + replacement % v
             except KeyError, e:

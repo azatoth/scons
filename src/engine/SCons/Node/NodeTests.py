@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -897,7 +898,7 @@ class NodeTestCase(unittest.TestCase):
 
         # Scanner method can select specific nodes to recurse
         def no_fff(nodes):
-            return filter(lambda n: str(n)[0] != 'f', nodes)
+            return [n for n in nodes if str(n)[0] != 'f']
         s.recurse_nodes = no_fff
         deps = node.get_implicit_deps(env, s, target)
         assert deps == [d1, d2, e, f], map(str, deps)

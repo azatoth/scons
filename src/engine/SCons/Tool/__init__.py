@@ -35,6 +35,7 @@ tool definition.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -546,7 +547,7 @@ def FindTool(tools, env):
 def FindAllTools(tools, env):
     def ToolExists(tool, env=env):
         return Tool(tool).exists(env)
-    return filter (ToolExists, tools)
+    return list(filter (ToolExists, tools))
 
 def tool_list(platform, env):
 
@@ -666,7 +667,7 @@ def tool_list(platform, env):
               fortran_compiler, assembler, ar]
              + other_tools)
 
-    return filter(lambda x: x, tools)
+    return [x for x in tools if x]
 
 # Local Variables:
 # tab-width:4

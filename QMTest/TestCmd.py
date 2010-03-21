@@ -213,6 +213,7 @@ version.
 # PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS,
 # AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
 __revision__ = "TestCmd.py 0.37.D001 2010/01/11 16:55:50 knight"
@@ -281,7 +282,7 @@ _chain_to_exitfunc = None
 
 def _clean():
     global _Cleanup
-    cleanlist = filter(None, _Cleanup)
+    cleanlist = [_f for _f in _Cleanup if _f]
     del _Cleanup[:]
     cleanlist.reverse()
     for test in cleanlist:
@@ -307,14 +308,14 @@ except NameError:
     def zip(*lists):
         result = []
         for i in xrange(min(map(len, lists))):
-            result.append(tuple(map(lambda l, i=i: l[i], lists)))
+            result.append(tuple(map(lambda l: l[i], lists)))
         return result
 
 class Collector:
     def __init__(self, top):
         self.entries = [top]
     def __call__(self, arg, dirname, names):
-        pathjoin = lambda n, d=dirname: os.path.join(d, n)
+        pathjoin = lambda n: os.path.join(dirname, n)
         self.entries.extend(map(pathjoin, names))
 
 def _caller(tblist, skip):

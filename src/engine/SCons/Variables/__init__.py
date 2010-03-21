@@ -26,6 +26,7 @@ customizable variables to an SCons build.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -284,7 +285,7 @@ class Variables:
 
         if sort:
             options = self.options[:]
-            options.sort(lambda x,y,func=sort: func(x.key,y.key))
+            options.sort(lambda x,y: sort(x.key,y.key))
         else:
             options = self.options
 
@@ -294,7 +295,7 @@ class Variables:
             else:
                 actual = None
             return self.FormatVariableHelpText(env, opt.key, opt.help, opt.default, actual, opt.aliases)
-        lines = filter(None, map(format, options))
+        lines = [_f for _f in map(format, options) if _f]
 
         return ''.join(lines)
 
@@ -303,7 +304,7 @@ class Variables:
 
     def FormatVariableHelpText(self, env, key, help, default, actual, aliases=[]):
         # Don't display the key name itself as an alias.
-        aliases = filter(lambda a, k=key: a != k, aliases)
+        aliases = [a for a in aliases if a != key]
         if len(aliases)==0:
             return self.format % (key, help, default, actual)
         else:

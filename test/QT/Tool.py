@@ -125,10 +125,8 @@ def CheckForQt(context):
   return 0
 
 def AttemptLinkWithVariables(context, variables, code, extension, prefix):
-  return DoWithVariables(variables,
-                         prefix,
-                         lambda c=context, code=code, e=extension:
-                                c.TryLink(code, e))
+  return DoWithVariables(variables, prefix,
+                         lambda: context.TryLink(code, extension))
 
 env = Environment(CPPPATH=['.'], LIBPATH=['.'], LIBS=[])
 

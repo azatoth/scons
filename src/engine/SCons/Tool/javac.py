@@ -30,6 +30,7 @@ selection method.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -66,20 +67,19 @@ def emit_java_classes(target, source, env):
 
     slist = []
     js = _my_normcase(java_suffix)
-    find_java = lambda n, js=js, ljs=len(js): _my_normcase(n[-ljs:]) == js
     for entry in source:
         entry = entry.rentry().disambiguate()
         if isinstance(entry, SCons.Node.FS.File):
             slist.append(entry)
         elif isinstance(entry, SCons.Node.FS.Dir):
             result = SCons.Util.OrderedDict()
-            def visit(arg, dirname, names, fj=find_java, dirnode=entry.rdir()):
-                java_files = filter(fj, names)
+            def visit(arg, dirname, names, dirnode=entry.rdir()):
+                java_files = [n for n in names if _my_normcase(n[-len(js):]) == js]
                 # The on-disk entries come back in arbitrary order.  Sort
                 # them so our target and source lists are determinate.
                 java_files.sort()
                 mydir = dirnode.Dir(dirname)
-                java_paths = map(lambda f, d=mydir: d.File(f), java_files)
+                java_paths = map(lambda f: mydir.File(f), java_files)
                 for jp in java_paths:
                      arg[jp] = True
 

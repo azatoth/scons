@@ -96,6 +96,7 @@ way for wrapping up the functions.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -686,7 +687,7 @@ class CommandAction(_ActionAction):
         #TODO(1.5) _ActionAction.__init__(self, **kw)
         _ActionAction.__init__(self, **kw)
         if is_List(cmd):
-            if filter(is_List, cmd):
+            if list(filter(is_List, cmd)):
                 raise TypeError, "CommandAction should be given only " \
                       "a single command"
         self.cmd_list = cmd
@@ -1105,8 +1106,7 @@ class ListAction(ActionBase):
         self.targets = '$TARGETS'
 
     def genstring(self, target, source, env):
-        return '\n'.join(map(lambda a, t=target, s=source, e=env:
-                                  a.genstring(t, s, e),
+        return '\n'.join(map(lambda a: a.genstring(target, source, env),
                                self.list))
 
     def __str__(self):
@@ -1114,15 +1114,14 @@ class ListAction(ActionBase):
 
     def presub_lines(self, env):
         return SCons.Util.flatten_sequence(
-            map(lambda a, env=env: a.presub_lines(env), self.list))
+            map(lambda a: a.presub_lines(env), self.list))
 
     def get_presig(self, target, source, env):
         """Return the signature contents of this action list.
 
         Simple concatenation of the signatures of the elements.
         """
-        return "".join(map(lambda x, t=target, s=source, e=env:
-                                      x.get_contents(t, s, e),
+        return "".join(map(lambda x: x.get_contents(target, source, env),
                                self.list))
 
     def __call__(self, target, source, env, exitstatfunc=_null, presub=_null,
@@ -1199,8 +1198,7 @@ class ActionCaller:
         return self.parent.convert(s)
 
     def subst_args(self, target, source, env):
-        return map(lambda x, self=self, t=target, s=source, e=env:
-                          self.subst(x, t, s, e),
+        return map(lambda x: self.subst(x, target, source, env),
                    self.args)
 
     def subst_kw(self, target, source, env):

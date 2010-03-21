@@ -13,6 +13,7 @@ attributes defined in this subclass.
 """
 
 # __COPYRIGHT__
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -29,7 +30,7 @@ except AttributeError:
     def zip(*lists):
         result = []
         for i in xrange(len(lists[0])):
-            result.append(tuple(map(lambda l, i=i: l[i], lists)))
+            result.append(tuple(map(lambda l: l[i], lists)))
         return result
     __builtin__.zip = zip
 
@@ -1275,8 +1276,8 @@ class TimeSCons(TestSCons):
             #dirs = [ d for d in dirs if not d.startswith('TimeSCons-') ]
             #files = [ f for f in files if not f.startswith('TimeSCons-') ]
             not_timescons_entries = lambda s: not s.startswith('TimeSCons-')
-            dirs = filter(not_timescons_entries, dirs)
-            files = filter(not_timescons_entries, files)
+            dirs = list(filter(not_timescons_entries, dirs))
+            files = list(filter(not_timescons_entries, files))
             for dirname in dirs:
                 source = os.path.join(root, dirname)
                 destination = source.replace(source_dir, dest_dir)

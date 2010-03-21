@@ -31,6 +31,7 @@ Environment
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -97,7 +98,7 @@ def apply_tools(env, tools, toolpath):
     if not tools:
         return
     # Filter out null tools from the list.
-    for tool in filter(None, tools):
+    for tool in [_f for _f in tools if _f]:
         if SCons.Util.is_List(tool) or type(tool)==type(()):
             toolname = tool[0]
             toolargs = tool[1] # should be a dict of kw args
@@ -606,8 +607,7 @@ class SubstitutionEnvironment:
         Removes the specified function's MethodWrapper from the
         added_methods list, so we don't re-bind it when making a clone.
         """
-        is_not_func = lambda dm, f=function: not dm.method is f
-        self.added_methods = filter(is_not_func, self.added_methods)
+        self.added_methods = [dm for dm in self.added_methods if not dm.method is function]
 
     def Override(self, overrides):
         """
@@ -1267,9 +1267,9 @@ class Base(SubstitutionEnvironment):
                 if not SCons.Util.is_List(dk):
                     dk = [dk]
                 if delete_existing:
-                    dk = filter(lambda x, val=val: x not in val, dk)
+                    dk = [x for x in dk if x not in val]
                 else:
-                    val = filter(lambda x, dk=dk: x not in dk, val)
+                    val = [x for x in val if x not in dk]
                 self._dict[key] = dk + val
             else:
                 dk = self._dict[key]
@@ -1277,14 +1277,14 @@ class Base(SubstitutionEnvironment):
                     # By elimination, val is not a list.  Since dk is a
                     # list, wrap val in a list first.
                     if delete_existing:
-                        dk = filter(lambda x, val=val: x not in val, dk)
+                        dk = [x for x in dk if x not in val]
                         self._dict[key] = dk + [val]
                     else:
                         if not val in dk:
                             self._dict[key] = dk + [val]
                 else:
                     if delete_existing:
-                        dk = filter(lambda x, val=val: x not in val, dk)
+                        dk = [x for x in dk if x not in val]
                     self._dict[key] = dk + val
         self.scanner_map_delete(kw)
 
@@ -1412,7 +1412,7 @@ class Base(SubstitutionEnvironment):
     def Dictionary(self, *args):
         if not args:
             return self._dict
-        dlist = map(lambda x, s=self: s._dict[x], args)
+        dlist = map(lambda x: self._dict[x], args)
         if len(dlist) == 1:
             dlist = dlist[0]
         return dlist
@@ -1490,7 +1490,7 @@ class Base(SubstitutionEnvironment):
                 raise
             return
         lines = SCons.Util.LogicalLines(fp).readlines()
-        lines = filter(lambda l: l[0] != '#', lines)
+        lines = [l for l in lines if l[0] != '#']
         tdlist = []
         for line in lines:
             try:
@@ -1623,9 +1623,9 @@ class Base(SubstitutionEnvironment):
                 if not SCons.Util.is_List(dk):
                     dk = [dk]
                 if delete_existing:
-                    dk = filter(lambda x, val=val: x not in val, dk)
+                    dk = [x for x in dk if x not in val]
                 else:
-                    val = filter(lambda x, dk=dk: x not in dk, val)
+                    val = [x for x in val if x not in dk]
                 self._dict[key] = val + dk
             else:
                 dk = self._dict[key]
@@ -1633,14 +1633,14 @@ class Base(SubstitutionEnvironment):
                     # By elimination, val is not a list.  Since dk is a
                     # list, wrap val in a list first.
                     if delete_existing:
-                        dk = filter(lambda x, val=val: x not in val, dk)
+                        dk = [x for x in dk if x not in val]
                         self._dict[key] = [val] + dk
                     else:
                         if not val in dk:
                             self._dict[key] = [val] + dk
                 else:
                     if delete_existing:
-                        dk = filter(lambda x, val=val: x not in val, dk)
+                        dk = [x for x in dk if x not in val]
                     self._dict[key] = val + dk
         self.scanner_map_delete(kw)
 
@@ -1765,7 +1765,7 @@ class Base(SubstitutionEnvironment):
         tlist = self.arg2nodes(target, self.ans.Alias)
         if not SCons.Util.is_List(source):
             source = [source]
-        source = filter(None, source)
+        source = [_f for _f in source if _f]
 
         if not action:
             if not source:

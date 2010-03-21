@@ -27,6 +27,7 @@ Nodes.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -371,7 +372,7 @@ class Executor:
         # TODO(batch):  extend to multiple batches
         assert (len(self.batches) == 1)
         # TODO(batch):  remove duplicates?
-        sources = filter(lambda x, s=self.batches[0].sources: x not in s, sources)
+        sources = [x for x in sources if x not in self.batches[0].sources]
         self.batches[0].sources.extend(sources)
 
     def get_sources(self):
@@ -405,9 +406,7 @@ class Executor:
 
     def my_str(self):
         env = self.get_build_env()
-        get = lambda action, t=self.get_all_targets(), s=self.get_all_sources(), e=env: \
-                     action.genstring(t, s, e)
-        return "\n".join(map(get, self.get_action_list()))
+        return "\n".join(map(lambda action: action.genstring(self.get_all_targets(), self.get_all_sources(), env), self.get_action_list()))
 
 
     def __str__(self):
@@ -416,7 +415,7 @@ class Executor:
     def nullify(self):
         self.cleanup()
         self.do_execute = self.do_nothing
-        self.my_str     = lambda S=self: ''
+        self.my_str     = lambda: ''
 
     memoizer_counters.append(SCons.Memoize.CountValue('get_contents'))
 
@@ -430,9 +429,7 @@ class Executor:
         except KeyError:
             pass
         env = self.get_build_env()
-        get = lambda action, t=self.get_all_targets(), s=self.get_all_sources(), e=env: \
-                     action.get_contents(t, s, e)
-        result = "".join(map(get, self.get_action_list()))
+        result = "".join(map(lambda action: action.get_contents(self.get_all_targets(), self.get_all_sources(), env), self.get_action_list()))
         self._memo['get_contents'] = result
         return result
 
@@ -520,7 +517,7 @@ class Executor:
             idict = {}
             for i in ignore:
                 idict[i] = 1
-            sourcelist = filter(lambda s, i=idict: not i.has_key(s), sourcelist)
+            sourcelist = [s for s in sourcelist if not idict.has_key(s)]
 
         memo_dict[key] = sourcelist
 

@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __doc__ = """
 Generic Taskmaster module for the SCons build engine.
@@ -1007,7 +1008,7 @@ class Taskmaster:
         #    node for node, cycle in nclist
         #             if cycle or node.get_state() != NODE_EXECUTED
         #]
-        genuine_cycles = filter(lambda t: t[1] or t[0].get_state() != NODE_EXECUTED, nclist)
+        genuine_cycles = [t for t in nclist if t[1] or t[0].get_state() != NODE_EXECUTED]
         if not genuine_cycles:
             # All of the "cycles" found were single nodes in EXECUTED state,
             # which is to say, they really weren't cycles.  Just return.

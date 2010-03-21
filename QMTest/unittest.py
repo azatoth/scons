@@ -28,6 +28,7 @@ PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS,
 AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 """
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __author__ = "Steve Purcell (stephen_purcell@yahoo.com)"
 __version__ = "$ Revision: 1.23 $"[11:-2]
@@ -338,8 +339,7 @@ def getTestCaseNames(testCaseClass, prefix, sortUsing=cmp):
        and its base classes that start with the given prefix. This is used
        by makeSuite().
     """
-    testFnNames = filter(lambda n,p=prefix: n[:len(p)] == p,
-                         dir(testCaseClass))
+    testFnNames = [n for n in dir(testCaseClass) if n[:len(prefix)] == prefix]
     for baseclass in testCaseClass.__bases__:
         testFnNames = testFnNames + \
                       getTestCaseNames(baseclass, prefix, sortUsing=None)

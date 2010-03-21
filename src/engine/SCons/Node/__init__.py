@@ -41,6 +41,7 @@ be able to depend on any other type of "thing."
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -547,8 +548,7 @@ class Node:
         deps = []
         while nodes:
             n = nodes.pop(0)
-            d = filter(lambda x, seen=seen: not seen.has_key(x),
-                       n.get_found_includes(env, scanner, path))
+            d = [x for x in n.get_found_includes(env, scanner, path) if not seen.has_key(x)]
             if d:
                 deps.extend(d)
                 for n in d:
@@ -1214,11 +1214,11 @@ class Node:
 
         lines = []
 
-        removed = filter(lambda x, nk=new_bkids: not x in nk, old_bkids)
+        removed = [x for x in old_bkids if not x in new_bkids]
         if removed:
             removed = map(stringify, removed)
             fmt = "`%s' is no longer a dependency\n"
-            lines.extend(map(lambda s, fmt=fmt: fmt % s, removed))
+            lines.extend(map(lambda s: fmt % s, removed))
 
         for k in new_bkids:
             if not k in old_bkids:

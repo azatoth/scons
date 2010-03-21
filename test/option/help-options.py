@@ -21,6 +21,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -53,7 +54,7 @@ ignored_re = re.compile('.*Ignored for compatibility\\.\n', re.S)
 stdout = ignored_re.sub('', test.stdout())
 
 lines = stdout.split('\n')
-lines = filter(lambda x: x[:3] == '  -', lines)
+lines = [x for x in lines if x[:3] == '  -']
 lines = map(lambda x: x[3:], lines)
 lines = map(lambda x: x[0] == '-' and x[1:] or x, lines)
 options = map(lambda x: x.split()[0], lines)

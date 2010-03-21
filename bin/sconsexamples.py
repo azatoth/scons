@@ -67,6 +67,7 @@
 # Error output gets passed through to your error output so you
 # can see if there are any problems executing the command.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 import os
 import os.path
@@ -268,7 +269,7 @@ class MySGML(sgmllib.SGMLParser):
         sys.stdout.write('&#' + ref + ';')
 
     def start_scons_example(self, attrs):
-        t = filter(lambda t: t[0] == 'name', attrs)
+        t = [t for t in attrs if t[0] == 'name']
         if t:
             name = t[0][1]
             try:
@@ -284,7 +285,7 @@ class MySGML(sgmllib.SGMLParser):
 
     def end_scons_example(self):
         e = self.e
-        files = filter(lambda f: f.printme, e.files)
+        files = [f for f in e.files if f.printme]
         if files:
             sys.stdout.write('<programlisting>')
             for f in files:
@@ -305,7 +306,7 @@ class MySGML(sgmllib.SGMLParser):
             e = self.e
         except AttributeError:
             self.error("<file> tag outside of <scons_example>")
-        t = filter(lambda t: t[0] == 'name', attrs)
+        t = [t for t in attrs if t[0] == 'name']
         if not t:
             self.error("no <file> name attribute found")
         try:
@@ -329,7 +330,7 @@ class MySGML(sgmllib.SGMLParser):
             e = self.e
         except AttributeError:
             self.error("<directory> tag outside of <scons_example>")
-        t = filter(lambda t: t[0] == 'name', attrs)
+        t = [t for t in attrs if t[0] == 'name']
         if not t:
             self.error("no <directory> name attribute found")
         try:
@@ -348,7 +349,7 @@ class MySGML(sgmllib.SGMLParser):
         self.afunclist = self.afunclist[:-1]
 
     def start_scons_example_file(self, attrs):
-        t = filter(lambda t: t[0] == 'example', attrs)
+        t = [t for t in attrs if t[0] == 'example']
         if not t:
             self.error("no <scons_example_file> example attribute found")
         exname = t[0][1]
@@ -356,11 +357,11 @@ class MySGML(sgmllib.SGMLParser):
             e = self.examples[exname]
         except KeyError:
             self.error("unknown example name '%s'" % exname)
-        fattrs = filter(lambda t: t[0] == 'name', attrs)
+        fattrs = [t for t in attrs if t[0] == 'name']
         if not fattrs:
             self.error("no <scons_example_file> name attribute found")
         fname = fattrs[0][1]
-        f = filter(lambda f, fname=fname: f.name == fname, e.files)
+        f = [f for f in e.files if f.name == fname]
         if not f:
             self.error("example '%s' does not have a file named '%s'" % (exname, fname))
         self.f = f[0]
@@ -375,7 +376,7 @@ class MySGML(sgmllib.SGMLParser):
         delattr(self, 'f')
 
     def start_scons_output(self, attrs):
-        t = filter(lambda t: t[0] == 'example', attrs)
+        t = [t for t in attrs if t[0] == 'example']
         if not t:
             self.error("no <scons_output> example attribute found")
         exname = t[0][1]
@@ -410,7 +411,7 @@ class MySGML(sgmllib.SGMLParser):
             i = 0
             while lines[0][i] == ' ':
                 i = i + 1
-            lines = map(lambda l, i=i: l[i:], lines)
+            lines = map(lambda l: l[i:], lines)
             path = f.name.replace('__ROOT__', t.workpath('ROOT'))
             dir, name = os.path.split(f.name)
             if dir:

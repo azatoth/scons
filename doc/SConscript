@@ -24,6 +24,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 import os.path
 import re
@@ -469,14 +470,14 @@ else:
     e = os.path.join('#src', 'engine')
     manifest_in = File(os.path.join(e, 'MANIFEST.in')).rstr()
     sources = map(lambda x: x[:-1], open(manifest_in).readlines())
-    sources = filter(lambda x: x.find('Optik') == -1, sources)
-    sources = filter(lambda x: x.find('Platform') == -1, sources)
-    sources = filter(lambda x: x.find('Tool') == -1, sources)
+    sources = [x for x in sources if x.find('Optik') == -1]
+    sources = [x for x in sources if x.find('Platform') == -1]
+    sources = [x for x in sources if x.find('Tool') == -1]
     # XXX
-    sources = filter(lambda x: x.find('Options') == -1, sources)
+    sources = [x for x in sources if x.find('Options') == -1]
 
     e = os.path.join(build, '..', 'scons', 'engine')
-    sources = map(lambda x, e=e: os.path.join(e, x), sources)
+    sources = map(lambda x: os.path.join(e, x), sources)
 
     epydoc_commands = [
         Delete('$OUTDIR'),
@@ -518,8 +519,7 @@ else:
 # for easy distribution to the web site.
 #
 if tar_deps:
-    tar_list = ' '.join(map(lambda x, b=build+'/': x.replace(b, ''),
-                           tar_list))
+    tar_list = ' '.join(map(lambda x: x.replace(build+'/', ''), tar_list))
     t = env.Command(dist_doc_tar_gz, tar_deps,
                 "tar cf${TAR_HFLAG} - -C %s %s | gzip > $TARGET" % (build, tar_list))
     AddPostAction(dist_doc_tar_gz, Chmod(dist_doc_tar_gz, 0644))

@@ -96,7 +96,7 @@ def PackageVariable(key, help, default, searchfunc=None):
     help = '\n    '.join(
         (help, '( yes | no | /path/to/%s )' % key))
     return (key, help, default,
-            lambda k, v, e, f=searchfunc: _validator(k,v,e,f),
+            lambda k, v, e: _validator(k,v,e,searchfunc),
             _converter)
 
 # Local Variables:

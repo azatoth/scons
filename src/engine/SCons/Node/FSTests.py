@@ -39,13 +39,6 @@ import SCons.Warnings
 
 built_it = None
 
-# This will be built-in in 2.3.  For now fake it.
-try :
-    True , False
-except NameError :
-    True = 1 ; False = 0
-
-
 scanner_count = 0
 
 class Scanner:
@@ -2537,7 +2530,7 @@ class RepositoryTestCase(_tempdirTestCase):
         ]
 
         rep = self.fs.Dir('#').getRepositories()
-        r = map(lambda x, np=os.path.normpath: np(str(x)), rep)
+        r = map(lambda x: os.path.normpath(str(x)), rep)
         assert r == expect, r
 
     def test_get_all_rdirs(self):
@@ -2559,7 +2552,7 @@ class RepositoryTestCase(_tempdirTestCase):
         ]
 
         rep = self.fs.Dir('#').get_all_rdirs()
-        r = map(lambda x, np=os.path.normpath: np(str(x)), rep)
+        r = map(lambda x: os.path.normpath(str(x)), rep)
         assert r == expect, r
 
     def test_rentry(self):

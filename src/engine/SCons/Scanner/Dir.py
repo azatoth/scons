@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -28,7 +29,7 @@ import SCons.Scanner
 
 def only_dirs(nodes):
     is_Dir = lambda n: isinstance(n.disambiguate(), SCons.Node.FS.Dir)
-    return filter(is_Dir, nodes)
+    return list(filter(is_Dir, nodes))
 
 def DirScanner(**kw):
     """Return a prototype Scanner instance for scanning
@@ -100,9 +101,9 @@ def scan_in_memory(node, env, path=()):
         # mixed Node types (Dirs and Files, for example) has a Dir as
         # the first entry.
         return []
-    entry_list = filter(do_not_scan, entries.keys())
+    entry_list = list(filter(do_not_scan, entries.keys()))
     entry_list.sort()
-    return map(lambda n, e=entries: e[n], entry_list)
+    return map(lambda n: entries[n], entry_list)
 
 # Local Variables:
 # tab-width:4

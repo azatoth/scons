@@ -26,6 +26,7 @@ This module implements the dependency scanner for Fortran code.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -93,12 +94,12 @@ class F90Scanner(SCons.Scanner.Classic):
             d = {}
             for m in defmodules:
                 d[m] = 1
-            modules = filter(lambda m, d=d: not d.has_key(m), modules)
+            modules = [m for m in modules if not d.has_key(m)]
             #modules = self.undefinedModules(modules, defmodules)
 
             # Convert module name to a .mod filename
             suffix = env.subst('$FORTRANMODSUFFIX')
-            modules = map(lambda x, s=suffix: x.lower() + s, modules)
+            modules = map(lambda x: x.lower() + suffix, modules)
             # Remove unique items from the list
             mods_and_includes = SCons.Util.unique(includes+modules)
             node.includes = mods_and_includes

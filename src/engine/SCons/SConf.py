@@ -898,7 +898,7 @@ def CheckFunc(context, function_name, header = None, language = None):
 
 def CheckType(context, type_name, includes = "", language = None):
     res = SCons.Conftest.CheckType(context, type_name,
-                                        header = includes, language = language)
+                                   header = includes, language = language)
     context.did_show_result = 1
     return not res
 

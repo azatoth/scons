@@ -56,7 +56,7 @@ class DummyEnvironment:
         elif len(args) == 1:
             return self._dict[args[0]]
         else:
-            return map(lambda x, s=self: s._dict[x], args)
+            return map(lambda x: self._dict[x], args)
 
     def has_key(self, key):
         return self.Dictionary().has_key(key)
