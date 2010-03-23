@@ -173,7 +173,7 @@ class env_global_regex_is_valid(Environment):
 class env_special_set_has_key(Environment):
     """_special_set.get():  use _special_set.has_key() instead"""
     def __setitem__(self, key, value):
-        if self._special_set.has_key(key):
+        if key in self._special_set:
             self._special_set[key](self, key, value)
         else:
             if not SCons.Environment.is_valid_construction_var(key):
@@ -231,7 +231,7 @@ class env_not_has_key(Environment):
         if special:
             special(self, key, value)
         else:
-            if not self._dict.has_key(key) \
+            if key not in self._dict \
                 and not SCons.Environment.is_valid_construction_var(key):
                     raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
             self._dict[key] = value
@@ -242,7 +242,7 @@ class env_Best_attribute(Environment):
         if key in self._special_set_keys:
             self._special_set[key](self, key, value)
         else:
-            if not self._dict.has_key(key) \
+            if key not in self._dict \
                and not global_valid_var.match(key):
                     raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
             self._dict[key] = value
@@ -250,10 +250,10 @@ class env_Best_attribute(Environment):
 class env_Best_has_key(Environment):
     """Best __setitem__(), with has_key"""
     def __setitem__(self, key, value):
-        if self._special_set.has_key(key):
+        if key in self._special_set:
             self._special_set[key](self, key, value)
         else:
-            if not self._dict.has_key(key) \
+            if key not in self._dict \
                and not global_valid_var.match(key):
                     raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
             self._dict[key] = value
@@ -264,7 +264,7 @@ class env_Best_list(Environment):
         if key in ['BUILDERS', 'SCANNERS', 'TARGET', 'TARGETS', 'SOURCE', 'SOURCES']:
             self._special_set[key](self, key, value)
         else:
-            if not self._dict.has_key(key) \
+            if key not in self._dict \
                and not global_valid_var.match(key):
                     raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
             self._dict[key] = value
@@ -277,7 +277,7 @@ else:
     class env_isalnum(Environment):
         """Greg's Folly: isalnum instead of probe"""
         def __setitem__(self, key, value):
-            if self._special_set.has_key(key):
+            if key in self._special_set:
                 self._special_set[key](self, key, value)
             else:
                 if not key.isalnum() and not global_valid_var.match(key):

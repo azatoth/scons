@@ -50,7 +50,7 @@ dummy_env = Environment()
 ENV = dummy_env['ENV']
 try:
     PATH=ARGUMENTS['PATH']
-    if ENV.has_key('PATH'):
+    if 'PATH' in ENV:
         ENV_PATH = PATH + os.pathsep + ENV['PATH']
     else:
         Exit(0) # this is certainly a weird system :-)

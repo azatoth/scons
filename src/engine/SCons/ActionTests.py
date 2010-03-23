@@ -67,16 +67,16 @@ try:
 except:
     pass
 f.close()
-if os.environ.has_key( 'ACTPY_PIPE' ):
-    if os.environ.has_key( 'PIPE_STDOUT_FILE' ):
+if 'ACTPY_PIPE' in os.environ:
+    if 'PIPE_STDOUT_FILE' in os.environ:
          stdout_msg = open(os.environ['PIPE_STDOUT_FILE'], 'r').read()
     else:
-         stdout_msg = "act.py: stdout: executed act.py %s\\n" % string.join(sys.argv[1:])
+         stdout_msg = "act.py: stdout: executed act.py %s\\n" % ' '.join(sys.argv[1:])
     sys.stdout.write( stdout_msg )
-    if os.environ.has_key( 'PIPE_STDERR_FILE' ):
+    if 'PIPE_STDERR_FILE' in os.environ:
          stderr_msg = open(os.environ['PIPE_STDERR_FILE'], 'r').read()
     else:
-         stderr_msg = "act.py: stderr: executed act.py %s\\n" % string.join(sys.argv[1:])
+         stderr_msg = "act.py: stderr: executed act.py %s\\n" % ' '.join(sys.argv[1:])
     sys.stderr.write( stderr_msg )
 sys.exit(0)
 """)
@@ -146,7 +146,7 @@ class Environment:
     def __setitem__(self, item, value):
         self.d[item] = value
     def has_key(self, item):
-        return self.d.has_key(item)
+        return item in self.d
     def get(self, key, value=None):
         return self.d.get(key, value)
     def items(self):
@@ -1075,7 +1075,7 @@ class CommandActionTestCase(unittest.TestCase):
 
         act = SCons.Action.CommandAction(cmd5)
         env5 = Environment()
-        if scons_env.has_key('ENV'):
+        if 'ENV' in scons_env:
             env5['ENV'] = scons_env['ENV']
             PATH = scons_env['ENV'].get('PATH', '')
         else:

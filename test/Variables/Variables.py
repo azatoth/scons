@@ -107,10 +107,10 @@ print env['VALIDATE']
 print env['valid_key']
 
 # unspecified variables should not be set:
-assert not env.has_key('UNSPECIFIED')
+assert 'UNSPECIFIED' not in env
 
 # undeclared variables should be ignored:
-assert not env.has_key('UNDECLARED')
+assert 'UNDECLARED' not in env
 
 # calling Update() should not effect variables that
 # are not declared on the variables object:

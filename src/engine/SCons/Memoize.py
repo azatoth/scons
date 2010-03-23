@@ -165,7 +165,7 @@ class CountValue(Counter):
     """
     def __call__(self, *args, **kw):
         obj = args[0]
-        if obj._memo.has_key(self.method_name):
+        if self.method_name in obj._memo:
             self.hit = self.hit + 1
         else:
             self.miss = self.miss + 1
@@ -200,7 +200,7 @@ class CountDict(Counter):
             self.miss = self.miss + 1
         else:
             key = self.keymaker(*args, **kw)
-            if memo_dict.has_key(key):
+            if key in memo_dict:
                 self.hit = self.hit + 1
             else:
                 self.miss = self.miss + 1

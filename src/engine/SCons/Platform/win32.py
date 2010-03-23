@@ -317,7 +317,7 @@ def generate(env):
         tmp_path = systemroot + os.pathsep + \
                    os.path.join(systemroot,'System32')
         tmp_pathext = '.com;.exe;.bat;.cmd'
-        if os.environ.has_key('PATHEXT'):
+        if 'PATHEXT' in os.environ:
             tmp_pathext = os.environ['PATHEXT'] 
         cmd_interp = SCons.Util.WhereIs('cmd', tmp_path, tmp_pathext)
         if not cmd_interp:
@@ -329,7 +329,7 @@ def generate(env):
             cmd_interp = env.Detect('command')
 
     
-    if not env.has_key('ENV'):
+    if 'ENV' not in env:
         env['ENV']        = {}
 
     # Import things from the external environment to the construction
@@ -346,7 +346,7 @@ def generate(env):
         if v:
             env['ENV'][var] = v
 
-    if not env['ENV'].has_key('COMSPEC'):
+    if 'COMSPEC' not in env['ENV']:
         v = os.environ.get("COMSPEC")
         if v:
             env['ENV']['COMSPEC'] = v

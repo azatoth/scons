@@ -446,7 +446,7 @@ if package:
         'deb'        : os.path.join('python2.1', 'site-packages')
     }
 
-    if not dir.has_key(package):
+    if package not in dir:
         sys.stderr.write("Unknown package '%s'\n" % package)
         sys.exit(2)
 
@@ -647,7 +647,7 @@ elif all and not qmtest:
         cmd = "aegis -list -unf pf 2>/dev/null"
         for line in os.popen(cmd, "r").readlines():
             a = line.split()
-            if a[0] == "test" and not tdict.has_key(a[-1]):
+            if a[0] == "test" and a[-1] not in tdict:
                 tdict[a[-1]] = Test(a[-1], spe)
         cmd = "aegis -list -unf cf 2>/dev/null"
         for line in os.popen(cmd, "r").readlines():
@@ -655,7 +655,7 @@ elif all and not qmtest:
             if a[0] == "test":
                 if a[1] == "remove":
                     del tdict[a[-1]]
-                elif not tdict.has_key(a[-1]):
+                elif a[-1] not in tdict:
                     tdict[a[-1]] = Test(a[-1], spe)
 
     tests = tdict.keys()

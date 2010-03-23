@@ -170,7 +170,7 @@ def _delete_duplicates(l, keep_last):
         l.reverse()
     for i in l:
         try:
-            if not seen.has_key(i):
+            if i not in seen:
                 result.append(i)
                 seen[i]=1
         except TypeError:
@@ -427,7 +427,7 @@ class SubstitutionEnvironment:
             # key and we don't need to check.  If we do check, using a
             # global, pre-compiled regular expression directly is more
             # efficient than calling another function or a method.
-            if not self._dict.has_key(key) \
+            if key not in self._dict \
                and not _is_valid_var.match(key):
                     raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
             self._dict[key] = value
@@ -437,7 +437,7 @@ class SubstitutionEnvironment:
         return self._dict.get(key, default)
 
     def has_key(self, key):
-        return self._dict.has_key(key)
+        return key in self._dict
 
     def __contains__(self, key):
         return self._dict.__contains__(key)
@@ -975,7 +975,7 @@ class Base(SubstitutionEnvironment):
         # Apply the passed-in and customizable variables to the
         # environment before calling the tools, because they may use
         # some of them during initialization.
-        if kw.has_key('options'):
+        if 'options' in kw:
             # Backwards compatibility:  they may stll be using the
             # old "options" keyword.
             variables = kw['options']
@@ -1236,13 +1236,13 @@ class Base(SubstitutionEnvironment):
         """
 
         orig = ''
-        if self._dict.has_key(envname) and self._dict[envname].has_key(name):
+        if envname in self._dict and name in self._dict[envname]:
             orig = self._dict[envname][name]
 
         nv = SCons.Util.AppendPath(orig, newpath, sep, delete_existing,
                                    canonicalize=self._canonicalize)
 
-        if not self._dict.has_key(envname):
+        if envname not in self._dict:
             self._dict[envname] = {}
 
         self._dict[envname][name] = nv
@@ -1257,7 +1257,7 @@ class Base(SubstitutionEnvironment):
         for key, val in kw.items():
             if SCons.Util.is_List(val):
                 val = _delete_duplicates(val, delete_existing)
-            if not self._dict.has_key(key) or self._dict[key] in ('', None):
+            if key not in self._dict or self._dict[key] in ('', None):
                 self._dict[key] = val
             elif SCons.Util.is_Dict(self._dict[key]) and \
                  SCons.Util.is_Dict(val):
@@ -1594,13 +1594,13 @@ class Base(SubstitutionEnvironment):
         """
 
         orig = ''
-        if self._dict.has_key(envname) and self._dict[envname].has_key(name):
+        if envname in self._dict and name in self._dict[envname]:
             orig = self._dict[envname][name]
 
         nv = SCons.Util.PrependPath(orig, newpath, sep, delete_existing,
                                     canonicalize=self._canonicalize)
 
-        if not self._dict.has_key(envname):
+        if envname not in self._dict:
             self._dict[envname] = {}
 
         self._dict[envname][name] = nv
@@ -1615,7 +1615,7 @@ class Base(SubstitutionEnvironment):
         for key, val in kw.items():
             if SCons.Util.is_List(val):
                 val = _delete_duplicates(val, not delete_existing)
-            if not self._dict.has_key(key) or self._dict[key] in ('', None):
+            if key not in self._dict or self._dict[key] in ('', None):
                 self._dict[key] = val
             elif SCons.Util.is_Dict(self._dict[key]) and \
                  SCons.Util.is_Dict(val):
@@ -1688,7 +1688,7 @@ class Base(SubstitutionEnvironment):
 
     def SetDefault(self, **kw):
         for k in kw.keys():
-            if self._dict.has_key(k):
+            if k in self._dict:
                 del kw[k]
         self.Replace(**kw)
 
@@ -1825,7 +1825,7 @@ class Base(SubstitutionEnvironment):
         return tlist
 
     def BuildDir(self, *args, **kw):
-        if kw.has_key('build_dir'):
+        if 'build_dir' in kw:
             kw['variant_dir'] = kw['build_dir']
             del kw['build_dir']
         return self.VariantDir(*args, **kw)
@@ -2233,7 +2233,7 @@ class OverrideEnvironment(Base):
             self.__dict__['overrides'][key]
             return 1
         except KeyError:
-            return self.__dict__['__subject'].has_key(key)
+            return key in self.__dict__['__subject']
     def __contains__(self, key):
         if self.__dict__['overrides'].__contains__(key):
             return 1

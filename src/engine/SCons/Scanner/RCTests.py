@@ -91,7 +91,7 @@ class DummyEnvironment(UserDict.UserDict):
         return list(map(self.subst, path))
 
     def has_key(self, key):
-        return self.Dictionary().has_key(key)
+        return key in self.Dictionary()
 
     def get_calculator(self):
         return None

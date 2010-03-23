@@ -146,8 +146,8 @@ CPP_to_Python_Ops_Expression = re.compile(expr)
 # A separate list of expressions to be evaluated and substituted
 # sequentially, not all at once.
 CPP_to_Python_Eval_List = [
-    ['defined\s+(\w+)',         '__dict__.has_key("\\1")'],
-    ['defined\s*\((\w+)\)',     '__dict__.has_key("\\1")'],
+    ['defined\s+(\w+)',         '"\\1" in __dict__'],
+    ['defined\s*\((\w+)\)',     '"\\1" in __dict__'],
     ['/\*.*\*/',                ''],
     ['/\*.*',                   ''],
     ['//.*',                    ''],
@@ -443,13 +443,13 @@ class PreProcessor:
         """
         Default handling of a #ifdef line.
         """
-        self._do_if_else_condition(self.cpp_namespace.has_key(t[1]))
+        self._do_if_else_condition(t[1] in self.cpp_namespace)
 
     def do_ifndef(self, t):
         """
         Default handling of a #ifndef line.
         """
-        self._do_if_else_condition(not self.cpp_namespace.has_key(t[1]))
+        self._do_if_else_condition(t[1] not in self.cpp_namespace)
 
     def do_if(self, t):
         """

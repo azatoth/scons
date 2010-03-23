@@ -222,7 +222,7 @@ class SConsInteractiveCmd(cmd.Cmd):
 
         def get_unseen_children(node, parent, seen_nodes=seen_nodes):
             def is_unseen(node, seen_nodes=seen_nodes):
-                return not seen_nodes.has_key(node)
+                return node not in seen_nodes
             return list(filter(is_unseen, node.children(scan=1)))
 
         def add_to_seen_nodes(node, parent, seen_nodes=seen_nodes):

@@ -53,7 +53,7 @@ class TestSConsign(TestSCons):
             'interpreter' : python,     # imported from TestSCons
         }
 
-        if not kw.has_key('program'):
+        if 'program' not in kw:
             kw['program'] = os.environ.get('SCONS')
             if not kw['program']:
                 if os.path.exists('scons'):

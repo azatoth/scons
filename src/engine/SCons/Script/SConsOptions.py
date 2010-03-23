@@ -168,7 +168,7 @@ class SConsValues(optparse.Values):
                 value = diskcheck_convert(value)
             except ValueError, v:
                 raise SCons.Errors.UserError, "Not a valid diskcheck value: %s"%v
-            if not self.__dict__.has_key('diskcheck'):
+            if 'diskcheck' not in self.__dict__:
                 # No --diskcheck= option was specified on the command line.
                 # Set this right away so it can affect the rest of the
                 # file/Node lookups while processing the SConscript files.

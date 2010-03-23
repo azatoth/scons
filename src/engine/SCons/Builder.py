@@ -234,7 +234,7 @@ class OverrideWarner(UserDict.UserDict):
         if self.already_warned:
             return
         for k in self.keys():
-            if misleading_keywords.has_key(k):
+            if k in misleading_keywords:
                 alt = misleading_keywords[k]
                 msg = "Did you mean to use `%s' instead of `%s'?" % (alt, k)
                 SCons.Warnings.warn(SCons.Warnings.MisleadingKeywordsWarning, msg)
@@ -243,14 +243,14 @@ class OverrideWarner(UserDict.UserDict):
 def Builder(**kw):
     """A factory for builder objects."""
     composite = None
-    if kw.has_key('generator'):
-        if kw.has_key('action'):
+    if 'generator' in kw:
+        if 'action' in kw:
             raise UserError, "You must not specify both an action and a generator."
         kw['action'] = SCons.Action.CommandGeneratorAction(kw['generator'], {})
         del kw['generator']
-    elif kw.has_key('action'):
+    elif 'action' in kw:
         source_ext_match = kw.get('source_ext_match', 1)
-        if kw.has_key('source_ext_match'):
+        if 'source_ext_match' in kw:
             del kw['source_ext_match']
         if SCons.Util.is_Dict(kw['action']):
             composite = DictCmdGenerator(kw['action'], source_ext_match)
@@ -259,7 +259,7 @@ def Builder(**kw):
         else:
             kw['action'] = SCons.Action.Action(kw['action'])
 
-    if kw.has_key('emitter'):
+    if 'emitter' in kw:
         emitter = kw['emitter']
         if SCons.Util.is_String(emitter):
             # This allows users to pass in an Environment
@@ -337,7 +337,7 @@ class EmitterProxy:
         # Recursively substitute the variable.
         # We can't use env.subst() because it deals only
         # in strings.  Maybe we should change that?
-        while SCons.Util.is_String(emitter) and env.has_key(emitter):
+        while SCons.Util.is_String(emitter) and emitter in env:
             emitter = env[emitter]
         if callable(emitter):
             target, source = emitter(target, source, env)
@@ -390,13 +390,13 @@ class BuilderBase:
             suffix = CallableSelector(suffix)
         self.env = env
         self.single_source = single_source
-        if overrides.has_key('overrides'):
+        if 'overrides' in overrides:
             SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning,
                 "The \"overrides\" keyword to Builder() creation has been deprecated;\n" +\
                 "\tspecify the items as keyword arguments to the Builder() call instead.")
             overrides.update(overrides['overrides'])
             del overrides['overrides']
-        if overrides.has_key('scanner'):
+        if 'scanner' in overrides:
             SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning,
                                 "The \"scanner\" keyword to Builder() creation has been deprecated;\n"
                                 "\tuse: source_scanner or target_scanner as appropriate.")
@@ -614,7 +614,7 @@ class BuilderBase:
             ekw = self.executor_kw.copy()
             ekw['chdir'] = chdir
         if kw:
-            if kw.has_key('srcdir'):
+            if 'srcdir' in kw:
                 def prependDirIfRelative(f, srcdir=kw['srcdir']):
                     import os.path
                     if SCons.Util.is_String(f) and not os.path.isabs(f):
@@ -838,7 +838,7 @@ class BuilderBase:
             sdict[s] = 1
         for builder in self.get_src_builders(env):
             for s in builder.src_suffixes(env):
-                if not sdict.has_key(s):
+                if s not in sdict:
                     sdict[s] = 1
                     suffixes.append(s)
         return suffixes

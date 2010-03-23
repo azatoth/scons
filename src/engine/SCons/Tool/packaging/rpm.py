@@ -65,7 +65,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
         buildarchitecture = os.uname()[4]
         buildarchitecture = archmap.get(buildarchitecture, buildarchitecture)
 
-        if kw.has_key('ARCHITECTURE'):
+        if 'ARCHITECTURE' in kw:
             buildarchitecture = kw['ARCHITECTURE']
 
         fmt = '%s-%s-%s.%s.rpm'
@@ -81,7 +81,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     del kw['source'], kw['target'], kw['env']
 
     # if no "SOURCE_URL" tag is given add a default one.
-    if not kw.has_key('SOURCE_URL'):
+    if 'SOURCE_URL' not in kw:
         #kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
         kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
 
@@ -150,7 +150,7 @@ def build_specfile(target, source, env):
         file.close()
 
         # call a user specified function
-        if env.has_key('CHANGE_SPECFILE'):
+        if 'CHANGE_SPECFILE' in env:
             env['CHANGE_SPECFILE'](target, source)
 
     except KeyError, e:
@@ -188,16 +188,16 @@ def build_specfile_sections(spec):
 
     # Default prep, build, install and clean rules
     # TODO: optimize those build steps, to not compile the project a second time
-    if not spec.has_key('X_RPM_PREP'):
+    if 'X_RPM_PREP' not in spec:
         spec['X_RPM_PREP'] = '[ -n "$RPM_BUILD_ROOT" -a "$RPM_BUILD_ROOT" != / ] && rm -rf "$RPM_BUILD_ROOT"' + '\n%setup -q'
 
-    if not spec.has_key('X_RPM_BUILD'):
+    if 'X_RPM_BUILD' not in spec:
         spec['X_RPM_BUILD'] = 'mkdir "$RPM_BUILD_ROOT"'
 
-    if not spec.has_key('X_RPM_INSTALL'):
+    if 'X_RPM_INSTALL' not in spec:
         spec['X_RPM_INSTALL'] = 'scons --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"'
 
-    if not spec.has_key('X_RPM_CLEAN'):
+    if 'X_RPM_CLEAN' not in spec:
         spec['X_RPM_CLEAN'] = '[ -n "$RPM_BUILD_ROOT" -a "$RPM_BUILD_ROOT" != / ] && rm -rf "$RPM_BUILD_ROOT"'
 
     str = str + SimpleTagCompiler(optional_sections, mandatory=0).compile( spec )
@@ -254,7 +254,7 @@ def build_specfile_header(spec):
 #    if not s.has_key('x_rpm_BuildRequires'):
 #        s['x_rpm_BuildRequires'] = 'scons'
 
-    if not spec.has_key('X_RPM_BUILDROOT'):
+    if 'X_RPM_BUILDROOT' not in spec:
         spec['X_RPM_BUILDROOT'] = '%{_tmppath}/%{name}-%{version}-%{release}'
 
     str = str + SimpleTagCompiler(optional_header_fields, mandatory=0).compile( spec )
@@ -268,7 +268,7 @@ def build_specfile_filesection(spec, files):
     """
     str  = '%files\n'
 
-    if not spec.has_key('X_RPM_DEFATTR'):
+    if 'X_RPM_DEFATTR' not in spec:
         spec['X_RPM_DEFATTR'] = '(-,root,root)'
 
     str = str + '%%defattr %s\n' % spec['X_RPM_DEFATTR']

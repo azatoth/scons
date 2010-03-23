@@ -167,7 +167,7 @@ class TestSCons_time(TestCommon):
             pass
         else:
             os.chdir(script_dir)
-        if not kw.has_key('program'):
+        if 'program' not in kw:
             p = os.environ.get('SCONS_TIME')
             if not p:
                 p = 'scons-time'
@@ -175,13 +175,13 @@ class TestSCons_time(TestCommon):
                     p = 'scons-time.py'
             kw['program'] = p
 
-        if not kw.has_key('interpreter'):
+        if 'interpreter' not in kw:
             kw['interpreter'] = [python, '-tt']
 
-        if not kw.has_key('match'):
+        if 'match' not in kw:
             kw['match'] = match_exact
 
-        if not kw.has_key('workdir'):
+        if 'workdir' not in kw:
             kw['workdir'] = ''
 
         TestCommon.__init__(self, **kw)

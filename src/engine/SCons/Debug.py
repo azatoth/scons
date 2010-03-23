@@ -45,7 +45,7 @@ else:
     def logInstanceCreation(instance, name=None):
         if name is None:
             name = instance.__class__.__name__
-        if not tracked_classes.has_key(name):
+        if name not in tracked_classes:
             tracked_classes[name] = []
         tracked_classes[name].append(weakref.ref(instance))
 
@@ -155,7 +155,7 @@ def _dump_one_caller(key, file, level=0):
     leader = '      '*level
     for v,c in l:
         file.write("%s  %6d %s:%d(%s)\n" % ((leader,-v) + func_shorten(c[-3:])))
-        if caller_dicts.has_key(c):
+        if c in caller_dicts:
             _dump_one_caller(c, file, level+1)
 
 # print each call tree

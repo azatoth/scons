@@ -203,7 +203,7 @@ class Variables:
 
         # Call the convert functions:
         for option in self.options:
-            if option.converter and values.has_key(option.key):
+            if option.converter and option.key in values:
                 value = env.subst('${%s}'%option.key)
                 try:
                     try:
@@ -216,7 +216,7 @@ class Variables:
 
         # Finally validate the values:
         for option in self.options:
-            if option.validator and values.has_key(option.key):
+            if option.validator and option.key in values:
                 option.validator(option.key, env.subst('${%s}'%option.key), env)
 
     def UnknownVariables(self):
@@ -290,7 +290,7 @@ class Variables:
             options = self.options
 
         def format(opt, self=self, env=env):
-            if env.has_key(opt.key):
+            if opt.key in env:
                 actual = env.subst('${%s}' % opt.key)
             else:
                 actual = None

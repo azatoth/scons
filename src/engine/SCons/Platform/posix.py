@@ -216,7 +216,7 @@ def generate(env):
     # os.fork()/os.exec() works better than os.system().  There may just
     # not be a default that works best for all users.
 
-    if os.__dict__.has_key('spawnvpe'):
+    if 'spawnvpe' in os.__dict__:
         spawn = spawnvpe_spawn
     elif env.Detect('env'):
         spawn = env_spawn
@@ -228,7 +228,7 @@ def generate(env):
     else:
         pspawn = piped_fork_spawn
 
-    if not env.has_key('ENV'):
+    if 'ENV' not in env:
         env['ENV']        = {}
     env['ENV']['PATH']    = '/usr/local/bin:/opt/bin:/bin:/usr/bin'
     env['OBJPREFIX']      = ''

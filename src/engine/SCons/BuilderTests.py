@@ -118,8 +118,10 @@ class Environment:
         self.d[item] = var
     def __getitem__(self, item):
         return self.d[item]
+    def __contains__(self, item):
+        return self.d.__contains__(item)
     def has_key(self, item):
-        return self.d.has_key(item)
+        return item in self.d
     def keys(self):
         return self.d.keys()
     def get(self, key, value=None):

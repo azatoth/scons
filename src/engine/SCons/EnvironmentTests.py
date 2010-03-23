@@ -43,14 +43,14 @@ def diff_env(env1, env2):
     keys = d.keys()
     keys.sort()
     for k in keys:
-        if env1.has_key(k):
-           if env2.has_key(k):
+        if k in env1:
+           if k in env2:
                if env1[k] != env2[k]:
                    s1 = s1 + "    " + repr(k) + " : " + repr(env1[k]) + "\n"
                    s2 = s2 + "    " + repr(k) + " : " + repr(env2[k]) + "\n"
            else:
                s1 = s1 + "    " + repr(k) + " : " + repr(env1[k]) + "\n"
-        elif env2.has_key(k):
+        elif k in env2:
            s2 = s2 + "    " + repr(k) + " : " + repr(env2[k]) + "\n"
     s1 = s1 + "}\n"
     s2 = s2 + "}\n"
@@ -65,14 +65,14 @@ def diff_dict(d1, d2):
     keys = d.keys()
     keys.sort()
     for k in keys:
-        if d1.has_key(k):
-           if d2.has_key(k):
+        if k in d1:
+           if k in d2:
                if d1[k] != d2[k]:
                    s1 = s1 + "    " + repr(k) + " : " + repr(d1[k]) + "\n"
                    s2 = s2 + "    " + repr(k) + " : " + repr(d2[k]) + "\n"
            else:
                s1 = s1 + "    " + repr(k) + " : " + repr(d1[k]) + "\n"
-        elif env2.has_key(k):
+        elif k in env2:
            s2 = s2 + "    " + repr(k) + " : " + repr(d2[k]) + "\n"
     s1 = s1 + "}\n"
     s2 = s2 + "}\n"
@@ -157,15 +157,15 @@ def test_tool( env ):
 
 class TestEnvironmentFixture:
     def TestEnvironment(self, *args, **kw):
-        if not kw or not kw.has_key('tools'):
+        if not kw or 'tools' not in kw:
             kw['tools'] = [test_tool]
         default_keys = { 'CC' : 'cc',
                          'CCFLAGS' : '-DNDEBUG',
                          'ENV' : { 'TMP' : '/tmp' } }
         for key, value in default_keys.items():
-            if not kw.has_key(key):
+            if key not in kw:
                 kw[key] = value
-        if not kw.has_key('BUILDERS'):
+        if 'BUILDERS' not in kw:
             static_obj = SCons.Builder.Builder(action = {},
                                                emitter = {},
                                                suffix = '.o',
@@ -182,7 +182,7 @@ class SubstitutionTestCase(unittest.TestCase):
         """Test initializing a SubstitutionEnvironment
         """
         env = SubstitutionEnvironment()
-        assert not env.has_key('__env__')
+        assert '__env__' not in env
 
     def test___cmp__(self):
         """Test comparing SubstitutionEnvironments
@@ -230,8 +230,8 @@ class SubstitutionTestCase(unittest.TestCase):
         """Test the SubstitutionEnvironment has_key() method
         """
         env = SubstitutionEnvironment(XXX = 'x')
-        assert env.has_key('XXX')
-        assert not env.has_key('YYY')
+        assert 'XXX' in env
+        assert 'YYY' not in env
 
     def test_contains(self):
         """Test the SubstitutionEnvironment __contains__() method
@@ -263,7 +263,7 @@ class SubstitutionTestCase(unittest.TestCase):
         class X(SCons.Node.Node):
             pass
         def Factory(name, directory = None, create = 1, dict=dict, X=X):
-            if not dict.has_key(name):
+            if name not in dict:
                 dict[name] = X()
                 dict[name].name = name
             return dict[name]
@@ -844,7 +844,7 @@ sys.exit(0)
         """
         env = SubstitutionEnvironment()
         env.MergeFlags('')
-        assert not env.has_key('CCFLAGS'), env['CCFLAGS']
+        assert 'CCFLAGS' not in env, env['CCFLAGS']
         env.MergeFlags('-X')
         assert env['CCFLAGS'] == ['-X'], env['CCFLAGS']
         env.MergeFlags('-X')
@@ -908,8 +908,8 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
         env2 = self.TestEnvironment(XXX = 'x', YYY = 'y')
         assert env1 == env2, diff_env(env1, env2)
 
-        assert not env1.has_key('__env__')
-        assert not env2.has_key('__env__')
+        assert '__env__' not in env1
+        assert '__env__' not in env2
 
     def test_variables(self):
         """Test that variables only get applied once."""
@@ -1149,7 +1149,7 @@ env4.builder1.env, env3)
         """Test setting the external ENV in Environments
         """
         env = Environment()
-        assert env.Dictionary().has_key('ENV')
+        assert 'ENV' in env.Dictionary()
 
         env = self.TestEnvironment(ENV = { 'PATH' : '/foo:/bar' })
         assert env.Dictionary('ENV')['PATH'] == '/foo:/bar'
@@ -1181,7 +1181,7 @@ env4.builder1.env, env3)
                 except warning:
                     exc_caught = 1
                 assert exc_caught, "Did not catch ReservedVariableWarning for `%s'" % kw
-                assert not env4.has_key(kw), "`%s' variable was incorrectly set" % kw
+                assert kw not in env4, "`%s' variable was incorrectly set" % kw
         finally:
             SCons.Warnings.warningAsException(old)
 
@@ -1203,7 +1203,7 @@ env4.builder1.env, env3)
                 except warning:
                     exc_caught = 1
                 assert exc_caught, "Did not catch FutureReservedVariableWarning for `%s'" % kw
-                assert env4.has_key(kw), "`%s' variable was not set" % kw
+                assert kw in env4, "`%s' variable was not set" % kw
         finally:
             SCons.Warnings.warningAsException(old)
 
@@ -1773,8 +1773,8 @@ def exists(env):
         assert env1.Dictionary('XXX') is env2.Dictionary('XXX')
         assert 4 in env2.Dictionary('YYY')
         assert not 4 in env1.Dictionary('YYY')
-        assert env2.Dictionary('ZZZ').has_key(5)
-        assert not env1.Dictionary('ZZZ').has_key(5)
+        assert 5 in env2.Dictionary('ZZZ')
+        assert 5 not in env1.Dictionary('ZZZ')
 
         #
         env1 = self.TestEnvironment(BUILDERS = {'b1' : 1})
@@ -1950,16 +1950,16 @@ def generate(env):
         xxx, zzz = env.Dictionary('XXX', 'ZZZ')
         assert xxx == 'x'
         assert zzz == 'z'
-        assert env.Dictionary().has_key('BUILDERS')
-        assert env.Dictionary().has_key('CC')
-        assert env.Dictionary().has_key('CCFLAGS')
-        assert env.Dictionary().has_key('ENV')
+        assert 'BUILDERS' in env.Dictionary()
+        assert 'CC' in env.Dictionary()
+        assert 'CCFLAGS' in env.Dictionary()
+        assert 'ENV' in env.Dictionary()
 
         assert env['XXX'] == 'x'
         env['XXX'] = 'foo'
         assert env.Dictionary('XXX') == 'foo'
         del env['XXX']
-        assert not env.Dictionary().has_key('XXX')
+        assert 'XXX' not in env.Dictionary()
 
     def test_FindIxes(self):
         "Test FindIxes()"
@@ -3415,9 +3415,9 @@ def generate(env):
         bad_msg = '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'
         added.append('INIT')
         for x in self.reserved_variables:
-            assert not env.has_key(x), env[x]
+            assert x not in env, env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert x in env, bad_msg % x
 
         env.Append(TARGETS = 'targets',
                    SOURCES = 'sources',
@@ -3430,9 +3430,9 @@ def generate(env):
                    APPEND = 'append')
         added.append('APPEND')
         for x in self.reserved_variables:
-            assert not env.has_key(x), env[x]
+            assert x not in env, env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert x in env, bad_msg % x
 
         env.AppendUnique(TARGETS = 'targets',
                          SOURCES = 'sources',
@@ -3445,9 +3445,9 @@ def generate(env):
                          APPENDUNIQUE = 'appendunique')
         added.append('APPENDUNIQUE')
         for x in self.reserved_variables:
-            assert not env.has_key(x), env[x]
+            assert x not in env, env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert x in env, bad_msg % x
 
         env.Prepend(TARGETS = 'targets',
                     SOURCES = 'sources',
@@ -3460,9 +3460,9 @@ def generate(env):
                     PREPEND = 'prepend')
         added.append('PREPEND')
         for x in self.reserved_variables:
-            assert not env.has_key(x), env[x]
+            assert x not in env, env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert x in env, bad_msg % x
 
         env.Prepend(TARGETS = 'targets',
                     SOURCES = 'sources',
@@ -3475,9 +3475,9 @@ def generate(env):
                     PREPENDUNIQUE = 'prependunique')
         added.append('PREPENDUNIQUE')
         for x in self.reserved_variables:
-            assert not env.has_key(x), env[x]
+            assert x not in env, env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert x in env, bad_msg % x
 
         env.Replace(TARGETS = 'targets',
                     SOURCES = 'sources',
@@ -3490,9 +3490,9 @@ def generate(env):
                     REPLACE = 'replace')
         added.append('REPLACE')
         for x in self.reserved_variables:
-            assert not env.has_key(x), env[x]
+            assert x not in env, env[x]
         for x in added:
-            assert env.has_key(x), bad_msg % x
+            assert x in env, bad_msg % x
 
         copy = env.Clone(TARGETS = 'targets',
                          SOURCES = 'sources',
@@ -3504,9 +3504,9 @@ def generate(env):
                          UNCHANGED_TARGETS = 'unchanged_targets',
                          COPY = 'copy')
         for x in self.reserved_variables:
-            assert not copy.has_key(x), env[x]
+            assert x not in copy, env[x]
         for x in added + ['COPY']:
-            assert copy.has_key(x), bad_msg % x
+            assert x in copy, bad_msg % x
 
         over = env.Override({'TARGETS' : 'targets',
                              'SOURCES' : 'sources',
@@ -3518,9 +3518,9 @@ def generate(env):
                              'UNCHANGED_TARGETS' : 'unchanged_targets',
                              'OVERRIDE' : 'override'})
         for x in self.reserved_variables:
-            assert not over.has_key(x), over[x]
+            assert x not in over, over[x]
         for x in added + ['OVERRIDE']:
-            assert over.has_key(x), bad_msg % x
+            assert x in over, bad_msg % x
 
     def test_parse_flags(self):
         '''Test the Base class parse_flags argument'''
@@ -3541,7 +3541,7 @@ def generate(env):
         # all we have to show is that it gets to MergeFlags internally
         env = Environment(tools = [])
         env2 = env.Clone(parse_flags = '-X')
-        assert not env.has_key('CCFLAGS')
+        assert 'CCFLAGS' not in env
         assert env2['CCFLAGS'] == ['-X'], env2['CCFLAGS']
 
         env = Environment(tools = [], CCFLAGS=None)
@@ -3551,9 +3551,9 @@ def generate(env):
 
         env = Environment(tools = [], CPPDEFINES = 'FOO')
         env2 = env.Clone(parse_flags = '-std=c99 -X -DBAR')
-        assert not env.has_key('CFLAGS')
+        assert 'CFLAGS' not in env
         assert env2['CFLAGS']  == ['-std=c99'], env2['CFLAGS']
-        assert not env.has_key('CCFLAGS')
+        assert 'CCFLAGS' not in env
         assert env2['CCFLAGS'] == ['-X'], env2['CCFLAGS']
         assert env['CPPDEFINES'] == 'FOO', env['CPPDEFINES']
         assert env2['CPPDEFINES'] == ['FOO','BAR'], env2['CPPDEFINES']
@@ -3587,19 +3587,19 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
         env, env2, env3 = self.envs
 
         del env3['XXX']
-        assert not env.has_key('XXX'), "env has XXX?"
-        assert not env2.has_key('XXX'), "env2 has XXX?"
-        assert not env3.has_key('XXX'), "env3 has XXX?"
+        assert 'XXX' not in env, "env has XXX?"
+        assert 'XXX' not in env2, "env2 has XXX?"
+        assert 'XXX' not in env3, "env3 has XXX?"
 
         del env3['YYY']
-        assert not env.has_key('YYY'), "env has YYY?"
-        assert not env2.has_key('YYY'), "env2 has YYY?"
-        assert not env3.has_key('YYY'), "env3 has YYY?"
+        assert 'YYY' not in env, "env has YYY?"
+        assert 'YYY' not in env2, "env2 has YYY?"
+        assert 'YYY' not in env3, "env3 has YYY?"
 
         del env3['ZZZ']
-        assert not env.has_key('ZZZ'), "env has ZZZ?"
-        assert not env2.has_key('ZZZ'), "env2 has ZZZ?"
-        assert not env3.has_key('ZZZ'), "env3 has ZZZ?"
+        assert 'ZZZ' not in env, "env has ZZZ?"
+        assert 'ZZZ' not in env2, "env2 has ZZZ?"
+        assert 'ZZZ' not in env3, "env3 has ZZZ?"
 
     def test_get(self):
         """Test the OverrideEnvironment get() method"""
@@ -3617,15 +3617,15 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
     def test_has_key(self):
         """Test the OverrideEnvironment has_key() method"""
         env, env2, env3 = self.envs
-        assert env.has_key('XXX'), env.has_key('XXX')
-        assert env2.has_key('XXX'), env2.has_key('XXX')
-        assert env3.has_key('XXX'), env3.has_key('XXX')
-        assert env.has_key('YYY'), env.has_key('YYY')
-        assert env2.has_key('YYY'), env2.has_key('YYY')
-        assert env3.has_key('YYY'), env3.has_key('YYY')
-        assert not env.has_key('ZZZ'), env.has_key('ZZZ')
-        assert not env2.has_key('ZZZ'), env2.has_key('ZZZ')
-        assert env3.has_key('ZZZ'), env3.has_key('ZZZ')
+        assert 'XXX' in env, 'XXX' in env
+        assert 'XXX' in env2, 'XXX' in env2
+        assert 'XXX' in env3, 'XXX' in env3
+        assert 'YYY' in env, 'YYY' in env
+        assert 'YYY' in env2, 'YYY' in env2
+        assert 'YYY' in env3, 'YYY' in env3
+        assert 'ZZZ' not in env, 'ZZZ' in env
+        assert 'ZZZ' not in env2, 'ZZZ' in env2
+        assert 'ZZZ' in env3, 'ZZZ' in env3
 
     def test_contains(self):
         """Test the OverrideEnvironment __contains__() method"""
@@ -3812,7 +3812,7 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
         # all we have to show is that it gets to MergeFlags internally
         env = SubstitutionEnvironment()
         env2 = env.Override({'parse_flags' : '-X'})
-        assert not env.has_key('CCFLAGS')
+        assert 'CCFLAGS' not in env
         assert env2['CCFLAGS'] == ['-X'], env2['CCFLAGS']
 
         env = SubstitutionEnvironment(CCFLAGS=None)
@@ -3822,9 +3822,9 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
 
         env = SubstitutionEnvironment(CPPDEFINES = 'FOO')
         env2 = env.Override({'parse_flags' : '-std=c99 -X -DBAR'})
-        assert not env.has_key('CFLAGS')
+        assert 'CFLAGS' not in env
         assert env2['CFLAGS']  == ['-std=c99'], env2['CFLAGS']
-        assert not env.has_key('CCFLAGS')
+        assert 'CCFLAGS' not in env
         assert env2['CCFLAGS'] == ['-X'], env2['CCFLAGS']
         assert env['CPPDEFINES'] == 'FOO', env['CPPDEFINES']
         assert env2['CPPDEFINES'] == ['FOO','BAR'], env2['CPPDEFINES']

@@ -523,7 +523,7 @@ class Executor:
             idict = {}
             for i in ignore:
                 idict[i] = 1
-            sourcelist = [s for s in sourcelist if not idict.has_key(s)]
+            sourcelist = [s for s in sourcelist if s not in idict]
 
         memo_dict[key] = sourcelist
 
@@ -549,7 +549,7 @@ def GetBatchExecutor(key):
     return _batch_executors[key]
 
 def AddBatchExecutor(key, executor):
-    assert not _batch_executors.has_key(key)
+    assert key not in _batch_executors
     _batch_executors[key] = executor
 
 nullenv = None

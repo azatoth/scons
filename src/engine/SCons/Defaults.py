@@ -445,7 +445,7 @@ class Variable_Method_Caller:
             frame = sys.exc_info()[2].tb_frame.f_back
         variable = self.variable
         while frame:
-            if frame.f_locals.has_key(variable):
+            if variable in frame.f_locals:
                 v = frame.f_locals[variable]
                 if v:
                     method = getattr(v, self.method)

@@ -345,7 +345,7 @@ class CleanTask(SCons.Taskmaster.AlwaysTask):
             for t in self.targets:
                 if not t.isdir():
                     display("Removed " + str(t))
-        if SCons.Environment.CleanTargets.has_key(target):
+        if target in SCons.Environment.CleanTargets:
             files = SCons.Environment.CleanTargets[target]
             for f in files:
                 self.fs_delete(f.abspath, str(f), 0)
@@ -366,7 +366,7 @@ class CleanTask(SCons.Taskmaster.AlwaysTask):
                 else:
                     if removed:
                         display("Removed " + str(t))
-        if SCons.Environment.CleanTargets.has_key(target):
+        if target in SCons.Environment.CleanTargets:
             files = SCons.Environment.CleanTargets[target]
             for f in files:
                 self.fs_delete(f.abspath, str(f))
@@ -469,7 +469,7 @@ class FakeOptionParser:
 OptionsParser = FakeOptionParser()
 
 def AddOption(*args, **kw):
-    if not kw.has_key('default'):
+    if 'default' not in kw:
         kw['default'] = None
     result = OptionsParser.add_local_option(*args, **kw)
     return result

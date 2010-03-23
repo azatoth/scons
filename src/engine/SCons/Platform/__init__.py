@@ -93,7 +93,7 @@ def platform_module(name = platform_default()):
     our execution environment.
     """
     full_name = 'SCons.Platform.' + name
-    if not sys.modules.has_key(full_name):
+    if full_name not in sys.modules:
         if os.name == 'java':
             eval(full_name)
         else:

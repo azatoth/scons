@@ -171,7 +171,7 @@ class Tool:
         env.Append(TOOLS = [ self.name ])
         if hasattr(self, 'options'):
             import SCons.Variables
-            if not env.has_key('options'):
+            if 'options' not in env:
                 from SCons.Script import ARGUMENTS
                 env['options']=SCons.Variables.Variables(args=ARGUMENTS)
             opts=env['options']

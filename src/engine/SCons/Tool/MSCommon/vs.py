@@ -384,7 +384,7 @@ def get_vs_by_version(msvs):
     global InstalledVSMap
     global SupportedVSMap
 
-    if not SupportedVSMap.has_key(msvs):
+    if msvs not in SupportedVSMap:
         msg = "Visual Studio version %s is not supported" % repr(msvs)
         raise SCons.Errors.UserError, msg
     get_installed_visual_studios()
@@ -413,7 +413,7 @@ def get_default_version(env):
     version: str
         the default version.
     """
-    if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
+    if 'MSVS' not in env or not SCons.Util.is_Dict(env['MSVS']):
         # TODO(1.5):
         #versions = [vs.version for vs in get_installed_visual_studios()]
         versions = [vs.version for vs in get_installed_visual_studios()]
@@ -421,7 +421,7 @@ def get_default_version(env):
     else:
         versions = env['MSVS'].get('VERSIONS', [])
 
-    if not env.has_key('MSVS_VERSION'):
+    if 'MSVS_VERSION' not in env:
         if versions:
             env['MSVS_VERSION'] = versions[0] #use highest version by default
         else:

@@ -208,7 +208,7 @@ class DummyEnvironment:
         return list(map(self.subst, path))
 
     def has_key(self, key):
-        return self.Dictionary().has_key(key)
+        return key in self.Dictionary()
 
     def __getitem__(self,key):
         return self.Dictionary()[key]

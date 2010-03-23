@@ -22,14 +22,14 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
-
 """
 QMTest classes to support SCons' testing and Aegis-inspired workflow.
 
 Thanks to Stefan Seefeld for the initial code.
 """
 from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 ########################################################################
 # Imports
@@ -97,7 +97,7 @@ def get_explicit_arguments(e):
         # Do not record computed fields.
         if field.IsComputed():
             continue
-        if e.__dict__.has_key(name):
+        if name in e.__dict__:
             explicit_arguments[name] = e.__dict__[name]
 
     return explicit_arguments

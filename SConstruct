@@ -175,7 +175,7 @@ python_ver = sys.version[0:3]
 
 ENV = { 'PATH' : os.environ['PATH'] }
 for key in ['LOGNAME', 'PYTHONPATH', 'LD_LIBRARY_PATH']:
-    if os.environ.has_key(key):
+    if key in os.environ:
         ENV[key] = os.environ[key]
 
 build_dir = ARGUMENTS.get('BUILDDIR', 'build')
@@ -708,7 +708,7 @@ for p in [ scons ]:
     pkg_version = "%s-%s" % (pkg, version)
 
     src = 'src'
-    if p.has_key('src_subdir'):
+    if 'src_subdir' in p:
         src = os.path.join(src, p['src_subdir'])
 
     build = os.path.join(build_dir, pkg)
@@ -754,7 +754,7 @@ for p in [ scons ]:
 
     MANIFEST_in_list = []
 
-    if p.has_key('subpkgs'):
+    if 'subpkgs' in p:
         #
         # This package includes some sub-packages.  Read up their
         # MANIFEST.in files, and add them to our source and destination

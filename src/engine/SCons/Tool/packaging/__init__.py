@@ -106,9 +106,9 @@ def Package(env, target=None, source=None, **kw):
         kw['PACKAGETYPE'] = GetOption('package_type')
 
     if kw['PACKAGETYPE'] == None:
-        if env['BUILDERS'].has_key('Tar'):
+        if 'Tar' in env['BUILDERS']:
             kw['PACKAGETYPE']='targz'
-        elif env['BUILDERS'].has_key('Zip'):
+        elif 'Zip' in env['BUILDERS']:
             kw['PACKAGETYPE']='zip'
         else:
             raise UserError, "No type for Package() given"
@@ -140,7 +140,7 @@ def Package(env, target=None, source=None, **kw):
             default_target = default_name%kw
             target.extend( [default_target]*size_diff )
 
-        if not kw.has_key('PACKAGEROOT'):
+        if 'PACKAGEROOT' not in kw:
             kw['PACKAGEROOT'] = default_name%kw
 
     except KeyError, e:
@@ -174,8 +174,7 @@ def Package(env, target=None, source=None, **kw):
         args.remove('target')
         args.remove('source')
         # now remove any args for which we have a value in kw.
-        #args=[x for x in args if not kw.has_key(x)]
-        args=[x for x in args if not kw.has_key(x)]
+        args=[x for x in args if x not in kw]
 
         if len(args)==0:
             raise # must be a different error, so reraise

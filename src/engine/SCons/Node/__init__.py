@@ -548,7 +548,7 @@ class Node:
         deps = []
         while nodes:
             n = nodes.pop(0)
-            d = [x for x in n.get_found_includes(env, scanner, path) if not seen.has_key(x)]
+            d = [x for x in n.get_found_includes(env, scanner, path) if x not in seen]
             if d:
                 deps.extend(d)
                 for n in d:
@@ -1309,7 +1309,7 @@ class Walker:
                 node = self.stack[-1].wkids.pop(0)
                 if not self.stack[-1].wkids:
                     self.stack[-1].wkids = None
-                if self.history.has_key(node):
+                if node in self.history:
                     self.cycle_func(node, self.stack)
                 else:
                     node.wkids = copy.copy(self.kids_func(node, self.stack[-1]))

@@ -90,7 +90,7 @@ def CheckForQt(context):
     "/usr/pkg/qt3" # pkgsrc (NetBSD)
     ]
 
-  if os.environ.has_key('QTDIR'):
+  if 'QTDIR' in os.environ:
     potential_qt_dirs.insert(0, os.environ[ 'QTDIR' ])
   
   if env[ 'qt_directory' ] != "/":

@@ -94,7 +94,7 @@ class F90Scanner(SCons.Scanner.Classic):
             d = {}
             for m in defmodules:
                 d[m] = 1
-            modules = [m for m in modules if not d.has_key(m)]
+            modules = [m for m in modules if m not in d]
             #modules = self.undefinedModules(modules, defmodules)
 
             # Convert module name to a .mod filename

@@ -5532,7 +5532,7 @@ The following statements are equivalent:
 .ES
 env.SetDefault(FOO = 'foo')
 
-if not env.has_key('FOO'): env['FOO'] = 'foo'
+if 'FOO' not in env: env['FOO'] = 'foo'
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -9899,7 +9899,7 @@ as follows:
 def pf(env, dir, target, source, arg):
     top_dir = Dir('#').abspath
     results = []
-    if env.has_key('MYPATH'):
+    if 'MYPATH' in env:
         for p in env['MYPATH']:
             results.append(top_dir + os.sep + p)
     return results

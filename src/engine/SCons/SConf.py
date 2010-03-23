@@ -686,7 +686,7 @@ class SConfBase:
         if self.logfile is not None and not dryrun:
             # truncate logfile, if SConf.Configure is called for the first time
             # in a build
-            if _ac_config_logs.has_key(self.logfile):
+            if self.logfile in _ac_config_logs:
                 log_mode = "a"
             else:
                 _ac_config_logs[self.logfile] = None

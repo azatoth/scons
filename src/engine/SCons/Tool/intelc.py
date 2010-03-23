@@ -38,7 +38,7 @@ import math, sys, os.path, glob, string, re
 
 is_windows = sys.platform == 'win32'
 is_win64 = is_windows and (os.environ['PROCESSOR_ARCHITECTURE'] == 'AMD64' or 
-                           (os.environ.has_key('PROCESSOR_ARCHITEW6432') and
+                           ('PROCESSOR_ARCHITEW6432' in os.environ and
                             os.environ['PROCESSOR_ARCHITEW6432'] == 'AMD64'))
 is_linux = sys.platform == 'linux2'
 is_mac     = sys.platform == 'darwin'

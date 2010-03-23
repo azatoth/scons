@@ -107,14 +107,14 @@ class TestRuntest(TestCommon):
         appears in a normal workspace.
         """
         set_workpath_runtest = None
-        if not kw.has_key('program'):
+        if 'program' not in kw:
             kw['program'] = 'runtest.py'
             set_workpath_runtest = 1
-        if not kw.has_key('interpreter'):
+        if 'interpreter' not in kw:
             kw['interpreter'] = [python, '-tt']
-        if not kw.has_key('match'):
+        if 'match' not in kw:
             kw['match'] = match_exact
-        if not kw.has_key('workdir'):
+        if 'workdir' not in kw:
             kw['workdir'] = ''
 
         try:

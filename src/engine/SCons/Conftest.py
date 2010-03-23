@@ -229,7 +229,7 @@ int main()
 
 def _check_empty_program(context, comp, text, language, use_shared = False):
     """Return 0 on success, 1 otherwise."""
-    if not context.env.has_key(comp) or not context.env[comp]:
+    if comp not in context.env or not context.env[comp]:
         # The compiler construction variable is not set or empty
         return 1
 

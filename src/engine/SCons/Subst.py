@@ -450,9 +450,9 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
                                 return ''
                             raise_exception(e, lvars['TARGETS'], s)
                     else:
-                        if lvars.has_key(key):
+                        if key in lvars:
                             s = lvars[key]
-                        elif self.gvars.has_key(key):
+                        elif key in self.gvars:
                             s = self.gvars[key]
                         elif not NameError in AllowableExceptions:
                             raise_exception(NameError(key), lvars['TARGETS'], s)
@@ -540,7 +540,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
     # If we dropped that behavior (or found another way to cover it),
     # we could get rid of this call completely and just rely on the
     # Executor setting the variables.
-    if not lvars.has_key('TARGET'):
+    if 'TARGET' not in lvars:
         d = subst_dict(target, source)
         if d:
             lvars = lvars.copy()
@@ -665,9 +665,9 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
                                 return
                             raise_exception(e, lvars['TARGETS'], s)
                     else:
-                        if lvars.has_key(key):
+                        if key in lvars:
                             s = lvars[key]
-                        elif self.gvars.has_key(key):
+                        elif key in self.gvars:
                             s = self.gvars[key]
                         elif not NameError in AllowableExceptions:
                             raise_exception(NameError(), lvars['TARGETS'], s)
@@ -834,7 +834,7 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
     # If we dropped that behavior (or found another way to cover it),
     # we could get rid of this call completely and just rely on the
     # Executor setting the variables.
-    if not lvars.has_key('TARGET'):
+    if 'TARGET' not in lvars:
         d = subst_dict(target, source)
         if d:
             lvars = lvars.copy()

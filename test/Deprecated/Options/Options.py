@@ -107,10 +107,10 @@ print env['VALIDATE']
 print env['valid_key']
 
 # unspecified options should not be set:
-assert not env.has_key('UNSPECIFIED')
+assert 'UNSPECIFIED' not in env
 
 # undeclared options should be ignored:
-assert not env.has_key('UNDECLARED')
+assert 'UNDECLARED' not in env
 
 # calling Update() should not effect options that
 # are not declared on the options object:

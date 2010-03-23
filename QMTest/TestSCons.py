@@ -234,7 +234,7 @@ class TestSCons(TestCommon):
             pass
         else:
             os.chdir(script_dir)
-        if not kw.has_key('program'):
+        if 'program' not in kw:
             kw['program'] = os.environ.get('SCONS')
             if not kw['program']:
                 if os.path.exists('scons'):
@@ -243,11 +243,11 @@ class TestSCons(TestCommon):
                     kw['program'] = 'scons.py'
             elif not os.path.isabs(kw['program']):
                 kw['program'] = os.path.join(self.orig_cwd, kw['program'])
-        if not kw.has_key('interpreter') and not os.environ.get('SCONS_EXEC'):
+        if 'interpreter' not in kw and not os.environ.get('SCONS_EXEC'):
             kw['interpreter'] = [python, '-tt']
-        if not kw.has_key('match'):
+        if 'match' not in kw:
             kw['match'] = match_exact
-        if not kw.has_key('workdir'):
+        if 'workdir' not in kw:
             kw['workdir'] = ''
 
         # Term causing test failures due to bogus readline init
@@ -965,7 +965,7 @@ print py_ver
         use standard input without forcing every .start() call in the
         individual tests to do so explicitly.
         """
-        if not kw.has_key('stdin'):
+        if 'stdin' not in kw:
             kw['stdin'] = True
         return TestCommon.start(self, *args, **kw)
 
@@ -1056,7 +1056,7 @@ class TimeSCons(TestSCons):
 
         self.calibrate = os.environ.get('TIMESCONS_CALIBRATE', '0') != '0'
 
-        if not kw.has_key('verbose') and not self.calibrate:
+        if 'verbose' not in kw and not self.calibrate:
             kw['verbose'] = True
 
         # TODO(1.5)
@@ -1088,7 +1088,7 @@ class TimeSCons(TestSCons):
         The elapsed time to execute each build is printed after
         it has finished.
         """
-        if not kw.has_key('options') and self.variables:
+        if 'options' not in kw and self.variables:
             options = []
             for variable, value in self.variables.items():
                 options.append('%s=%s' % (variable, value))

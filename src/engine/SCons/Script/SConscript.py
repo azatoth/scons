@@ -312,7 +312,7 @@ def SConscript_exception(file=sys.stderr):
     up to where we exec the SConscript."""
     exc_type, exc_value, exc_tb = sys.exc_info()
     tb = exc_tb
-    while tb and not tb.tb_frame.f_locals.has_key(stack_bottom):
+    while tb and stack_bottom not in tb.tb_frame.f_locals:
         tb = tb.tb_next
     if not tb:
         # We did not find our exec statement, so this was actually a bug
@@ -334,7 +334,7 @@ def annotate(node):
     """Annotate a node with the stack frame describing the
     SConscript file and line number that created it."""
     tb = sys.exc_info()[2]
-    while tb and not tb.tb_frame.f_locals.has_key(stack_bottom):
+    while tb and stack_bottom not in tb.tb_frame.f_locals:
         tb = tb.tb_next
     if not tb:
         # We did not find any exec of an SConscript file: what?!
@@ -520,7 +520,7 @@ class SConsEnvironment(SCons.Environment.Base):
                         globals.update(global_exports)
                         globals.update(exports)
                     else:
-                        if exports.has_key(v):
+                        if v in exports:
                             globals[v] = exports[v]
                         else:
                             globals[v] = global_exports[v]

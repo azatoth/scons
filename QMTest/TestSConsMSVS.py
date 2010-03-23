@@ -619,7 +619,7 @@ print "self._msvs_versions =", str(SCons.Tool.MSCommon.query_versions())
         if project_guid is None:
             project_guid = "{E5466E26-0003-F18B-8F8A-BCD76C86388D}"
 
-        if os.environ.has_key('SCONS_LIB_DIR'):
+        if 'SCONS_LIB_DIR' in os.environ:
             exec_script_main = "from os.path import join; import sys; sys.path = [ r'%s' ] + sys.path; import SCons.Script; SCons.Script.main()" % os.environ['SCONS_LIB_DIR']
         else:
             exec_script_main = "from os.path import join; import sys; sys.path = [ join(sys.prefix, 'Lib', 'site-packages', 'scons-%s'), join(sys.prefix, 'scons-%s'), join(sys.prefix, 'Lib', 'site-packages', 'scons'), join(sys.prefix, 'scons') ] + sys.path; import SCons.Script; SCons.Script.main()" % (self.scons_version, self.scons_version)

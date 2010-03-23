@@ -375,7 +375,7 @@ class DummyEnv:
         return self.dict[key]
 
     def has_key(self,name):
-        return self.dict.has_key(name)
+        return name in self.dict
 
 class RegKey:
     """key class for storing an 'open' registry key"""
@@ -394,7 +394,7 @@ class RegNode:
         self.name = name
 
     def value(self,val):
-        if self.valdict.has_key(val):
+        if val in self.valdict:
             return (self.valdict[val],1)
         else:
             raise SCons.Util.RegError
@@ -433,7 +433,7 @@ class RegNode:
             keyname = name
             subkeys = ""
 
-        if not self.keydict.has_key(keyname):
+        if keyname not in self.keydict:
             self.keydict[keyname] = RegNode(keyname)
             self.keyarray.append(keyname)
 
@@ -738,7 +738,7 @@ if __name__ == "__main__":
             for k in ['VS71COMNTOOLS',
                       'VS80COMNTOOLS',
                       'VS90COMNTOOLS']:
-                if os.environ.has_key(k):
+                if k in os.environ:
                     del os.environ[k]
 
             suite = unittest.makeSuite(test_class, 'test_')

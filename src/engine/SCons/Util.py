@@ -200,7 +200,7 @@ def render_tree(root, child_func, prune=0, margin=[0], visited={}):
         else:
             retval = retval + "  "
 
-    if visited.has_key(rname):
+    if rname in visited:
         return retval + "+-[" + rname + "]\n"
 
     retval = retval + "+-" + rname + "\n"
@@ -273,7 +273,7 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
 
     children = child_func(root)
 
-    if prune and visited.has_key(rname) and children:
+    if prune and rname in visited and children:
         print ''.join(tags + margins + ['+-[', rname, ']'])
         return
 
@@ -1128,7 +1128,7 @@ class Selector(OrderedDict):
             for (k,v) in self.items():
                 if k is not None:
                     s_k = env.subst(k)
-                    if s_dict.has_key(s_k):
+                    if s_k in s_dict:
                         # We only raise an error when variables point
                         # to the same suffix.  If one suffix is literal
                         # and a variable suffix contains this literal,
@@ -1275,7 +1275,7 @@ def uniquer_hashables(seq):
     result = []
     for item in seq:
         #if not item in seen:
-        if not seen.has_key(item):
+        if item not in seen:
             seen[item] = 1
             result.append(item)
     return result

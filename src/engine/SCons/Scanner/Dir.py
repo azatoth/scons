@@ -68,7 +68,7 @@ for skip in skip_entry_list:
     skip_entry[skip] = 1
     skip_entry[SCons.Node.FS._my_normcase(skip)] = 1
 
-do_not_scan = lambda k: not skip_entry.has_key(k)
+do_not_scan = lambda k: k not in skip_entry
 
 def scan_on_disk(node, env, path=()):
     """
