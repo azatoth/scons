@@ -177,8 +177,8 @@ scons_py = os.path.join('src', 'script', 'scons.py')
 src_engine = os.path.join('src', 'engine')
 MANIFEST_in = find(os.path.join(src_engine, 'MANIFEST.in'))
 
-files = [ scons_py ] + map(lambda x: os.path.join(src_engine, x[:-1]),
-                           open(MANIFEST_in).readlines())
+files = [ scons_py ] + [os.path.join(src_engine, x[:-1])
+                        for x in open(MANIFEST_in).readlines()]
 
 for file in files:
     src = find(file)

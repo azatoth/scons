@@ -109,7 +109,7 @@ complete_time = time.time() - start_time
 expected_total_time = complete_time - overhead
 
 pattern = r'Command execution time: (\d+\.\d+) seconds'
-times = map(float, re.findall(pattern, test.stdout()))
+times = list(map(float, re.findall(pattern, test.stdout())))
 expected_command_time = reduce(lambda x, y: x + y, times, 0.0)
 
 

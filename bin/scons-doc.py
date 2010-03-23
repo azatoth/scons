@@ -303,7 +303,7 @@ def JavaCCom(target, source, env):
     #   public class FooBar
     # lines in the source file(s) and spits those out
     # to .class files named after the class.
-    tlist = map(str, target)
+    tlist = list(map(str, target))
     not_copied = {}
     for t in tlist:
        not_copied[t] = 1
@@ -311,7 +311,7 @@ def JavaCCom(target, source, env):
         contents = open(src, "rb").read()
         classes = public_class_re.findall(contents)
         for c in classes:
-            for t in filter(lambda x: string.find(x, c) != -1, tlist):
+            for t in [x for x in tlist if x.find(c) != -1]:
                 open(t, "wb").write(contents)
                 del not_copied[t]
     for t in not_copied.keys():
@@ -381,9 +381,9 @@ ToolList = {
 toollist = ToolList[platform]
 filter_tools = string.split('%(tools)s')
 if filter_tools:
-    toollist = filter(lambda x: x[0] in filter_tools, toollist)
+    toollist = [x for x in toollist if x[0] in filter_tools]
 
-toollist = map(lambda t: ToolSurrogate(*t), toollist)
+toollist = [ToolSurrogate(*t) for t in toollist]
 
 toollist.append('install')
 
@@ -718,7 +718,7 @@ class MySGML(sgmllib.SGMLParser):
             i = 0
             while lines[0][i] == ' ':
                 i = i + 1
-            lines = map(lambda l: l[i:], lines)
+            lines = [l[i:] for l in lines]
             path = f.name.replace('__ROOT__', t.rootpath)
             if not os.path.isabs(path):
                 path = t.workpath('WORK', path)

@@ -1412,7 +1412,7 @@ class Base(SubstitutionEnvironment):
     def Dictionary(self, *args):
         if not args:
             return self._dict
-        dlist = map(lambda x: self._dict[x], args)
+        dlist = [self._dict[x] for x in args]
         if len(dlist) == 1:
             dlist = dlist[0]
         return dlist
@@ -1504,9 +1504,11 @@ class Base(SubstitutionEnvironment):
             else:
                 tdlist.append((target.split(), depends.split()))
         if only_one:
-            targets = reduce(lambda x, y: x+y, map(lambda p: p[0], tdlist))
+            targets = reduce(lambda x, y: x+y, [p[0] for p in tdlist])
             if len(targets) > 1:
-                raise SCons.Errors.UserError, "More than one dependency target found in `%s':  %s" % (filename, targets)
+                raise SCons.Errors.UserError(
+                            "More than one dependency target found in `%s':  %s"
+                                            % (filename, targets))
         for target, depends in tdlist:
             self.Depends(target, depends)
 
@@ -1698,7 +1700,7 @@ class Base(SubstitutionEnvironment):
             tool = self.subst(tool)
             if toolpath is None:
                 toolpath = self.get('toolpath', [])
-            toolpath = map(self._find_toolpath_dir, toolpath)
+            toolpath = list(map(self._find_toolpath_dir, toolpath))
             tool = SCons.Tool.Tool(tool, toolpath, **kw)
         tool(self)
 
@@ -1737,7 +1739,7 @@ class Base(SubstitutionEnvironment):
             if SCons.Util.is_String(a):
                 a = self.subst(a)
             return a
-        nargs = map(subst_string, args)
+        nargs = list(map(subst_string, args))
         nkw = self.subst_kw(kw)
         return SCons.Action.Action(*nargs, **nkw)
 
@@ -1745,7 +1747,7 @@ class Base(SubstitutionEnvironment):
         nodes = self.arg2nodes(files, self.fs.Entry)
         action = SCons.Action.Action(action)
         uniq = {}
-        for executor in map(lambda n: n.get_executor(), nodes):
+        for executor in [n.get_executor() for n in nodes]:
             uniq[executor] = 1
         for executor in uniq.keys():
             executor.add_pre_action(action)
@@ -1755,7 +1757,7 @@ class Base(SubstitutionEnvironment):
         nodes = self.arg2nodes(files, self.fs.Entry)
         action = SCons.Action.Action(action)
         uniq = {}
-        for executor in map(lambda n: n.get_executor(), nodes):
+        for executor in [n.get_executor() for n in nodes]:
             uniq[executor] = 1
         for executor in uniq.keys():
             executor.add_post_action(action)
@@ -1961,7 +1963,7 @@ class Base(SubstitutionEnvironment):
         return SCons.Util.flatten(sequence)
 
     def GetBuildPath(self, files):
-        result = map(str, self.arg2nodes(files, self.fs.Entry))
+        result = list(map(str, self.arg2nodes(files, self.fs.Entry)))
         if SCons.Util.is_List(files):
             return result
         else:
@@ -2089,7 +2091,7 @@ class Base(SubstitutionEnvironment):
               in the list are not split at spaces.
         In all cases, the function returns a list of Nodes and strings."""
         if SCons.Util.is_List(arg):
-            return map(self.subst, arg)
+            return list(map(self.subst, arg))
         elif SCons.Util.is_String(arg):
             return self.subst(arg).split()
         else:

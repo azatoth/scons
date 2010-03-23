@@ -576,11 +576,11 @@ class SConsTimer:
         and returns the next run number after the largest it finds.
         """
         x = re.compile(re.escape(prefix) + '-([0-9]+).*')
-        matches = map(lambda e: x.match(e), os.listdir(dir))
+        matches = [x.match(e) for e in os.listdir(dir)]
         matches = [_f for _f in matches if _f]
         if not matches:
             return 0
-        run_numbers = map(lambda m: int(m.group(1)), matches)
+        run_numbers = [int(m.group(1)) for m in matches]
         return int(max(run_numbers)) + 1
 
     def gnuplot_results(self, results, fmt='%s %.3f'):

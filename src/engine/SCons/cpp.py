@@ -90,7 +90,7 @@ del op_list
 override = {
     'if'                        : 'if(?!def)',
 }
-l = map(lambda x: override.get(x, x), Table.keys())
+l = [override.get(x, x) for x in Table.keys()]
 
 
 # Turn the list of expressions into one big honkin' regular expression
@@ -291,8 +291,7 @@ class PreProcessor:
         global CPP_Expression, Table
         contents = line_continuations.sub('', contents)
         cpp_tuples = CPP_Expression.findall(contents)
-        return  map(lambda m: (m[0],) + Table[m[0]].match(m[1]).groups(),
-                    cpp_tuples)
+        return  [(m[0],) + Table[m[0]].match(m[1]).groups() for m in cpp_tuples]
 
     def __call__(self, file):
         """

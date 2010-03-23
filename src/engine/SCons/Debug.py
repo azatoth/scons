@@ -63,7 +63,7 @@ def string_to_classes(s):
 
 def fetchLoggedInstances(classes="*"):
     classnames = string_to_classes(classes)
-    return map(lambda cn: (cn, len(tracked_classes[cn])), classnames)
+    return [(cn, len(tracked_classes[cn])) for cn in classnames]
   
 def countLoggedInstances(classes, file=sys.stdout):
     for classname in string_to_classes(classes):
@@ -176,7 +176,7 @@ shorten_list = [
 if os.sep != '/':
    def platformize(t):
        return (t[0].replace('/', os.sep), t[1])
-   shorten_list = map(platformize, shorten_list)
+   shorten_list = list(map(platformize, shorten_list))
    del platformize
 
 def func_shorten(func_tuple):

@@ -154,9 +154,9 @@ sys_attributes = [
 
 def get_sys_values():
     sys_attributes.sort()
-    result = map(lambda k: (k, getattr(sys, k, _null)), sys_attributes)
+    result = [(k, getattr(sys, k, _null)) for k in sys_attributes]
     result = [t for t in result if not t[1] is _null]
-    result = map(lambda t: t[0] + '=' + repr(t[1]), result)
+    result = [t[0] + '=' + repr(t[1]) for t in result]
     return '\n '.join(result)
 
 module_attributes = [
@@ -169,9 +169,9 @@ module_attributes = [
 
 def get_module_info(module):
     module_attributes.sort()
-    result = map(lambda k: (k, getattr(module, k, _null)), module_attributes)
+    result = [(k, getattr(module, k, _null)) for k in module_attributes]
     result = [t for t in result if not t[1] is _null]
-    result = map(lambda t: t[0] + '=' + repr(t[1]), result)
+    result = [t[0] + '=' + repr(t[1]) for t in result]
     return '\n '.join(result)
 
 environ_keys = [
@@ -215,9 +215,9 @@ environ_keys = [
 
 def get_environment():
     environ_keys.sort()
-    result = map(lambda k: (k, os.environ.get(k, _null)), environ_keys)
+    result = [(k, os.environ.get(k, _null)) for k in environ_keys]
     result = [t for t in result if not t[1] is _null]
-    result = map(lambda t: t[0] + '-' + t[1], result)
+    result = [t[0] + '-' + t[1] for t in result]
     return '\n '.join(result)
 
 class SConsXMLResultStream(XMLResultStream):

@@ -703,7 +703,7 @@ if __name__ == '__main__':
         except NameError:
             pass
         names.sort()
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

@@ -307,8 +307,8 @@ try:
 except NameError:
     def zip(*lists):
         result = []
-        for i in xrange(min(map(len, lists))):
-            result.append(tuple(map(lambda l: l[i], lists)))
+        for i in xrange(min(list(map(len, lists)))):
+            result.append(tuple([l[i] for l in lists]))
         return result
 
 class Collector:
@@ -316,7 +316,7 @@ class Collector:
         self.entries = [top]
     def __call__(self, arg, dirname, names):
         pathjoin = lambda n: os.path.join(dirname, n)
-        self.entries.extend(map(pathjoin, names))
+        self.entries.extend(list(map(pathjoin, names)))
 
 def _caller(tblist, skip):
     string = ""
@@ -472,15 +472,15 @@ else:
         for op, a1, a2, b1, b2 in sm.get_opcodes():
             if op == 'delete':
                 result.append("%sd%d" % (comma(a1, a2), b1))
-                result.extend(map(lambda l: '< ' + l, a[a1:a2]))
+                result.extend(['< ' + l for l in a[a1:a2]])
             elif op == 'insert':
                 result.append("%da%s" % (a1, comma(b1, b2)))
-                result.extend(map(lambda l: '> ' + l, b[b1:b2]))
+                result.extend(['> ' + l for l in b[b1:b2]])
             elif op == 'replace':
                 result.append("%sc%s" % (comma(a1, a2), comma(b1, b2)))
-                result.extend(map(lambda l: '< ' + l, a[a1:a2]))
+                result.extend(['< ' + l for l in a[a1:a2]])
                 result.append('---')
-                result.extend(map(lambda l: '> ' + l, b[b1:b2]))
+                result.extend(['> ' + l for l in b[b1:b2]])
         return result
 
 def diff_re(a, b, fromfile='', tofile='',

@@ -30,7 +30,7 @@ except AttributeError:
     def zip(*lists):
         result = []
         for i in xrange(len(lists[0])):
-            result.append(tuple(map(lambda l: l[i], lists)))
+            result.append(tuple([l[i] for l in lists]))
         return result
     __builtin__.zip = zip
 
@@ -171,7 +171,7 @@ try:
 except AttributeError:
     # Pre-1.6 Python has no sys.version_info
     version_string = sys.version.split()[0]
-    version_ints = map(int, version_string.split('.'))
+    version_ints = list(map(int, version_string.split('.')))
     sys.version_info = tuple(version_ints + ['final', 0])
 
 def python_version_string():

@@ -751,8 +751,7 @@ class _ActionActionTestCase(unittest.TestCase):
         sum = act1 + act2
         assert isinstance(sum, SCons.Action.ListAction), str(sum)
         assert len(sum.list) == 3, len(sum.list)
-        assert map(lambda x: isinstance(x, SCons.Action.ActionBase),
-                   sum.list) == [ 1, 1, 1 ]
+        assert [isinstance(x, SCons.Action.ActionBase) for x in sum.list] == [ 1, 1, 1 ]
 
         sum = act1 + act1
         assert isinstance(sum, SCons.Action.ListAction), str(sum)
@@ -1049,7 +1048,7 @@ class CommandActionTestCase(unittest.TestCase):
         cmd3 = r'%s %s %s ${TARGETS}' % (_python_, act_py, outfile)
 
         act = SCons.Action.CommandAction(cmd3)
-        r = act(map(DummyNode, ['aaa', 'bbb']), [], env.Clone())
+        r = act(list(map(DummyNode, ['aaa', 'bbb'])), [], env.Clone())
         assert r == 0
         c = test.read(outfile, 'r')
         assert c == "act.py: 'aaa' 'bbb'\n", c
@@ -1331,8 +1330,8 @@ class CommandActionTestCase(unittest.TestCase):
         # that scheme, then all of the '__t1__' and '__s6__' file names
         # in the asserts below would change to 't1' and 's6' and the
         # like.
-        t = map(DummyNode, ['t1', 't2', 't3', 't4', 't5', 't6'])
-        s = map(DummyNode, ['s1', 's2', 's3', 's4', 's5', 's6'])
+        t = list(map(DummyNode, ['t1', 't2', 't3', 't4', 't5', 't6']))
+        s = list(map(DummyNode, ['s1', 's2', 's3', 's4', 's5', 's6']))
         env = Environment()
 
         a = SCons.Action.CommandAction(["$TARGET"])
@@ -1527,7 +1526,7 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
         def f_local(target, source, env, for_signature, LocalFunc=LocalFunc):
             return SCons.Action.Action(LocalFunc, varlist=['XYZ'])
 
-        matches_foo = map(lambda x: x + "foo", func_matches)
+        matches_foo = [x + "foo" for x in func_matches]
 
         a = self.factory(f_global)
         c = a.get_contents(target=[], source=[], env=env)
@@ -1675,7 +1674,7 @@ class FunctionActionTestCase(unittest.TestCase):
         c = a.get_contents(target=[], source=[], env=Environment())
         assert c in func_matches, repr(c)
 
-        matches_foo = map(lambda x: x + "foo", func_matches)
+        matches_foo = [x + "foo" for x in func_matches]
 
         a = factory(GlobalFunc, varlist=['XYZ'])
         c = a.get_contents(target=[], source=[], env=Environment())
@@ -1891,7 +1890,7 @@ class LazyActionTestCase(unittest.TestCase):
         c = a.get_contents(target=[], source=[], env=env)
         assert c in func_matches, repr(c)
 
-        matches_foo = map(lambda x: x + "foo", func_matches)
+        matches_foo = [x + "foo" for x in func_matches]
 
         env = Environment(FOO = factory(GlobalFunc, varlist=['XYZ']))
         c = a.get_contents(target=[], source=[], env=env)
@@ -2095,7 +2094,7 @@ if __name__ == "__main__":
                  ActionCompareTestCase ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

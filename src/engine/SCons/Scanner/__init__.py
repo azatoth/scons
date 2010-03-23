@@ -359,7 +359,7 @@ class Classic(Current):
             includes = self.find_include_names (node)
             # Intern the names of the include files. Saves some memory
             # if the same header is included many times.
-            node.includes = map(SCons.Util.silent_intern, includes)
+            node.includes = list(map(SCons.Util.silent_intern, includes))
 
         # This is a hand-coded DSU (decorate-sort-undecorate, or
         # Schwartzian transform) pattern.  The sort key is the raw name
@@ -382,7 +382,7 @@ class Classic(Current):
                 nodes.append((sortkey, n))
 
         nodes.sort()
-        nodes = map(lambda pair: pair[1], nodes)
+        nodes = [pair[1] for pair in nodes]
         return nodes
 
 class ClassicCPP(Classic):

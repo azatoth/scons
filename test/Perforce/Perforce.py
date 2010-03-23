@@ -65,11 +65,11 @@ class TestPerforce(TestSCons.TestSCons):
                 if ' ' in a:
                     a = '"%s"' % a
                 return a
-            args = map(quote_space, [self.p4d, '-q', '-d'] + \
+            args = list(map(quote_space, [self.p4d, '-q', '-d'] + \
                                     self.p4portflags + \
                                     ['-J', 'Journal',
                                      '-L', 'Log',
-                                     '-r', self.workpath('depot')])
+                                     '-r', self.workpath('depot')]))
 
             # We don't use self.run() because the TestCmd logic will hang
             # waiting for the daemon to exit, even when we pass it
@@ -207,7 +207,7 @@ test.write(['import', 'sub', 'fff.in'], "import/sub/fff.in\n")
 os.environ["PWD"] = test.workpath('import')
 paths = [ 'aaa.in', 'bbb.in', 'ccc.in',
           'sub/ddd.in', 'sub/eee.in', 'sub/fff.in', 'sub/SConscript' ]
-paths = map(os.path.normpath, paths)
+paths = list(map(os.path.normpath, paths))
 args = '-c testclient1 add -t binary %s' % ' '.join(paths)
 test.p4(args, chdir='import')
 
@@ -239,10 +239,9 @@ test.p4('-c testclient1 submit -i', stdin=changespec)
 SConstruct_contents = test.substitute("""
 def cat(env, source, target):
     target = str(target[0])
-    source = map(str, source)
     f = open(target, "wb")
     for src in source:
-        f.write(open(src, "rb").read())
+        f.write(open(str(src), "rb").read())
     f.close()
 env = Environment(tools = ['default', 'Perforce'],
                   BUILDERS={'Cat':Builder(action=cat)},

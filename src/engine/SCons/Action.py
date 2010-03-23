@@ -284,7 +284,7 @@ def _function_contents(func):
 
     #xxx = [_object_contents(x.cell_contents) for x in closure]
     try:
-        xxx = map(lambda x: _object_contents(x.cell_contents), closure)
+        xxx = [_object_contents(x.cell_contents) for x in closure]
     except AttributeError:
         xxx = []
     contents.append(',(' + ','.join(xxx) + ')')
@@ -782,7 +782,7 @@ class CommandAction(_ActionAction):
         if executor:
             target = executor.get_all_targets()
             source = executor.get_all_sources()
-        cmd_list, ignore, silent = self.process(target, map(rfile, source), env, executor)
+        cmd_list, ignore, silent = self.process(target, list(map(rfile, source)), env, executor)
 
         # Use len() to filter out any "command" that's zero-length.
         for cmd_line in filter(len, cmd_list):
@@ -885,7 +885,9 @@ class CommandGeneratorAction(ActionBase):
                  show=_null, execute=_null, chdir=_null, executor=None):
         act = self._generate(target, source, env, 0, executor)
         if act is None:
-            raise UserError("While building `%s': Cannot deduce file extension from source files: %s" % (repr(map(str, target)), repr(map(str, source))))
+            raise UserError("While building `%s': "
+                            "Cannot deduce file extension from source files: %s"
+                % (repr(list(map(str, target))), repr(list(map(str, source)))))
         return act(target, source, env, exitstatfunc, presub,
                    show, execute, chdir, executor)
 
@@ -1043,7 +1045,7 @@ class FunctionAction(_ActionAction):
             if executor:
                 target = executor.get_all_targets()
                 source = executor.get_all_sources()
-            rsources = map(rfile, source)
+            rsources = list(map(rfile, source))
             try:
                 result = self.execfunction(target=target, source=rsources, env=env)
             except KeyboardInterrupt, e:
@@ -1093,36 +1095,34 @@ class FunctionAction(_ActionAction):
 
 class ListAction(ActionBase):
     """Class for lists of other actions."""
-    def __init__(self, list):
+    def __init__(self, actionlist):
         if __debug__: logInstanceCreation(self, 'Action.ListAction')
         def list_of_actions(x):
             if isinstance(x, ActionBase):
                 return x
             return Action(x)
-        self.list = map(list_of_actions, list)
+        self.list = list(map(list_of_actions, actionlist))
         # our children will have had any varlist
         # applied; we don't need to do it again
         self.varlist = ()
         self.targets = '$TARGETS'
 
     def genstring(self, target, source, env):
-        return '\n'.join(map(lambda a: a.genstring(target, source, env),
-                               self.list))
+        return '\n'.join([a.genstring(target, source, env) for a in self.list])
 
     def __str__(self):
         return '\n'.join(map(str, self.list))
 
     def presub_lines(self, env):
         return SCons.Util.flatten_sequence(
-            map(lambda a: a.presub_lines(env), self.list))
+            [a.presub_lines(env) for a in self.list])
 
     def get_presig(self, target, source, env):
         """Return the signature contents of this action list.
 
         Simple concatenation of the signatures of the elements.
         """
-        return "".join(map(lambda x: x.get_contents(target, source, env),
-                               self.list))
+        return "".join([x.get_contents(target, source, env) for x in self.list])
 
     def __call__(self, target, source, env, exitstatfunc=_null, presub=_null,
                  show=_null, execute=_null, chdir=_null, executor=None):
@@ -1198,8 +1198,7 @@ class ActionCaller:
         return self.parent.convert(s)
 
     def subst_args(self, target, source, env):
-        return map(lambda x: self.subst(x, target, source, env),
-                   self.args)
+        return [self.subst(x, target, source, env) for x in self.args]
 
     def subst_kw(self, target, source, env):
         kw = {}

@@ -43,10 +43,9 @@ Execute(Copy(File('d2.out'), 'd2.in'))
 Execute(Copy('d3.out', File('f3.in')))
 def cat(env, source, target):
     target = str(target[0])
-    source = map(str, source)
     f = open(target, "wb")
     for src in source:
-        f.write(open(src, "rb").read())
+        f.write(open(str(src), "rb").read())
     f.close()
 Cat = Action(cat)
 env = Environment()

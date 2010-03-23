@@ -152,7 +152,7 @@ class CmdStringHolder(UserString.UserString):
         else:
             return self.data
 
-def escape_list(list, escape_func):
+def escape_list(mylist, escape_func):
     """Escape a list of arguments by running the specified escape_func
     on every object in the list that has an escape() method."""
     def escape(obj, escape_func=escape_func):
@@ -162,7 +162,7 @@ def escape_list(list, escape_func):
             return obj
         else:
             return e(escape_func)
-    return map(escape, list)
+    return list(map(escape, mylist))
 
 class NLWrapper:
     """A wrapper class that delays turning a list of sources or targets
@@ -183,14 +183,14 @@ class NLWrapper:
     def _return_nodelist(self):
         return self.nodelist
     def _gen_nodelist(self):
-        list = self.list
-        if list is None:
-            list = []
-        elif not is_Sequence(list):
-            list = [list]
+        mylist = self.list
+        if mylist is None:
+            mylist = []
+        elif not is_Sequence(mylist):
+            mylist = [mylist]
         # The map(self.func) call is what actually turns
         # a list into appropriate proxies.
-        self.nodelist = SCons.Util.NodeList(map(self.func, list))
+        self.nodelist = SCons.Util.NodeList(list(map(self.func, mylist)))
         self._create_nodelist = self._return_nodelist
         return self.nodelist
     _create_nodelist = _gen_nodelist
@@ -478,7 +478,7 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
             elif is_Sequence(s):
                 def func(l, conv=self.conv, substitute=self.substitute, lvars=lvars):
                     return conv(substitute(l, lvars))
-                return map(func, s)
+                return list(map(func, s))
             elif callable(s):
                 try:
                     s = s(target=lvars['TARGETS'],

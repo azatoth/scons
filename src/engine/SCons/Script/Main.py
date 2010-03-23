@@ -501,7 +501,7 @@ class CountStats(Stats):
     def do_print(self):
         stats_table = {}
         for s in self.stats:
-            for n in map(lambda t: t[0], s):
+            for n in [t[0] for t in s]:
                 stats_table[n] = [0, 0, 0, 0]
         i = 0
         for s in self.stats:
@@ -518,8 +518,8 @@ class CountStats(Stats):
         fmt2 = ''.join(pre + [' %7d']*l + post)
         labels = self.labels[:l]
         labels.append(("", "Class"))
-        self.outfp.write(fmt1 % tuple(map(lambda x: x[0], labels)))
-        self.outfp.write(fmt1 % tuple(map(lambda x: x[1], labels)))
+        self.outfp.write(fmt1 % tuple([x[0] for x in labels]))
+        self.outfp.write(fmt1 % tuple([x[1] for x in labels]))
         for k in keys:
             r = stats_table[k][:l] + [k]
             self.outfp.write(fmt2 % tuple(r))

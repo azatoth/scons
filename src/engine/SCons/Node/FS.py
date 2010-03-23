@@ -459,7 +459,7 @@ def set_diskcheck(list):
         dc.set(list)
 
 def diskcheck_types():
-    return map(lambda dc: dc.type, diskcheckers)
+    return [dc.type for dc in diskcheckers]
 
 
 
@@ -753,7 +753,7 @@ class Base(SCons.Node.Node):
         try: i = path_elems.index(dir)
         except ValueError: pass
         else: path_elems = path_elems[i+1:]
-        path_elems = map(lambda n: n.name, path_elems)
+        path_elems = [n.name for n in path_elems]
         return os.sep.join(path_elems)
 
     def set_src_builder(self, builder):
@@ -1574,7 +1574,7 @@ class Dir(Base):
             i = self.path_elements.index(other) + 1
 
             path_elems = ['..'] * (len(self.path_elements) - i) \
-                         + map(lambda n: n.name, other.path_elements[i:])
+                         + [n.name for n in other.path_elements[i:]]
              
             result = os.sep.join(path_elems)
 
@@ -1963,7 +1963,7 @@ class Dir(Base):
         for dir in list:
             r = dir._glob1(basename, ondisk, source, strings)
             if strings:
-                r = map(lambda x: os.path.join(str(dir), x), r)
+                r = [os.path.join(str(dir), x) for x in r]
             result.extend(r)
         result.sort(lambda a, b: cmp(str(a), str(b)))
         return result
@@ -1989,9 +1989,8 @@ class Dir(Base):
             # We use the .name attribute from the Node because the keys of
             # the dir.entries dictionary are normalized (that is, all upper
             # case) on case-insensitive systems like Windows.
-            #node_names = [ v.name for k, v in dir.entries.items() if k not in ('.', '..') ]
-            entry_names = [n for n in dir.entries.keys() if n not in ('.', '..')]
-            node_names = map(lambda n: dir.entries[n].name, entry_names)
+            node_names = [ v.name for k, v in dir.entries.items()
+                           if k not in ('.', '..') ]
             names.extend(node_names)
             if not strings:
                 # Make sure the working directory (self) actually has
@@ -2037,7 +2036,7 @@ class Dir(Base):
             return names
 
         #return [ self.entries[_my_normcase(n)] for n in names ]
-        return map(lambda n:  self.entries[_my_normcase(n)], names)
+        return [self.entries[_my_normcase(n)] for n in names]
 
 class RootDir(Dir):
     """A class for the root directory of a file system.
@@ -2207,7 +2206,7 @@ class FileBuildInfo(SCons.Node.BuildInfoBase):
             except AttributeError:
                 pass
             else:
-                setattr(self, attr, map(node_to_str, val))
+                setattr(self, attr, list(map(node_to_str, val)))
     def convert_from_sconsign(self, dir, name):
         """
         Converts a newly-read FileBuildInfo object for in-SCons use
@@ -2287,7 +2286,7 @@ class File(Base):
         directory of this file."""
         # TODO(1.5)
         # return [self.Dir(p) for p in pathlist]
-        return map(lambda p: self.Dir(p), pathlist)
+        return [self.Dir(p) for p in pathlist]
 
     def File(self, name):
         """Create a file node named 'name' relative to
@@ -2602,7 +2601,7 @@ class File(Base):
         if scanner:
             # result = [n.disambiguate() for n in scanner(self, env, path)]
             result = scanner(self, env, path)
-            result = map(lambda N: N.disambiguate(), result)
+            result = [N.disambiguate() for N in result]
         else:
             result = []
 
@@ -3018,7 +3017,7 @@ class File(Base):
         children = self.children()
         executor = self.get_executor()
         # sigs = [n.get_cachedir_csig() for n in children]
-        sigs = map(lambda n: n.get_cachedir_csig(), children)
+        sigs = [n.get_cachedir_csig() for n in children]
         sigs.append(SCons.Util.MD5signature(executor.get_contents()))
         sigs.append(self.path)
         result = self.cachesig = SCons.Util.MD5collect(sigs)

@@ -197,7 +197,7 @@ class TempFileMunge:
         if not prefix:
             prefix = '@'
 
-        args = map(SCons.Subst.quote_spaces, cmd[1:])
+        args = list(map(SCons.Subst.quote_spaces, cmd[1:]))
         os.write(fd, " ".join(args) + "\n")
         os.close(fd)
         # XXX Using the SCons.Action.print_actions value directly

@@ -91,7 +91,7 @@ def Subdirs(env, dirlist):
         env.SConscript(file, "env")
 
 def _subconf_list(dirlist):
-    return map(lambda x: os.path.join(x, "SConscript"), dirlist.split())
+    return [os.path.join(x, "SConscript") for x in dirlist.split()]
 
 def StaticLibMergeMembers(local_env, libname, hackpath, files):
     for file in files.split():
@@ -243,7 +243,7 @@ lib_name = "g"
 lib_fullname = env.subst("${LIBPREFIX}g${LIBSUFFIX}")
 lib_srcs = "libg_1.c libg_2.c libg_3.c".split()
 import re
-lib_objs = map(lambda x: re.sub("\.c$", ".o", x), lib_srcs)
+lib_objs = [re.sub("\.c$", ".o", x) for x in lib_srcs]
 
 Mylib.ExportHeader(env, exported_hdrs)
 Mylib.ExportLib(env, lib_fullname)

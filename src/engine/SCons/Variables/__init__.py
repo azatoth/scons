@@ -108,7 +108,7 @@ class Variables:
         """
         Returns the keywords for the options
         """
-        return map(lambda o: o.key, self.options)
+        return [o.key for o in self.options]
 
     def Add(self, key, help="", default=None, validator=None, converter=None, **kw):
         """

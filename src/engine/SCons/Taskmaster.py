@@ -1001,7 +1001,7 @@ class Taskmaster:
 
         # TODO(1.5)
         #nclist = [ (n, find_cycle([n], set())) for n in self.pending_children ]
-        nclist = map(lambda n: (n, find_cycle([n], set())), self.pending_children)
+        nclist = [(n, find_cycle([n], set())) for n in self.pending_children]
 
         # TODO(1.5)
         #genuine_cycles = [

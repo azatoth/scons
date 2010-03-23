@@ -831,7 +831,7 @@ class Node:
         except TypeError, e:
             e = e.args[0]
             if SCons.Util.is_List(e):
-                s = map(str, e)
+                s = list(map(str, e))
             else:
                 s = str(e)
             raise SCons.Errors.UserError("attempted to add a non-Node dependency to %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
@@ -848,7 +848,7 @@ class Node:
         except TypeError, e:
             e = e.args[0]
             if SCons.Util.is_List(e):
-                s = map(str, e)
+                s = list(map(str, e))
             else:
                 s = str(e)
             raise SCons.Errors.UserError("attempted to ignore a non-Node dependency of %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
@@ -862,7 +862,7 @@ class Node:
         except TypeError, e:
             e = e.args[0]
             if SCons.Util.is_List(e):
-                s = map(str, e)
+                s = list(map(str, e))
             else:
                 s = str(e)
             raise SCons.Errors.UserError("attempted to add a non-Node as source of %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
@@ -1216,9 +1216,9 @@ class Node:
 
         removed = [x for x in old_bkids if not x in new_bkids]
         if removed:
-            removed = map(stringify, removed)
+            removed = list(map(stringify, removed))
             fmt = "`%s' is no longer a dependency\n"
-            lines.extend(map(lambda s: fmt % s, removed))
+            lines.extend([fmt % s for s in removed])
 
         for k in new_bkids:
             if not k in old_bkids:
@@ -1228,8 +1228,8 @@ class Node:
 
         if len(lines) == 0 and old_bkids != new_bkids:
             lines.append("the dependency order changed:\n" +
-                         "%sold: %s\n" % (' '*15, map(stringify, old_bkids)) +
-                         "%snew: %s\n" % (' '*15, map(stringify, new_bkids)))
+                         "%sold: %s\n" % (' '*15, list(map(stringify, old_bkids))) +
+                         "%snew: %s\n" % (' '*15, list(map(stringify, new_bkids))))
 
         if len(lines) == 0:
             def fmt_with_title(title, strlines):
@@ -1266,7 +1266,7 @@ except TypeError:
 else:
     class NodeList(UserList.UserList):
         def __str__(self):
-            return str(map(str, self.data))
+            return str(list(map(str, self.data)))
 
 def get_children(node, parent): return node.children()
 def ignore_cycle(node, stack): pass

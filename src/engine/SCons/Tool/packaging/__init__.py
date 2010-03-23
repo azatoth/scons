@@ -125,7 +125,7 @@ def Package(env, target=None, source=None, **kw):
         except ImportError, e:
             raise EnvironmentError("packager %s not available: %s"%(type,str(e)))
 
-    packagers=map(load_packager, PACKAGETYPE)
+    packagers=list(map(load_packager, PACKAGETYPE))
 
     # set up targets and the PACKAGEROOT
     try:
@@ -223,7 +223,7 @@ def options(opts):
     opts.AddVariables(
         EnumVariable( 'PACKAGETYPE',
                      'the type of package to create.',
-                     None, allowed_values=map( str, __all__ ),
+                     None, allowed_values=list(map( str, __all__ )),
                      ignorecase=2
                   )
     )

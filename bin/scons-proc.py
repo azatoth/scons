@@ -150,12 +150,12 @@ class SCons_XML_to_XML(SCons_XML):
             for chunk in v.summary.body:
                 f.write(str(chunk))
             if v.sets:
-                s = map(lambda x: '&cv-link-%s;' % x, v.sets)
+                s = ['&cv-link-%s;' % x for x in v.sets]
                 f.write('<para>\n')
                 f.write('Sets:  ' + ', '.join(s) + '.\n')
                 f.write('</para>\n')
             if v.uses:
-                u = map(lambda x: '&cv-link-%s;' % x, v.uses)
+                u = ['&cv-link-%s;' % x for x in v.uses]
                 f.write('<para>\n')
                 f.write('Uses:  ' + ', '.join(u) + '.\n')
                 f.write('</para>\n')
@@ -200,7 +200,7 @@ class SCons_XML_to_man(SCons_XML):
             chunks.extend(self.mansep())
             for n in self.initial_chunks(v.name):
                 chunks.append('.IP %s\n' % n)
-            chunks.extend(map(str, v.summary.body))
+            chunks.extend(list(map(str, v.summary.body)))
 
         body = ''.join(chunks)
         body = body.replace('<programlisting>', '.ES')

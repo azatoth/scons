@@ -123,7 +123,7 @@ def match_splitext(path, suffixes = []):
     if suffixes:
         matchsuf = [S for S in suffixes if path[-len(S):] == S]
         if matchsuf:
-            suf = max(map(None, map(len, matchsuf), matchsuf))[1]
+            suf = max(list(map(None, list(map(len, matchsuf)), matchsuf)))[1]
             return [path[:-len(suf)], path[-len(suf):]]
     return SCons.Util.splitext(path)
 
@@ -156,14 +156,17 @@ class DictCmdGenerator(SCons.Util.Selector):
             for src in map(str, source):
                 my_ext = match_splitext(src, suffixes)[1]
                 if ext and my_ext != ext:
-                    raise UserError("While building `%s' from `%s': Cannot build multiple sources with different extensions: %s, %s" % (repr(map(str, target)), src, ext, my_ext))
+                    raise UserError("While building `%s' from `%s': Cannot build multiple sources with different extensions: %s, %s"
+                             % (repr(list(map(str, target))), src, ext, my_ext))
                 ext = my_ext
         else:
             ext = match_splitext(str(source[0]), self.src_suffixes())[1]
 
         if not ext:
             #return ext
-            raise UserError("While building `%s': Cannot deduce file extension from source files: %s" % (repr(map(str, target)), repr(map(str, source))))
+            raise UserError("While building `%s': "
+                            "Cannot deduce file extension from source files: %s"
+                 % (repr(list(map(str, target))), repr(list(map(str, source)))))
 
         try:
             ret = SCons.Util.Selector.__call__(self, env, source, ext)
@@ -171,7 +174,7 @@ class DictCmdGenerator(SCons.Util.Selector):
             raise UserError("Ambiguous suffixes after environment substitution: %s == %s == %s" % (e[0], e[1], e[2]))
         if ret is None:
             raise UserError("While building `%s' from `%s': Don't know how to build from a source file with suffix `%s'.  Expected a suffix in this list: %s." % \
-                            (repr(map(str, target)), repr(map(str, source)), ext, repr(self.keys())))
+                            (repr(list(map(str, target))), repr(list(map(str, source))), ext, repr(self.keys())))
         return ret
 
 class CallableSelector(SCons.Util.Selector):
@@ -308,15 +311,15 @@ def _node_errors(builder, env, tlist, slist):
                     raise UserError, msg
                 # TODO(batch):  list constructed each time!
                 if t.get_executor().get_all_targets() != tlist:
-                    msg = "Two different target lists have a target in common: %s  (from %s and from %s)" % (t, map(str, t.get_executor().get_all_targets()), map(str, tlist))
+                    msg = "Two different target lists have a target in common: %s  (from %s and from %s)" % (t, list(map(str, t.get_executor().get_all_targets())), list(map(str, tlist)))
                     raise UserError, msg
             elif t.sources != slist:
-                msg = "Multiple ways to build the same target were specified for: %s  (from %s and from %s)" % (t, map(str, t.sources), map(str, slist))
+                msg = "Multiple ways to build the same target were specified for: %s  (from %s and from %s)" % (t, list(map(str, t.sources)), list(map(str, slist)))
                 raise UserError, msg
 
     if builder.single_source:
         if len(slist) > 1:
-            raise UserError, "More than one source given for single-source builder: targets=%s sources=%s" % (map(str,tlist), map(str,slist))
+            raise UserError, "More than one source given for single-source builder: targets=%s sources=%s" % (list(map(str,tlist)), list(map(str,slist)))
 
 class EmitterProxy:
     """This is a callable class that can act as a
@@ -574,7 +577,7 @@ class BuilderBase:
             if not self.action:
                 fmt = "Builder %s must have an action to build %s."
                 raise UserError, fmt % (self.get_name(env or self.env),
-                                        map(str,tlist))
+                                        list(map(str,tlist)))
             key = self.action.batch_key(env or self.env, tlist, slist)
             if key:
                 try:
@@ -619,7 +622,7 @@ class BuilderBase:
                     return f
                 if not SCons.Util.is_List(source):
                     source = [source]
-                source = map(prependDirIfRelative, source)
+                source = list(map(prependDirIfRelative, source))
                 del kw['srcdir']
             if self.overrides:
                 env_kw = self.overrides.copy()
@@ -658,7 +661,7 @@ class BuilderBase:
             src_suffix = []
         elif not SCons.Util.is_List(src_suffix):
             src_suffix = [ src_suffix ]
-        self.src_suffix = map(lambda suf: callable(suf) and suf or self.adjust_suffix(suf), src_suffix)
+        self.src_suffix = [callable(suf) and suf or self.adjust_suffix(suf) for suf in src_suffix]
 
     def get_src_suffix(self, env):
         """Get the first src_suffix in the list of src_suffixes."""
@@ -721,7 +724,7 @@ class BuilderBase:
         lengths = list(set(map(len, src_suffixes)))
 
         def match_src_suffix(name, src_suffixes=src_suffixes, lengths=lengths):
-            node_suffixes = map(lambda l: name[-l:], lengths)
+            node_suffixes = [name[-l:] for l in lengths]
             for suf in src_suffixes:
                 if suf in node_suffixes:
                     return suf
@@ -816,7 +819,7 @@ class BuilderBase:
                 return memo_dict[memo_key]
             except KeyError:
                 pass
-        suffixes = map(lambda x: env.subst(x), self.src_suffix)
+        suffixes = [env.subst(x) for x in self.src_suffix]
         memo_dict[memo_key] = suffixes
         return suffixes
 

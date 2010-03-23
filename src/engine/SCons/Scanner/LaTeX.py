@@ -59,11 +59,11 @@ def modify_env_var(env, var, abspath):
         if SCons.Util.is_List(env[var]):
             #TODO(1.5)
             #env.PrependENVPath(var, [os.path.abspath(str(p)) for p in env[var]])
-            env.PrependENVPath(var, map(lambda p: os.path.abspath(str(p)), env[var]))
+            env.PrependENVPath(var, [os.path.abspath(str(p)) for p in env[var]])
         else:
             # Split at os.pathsep to convert into absolute path
             #TODO(1.5) env.PrependENVPath(var, [os.path.abspath(p) for p in str(env[var]).split(os.pathsep)])
-            env.PrependENVPath(var, map(lambda p: os.path.abspath(p), str(env[var]).split(os.pathsep)))
+            env.PrependENVPath(var, [os.path.abspath(p) for p in str(env[var]).split(os.pathsep)])
     except KeyError:
         pass
 
@@ -255,7 +255,7 @@ class LaTeX(SCons.Scanner.Base):
                 #return map(lambda e: filename+e, self.graphics_extensions + TexGraphics)
                 # use the line above to find dependency for PDF builder when only .eps figure is present
                 # Since it will be found if the user tell scons how to make the pdf figure leave it out for now.
-                return map(lambda e: filename+e, self.graphics_extensions)
+                return [filename+e for e in self.graphics_extensions]
         return [filename]
 
     def sort_key(self, include):
@@ -367,7 +367,7 @@ class LaTeX(SCons.Scanner.Base):
 
         #
         nodes.sort()
-        nodes = map(lambda pair: pair[1], nodes)
+        nodes = [pair[1] for pair in nodes]
         return nodes
 
 # Local Variables:

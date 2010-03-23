@@ -889,24 +889,24 @@ class NodeTestCase(unittest.TestCase):
         d2.found_includes = [e, f]
         f.found_includes = [g]
         deps = node.get_implicit_deps(env, s, target)
-        assert deps == [d1, d2, e, f, g], map(str, deps)
+        assert deps == [d1, d2, e, f, g], list(map(str, deps))
 
         # Recursive scanning eliminates duplicates
         e.found_includes = [f]
         deps = node.get_implicit_deps(env, s, target)
-        assert deps == [d1, d2, e, f, g], map(str, deps)
+        assert deps == [d1, d2, e, f, g], list(map(str, deps))
 
         # Scanner method can select specific nodes to recurse
         def no_fff(nodes):
             return [n for n in nodes if str(n)[0] != 'f']
         s.recurse_nodes = no_fff
         deps = node.get_implicit_deps(env, s, target)
-        assert deps == [d1, d2, e, f], map(str, deps)
+        assert deps == [d1, d2, e, f], list(map(str, deps))
 
         # Scanner method can short-circuit recursing entirely
         s.recurse_nodes = lambda nodes: []
         deps = node.get_implicit_deps(env, s, target)
-        assert deps == [d1, d2], map(str, deps)
+        assert deps == [d1, d2], list(map(str, deps))
 
     def test_get_env_scanner(self):
         """Test fetching the environment scanner for a Node
@@ -1306,7 +1306,7 @@ if __name__ == "__main__":
                  NodeListTestCase ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

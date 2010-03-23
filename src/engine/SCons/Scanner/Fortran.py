@@ -99,7 +99,7 @@ class F90Scanner(SCons.Scanner.Classic):
 
             # Convert module name to a .mod filename
             suffix = env.subst('$FORTRANMODSUFFIX')
-            modules = map(lambda x: x.lower() + suffix, modules)
+            modules = [x.lower() + suffix for x in modules]
             # Remove unique items from the list
             mods_and_includes = SCons.Util.unique(includes+modules)
             node.includes = mods_and_includes
@@ -124,7 +124,7 @@ class F90Scanner(SCons.Scanner.Classic):
                 nodes.append((sortkey, n))
 
         nodes.sort()
-        nodes = map(lambda pair: pair[1], nodes)
+        nodes = [pair[1] for pair in nodes]
         return nodes
 
 def FortranScan(path_variable="FORTRANPATH"):

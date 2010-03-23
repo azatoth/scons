@@ -57,7 +57,7 @@ if bad_drive is None:
 test.write('SConstruct', """
 def cat(env, source, target):
     target = str(target[0])
-    source = map(str, source)
+    source = list(map(str, source))
     print 'cat(%%s) > %%s' %% (source, target)
     f = open(target, "wb")
     for src in source:

@@ -46,8 +46,8 @@ env.Textfile('foo1a.txt', data + [''])
 env.Textfile('foo2a.txt', data + [''], LINESEPARATOR='|*')
 
 # recreate the list with the data wrapped in Value()
-data0 = map(Value, data0)
-data = map(Value, data)
+data0 = list(map(Value, data0))
+data = list(map(Value, data))
 data[2] = data0
 
 env.Substfile('bar1', data)
@@ -69,18 +69,18 @@ foo2aText = foo2Text + '|*'
 
 test.up_to_date(arguments = '.')
 
-files = map(test.workpath, (
+files = list(map(test.workpath, (
             'foo1.txt', 'foo2.txt', 'foo1a.txt', 'foo2a.txt',
             'bar1',     'bar2',     'bar1a.txt', 'bar2a.txt',
-        ))
+        )))
 def check_times():
     # make sure the files didn't get rewritten, because nothing changed:
-    before = map(os.path.getmtime, files)
+    before = list(map(os.path.getmtime, files))
     # introduce a small delay, to make the test valid
     test.sleep()
     # should still be up-to-date
     test.up_to_date(arguments = '.')
-    after = map(os.path.getmtime, files)
+    after = list(map(os.path.getmtime, files))
     test.fail_test(before != after)
 
 # make sure that the file content is as expected

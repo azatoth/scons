@@ -161,10 +161,10 @@ class Executor:
         ut = []
         for b in self.batches:
             if b.targets[0].is_up_to_date():
-                us.extend(map(rfile, b.sources))
+                us.extend(list(map(rfile, b.sources)))
                 ut.extend(b.targets)
             else:
-                cs.extend(map(rfile, b.sources))
+                cs.extend(list(map(rfile, b.sources)))
                 ct.extend(b.targets)
         self._changed_sources_list = SCons.Util.NodeList(cs)
         self._changed_targets_list = SCons.Util.NodeList(ct)
@@ -190,14 +190,14 @@ class Executor:
         return rfile(self.batches[0].sources[0]).get_subst_proxy()
 
     def _get_sources(self, *args, **kw):
-        return SCons.Util.NodeList(map(lambda n: rfile(n).get_subst_proxy(), self.get_all_sources()))
+        return SCons.Util.NodeList([rfile(n).get_subst_proxy() for n in self.get_all_sources()])
 
     def _get_target(self, *args, **kw):
         #return SCons.Util.NodeList([self.batches[0].targets[0].get_subst_proxy()])
         return self.batches[0].targets[0].get_subst_proxy()
 
     def _get_targets(self, *args, **kw):
-        return SCons.Util.NodeList(map(lambda n: n.get_subst_proxy(), self.get_all_targets()))
+        return SCons.Util.NodeList([n.get_subst_proxy() for n in self.get_all_targets()])
 
     def _get_unchanged_sources(self, *args, **kw):
         try:
@@ -406,7 +406,10 @@ class Executor:
 
     def my_str(self):
         env = self.get_build_env()
-        return "\n".join(map(lambda action: action.genstring(self.get_all_targets(), self.get_all_sources(), env), self.get_action_list()))
+        return "\n".join([action.genstring(self.get_all_targets(),
+                                           self.get_all_sources(),
+                                           env)
+                          for action in self.get_action_list()])
 
 
     def __str__(self):
@@ -429,7 +432,10 @@ class Executor:
         except KeyError:
             pass
         env = self.get_build_env()
-        result = "".join(map(lambda action: action.get_contents(self.get_all_targets(), self.get_all_sources(), env), self.get_action_list()))
+        result = "".join([action.get_contents(self.get_all_targets(),
+                                              self.get_all_sources(),
+                                              env)
+                          for action in self.get_action_list()])
         self._memo['get_contents'] = result
         return result
 

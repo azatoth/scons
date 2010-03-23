@@ -130,28 +130,28 @@ class MyTestSCons(TestSCons.TestSCons):
         return 'Installed SCons library modules into %s' % lib
 
     def lib_paths(self, lib_dir):
-        return map(lambda p: os.path.join(lib_dir, 'SCons', p), self._lib_modules)
+        return [os.path.join(lib_dir, 'SCons', p) for p in self._lib_modules]
 
     def scripts_line(self):
         return 'Installed SCons scripts into %s' % self.bin_dir
 
     def base_script_paths(self):
         scripts = self._base_scripts
-        return map(self.prepend_bin_dir, scripts)
+        return list(map(self.prepend_bin_dir, scripts))
 
     def version_script_paths(self):
         scripts = self._version_scripts
-        return map(self.prepend_bin_dir, scripts)
+        return list(map(self.prepend_bin_dir, scripts))
 
     def bat_script_paths(self):
         scripts = self._bat_scripts + self._bat_version_scripts
-        return map(self.prepend_bat_dir, scripts)
+        return list(map(self.prepend_bat_dir, scripts))
 
     def man_page_line(self):
         return 'Installed SCons man pages into %s' % self.man_dir
 
     def man_page_paths(self):
-        return map(self.prepend_man_dir, self._man_pages)
+        return list(map(self.prepend_man_dir, self._man_pages))
 
 
     def must_have_installed(self, paths):

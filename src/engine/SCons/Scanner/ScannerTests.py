@@ -50,7 +50,7 @@ class DummyEnvironment(UserDict.UserDict):
     def subst_path(self, path, target=None, source=None, conv=None):
         if type(path) != type([]):
             path = [path]
-        return map(self.subst, path)
+        return list(map(self.subst, path))
     def get_factory(self, factory):
         return factory or self.fs.File
 
@@ -128,7 +128,7 @@ class BaseTestCase(unittest.TestCase):
         self.deps = deps
         path = scanner.path(env)
         scanned = scanner(filename, env, path)
-        scanned_strs = map(lambda x: str(x), scanned)
+        scanned_strs = [str(x) for x in scanned]
 
         self.failUnless(self.filename == filename, "the filename was passed incorrectly")
         self.failUnless(self.env == env, "the environment was passed incorrectly")
@@ -596,7 +596,7 @@ def suite():
                ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     return suite
 
 if __name__ == "__main__":

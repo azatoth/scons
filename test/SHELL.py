@@ -56,7 +56,7 @@ def stripquote(s):
         s = s[1:-1]
     return s
 args = stripquote(sys.argv[2]).split()
-args = map(stripquote, args)
+args = list(map(stripquote, args))
 ofp = open(args[2], 'wb')
 for f in args[3:] + ['extra.txt']:
     ofp.write(open(f, 'rb').read())

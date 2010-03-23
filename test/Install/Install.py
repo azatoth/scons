@@ -50,10 +50,9 @@ _SUBDIR_f4_out = os.path.join('$SUBDIR', 'f4.out')
 test.write(['work', 'SConstruct'], """\
 def cat(env, source, target):
     target = str(target[0])
-    source = map(str, source)
     f = open(target, "wb")
     for src in source:
-        f.write(open(src, "rb").read())
+        f.write(open(str(src), "rb").read())
     f.close()
 
 def my_install(dest, source, env):

@@ -351,7 +351,7 @@ class SimpleTagCompiler:
             try:
                 #int_values_for_key = [ (get_country_code(k),v) for k,v in values.items() if strip_country_code(k) == key ]
                 x = [t for t in values.items() if strip_country_code(t[0]) == key]
-                int_values_for_key = map(lambda t: (get_country_code(t[0]),t[1]), x)
+                int_values_for_key = [(get_country_code(t[0]),t[1]) for t in x]
                 for v in int_values_for_key:
                     str = str + replacement % v
             except KeyError, e:

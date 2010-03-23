@@ -389,7 +389,7 @@ class SubstitutionTestCase(unittest.TestCase):
                               DummyNode,
                               target=targets,
                               source=sources)
-        names = map(lambda n: n.name, nodes)
+        names = [n.name for n in nodes]
         assert names == ['t1-a', 's1-b', 't2-c', 's2-d'], names
 
     def test_gvars(self):
@@ -576,16 +576,16 @@ class SubstitutionTestCase(unittest.TestCase):
         assert r == ['foo', 'xxx', 'bar'], r
 
         r = env.subst_path(['$FOO', '$LIST', '$BAR'])
-        assert map(str, r) == ['foo', 'one two', 'bar'], r
+        assert list(map(str, r)) == ['foo', 'one two', 'bar'], r
 
         r = env.subst_path(['$FOO', '$TARGET', '$SOURCE', '$BAR'])
         assert r == ['foo', '', '', 'bar'], r
 
         r = env.subst_path(['$FOO', '$TARGET', '$BAR'], target=MyNode('ttt'))
-        assert map(str, r) == ['foo', 'ttt', 'bar'], r
+        assert list(map(str, r)) == ['foo', 'ttt', 'bar'], r
 
         r = env.subst_path(['$FOO', '$SOURCE', '$BAR'], source=MyNode('sss'))
-        assert map(str, r) == ['foo', 'sss', 'bar'], r
+        assert list(map(str, r)) == ['foo', 'sss', 'bar'], r
 
         n = MyObj()
 
@@ -829,7 +829,7 @@ sys.exit(0)
         assert d['LIBPATH'] == ['/usr/fax',
                                 'foo',
                                 'C:\\Program Files\\ASCEND'], d['LIBPATH']
-        LIBS = map(str, d['LIBS'])
+        LIBS = list(map(str, d['LIBS']))
         assert LIBS == ['xxx', 'yyy', 'ascend'], (d['LIBS'], LIBS)
         assert d['LINKFLAGS'] == ['-Wl,-link', '-pthread',
                                   '-mno-cygwin', '-mwindows',
@@ -1087,39 +1087,39 @@ env4.builder1.env, env3)
         env = Environment()
         try: del env['SCANNERS']
         except KeyError: pass
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [None, None, None, None, None], s
 
         env = self.TestEnvironment(SCANNERS = [])
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [None, None, None, None, None], s
 
         env.Replace(SCANNERS = [s1])
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [s1, s1, None, None, None], s
 
         env.Append(SCANNERS = [s2])
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [s1, s1, None, s2, None], s
 
         env.AppendUnique(SCANNERS = [s3])
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [s1, s1, None, s2, s3], s
 
         env = env.Clone(SCANNERS = [s2])
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [None, None, None, s2, None], s
 
         env['SCANNERS'] = [s1]
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [s1, s1, None, None, None], s
 
         env.PrependUnique(SCANNERS = [s2, s1])
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [s1, s1, None, s2, None], s
 
         env.Prepend(SCANNERS = [s3])
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [s1, s1, None, s3, s3], s
 
         # Verify behavior of case-insensitive suffix matches on Windows.
@@ -1128,21 +1128,21 @@ env4.builder1.env, env3)
         env = Environment(SCANNERS = [s1, s2, s3],
                           PLATFORM = 'linux')
 
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [s1, s1, None, s2, s3], s
 
-        s = map(env.get_scanner, uc_suffixes)
+        s = list(map(env.get_scanner, uc_suffixes))
         assert s == [None, None, None, None, None], s
 
         env['PLATFORM'] = 'win32'
 
-        s = map(env.get_scanner, uc_suffixes)
+        s = list(map(env.get_scanner, uc_suffixes))
         assert s == [s1, s1, None, s2, s3], s
 
         # Verify behavior for a scanner returning None (on Windows
         # where we might try to perform case manipulation on None).
         env.Replace(SCANNERS = [s4])
-        s = map(env.get_scanner, suffixes)
+        s = list(map(env.get_scanner, suffixes))
         assert s == [None, None, None, None, None], s
 
     def test_ENV(self):
@@ -1309,7 +1309,7 @@ env4.builder1.env, env3)
             if arg not in ('$(','$)','-I'):
                 return np(str(arg))
             return arg
-        flags = map(normalize_if_path, flags)
+        flags = list(map(normalize_if_path, flags))
         assert flags == expect, flags
 
     def test_platform(self):
@@ -2102,8 +2102,8 @@ f5: \
         del dlist[:]
 
         env.ParseDepends('$SINGLE', only_one=1)
-        t = map(str, tlist)
-        d = map(str, dlist)
+        t = list(map(str, tlist))
+        d = list(map(str, dlist))
         assert t == ['f0'], t
         assert d == ['d1', 'd2', 'd3'], d
 
@@ -2111,8 +2111,8 @@ f5: \
         del dlist[:]
 
         env.ParseDepends(test.workpath('multiple'))
-        t = map(str, tlist)
-        d = map(str, dlist)
+        t = list(map(str, tlist))
+        d = list(map(str, dlist))
         assert t == ['f1', 'f2', 'f3', 'f4', 'f5'], t
         assert d == ['foo', 'bar', 'abc', 'def', 'ghi', 'jkl', 'mno'], d
 
@@ -2630,37 +2630,37 @@ def generate(env):
 
         tgt = env.Alias('export_alias', [ 'asrc1', '$FOO' ])[0]
         assert str(tgt) == 'export_alias', tgt
-        assert len(tgt.sources) == 2, map(str, tgt.sources)
-        assert str(tgt.sources[0]) == 'asrc1', map(str, tgt.sources)
-        assert str(tgt.sources[1]) == 'kkk', map(str, tgt.sources)
+        assert len(tgt.sources) == 2, list(map(str, tgt.sources))
+        assert str(tgt.sources[0]) == 'asrc1', list(map(str, tgt.sources))
+        assert str(tgt.sources[1]) == 'kkk', list(map(str, tgt.sources))
 
         n = env.Alias(tgt, source = ['$BAR', 'asrc4'])[0]
         assert n is tgt, n
-        assert len(tgt.sources) == 4, map(str, tgt.sources)
-        assert str(tgt.sources[2]) == 'lll', map(str, tgt.sources)
-        assert str(tgt.sources[3]) == 'asrc4', map(str, tgt.sources)
+        assert len(tgt.sources) == 4, list(map(str, tgt.sources))
+        assert str(tgt.sources[2]) == 'lll', list(map(str, tgt.sources))
+        assert str(tgt.sources[3]) == 'asrc4', list(map(str, tgt.sources))
 
         n = env.Alias('$EA', 'asrc5')[0]
         assert n is tgt, n
-        assert len(tgt.sources) == 5, map(str, tgt.sources)
-        assert str(tgt.sources[4]) == 'asrc5', map(str, tgt.sources)
+        assert len(tgt.sources) == 5, list(map(str, tgt.sources))
+        assert str(tgt.sources[4]) == 'asrc5', list(map(str, tgt.sources))
 
         t1, t2 = env.Alias(['t1', 't2'], ['asrc6', 'asrc7'])
         assert str(t1) == 't1', t1
         assert str(t2) == 't2', t2
-        assert len(t1.sources) == 2, map(str, t1.sources)
-        assert str(t1.sources[0]) == 'asrc6', map(str, t1.sources)
-        assert str(t1.sources[1]) == 'asrc7', map(str, t1.sources)
-        assert len(t2.sources) == 2, map(str, t2.sources)
-        assert str(t2.sources[0]) == 'asrc6', map(str, t2.sources)
-        assert str(t2.sources[1]) == 'asrc7', map(str, t2.sources)
+        assert len(t1.sources) == 2, list(map(str, t1.sources))
+        assert str(t1.sources[0]) == 'asrc6', list(map(str, t1.sources))
+        assert str(t1.sources[1]) == 'asrc7', list(map(str, t1.sources))
+        assert len(t2.sources) == 2, list(map(str, t2.sources))
+        assert str(t2.sources[0]) == 'asrc6', list(map(str, t2.sources))
+        assert str(t2.sources[1]) == 'asrc7', list(map(str, t2.sources))
 
         tgt = env.Alias('add', 's1')
         tgt = env.Alias('add', 's2')[0]
-        s = map(str, tgt.sources)
+        s = list(map(str, tgt.sources))
         assert s == ['s1', 's2'], s
         tgt = env.Alias(tgt, 's3')[0]
-        s = map(str, tgt.sources)
+        s = list(map(str, tgt.sources))
         assert s == ['s1', 's2', 's3'], s
 
         tgt = env.Alias('act', None, "action1")[0]
@@ -2763,20 +2763,20 @@ def generate(env):
         fff = env.arg2nodes('fff')[0]
 
         t = env.Clean('foo', 'aaa')
-        l = map(str, CT[foo])
+        l = list(map(str, CT[foo]))
         assert l == ['aaa'], l
 
         t = env.Clean(foo, ['$BAR', 'ccc'])
-        l = map(str, CT[foo])
+        l = list(map(str, CT[foo]))
         assert l == ['aaa', 'bbb', 'ccc'], l
 
         eee = env.arg2nodes('eee')[0]
 
         t = env.Clean('$FOO', 'ddd')
-        l = map(str, CT[fff])
+        l = list(map(str, CT[fff]))
         assert l == ['ddd'], l
         t = env.Clean(fff, [eee, 'fff'])
-        l = map(str, CT[fff])
+        l = list(map(str, CT[fff]))
         assert l == ['ddd', 'eee', 'fff'], l
 
     def test_Command(self):
@@ -2787,25 +2787,25 @@ def generate(env):
         assert t.builder is not None
         assert t.builder.action.__class__.__name__ == 'CommandAction'
         assert t.builder.action.cmd_list == 'buildfoo $target $source'
-        assert 'foo1.in' in map(lambda x: x.path, t.sources)
-        assert 'foo2.in' in map(lambda x: x.path, t.sources)
+        assert 'foo1.in' in [x.path for x in t.sources]
+        assert 'foo2.in' in [x.path for x in t.sources]
 
         sub = env.fs.Dir('sub')
         t = env.Command(target='bar.out', source='sub',
                         action='buildbar $target $source')[0]
-        assert 'sub' in map(lambda x: x.path, t.sources)
+        assert 'sub' in [x.path for x in t.sources]
 
         def testFunc(env, target, source):
             assert str(target[0]) == 'foo.out'
-            assert 'foo1.in' in map(str, source) and 'foo2.in' in map(str, source), map(str, source)
+            assert 'foo1.in' in list(map(str, source)) and 'foo2.in' in list(map(str, source)), list(map(str, source))
             return 0
         t = env.Command(target='foo.out', source=['foo1.in','foo2.in'],
                         action=testFunc)[0]
         assert t.builder is not None
         assert t.builder.action.__class__.__name__ == 'FunctionAction'
         t.build()
-        assert 'foo1.in' in map(lambda x: x.path, t.sources)
-        assert 'foo2.in' in map(lambda x: x.path, t.sources)
+        assert 'foo1.in' in [x.path for x in t.sources]
+        assert 'foo2.in' in [x.path for x in t.sources]
 
         x = []
         def test2(baz, x=x):
@@ -2822,7 +2822,7 @@ def generate(env):
                         action = 'foo',
                         X = 'xxx')[0]
         assert str(t) == 'xxx.out', str(t)
-        assert 'xxx.in' in map(lambda x: x.path, t.sources)
+        assert 'xxx.in' in [x.path for x in t.sources]
 
         env = self.TestEnvironment(source_scanner = 'should_not_find_this')
         t = env.Command(target='file.out', source='file.in',
@@ -3975,7 +3975,7 @@ if __name__ == "__main__":
                  EnvironmentVariableTestCase ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

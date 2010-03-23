@@ -126,12 +126,11 @@ else:
         # check only /foo/lib/scons*.
         prefs.append(sys.prefix)
 
-    temp = map(lambda x: os.path.join(x, 'lib'), prefs)
-    temp.extend(map(lambda x: os.path.join(x,
+    temp = [os.path.join(x, 'lib') for x in prefs]
+    temp.extend([os.path.join(x,
                                            'lib',
                                            'python' + sys.version[:3],
-                                           'site-packages'),
-                           prefs))
+                                           'site-packages') for x in prefs])
     prefs = temp
 
     # Add the parent directory of the current python's library to the
@@ -151,8 +150,8 @@ else:
 
 # Look first for 'scons-__version__' in all of our preference libs,
 # then for 'scons'.
-libs.extend(map(lambda x: os.path.join(x, scons_version), prefs))
-libs.extend(map(lambda x: os.path.join(x, 'scons'), prefs))
+libs.extend([os.path.join(x, scons_version) for x in prefs])
+libs.extend([os.path.join(x, 'scons') for x in prefs])
 
 sys.path = libs + sys.path
 
@@ -286,7 +285,7 @@ def nodeinfo_cooked(name, ninfo, prefix=""):
         field_list = []
     if '\n' in name:
         name = repr(name)
-    outlist = [name+':'] + [_f for _f in map(lambda x: field(x, ninfo, Verbose), field_list) if _f]
+    outlist = [name+':'] + [_f for _f in [field(x, ninfo, Verbose) for x in field_list] if _f]
     if Verbose:
         sep = '\n    ' + prefix
     else:

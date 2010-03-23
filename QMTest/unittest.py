@@ -354,8 +354,8 @@ def makeSuite(testCaseClass, prefix='test', sortUsing=cmp):
        prefix. The cases are sorted by their function names
        using the supplied comparison function, which defaults to 'cmp'.
     """
-    cases = map(testCaseClass,
-                getTestCaseNames(testCaseClass, prefix, sortUsing))
+    cases = list(map(testCaseClass,
+                getTestCaseNames(testCaseClass, prefix, sortUsing)))
     return TestSuite(cases)
 
 
@@ -596,9 +596,10 @@ class VerboseTextTestRunner:
         self.stream.writeln()
         if not result.wasSuccessful():
             self.stream.write("FAILED (")
-            failed, errored = map(len, (result.failures, result.errors))
+            failed = len(result.failures)
             if failed:
                 self.stream.write("failures=%d" % failed)
+            errored = len(result.errors)
             if errored:
                 if failed: self.stream.write(", ")
                 self.stream.write("errors=%d" % errored)

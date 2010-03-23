@@ -86,7 +86,7 @@ def t(arg, dirname, names):
     try: names.remove('.svn')
     except ValueError: pass
     names = list(filter(arg, names))
-    arg.extend(map(lambda n: os.path.join(dirname, n), names))
+    arg.extend([os.path.join(dirname, n) for n in names])
 
 os.path.walk('src', t, src_Tests_py_tests)
 os.path.walk('src', t, src_test_tests)

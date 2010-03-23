@@ -55,11 +55,11 @@ stdout = ignored_re.sub('', test.stdout())
 
 lines = stdout.split('\n')
 lines = [x for x in lines if x[:3] == '  -']
-lines = map(lambda x: x[3:], lines)
-lines = map(lambda x: x[0] == '-' and x[1:] or x, lines)
-options = map(lambda x: x.split()[0], lines)
-options = map(lambda x: x[-1] == ',' and x[:-1] or x, options)
-lowered = map(lambda x: x.lower(), options)
+lines = [x[3:] for x in lines]
+lines = [x[0] == '-' and x[1:] or x for x in lines]
+options = [x.split()[0] for x in lines]
+options = [x[-1] == ',' and x[:-1] or x for x in options]
+lowered = [x.lower() for x in options]
 sorted = lowered[:]
 sorted.sort()
 if lowered != sorted:

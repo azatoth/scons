@@ -333,7 +333,7 @@ except AttributeError:
 else:
     def spawn_it(command_args):
         command = command_args[0]
-        command_args = map(escape, command_args)
+        command_args = list(map(escape, command_args))
         return os.spawnv(os.P_WAIT, command, command_args)
 
 class Base:
@@ -627,7 +627,7 @@ if args:
 elif testlistfile:
     tests = open(testlistfile, 'r').readlines()
     tests = [x for x in tests if x[0] != '#']
-    tests = map(lambda x: x[:-1], tests)
+    tests = [x[:-1] for x in tests]
 elif all and not qmtest:
     # Find all of the SCons functional tests in the local directory
     # tree.  This is anything under the 'src' subdirectory that ends
@@ -700,7 +700,7 @@ if qmtest:
         qmtest_args.append(rs)
 
     if format == '--aegis':
-        tests = map(lambda x: x.replace(cwd+os.sep, ''), tests)
+        tests = [x.replace(cwd+os.sep, '') for x in tests]
     else:
         os.environ['SCONS'] = os.path.join(cwd, 'src', 'script', 'scons.py')
 
@@ -718,7 +718,7 @@ if qmtest:
 #except OSError:
 #    pass
 
-tests = map(Test, tests)
+tests = list(map(Test, tests))
 
 class Unbuffered:
     def __init__(self, file):
@@ -787,21 +787,21 @@ if len(tests) != 1 and execute_tests:
             sys.stdout.write("\nPassed the following test:\n")
         else:
             sys.stdout.write("\nPassed the following %d tests:\n" % len(passed))
-        paths = map(lambda x: x.path, passed)
+        paths = [x.path for x in passed]
         sys.stdout.write("\t" + "\n\t".join(paths) + "\n")
     if fail:
         if len(fail) == 1:
             sys.stdout.write("\nFailed the following test:\n")
         else:
             sys.stdout.write("\nFailed the following %d tests:\n" % len(fail))
-        paths = map(lambda x: x.path, fail)
+        paths = [x.path for x in fail]
         sys.stdout.write("\t" + "\n\t".join(paths) + "\n")
     if no_result:
         if len(no_result) == 1:
             sys.stdout.write("\nNO RESULT from the following test:\n")
         else:
             sys.stdout.write("\nNO RESULT from the following %d tests:\n" % len(no_result))
-        paths = map(lambda x: x.path, no_result)
+        paths = [x.path for x in no_result]
         sys.stdout.write("\t" + "\n\t".join(paths) + "\n")
 
 if outputfile:

@@ -318,7 +318,7 @@ class SConsInteractiveCmd(cmd.Cmd):
             if l[:len(spaces)] == spaces:
                 l = l[len(spaces):]
             return l
-        lines = map(strip_spaces, lines)
+        lines = list(map(strip_spaces, lines))
         return '\n'.join(lines)
 
     def do_exit(self, argv):

@@ -103,7 +103,7 @@ def scan_in_memory(node, env, path=()):
         return []
     entry_list = list(filter(do_not_scan, entries.keys()))
     entry_list.sort()
-    return map(lambda n: entries[n], entry_list)
+    return [entries[n] for n in entry_list]
 
 # Local Variables:
 # tab-width:4

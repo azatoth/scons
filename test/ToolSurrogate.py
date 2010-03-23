@@ -81,7 +81,7 @@ ToolList = {
 }
 
 platform = ARGUMENTS['platform']
-tools = map(lambda t: ToolSurrogate(*t), ToolList[platform])
+tools = [ToolSurrogate(*t) for t in ToolList[platform]]
 
 env = Environment(tools=tools, PROGSUFFIX='.exe', OBJSUFFIX='.obj')
 env.Program('foo.c')

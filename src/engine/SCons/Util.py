@@ -126,11 +126,11 @@ class NodeList(UserList):
         return iter(self.data)
 
     def __call__(self, *args, **kwargs):
-        result = map(lambda x: x(*args, **kwargs), self.data)
+        result = [x(*args, **kwargs) for x in self.data]
         return self.__class__(result)
 
     def __getattr__(self, name):
-        result = map(lambda x: getattr(x, name), self.data)
+        result = [getattr(x, name) for x in self.data]
         return self.__class__(result)
 
 
@@ -269,7 +269,7 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
 
     def MMM(m):
         return ["  ","| "][m]
-    margins = map(MMM, margin[:-1])
+    margins = list(map(MMM, margin[:-1]))
 
     children = child_func(root)
 
@@ -598,7 +598,7 @@ def _semi_deepcopy_dict(x):
 d[types.DictionaryType] = _semi_deepcopy_dict
 
 def _semi_deepcopy_list(x):
-    return map(semi_deepcopy, x)
+    return list(map(semi_deepcopy, x))
 d[types.ListType] = _semi_deepcopy_list
 
 def _semi_deepcopy_tuple(x):
@@ -888,7 +888,7 @@ def PrependPath(oldpath, newpath, sep = os.pathsep,
         newpaths = newpath
 
     if canonicalize:
-        newpaths=map(canonicalize, newpaths)
+        newpaths=list(map(canonicalize, newpaths))
 
     if not delete_existing:
         # First uniquify the old paths, making sure to 
@@ -969,7 +969,7 @@ def AppendPath(oldpath, newpath, sep = os.pathsep,
         newpaths = newpath
 
     if canonicalize:
-        newpaths=map(canonicalize, newpaths)
+        newpaths=list(map(canonicalize, newpaths))
 
     if not delete_existing:
         # add old paths to result, then
@@ -1107,7 +1107,7 @@ class OrderedDict(UserDict):
             self.__setitem__(key, val)
 
     def values(self):
-        return map(self.get, self._keys)
+        return list(map(self.get, self._keys))
 
 class Selector(OrderedDict):
     """A callable ordered dictionary that maps file suffixes to

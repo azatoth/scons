@@ -79,7 +79,7 @@ def emit_java_classes(target, source, env):
                 # them so our target and source lists are determinate.
                 java_files.sort()
                 mydir = dirnode.Dir(dirname)
-                java_paths = map(lambda f: mydir.File(f), java_files)
+                java_paths = [mydir.File(f) for f in java_files]
                 for jp in java_paths:
                      arg[jp] = True
 

@@ -96,28 +96,26 @@ def _swigEmitter(target, source, env):
                 mnames, directors = _find_modules(src)
             if directors:
                 _add_director_header_targets(target, env)
-            python_files = map(lambda m: m + ".py", mnames)
+            python_files = [m + ".py" for m in mnames]
             outdir = env.subst('$SWIGOUTDIR', target=target, source=source)
             # .py files should be generated in SWIGOUTDIR if specified,
             # otherwise in the same directory as the target
             if outdir:
-                python_files = map(lambda j:
-                                   env.fs.File(os.path.join(outdir, j)),
-                                   python_files)
+                python_files = [env.fs.File(os.path.join(outdir, j)) for j in python_files]
             else:
-                python_files = map(lambda m: target[0].dir.File(m), python_files)
+                python_files = [target[0].dir.File(m) for m in python_files]
             target.extend(python_files)
         if "-java" in flags:
             if mnames is None:
                 mnames, directors = _find_modules(src)
             if directors:
                 _add_director_header_targets(target, env)
-            java_files = map(lambda m: [m + ".java", m + "JNI.java"], mnames)
+            java_files = [[m + ".java", m + "JNI.java"] for m in mnames]
             java_files = SCons.Util.flatten(java_files)
             outdir = env.subst('$SWIGOUTDIR', target=target, source=source)
             if outdir:
-                 java_files = map(lambda j: os.path.join(outdir, j), java_files)
-            java_files = map(env.fs.File, java_files)
+                 java_files = [os.path.join(outdir, j) for j in java_files]
+            java_files = list(map(env.fs.File, java_files))
             for jf in java_files:
                 t_from_s = lambda t, p, s, x: t.dir
                 SCons.Util.AddMethod(jf, t_from_s, 'target_from_source')

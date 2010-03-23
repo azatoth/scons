@@ -94,7 +94,7 @@ try:
 
     def files(fname):
         zf = zipfile.ZipFile(fname, 'r')
-        return map(lambda x: x.filename, zf.infolist())
+        return [x.filename for x in zf.infolist()]
 
 except ImportError:
     internal_zip = 0
@@ -106,7 +106,7 @@ except ImportError:
         lines = test.stdout().split("\n")[:-1]
         def lastword(line):
             return line.split()[-1]
-        return map(lastword, lines)
+        return list(map(lastword, lines))
 
 if zip:
 

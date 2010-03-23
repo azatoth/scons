@@ -96,7 +96,7 @@ try:
 except NameError:
     function_names = [x for x in locals().keys() if x[:4] == FunctionPrefix]
     function_names.sort()
-    l = map(lambda f: locals()[f], function_names)
+    l = [locals()[f] for f in function_names]
     FunctionList = [f for f in l if type(f) == types.FunctionType]
 
 IterationList = [None] * Iterations

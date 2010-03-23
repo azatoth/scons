@@ -411,7 +411,7 @@ class MySGML(sgmllib.SGMLParser):
             i = 0
             while lines[0][i] == ' ':
                 i = i + 1
-            lines = map(lambda l: l[i:], lines)
+            lines = [l[i:] for l in lines]
             path = f.name.replace('__ROOT__', t.workpath('ROOT'))
             dir, name = os.path.split(f.name)
             if dir:

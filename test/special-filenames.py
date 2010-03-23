@@ -66,7 +66,7 @@ for fn in attempt_file_names:
 def buildFileStr(fn):
     return "env.Build(source=r\"\"\"%s.in\"\"\", target=r\"\"\"%s.out\"\"\")" % ( fn, fn )
 
-xxx =  '\n'.join(map(buildFileStr, file_names))
+xxx = '\n'.join(map(buildFileStr, file_names))
 
 test.write("SConstruct", """
 env=Environment(BUILDERS = {'Build' : Builder(action = '%(_python_)s cat.py $TARGET $SOURCE')})

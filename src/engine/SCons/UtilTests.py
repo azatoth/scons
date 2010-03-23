@@ -112,7 +112,7 @@ class UtilTestCase(unittest.TestCase):
 """
 
         lines = expect.split('\n')[:-1]
-        lines = map(lambda l: '[E BSPACN ]'+l, lines)
+        lines = ['[E BSPACN ]'+l for l in lines]
         withtags = '\n'.join(lines) + '\n'
 
         return foo, expect, withtags
@@ -140,7 +140,7 @@ class UtilTestCase(unittest.TestCase):
             expect = expect.replace(']', '')
 
         lines = expect.split('\n')[:-1]
-        lines = map(lambda l: '[E BSPACN ]'+l, lines)
+        lines = ['[E BSPACN ]'+l for l in lines]
         withtags = '\n'.join(lines) + '\n'
 
         return blat_o, expect, withtags
@@ -709,7 +709,7 @@ class MD5TestCase(unittest.TestCase):
     def test_collect(self):
         """Test collecting a list of signatures into a new signature value
         """
-        s = map(MD5signature, ('111', '222', '333'))
+        s = list(map(MD5signature, ('111', '222', '333')))
         
         assert '698d51a19d8a121ce581499d7b701668' == MD5collect(s[0:1])
         assert '8980c988edc2c78cc43ccb718c06efd5' == MD5collect(s[0:2])
@@ -790,7 +790,7 @@ if __name__ == "__main__":
                ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

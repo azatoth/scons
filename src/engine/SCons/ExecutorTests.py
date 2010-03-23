@@ -49,7 +49,7 @@ class MyAction:
         for action in self.actions:
             action(target, source, env, **kw)
     def genstring(self, target, source, env):
-        return ' '.join(['GENSTRING'] + map(str, self.actions) + target + source)
+        return ' '.join(['GENSTRING'] + list(map(str, self.actions)) + target + source)
     def get_contents(self, target, source, env):
         return ' '.join(self.actions + target + source)
     def get_implicit_deps(self, target, source, env):
@@ -183,8 +183,8 @@ class ExecutorTestCase(unittest.TestCase):
 
         class LocalScanner:
             def path(self, env, dir, target, source):
-                target = map(str, target)
-                source = map(str, source)
+                target = list(map(str, target))
+                source = list(map(str, source))
                 return "scanner: %s, %s, %s, %s" % (env['SCANNERVAL'], dir, target, source)
         s = LocalScanner()
 
@@ -439,13 +439,13 @@ class ExecutorTestCase(unittest.TestCase):
         x = SCons.Executor.Executor('b', env, [{}], [], [s1, s2, s3])
 
         r = x.get_unignored_sources(None, [])
-        assert r == [s1, s2, s3], map(str, r)
+        assert r == [s1, s2, s3], list(map(str, r))
 
         r = x.get_unignored_sources(None, [s2])
-        assert r == [s1, s3], map(str, r)
+        assert r == [s1, s3], list(map(str, r))
 
         r = x.get_unignored_sources(None, [s1, s3])
-        assert r == [s2], map(str, r)
+        assert r == [s2], list(map(str, r))
 
 
 
@@ -454,7 +454,7 @@ if __name__ == "__main__":
     tclasses = [ ExecutorTestCase ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

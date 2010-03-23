@@ -86,7 +86,7 @@ class Checker:
             return os.path.isfile(path)
 
     def visit(self, result, dirname, names):
-        for name, path in map(lambda n: (n, os.path.join(dirname, n)), names):
+        for name, path in [(n, os.path.join(dirname, n)) for n in names]:
             if self.remove_this(name, path):
                 names.remove(name)
             elif self.search_this(path):

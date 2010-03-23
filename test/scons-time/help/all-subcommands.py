@@ -48,9 +48,9 @@ except: pass
 functions = globals['SConsTimer'].__dict__.keys()
 do_funcs = [x for x in functions if x[:3] == 'do_']
 
-subcommands = map(lambda x: x[3:], do_funcs)
+subcommands = [x[3:] for x in do_funcs]
 
-expect = map(lambda x: '    %s ' % x, subcommands)
+expect = ['    %s ' % x for x in subcommands]
 
 test.run(arguments = 'help')
 

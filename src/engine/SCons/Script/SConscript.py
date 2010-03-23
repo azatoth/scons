@@ -396,11 +396,11 @@ class SConsEnvironment(SCons.Environment.Base):
 
             if not SCons.Util.is_List(dirs):
                 dirs = [ dirs ]
-            dirs = map(str, dirs)
+            dirs = list(map(str, dirs))
 
             name = kw.get('name', 'SConscript')
 
-            files = map(lambda n: os.path.join(n, name), dirs)
+            files = [os.path.join(n, name) for n in dirs]
 
         elif len(ls) == 1:
 
@@ -530,11 +530,11 @@ class SConsEnvironment(SCons.Environment.Base):
     def SConscript(self, *ls, **kw):
         def subst_element(x, subst=self.subst):
             if SCons.Util.is_List(x):
-                x = map(subst, x)
+                x = list(map(subst, x))
             else:
                 x = subst(x)
             return x
-        ls = map(subst_element, ls)
+        ls = list(map(subst_element, ls))
         subst_kw = {}
         for key, val in kw.items():
             if SCons.Util.is_String(val):
