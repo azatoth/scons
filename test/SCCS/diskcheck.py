@@ -92,7 +92,7 @@ test.write(['bbb.in'], "checked-out bbb.in\n")
 test.write(['sub', 'eee.in'], "checked-out sub/eee.in\n")
 
 sub_SConscript = os.path.join('sub', 'SConscript')
-SConstruct_file_line = test.python_file_line(test.workpath('SConstruct'), 17)[:-1]
+SConstruct_file_line = test.python_file_line(test.workpath('SConstruct'), 16)[:-1]
 
 expect = """\
 
