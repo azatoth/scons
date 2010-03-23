@@ -29,9 +29,6 @@ Test that the $SHLINKCOMSTR construction variable allows you to customize
 the displayed linker string for programs using shared libraries.
 """
 
-import os
-import string
-import sys
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -97,3 +94,9 @@ test.must_match('test3.dll', "test1.c\ntest2.c\n")
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

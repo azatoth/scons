@@ -40,8 +40,8 @@ _python_ = TestSCons._python_
 test = TestSCons.TestSCons()
 
 if sys.platform == 'win32':
-    sys.stderr.write('Cannot set SHELL separately from other variables on Windows.\n')
-    test.no_result(1)
+    msg = 'Cannot set SHELL separately from other variables on Windows.\n'
+    test.skip_test(msg)
 
 my_shell = test.workpath('my_shell.py')
 
@@ -81,3 +81,9 @@ test.run()
 test.must_match('file.out', "file.in\nextra.txt\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

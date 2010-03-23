@@ -59,7 +59,7 @@ expect = test.msvs_substitute(expected_vcprojfile,
                               '8.0',
                               None,
                               'SConstruct',
-                              project_guid="{FC63FE9E-71B3-06CC-11AF-2077D8108DFE}")
+                              project_guid="{25F6CE89-8E22-2910-8B6E-FFE6DC1E2792}")
 # don't compare the pickled data
 assert vcproj[:len(expect)] == expect, test.diff_substr(expect, vcproj)
 
@@ -86,3 +86,9 @@ The real workspace file is here:
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

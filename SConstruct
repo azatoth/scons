@@ -6,10 +6,10 @@
 
 # When this gets changed, you must also change the copyright_years string
 # in QMTest/TestSCons.py so the test scripts look for the right string.
-copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008'
+copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010'
 
 # This gets inserted into the man pages to reflect the month of release.
-month_year = 'December 2008'
+month_year = 'March 2010'
 
 #
 # __COPYRIGHT__
@@ -48,6 +48,8 @@ project = 'scons'
 default_version = '1.2.0'
 copyright = "Copyright (c) %s The SCons Foundation" % copyright_years
 
+platform = distutils.util.get_platform()
+
 SConsignFile()
 
 #
@@ -55,15 +57,20 @@ SConsignFile()
 # is available on this system.
 #
 def whereis(file):
+    exts = ['']
+    if platform == "win32":
+        exts += ['.exe']
     for dir in string.split(os.environ['PATH'], os.pathsep):
         f = os.path.join(dir, file)
-        if os.path.isfile(f):
-            try:
-                st = os.stat(f)
-            except:
-                continue
-            if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
-                return f
+        for ext in exts:
+            f_ext = f + ext
+            if os.path.isfile(f_ext):
+                try:
+                    st = os.stat(f_ext)
+                except:
+                    continue
+                if stat.S_IMODE(st[stat.ST_MODE]) & 0111:
+                    return f_ext
     return None
 
 #
@@ -76,7 +83,8 @@ dh_builddeb = whereis('dh_builddeb')
 fakeroot = whereis('fakeroot')
 gzip = whereis('gzip')
 rpmbuild = whereis('rpmbuild') or whereis('rpm')
-svn = whereis('svn')
+hg = os.path.exists('.hg') and whereis('hg')
+svn = os.path.exists('.svn') and whereis('svn')
 unzip = whereis('unzip')
 zip = whereis('zip')
 
@@ -104,12 +112,45 @@ version = ARGUMENTS.get('VERSION', '')
 if not version:
     version = default_version
 
+hg_status_lines = []
+svn_status_lines = []
+
+if hg:
+    cmd = "%s status --all 2> /dev/null" % hg
+    hg_status_lines = os.popen(cmd, "r").readlines()
+
+if svn:
+    cmd = "%s status --verbose 2> /dev/null" % svn
+    svn_status_lines = os.popen(cmd, "r").readlines()
+
 revision = ARGUMENTS.get('REVISION', '')
+def generate_build_id(revision):
+    return revision
+
+if not revision and hg:
+    hg_heads = os.popen("%s heads 2> /dev/null" % hg, "r").read()
+    cs = re.search('changeset:\s+(\S+)', hg_heads)
+    if cs:
+        revision = cs.group(1)
+        b = re.search('branch:\s+(\S+)', hg_heads)
+        if b:
+            revision = b.group(1) + ':' + revision
+        def generate_build_id(revision):
+            result = revision
+            if filter(lambda l: l[0] in 'AMR!', hg_status_lines):
+                result = result + '[MODIFIED]'
+            return result
+
 if not revision and svn:
     svn_info = os.popen("%s info 2> /dev/null" % svn, "r").read()
     m = re.search('Revision: (\d+)', svn_info)
     if m:
         revision = m.group(1)
+        def generate_build_id(revision):
+            result = 'r' + revision
+            if filter(lambda l: l[0] in 'ACDMR', svn_status_lines):
+                result = result + '[MODIFIED]'
+            return result
 
 checkpoint = ARGUMENTS.get('CHECKPOINT', '')
 if checkpoint:
@@ -120,25 +161,14 @@ if checkpoint:
         checkpoint = 'r' + revision
     version = version + '.' + checkpoint
 
-svn_status = None
-svn_status_lines = []
-
-if svn:
-    svn_status = os.popen("%s status --verbose 2> /dev/null" % svn, "r").read()
-    svn_status_lines = svn_status[:-1].split('\n')
-
 build_id = ARGUMENTS.get('BUILD_ID')
 if build_id is None:
     if revision:
-        build_id = 'r' + revision
-        if filter(lambda l: l[0] in 'ACDMR', svn_status_lines):
-            build_id = build_id + '[MODIFIED]'
+        build_id = generate_build_id(revision)
     else:
         build_id = ''
 
 python_ver = sys.version[0:3]
-
-platform = distutils.util.get_platform()
 
 # Re-exporting LD_LIBRARY_PATH is necessary if the Python version was
 # built with the --enable-shared option.
@@ -377,7 +407,7 @@ def soelim(target, source, env):
     tfp.close()
 
 def soscan(node, env, path):
-    c = node.get_contents()
+    c = node.get_text_contents()
     return re.compile(r"^[\.']so\s+(\S+)", re.M).findall(c)
 
 soelimbuilder = Builder(action = Action(soelim),
@@ -691,7 +721,10 @@ for p in [ scons ]:
     platform_zip = os.path.join(build,
                                 'dist',
                                 "%s.%s.zip" % (pkg_version, platform))
-    win32_exe = os.path.join(build, 'dist', "%s.win32.exe" % pkg_version)
+    if platform == "win-amd64":
+        win32_exe = os.path.join(build, 'dist', "%s.win-amd64.exe" % pkg_version)
+    else:
+        win32_exe = os.path.join(build, 'dist', "%s.win32.exe" % pkg_version)
 
     #
     # Update the environment with the relevant information
@@ -811,7 +844,7 @@ for p in [ scons ]:
     AddPostAction(dist_distutils_targets, Chmod(dist_distutils_targets, 0644))
 
     if not gzip:
-        print "gzip not found; skipping .tar.gz package for %s." % pkg
+        print "gzip not found in %s; skipping .tar.gz package for %s." % (os.environ['PATH'], pkg)
     else:
 
         distutils_formats.append('gztar')
@@ -1173,17 +1206,24 @@ SConscript('doc/SConscript')
 # source archive from the project files and files in the change.
 #
 
-if not svn_status:
-   "Not building in a Subversion tree; skipping building src package."
-else:
+sfiles = None
+if hg_status_lines:
+    slines = filter(lambda l: l[0] in 'ACM', hg_status_lines)
+    sfiles = map(lambda l: l.split()[-1], slines)
+elif svn_status_lines:
     slines = filter(lambda l: l[0] in ' MA', svn_status_lines)
     sentries = map(lambda l: l.split()[-1], slines)
     sfiles = filter(os.path.isfile, sentries)
+else:
+   "Not building in a Mercurial or Subversion tree; skipping building src package."
 
+if sfiles:
     remove_patterns = [
+        '.hgt/*',
         '.svnt/*',
         '*.aeignore',
         '*.cvsignore',
+        '*.hgignore',
         'www/*',
     ]
 

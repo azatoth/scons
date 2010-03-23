@@ -25,7 +25,7 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
-import sys
+
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -98,3 +98,9 @@ test.up_to_date(chdir = 'work', options = opts, arguments = '.')
 
 #
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

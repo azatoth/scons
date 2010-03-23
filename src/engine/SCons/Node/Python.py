@@ -53,7 +53,7 @@ class Value(SCons.Node.Node):
     def __init__(self, value, built_value=None):
         SCons.Node.Node.__init__(self)
         self.value = value
-        if not built_value is None:
+        if built_value is not None:
             self.built_value = built_value
 
     def str_for_display(self):
@@ -88,16 +88,19 @@ class Value(SCons.Node.Node):
             self.built_value = self.value
         return self.built_value
 
-    def get_contents(self):
+    def get_text_contents(self):
         """By the assumption that the node.built_value is a
         deterministic product of the sources, the contents of a Value
         are the concatenation of all the contents of its sources.  As
         the value need not be built when get_contents() is called, we
         cannot use the actual node.built_value."""
+        ###TODO: something reasonable about universal newlines
         contents = str(self.value)
         for kid in self.children(None):
             contents = contents + kid.get_contents()
         return contents
+
+    get_contents = get_text_contents    ###TODO should return 'bytes' value
 
     def changed_since_last_build(self, target, prev_ni):
         cur_csig = self.get_csig()
@@ -117,3 +120,9 @@ class Value(SCons.Node.Node):
         contents = self.get_contents()
         self.get_ninfo().csig = contents
         return contents
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

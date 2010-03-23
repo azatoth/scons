@@ -208,7 +208,11 @@ for o, a in opts:
     elif o in ['-P', '--python']:
         python = a
     elif o in ['--qmtest']:
-        qmtest = 'qmtest'
+        if sys.platform == 'win32':
+            # typically in c:/PythonXX/Scripts
+            qmtest = 'qmtest.py'
+        else:
+            qmtest = 'qmtest'
     elif o in ['-q', '--quiet']:
         printcommand = 0
     elif o in ['--sp']:
@@ -241,7 +245,7 @@ runtest.py:  No tests were specified.
 if sys.platform in ('win32', 'cygwin'):
 
     def whereis(file):
-        pathext = [''] + string.split(os.environ['PATHEXT'])
+        pathext = [''] + string.split(os.environ['PATHEXT'], os.pathsep)
         for dir in string.split(os.environ['PATH'], os.pathsep):
             f = os.path.join(dir, file)
             for ext in pathext:
@@ -264,16 +268,25 @@ else:
                     return f
         return None
 
+# See if --qmtest or --noqmtest specified
 try:
     qmtest
 except NameError:
-    q = 'qmtest'
-    qmtest = whereis(q)
-    if qmtest:
-        qmtest = q
-    else:
-        sys.stderr.write('Warning:  %s not found on $PATH, assuming --noqmtest option.\n' % q)
-        sys.stderr.flush()
+    qmtest = None
+    # Old code for using QMTest by default if it's installed.
+    # We now default to not using QMTest unless explicitly asked for.
+    #for q in ['qmtest', 'qmtest.py']:
+    #    path = whereis(q)
+    #    if path:
+    #        # The name was found on $PATH; just execute the found name so
+    #        # we don't have to worry about paths containing white space.
+    #        qmtest = q
+    #        break
+    #if not qmtest:
+    #    msg = ('Warning:  found neither qmtest nor qmtest.py on $PATH;\n' +
+    #           '\tassuming --noqmtest option.\n')
+    #    sys.stderr.write(msg)
+    #    sys.stderr.flush()
 
 aegis = whereis('aegis')
 
@@ -360,6 +373,8 @@ except ImportError:
                 self.status = childerr.close()
                 if not self.status:
                     self.status = 0
+                else:
+                    self.status = self.status >> 8
     else:
         class PopenExecutor(Base):
             def execute(self):
@@ -368,13 +383,16 @@ except ImportError:
                 self.stdout = p.fromchild.read()
                 self.stderr = p.childerr.read()
                 self.status = p.wait()
+                self.status = self.status >> 8
 else:
     class PopenExecutor(Base):
         def execute(self):
-            p = subprocess.Popen(self.command_str, shell=True)
-            p.stdin.close()
+            p = subprocess.Popen(self.command_str,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 shell=True)
             self.stdout = p.stdout.read()
-            self.stdout = p.stderr.read()
+            self.stderr = p.stderr.read()
             self.status = p.wait()
 
 class Aegis(SystemExecutor):
@@ -562,6 +580,25 @@ if old_pythonpath:
 
 tests = []
 
+def find_Tests_py(tdict, dirname, names):
+    for n in filter(lambda n: n[-8:] == "Tests.py", names):
+        tdict[os.path.join(dirname, n)] = 1
+
+def find_py(tdict, dirname, names):
+    tests = filter(lambda n: n[-3:] == ".py", names)
+    try:
+        excludes = open(os.path.join(dirname,".exclude_tests")).readlines()
+    except (OSError, IOError):
+        pass
+    else:
+        for exclude in excludes:
+            exclude = string.split(exclude, '#' , 1)[0]
+            exclude = string.strip(exclude)
+            if not exclude: continue
+            tests = filter(lambda n, ex = exclude: n != ex, tests)
+    for n in tests:
+        tdict[os.path.join(dirname, n)] = 1
+
 if args:
     if spe:
         for a in args:
@@ -576,7 +613,18 @@ if args:
                         break
     else:
         for a in args:
-            tests.extend(glob.glob(a))
+            for path in glob.glob(a):
+                if os.path.isdir(path):
+                    tdict = {}
+                    if path[:3] == 'src':
+                        os.path.walk(path, find_Tests_py, tdict)
+                    elif path[:4] == 'test':
+                        os.path.walk(path, find_py, tdict)
+                    t = tdict.keys()
+                    t.sort()
+                    tests.extend(t)
+                else:
+                    tests.append(path)
 elif testlistfile:
     tests = open(testlistfile, 'r').readlines()
     tests = filter(lambda x: x[0] != '#', tests)
@@ -594,21 +642,8 @@ elif all and not qmtest:
     # by the Aegis packaging build to make sure that we're building
     # things correctly.)
     tdict = {}
-
-    def find_Tests_py(tdict, dirname, names):
-        for n in filter(lambda n: n[-8:] == "Tests.py", names):
-            t = os.path.join(dirname, n)
-            if not tdict.has_key(t):
-                tdict[t] = 1
     os.path.walk('src', find_Tests_py, tdict)
-
-    def find_py(tdict, dirname, names):
-        for n in filter(lambda n: n[-3:] == ".py", names):
-            t = os.path.join(dirname, n)
-            if not tdict.has_key(t):
-                tdict[t] = 1
     os.path.walk('test', find_py, tdict)
-
     if format == '--aegis' and aegis:
         cmd = "aegis -list -unf pf 2>/dev/null"
         for line in os.popen(cmd, "r").readlines():
@@ -696,10 +731,11 @@ class Unbuffered:
         return getattr(self.file, attr)
 
 sys.stdout = Unbuffered(sys.stdout)
+sys.stderr = Unbuffered(sys.stderr)
 
 if list_only:
     for t in tests:
-        sys.stdout.write(t.abspath + "\n")
+        sys.stdout.write(t.path + "\n")
     sys.exit(0)
 
 #
@@ -725,11 +761,12 @@ else:
 
 total_start_time = time_func()
 for t in tests:
-    t.command_args = [python, '-tt']
+    command_args = ['-tt']
     if debug:
-        t.command_args.append(debug)
-    t.command_args.append(t.abspath)
-    t.command_str = string.join(map(escape, t.command_args), " ")
+        command_args.append(debug)
+    command_args.append(t.path)
+    t.command_args = [python] + command_args
+    t.command_str = string.join([escape(python)] + command_args, " ")
     if printcommand:
         sys.stdout.write(t.command_str + "\n")
     test_start_time = time_func()
@@ -790,3 +827,9 @@ elif len(no_result):
     sys.exit(2)
 else:
     sys.exit(0)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -44,12 +44,12 @@ include_re = re.compile(r'^include\s+(\S+)$', re.M)
 input_re = re.compile(r'^input\s+(\S+)$', re.M)
 
 scan1 = Scanner(name = 'Include',
-                function = lambda N,E,P,A: A.findall(N.get_contents()),
+                function = lambda N,E,P,A: A.findall(N.get_text_contents()),
                 argument = include_re,
                 skeys = ['.inp'])
 
 scan2 = Scanner(name = 'Input',
-                function = lambda N,E,P,A: A.findall(N.get_contents()),
+                function = lambda N,E,P,A: A.findall(N.get_text_contents()),
                 argument = input_re,
                 skeys = ['.inp'])
 
@@ -114,3 +114,9 @@ test.must_match('frog.1', 'croak\ninput sound2\n')
 test.must_match('frog.2', 'include sound1\nrudeep\n')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

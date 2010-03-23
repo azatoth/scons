@@ -163,7 +163,7 @@ def generate_guids(root):
     To handle this requirement, the uuid is generated with an md5 hashing the
     whole subtree of a xml node.
     """
-    from md5 import md5
+    from hashlib import md5
 
     # specify which tags need a guid and in which attribute this should be stored.
     needs_id = { 'Product'   : 'Id',
@@ -519,3 +519,8 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     # return the target and source tuple.
     return (msifile, source+[specfile])
 
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

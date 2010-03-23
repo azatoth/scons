@@ -36,7 +36,9 @@ provided by the TestCommon class:
 
     test.must_contain('file', 'required text\n')
 
-    test.must_contain_lines(lines, output)
+    test.must_contain_all_lines(output, lines, ['title', find])
+
+    test.must_contain_any_line(output, lines, ['title', find])
 
     test.must_exist('file1', ['file2', ...])
 
@@ -44,7 +46,9 @@ provided by the TestCommon class:
 
     test.must_not_be_writable('file1', ['file2', ...])
 
-    test.must_not_contain_lines(lines, output)
+    test.must_not_contain('file', 'banned text\n')
+
+    test.must_not_contain_any_line(output, lines, ['title', find])
 
     test.must_not_exist('file1', ['file2', ...])
 
@@ -59,6 +63,7 @@ The TestCommon module also provides the following variables
     TestCommon.python_executable
     TestCommon.exe_suffix
     TestCommon.obj_suffix
+    TestCommon.shobj_prefix
     TestCommon.shobj_suffix
     TestCommon.lib_prefix
     TestCommon.lib_suffix
@@ -67,7 +72,7 @@ The TestCommon module also provides the following variables
 
 """
 
-# Copyright 2000, 2001, 2002, 2003, 2004 Steven Knight
+# Copyright 2000-2010 Steven Knight
 # This module is free software, and you may redistribute it and/or modify
 # it under the same terms as Python itself, so long as this copyright message
 # and disclaimer are retained in their original form.
@@ -84,8 +89,8 @@ The TestCommon module also provides the following variables
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCommon.py 0.32.D001 2008/10/30 23:00:04 knight"
-__version__ = "0.32"
+__revision__ = "TestCommon.py 0.37.D001 2010/01/11 16:55:50 knight"
+__version__ = "0.37"
 
 import copy
 import os
@@ -166,36 +171,6 @@ else:
     dll_prefix   = 'lib'
     dll_suffix   = '.so'
 
-try:
-    import difflib
-except ImportError:
-    pass
-else:
-    def simple_diff(a, b, fromfile='', tofile='',
-                    fromfiledate='', tofiledate='', n=3, lineterm='\n'):
-        """
-        A function with the same calling signature as difflib.context_diff
-        (diff -c) and difflib.unified_diff (diff -u) but which prints
-        output like the simple, unadorned 'diff" command.
-        """
-        sm = difflib.SequenceMatcher(None, a, b)
-        def comma(x1, x2):
-            return x1+1 == x2 and str(x2) or '%s,%s' % (x1+1, x2)
-        result = []
-        for op, a1, a2, b1, b2 in sm.get_opcodes():
-            if op == 'delete':
-                result.append("%sd%d" % (comma(a1, a2), b1))
-                result.extend(map(lambda l: '< ' + l, a[a1:a2]))
-            elif op == 'insert':
-                result.append("%da%s" % (a1, comma(b1, b2)))
-                result.extend(map(lambda l: '> ' + l, b[b1:b2]))
-            elif op == 'replace':
-                result.append("%sc%s" % (comma(a1, a2), comma(b1, b2)))
-                result.extend(map(lambda l: '< ' + l, a[a1:a2]))
-                result.append('---')
-                result.extend(map(lambda l: '> ' + l, b[b1:b2]))
-        return result
-
 def is_List(e):
     return type(e) is types.ListType \
         or isinstance(e, UserList.UserList)
@@ -244,38 +219,6 @@ class TestCommon(TestCmd):
         """
         apply(TestCmd.__init__, [self], kw)
         os.chdir(self.workdir)
-        try:
-            difflib
-        except NameError:
-            pass
-        else:
-            self.diff_function = simple_diff
-            #self.diff_function = difflib.context_diff
-            #self.diff_function = difflib.unified_diff
-
-    banner_char = '='
-    banner_width = 80
-
-    def banner(self, s, width=None):
-        if width is None:
-            width = self.banner_width
-        return s + self.banner_char * (width - len(s))
-
-    try:
-        difflib
-    except NameError:
-        def diff(self, a, b, name, *args, **kw):
-            print self.banner('Expected %s' % name)
-            print a
-            print self.banner('Actual %s' % name)
-            print b
-    else:
-        def diff(self, a, b, name, *args, **kw):
-            print self.banner(name)
-            args = (a.splitlines(), b.splitlines()) + args
-            lines = apply(self.diff_function, args, kw)
-            for l in lines:
-                print l
 
     def must_be_writable(self, *files):
         """Ensures that the specified file(s) exist and are writable.
@@ -306,18 +249,63 @@ class TestCommon(TestCmd):
             print file_contents
             self.fail_test(not contains)
 
-    def must_contain_lines(self, lines, output, title=None):
-        if title is None:
-            title = 'output'
+    def must_contain_all_lines(self, output, lines, title=None, find=None):
+        """Ensures that the specified output string (first argument)
+        contains all of the specified lines (second argument).
 
-        missing = filter(lambda l, o=output: string.find(o, l) == -1, lines)
+        An optional third argument can be used to describe the type
+        of output being searched, and only shows up in failure output.
+
+        An optional fourth argument can be used to supply a different
+        function, of the form "find(line, output), to use when searching
+        for lines in the output.
+        """
+        if find is None:
+            find = lambda o, l: string.find(o, l) != -1
+        missing = []
+        for line in lines:
+            if not find(output, line):
+                missing.append(line)
 
         if missing:
-            print "Missing lines from %s:" % title
-            print string.join(missing, '\n')
-            print "%s ============================================================" % title
-            print output
+            if title is None:
+                title = 'output'
+            sys.stdout.write("Missing expected lines from %s:\n" % title)
+            for line in missing:
+                sys.stdout.write('    ' + repr(line) + '\n')
+            sys.stdout.write(self.banner(title + ' '))
+            sys.stdout.write(output)
             self.fail_test()
+
+    def must_contain_any_line(self, output, lines, title=None, find=None):
+        """Ensures that the specified output string (first argument)
+        contains at least one of the specified lines (second argument).
+
+        An optional third argument can be used to describe the type
+        of output being searched, and only shows up in failure output.
+
+        An optional fourth argument can be used to supply a different
+        function, of the form "find(line, output), to use when searching
+        for lines in the output.
+        """
+        if find is None:
+            find = lambda o, l: string.find(o, l) != -1
+        for line in lines:
+            if find(output, line):
+                return
+
+        if title is None:
+            title = 'output'
+        sys.stdout.write("Missing any expected line from %s:\n" % title)
+        for line in lines:
+            sys.stdout.write('    ' + repr(line) + '\n')
+        sys.stdout.write(self.banner(title + ' '))
+        sys.stdout.write(output)
+        self.fail_test()
+
+    def must_contain_lines(self, lines, output, title=None):
+        # Deprecated; retain for backwards compatibility.
+        return self.must_contain_all_lines(output, lines, title)
 
     def must_exist(self, *files):
         """Ensures that the specified file(s) must exist.  An individual
@@ -347,18 +335,49 @@ class TestCommon(TestCmd):
             self.diff(expect, file_contents, 'contents ')
             raise
 
-    def must_not_contain_lines(self, lines, output=None, title=None):
-        if title is None:
-            title = 'output'
+    def must_not_contain(self, file, banned, mode = 'rb'):
+        """Ensures that the specified file doesn't contain the banned text.
+        """
+        file_contents = self.read(file, mode)
+        contains = (string.find(file_contents, banned) != -1)
+        if contains:
+            print "File `%s' contains banned string." % file
+            print self.banner('Banned string ')
+            print banned
+            print self.banner('%s contents ' % file)
+            print file_contents
+            self.fail_test(contains)
 
-        unexpected = filter(lambda l, o=output: string.find(o, l) != -1, lines)
+    def must_not_contain_any_line(self, output, lines, title=None, find=None):
+        """Ensures that the specified output string (first argument)
+        does not contain any of the specified lines (second argument).
+
+        An optional third argument can be used to describe the type
+        of output being searched, and only shows up in failure output.
+
+        An optional fourth argument can be used to supply a different
+        function, of the form "find(line, output), to use when searching
+        for lines in the output.
+        """
+        if find is None:
+            find = lambda o, l: string.find(o, l) != -1
+        unexpected = []
+        for line in lines:
+            if find(output, line):
+                unexpected.append(line)
 
         if unexpected:
-            print "Unexpected lines in %s:" % title
-            print string.join(unexpected, '\n')
-            print "%s ============================================================" % title
-            print output
+            if title is None:
+                title = 'output'
+            sys.stdout.write("Unexpected lines in %s:\n" % title)
+            for line in unexpected:
+                sys.stdout.write('    ' + repr(line) + '\n')
+            sys.stdout.write(self.banner(title + ' '))
+            sys.stdout.write(output)
             self.fail_test()
+
+    def must_not_contain_lines(self, lines, output, title=None):
+        return self.must_not_contain_any_line(output, lines, title)
 
     def must_not_exist(self, *files):
         """Ensures that the specified file(s) must not exist.
@@ -455,6 +474,8 @@ class TestCommon(TestCmd):
                 print self.stderr()
             except IndexError:
                 pass
+            cmd_args = self.command_args(program, interpreter, arguments)
+            sys.stderr.write('Exception trying to execute: %s\n' % cmd_args)
             raise e
 
     def finish(self, popen, stdout = None, stderr = '', status = 0, **kw):
@@ -552,3 +573,9 @@ class TestCommon(TestCmd):
             # We're under the development directory for this change,
             # so this is an Aegis invocation; pass the test (exit 0).
             self.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

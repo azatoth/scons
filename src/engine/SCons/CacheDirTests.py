@@ -194,10 +194,10 @@ class FileTestCase(BaseTestCase):
 
             cd_f3 = self.test.workpath("cd.f3")
             f3 = self.File(cd_f3)
-            f3.built()
+            f3.push_to_cache()
             assert self.pushed == [], self.pushed
             self.test.write(cd_f3, "cd.f3\n")
-            f3.built()
+            f3.push_to_cache()
             assert self.pushed == [f3], self.pushed
 
             self.pushed = []
@@ -240,7 +240,7 @@ class FileTestCase(BaseTestCase):
 
             warn_caught = 0
             try:
-                f7.built()
+                f7.push_to_cache()
             except SCons.Errors.BuildError, e:
                 assert e.exc_info[0] == SCons.Warnings.CacheWriteErrorWarning
                 warn_caught = 1
@@ -289,3 +289,9 @@ if __name__ == "__main__":
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

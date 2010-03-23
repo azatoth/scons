@@ -42,8 +42,6 @@ from SCons.Platform.posix import exitvalmap
 from SCons.Platform import TempFileMunge
 import SCons.Util
 
-
-
 try:
     import msvcrt
     import win32api
@@ -67,7 +65,7 @@ else:
 
     _builtin_file = __builtin__.file
     _builtin_open = __builtin__.open
-
+    
     def _scons_file(*args, **kw):
         fp = apply(_builtin_file, args, kw)
         win32api.SetHandleInformation(msvcrt.get_osfhandle(fp.fileno()),
@@ -134,18 +132,18 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
                 ret = exitvalmap[e[0]]
             except KeyError:
                 sys.stderr.write("scons: unknown OSError exception code %d - %s: %s\n" % (e[0], cmd, e[1]))
-            if stderr != None:
+            if stderr is not None:
                 stderr.write("scons: %s: %s\n" % (cmd, e[1]))
         # copy child output from tempfiles to our streams
         # and do clean up stuff
-        if stdout != None and stdoutRedirected == 0:
+        if stdout is not None and stdoutRedirected == 0:
             try:
                 stdout.write(open( tmpFileStdout, "r" ).read())
                 os.remove( tmpFileStdout )
             except (IOError, OSError):
                 pass
 
-        if stderr != None and stderrRedirected == 0:
+        if stderr is not None and stderrRedirected == 0:
             try:
                 stderr.write(open( tmpFileStderr, "r" ).read())
                 os.remove( tmpFileStderr )
@@ -189,15 +187,16 @@ def escape(x):
     return '"' + x + '"'
 
 # Get the windows system directory name
-def get_system_root():
-    # A resonable default if we can't read the registry
-    try:
-        val = os.environ['SYSTEMROOT']
-    except KeyError:
-        val = "C:/WINDOWS"
-        pass
+_system_root = None
 
-    # First see if we can look in the registry...
+def get_system_root():
+    global _system_root
+    if _system_root is not None:
+        return _system_root
+
+    # A resonable default if we can't read the registry
+    val = os.environ.get('SystemRoot', "C:\\WINDOWS")
+
     if SCons.Util.can_read_reg:
         try:
             # Look for Windows NT system root
@@ -214,6 +213,7 @@ def get_system_root():
                 raise
             except:
                 pass
+    _system_root = val
     return val
 
 # Get the location of the program files directory
@@ -236,6 +236,53 @@ def get_program_files_dir():
         val = os.path.join(os.path.dirname(get_system_root()),"Program Files")
         
     return val
+
+
+
+# Determine which windows CPU were running on.
+class ArchDefinition:
+    """
+    A class for defining architecture-specific settings and logic.
+    """
+    def __init__(self, arch, synonyms=[]):
+        self.arch = arch
+        self.synonyms = synonyms
+
+SupportedArchitectureList = [
+    ArchDefinition(
+        'x86',
+        ['i386', 'i486', 'i586', 'i686'],
+    ),
+
+    ArchDefinition(
+        'x86_64',
+        ['AMD64', 'amd64', 'em64t', 'EM64T', 'x86_64'],
+    ),
+
+    ArchDefinition(
+        'ia64',
+        ['IA64'],
+    ),
+]
+
+SupportedArchitectureMap = {}
+for a in SupportedArchitectureList:
+    SupportedArchitectureMap[a.arch] = a
+    for s in a.synonyms:
+        SupportedArchitectureMap[s] = a
+
+def get_architecture(arch=None):
+    """Returns the definition for the specified architecture string.
+
+    If no string is specified, the system default is returned (as defined
+    by the PROCESSOR_ARCHITEW6432 or PROCESSOR_ARCHITECTURE environment
+    variables).
+    """
+    if arch is None:
+        arch = os.environ.get('PROCESSOR_ARCHITEW6432')
+        if not arch:
+            arch = os.environ.get('PROCESSOR_ARCHITECTURE')
+    return SupportedArchitectureMap.get(arch, ArchDefinition('', ['']))
 
 def generate(env):
     # Attempt to find cmd.exe (for WinNT/2k/XP) or
@@ -267,9 +314,7 @@ def generate(env):
     # the env's PATH.  The problem with that is that it might not
     # contain an ENV and a PATH.
     if not cmd_interp:
-        systemroot = r'C:\Windows'
-        if os.environ.has_key('SYSTEMROOT'):
-            systemroot = os.environ['SYSTEMROOT']
+        systemroot = get_system_root()
         tmp_path = systemroot + os.pathsep + \
                    os.path.join(systemroot,'System32')
         tmp_pathext = '.com;.exe;.bat;.cmd'
@@ -291,16 +336,23 @@ def generate(env):
     # Import things from the external environment to the construction
     # environment's ENV.  This is a potential slippery slope, because we
     # *don't* want to make builds dependent on the user's environment by
-    # default.  We're doing this for SYSTEMROOT, though, because it's
+    # default.  We're doing this for SystemRoot, though, because it's
     # needed for anything that uses sockets, and seldom changes, and
-    # for SYSTEMDRIVE because it's related.
+    # for SystemDrive because it's related.
     #
     # Weigh the impact carefully before adding other variables to this list.
-    import_env = [ 'SYSTEMDRIVE', 'SYSTEMROOT', 'TEMP', 'TMP' ]
+    import_env = [ 'SystemDrive', 'SystemRoot', 'TEMP', 'TMP' ]
     for var in import_env:
         v = os.environ.get(var)
         if v:
             env['ENV'][var] = v
+
+    if not env['ENV'].has_key('COMSPEC'):
+        v = os.environ.get("COMSPEC")
+        if v:
+            env['ENV']['COMSPEC'] = v
+
+    env.AppendENVPath('PATH', get_system_root() + '\System32')
 
     env['ENV']['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'
     env['OBJPREFIX']      = ''
@@ -322,3 +374,13 @@ def generate(env):
     env['TEMPFILEPREFIX'] = '@'
     env['MAXLINELENGTH']  = 2048
     env['ESCAPE']         = escape
+    
+    env['HOST_OS']        = 'win32'
+    env['HOST_ARCH']      = get_architecture().arch
+    
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

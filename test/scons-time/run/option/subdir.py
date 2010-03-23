@@ -54,6 +54,14 @@ expect = [
 
 content = test.read(test.workpath('foo-000-0.log'), mode='r')
 
-test.must_contain_all_lines('foo-000-0.log', content, expect, re.search)
+def re_find(content, line):
+    return re.search(line, content)
+test.must_contain_all_lines(content, expect, 'foo-000-0.log', re_find)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

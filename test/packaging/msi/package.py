@@ -28,7 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test the ability to create a simple msi package.
 """
 
-import os
 import TestSCons
 
 python = TestSCons.python
@@ -52,8 +51,6 @@ test.write( 'file1.exe', "file1" )
 test.write( 'file2.exe', "file2" )
 
 test.write('SConstruct', """
-import os
-
 env  = Environment(tools=['default', 'packaging'])
 
 f1  = env.Install( '/usr/' , 'file1.exe'  )
@@ -97,7 +94,6 @@ test.write( 'file4.dll', "file4" )
 test.write( 'file5.dll', "file5" )
 
 test.write('SConstruct', """
-import os
 env = Environment(tools=['default', 'packaging'])
 f1  = env.Install( '/usr/' , 'file1.exe'  )
 f2  = env.Install( '/usr/' , 'file2.exe'  )
@@ -139,3 +135,9 @@ test.fail_test( not elements[4].attributes['Title'].value == 'Java Part' )
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

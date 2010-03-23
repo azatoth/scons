@@ -300,6 +300,10 @@ macro_function_input = """
 
 /* Make sure we don't die if the expansion isn't a string. */
 #define FUNC_INTEGER(x)       1
+
+/* Make sure one-character names are recognized. */
+#define _(x)       translate(x)
+#undef _
 """
 
 
@@ -703,3 +707,9 @@ if __name__ == '__main__':
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

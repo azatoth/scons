@@ -167,6 +167,21 @@ except AttributeError:
     elif 'nt' in _names:
         os.devnull = 'nul'
     os.path.devnull = os.devnull
+try:
+    os.path.lexists
+except AttributeError:
+    # Pre-2.4 Python has no os.path.lexists function
+    def lexists(path):
+        return os.path.exists(path) or os.path.islink(path)
+    os.path.lexists = lexists
+
+
+try:
+    import platform
+except ImportError:
+    # Pre-2.3 Python has no platform module.
+    import_as('_scons_platform', 'platform')
+
 
 import shlex
 try:
@@ -242,3 +257,46 @@ try:
 except ImportError:
     # Pre-1.6 Python has no UserString module.
     import_as('_scons_UserString', 'UserString')
+
+import tempfile
+try:
+    tempfile.mkstemp
+except AttributeError:
+    # Pre-2.3 Python has no tempfile.mkstemp function, so try to simulate it.
+    # adapted from the mkstemp implementation in python 3.
+    import os
+    import errno
+    def mkstemp(*args, **kw):
+        text = False
+        # TODO (1.5)
+        #if 'text' in kw :
+        if 'text' in kw.keys() :
+            text = kw['text']
+            del kw['text']
+        elif len( args ) == 4 :
+            text = args[3]
+            args = args[:3]
+        flags = os.O_RDWR | os.O_CREAT | os.O_EXCL
+        if not text and hasattr( os, 'O_BINARY' ) :
+            flags = flags | os.O_BINARY
+        while True:
+            try :
+                name = apply(tempfile.mktemp, args, kw)
+                fd = os.open( name, flags, 0600 )
+                return (fd, os.path.abspath(name))
+            except OSError, e:
+                if e.errno == errno.EEXIST:
+                    continue
+                raise
+
+    tempfile.mkstemp = mkstemp
+    del mkstemp
+
+
+
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

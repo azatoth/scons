@@ -16,8 +16,7 @@ A TestCmd environment object is created via the usual invocation:
     import TestCmd
     test = TestCmd.TestCmd()
 
-There are a bunch of keyword arguments that you can use at instantiation
-time:
+There are a bunch of keyword arguments available at instantiation:
 
     test = TestCmd.TestCmd(description = 'string',
                            program = 'program_or_script_to_test',
@@ -26,10 +25,10 @@ time:
                            subdir = 'subdir',
                            verbose = Boolean,
                            match = default_match_function,
+                           diff = default_diff_function,
                            combine = Boolean)
 
-There are a bunch of methods that let you do a bunch of different
-things.  Here is an overview of them:
+There are a bunch of methods that let you do different things:
 
     test.verbose_set(1)
 
@@ -65,11 +64,23 @@ things.  Here is an overview of them:
 
     test.cleanup(condition)
 
+    test.command_args(program = 'program_or_script_to_run',
+                      interpreter = 'script_interpreter',
+                      arguments = 'arguments to pass to program')
+
     test.run(program = 'program_or_script_to_run',
              interpreter = 'script_interpreter',
              arguments = 'arguments to pass to program',
              chdir = 'directory_to_chdir_to',
              stdin = 'input to feed to the program\n')
+             universal_newlines = True)
+
+    p = test.start(program = 'program_or_script_to_run',
+                   interpreter = 'script_interpreter',
+                   arguments = 'arguments to pass to program',
+                   universal_newlines = None)
+
+    test.finish(self, p)
 
     test.pass_test()
     test.pass_test(condition)
@@ -92,6 +103,11 @@ things.  Here is an overview of them:
     test.stderr(run)
 
     test.symlink(target, link)
+
+    test.banner(string)
+    test.banner(string, width)
+
+    test.diff(actual, expected)
 
     test.match(actual, expected)
 
@@ -154,6 +170,24 @@ in the same way as the match_*() methods described above.
 
     test = TestCmd.TestCmd(match = TestCmd.match_re_dotall)
 
+The TestCmd module provides unbound functions that can be used for the
+"diff" argument to TestCmd.TestCmd instantiation:
+
+    import TestCmd
+
+    test = TestCmd.TestCmd(match = TestCmd.match_re,
+                           diff = TestCmd.diff_re)
+
+    test = TestCmd.TestCmd(diff = TestCmd.simple_diff)
+
+The "diff" argument can also be used with standard difflib functions:
+
+    import difflib
+
+    test = TestCmd.TestCmd(diff = difflib.context_diff)
+
+    test = TestCmd.TestCmd(diff = difflib.unified_diff)
+
 Lastly, the where_is() method also exists in an unbound function
 version.
 
@@ -164,7 +198,7 @@ version.
     TestCmd.where_is('foo', 'PATH1;PATH2', '.suffix3;.suffix4')
 """
 
-# Copyright 2000, 2001, 2002, 2003, 2004 Steven Knight
+# Copyright 2000-2010 Steven Knight
 # This module is free software, and you may redistribute it and/or modify
 # it under the same terms as Python itself, so long as this copyright message
 # and disclaimer are retained in their original form.
@@ -181,8 +215,8 @@ version.
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCmd.py 0.32.D001 2008/10/30 23:00:04 knight"
-__version__ = "0.32"
+__revision__ = "TestCmd.py 0.37.D001 2010/01/11 16:55:50 knight"
+__version__ = "0.37"
 
 import errno
 import os
@@ -209,6 +243,11 @@ __all__ = [
     'python_executable',
     'TestCmd'
 ]
+
+try:
+    import difflib
+except ImportError:
+    __all__.append('simple_diff')
 
 def is_List(e):
     return type(e) is types.ListType \
@@ -239,6 +278,8 @@ re_space = re.compile('\s')
 
 _Cleanup = []
 
+_chain_to_exitfunc = None
+
 def _clean():
     global _Cleanup
     cleanlist = filter(None, _Cleanup)
@@ -246,8 +287,29 @@ def _clean():
     cleanlist.reverse()
     for test in cleanlist:
         test.cleanup()
+    if _chain_to_exitfunc:
+        _chain_to_exitfunc()
 
-sys.exitfunc = _clean
+try:
+    import atexit
+except ImportError:
+    # TODO(1.5): atexit requires python 2.0, so chain sys.exitfunc
+    try:
+        _chain_to_exitfunc = sys.exitfunc
+    except AttributeError:
+        pass
+    sys.exitfunc = _clean
+else:
+    atexit.register(_clean)
+
+try:
+    zip
+except NameError:
+    def zip(*lists):
+        result = []
+        for i in xrange(min(map(len, lists))):
+            result.append(tuple(map(lambda l, i=i: l[i], lists)))
+        return result
 
 class Collector:
     def __init__(self, top):
@@ -365,7 +427,13 @@ def match_re(lines = None, res = None):
     if len(lines) != len(res):
         return
     for i in range(len(lines)):
-        if not re.compile("^" + res[i] + "$").search(lines[i]):
+        s = "^" + res[i] + "$"
+        try:
+            expr = re.compile(s)
+        except re.error, e:
+            msg = "Regular expression error in %s: %s"
+            raise re.error, msg % (repr(s), e[0])
+        if not expr.search(lines[i]):
             return
     return 1
 
@@ -376,8 +444,44 @@ def match_re_dotall(lines = None, res = None):
         lines = string.join(lines, "\n")
     if not type(res) is type(""):
         res = string.join(res, "\n")
-    if re.compile("^" + res + "$", re.DOTALL).match(lines):
+    s = "^" + res + "$"
+    try:
+        expr = re.compile(s, re.DOTALL)
+    except re.error, e:
+        msg = "Regular expression error in %s: %s"
+        raise re.error, msg % (repr(s), e[0])
+    if expr.match(lines):
         return 1
+
+try:
+    import difflib
+except ImportError:
+    pass
+else:
+    def simple_diff(a, b, fromfile='', tofile='',
+                    fromfiledate='', tofiledate='', n=3, lineterm='\n'):
+        """
+        A function with the same calling signature as difflib.context_diff
+        (diff -c) and difflib.unified_diff (diff -u) but which prints
+        output like the simple, unadorned 'diff" command.
+        """
+        sm = difflib.SequenceMatcher(None, a, b)
+        def comma(x1, x2):
+            return x1+1 == x2 and str(x2) or '%s,%s' % (x1+1, x2)
+        result = []
+        for op, a1, a2, b1, b2 in sm.get_opcodes():
+            if op == 'delete':
+                result.append("%sd%d" % (comma(a1, a2), b1))
+                result.extend(map(lambda l: '< ' + l, a[a1:a2]))
+            elif op == 'insert':
+                result.append("%da%s" % (a1, comma(b1, b2)))
+                result.extend(map(lambda l: '> ' + l, b[b1:b2]))
+            elif op == 'replace':
+                result.append("%sc%s" % (comma(a1, a2), comma(b1, b2)))
+                result.extend(map(lambda l: '< ' + l, a[a1:a2]))
+                result.append('---')
+                result.extend(map(lambda l: '> ' + l, b[b1:b2]))
+        return result
 
 def diff_re(a, b, fromfile='', tofile='',
                 fromfiledate='', tofiledate='', n=3, lineterm='\n'):
@@ -396,7 +500,13 @@ def diff_re(a, b, fromfile='', tofile='',
         b = b + ['']*diff
     i = 0
     for aline, bline in zip(a, b):
-        if not re.compile("^" + aline + "$").search(bline):
+        s = "^" + aline + "$"
+        try:
+            expr = re.compile(s)
+        except re.error, e:
+            msg = "Regular expression error in %s: %s"
+            raise re.error, msg % (repr(s), e[0])
+        if not expr.search(bline):
             result.append("%sc%s" % (i+1, i+1))
             result.append('< ' + repr(a[i]))
             result.append('---')
@@ -708,6 +818,7 @@ def recv_some(p, t=.1, e=1, tr=5, stderr=0):
             time.sleep(max((x-time.time())/tr, 0))
     return ''.join(y)
 
+# TODO(3.0:  rewrite to use memoryview()
 def send_all(p, data):
     while len(data):
         sent = p.send(data)
@@ -717,7 +828,15 @@ def send_all(p, data):
 
 
 
-class TestCmd:
+try:
+    object
+except NameError:
+    class object:
+        pass
+
+
+
+class TestCmd(object):
     """Class TestCmd
     """
 
@@ -728,6 +847,7 @@ class TestCmd:
                        subdir = None,
                        verbose = None,
                        match = None,
+                       diff = None,
                        combine = 0,
                        universal_newlines = 1):
         self._cwd = os.getcwd()
@@ -743,9 +863,20 @@ class TestCmd:
         self.combine = combine
         self.universal_newlines = universal_newlines
         if not match is None:
-            self.match_func = match
+            self.match_function = match
         else:
-            self.match_func = match_re
+            self.match_function = match_re
+        if not diff is None:
+            self.diff_function = diff
+        else:
+            try:
+                difflib
+            except NameError:
+                pass
+            else:
+                self.diff_function = simple_diff
+                #self.diff_function = difflib.context_diff
+                #self.diff_function = difflib.unified_diff
         self._dirlist = []
         self._preserve = {'pass_test': 0, 'fail_test': 0, 'no_result': 0}
         if os.environ.has_key('PRESERVE') and not os.environ['PRESERVE'] is '':
@@ -778,6 +909,14 @@ class TestCmd:
     def __repr__(self):
         return "%x" % id(self)
 
+    banner_char = '='
+    banner_width = 80
+
+    def banner(self, s, width=None):
+        if width is None:
+            width = self.banner_width
+        return s + self.banner_char * (width - len(s))
+
     if os.name == 'posix':
 
         def escape(self, arg):
@@ -809,6 +948,12 @@ class TestCmd:
         if not os.path.isabs(path):
             path = os.path.join(self.workdir, path)
         return path
+
+    def chmod(self, path, mode):
+        """Changes permissions on the specified file or directory
+        path name."""
+        path = self.canonicalize(path)
+        os.chmod(path, mode)
 
     def cleanup(self, condition = None):
         """Removes any temporary working directories for the specified
@@ -848,20 +993,49 @@ class TestCmd:
         except (AttributeError, ValueError):
             pass
 
-    def chmod(self, path, mode):
-        """Changes permissions on the specified file or directory
-        path name."""
-        path = self.canonicalize(path)
-        os.chmod(path, mode)
+    def command_args(self, program = None,
+                           interpreter = None,
+                           arguments = None):
+        if program:
+            if type(program) == type('') and not os.path.isabs(program):
+                program = os.path.join(self._cwd, program)
+        else:
+            program = self.program
+            if not interpreter:
+                interpreter = self.interpreter
+        if not type(program) in [type([]), type(())]:
+            program = [program]
+        cmd = list(program)
+        if interpreter:
+            if not type(interpreter) in [type([]), type(())]:
+                interpreter = [interpreter]
+            cmd = list(interpreter) + cmd
+        if arguments:
+            if type(arguments) == type(''):
+                arguments = string.split(arguments)
+            cmd.extend(arguments)
+        return cmd
 
     def description_set(self, description):
         """Set the description of the functionality being tested.
         """
         self.description = description
 
-#    def diff(self):
-#        """Diff two arrays.
-#        """
+    try:
+        difflib
+    except NameError:
+        def diff(self, a, b, name, *args, **kw):
+            print self.banner('Expected %s' % name)
+            print a
+            print self.banner('Actual %s' % name)
+            print b
+    else:
+        def diff(self, a, b, name, *args, **kw):
+            print self.banner(name)
+            args = (a.splitlines(), b.splitlines()) + args
+            lines = apply(self.diff_function, args, kw)
+            for l in lines:
+                print l
 
     def fail_test(self, condition = 1, function = None, skip = 0):
         """Cause the test to fail.
@@ -883,7 +1057,7 @@ class TestCmd:
     def match(self, lines, matches):
         """Compare actual and expected file contents.
         """
-        return self.match_func(lines, matches)
+        return self.match_function(lines, matches)
 
     def match_exact(self, lines, matches):
         """Compare actual and expected file contents.
@@ -974,29 +1148,20 @@ class TestCmd:
         The specified program will have the original directory
         prepended unless it is enclosed in a [list].
         """
-        if program:
-            if type(program) == type('') and not os.path.isabs(program):
-                program = os.path.join(self._cwd, program)
-        else:
-            program = self.program
-            if not interpreter:
-                interpreter = self.interpreter
-        if not type(program) in [type([]), type(())]:
-            program = [program]
-        cmd = list(program)
-        if interpreter:
-            if not type(interpreter) in [type([]), type(())]:
-                interpreter = [interpreter]
-            cmd = list(interpreter) + cmd
-        if arguments:
-            if type(arguments) == type(''):
-                arguments = string.split(arguments)
-            cmd.extend(arguments)
+        cmd = self.command_args(program, interpreter, arguments)
         cmd_string = string.join(map(self.escape, cmd), ' ')
         if self.verbose:
             sys.stderr.write(cmd_string + "\n")
         if universal_newlines is None:
             universal_newlines = self.universal_newlines
+
+        # On Windows, if we make stdin a pipe when we plan to send 
+        # no input, and the test program exits before
+        # Popen calls msvcrt.open_osfhandle, that call will fail.
+        # So don't use a pipe for stdin if we don't need one.
+        stdin = kw.get('stdin', None)
+        if stdin is not None:
+            stdin = subprocess.PIPE
 
         combine = kw.get('combine', self.combine)
         if combine:
@@ -1005,7 +1170,7 @@ class TestCmd:
             stderr_value = subprocess.PIPE
 
         return Popen(cmd,
-                     stdin=subprocess.PIPE,
+                     stdin=stdin,
                      stdout=subprocess.PIPE,
                      stderr=stderr_value,
                      universal_newlines=universal_newlines)
@@ -1047,14 +1212,18 @@ class TestCmd:
             if self.verbose:
                 sys.stderr.write("chdir(" + chdir + ")\n")
             os.chdir(chdir)
-        p = self.start(program, interpreter, arguments, universal_newlines)
+        p = self.start(program,
+                       interpreter,
+                       arguments,
+                       universal_newlines,
+                       stdin=stdin)
         if stdin:
             if is_List(stdin):
                 for line in stdin:
                     p.stdin.write(line)
             else:
                 p.stdin.write(stdin)
-        p.stdin.close()
+            p.stdin.close()
 
         out = p.stdout.read()
         if p.stderr is None:
@@ -1294,9 +1463,8 @@ class TestCmd:
             do_chmod(top)
 
             def chmod_entries(arg, dirname, names, do_chmod=do_chmod):
-                pathnames = map(lambda n, d=dirname: os.path.join(d, n),
-                                names)
-                map(lambda p, do=do_chmod: do(p), pathnames)
+                for n in names:
+                    do_chmod(os.path.join(dirname, n))
 
             os.path.walk(top, chmod_entries, None)
         else:
@@ -1311,7 +1479,7 @@ class TestCmd:
             col = Collector(top)
             os.path.walk(top, col, None)
             col.entries.reverse()
-            map(lambda d, do=do_chmod: do(d), col.entries)
+            for d in col.entries: do_chmod(d)
 
     def writable(self, top, write=1):
         """Make the specified directory tree writable (write == 1)
@@ -1347,7 +1515,7 @@ class TestCmd:
         else:
             col = Collector(top)
             os.path.walk(top, col, None)
-            map(lambda d, do=do_chmod: do(d), col.entries)
+            for d in col.entries: do_chmod(d)
 
     def executable(self, top, execute=1):
         """Make the specified directory tree executable (execute == 1)
@@ -1384,9 +1552,8 @@ class TestCmd:
             do_chmod(top)
 
             def chmod_entries(arg, dirname, names, do_chmod=do_chmod):
-                pathnames = map(lambda n, d=dirname: os.path.join(d, n),
-                                names)
-                map(lambda p, do=do_chmod: do(p), pathnames)
+                for n in names:
+                    do_chmod(os.path.join(dirname, n))
 
             os.path.walk(top, chmod_entries, None)
         else:
@@ -1401,7 +1568,7 @@ class TestCmd:
             col = Collector(top)
             os.path.walk(top, col, None)
             col.entries.reverse()
-            map(lambda d, do=do_chmod: do(d), col.entries)
+            for d in col.entries: do_chmod(d)
 
     def write(self, file, content, mode = 'wb'):
         """Writes the specified content text (second argument) to the
@@ -1416,3 +1583,9 @@ class TestCmd:
         if mode[0] != 'w':
             raise ValueError, "mode must begin with 'w'"
         open(file, mode).write(content)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -31,7 +31,6 @@ In other words, if a build has a directory as a source file, any
 change in any file under that directory should trigger a rebuild.
 """
 
-import sys
 import TestSCons
 
 
@@ -168,3 +167,9 @@ test.not_up_to_date(arguments='tstamp.out')
 test.not_up_to_date(arguments='content.out')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

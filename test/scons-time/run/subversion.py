@@ -38,10 +38,11 @@ test = TestSCons_time.TestSCons_time()
 
 test.write_sample_project('foo.tar')
 
+_python_ = TestSCons_time._python_
 my_svn_py = test.write_fake_svn_py('my_svn.py')
 
 test.write('config', """\
-svn = r'%(my_svn_py)s'
+svn = r'%(_python_)s %(my_svn_py)s'
 """ % locals())
 
 test.run(arguments = 'run -f config --svn http://xyzzy --number 617,716 foo.tar')
@@ -67,6 +68,14 @@ expect = [
 
 content = test.read(test.workpath('foo-617-2.log'), mode='r')
 
-test.must_contain_all_lines('foo-617-2.log', content, expect, re.search)
+def re_find(content, line):
+    return re.search(line, content)
+test.must_contain_all_lines(content, expect, 'foo-617-2.log', re_find)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -82,7 +82,7 @@ def diff_dict(d1, d2):
 called_it = {}
 built_it = {}
 
-class Builder:
+class Builder(SCons.Builder.BuilderBase):
     """A dummy Builder class for testing purposes.  "Building"
     a target is simply setting a value in the dictionary.
     """
@@ -172,6 +172,7 @@ class TestEnvironmentFixture:
                                                suffix = '.o',
                                                single_source = 1)
             kw['BUILDERS'] = {'Object' : static_obj}
+            static_obj.add_action('.cpp', 'fake action')
             
         env = apply(Environment, args, kw)
         return env
@@ -887,6 +888,17 @@ sys.exit(0)
 
 class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
 
+    reserved_variables = [
+        'CHANGED_SOURCES',
+        'CHANGED_TARGETS',
+        'SOURCE',
+        'SOURCES',
+        'TARGET',
+        'TARGETS',
+        'UNCHANGED_SOURCES',
+        'UNCHANGED_TARGETS',
+    ]
+
     def test___init__(self):
         """Test construction Environment creation
 
@@ -944,20 +956,20 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
                                  'builder2' : b2 })
         called_it = {}
         env.builder1('in1')
-        assert called_it['target'] == None, called_it
+        assert called_it['target'] is None, called_it
         assert called_it['source'] == ['in1'], called_it
 
         called_it = {}
         env.builder2(source = 'in2', xyzzy = 1)
-        assert called_it['target'] == None, called_it
+        assert called_it['target'] is None, called_it
         assert called_it['source'] == ['in2'], called_it
         assert called_it['xyzzy'] == 1, called_it
 
         called_it = {}
         env.builder1(foo = 'bar')
         assert called_it['foo'] == 'bar', called_it
-        assert called_it['target'] == None, called_it
-        assert called_it['source'] == None, called_it
+        assert called_it['target'] is None, called_it
+        assert called_it['source'] is None, called_it
 
     def test_BuilderWrapper_attributes(self):
         """Test getting and setting of BuilderWrapper attributes
@@ -1047,6 +1059,7 @@ env4.builder1.env, env3)
         s1 = Scanner(name = 'scanner1', skeys = [".c", ".cc"])
         s2 = Scanner(name = 'scanner2', skeys = [".m4"])
         s3 = Scanner(name = 'scanner3', skeys = [".m4", ".m5"])
+        s4 = Scanner(name = 'scanner4', skeys = [None])
 
 #        XXX Tests for scanner execution through different environments,
 #        XXX if we ever want to do that some day
@@ -1110,6 +1123,29 @@ env4.builder1.env, env3)
         s = map(env.get_scanner, suffixes)
         assert s == [s1, s1, None, s3, s3], s
 
+        # Verify behavior of case-insensitive suffix matches on Windows.
+        uc_suffixes = map(string.upper, suffixes)
+
+        env = Environment(SCANNERS = [s1, s2, s3],
+                          PLATFORM = 'linux')
+
+        s = map(env.get_scanner, suffixes)
+        assert s == [s1, s1, None, s2, s3], s
+
+        s = map(env.get_scanner, uc_suffixes)
+        assert s == [None, None, None, None, None], s
+
+        env['PLATFORM'] = 'win32'
+
+        s = map(env.get_scanner, uc_suffixes)
+        assert s == [s1, s1, None, s2, s3], s
+
+        # Verify behavior for a scanner returning None (on Windows
+        # where we might try to perform case manipulation on None).
+        env.Replace(SCANNERS = [s4])
+        s = map(env.get_scanner, suffixes)
+        assert s == [None, None, None, None, None], s
+
     def test_ENV(self):
         """Test setting the external ENV in Environments
         """
@@ -1123,10 +1159,14 @@ env4.builder1.env, env3)
         """Test warning generation when reserved variable names are set"""
 
         reserved_variables = [
+            'CHANGED_SOURCES',
+            'CHANGED_TARGETS',
             'SOURCE',
             'SOURCES',
             'TARGET',
             'TARGETS',
+            'UNCHANGED_SOURCES',
+            'UNCHANGED_TARGETS',
         ]
 
         warning = SCons.Warnings.ReservedVariableWarning
@@ -1135,7 +1175,7 @@ env4.builder1.env, env3)
 
         try:
             env4 = Environment()
-            for kw in reserved_variables:
+            for kw in self.reserved_variables:
                 exc_caught = None
                 try:
                     env4[kw] = 'xyzzy'
@@ -1149,12 +1189,7 @@ env4.builder1.env, env3)
     def test_FutureReservedVariables(self):
         """Test warning generation when future reserved variable names are set"""
 
-        future_reserved_variables = [
-            'CHANGED_SOURCES',
-            'CHANGED_TARGETS',
-            'UNCHANGED_SOURCES',
-            'UNCHANGED_TARGETS',
-        ]
+        future_reserved_variables = []
 
         warning = SCons.Warnings.FutureReservedVariableWarning
         SCons.Warnings.enableWarningClass(warning)
@@ -1593,9 +1628,11 @@ def exists(env):
         assert env3['X'] == {'x1': 8, 'x2': 9}, env3['X']
         assert env3['Y'] == {'y1': 10}, env3['Y']
 
-        env4 = self.TestEnvironment(BUILDERS = {'z1' : 11})
-        env4.Append(BUILDERS = {'z2' : 12})
-        assert env4['BUILDERS'] == {'z1' : 11, 'z2' : 12}, env4['BUILDERS']
+        z1 = Builder()
+        z2 = Builder()
+        env4 = self.TestEnvironment(BUILDERS = {'z1' : z1})
+        env4.Append(BUILDERS = {'z2' : z2})
+        assert env4['BUILDERS'] == {'z1' : z1, 'z2' : z2}, env4['BUILDERS']
         assert hasattr(env4, 'z1')
         assert hasattr(env4, 'z2')
 
@@ -1612,6 +1649,13 @@ def exists(env):
         env1.AppendENVPath('MYPATH',r'C:\mydir\num\three','MYENV', sep = ';', delete_existing=0)
         assert(env1['ENV']['PATH'] == r'C:\dir\num\one;C:\dir\num\two;C:\dir\num\three')
         assert(env1['MYENV']['MYPATH'] == r'C:\mydir\num\two;C:\mydir\num\three;C:\mydir\num\one')
+
+        test = TestCmd.TestCmd(workdir = '')
+        test.subdir('sub1', 'sub2')
+        p=env1['ENV']['PATH']
+        env1.AppendENVPath('PATH','#sub1', sep = ';')
+        env1.AppendENVPath('PATH',env1.fs.Dir('sub2'), sep = ';')
+        assert env1['ENV']['PATH'] == p + ';sub1;sub2', env1['ENV']['PATH']
 
     def test_AppendUnique(self):
         """Test appending to unique values to construction variables
@@ -1736,10 +1780,10 @@ def exists(env):
         assert not env1.Dictionary('ZZZ').has_key(5)
 
         #
-        env1 = self.TestEnvironment(BUILDERS = {'b1' : 1})
+        env1 = self.TestEnvironment(BUILDERS = {'b1' : Builder()})
         assert hasattr(env1, 'b1'), "env1.b1 was not set"
         assert env1.b1.object == env1, "b1.object doesn't point to env1"
-        env2 = env1.Clone(BUILDERS = {'b2' : 2})
+        env2 = env1.Clone(BUILDERS = {'b2' : Builder()})
         assert env2 is env2
         assert env2 == env2
         assert hasattr(env1, 'b1'), "b1 was mistakenly cleared from env1"
@@ -1934,12 +1978,12 @@ def generate(env):
 
         assert paths[0] == env.FindIxes(paths, 'LIBPREFIX', 'LIBSUFFIX')
         assert paths[1] == env.FindIxes(paths, 'SHLIBPREFIX', 'SHLIBSUFFIX')
-        assert None == env.FindIxes(paths, 'PREFIX', 'POST')
+        assert None is env.FindIxes(paths, 'PREFIX', 'POST')
 
         paths = ['libfoo.a', 'prefoopost']
 
         assert paths[0] == env.FindIxes(paths, 'LIBPREFIX', 'LIBSUFFIX')
-        assert None == env.FindIxes(paths, 'SHLIBPREFIX', 'SHLIBSUFFIX')
+        assert None is env.FindIxes(paths, 'SHLIBPREFIX', 'SHLIBSUFFIX')
         assert paths[1] == env.FindIxes(paths, 'PREFIX', 'SUFFIX')
 
     def test_ParseConfig(self):
@@ -2239,9 +2283,11 @@ f5: \
         assert env3['X'] == {'x1': 8, 'x2' : 9}, env3['X']
         assert env3['Y'] == {'y1': 10}, env3['Y']
 
-        env4 = self.TestEnvironment(BUILDERS = {'z1' : 11})
-        env4.Prepend(BUILDERS = {'z2' : 12})
-        assert env4['BUILDERS'] == {'z1' : 11, 'z2' : 12}, env4['BUILDERS']
+        z1 = Builder()
+        z2 = Builder()
+        env4 = self.TestEnvironment(BUILDERS = {'z1' : z1})
+        env4.Prepend(BUILDERS = {'z2' : z2})
+        assert env4['BUILDERS'] == {'z1' : z1, 'z2' : z2}, env4['BUILDERS']
         assert hasattr(env4, 'z1')
         assert hasattr(env4, 'z2')
 
@@ -2259,17 +2305,12 @@ f5: \
         assert(env1['ENV']['PATH'] == r'C:\dir\num\three;C:\dir\num\two;C:\dir\num\one')
         assert(env1['MYENV']['MYPATH'] == r'C:\mydir\num\one;C:\mydir\num\three;C:\mydir\num\two')
 
-    def test_PrependENVPath(self):
-        """Test prepending to an ENV path."""
-        env1 = self.TestEnvironment(ENV = {'PATH': r'C:\dir\num\one;C:\dir\num\two'},
-                           MYENV = {'MYPATH': r'C:\mydir\num\one;C:\mydir\num\two'})
-        # have to include the pathsep here so that the test will work on UNIX too.
-        env1.PrependENVPath('PATH',r'C:\dir\num\two',sep = ';')
-        env1.PrependENVPath('PATH',r'C:\dir\num\three',sep = ';')
-        env1.PrependENVPath('MYPATH',r'C:\mydir\num\three','MYENV',sep = ';')
-        env1.PrependENVPath('MYPATH',r'C:\mydir\num\one','MYENV',sep = ';')
-        assert(env1['ENV']['PATH'] == r'C:\dir\num\three;C:\dir\num\two;C:\dir\num\one')
-        assert(env1['MYENV']['MYPATH'] == r'C:\mydir\num\one;C:\mydir\num\three;C:\mydir\num\two')
+        test = TestCmd.TestCmd(workdir = '')
+        test.subdir('sub1', 'sub2')
+        p=env1['ENV']['PATH']
+        env1.PrependENVPath('PATH','#sub1', sep = ';')
+        env1.PrependENVPath('PATH',env1.fs.Dir('sub2'), sep = ';')
+        assert env1['ENV']['PATH'] == 'sub2;sub1;' + p, env1['ENV']['PATH']
 
     def test_PrependUnique(self):
         """Test prepending unique values to construction variables
@@ -2362,9 +2403,11 @@ f5: \
         env2 = self.TestEnvironment(AAA = 'a', BBB = 'bbb', CCC = 'ccc')
         assert env1 == env2, diff_env(env1, env2)
 
-        env3 = self.TestEnvironment(BUILDERS = {'b1' : 1})
+        b1 = Builder()
+        b2 = Builder()
+        env3 = self.TestEnvironment(BUILDERS = {'b1' : b1})
         assert hasattr(env3, 'b1'), "b1 was not set"
-        env3.Replace(BUILDERS = {'b2' : 2})
+        env3.Replace(BUILDERS = {'b2' : b2})
         assert not hasattr(env3, 'b1'), "b1 was not cleared"
         assert hasattr(env3, 'b2'), "b2 was not set"
 
@@ -2692,20 +2735,20 @@ def generate(env):
         env = self.TestEnvironment(FOO = 'xyzzy')
 
         b = env.Builder(action = 'foo')
-        assert not b is None, b
+        assert b is not None, b
 
         b = env.Builder(action = '$FOO')
-        assert not b is None, b
+        assert b is not None, b
 
         b = env.Builder(action = ['$FOO', 'foo'])
-        assert not b is None, b
+        assert b is not None, b
 
         def func(arg):
             pass
         b = env.Builder(action = func)
-        assert not b is None, b
+        assert b is not None, b
         b = env.Builder(generator = func)
-        assert not b is None, b
+        assert b is not None, b
 
     def test_CacheDir(self):
         """Test the CacheDir() method"""
@@ -2748,7 +2791,7 @@ def generate(env):
         env = Environment()
         t = env.Command(target='foo.out', source=['foo1.in', 'foo2.in'],
                         action='buildfoo $target $source')[0]
-        assert not t.builder is None
+        assert t.builder is not None
         assert t.builder.action.__class__.__name__ == 'CommandAction'
         assert t.builder.action.cmd_list == 'buildfoo $target $source'
         assert 'foo1.in' in map(lambda x: x.path, t.sources)
@@ -2765,7 +2808,7 @@ def generate(env):
             return 0
         t = env.Command(target='foo.out', source=['foo1.in','foo2.in'],
                         action=testFunc)[0]
-        assert not t.builder is None
+        assert t.builder is not None
         assert t.builder.action.__class__.__name__ == 'FunctionAction'
         t.build()
         assert 'foo1.in' in map(lambda x: x.path, t.sources)
@@ -2778,7 +2821,7 @@ def generate(env):
         t = env.Command(target='baz.out', source='baz.in',
                         action='${TEST2(XYZ)}',
                         XYZ='magic word')[0]
-        assert not t.builder is None
+        assert t.builder is not None
         t.build()
         assert x[0] == 'magic word', x
 
@@ -2809,11 +2852,11 @@ def generate(env):
                 pass
 
             c = env.Configure()
-            assert not c is None, c
+            assert c is not None, c
             c.Finish()
 
             c = env.Configure(custom_tests = {'foo' : func, '$FOO' : func})
-            assert not c is None, c
+            assert c is not None, c
             assert hasattr(c, 'foo')
             assert hasattr(c, 'xyzzy')
             c.Finish()
@@ -3102,17 +3145,17 @@ def generate(env):
         env = self.TestEnvironment(FOO = scan)
 
         s = env.Scanner('foo')
-        assert not s is None, s
+        assert s is not None, s
 
         s = env.Scanner(function = 'foo')
-        assert not s is None, s
+        assert s is not None, s
 
         if 0:
             s = env.Scanner('$FOO')
-            assert not s is None, s
+            assert s is not None, s
 
             s = env.Scanner(function = '$FOO')
-            assert not s is None, s
+            assert s is not None, s
 
     def test_SConsignFile(self):
         """Test the SConsignFile() method"""
@@ -3138,19 +3181,19 @@ def generate(env):
 
             env.SConsignFile('foo')
             assert fnames[-1] == os.path.join(os.sep, 'dir', 'foo'), fnames
-            assert dbms[-1] == None, dbms
+            assert dbms[-1] is None, dbms
 
             env.SConsignFile('$FOO')
             assert fnames[-1] == os.path.join(os.sep, 'dir', 'SConsign'), fnames
-            assert dbms[-1] == None, dbms
+            assert dbms[-1] is None, dbms
 
             env.SConsignFile('/$FOO')
             assert fnames[-1] == os.sep + 'SConsign', fnames
-            assert dbms[-1] == None, dbms
+            assert dbms[-1] is None, dbms
 
             env.SConsignFile(os.sep + '$FOO')
             assert fnames[-1] == os.sep + 'SConsign', fnames
-            assert dbms[-1] == None, dbms
+            assert dbms[-1] is None, dbms
 
             env.SConsignFile('$BAR', 'x')
             assert fnames[-1] == os.path.join(os.sep, 'File'), fnames
@@ -3162,11 +3205,11 @@ def generate(env):
 
             env.SConsignFile()
             assert fnames[-1] == os.path.join(os.sep, 'dir', '.sconsign'), fnames
-            assert dbms[-1] == None, dbms
+            assert dbms[-1] is None, dbms
 
             env.SConsignFile(None)
-            assert fnames[-1] == None, fnames
-            assert dbms[-1] == None, dbms
+            assert fnames[-1] is None, fnames
+            assert dbms[-1] is None, dbms
         finally:
             SCons.SConsign.File = save_SConsign_File
 
@@ -3363,19 +3406,22 @@ def generate(env):
         f = env.xxx('$FOO')
         assert f == 'foo', f
 
-    def test_bad_keywords(type):
+    def test_bad_keywords(self):
         """Test trying to use reserved keywords in an Environment"""
-        reserved = ['TARGETS','SOURCES', 'SOURCE','TARGET']
         added = []
 
-        env = type.TestEnvironment(TARGETS = 'targets',
+        env = self.TestEnvironment(TARGETS = 'targets',
                                    SOURCES = 'sources',
                                    SOURCE = 'source',
                                    TARGET = 'target',
+                                   CHANGED_SOURCES = 'changed_sources',
+                                   CHANGED_TARGETS = 'changed_targets',
+                                   UNCHANGED_SOURCES = 'unchanged_sources',
+                                   UNCHANGED_TARGETS = 'unchanged_targets',
                                    INIT = 'init')
         bad_msg = '%s is not reserved, but got omitted; see Environment.construction_var_name_ok'
         added.append('INIT')
-        for x in reserved:
+        for x in self.reserved_variables:
             assert not env.has_key(x), env[x]
         for x in added:
             assert env.has_key(x), bad_msg % x
@@ -3384,9 +3430,13 @@ def generate(env):
                    SOURCES = 'sources',
                    SOURCE = 'source',
                    TARGET = 'target',
+                   CHANGED_SOURCES = 'changed_sources',
+                   CHANGED_TARGETS = 'changed_targets',
+                   UNCHANGED_SOURCES = 'unchanged_sources',
+                   UNCHANGED_TARGETS = 'unchanged_targets',
                    APPEND = 'append')
         added.append('APPEND')
-        for x in reserved:
+        for x in self.reserved_variables:
             assert not env.has_key(x), env[x]
         for x in added:
             assert env.has_key(x), bad_msg % x
@@ -3395,9 +3445,13 @@ def generate(env):
                          SOURCES = 'sources',
                          SOURCE = 'source',
                          TARGET = 'target',
+                         CHANGED_SOURCES = 'changed_sources',
+                         CHANGED_TARGETS = 'changed_targets',
+                         UNCHANGED_SOURCES = 'unchanged_sources',
+                         UNCHANGED_TARGETS = 'unchanged_targets',
                          APPENDUNIQUE = 'appendunique')
         added.append('APPENDUNIQUE')
-        for x in reserved:
+        for x in self.reserved_variables:
             assert not env.has_key(x), env[x]
         for x in added:
             assert env.has_key(x), bad_msg % x
@@ -3406,9 +3460,13 @@ def generate(env):
                     SOURCES = 'sources',
                     SOURCE = 'source',
                     TARGET = 'target',
+                    CHANGED_SOURCES = 'changed_sources',
+                    CHANGED_TARGETS = 'changed_targets',
+                    UNCHANGED_SOURCES = 'unchanged_sources',
+                    UNCHANGED_TARGETS = 'unchanged_targets',
                     PREPEND = 'prepend')
         added.append('PREPEND')
-        for x in reserved:
+        for x in self.reserved_variables:
             assert not env.has_key(x), env[x]
         for x in added:
             assert env.has_key(x), bad_msg % x
@@ -3417,9 +3475,13 @@ def generate(env):
                     SOURCES = 'sources',
                     SOURCE = 'source',
                     TARGET = 'target',
+                    CHANGED_SOURCES = 'changed_sources',
+                    CHANGED_TARGETS = 'changed_targets',
+                    UNCHANGED_SOURCES = 'unchanged_sources',
+                    UNCHANGED_TARGETS = 'unchanged_targets',
                     PREPENDUNIQUE = 'prependunique')
         added.append('PREPENDUNIQUE')
-        for x in reserved:
+        for x in self.reserved_variables:
             assert not env.has_key(x), env[x]
         for x in added:
             assert env.has_key(x), bad_msg % x
@@ -3428,9 +3490,13 @@ def generate(env):
                     SOURCES = 'sources',
                     SOURCE = 'source',
                     TARGET = 'target',
+                    CHANGED_SOURCES = 'changed_sources',
+                    CHANGED_TARGETS = 'changed_targets',
+                    UNCHANGED_SOURCES = 'unchanged_sources',
+                    UNCHANGED_TARGETS = 'unchanged_targets',
                     REPLACE = 'replace')
         added.append('REPLACE')
-        for x in reserved:
+        for x in self.reserved_variables:
             assert not env.has_key(x), env[x]
         for x in added:
             assert env.has_key(x), bad_msg % x
@@ -3439,8 +3505,12 @@ def generate(env):
                          SOURCES = 'sources',
                          SOURCE = 'source',
                          TARGET = 'target',
+                         CHANGED_SOURCES = 'changed_sources',
+                         CHANGED_TARGETS = 'changed_targets',
+                         UNCHANGED_SOURCES = 'unchanged_sources',
+                         UNCHANGED_TARGETS = 'unchanged_targets',
                          COPY = 'copy')
-        for x in reserved:
+        for x in self.reserved_variables:
             assert not copy.has_key(x), env[x]
         for x in added + ['COPY']:
             assert copy.has_key(x), bad_msg % x
@@ -3449,8 +3519,12 @@ def generate(env):
                              'SOURCES' : 'sources',
                              'SOURCE' : 'source',
                              'TARGET' : 'target',
+                             'CHANGED_SOURCES' : 'changed_sources',
+                             'CHANGED_TARGETS' : 'changed_targets',
+                             'UNCHANGED_SOURCES' : 'unchanged_sources',
+                             'UNCHANGED_TARGETS' : 'unchanged_targets',
                              'OVERRIDE' : 'override'})
-        for x in reserved:
+        for x in self.reserved_variables:
             assert not over.has_key(x), over[x]
         for x in added + ['OVERRIDE']:
             assert over.has_key(x), bad_msg % x
@@ -3543,8 +3617,8 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
         assert env.get('YYY') == 'y', env.get('YYY')
         assert env2.get('YYY') == 'y', env2.get('YYY')
         assert env3.get('YYY') == 'y3', env3.get('YYY')
-        assert env.get('ZZZ') == None, env.get('ZZZ')
-        assert env2.get('ZZZ') == None, env2.get('ZZZ')
+        assert env.get('ZZZ') is None, env.get('ZZZ')
+        assert env2.get('ZZZ') is None, env2.get('ZZZ')
         assert env3.get('ZZZ') == 'z3', env3.get('ZZZ')
 
     def test_has_key(self):
@@ -3869,15 +3943,15 @@ class EnvironmentVariableTestCase(unittest.TestCase):
     def test_is_valid_construction_var(self):
         """Testing is_valid_construction_var()"""
         r = is_valid_construction_var("_a")
-        assert not r is None, r
+        assert r is not None, r
         r = is_valid_construction_var("z_")
-        assert not r is None, r
+        assert r is not None, r
         r = is_valid_construction_var("X_")
-        assert not r is None, r
+        assert r is not None, r
         r = is_valid_construction_var("2a")
         assert r is None, r
         r = is_valid_construction_var("a2_")
-        assert not r is None, r
+        assert r is not None, r
         r = is_valid_construction_var("/")
         assert r is None, r
         r = is_valid_construction_var("_/")
@@ -3911,3 +3985,9 @@ if __name__ == "__main__":
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

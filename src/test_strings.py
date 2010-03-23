@@ -111,6 +111,13 @@ class CheckUnexpandedStrings(Checker):
     def must_be_built(self):
         return None
 
+class CheckPassTest(Checker):
+    expressions = [
+        re.compile(r'\.pass_test()'),
+    ]
+    def must_be_built(self):
+        return None
+
 class CheckExpandedCopyright(Checker):
     expressions = [
         re.compile('Copyright.*The SCons Foundation'),
@@ -138,6 +145,14 @@ check_list = [
     CheckUnexpandedStrings(
         'test',
         search_list = [ '*.py' ],
+    ),
+
+    CheckPassTest(
+        'test',
+        search_list = [ '*.py' ],
+        remove_list = [
+            'Fortran/common.py',
+        ],
     ),
 
     CheckExpandedCopyright(
@@ -225,7 +240,14 @@ check_list = [
             'src/engine/SCons/dblite.py',
             'src/script/MANIFEST.in',
             'src/script/setup.cfg',
+            'test/Fortran/.exclude_tests',
+            'timings/changelog.html',
+            'timings/graph.html',
+            'timings/index.html',
         ],
+        remove_patterns = [
+            '*.js',
+        ]
     ),
 
 ]
@@ -250,3 +272,9 @@ if not_built:
     test.no_result(1)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

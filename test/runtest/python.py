@@ -28,9 +28,9 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test that the -P option lets us specify a Python version to use.
 """
 
-import os.path
+import os
 import re
-import sys
+import string
 
 if not hasattr(os.path, 'pardir'):
     os.path.pardir = '..'
@@ -46,29 +46,35 @@ head, dir = os.path.split(head)
 
 mypython = os.path.join(head, dir, os.path.pardir, dir, python)
 
+def escape(s):
+    return string.replace(s, '\\', '\\\\')
+
+if re.search('\s', mypython):
+    mypythonstring = '"%s"' % escape(mypython)
+else:
+    mypythonstring = escape(mypython)
+
 test.subdir('test')
 
 test.write_passing_test(['test', 'pass.py'])
 
-# NOTE:  The "test/pass.py : PASS" line has spaces at the end.
-
-expect = r"""qmtest run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" --context python="%(mypython)s" test
---- TEST RESULTS -------------------------------------------------------------
-
-  %(test_pass_py)s                                  : PASS    
-
---- TESTS THAT DID NOT PASS --------------------------------------------------
-
-  None.
-
-
---- STATISTICS ---------------------------------------------------------------
-
-       1        tests total
-
-       1 (100%%) tests PASS
+expect_stdout = """\
+%(mypythonstring)s -tt %(test_pass_py)s
+PASSING TEST STDOUT
 """ % locals()
 
-test.run(arguments = ['-P', mypython, 'test'], stdout = expect)
+expect_stderr = """\
+PASSING TEST STDERR
+"""
+
+test.run(arguments=['-P', mypython, 'test'],
+         stdout=expect_stdout,
+         stderr=expect_stderr)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

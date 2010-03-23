@@ -63,6 +63,12 @@ class D(SCons.Scanner.Classic):
 
     def find_include_names(self, node):
         includes = []
-        for i in self.cre.findall(node.get_contents()):
+        for i in self.cre.findall(node.get_text_contents()):
             includes = includes + self.cre2.findall(i)
         return includes
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

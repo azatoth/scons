@@ -28,13 +28,12 @@ This tests the MinGW C/C++ compiler support.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import TestSCons
-import sys
-import os.path
 import os
-import TestCmd
-import time
 import string
+import sys
+
+import TestSCons
+import TestCmd
 
 test = TestSCons.TestSCons(match = TestCmd.match_re_dotall)
 
@@ -201,3 +200,9 @@ test.run(arguments='test.exe', stderr='.*')
 test.run(program=test.workpath('test.exe'), stdout='test.cpp2\nshared.cpp2\n')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

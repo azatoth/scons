@@ -24,8 +24,9 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import os
+
 import TestSCons
-import os.path
 
 test = TestSCons.TestSCons()
 
@@ -101,3 +102,9 @@ scons: warning: Ignoring missing SConscript 'no_such_file'
 """ + TestSCons.file_expr))
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

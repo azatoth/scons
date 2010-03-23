@@ -1,6 +1,7 @@
 """SCons.Tool.pdflatex
 
 Tool-specific initialization for pdflatex.
+Generates .pdf files from .latex or .ltx files
 
 There normally shouldn't be any need to import this module directly.
 It will usually be imported through the generic SCons.Tool.Tool()
@@ -42,6 +43,8 @@ PDFLaTeXAction = None
 
 def PDFLaTeXAuxFunction(target = None, source= None, env=None):
     result = SCons.Tool.tex.InternalLaTeXAuxAction( PDFLaTeXAction, target, source, env )
+    if result != 0:
+        print env['PDFLATEX']," returned an error, check the log file"
     return result
 
 PDFLaTeXAuxAction = None
@@ -57,6 +60,8 @@ def generate(env):
         PDFLaTeXAuxAction = SCons.Action.Action(PDFLaTeXAuxFunction,
                               strfunction=SCons.Tool.tex.TeXLaTeXStrFunction)
 
+    env.AppendUnique(LATEXSUFFIXES=SCons.Tool.LaTeXSuffixes)
+
     import pdf
     pdf.generate(env)
 
@@ -66,10 +71,13 @@ def generate(env):
     bld.add_emitter('.ltx', SCons.Tool.tex.tex_pdf_emitter)
     bld.add_emitter('.latex', SCons.Tool.tex.tex_pdf_emitter)
 
-    env['PDFLATEX']      = 'pdflatex'
-    env['PDFLATEXFLAGS'] = SCons.Util.CLVar('-interaction=nonstopmode')
-    env['PDFLATEXCOM']   = 'cd ${TARGET.dir} && $PDFLATEX $PDFLATEXFLAGS ${SOURCE.file}'
-    env['LATEXRETRIES']  = 3
+    SCons.Tool.tex.generate_common(env)
 
 def exists(env):
     return env.Detect('pdflatex')
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

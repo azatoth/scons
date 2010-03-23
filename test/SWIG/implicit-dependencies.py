@@ -28,19 +28,17 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Verify that SWIG implicit dependencies are caught.
 """
 
-import sys
-
 import TestSCons
 
 test = TestSCons.TestSCons()
 
 swig = test.where_is('swig')
-
 if not swig:
     test.skip_test('Can not find installed "swig", skipping test.\n')
 
-_python_ = test.get_quoted_platform_python()
-
+python = test.where_is('python')
+if not python:
+    test.skip_test('Can not find installed "python", skipping test.\n')
 
 
 test.write("dependency.i", """\
@@ -56,7 +54,7 @@ test.write("dependent.i", """\
 test.write('SConstruct', """
 foo = Environment(SWIGFLAGS='-python')
 swig = foo.Dictionary('SWIG')
-bar = foo.Clone(SWIG = r'%(_python_)s wrapper.py ' + swig)
+bar = foo.Clone(SWIG = [r'%(python)s', r'wrapper.py', swig])
 foo.CFile(target = 'dependent', source = ['dependent.i'])
 """ % locals())
 
@@ -72,3 +70,9 @@ test.not_up_to_date(arguments = "dependent_wrap.c")
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

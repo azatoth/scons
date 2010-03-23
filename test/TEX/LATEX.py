@@ -30,10 +30,8 @@ the produced .dvi, .aux and .log files get removed by the -c option,
 and that we can use this to wrap calls to the real latex utility.
 """
 
-import os
-import os.path
 import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -46,7 +44,7 @@ test.write('mylatex.py', r"""
 import sys
 import os
 import getopt
-cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:', [])
+cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:r:', [])
 base_name = os.path.splitext(arg[0])[0]
 infile = open(arg[0], 'rb')
 dvi_file = open(base_name+'.dvi', 'wb')
@@ -202,3 +200,9 @@ This is the include file. mod %s
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

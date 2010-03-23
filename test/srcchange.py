@@ -53,10 +53,10 @@ import re
 import string
 
 def subrevision(target, source ,env):
-    orig = target[0].get_contents()
+    orig = target[0].get_text_contents()
     new = re.sub('\$REV.*?\$',
-                 '$REV: %%s$'%%string.strip(source[0].get_contents()),
-                 target[0].get_contents())
+                 '$REV: %%s$'%%string.strip(source[0].get_text_contents()),
+                 target[0].get_text_contents())
     outf = open(str(target[0]),'wb')
     outf.write(new)
     outf.close()
@@ -110,3 +110,9 @@ test.must_exist(prog)
 test.run(program=test.workpath(prog), stdout='Revision $REV: 3.3$\n')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

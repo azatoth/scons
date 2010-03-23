@@ -29,9 +29,7 @@ Test that $M4 and $M4FLAGS work with repositories.
 """
 
 import os
-import os.path
-import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -102,3 +100,9 @@ test.fail_test(test.read(test.workpath('work', 'build', 'bbb.y'), 'r') != expect
 
 #
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

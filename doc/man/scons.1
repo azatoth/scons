@@ -73,7 +73,7 @@ The
 .I SConstruct
 file can specify subsidiary
 configuration files using the
-.B SConscript()
+.BR SConscript ()
 function.
 By convention,
 these subsidiary files are named
@@ -1352,8 +1352,16 @@ These warnings are disabled by default.
 
 .TP
 --warn=deprecated, --warn=no-deprecated
-Enables or disables all warnings about use of deprecated features.
+Enables or disables all warnings about use of
+currently deprecated features.
 These warnings are enabled by default.
+Note that the
+.B --warn=no-deprecated
+option does not disable warnings about absolutely all deprecated features.
+Warnings for some deprecated features that have already been through
+several releases with deprecation warnings
+may be mandatory for a release or two
+before they are officially no longer supported by SCons.
 Warnings for some specific deprecated features
 may be enabled or disabled individually;
 see below.
@@ -1394,6 +1402,18 @@ These warnings are enabled by default.
 Enables or disables the specific warning about linking
 Fortran and C++ object files in a single executable,
 which can yield unpredictable behavior with some compilers.
+
+.TP
+--warn=future-deprecated, --warn=no-future-deprecated
+Enables or disables warnings about features
+that will be deprecated in the future.
+These warnings are disabled by default.
+Enabling this warning is especially
+recommended for projects that redistribute
+SCons configurations for other users to build,
+so that the project can be warned as soon as possible
+about to-be-deprecated features
+that may require changes to the configuration.
 
 .TP
 --warn=link, --warn=no-link
@@ -1461,11 +1481,15 @@ These warnings are enabled by default.
 --warn=reserved-variable, --warn=no-reserved-variable
 Enables or disables warnings about attempts to set the
 reserved construction variable names
+.BR CHANGED_SOURCES ,
+.BR CHANGED_TARGETS ,
 .BR TARGET ,
 .BR TARGETS ,
-.BR SOURCE
+.BR SOURCE ,
+.BR SOURCES ,
+.BR UNCHANGED_SOURCES
 or
-.BR SOURCES .
+.BR UNCHANGED_TARGETS .
 These warnings are disabled by default.
 
 .TP
@@ -1576,9 +1600,9 @@ and suffixes appropriate for the platform.
 Note that the
 .B win32
 platform adds the
-.B SYSTEMDRIVE
+.B SystemDrive
 and
-.B SYSTEMROOT
+.B SystemRoot
 variables from the user's external environment
 to the construction environment's
 .B ENV
@@ -1752,6 +1776,7 @@ midl
 mingw
 mslib
 mslink
+mssdk
 msvc
 msvs
 mwcc
@@ -1776,6 +1801,7 @@ sunlink
 swig
 tar
 tex
+textfile
 tlib
 yacc
 zip
@@ -2975,6 +3001,14 @@ Clean('dist', env.Program('hello', 'hello.c'))
 Clean(['foo', 'bar'], 'something_else_to_clean')
 .EE
 
+In this example,
+installing the project creates a subdirectory for the documentation.
+This statement causes the subdirectory to be removed
+if the project is deinstalled.
+.ES
+Clean(docdir, os.path.join(docdir, projectname))
+.EE
+
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .TP
 .RI Command( target ", " source ", " action ", [" key = val ", ...])"
@@ -3488,7 +3522,7 @@ print env.Dump('CCCOM')
 .IP
 will print:
 .ES
-\&'$CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES'
+\&'$CC -c -o $TARGET $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS $SOURCES'
 .EE
 
 .ES
@@ -3636,9 +3670,10 @@ so subsequent calls to
 will over-write previous exports that have the same name.
 Multiple variable names can be passed to
 .BR Export ()
-as separate arguments or as a list. A dictionary can be used to map
-variables to a different name when exported. Both local variables and
-global variables can be exported.
+as separate arguments or as a list.
+Keyword arguments can be used to provide names and their values.
+A dictionary can be used to map variables to a different name when exported.
+Both local variables and global variables can be exported.
 
 Examples:
 
@@ -3654,7 +3689,10 @@ Export("env", "package")
 # Make env and package available for all SConscript files:
 Export(["env", "package"])
 
-# Make env available using the name debug:.
+# Make env available using the name debug:
+Export(debug = env)
+
+# Make env available using the name debug:
 Export({"debug":env})
 .EE
 
@@ -4151,6 +4189,8 @@ uses Unix shell style metacharacters for matching:
 .EE
 
 .IP
+If the first character of a filename is a dot,
+it must be matched explicitly.
 Character matches do
 .I not
 span directory separators.
@@ -4222,10 +4262,11 @@ not the original
 .B SConscript
 directory.)
 
-Example:
+Examples:
 
 .ES
 Program('foo', Glob('*.c'))
+Zip('/tmp/everything', Glob('.??*') + Glob('*'))
 .EE
 
 '\"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -4706,7 +4747,7 @@ P4LANGUAGE,
 P4PASSWD,
 P4PORT,
 P4USER,
-SYSTEMROOT,
+SystemRoot,
 USER,
 and
 USERNAME.
@@ -4737,9 +4778,9 @@ env.Platform('posix')
 Note that the
 .B win32
 platform adds the
-.B SYSTEMDRIVE
+.B SystemDrive
 and
-.B SYSTEMROOT
+.B SystemRoot
 variables from the user's external environment
 to the construction environment's
 .B ENV
@@ -5280,17 +5321,24 @@ The
 '\" .I src_dir
 '\" arguments are interpreted relative to the directory of the calling
 argument is interpreted relative to the directory of the calling
-.BR SConscript file.
+.B SConscript
+file.
 See the description of the
 .BR VariantDir ()
 function below for additional details and restrictions.
 
 If
-'\" .IR variant_dir " is present, but"
+.I variant_dir
+is present,
+'\" but
 '\" .IR src_dir " is not,"
-.IR variant_dir " is present,"
-the source directory is relative to the called
-.BR SConscript " file."
+the source directory is the directory in which the
+.B SConscript
+file resides and the
+.B SConscript
+file is evaluated as if it were in the
+.I variant_dir
+directory:
 .ES
 SConscript('src/SConscript', variant_dir = 'build')
 .EE
@@ -5301,7 +5349,7 @@ SConscript('build/SConscript')
 .EE
 This later paradigm is often used when the sources are
 in the same directory as the
-.BR SConstruct file:
+.BR SConstruct:
 .ES
 SConscript('SConscript', variant_dir = 'build')
 .EE
@@ -7149,8 +7197,8 @@ will be displayed to the user, e.g. 'Checking for library X...'
 
 Usually called after the check is done.
 .I res
-can be either an integer or a string. In the former case, 'ok' (res != 0)
-or 'failed' (res == 0) is displayed to the user, in the latter case the
+can be either an integer or a string. In the former case, 'yes' (res != 0)
+or 'no' (res == 0) is displayed to the user, in the latter case the
 given string is displayed.
 
 .TP
@@ -8244,7 +8292,7 @@ multi-stage builder.
 
 .IP single_source
 Specifies that this builder expects exactly one source file per call. Giving
-more than one source files without target files results in implicitely calling
+more than one source file without target files results in implicitely calling
 the builder multiple times (once for each source given). Giving multiple
 source files together with target files results in a UserError exception.
 
@@ -8624,16 +8672,25 @@ a = Action(build_it, varlist=['XXX'])
 The
 .BR Action ()
 global function
-also takes a
+can be passed the following
+optional keyword arguments
+to modify the Action object's behavior:
+
+.IP
 .B chdir
-keyword argument
-which specifies that
+The
+.B chdir
+keyword argument specifies that
 scons will execute the action
 after changing to the specified directory.
-If the chdir argument is
+If the
+.B chdir
+argument is
 a string or a directory Node,
 scons will change to the specified directory.
-If the chdir argument
+If the
+.B chdir
+argument
 is not a string or Node
 and is non-zero,
 then scons will change to the
@@ -8668,6 +8725,8 @@ a = Action("build < ${SOURCE.file} > ${TARGET.file}",
            chdir=1)
 .EE
 
+.IP
+.B exitstatfunc
 The
 .BR Action ()
 global function
@@ -8683,6 +8742,7 @@ or modified value.
 This can be used, for example,
 to specify that an Action object's
 return value should be ignored
+under special conditions
 and SCons should, therefore,
 consider that the action always suceeds:
 
@@ -8692,6 +8752,111 @@ def always_succeed(s):
     return 0
 a = Action("build < ${SOURCE.file} > ${TARGET.file}",
            exitstatfunc=always_succeed)
+.EE
+
+.IP
+.B batch_key
+The
+.B batch_key
+keyword argument can be used
+to specify that the Action can create multiple target files
+by processing multiple independent source files simultaneously.
+(The canonical example is "batch compilation"
+of multiple object files
+by passing multiple source files
+to a single invocation of a compiler
+such as Microsoft's Visual C / C++ compiler.)
+If the
+.B batch_key
+argument is any non-False, non-callable Python value,
+the configured Action object will cause
+.B scons
+to collect all targets built with the Action object
+and configured with the same construction environment
+into single invocations of the Action object's
+command line or function.
+Command lines will typically want to use the
+.BR CHANGED_SOURCES
+construction variable
+(and possibly
+.BR CHANGED_TARGETS
+as well)
+to only pass to the command line those sources that
+have actually changed since their targets were built.
+
+Example:
+
+.ES
+a = Action('build $CHANGED_SOURCES', batch_key=True)
+.EE
+
+The
+.B batch_key
+argument may also be
+a callable function
+that returns a key that
+will be used to identify different
+"batches" of target files to be collected
+for batch building.
+A
+.B batch_key
+function must take the following arguments:
+
+.IP action
+The action object.
+
+.IP env
+The construction environment
+configured for the target.
+
+.IP target
+The list of targets for a particular configured action.
+
+.IP source
+The list of source for a particular configured action.
+
+The returned key should typically
+be a tuple of values derived from the arguments,
+using any appropriate logic to decide
+how multiple invocations should be batched.
+For example, a
+.B batch_key
+function may decide to return
+the value of a specific construction
+variable from the
+.B env
+argument
+which will cause
+.B scons
+to batch-build targets
+with matching values of that variable,
+or perhaps return the
+.BR id ()
+of the entire construction environment,
+in which case
+.B scons
+will batch-build
+all targets configured with the same construction environment.
+Returning
+.B None
+indicates that
+the particular target should
+.I not
+be part of any batched build,
+but instead will be built
+by a separate invocation of action's
+command or function.
+Example:
+
+.ES
+def batch_key(action, env, target, source):
+    tdir = target[0].dir
+    if tdir.name == 'special':
+        # Don't batch-build any target
+        # in the special/ subdirectory.
+        return None
+    return (id(action), id(env), tdir)
+a = Action('build $CHANGED_SOURCES', batch_key=batch_key)
 .EE
 
 .SS Miscellaneous Action Functions
@@ -8833,10 +8998,10 @@ Examples:
 Execute(Mkdir('/tmp/outputdir'))
 
 env.Command('foo.out', 'foo.in',
-            [Mkdir('/tmp/builddir',
-             Copy('$SOURCE', '/tmp/builddir/foo.in')
+            [Mkdir('/tmp/builddir'),
+             Copy('/tmp/builddir/foo.in', '$SOURCE'),
              "cd /tmp/builddir && make",
-             Copy('/tmp/builddir/foo.out', '$TARGET')])
+             Copy('$TARGET', '/tmp/builddir/foo.out')])
 .EE
 
 .TP
@@ -8886,19 +9051,41 @@ prefix.
 Besides construction variables, scons provides the following
 variables for each command execution:
 
+.IP CHANGED_SOURCES
+The file names of all sources of the build command
+that have changed since the target was last built.
+
+.IP CHANGED_TARGETS
+The file names of all targets that would be built
+from sources that have changed since the target was last built.
+
+.IP SOURCE
+The file name of the source of the build command,
+or the file name of the first source
+if multiple sources are being built.
+
+.IP SOURCES
+The file names of the sources of the build command.
+
 .IP TARGET
-The file name of the target being built, or the file name of the first
-target if multiple targets are being built.
+The file name of the target being built,
+or the file name of the first target
+if multiple targets are being built.
 
 .IP TARGETS
 The file names of all targets being built.
 
-.IP SOURCE
-The file name of the source of the build command, or the file name of the
-first source if multiple sources are being built.
+.IP UNCHANGED_SOURCES
+The file names of all sources of the build command
+that have
+.I not
+changed since the target was last built.
 
-.IP SOURCES
-The file names of the sources of the build command.
+.IP UNCHANGED_TARGETS
+The file names of all targets that would be built
+from sources that have
+.I not
+changed since the target was last built.
 
 (Note that the above variables are reserved
 and may not be set in a construction environment.)
@@ -9371,7 +9558,7 @@ source files of different types:
 
 .ES
 def xyz_scan(node, env, path):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     # Scan the contents and return the included files.
 
 XYZScanner = Scanner(xyz_scan)
@@ -9643,7 +9830,7 @@ import re
 include_re = re.compile(r'^include\\s+(\\S+)$', re.M)
 
 def kfile_scan(node, env, path, arg):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     includes = include_re.findall(contents)
     return includes
 
@@ -9672,7 +9859,7 @@ for files that actually exist:
 include_re = re.compile(r'^include\\s+(\\S+)$', re.M)
 
 def my_scan(node, env, path, arg):
-   contents = node.get_contents()
+   contents = node.get_text_contents()
    includes = include_re.findall(contents)
    if includes == []:
         return []

@@ -65,7 +65,7 @@ import re
 include_re = re.compile(r'^include\s+(\S+)$', re.M)
 
 def kfile_scan(node, env, scanpaths, arg):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     includes = include_re.findall(contents)
     return includes
 
@@ -117,7 +117,7 @@ import string
 
 def blork(env, target, source):
     open(str(target[0]), 'wb').write(
-        string.replace(source[0].get_contents(), 'getfile', 'MISSEDME'))
+        string.replace(source[0].get_text_contents(), 'getfile', 'MISSEDME'))
 
 kbld = Builder(action=r'%(_python_)s build.py $SOURCES $TARGET',
                src_suffix='.lork',
@@ -238,3 +238,9 @@ test.must_match('moo.ork', "xxx 2\nmoo.lork 1 line 2\nyyy 2\nmoo.lork 1 line 4\n
 test.up_to_date(arguments = 'foo')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

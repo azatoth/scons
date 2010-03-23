@@ -65,7 +65,8 @@ def generate(env):
     for dialect in ['F77', 'F90', 'FORTRAN', 'F95']:
         env['%s' % dialect] = fc
         env['SH%s' % dialect] = '$%s' % dialect
-        env['SH%sFLAGS' % dialect] = SCons.Util.CLVar('$%sFLAGS -fPIC' % dialect)
+        if env['PLATFORM'] == 'posix':
+            env['SH%sFLAGS' % dialect] = SCons.Util.CLVar('$%sFLAGS -fPIC' % dialect)
 
     if env['PLATFORM'] == 'win32':
         # On Windows, the ifort compiler specifies the object on the
@@ -81,3 +82,9 @@ def generate(env):
 
 def exists(env):
     return env.Detect('ifort')
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

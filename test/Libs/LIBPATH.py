@@ -24,10 +24,10 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import TestSCons
-import sys
 import os.path
 import time
+
+import TestSCons
 
 _exe = TestSCons._exe
 _dll = TestSCons._dll
@@ -173,3 +173,9 @@ test.run(arguments = '.',
          match=TestSCons.match_re_dotall)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

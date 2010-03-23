@@ -437,7 +437,9 @@ class _SConsTaskTest(unittest.TestCase):
         for tnum in range(num_tasks):
             testnodes.append(node_seq[tnum % len(node_seq)]())
 
-        taskmaster = SCons.Taskmaster.Taskmaster(testnodes)
+        taskmaster = SCons.Taskmaster.Taskmaster(testnodes,
+                                                 tasker=SCons.Taskmaster.AlwaysTask)
+
         jobs = SCons.Job.Jobs(num_jobs, taskmaster)
 
         # Exceptions thrown by tasks are not actually propagated to
@@ -529,3 +531,9 @@ if __name__ == "__main__":
         sys.exit(2)
     elif not result.wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -29,6 +29,8 @@ Real-world test (courtesy Leanid Nazdrynau) of the multi-step
 capabilities of the various Java Builders.
 """
 
+import os
+
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -134,11 +136,12 @@ import java.awt.*;
 import java.applet.*;
 
 public class Hello extends Applet {
-    public void paint(Graphics g) {
-    g.drawString("Hello from SCons signed applet",250,150);
+    static final long serialVersionUID = 0;
+    public void paint(Graphics g)
+    {
+        g.drawString("Hello from SCons signed applet",250,150);
     }
-    }
-
+}
 """)
 
 test.write(['src', 'javah', 'MyID.cc'], """\
@@ -150,10 +153,6 @@ int getMyID()
 """)
 
 test.write(['src', 'javah', 'MyID.java'], """\
-import java.util.*;
-import java.io.IOException;
-import java.lang.reflect.*;
-
 public class MyID
 {
     static private long current = System.currentTimeMillis();
@@ -177,8 +176,6 @@ denv.SharedLibrary('myid','MyID.cc')
 
 test.write(['src', 'jni', 'A.java'], """\
 package web.jni;
-
-import web.jni.*;
 
 public class A
 {
@@ -475,9 +472,6 @@ public class Bool {
 test.write(['src', 'server', 'JavaSource', 'com', 'gnu', 'scons', 'web', 'tools', 'StringUtils.java'], """\
 package com.gnu.scons.web.tools;
 
-import java.util.Iterator;
-import java.util.Map;
-
 public class StringUtils
 {
     public static String toPercent( String value )
@@ -562,10 +556,15 @@ test.must_exist(['buildout', 'jni', 'SampleTest.java'])
 # a SampleTest.class file, while others do.  Only issue a warning if
 # it doesn't exist.
 p = test.workpath('buildout', 'jni', 'SampleTest.class')
-import os.path
 if not os.path.exists(p):
     print 'Warning:  %s does not exist' % p
 
 test.up_to_date(arguments = '.')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

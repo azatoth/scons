@@ -68,13 +68,13 @@ class ErrorsTestCase(unittest.TestCase):
             assert e.errstr == "Unknown error"
             assert e.status == 2
             assert e.exitstatus == 2
-            assert e.filename == None
+            assert e.filename is None
             assert e.exc_info == (None, None, None)
 
-            assert e.node == None
-            assert e.executor == None
-            assert e.action == None
-            assert e.command == None
+            assert e.node is None
+            assert e.executor is None
+            assert e.action is None
+            assert e.command is None
 
     def test_InternalError(self):
         """Test the InternalError exception."""
@@ -101,3 +101,9 @@ if __name__ == "__main__":
     suite = unittest.makeSuite(ErrorsTestCase, 'test_')
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

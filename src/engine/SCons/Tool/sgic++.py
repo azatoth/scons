@@ -43,10 +43,16 @@ def generate(env):
     cplusplus.generate(env)
 
     env['CXX']         = 'CC'
-    env['CXXFLAGS']    = SCons.Util.CLVar('$CCFLAGS -LANG:std')
+    env['CXXFLAGS']    = SCons.Util.CLVar('-LANG:std')
     env['SHCXX']       = '$CXX'
     env['SHOBJSUFFIX'] = '.o'
     env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME'] = 1
     
 def exists(env):
     return env.Detect('CC')
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

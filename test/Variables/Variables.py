@@ -235,7 +235,7 @@ opts.Save('variables.saved', env)
 def checkSave(file, expected):
     gdict = {}
     ldict = {}
-    execfile(file, gdict, ldict)
+    exec open(file, 'rU').read() in gdict, ldict
     assert expected == ldict, "%s\n...not equal to...\n%s" % (expected, ldict)
 
 # First test with no command line variables
@@ -362,3 +362,9 @@ env2 = Environment(variables = SCons.Variables.Variables())
 test.run()
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

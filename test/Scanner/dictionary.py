@@ -69,17 +69,17 @@ include2_re = re.compile(r'^include2\s+(\S+)$', re.M)
 include3_re = re.compile(r'^include3\s+(\S+)$', re.M)
 
 def kfile_scan1(node, env, scanpaths, arg=None):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     includes = include1_re.findall(contents)
     return includes
 
 def kfile_scan2(node, env, scanpaths, arg=None):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     includes = include2_re.findall(contents)
     return includes
 
 def kfile_scan3(node, env, scanpaths, arg=None):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     includes = include3_re.findall(contents)
     return includes
 
@@ -197,3 +197,9 @@ test.must_match('bbb', expect_bbb)
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

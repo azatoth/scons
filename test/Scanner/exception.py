@@ -24,8 +24,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
-import sys
 import TestSCons
 
 python = TestSCons.python
@@ -46,7 +44,7 @@ include_re = re.compile(r'^include\s+(\S+)$', re.M)
 exception_re = re.compile(r'^exception\s+(.+)$', re.M)
 
 def kfile_scan(node, env, target, arg):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     exceptions = exception_re.findall(contents)
     if exceptions:
         raise Exception, "kfile_scan error:  %s" % exceptions[0]
@@ -113,3 +111,9 @@ scons: *** [foo] Exception : kfile_scan error:  yyy 1
 """)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

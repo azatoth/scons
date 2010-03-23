@@ -36,7 +36,7 @@ test.run(arguments = ".",
 scons: \*\*\* No SConstruct file found.
 """ + TestSCons.file_expr)
 
-test.match_func = TestCmd.match_exact
+test.match_function = TestCmd.match_exact
 
 wpath = test.workpath()
 
@@ -69,3 +69,9 @@ test.run(arguments = ".",
                                    build_str = "scons: `.' is up to date.\n"))
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

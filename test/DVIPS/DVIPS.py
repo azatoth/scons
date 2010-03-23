@@ -24,7 +24,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
 import string
 
 import TestSCons
@@ -39,7 +38,7 @@ test.write('mytex.py', r"""
 import os
 import sys
 import getopt
-cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:', [])
+cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:r:', [])
 base_name = os.path.splitext(arg[0])[0]
 infile = open(arg[0], 'rb')
 out_file = open(base_name+'.dvi', 'wb')
@@ -53,7 +52,7 @@ test.write('mylatex.py', r"""
 import os
 import sys
 import getopt
-cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:', [])
+cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:r:', [])
 base_name = os.path.splitext(arg[0])[0]
 infile = open(arg[0], 'rb')
 out_file = open(base_name+'.dvi', 'wb')
@@ -179,3 +178,9 @@ dvips -o bar3.ps bar3.dvi
     test.must_exist(test.workpath('bar3.ps'))
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

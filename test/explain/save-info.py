@@ -28,9 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Verify that the --debug=explain information gets saved by default.
 """
 
-import os.path
-import string
-import sys
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -75,7 +72,7 @@ import re
 include_re = re.compile(r'^include\s+(\S+)$', re.M)
 
 def kfile_scan(node, env, target, arg):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     includes = include_re.findall(contents)
     return includes
 
@@ -209,3 +206,9 @@ file5.k 1 line 4
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

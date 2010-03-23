@@ -54,6 +54,7 @@ import SCons.Node.Alias
 import SCons.Node.FS
 import SCons.Node.Python
 import SCons.Platform
+import SCons.SConf
 import SCons.SConsign
 import SCons.Subst
 import SCons.Tool
@@ -109,18 +110,21 @@ def apply_tools(env, tools, toolpath):
 # set or override them.  This warning can optionally be turned off,
 # but scons will still ignore the illegal variable names even if it's off.
 reserved_construction_var_names = [
+    'CHANGED_SOURCES',
+    'CHANGED_TARGETS',
     'SOURCE',
     'SOURCES',
     'TARGET',
     'TARGETS',
-]
-
-future_reserved_construction_var_names = [
-    'CHANGED_SOURCES',
-    'CHANGED_TARGETS',
     'UNCHANGED_SOURCES',
     'UNCHANGED_TARGETS',
 ]
+
+future_reserved_construction_var_names = [
+    #'HOST_OS',
+    #'HOST_ARCH',
+    #'HOST_CPU',
+    ]
 
 def copy_non_reserved_keywords(dict):
     result = semi_deepcopy(dict)
@@ -148,6 +152,9 @@ def _set_BUILDERS(env, key, value):
     except KeyError:
         bd = BuilderDict(kwbd, env)
         env._dict[key] = bd
+    for k, v in value.items():
+        if not SCons.Builder.is_a_Builder(v):
+            raise SCons.Errors.UserError('%s is not a Builder.' % repr(v))
     bd.update(value)
 
 def _del_SCANNERS(env, key):
@@ -246,9 +253,9 @@ class BuilderWrapper(MethodWrapper):
         if source is _null:
             source = target
             target = None
-        if not target is None and not SCons.Util.is_List(target):
+        if target is not None and not SCons.Util.is_List(target):
             target = [target]
-        if not source is None and not SCons.Util.is_List(source):
+        if source is not None and not SCons.Util.is_List(source):
             source = [source]
         return apply(MethodWrapper.__call__, (self, target, source) + args, kw)
 
@@ -429,7 +436,7 @@ class SubstitutionEnvironment:
             self._dict[key] = value
 
     def get(self, key, default=None):
-        "Emulates the get() method of dictionaries."""
+        """Emulates the get() method of dictionaries."""
         return self._dict.get(key, default)
 
     def has_key(self, key):
@@ -458,9 +465,9 @@ class SubstitutionEnvironment:
                 n = None
                 for l in lookup_list:
                     n = l(v)
-                    if not n is None:
+                    if n is not None:
                         break
-                if not n is None:
+                if n is not None:
                     if SCons.Util.is_String(n):
                         # n = self.subst(n, raw=1, **kw)
                         kw['raw'] = 1
@@ -490,7 +497,7 @@ class SubstitutionEnvironment:
     def lvars(self):
         return {}
 
-    def subst(self, string, raw=0, target=None, source=None, conv=None):
+    def subst(self, string, raw=0, target=None, source=None, conv=None, executor=None):
         """Recursively interpolates construction variables from the
         Environment into the specified string, returning the expanded
         result.  Construction variables are specified by a $ prefix
@@ -503,6 +510,8 @@ class SubstitutionEnvironment:
         gvars = self.gvars()
         lvars = self.lvars()
         lvars['__env__'] = self
+        if executor:
+            lvars.update(executor.get_lvars())
         return SCons.Subst.scons_subst(string, self, raw, target, source, gvars, lvars, conv)
 
     def subst_kw(self, kw, raw=0, target=None, source=None):
@@ -514,12 +523,14 @@ class SubstitutionEnvironment:
             nkw[k] = v
         return nkw
 
-    def subst_list(self, string, raw=0, target=None, source=None, conv=None):
+    def subst_list(self, string, raw=0, target=None, source=None, conv=None, executor=None):
         """Calls through to SCons.Subst.scons_subst_list().  See
         the documentation for that function."""
         gvars = self.gvars()
         lvars = self.lvars()
         lvars['__env__'] = self
+        if executor:
+            lvars.update(executor.get_lvars())
         return SCons.Subst.scons_subst_list(string, self, raw, target, source, gvars, lvars, conv)
 
     def subst_path(self, path, target=None, source=None):
@@ -893,9 +904,6 @@ class Base(SubstitutionEnvironment):
     Environment.
     """
 
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
-
     memoizer_counters = []
 
     #######################################################################
@@ -959,6 +967,14 @@ class Base(SubstitutionEnvironment):
             platform = SCons.Platform.Platform(platform)
         self._dict['PLATFORM'] = str(platform)
         platform(self)
+        
+        self._dict['HOST_OS']      = self._dict.get('HOST_OS',None)
+        self._dict['HOST_ARCH']    = self._dict.get('HOST_ARCH',None)
+        
+        # Now set defaults for TARGET_{OS|ARCH}
+        self._dict['TARGET_OS']      = self._dict.get('HOST_OS',None)
+        self._dict['TARGET_ARCH']    = self._dict.get('HOST_ARCH',None)
+        
 
         # Apply the passed-in and customizable variables to the
         # environment before calling the tools, because they may use
@@ -1034,7 +1050,7 @@ class Base(SubstitutionEnvironment):
         """
         name = default
         try:
-            is_node = issubclass(factory, SCons.Node.Node)
+            is_node = issubclass(factory, SCons.Node.FS.Base)
         except TypeError:
             # The specified factory isn't a Node itself--it's
             # most likely None, or possibly a callable.
@@ -1083,6 +1099,8 @@ class Base(SubstitutionEnvironment):
             scanners.reverse()
             for scanner in scanners:
                 for k in scanner.get_skeys(self):
+                    if k and self['PLATFORM'] == 'win32':
+                        k = string.lower(k)
                     result[k] = scanner
 
         self._memo['_gsm'] = result
@@ -1092,6 +1110,8 @@ class Base(SubstitutionEnvironment):
     def get_scanner(self, skey):
         """Find the appropriate scanner given a key (usually a file suffix).
         """
+        if skey and self['PLATFORM'] == 'win32':
+            skey = string.lower(skey)
         return self._gsm().get(skey)
 
     def scanner_map_delete(self, kw=None):
@@ -1198,6 +1218,15 @@ class Base(SubstitutionEnvironment):
                                 orig[val] = None
         self.scanner_map_delete(kw)
 
+    # allow Dirs and strings beginning with # for top-relative
+    # Note this uses the current env's fs (in self).
+    def _canonicalize(self, path):
+        if not SCons.Util.is_String(path): # typically a Dir
+            path = str(path)
+        if path and path[0] == '#':
+            path = str(self.fs.Dir(path))
+        return path
+
     def AppendENVPath(self, name, newpath, envname = 'ENV', 
                       sep = os.pathsep, delete_existing=1):
         """Append path elements to the path 'name' in the 'ENV'
@@ -1214,7 +1243,8 @@ class Base(SubstitutionEnvironment):
         if self._dict.has_key(envname) and self._dict[envname].has_key(name):
             orig = self._dict[envname][name]
 
-        nv = SCons.Util.AppendPath(orig, newpath, sep, delete_existing)
+        nv = SCons.Util.AppendPath(orig, newpath, sep, delete_existing,
+                                   canonicalize=self._canonicalize)
 
         if not self._dict.has_key(envname):
             self._dict[envname] = {}
@@ -1569,7 +1599,8 @@ class Base(SubstitutionEnvironment):
         if self._dict.has_key(envname) and self._dict[envname].has_key(name):
             orig = self._dict[envname][name]
 
-        nv = SCons.Util.PrependPath(orig, newpath, sep, delete_existing)
+        nv = SCons.Util.PrependPath(orig, newpath, sep, delete_existing,
+                                    canonicalize=self._canonicalize)
 
         if not self._dict.has_key(envname):
             self._dict[envname] = {}
@@ -1807,7 +1838,7 @@ class Base(SubstitutionEnvironment):
 
     def CacheDir(self, path):
         import SCons.CacheDir
-        if not path is None:
+        if path is not None:
             path = self.subst(path)
         self._CacheDir_path = path
 
@@ -1998,7 +2029,7 @@ class Base(SubstitutionEnvironment):
         return apply(SCons.Scanner.Base, nargs, nkw)
 
     def SConsignFile(self, name=".sconsign", dbm_module=None):
-        if not name is None:
+        if name is not None:
             name = self.subst(name)
             if not os.path.isabs(name):
                 name = os.path.join(str(self.fs.SConstruct_dir), name)
@@ -2118,17 +2149,13 @@ class Base(SubstitutionEnvironment):
         #            result.append(s)
         build_source(node.all_children(), sources)
 
-        # now strip the build_node from the sources by calling the srcnode
-        # function
-        def get_final_srcnode(file):
-            srcnode = file.srcnode()
-            while srcnode != file.srcnode():
-                srcnode = file.srcnode()
-            return srcnode
-
-        # get the final srcnode for all nodes, this means stripping any
-        # attached build node.
-        map( get_final_srcnode, sources )
+    # THIS CODE APPEARS TO HAVE NO EFFECT
+    #    # get the final srcnode for all nodes, this means stripping any
+    #    # attached build node by calling the srcnode function
+    #    for file in sources:
+    #        srcnode = file.srcnode()
+    #        while srcnode != file.srcnode():
+    #            srcnode = file.srcnode()
 
         # remove duplicates
         return list(set(sources))
@@ -2161,9 +2188,6 @@ class OverrideEnvironment(Base):
     be proxied because they need *this* object's methods to fetch the
     values from the overrides dictionary.
     """
-
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
 
     def __init__(self, subject, overrides={}):
         if __debug__: logInstanceCreation(self, 'Environment.OverrideEnvironment')
@@ -2298,3 +2322,9 @@ def NoSubstitutionProxy(subject):
             self.raw_to_mode(nkw)
             return apply(SCons.Subst.scons_subst, nargs, nkw)
     return _NoSubstitutionProxy(subject)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

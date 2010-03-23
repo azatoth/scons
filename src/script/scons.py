@@ -56,6 +56,19 @@ import sys
 # followed by generic) so we pick up the right version of the build
 # engine modules if they're in either directory.
 
+
+# Check to see if the python version is > 3.0 which is currently unsupported
+# If so exit with error message
+try:
+    if  sys.version_info >= (3,0,0):
+        msg = "scons: *** SCons version %s does not run under Python version %s.\n"
+        sys.stderr.write(msg % (__version__, sys.version.split()[0]))
+        sys.exit(1)
+except AttributeError:
+    # Pre-1.6 Python has no sys.version_info
+    # No need to check version as we then know the version is < 3.0.0 and supported
+    pass
+
 script_dir = sys.path[0]
 
 if script_dir in sys.path:
@@ -147,6 +160,19 @@ else:
         # Check /usr/libfoo/scons*.
         prefs.append(libpath)
 
+    try:
+        import pkg_resources
+    except ImportError:
+        pass
+    else:
+        # when running from an egg add the egg's directory 
+        try:
+            d = pkg_resources.get_distribution('scons')
+        except pkg_resources.DistributionNotFound:
+            pass
+        else:
+            prefs.append(d.location)
+
 # Look first for 'scons-__version__' in all of our preference libs,
 # then for 'scons'.
 libs.extend(map(lambda x: os.path.join(x, scons_version), prefs))
@@ -163,3 +189,9 @@ if __name__ == "__main__":
     # this does all the work, and calls sys.exit
     # with the proper exit status when done.
     SCons.Script.main()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -94,6 +94,10 @@ class WarningsTestCase(unittest.TestCase):
                             "Foo")
         assert to.out is None, to.out
 
+        SCons.Warnings.warn(SCons.Warnings.MandatoryWarning,
+                            "Foo")
+        assert to.out is None, to.out
+
         SCons.Warnings.enableWarningClass(SCons.Warnings.Warning)
         SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning,
                             "Foo")
@@ -123,3 +127,9 @@ if __name__ == "__main__":
     suite = unittest.makeSuite(WarningsTestCase, 'test_')
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

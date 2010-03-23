@@ -20,10 +20,106 @@ more effectively, please sign up for the scons-users mailing list at:
 
 
 
-RELEASE 1.2.0 - Sat, 20 Dec 2008 22:47:29 -0800
+RELEASE 1.2.0.d20100306 - Sat, 06 Mar 2010 16:18:33 -0800
 
   Please consult the CHANGES.txt file for a list of specific changes
   since last release.
+
+  Please note the following important changes scheduled for the next
+  minor release (1.3.0):
+
+    --  DEPRECATED FEATURES WILL GENERATE MANDATORY WARNINGS IN 1.3.0
+
+        In keeping with our deprecation cycle, the following deprecated
+        features will still be supported in 1.3.0 but will generate
+        mandatory, non-disableable warnings:
+
+            --  Support for Python versions 1.5, 1.6, 2.0, 2.1, 2.2, and 2.3.
+            --  The overrides= keyword argument to the Builder() call.
+            --  The scanner= keyword argument to the Builder() call.
+            --  The BuildDir() function and env.BuildDir() method.
+            --  The env.Copy() method.
+            --  The SourceSignatures() function and
+                env.SourceSignatures() method.
+            --  The TargetSignatures() function and
+                env.TargetSignatures() method.
+            --  The Sig module (now an unnused stub).
+            --  The --debug=dtree, --debug=stree and --debug=tree options.
+            --  The --debug=nomemoizer option.
+            --  The Options object and the related BoolOption(),
+                EnumOption(), ListOption(), PackageOption() and
+                PathOption() functions.
+
+        The mandatory warnings will be issued in order to make sure
+        users of 1.3.0 notice *prior* to the release of SCons 2.0.0, that
+        these features will be removed.  In SCons 2.0.0 these features
+        will no longer work at all, and will instead generate specific
+        fatal errors when anyone tries to use them.
+
+  Please note the following important changes since release 1.2.0:
+
+    --  Support for Latex glosseries and acronyms has been added
+
+    --  MICROSOFT VISUAL STUDIO VERSION/ARCH DETECTION HAS CHANGED
+
+        The way SCons detects Visual Studio on Windows has changed in
+        1.3.  By default, it should now use the latest installed
+        Visual Studio version on your machine, and compile for 32 or
+        64 bits according to whether your OS is 32 or 64 bits (32/64
+        bit python makes no difference).
+
+	Two new variables control Visual Studio: MSVC_VERSION and
+	TARGET_ARCH.  These variables ONLY take effect when passed to
+	the Environment() constructor; setting them later has no
+	effect.  To use a non-default Visual Studio version, set
+	MSVC_VERSION to e.g. "8.0" or "7.1".  Setting it to "xxx" (or
+	any nonexistent value) will make it print out the valid
+	versions on your system.  To use a non-default architecture,
+	set TARGET_ARCH to "x86" or "x86_64" (various synonyms are
+	accepted).
+
+	In addition, MSVC_USE_SCRIPT can be used to bypass the 
+	above autodetection; setting it to the path of a Visual
+	Studio .bat file (e.g. vcvars.bat) will cause SCons to
+	run that bat file and extract the relevant variables
+	from the result (typically %INCLUDE%, %LIB%, and %PATH%).
+	Setting MSVC_USE_SCRIPT to None bypasses the Visual Studio
+	autodetection entirely; use this if you are importing
+	the shell env and running SCons in a Visual Studio cmd window.
+
+	Note that if you use MSVS_VERSION to build Visual Studio
+	projects from your SConstructs, MSVS_VERSION must be set to
+	the same version as MSVC_VERSION.
+
+        Support for HOST_OS,HOST_ARCH,TARGET_OS, TARGET_ARCH has been
+        added to allow specifying different target arch than the host 
+        system. This is only supported for Visual Studio/Visual C++
+        at this time.
+
+    --  VISUAL C/C++ PRECOMPILED HEADERS WILL BE REBUILT
+
+        Precompiled header files built with Visual C/C++ will be
+        rebuilt after upgrading from 1.2.0 to a later release.
+
+        This rebuild is normal and will occur because the command line
+        defined by the $PCHCOM construction variable has had the $CCFLAGS
+        variable added, and has been rearranged to put the "/Fo" output
+        flag towards the beginning of the line, consistent with the
+        related command lines for $CCCOM, $CXXCOM, etc.
+
+    --  CHANGES TO SOME LINKER COMMAND LINES WILL CAUSE RELINKING
+
+        Changes to the command line definitions for the Microsoft link.exe
+        linker, the OS/2 ilink linker and the Phar Lap linkloc linker
+        will cause targets built with those tools be to be rebuilt after
+        upgrading from 1.2.0 to a later release.
+
+        This relink is normal and will occur because the command lines for
+        these tools have been redefined to remove unnecessary nested $(
+        and $) character strings.
+
+    --  MSVS_USE_MFC_DIRS and MSVS_IGNORE_IDE_PATHS are obsoleted and
+        have no effect.
 
   Please note the following important changes since release 1.1.0:
 
@@ -811,6 +907,18 @@ RELEASE 1.2.0 - Sat, 20 Dec 2008 22:47:29 -0800
                 are executed by an earlier version of SCons:
 
                     EnsureSConsVersion(0, 96, 93)
+
+    --  THE CheckLib Configure TEST WILL CHANGE BEHAVIOR
+
+    	The CheckLib() Configure test appends the lib(s) to the
+    	Environment's LIBS list in 1.3 and earlier.  In 1.3 there is a
+    	new CheckLib argument, append, which defaults to True to
+    	preserve the old behavior.  In a future release, append will
+    	be changed to default to False, to conform with autoconf and
+    	user expectations, since it is usually used to build up
+    	library lists in a right-to-left way.
+
+
 
   SCons is developed with an extensive regression test suite, and a
   rigorous development methodology for continually improving that suite.

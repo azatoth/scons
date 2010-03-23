@@ -870,8 +870,6 @@ def Parser(version):
     def opt_not_yet(option, opt, value, parser):
         msg = "Warning:  the %s option is not yet implemented\n" % opt
         sys.stderr.write(msg)
-        sys.exit(0)
-
 
     op.add_option('-l', '--load-average', '--max-load',
                   nargs=1, type="int",
@@ -938,3 +936,9 @@ def Parser(version):
                   help=SUPPRESS_HELP)
 
     return op
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

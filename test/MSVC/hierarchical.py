@@ -49,7 +49,9 @@ SConscript('build/SConscript')
 
 test.write('src/SConscript',"""
 import os
-env = Environment()
+# TODO:  this is order-dependent (putting 'mssdk' second or third breaks),
+# and ideally we shouldn't need to specify the tools= list anyway.
+env = Environment(tools=['mssdk', 'msvc', 'mslink'])
 env.Append(CPPPATH=os.environ.get('INCLUDE', ''),
            LIBPATH=os.environ.get('LIB', ''))
 env['PCH'] = 'StdAfx.pch'
@@ -91,3 +93,9 @@ test.must_not_exist(test.workpath('build/StdAfx.obj'))
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -481,6 +481,8 @@ class ClassicTestCase(unittest.TestCase):
                 return self._exists
             def get_contents(self):
                 return self._contents
+            def get_text_contents(self):
+                return self._contents
             def get_dir(self):
                 return self._dir
 
@@ -566,6 +568,17 @@ class ClassicCPPTestCase(unittest.TestCase):
             assert n == 'path/bbb', n
             assert i == 'bbb', i
 
+            # TODO(1.5):  remove when 2.2 is minimal; replace ccc
+            # variable in find_include() call below with in-line u'ccc'.
+            try:
+                ccc = eval("u'ccc'")
+            except SyntaxError:
+                ccc = 'ccc'
+
+            n, i = s.find_include(('<', ccc), 'foo', ('path',))
+            assert n == 'path/ccc', n
+            assert i == 'ccc', i
+
         finally:
             SCons.Node.FS.find_file = save
 
@@ -590,3 +603,9 @@ if __name__ == "__main__":
     result = runner.run(suite())
     if not result.wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

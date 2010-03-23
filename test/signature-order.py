@@ -33,7 +33,6 @@ but
 
 """
 
-import sys
 import TestSCons
 
 _exe = TestSCons._exe
@@ -130,3 +129,9 @@ test.run(program = work2_foo, stdout = "content2\n")
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

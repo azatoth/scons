@@ -262,7 +262,7 @@ def test_positional_args(pos_callback, cmd, **kw):
 
         def none(a):
             assert hasattr(a, 'strfunction')
-            assert a.cmdstr == None, a.cmdstr
+            assert a.cmdstr is None, a.cmdstr
         #FUTURE test_varlist(pos_callback, none, cmd, None, **kw)
         apply(test_varlist, (pos_callback, none, cmd, None), kw)
 
@@ -405,13 +405,6 @@ class ActionTestCase(unittest.TestCase):
         a2 = SCons.Action.Action(a1)
         assert a2 is a1, a2
 
-class ActionBaseTestCase(unittest.TestCase):
-    def test_get_executor(self):
-        """Test the ActionBase.get_executor() method"""
-        a = SCons.Action.Action('foo')
-        x = a.get_executor({}, {}, [], [], {})
-        assert x is not None, x
- 
 class _ActionActionTestCase(unittest.TestCase):
 
     def test__init__(self):
@@ -1492,6 +1485,59 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
         c = a.get_contents(target=[], source=[], env=env)
         assert c == "guux FFF BBB test", c
 
+    def test_get_contents_of_function_action(self):
+        """Test contents of a CommandGeneratorAction-generated FunctionAction
+        """
+
+        def LocalFunc():
+            pass
+
+        func_matches = [
+            "0,0,0,0,(),(),(d\000\000S),(),()",
+            "0,0,0,0,(),(),(d\x00\x00S),(),()",
+            ]
+        
+        meth_matches = [
+            "1,1,0,0,(),(),(d\000\000S),(),()",
+            "1,1,0,0,(),(),(d\x00\x00S),(),()",
+        ]
+
+        def f_global(target, source, env, for_signature):
+            return SCons.Action.Action(GlobalFunc)
+
+        # TODO(1.5):
+        #def f_local(target, source, env, for_signature):
+        def f_local(target, source, env, for_signature, LocalFunc=LocalFunc):
+            return SCons.Action.Action(LocalFunc)
+
+        env = Environment(XYZ = 'foo')
+
+        a = self.factory(f_global)
+        c = a.get_contents(target=[], source=[], env=env)
+        assert c in func_matches, repr(c)
+
+        a = self.factory(f_local)
+        c = a.get_contents(target=[], source=[], env=env)
+        assert c in func_matches, repr(c)
+
+        def f_global(target, source, env, for_signature):
+            return SCons.Action.Action(GlobalFunc, varlist=['XYZ'])
+
+        # TODO(1.5):
+        #def f_local(target, source, env, for_signature):
+        def f_local(target, source, env, for_signature, LocalFunc=LocalFunc):
+            return SCons.Action.Action(LocalFunc, varlist=['XYZ'])
+
+        matches_foo = map(lambda x: x + "foo", func_matches)
+
+        a = self.factory(f_global)
+        c = a.get_contents(target=[], source=[], env=env)
+        assert c in matches_foo, repr(c)
+
+        a = self.factory(f_local)
+        c = a.get_contents(target=[], source=[], env=env)
+        assert c in matches_foo, repr(c)
+
 
 class FunctionActionTestCase(unittest.TestCase):
 
@@ -1589,13 +1635,14 @@ class FunctionActionTestCase(unittest.TestCase):
         c = test.read(outfile, 'r')
         assert c == "class1b\n", c
 
-        def build_it(target, source, env, self=self):
+        def build_it(target, source, env, executor=None, self=self):
             self.build_it = 1
             return 0
-        def string_it(target, source, env, self=self):
+        def string_it(target, source, env, executor=None, self=self):
             self.string_it = 1
             return None
-        act = SCons.Action.FunctionAction(build_it, { 'strfunction' : string_it })
+        act = SCons.Action.FunctionAction(build_it,
+                                          { 'strfunction' : string_it })
         r = act([], [], Environment())
         assert r == 0, r
         assert self.build_it
@@ -1814,6 +1861,47 @@ class LazyActionTestCase(unittest.TestCase):
         c = a.get_contents(target=[], source=[], env=env)
         assert c == "This is a test", c
 
+    def test_get_contents_of_function_action(self):
+        """Test fetching the contents of a lazy-evaluation FunctionAction
+        """
+
+        def LocalFunc():
+            pass
+
+        func_matches = [
+            "0,0,0,0,(),(),(d\000\000S),(),()",
+            "0,0,0,0,(),(),(d\x00\x00S),(),()",
+            ]
+        
+        meth_matches = [
+            "1,1,0,0,(),(),(d\000\000S),(),()",
+            "1,1,0,0,(),(),(d\x00\x00S),(),()",
+        ]
+
+        def factory(act, **kw):
+            return SCons.Action.FunctionAction(act, kw)
+
+
+        a = SCons.Action.Action("${FOO}")
+
+        env = Environment(FOO = factory(GlobalFunc))
+        c = a.get_contents(target=[], source=[], env=env)
+        assert c in func_matches, repr(c)
+
+        env = Environment(FOO = factory(LocalFunc))
+        c = a.get_contents(target=[], source=[], env=env)
+        assert c in func_matches, repr(c)
+
+        matches_foo = map(lambda x: x + "foo", func_matches)
+
+        env = Environment(FOO = factory(GlobalFunc, varlist=['XYZ']))
+        c = a.get_contents(target=[], source=[], env=env)
+        assert c in func_matches, repr(c)
+
+        env['XYZ'] = 'foo'
+        c = a.get_contents(target=[], source=[], env=env)
+        assert c in matches_foo, repr(c)
+
 class ActionCallerTestCase(unittest.TestCase):
     def test___init__(self):
         """Test creation of an ActionCaller"""
@@ -1996,8 +2084,7 @@ class ActionCompareTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    tclasses = [ ActionBaseTestCase,
-                 _ActionActionTestCase,
+    tclasses = [ _ActionActionTestCase,
                  ActionTestCase,
                  CommandActionTestCase,
                  CommandGeneratorActionTestCase,
@@ -2012,3 +2099,9 @@ if __name__ == "__main__":
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

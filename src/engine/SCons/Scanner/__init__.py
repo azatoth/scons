@@ -92,7 +92,9 @@ class Base:
                  argument = _null,
                  skeys = _null,
                  path_function = None,
-                 node_class = SCons.Node.FS.Entry,
+                 # Node.FS.Base so that, by default, it's okay for a
+                 # scanner to return a Dir, File or Entry.
+                 node_class = SCons.Node.FS.Base,
                  node_factory = None,
                  scan_check = None,
                  recursive = None):
@@ -347,16 +349,18 @@ class Classic(Current):
         return SCons.Node.FS._my_normcase(include)
 
     def find_include_names(self, node):
-        return self.cre.findall(node.get_contents())
+        return self.cre.findall(node.get_text_contents())
 
     def scan(self, node, path=()):
 
         # cache the includes list in node so we only scan it once:
-        if node.includes != None:
+        if node.includes is not None:
             includes = node.includes
         else:
             includes = self.find_include_names (node)
-            node.includes = includes
+            # Intern the names of the include files. Saves some memory
+            # if the same header is included many times.
+            node.includes = map(SCons.Util.silent_intern, includes)
 
         # This is a hand-coded DSU (decorate-sort-undecorate, or
         # Schwartzian transform) pattern.  The sort key is the raw name
@@ -400,7 +404,14 @@ class ClassicCPP(Classic):
 
         n = SCons.Node.FS.find_file(include[1], paths)
 
-        return n, include[1]
+        i = SCons.Util.silent_intern(include[1])
+        return n, i
 
     def sort_key(self, include):
         return SCons.Node.FS._my_normcase(string.join(include))
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

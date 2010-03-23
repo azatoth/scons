@@ -67,20 +67,27 @@ TESTING_PACKAGES = [
     'gcc',
     'gcj',
     'ghostscript',
-    'libgcj7-dev',
+#    'libgcj7-dev',
     'm4',
     'openssh-client',
     'openssh-server',
     'python-profiler',
+    'python-all-dev',
     'rcs',
     'rpm',
     'sun-java5-jdk',
     'sun-java6-jdk',
     'swig',
     'texlive-base-bin',
+    'texlive-extra-utils',
     'texlive-latex-base',
     'texlive-latex-extra',
     'zip',
+]
+
+BUILDBOT_PACKAGES = [
+    'buildbot',
+    'cron',
 ]
 
 default_args = [
@@ -111,6 +118,9 @@ Usage:  scons_dev_master.py [-hnqy] [--password PASSWORD] [--username USER]
         testing                 Install packages for testing SCons
         scons-versions          Install versions of SCons
         python-versions         Install versions of Python
+
+    ACTIONS (optional):
+        buildbot                Install packages for running BuildBot
 """
 
     scons_url = 'http://scons.tigris.org/svn/scons/trunk'
@@ -151,6 +161,7 @@ Usage:  scons_dev_master.py [-hnqy] [--password PASSWORD] [--username USER]
     install_packages = ' '.join(INSTALL_PACKAGES)
     building_packages = ' '.join(BUILDING_PACKAGES)
     testing_packages = ' '.join(TESTING_PACKAGES)
+    buildbot_packages = ' '.join(BUILDBOT_PACKAGES)
     python_packages = ' '.join(PYTHON_PACKAGES)
 
     cmd = CommandRunner(locals())
@@ -165,6 +176,8 @@ Usage:  scons_dev_master.py [-hnqy] [--password PASSWORD] [--username USER]
             cmd.run('%(sudo)s apt-get %(yesflag)s install %(building_packages)s')
         elif arg == 'testing':
             cmd.run('%(sudo)s apt-get %(yesflag)s install %(testing_packages)s')
+        elif arg == 'buildbot':
+            cmd.run('%(sudo)s apt-get %(yesflag)s install %(buildbot_packages)s')
         elif arg == 'python-versions':
             if install_packages:
                 cmd.run('%(sudo)s apt-get %(yesflag)s install %(install_packages)s')
@@ -195,3 +208,9 @@ Usage:  scons_dev_master.py [-hnqy] [--password PASSWORD] [--username USER]
 
 if __name__ == "__main__":
     sys.exit(main())
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

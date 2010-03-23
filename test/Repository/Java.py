@@ -29,24 +29,18 @@ Test building Java applications when using Repositories.
 """
 
 import os
-import string
-import sys
+
 import TestSCons
 
 python = TestSCons.python
 
 test = TestSCons.TestSCons()
 
-where_javac, java_version = test.java_where_javac()
-where_java = test.java_where_java()
+javac, java_version = test.java_where_javac()
+java = test.java_where_java()
 
-# where_java_home=test.java_where_java_home()
-os.environ['JAVA_HOME'] = test.java_where_java_home()
-
-
-
-java = where_java
-javac = where_javac
+# where_java_home=test.java_where_java_home(java_version)
+os.environ['JAVA_HOME'] = test.java_where_java_home(java_version)
 
 ###############################################################################
 
@@ -262,3 +256,9 @@ test.writable('repository', 0)
 #test.up_to_date(chdir = 'work2', options = opts, arguments = ".")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

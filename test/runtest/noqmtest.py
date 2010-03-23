@@ -29,50 +29,31 @@ Test that the --noqmtest option invokes tests directly via Python, not
 using qmtest.
 """
 
-import os.path
-import re
+import os
 import string
 
 import TestRuntest
 
-python = TestRuntest.python
-_python_ = TestRuntest._python_
+pythonstring = TestRuntest.pythonstring
 
 test = TestRuntest.TestRuntest(noqmtest=1)
 
 test.subdir('test')
 
-test_pass_py = os.path.join('test', 'pass.py')
-test_fail_py = os.path.join('test', 'fail.py')
+test_fail_py      = os.path.join('test', 'fail.py')
 test_no_result_py = os.path.join('test', 'no_result.py')
-
-workpath_pass_py = test.workpath(test_pass_py)
-workpath_fail_py = test.workpath(test_fail_py)
-workpath_no_result_py = test.workpath(test_no_result_py)
+test_pass_py      = os.path.join('test', 'pass.py')
 
 test.write_failing_test(test_fail_py)
 test.write_no_result_test(test_no_result_py)
 test.write_passing_test(test_pass_py)
 
-if re.search('\s', python):
-    expect_python = _python_
-else:
-    expect_python = python
-
-def escape(s):
-    return string.replace(s, '\\', '\\\\')
-
-expect_python			= escape(expect_python)
-expect_workpath_pass_py		= escape(workpath_pass_py)
-expect_workpath_fail_py		= escape(workpath_fail_py)
-expect_workpath_no_result_py	= escape(workpath_no_result_py)
-
 expect_stdout = """\
-%(expect_python)s -tt %(expect_workpath_fail_py)s
+%(pythonstring)s -tt %(test_fail_py)s
 FAILING TEST STDOUT
-%(expect_python)s -tt %(expect_workpath_no_result_py)s
+%(pythonstring)s -tt %(test_no_result_py)s
 NO RESULT TEST STDOUT
-%(expect_python)s -tt %(expect_workpath_pass_py)s
+%(pythonstring)s -tt %(test_pass_py)s
 PASSING TEST STDOUT
 
 Failed the following test:
@@ -100,3 +81,9 @@ test.run(arguments = '--noqmtest %s' % string.join(testlist),
          stderr = expect_stderr)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

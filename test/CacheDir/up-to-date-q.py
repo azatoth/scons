@@ -59,7 +59,6 @@ int main(){ return 0; }
 """
 
 sconstruct = """
-import os
 CacheDir(r'%s')
 Program('foo', 'foo.c')
 """ % test.workpath('cache')
@@ -80,3 +79,9 @@ test.run(chdir = 'beta', arguments = '.')
 test.run(chdir = 'beta', arguments = '. -q')
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

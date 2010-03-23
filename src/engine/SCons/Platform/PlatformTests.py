@@ -33,6 +33,8 @@ import UserDict
 class Environment(UserDict.UserDict):
     def Detect(self, cmd):
         return cmd
+    def AppendENVPath(self, key, value):
+        pass
 
 class PlatformTestCase(unittest.TestCase):
     def test_Platform(self):
@@ -116,3 +118,9 @@ if __name__ == "__main__":
     suite = unittest.makeSuite(PlatformTestCase, 'test_')
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

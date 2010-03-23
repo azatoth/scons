@@ -30,7 +30,6 @@ the displayed archiver string.
 """
 
 import TestSCons
-import string
 
 _python_ = TestSCons._python_
 
@@ -67,10 +66,15 @@ test.write('file.2', "file.2\n/*ar*/\n")
 test.run()
 
 expect = 'Archiving output.lib from file.1 file.2'
-test.fail_test(string.find(test.stdout(), expect) == -1)
-
+test.must_contain_all_lines(test.stdout(), [expect])
 test.must_match('output.lib', "file.1\nfile.2\n")
 
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

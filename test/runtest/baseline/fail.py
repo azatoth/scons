@@ -30,33 +30,32 @@ Test how we handle a failing test specified on the command line.
 
 import TestRuntest
 
+pythonstring = TestRuntest.pythonstring
+
 test = TestRuntest.TestRuntest()
 
 test.subdir('test')
 
 test.write_failing_test(['test', 'fail.py'])
 
-# NOTE:  The "test/fail.py   : FAIL" line has spaces at the end.
+expect_stdout = """\
+%(pythonstring)s -tt test/fail.py
+FAILING TEST STDOUT
+""" % locals()
 
-expect = r"""qmtest run --output baseline.qmr --format none --result-stream="scons_tdb.AegisBaselineStream" test/fail.py
---- TEST RESULTS -------------------------------------------------------------
-
-  test/fail.py                                  : FAIL    
-
-    FAILING TEST STDOUT
-
-    FAILING TEST STDERR
-
---- TESTS WITH UNEXPECTED OUTCOMES -------------------------------------------
-
-  None.
-
-
---- STATISTICS ---------------------------------------------------------------
-
-       1 (100%) tests as expected
+expect_stderr = """\
+FAILING TEST STDERR
 """
 
-test.run(arguments = '-b . test/fail.py', status = 1, stdout = expect)
+test.run(arguments='-b . test/fail.py',
+         status=1,
+         stdout=expect_stdout,
+         stderr=expect_stderr)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

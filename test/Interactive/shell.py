@@ -84,9 +84,9 @@ scons.send("build foo.out\n")
 scons.send("\n")
 
 if sys.platform == 'win32':
-    no_such_error = 'The system cannot find the file specified'
+    no_such_error = "'no_such_command' is not recognized as an internal or external command,\noperable program or batch file."
 else:
-    no_such_error = 'No such file or directory'
+    no_such_error = 'scons: no_such_command: No such file or directory'
 
 expect_stdout = """\
 scons>>> Copy("foo.out", "foo.in")
@@ -100,9 +100,9 @@ hello from shell_command.py
 scons>>> hello from shell_command.py
 scons>>> sh %(_python_)s %(_shell_command_py_)s
 hello from shell_command.py
-scons>>> scons: no_such_command: %(no_such_error)s
+scons>>> %(no_such_error)s
 scons>>> !no_such_command arg1 arg2
-scons: no_such_command: %(no_such_error)s
+%(no_such_error)s
 scons>>> scons: `foo.out' is up to date.
 scons>>> build foo.out
 scons: `foo.out' is up to date.
@@ -114,3 +114,9 @@ test.finish(scons, stdout = expect_stdout)
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -24,11 +24,11 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import TestSCons
+import os
 import string
-import sys
-import os.path
 import types
+
+import TestSCons
 
 def match_normcase(lines, matches):
     if not type(lines) is types.ListType:
@@ -68,23 +68,33 @@ print env.GetBuildPath('../$FOO/$BAR')
 """)
 
 test.run(arguments = '-C sub .',
-         stdout = test.wrap_stdout(read_str = '%s\n' % wpath,
-                                   build_str = "scons: `.' is up to date.\n"))
+         stdout = "scons: Entering directory `%s'\n" % wpath_sub \
+             + test.wrap_stdout(read_str = '%s\n' % wpath,
+                                build_str = "scons: `.' is up to date.\n"))
 
 test.run(arguments = '-C sub -C dir .',
-         stdout = test.wrap_stdout(read_str = '%s\n' % wpath_sub_foo_bar,
-                                   build_str = "scons: `.' is up to date.\n"))
+         stdout = "scons: Entering directory `%s'\n" % wpath_sub_dir \
+             + test.wrap_stdout(read_str = '%s\n' % wpath_sub_foo_bar,
+                                build_str = "scons: `.' is up to date.\n"))
 
 test.run(arguments = ".",
          stdout = test.wrap_stdout(read_str = 'SConstruct %s\n' % wpath,
                                    build_str = "scons: `.' is up to date.\n"))
 
 test.run(arguments = '--directory=sub/dir .',
-         stdout = test.wrap_stdout(read_str = '%s\n' % wpath_sub_foo_bar,
-                                   build_str = "scons: `.' is up to date.\n"))
+         stdout = "scons: Entering directory `%s'\n" % wpath_sub_dir \
+             + test.wrap_stdout(read_str = '%s\n' % wpath_sub_foo_bar,
+                                build_str = "scons: `.' is up to date.\n"))
 
 test.run(arguments = '-C %s -C %s .' % (wpath_sub_dir, wpath_sub),
-         stdout = test.wrap_stdout(read_str = '%s\n' % wpath,
-                                   build_str = "scons: `.' is up to date.\n"))
+         stdout = "scons: Entering directory `%s'\n" % wpath_sub \
+             + test.wrap_stdout(read_str = '%s\n' % wpath,
+                                build_str = "scons: `.' is up to date.\n"))
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -35,8 +35,9 @@ that can be used by scripts or modules looking for the canonical default.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import fnmatch
 from itertools import izip
+import cStringIO
+import fnmatch
 import os
 import os.path
 import re
@@ -45,7 +46,58 @@ import stat
 import string
 import sys
 import time
-import cStringIO
+
+try:
+    import codecs
+except ImportError:
+    pass
+else:
+    # TODO(2.2):  Remove when 2.3 becomes the minimal supported version.
+    try:
+        codecs.BOM_UTF8
+    except AttributeError:
+        codecs.BOM_UTF8 = '\xef\xbb\xbf'
+    try:
+        codecs.BOM_UTF16_LE
+        codecs.BOM_UTF16_BE
+    except AttributeError:
+        codecs.BOM_UTF16_LE = '\xff\xfe'
+        codecs.BOM_UTF16_BE = '\xfe\xff'
+
+    # Provide a wrapper function to handle decoding differences in
+    # different versions of Python.  Normally, we'd try to do this in the
+    # compat layer (and maybe it still makes sense to move there?) but
+    # that doesn't provide a way to supply the string class used in
+    # pre-2.3 Python versions with a .decode() method that all strings
+    # naturally have.  Plus, the 2.[01] encodings behave differently
+    # enough that we have to settle for a lowest-common-denominator
+    # wrapper approach.
+    #
+    # Note that the 2.[012] implementations below may be inefficient
+    # because they perform an explicit look up of the encoding for every
+    # decode, but they're old enough (and we want to stop supporting
+    # them soon enough) that it's not worth complicating the interface.
+    # Think of it as additional incentive for people to upgrade...
+    try:
+        ''.decode
+    except AttributeError:
+        # 2.0 through 2.2:  strings have no .decode() method
+        try:
+            codecs.lookup('ascii').decode
+        except AttributeError:
+            # 2.0 and 2.1:  encodings are a tuple of functions, and the
+            # decode() function returns a (result, length) tuple.
+            def my_decode(contents, encoding):
+                return codecs.lookup(encoding)[1](contents)[0]
+        else:
+            # 2.2:  encodings are an object with methods, and the
+            # .decode() method returns just the decoded bytes.
+            def my_decode(contents, encoding):
+                return codecs.lookup(encoding).decode(contents)
+    else:
+        # 2.3 or later:  use the .decode() string method
+        def my_decode(contents, encoding):
+            return contents.decode(encoding)
 
 import SCons.Action
 from SCons.Debug import logInstanceCreation
@@ -534,22 +586,24 @@ class Base(SCons.Node.Node):
         if __debug__: logInstanceCreation(self, 'Node.FS.Base')
         SCons.Node.Node.__init__(self)
 
-        self.name = name
-        self.suffix = SCons.Util.splitext(name)[1]
+        # Filenames and paths are probably reused and are intern'ed to
+        # save some memory.
+        self.name = SCons.Util.silent_intern(name)
+        self.suffix = SCons.Util.silent_intern(SCons.Util.splitext(name)[1])
         self.fs = fs
 
         assert directory, "A directory must be provided"
 
-        self.abspath = directory.entry_abspath(name)
-        self.labspath = directory.entry_labspath(name)
+        self.abspath = SCons.Util.silent_intern(directory.entry_abspath(name))
+        self.labspath = SCons.Util.silent_intern(directory.entry_labspath(name))
         if directory.path == '.':
-            self.path = name
+            self.path = SCons.Util.silent_intern(name)
         else:
-            self.path = directory.entry_path(name)
+            self.path = SCons.Util.silent_intern(directory.entry_path(name))
         if directory.tpath == '.':
-            self.tpath = name
+            self.tpath = SCons.Util.silent_intern(name)
         else:
-            self.tpath = directory.entry_tpath(name)
+            self.tpath = SCons.Util.silent_intern(directory.entry_tpath(name))
         self.path_elements = directory.path_elements + [self]
 
         self.dir = directory
@@ -564,7 +618,7 @@ class Base(SCons.Node.Node):
         This node, which already existed, is being looked up as the
         specified klass.  Raise an exception if it isn't.
         """
-        if self.__class__ is klass or klass is Entry:
+        if isinstance(self, klass) or klass is Entry:
             return
         raise TypeError, "Tried to lookup %s '%s' as a %s." %\
               (self.__class__.__name__, self.path, klass.__name__)
@@ -593,7 +647,7 @@ class Base(SCons.Node.Node):
             return self._memo['_save_str']
         except KeyError:
             pass
-        result = self._get_str()
+        result = intern(self._get_str())
         self._memo['_save_str'] = result
         return result
 
@@ -876,11 +930,8 @@ class Entry(Base):
         return self.get_suffix()
 
     def get_contents(self):
-        """Fetch the contents of the entry.
-
-        Since this should return the real contents from the file
-        system, we check to see into what sort of subclass we should
-        morph this Entry."""
+        """Fetch the contents of the entry.  Returns the exact binary
+        contents of the file."""
         try:
             self = self.disambiguate(must_exist=1)
         except SCons.Errors.UserError:
@@ -892,6 +943,24 @@ class Entry(Base):
             return ''
         else:
             return self.get_contents()
+
+    def get_text_contents(self):
+        """Fetch the decoded text contents of a Unicode encoded Entry.
+
+        Since this should return the text contents from the file
+        system, we check to see into what sort of subclass we should
+        morph this Entry."""
+        try:
+            self = self.disambiguate(must_exist=1)
+        except SCons.Errors.UserError:
+            # There was nothing on disk with which to disambiguate
+            # this entry.  Leave it as an Entry, but return a null
+            # string so calls to get_text_contents() in emitters and
+            # the like (e.g. in qt.py) don't have to disambiguate by
+            # hand or catch the exception.
+            return ''
+        else:
+            return self.get_text_contents()
 
     def must_be_same(self, klass):
         """Called to make sure a Node is a Dir.  Since we're an
@@ -932,6 +1001,9 @@ class Entry(Base):
 
     def _glob1(self, pattern, ondisk=True, source=False, strings=False):
         return self.disambiguate()._glob1(pattern, ondisk, source, strings)
+
+    def get_subst_proxy(self):
+        return self.disambiguate().get_subst_proxy()
 
 # This is for later so we can differentiate between Entry the class and Entry
 # the method of the FS class.
@@ -1565,9 +1637,12 @@ class Dir(Base):
             if parent.exists():
                 break
             listDirs.append(parent)
-            parent = parent.up()
-        else:
-            raise SCons.Errors.StopError, parent.path
+            p = parent.up()
+            if p is None:
+                # Don't use while: - else: for this condition because
+                # if so, then parent is None and has no .path attribute.
+                raise SCons.Errors.StopError, parent.path
+            parent = p
         listDirs.reverse()
         for dirnode in listDirs:
             try:
@@ -1598,13 +1673,18 @@ class Dir(Base):
         """A directory does not get scanned."""
         return None
 
+    def get_text_contents(self):
+        """We already emit things in text, so just return the binary
+        version."""
+        return self.get_contents()
+
     def get_contents(self):
         """Return content signatures and names of all our children
         separated by new-lines. Ensure that the nodes are sorted."""
         contents = []
         name_cmp = lambda a, b: cmp(a.name, b.name)
         sorted_children = self.children()[:]
-        sorted_children.sort(name_cmp)        
+        sorted_children.sort(name_cmp)
         for node in sorted_children:
             contents.append('%s %s\n' % (node.get_csig(), node.name))
         return string.join(contents, '')
@@ -1691,9 +1771,19 @@ class Dir(Base):
                 pass
             else:
                 for entry in map(_my_normcase, entries):
-                    d[entry] = 1
+                    d[entry] = True
             self.on_disk_entries = d
-        return d.has_key(_my_normcase(name))
+        if sys.platform == 'win32':
+            name = _my_normcase(name)
+            result = d.get(name)
+            if result is None:
+                # Belt-and-suspenders for Windows:  check directly for
+                # 8.3 file names that don't show up in os.listdir().
+                result = os.path.exists(self.abspath + os.sep + name)
+                d[name] = result
+            return result
+        else:
+            return d.has_key(name)
 
     memoizer_counters.append(SCons.Memoize.CountValue('srcdir_list'))
 
@@ -1863,7 +1953,9 @@ class Dir(Base):
         """
         dirname, basename = os.path.split(pathname)
         if not dirname:
-            return self._glob1(basename, ondisk, source, strings)
+            result = self._glob1(basename, ondisk, source, strings)
+            result.sort(lambda a, b: cmp(str(a), str(b)))
+            return result
         if has_glob_magic(dirname):
             list = self.glob(dirname, ondisk, source, strings=False)
         else:
@@ -1905,7 +1997,7 @@ class Dir(Base):
             if not strings:
                 # Make sure the working directory (self) actually has
                 # entries for all Nodes in repositories or variant dirs.
-                map(selfEntry, node_names)
+                for name in node_names: selfEntry(name)
             if ondisk:
                 try:
                     disk_names = os.listdir(dir.abspath)
@@ -2018,7 +2110,8 @@ class RootDir(Dir):
             result = self._lookupDict[k]
         except KeyError:
             if not create:
-                raise SCons.Errors.UserError
+                msg = "No such file or directory: '%s' in '%s' (and create is False)" % (p, str(self))
+                raise SCons.Errors.UserError, msg
             # There is no Node for this path name, and we're allowed
             # to create it.
             dir_name, file_name = os.path.split(p)
@@ -2236,12 +2329,45 @@ class File(Base):
             return ''
         fname = self.rfile().abspath
         try:
-            r = open(fname, "rb").read()
+            contents = open(fname, "rb").read()
         except EnvironmentError, e:
             if not e.filename:
                 e.filename = fname
             raise
-        return r
+        return contents
+
+    try:
+        import codecs
+    except ImportError:
+        get_text_contents = get_contents
+    else:
+        # This attempts to figure out what the encoding of the text is
+        # based upon the BOM bytes, and then decodes the contents so that
+        # it's a valid python string.
+        def get_text_contents(self):
+            contents = self.get_contents()
+            # The behavior of various decode() methods and functions
+            # w.r.t. the initial BOM bytes is different for different
+            # encodings and/or Python versions.  ('utf-8' does not strip
+            # them, but has a 'utf-8-sig' which does; 'utf-16' seems to
+            # strip them; etc.)  Just side step all the complication by
+            # explicitly stripping the BOM before we decode().
+            if contents.startswith(codecs.BOM_UTF8):
+                contents = contents[len(codecs.BOM_UTF8):]
+                # TODO(2.2):  Remove when 2.3 becomes floor.
+                #contents = contents.decode('utf-8')
+                contents = my_decode(contents, 'utf-8')
+            elif contents.startswith(codecs.BOM_UTF16_LE):
+                contents = contents[len(codecs.BOM_UTF16_LE):]
+                # TODO(2.2):  Remove when 2.3 becomes floor.
+                #contents = contents.decode('utf-16-le')
+                contents = my_decode(contents, 'utf-16-le')
+            elif contents.startswith(codecs.BOM_UTF16_BE):
+                contents = contents[len(codecs.BOM_UTF16_BE):]
+                # TODO(2.2):  Remove when 2.3 becomes floor.
+                #contents = contents.decode('utf-16-be')
+                contents = my_decode(contents, 'utf-16-be')
+            return contents
 
     def get_content_hash(self):
         """
@@ -2490,6 +2616,22 @@ class File(Base):
         # created.
         self.dir._create()
 
+    def push_to_cache(self):
+        """Try to push the node into a cache
+        """
+        # This should get called before the Nodes' .built() method is
+        # called, which would clear the build signature if the file has
+        # a source scanner.
+        #
+        # We have to clear the local memoized values *before* we push
+        # the node to cache so that the memoization of the self.exists()
+        # return value doesn't interfere.
+        if self.nocache:
+            return
+        self.clear_memoized_values()
+        if self.exists():
+            self.get_build_env().get_CacheDir().push(self)
+
     def retrieve_from_cache(self):
         """Try to retrieve the node's content from a cache
 
@@ -2504,22 +2646,6 @@ class File(Base):
         if not self.is_derived():
             return None
         return self.get_build_env().get_CacheDir().retrieve(self)
-
-    def built(self):
-        """
-        Called just after this node is successfully built.
-        """
-        # Push this file out to cache before the superclass Node.built()
-        # method has a chance to clear the build signature, which it
-        # will do if this file has a source scanner.
-        #
-        # We have to clear the memoized values *before* we push it to
-        # cache so that the memoization of the self.exists() return
-        # value doesn't interfere.
-        self.clear_memoized_values()
-        if self.exists():
-            self.get_build_env().get_CacheDir().push(self)
-        SCons.Node.Node.built(self)
 
     def visited(self):
         if self.exists():
@@ -2834,6 +2960,19 @@ class File(Base):
                    (isinstance(node, File) or isinstance(node, Entry) \
                     or not node.is_derived()):
                         result = node
+                        # Copy over our local attributes to the repository
+                        # Node so we identify shared object files in the
+                        # repository and don't assume they're static.
+                        #
+                        # This isn't perfect; the attribute would ideally
+                        # be attached to the object in the repository in
+                        # case it was built statically in the repository
+                        # and we changed it to shared locally, but that's
+                        # rarely the case and would only occur if you
+                        # intentionally used the same suffix for both
+                        # shared and static objects anyway.  So this
+                        # should work well in practice.
+                        result.attributes = self.attributes
                         break
         self._memo['rfile'] = result
         return result
@@ -2922,8 +3061,9 @@ class FileFinder:
             fd = self.default_filedir
         dir, name = os.path.split(fd)
         drive, d = os.path.splitdrive(dir)
-        if d in ('/', os.sep):
-            return p.fs.get_root(drive).dir_on_disk(name)
+        if not name and d[:1] in ('/', os.sep):
+            #return p.fs.get_root(drive).dir_on_disk(name)
+            return p.fs.get_root(drive)
         if dir:
             p = self.filedir_lookup(p, dir)
             if not p:
@@ -3073,3 +3213,8 @@ def invalidate_node_memos(targets):
             if node:
                 node.clear_memoized_values()                        
 
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

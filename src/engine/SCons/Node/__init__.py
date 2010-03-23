@@ -297,6 +297,11 @@ class Node:
         except AttributeError:
             pass
 
+    def push_to_cache(self):
+        """Try to push a node into a cache
+        """
+        pass
+
     def retrieve_from_cache(self):
         """Try to retrieve the node's content from a cache
 
@@ -347,7 +352,7 @@ class Node:
             if d.missing():
                 msg = "Explicit dependency `%s' not found, needed by target `%s'."
                 raise SCons.Errors.StopError, msg % (d, self)
-        if not self.implicit is None:
+        if self.implicit is not None:
             for i in self.implicit:
                 if i.missing():
                     msg = "Implicit dependency `%s' not found, needed by target `%s'."
@@ -469,7 +474,7 @@ class Node:
             # There was no explicit builder for this Node, so initialize
             # the self.builder attribute to None now.
             b = self.builder = None
-        return not b is None
+        return b is not None
 
     def set_explicit(self, is_explicit):
         self.is_explicit = is_explicit
@@ -597,7 +602,7 @@ class Node:
         # Don't bother scanning non-derived files, because we don't
         # care what their dependencies are.
         # Don't scan again, if we already have scanned.
-        if not self.implicit is None:
+        if self.implicit is not None:
             return
         self.implicit = []
         self.implicit_set = set()
@@ -621,7 +626,7 @@ class Node:
                 # essentially short-circuits an N*M scan of the
                 # sources for each individual target, which is a hell
                 # of a lot more efficient.
-                for tgt in executor.targets:
+                for tgt in executor.get_all_targets():
                     tgt.add_to_implicit(implicit)
 
                 if implicit_deps_unchanged or self.is_up_to_date():
@@ -714,7 +719,7 @@ class Node:
                 if s not in ignore_set:
                     sources.append(s)
         else:
-            sources = executor.get_unignored_sources(self.ignore)
+            sources = executor.get_unignored_sources(self, self.ignore)
         seen = set()
         bsources = []
         bsourcesigs = []
@@ -886,7 +891,7 @@ class Node:
 
     def add_wkid(self, wkid):
         """Add a node to the list of kids waiting to be evaluated"""
-        if self.wkids != None:
+        if self.wkids is not None:
             self.wkids.append(wkid)
 
     def _children_reset(self):
@@ -1328,3 +1333,9 @@ class Walker:
 
 
 arg2nodes_lookups = []
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

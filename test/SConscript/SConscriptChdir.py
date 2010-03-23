@@ -24,7 +24,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import sys
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -45,27 +44,27 @@ SConscript('dir5/SConscript')
 """)
 
 test.write(['dir1', 'SConscript'], """
-execfile("create_test.py")
+exec(open("create_test.py", 'rU').read())
 """)
 
 test.write(['dir2', 'SConscript'], """
-execfile("create_test.py")
+exec(open("create_test.py", 'rU').read())
 """)
 
 test.write(['dir3', 'SConscript'], """
 import os.path
 name = os.path.join('dir3', 'create_test.py')
-execfile(name)
+exec(open(name, 'rU').read())
 """)
 
 test.write(['dir4', 'SConscript'], """
-execfile("create_test.py")
+exec(open("create_test.py", 'rU').read())
 """)
 
 test.write(['dir5', 'SConscript'], """
 import os.path
 name = os.path.join('dir5', 'create_test.py')
-execfile(name)
+exec(open(name, 'rU').read())
 """)
 
 for dir in ['dir1', 'dir2', 'dir3','dir4', 'dir5']:
@@ -83,3 +82,9 @@ test.fail_test(test.read('test.txt') != "This is the dir3 test.\nThis is the dir
 test.fail_test(test.read(['dir4', 'test.txt']) != "This is the dir4 test.\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -44,6 +44,8 @@ their own platform definition.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
 import imp
 import os
 import string
@@ -51,6 +53,7 @@ import sys
 import tempfile
 
 import SCons.Errors
+import SCons.Subst
 import SCons.Tool
 
 def platform_default():
@@ -147,8 +150,18 @@ class TempFileMunge:
 
     def __call__(self, target, source, env, for_signature):
         if for_signature:
+            # If we're being called for signature calculation, it's
+            # because we're being called by the string expansion in
+            # Subst.py, which has the logic to strip any $( $) that
+            # may be in the command line we squirreled away.  So we
+            # just return the raw command line and let the upper
+            # string substitution layers do their thing.
             return self.cmd
-        cmd = env.subst_list(self.cmd, 0, target, source)[0]
+
+        # Now we're actually being called because someone is actually
+        # going to try to execute the command, so we have to do our
+        # own expansion.
+        cmd = env.subst_list(self.cmd, SCons.Subst.SUBST_CMD, target, source)[0]
         try:
             maxline = int(env.subst('$MAXLINELENGTH'))
         except ValueError:
@@ -165,8 +178,8 @@ class TempFileMunge:
         # We use the .lnk suffix for the benefit of the Phar Lap
         # linkloc linker, which likes to append an .lnk suffix if
         # none is given.
-        tmp = os.path.normpath(tempfile.mktemp('.lnk'))
-        native_tmp = SCons.Util.get_native_path(tmp)
+        (fd, tmp) = tempfile.mkstemp('.lnk', text=True)
+        native_tmp = SCons.Util.get_native_path(os.path.normpath(tmp))
 
         if env['SHELL'] and env['SHELL'] == 'sh':
             # The sh shell will try to escape the backslashes in the
@@ -186,7 +199,8 @@ class TempFileMunge:
             prefix = '@'
 
         args = map(SCons.Subst.quote_spaces, cmd[1:])
-        open(tmp, 'w').write(string.join(args, " ") + "\n")
+        os.write(fd, string.join(args, " ") + "\n")
+        os.close(fd)
         # XXX Using the SCons.Action.print_actions value directly
         # like this is bogus, but expedient.  This class should
         # really be rewritten as an Action that defines the
@@ -214,3 +228,9 @@ def Platform(name = platform_default()):
     spec = PlatformSpec(name)
     spec.__call__ = module.generate
     return spec
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

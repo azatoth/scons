@@ -116,7 +116,7 @@ def process_cmd_output(cmd_stdout, cmd_stderr, stdout, stderr):
                 str = cmd_stdout.read()
                 if len(str) == 0:
                     stdout_eof = 1
-                elif stdout != None:
+                elif stdout is not None:
                     stdout.write(str)
             if cmd_stderr in i:
                 str = cmd_stderr.read()
@@ -256,3 +256,9 @@ def generate(env):
 
     # This platform supports RPATH specifications.
     env['__RPATH'] = '$_RPATH'
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

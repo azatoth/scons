@@ -34,10 +34,6 @@ factors triggered the bug Scott saw, and partly because the real-world
 complexity is valuable in its own right.
 """
 
-import os.path
-import sys
-
-import TestCmd
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -55,10 +51,7 @@ test.write('SConstruct', """\
 ###
 
 experimenttop = r"%s"
-
 import os
-import os.path
-import string
 import Mylib
 
 BStaticLibMerge = Builder(generator = Mylib.Gen_StaticLibMerge)
@@ -411,17 +404,20 @@ int g_3()
 test.run(stderr=TestSCons.noisy_ar,
          match=TestSCons.match_re_dotall)
 
-# Note that the generated .h files still get scanned twice,
-# but that's really once each as a child of libg_1.o and libg_2.o.
-
 test.must_match("MyCScan.out", """\
 libg_1.c: 1
 libg_2.c: 1
 libg_3.c: 1
-libg_gx.h: 2
+libg_gx.h: 1
 libg_gy.h: 1
 libg_gz.h: 1
-libg_w.h: 2
+libg_w.h: 1
 """)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

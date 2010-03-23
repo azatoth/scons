@@ -107,18 +107,6 @@ def updrive(path):
         path = string.upper(drive) + rest
     return path
 
-class CallableComposite(UserList):
-    """A simple composite callable class that, when called, will invoke all
-    of its contained callables with the same arguments."""
-    def __call__(self, *args, **kwargs):
-        retvals = map(lambda x, args=args, kwargs=kwargs: apply(x,
-                                                                args,
-                                                                kwargs),
-                      self.data)
-        if self.data and (len(self.data) == len(filter(callable, retvals))):
-            return self.__class__(retvals)
-        return NodeList(retvals)
-
 class NodeList(UserList):
     """This class is almost exactly like a regular list of Nodes
     (actually it can hold any object), with one important difference.
@@ -135,23 +123,20 @@ class NodeList(UserList):
     def __str__(self):
         return string.join(map(str, self.data))
 
+    def __iter__(self):
+        return iter(self.data)
+
+    def __call__(self, *args, **kwargs):
+        result = map(lambda x, args=args, kwargs=kwargs: apply(x,
+                                                               args,
+                                                               kwargs),
+                     self.data)
+        return self.__class__(result)
+
     def __getattr__(self, name):
-        if not self.data:
-            # If there is nothing in the list, then we have no attributes to
-            # pass through, so raise AttributeError for everything.
-            raise AttributeError, "NodeList has no attribute: %s" % name
+        result = map(lambda x, n=name: getattr(x, n), self.data)
+        return self.__class__(result)
 
-        # Return a list of the attribute, gotten from every element
-        # in the list
-        attrList = map(lambda x, n=name: getattr(x, n), self.data)
-
-        # Special case.  If the attribute is callable, we do not want
-        # to return a list of callables.  Rather, we want to return a
-        # single callable that, when called, will invoke the function on
-        # all elements of this list.
-        if self.data and (len(self.data) == len(filter(callable, attrList))):
-            return CallableComposite(attrList)
-        return self.__class__(attrList)
 
 _get_env_var = re.compile(r'^\$([_a-zA-Z]\w*|{[_a-zA-Z]\w*})$')
 
@@ -302,11 +287,11 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
 
     if children:
         margin.append(1)
-        map(lambda C, cf=child_func, p=prune, i=IDX(showtags), m=margin, v=visited:
-                   print_tree(C, cf, p, i, m, v),
-            children[:-1])
+        idx = IDX(showtags)
+        for C in children[:-1]:
+            print_tree(C, child_func, prune, idx, margin, visited)
         margin[-1] = 0
-        print_tree(children[-1], child_func, prune, IDX(showtags), margin, visited)
+        print_tree(children[-1], child_func, prune, idx, margin, visited)
         margin.pop()
 
 
@@ -690,11 +675,11 @@ try:
     can_read_reg = 1
     hkey_mod = _winreg
 
-    RegOpenKeyEx = _winreg.OpenKeyEx
-    RegEnumKey = _winreg.EnumKey
-    RegEnumValue = _winreg.EnumValue
+    RegOpenKeyEx    = _winreg.OpenKeyEx
+    RegEnumKey      = _winreg.EnumKey
+    RegEnumValue    = _winreg.EnumValue
     RegQueryValueEx = _winreg.QueryValueEx
-    RegError = _winreg.error
+    RegError        = _winreg.error
 
 except ImportError:
     try:
@@ -703,11 +688,11 @@ except ImportError:
         can_read_reg = 1
         hkey_mod = win32con
 
-        RegOpenKeyEx = win32api.RegOpenKeyEx
-        RegEnumKey = win32api.RegEnumKey
-        RegEnumValue = win32api.RegEnumValue
+        RegOpenKeyEx    = win32api.RegOpenKeyEx
+        RegEnumKey      = win32api.RegEnumKey
+        RegEnumValue    = win32api.RegEnumValue
         RegQueryValueEx = win32api.RegQueryValueEx
-        RegError = win32api.error
+        RegError        = win32api.error
 
     except ImportError:
         class _NoError(Exception):
@@ -715,10 +700,10 @@ except ImportError:
         RegError = _NoError
 
 if can_read_reg:
-    HKEY_CLASSES_ROOT = hkey_mod.HKEY_CLASSES_ROOT
+    HKEY_CLASSES_ROOT  = hkey_mod.HKEY_CLASSES_ROOT
     HKEY_LOCAL_MACHINE = hkey_mod.HKEY_LOCAL_MACHINE
-    HKEY_CURRENT_USER = hkey_mod.HKEY_CURRENT_USER
-    HKEY_USERS = hkey_mod.HKEY_USERS
+    HKEY_CURRENT_USER  = hkey_mod.HKEY_CURRENT_USER
+    HKEY_USERS         = hkey_mod.HKEY_USERS
 
     def RegGetValue(root, key):
         """This utility function returns a value in the registry
@@ -742,10 +727,35 @@ if can_read_reg:
         # I would use os.path.split here, but it's not a filesystem
         # path...
         p = key.rfind('\\') + 1
-        keyp = key[:p]
+        keyp = key[:p-1]          # -1 to omit trailing slash
         val = key[p:]
         k = RegOpenKeyEx(root, keyp)
         return RegQueryValueEx(k,val)
+else:
+    try:
+        e = WindowsError
+    except NameError:
+        # Make sure we have a definition of WindowsError so we can
+        # run platform-independent tests of Windows functionality on
+        # platforms other than Windows.  (WindowsError is, in fact, an
+        # OSError subclass on Windows.)
+        class WindowsError(OSError):
+            pass
+        import __builtin__
+        __builtin__.WindowsError = WindowsError
+    else:
+        del e
+        
+    HKEY_CLASSES_ROOT = None
+    HKEY_LOCAL_MACHINE = None
+    HKEY_CURRENT_USER = None
+    HKEY_USERS = None
+
+    def RegGetValue(root, key):
+        raise WindowsError
+
+    def RegOpenKeyEx(root, key):
+        raise WindowsError
 
 if sys.platform == 'win32':
 
@@ -844,7 +854,8 @@ else:
                     continue
         return None
 
-def PrependPath(oldpath, newpath, sep = os.pathsep, delete_existing=1):
+def PrependPath(oldpath, newpath, sep = os.pathsep, 
+                delete_existing=1, canonicalize=None):
     """This prepends newpath elements to the given oldpath.  Will only
     add any particular path once (leaving the first one it encounters
     and ignoring the rest, to preserve path order), and will
@@ -861,6 +872,9 @@ def PrependPath(oldpath, newpath, sep = os.pathsep, delete_existing=1):
     If delete_existing is 0, then adding a path that exists will
     not move it to the beginning; it will stay where it is in the
     list.
+
+    If canonicalize is not None, it is applied to each element of 
+    newpath before use.
     """
 
     orig = oldpath
@@ -870,10 +884,15 @@ def PrependPath(oldpath, newpath, sep = os.pathsep, delete_existing=1):
         paths = string.split(paths, sep)
         is_list = 0
 
-    if is_List(newpath) or is_Tuple(newpath):
-        newpaths = newpath
-    else:
+    if is_String(newpath):
         newpaths = string.split(newpath, sep)
+    elif not is_List(newpath) and not is_Tuple(newpath):
+        newpaths = [ newpath ]  # might be a Dir
+    else:
+        newpaths = newpath
+
+    if canonicalize:
+        newpaths=map(canonicalize, newpaths)
 
     if not delete_existing:
         # First uniquify the old paths, making sure to 
@@ -917,7 +936,8 @@ def PrependPath(oldpath, newpath, sep = os.pathsep, delete_existing=1):
     else:
         return string.join(paths, sep)
 
-def AppendPath(oldpath, newpath, sep = os.pathsep, delete_existing=1):
+def AppendPath(oldpath, newpath, sep = os.pathsep, 
+               delete_existing=1, canonicalize=None):
     """This appends new path elements to the given old path.  Will
     only add any particular path once (leaving the last one it
     encounters and ignoring the rest, to preserve path order), and
@@ -933,6 +953,9 @@ def AppendPath(oldpath, newpath, sep = os.pathsep, delete_existing=1):
 
     If delete_existing is 0, then adding a path that exists
     will not move it to the end; it will stay where it is in the list.
+
+    If canonicalize is not None, it is applied to each element of 
+    newpath before use.
     """
 
     orig = oldpath
@@ -942,10 +965,15 @@ def AppendPath(oldpath, newpath, sep = os.pathsep, delete_existing=1):
         paths = string.split(paths, sep)
         is_list = 0
 
-    if is_List(newpath) or is_Tuple(newpath):
-        newpaths = newpath
-    else:
+    if is_String(newpath):
         newpaths = string.split(newpath, sep)
+    elif not is_List(newpath) and not is_Tuple(newpath):
+        newpaths = [ newpath ]  # might be a Dir
+    else:
+        newpaths = newpath
+
+    if canonicalize:
+        newpaths=map(canonicalize, newpaths)
 
     if not delete_existing:
         # add old paths to result, then
@@ -1089,11 +1117,12 @@ class Selector(OrderedDict):
     """A callable ordered dictionary that maps file suffixes to
     dictionary values.  We preserve the order in which items are added
     so that get_suffix() calls always return the first suffix added."""
-    def __call__(self, env, source):
-        try:
-            ext = source[0].suffix
-        except IndexError:
-            ext = ""
+    def __call__(self, env, source, ext=None):
+        if ext is None:
+            try:
+                ext = source[0].suffix
+            except IndexError:
+                ext = ""
         try:
             return self[ext]
         except KeyError:
@@ -1101,7 +1130,7 @@ class Selector(OrderedDict):
             # the dictionary before giving up.
             s_dict = {}
             for (k,v) in self.items():
-                if not k is None:
+                if k is not None:
                     s_k = env.subst(k)
                     if s_dict.has_key(s_k):
                         # We only raise an error when variables point
@@ -1543,15 +1572,37 @@ def MD5collect(signatures):
 
 
 
+# Wrap the intern() function so it doesn't throw exceptions if ineligible
+# arguments are passed. The intern() function was moved into the sys module in
+# Python 3.
+try:
+    intern
+except NameError:
+    from sys import intern
+
+def silent_intern(x):
+    """
+    Perform intern() on the passed argument and return the result.
+    If the input is ineligible (e.g. a unicode string) the original argument is
+    returned and no exception is thrown.
+    """
+    try:
+        return intern(x)
+    except TypeError:
+        return x
+
+
+
 # From Dinu C. Gherman,
 # Python Cookbook, second edition, recipe 6.17, p. 277.
 # Also:
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/68205
 # ASPN: Python Cookbook: Null Object Design Pattern
 
+# TODO(1.5):
+#class Null(object):
 class Null:
-    """ Null objects always and reliably "do nothging." """
-
+    """ Null objects always and reliably "do nothing." """
     def __new__(cls, *args, **kwargs):
         if not '_inst' in vars(cls):
             #cls._inst = type.__new__(cls, *args, **kwargs)
@@ -1562,16 +1613,33 @@ class Null:
     def __call__(self, *args, **kwargs):
         return self
     def __repr__(self):
-        return "Null()"
+        return "Null(0x%08X)" % id(self)
     def __nonzero__(self):
         return False
-    def __getattr__(self, mname):
+    def __getattr__(self, name):
         return self
     def __setattr__(self, name, value):
         return self
     def __delattr__(self, name):
         return self
 
+class NullSeq(Null):
+    def __len__(self):
+        return 0
+    def __iter__(self):
+        return iter(())
+    def __getitem__(self, i):
+        return self
+    def __delitem__(self, i):
+        return self
+    def __setitem__(self, i, v):
+        return self
 
 
 del __revision__
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

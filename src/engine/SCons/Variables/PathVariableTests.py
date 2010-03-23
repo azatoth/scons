@@ -44,7 +44,7 @@ class PathVariableTestCase(unittest.TestCase):
         assert o.key == 'test', o.key
         assert o.help == 'test option help ( /path/to/test )', repr(o.help)
         assert o.default == '/default/path', o.default
-        assert not o.validator is None, o.validator
+        assert o.validator is not None, o.validator
         assert o.converter is None, o.converter
 
     def test_PathExists(self):
@@ -229,3 +229,9 @@ if __name__ == "__main__":
     suite = unittest.makeSuite(PathVariableTestCase, 'test_')
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

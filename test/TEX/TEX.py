@@ -30,10 +30,8 @@ the produced .dvi, .aux and .log files get removed by the -c option,
 and that we can use this to wrap calls to the real latex utility.
 """
 
-import os
-import os.path
 import string
-import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -46,7 +44,7 @@ test.write('mytex.py', r"""
 import sys
 import os
 import getopt
-cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:', [])
+cmd_opts, arg = getopt.getopt(sys.argv[1:], 'i:r:', [])
 base_name = os.path.splitext(arg[0])[0]
 infile = open(arg[0], 'rb')
 dvi_file = open(base_name+'.dvi', 'wb')
@@ -177,7 +175,7 @@ Run \texttt{latex}, then \texttt{bibtex}, then \texttt{latex} twice again \cite{
     test.run(stderr = None)
     output_lines = string.split(test.stdout(), '\n')
 
-    reruns = filter(lambda x: string.find(x, 'latex -interaction=nonstopmode rerun.tex') != -1, output_lines)
+    reruns = filter(lambda x: string.find(x, 'latex -interaction=nonstopmode -recorder rerun.tex') != -1, output_lines)
     if len(reruns) != 2:
         print "Expected 2 latex calls, got %s:" % len(reruns)
         print string.join(reruns, '\n')
@@ -190,3 +188,9 @@ Run \texttt{latex}, then \texttt{bibtex}, then \texttt{latex} twice again \cite{
         test.fail_test()
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

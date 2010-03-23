@@ -25,7 +25,6 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
-import string
 
 import TestSCons
 
@@ -152,6 +151,12 @@ ParseDepends('nonexistent_file', must_exist=1)
 
 test.run(status=2, stderr=None)
 
-test.fail_test(string.find(test.stderr(), "No such file or directory") == -1)
+test.must_contain_all_lines(test.stderr(), ["No such file or directory"])
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

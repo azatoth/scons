@@ -28,11 +28,10 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test that the --debug=memory option works.
 """
 
-import TestSCons
-import sys
-import string
 import re
-import time
+import string
+
+import TestSCons
 
 test = TestSCons.TestSCons()
 
@@ -80,3 +79,9 @@ test.fail_test(re.match(r'Memory after reading SConscript files: +\d+', lines[-2
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -30,7 +30,6 @@ file" as the side effect "target."
 """
 
 import os.path
-import string
 
 import TestSCons
 
@@ -106,3 +105,9 @@ foo.in -> foo.out
 test.must_match('log.txt', expect)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

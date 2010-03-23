@@ -28,10 +28,7 @@ Test that an Alias of a node with a Scanner works.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import sys
 import TestSCons
-import TestCmd
 
 test = TestSCons.TestSCons()
 
@@ -59,3 +56,9 @@ test.run()
 test.fail_test(test.read('file.c') != "file.x\n")
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -29,7 +29,7 @@ Test the --install-sandbox commandline option for Install() and InstallAs().
 """
 
 import os.path
-import sys
+
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -74,3 +74,9 @@ test.must_match('destination/subdir/file3.out', "subdir/file3.in\n")
 
 #
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

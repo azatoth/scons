@@ -28,16 +28,17 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Verify a lot of the basic operation of the --debug=explain option.
 """
 
-import os.path
+import os
 import string
-import sys
-import TestSCons
 
-_python_ = TestSCons._python_
+import TestSCons
 
 test = TestSCons.TestSCons()
 
 test.subdir(['src'], ['src', 'subdir'])
+
+python = TestSCons.python
+_python_ = TestSCons._python_
 
 subdir_file7 = os.path.join('subdir', 'file7')
 subdir_file7_in = os.path.join('subdir', 'file7.in')
@@ -52,7 +53,7 @@ inc_bbb_k = test.workpath('inc', 'bbb.k')
 
 
 
-test.write(cat_py, r"""
+test.write(cat_py, r"""#!/usr/bin/env python
 import sys
 
 def process(outfp, infp):
@@ -77,13 +78,14 @@ for f in sys.argv[2:]:
 sys.exit(0)
 """)
 
+
 SConstruct_contents = """\
 import re
 
 include_re = re.compile(r'^include\s+(\S+)$', re.M)
 
 def kfile_scan(node, env, target, arg):
-    contents = node.get_contents()
+    contents = node.get_text_contents()
     includes = include_re.findall(contents)
     return includes
 
@@ -92,12 +94,13 @@ kscan = Scanner(name = 'kfile',
                 argument = None,
                 skeys = ['.k'])
 
-cat = Builder(action = r'%(_python_)s %(cat_py)s $TARGET $SOURCES')
-one_cat = Builder( action = r'%(_python_)s %(cat_py)s $TARGET ${SOURCES[0]}')
+cat = Builder(action = [[r'%(_python_)s', r'%(cat_py)s', '$TARGET', '$SOURCES']])
+one_cat = Builder( action = [[r'%(_python_)s', r'%(cat_py)s', '$TARGET', '${SOURCES[0]}']])
 
 env = Environment()
 env.Append(BUILDERS = {'Cat':cat, 'OneCat':one_cat},
            SCANNERS = kscan)
+env.PrependENVPath('PATHEXT', '.PY')
 
 Export("env")
 SConscript('SConscript')
@@ -314,10 +317,12 @@ Import("env")
 env.Cat('file3', ['zzz', 'yyy', 'xxx'])
 """)
 
+python_sep = string.replace(python, '\\', '\\\\')
+
 expect = test.wrap_stdout("""\
 scons: rebuilding `file3' because the dependency order changed:
-               old: ['xxx', 'yyy', 'zzz']
-               new: ['zzz', 'yyy', 'xxx']
+               old: ['xxx', 'yyy', 'zzz', '%(python_sep)s']
+               new: ['zzz', 'yyy', 'xxx', '%(python_sep)s']
 %(_python_)s %(cat_py)s file3 zzz yyy xxx
 """ % locals())
 
@@ -417,3 +422,9 @@ test.up_to_date(chdir='src',arguments='.')
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

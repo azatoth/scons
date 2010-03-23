@@ -25,24 +25,23 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import TestSCons
-import string
-import sys
 
 test = TestSCons.TestSCons()
 
 test.write('SConstruct', "")
 
-test.run(arguments = '-W foo .',
-         stderr = "Warning:  the -W option is not yet implemented\n")
+test.option_not_yet_implemented('-W', 'foo .')
 
-test.run(arguments = '--what-if=foo .',
-         stderr = "Warning:  the --what-if option is not yet implemented\n")
+test.option_not_yet_implemented('--what-if', '=foo .')
 
-test.run(arguments = '--new-file=foo .',
-         stderr = "Warning:  the --new-file option is not yet implemented\n")
+test.option_not_yet_implemented('--new-file', '=foo .')
 
-test.run(arguments = '--assume-new=foo .',
-         stderr = "Warning:  the --assume-new option is not yet implemented\n")
+test.option_not_yet_implemented('--assume-new', '=foo .')
 
 test.pass_test()
  
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -52,7 +52,6 @@ print "VARIABLE =", env.get('VARIABLE')
 """
 
 test.write(['bin', 'opts.cfg'], """\
-import sys
 from local_options import VARIABLE
 """ % locals())
 
@@ -67,3 +66,9 @@ expect = "VARIABLE = bin/local_options.py\n"
 test.run(arguments = '-q -Q .', stdout = expect)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

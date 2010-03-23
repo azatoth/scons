@@ -103,7 +103,7 @@ def emit_java_headers(target, source, env):
 def JavaHOutFlagGenerator(target, source, env, for_signature):
     try:
         t = target[0]
-    except (AttributeError, TypeError):
+    except (AttributeError, IndexError, TypeError):
         t = target
     try:
         return '-d ' + str(t.attributes.java_lookupdir)
@@ -130,3 +130,9 @@ def generate(env):
 
 def exists(env):
     return env.Detect('javah')
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

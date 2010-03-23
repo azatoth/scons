@@ -401,6 +401,7 @@ arguments = {
                           "SCons.Scanner",
                           "SCons.Script",
                           "SCons.Tool",
+                          "SCons.Tool.MSCommon",
                           "SCons.Tool.packaging",
                           "SCons.Variables",
                          ],
@@ -418,3 +419,9 @@ apply(distutils.core.setup, (), arguments)
 
 if Installed:
     print string.join(Installed, '\n')
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

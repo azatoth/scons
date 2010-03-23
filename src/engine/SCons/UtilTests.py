@@ -494,30 +494,6 @@ class UtilTestCase(unittest.TestCase):
         p1 = AppendPath(p1,r'C:\dir\num\three',sep = ';')
         assert(p1 == r'C:\dir\num\one;C:\dir\num\two;C:\dir\num\three')
 
-    def test_NodeList(self):
-        """Test NodeList class"""
-        class TestClass:
-            def __init__(self, name, child=None):
-                self.child = child
-                self.bar = name
-            def foo(self):
-                return self.bar + "foo"
-            def getself(self):
-                return self
-
-        t1 = TestClass('t1', TestClass('t1child'))
-        t2 = TestClass('t2', TestClass('t2child'))
-        t3 = TestClass('t3')
-
-        nl = NodeList([t1, t2, t3])
-        assert nl.foo() == [ 't1foo', 't2foo', 't3foo' ], nl.foo()
-        assert nl.bar == [ 't1', 't2', 't3' ], nl.bar
-        assert nl.getself().bar == [ 't1', 't2', 't3' ], nl.getself().bar
-        assert nl[0:2].child.foo() == [ 't1childfoo', 't2childfoo' ], \
-               nl[0:2].child.foo()
-        assert nl[0:2].child.bar == [ 't1child', 't2child' ], \
-               nl[0:2].child.bar
-
     def test_CLVar(self):
         """Test the command-line construction variable class"""
         f = SCons.Util.CLVar('a b')
@@ -649,13 +625,13 @@ class UtilTestCase(unittest.TestCase):
 
         s = Selector({'.d' : 'DDD', '.e' : 'EEE'})
         ret = s(env, [])
-        assert ret == None, ret
+        assert ret is None, ret
         ret = s(env, [MyNode('foo.d')])
         assert ret == 'DDD', ret
         ret = s(env, [MyNode('bar.e')])
         assert ret == 'EEE', ret
         ret = s(env, [MyNode('bar.x')])
-        assert ret == None, ret
+        assert ret is None, ret
         s[None] = 'XXX'
         ret = s(env, [MyNode('bar.x')])
         assert ret == 'XXX', ret
@@ -719,6 +695,16 @@ bling
             'bling\n',
         ], lines
 
+    def test_intern(self):
+        s1 = silent_intern("spam")
+        # Python 1.5 and 3.x do not have a unicode() built-in
+        if sys.version[0] == '2': 
+            s2 = silent_intern(unicode("unicode spam"))
+        s3 = silent_intern(42)
+        s4 = silent_intern("spam")
+        assert id(s1) == id(s4)
+
+
 class MD5TestCase(unittest.TestCase):
 
     def test_collect(self):
@@ -738,6 +724,55 @@ class MD5TestCase(unittest.TestCase):
         s = MD5signature('222')
         assert 'bcbe3365e6ac95ea2c0343a2395834dd' == s, s
 
+class NodeListTestCase(unittest.TestCase):
+    def test_simple_attributes(self):
+        """Test simple attributes of a NodeList class"""
+        class TestClass:
+            def __init__(self, name, child=None):
+                self.child = child
+                self.bar = name
+
+        t1 = TestClass('t1', TestClass('t1child'))
+        t2 = TestClass('t2', TestClass('t2child'))
+        t3 = TestClass('t3')
+
+        nl = NodeList([t1, t2, t3])
+        assert nl.bar == [ 't1', 't2', 't3' ], nl.bar
+        assert nl[0:2].child.bar == [ 't1child', 't2child' ], \
+               nl[0:2].child.bar
+
+    def test_callable_attributes(self):
+        """Test callable attributes of a NodeList class"""
+        class TestClass:
+            def __init__(self, name, child=None):
+                self.child = child
+                self.bar = name
+            def foo(self):
+                return self.bar + "foo"
+            def getself(self):
+                return self
+
+        t1 = TestClass('t1', TestClass('t1child'))
+        t2 = TestClass('t2', TestClass('t2child'))
+        t3 = TestClass('t3')
+
+        nl = NodeList([t1, t2, t3])
+        assert nl.foo() == [ 't1foo', 't2foo', 't3foo' ], nl.foo()
+        assert nl.bar == [ 't1', 't2', 't3' ], nl.bar
+        assert nl.getself().bar == [ 't1', 't2', 't3' ], nl.getself().bar
+        assert nl[0:2].child.foo() == [ 't1childfoo', 't2childfoo' ], \
+               nl[0:2].child.foo()
+        assert nl[0:2].child.bar == [ 't1child', 't2child' ], \
+               nl[0:2].child.bar
+
+    def test_null(self):
+        """Test a null NodeList"""
+        nl = NodeList([])
+        r = str(nl)
+        assert r == '', r
+        for node in nl:
+            raise Exception, "should not enter this loop"
+
 
 class flattenTestCase(unittest.TestCase):
 
@@ -751,6 +786,7 @@ if __name__ == "__main__":
     tclasses = [ dictifyTestCase,
                  flattenTestCase,
                  MD5TestCase,
+                 NodeListTestCase,
                  UtilTestCase,
                ]
     for tclass in tclasses:
@@ -758,3 +794,9 @@ if __name__ == "__main__":
         suite.addTests(map(tclass, names))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

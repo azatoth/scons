@@ -47,7 +47,7 @@ from SCons.Tool.PharLapCommon import addPathIfNotExists
 
 # Variables that we want to import from the base OS environment.
 _import_env = [ 'P4PORT', 'P4CLIENT', 'P4USER', 'USER', 'USERNAME', 'P4PASSWD',
-                'P4CHARSET', 'P4LANGUAGE', 'SYSTEMROOT' ]
+                'P4CHARSET', 'P4LANGUAGE', 'SystemRoot' ]
 
 PerforceAction = SCons.Action.Action('$P4COM', '$P4COMSTR')
 
@@ -96,3 +96,9 @@ def generate(env):
 
 def exists(env):
     return env.Detect('p4')
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

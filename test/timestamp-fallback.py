@@ -31,7 +31,6 @@ hashlib and no underlying md5 module available.
 
 import imp
 import os
-import os.path
 
 import TestSCons
 
@@ -110,3 +109,8 @@ scons: `f4.out' is up to date.
 
 test.pass_test()
 
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

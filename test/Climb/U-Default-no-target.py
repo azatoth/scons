@@ -37,8 +37,14 @@ test.write('SConstruct', """
 Default('not_a_target.in')
 """)
 
-test.run(arguments = '-U', status=2, stderr="""\
-scons: *** Do not know how to make target `not_a_target.in'.  Stop.
+test.run(arguments = '-U', status=2, match=TestSCons.match_re, stderr="""\
+scons: \*\*\* Do not know how to make File target `not_a_target.in' \(.*not_a_target.in\).  Stop.
 """)
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

@@ -51,6 +51,7 @@ import os
 
 env = Environment(ENV = { 'PATH' : os.environ['PATH'] })
 
+env.PDF('Fig1.ps')
 test = env.PDF(source='test.tex')
 """)
 
@@ -229,3 +230,9 @@ for f in files:
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:
