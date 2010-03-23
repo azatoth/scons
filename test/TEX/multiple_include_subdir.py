@@ -51,6 +51,7 @@ import os
 
 env = Environment(ENV = { 'PATH' : os.environ['PATH'] })
 
+env.PDF('docs/Fig1.eps')
 test = env.PDF(source='docs/test.tex')
 """)
 
@@ -79,7 +80,7 @@ newpath 0 98 moveto 0 0 lineto 98 0 lineto 98 98 lineto closepath clip newpath
 /cp {closepath} bind def
 /ef {eofill} bind def
 /gr {grestore} bind def
-/gs {gsave} bind defThe Oxygen Isotopic Composition of Captured Solar Wind: First Resultsfrom the GENESIS Mission
+/gs {gsave} bind defThe Oxygen Isotopic Composition of Captured Solar Wind: First Results\rfrom the GENESIS Mission
 /rs {restore} bind def
 /l {lineto} bind def
 /m {moveto} bind def
@@ -229,3 +230,9 @@ for f in files:
 
 
 test.pass_test()
+
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:
