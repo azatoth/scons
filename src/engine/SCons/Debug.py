@@ -174,7 +174,10 @@ shorten_list = [
 ]
 
 if os.sep != '/':
-    shorten_list = [(t[0].replace('/', os.sep), t[1]) for t in shorten_list]
+   def platformize(t):
+       return (t[0].replace('/', os.sep), t[1])
+   shorten_list = list(map(platformize, shorten_list))
+   del platformize
 
 def func_shorten(func_tuple):
     f = func_tuple[0]
