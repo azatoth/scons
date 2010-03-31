@@ -136,17 +136,19 @@ _VCVER_TO_PRODUCT_DIR = {
         '6.0': [
             r'Microsoft\VisualStudio\6.0\Setup\Microsoft Visual C++\ProductDir']
 }
-
+        
 def msvc_version_to_maj_min(msvc_version):
-    t = msvc_version.split(".")
-    if not len(t) == 2:
-        raise ValueError("Unrecognized version %s" % msvc_version)
-    try:
-        maj = int(t[0])
-        min = int(t[1])
-        return maj, min
-    except ValueError, e:
-        raise ValueError("Unrecognized version %s" % msvc_version)
+   msvc_ver_numeric = string.join(filter(lambda x: x in string.digits + ".", msvc_version), '')
+
+   t = msvc_version_numeric.split(".")
+   if not len(t) == 2:
+       raise ValueError("Unrecognized version %s" % msvc_version)
+   try:
+       maj = int(t[0])
+       min = int(t[1])
+       return maj, min
+   except ValueError, e:
+       raise ValueError("Unrecognized version %s" % msvc_version)
 
 def is_host_target_supported(host_target, msvc_version):
     """Return True if the given (host, target) tuple is supported given the
