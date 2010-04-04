@@ -21,7 +21,7 @@ the instructions on the following page:
 
 
 
-RELEASE 1.3.0.d20100403 - Sat, 03 Apr 2010 16:23:38 -0700
+RELEASE 1.3.0.d20100404 - Sat, 04 Apr 2010 16:23:38 -0700
 
   Please consult the CHANGES.txt file for a list of specific changes
   since last release.
