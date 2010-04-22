@@ -398,6 +398,11 @@ def msvc_find_valid_batch_script(env,version):
             debug('vc.py:msvc_find_valid_batch_script() use_script 6: Neither VC script nor SDK script found')
             continue
     
+    # If we cannot find a viable installed compiler, reset the TARGET_ARCH
+    # To it's initial value
+    if not d:
+        env['TARGET_ARCH']=req_target_platform
+    
     return d
     
 
