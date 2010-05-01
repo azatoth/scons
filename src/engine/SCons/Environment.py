@@ -970,11 +970,6 @@ class Base(SubstitutionEnvironment):
         
         self._dict['HOST_OS']      = self._dict.get('HOST_OS',None)
         self._dict['HOST_ARCH']    = self._dict.get('HOST_ARCH',None)
-        
-        # Now set defaults for TARGET_{OS|ARCH}
-        self._dict['TARGET_OS']      = self._dict.get('HOST_OS',None)
-        self._dict['TARGET_ARCH']    = self._dict.get('HOST_ARCH',None)
-        
 
         # Apply the passed-in and customizable variables to the
         # environment before calling the tools, because they may use
@@ -1007,6 +1002,13 @@ class Base(SubstitutionEnvironment):
                 tools = ['default']
         apply_tools(self, tools, toolpath)
 
+
+        # Now set defaults for TARGET_{OS|ARCH}
+        # Do this after tool initialization. or maybe not at all?
+        self._dict['TARGET_OS']      = self._dict.get('HOST_OS',None)
+        # Moved to msvc initialization
+        #        self._dict['TARGET_ARCH']    = self._dict.get('HOST_ARCH',None)
+        
         # Now restore the passed-in and customized variables
         # to the environment, since the values the user set explicitly
         # should override any values set by the tools.
