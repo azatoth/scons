@@ -111,7 +111,7 @@ def platform_module(name = platform_default()):
                     importer = zipimport.zipimporter( sys.modules['SCons.Platform'].__path__[0] )
                     mod = importer.load_module(full_name)
                 except ImportError:
-                    raise SCons.Errors.UserError, "No platform named '%s'" % name
+                    raise SCons.Errors.UserError("No platform named '%s'" % name)
             setattr(SCons.Platform, name, mod)
     return sys.modules[full_name]
 
@@ -166,7 +166,10 @@ class TempFileMunge:
         except ValueError:
             maxline = 2048
 
-        if (reduce(lambda x, y: x + len(y), cmd, 0) + len(cmd)) <= maxline:
+        length = 0
+        for c in cmd:
+            length += len(c)
+        if length <= maxline:
             return self.cmd
 
         # We do a normpath because mktemp() has what appears to be

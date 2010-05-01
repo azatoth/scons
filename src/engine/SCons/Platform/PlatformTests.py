@@ -23,14 +23,16 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
+import collections
 import sys
 import unittest
 
 import SCons.Errors
 import SCons.Platform
-import UserDict
 
-class Environment(UserDict.UserDict):
+class Environment(collections.UserDict):
     def Detect(self, cmd):
         return cmd
     def AppendENVPath(self, key, value):

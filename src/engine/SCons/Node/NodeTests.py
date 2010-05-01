@@ -19,16 +19,16 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
+import collections
 import os
 import re
 import sys
 import unittest
-import UserList
 
 import SCons.Errors
 import SCons.Node
@@ -52,7 +52,7 @@ def _actionAppend(a1, a2):
         elif isinstance(curr_a, list):
             all.extend(curr_a)
         else:
-            raise 'Cannot Combine Actions'
+            raise Exception('Cannot Combine Actions')
     return MyListAction(all)
 
 class MyActionBase:
@@ -176,7 +176,7 @@ class ExceptBuilder:
 
 class ExceptBuilder2:
     def execute(self, target, source, env):
-        raise "foo"
+        raise Exception("foo")
 
 class Scanner:
     called = None
@@ -213,7 +213,10 @@ class Calculator:
             def signature(self, args):
                 return self.val
             def collect(self, args):
-                return reduce(lambda x, y: x+y, args, self.val)
+                result = self.val
+                for a in args:
+                    result += a
+                return result
         self.module = M(val)
 
 
@@ -785,7 +788,7 @@ class NodeTestCase(unittest.TestCase):
         except:
             pass
         else:
-            raise "did not catch expected exception"
+            raise Exception("did not catch expected exception")
         assert node.depends == [zero, one, two, three, four]
 
 
@@ -817,7 +820,7 @@ class NodeTestCase(unittest.TestCase):
         except:
             pass
         else:
-            raise "did not catch expected exception"
+            raise Exception("did not catch expected exception")
         assert node.sources == [zero, one, two, three, four], node.sources
 
     def test_add_ignore(self):
@@ -848,7 +851,7 @@ class NodeTestCase(unittest.TestCase):
         except:
             pass
         else:
-            raise "did not catch expected exception"
+            raise Exception("did not catch expected exception")
         assert node.ignore == [zero, one, two, three, four]
 
     def test_get_found_includes(self):
@@ -1274,16 +1277,9 @@ class NodeListTestCase(unittest.TestCase):
         nl = SCons.Node.NodeList([n3, n2, n1])
 
         l = [1]
-        ul = UserList.UserList([2])
-        try:
-            l.extend(ul)
-        except TypeError:
-            # An older version of Python (*cough* 1.5.2 *cough*)
-            # that doesn't allow UserList objects to extend lists.
-            pass
-        else:
-            s = str(nl)
-            assert s == "['n3', 'n2', 'n1']", s
+        ul = collections.UserList([2])
+        s = str(nl)
+        assert s == "['n3', 'n2', 'n1']", s
 
         r = repr(nl)
         r = re.sub('at (0[xX])?[0-9a-fA-F]+', 'at 0x', r)

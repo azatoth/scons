@@ -45,8 +45,6 @@ Usage example:
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -55,14 +53,14 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 __all__ = ['ListVariable',]
 
-import UserList
+import collections
 
 import SCons.Util
 
 
-class _ListVariable(UserList.UserList):
+class _ListVariable(collections.UserList):
     def __init__(self, initlist=[], allowedElems=[]):
-        UserList.UserList.__init__(self, [_f for _f in initlist if _f])
+        collections.UserList.__init__(self, [_f for _f in initlist if _f])
         self.allowedElems = sorted(allowedElems)
 
     def __cmp__(self, other):

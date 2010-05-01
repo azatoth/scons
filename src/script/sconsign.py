@@ -22,8 +22,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -38,7 +36,6 @@ __date__ = "__DATE__"
 __developer__ = "__DEVELOPER__"
 
 import os
-import os.path
 import sys
 import time
 
@@ -172,9 +169,11 @@ sys.path = libs + sys.path
 # END STANDARD SCons SCRIPT HEADER
 ##############################################################################
 
-import cPickle
-import imp
+import SCons.compat   # so pickle will import cPickle instead
+
 import whichdb
+import pickle
+import imp
 
 import SCons.SConsign
 
@@ -383,7 +382,7 @@ class Do_SConsignDB:
                 return
         except KeyboardInterrupt:
             raise
-        except cPickle.UnpicklingError:
+        except pickle.UnpicklingError:
             sys.stderr.write("sconsign: ignoring invalid `%s' file `%s'\n" % (self.dbm_name, fname))
             return
         except Exception, e:
@@ -404,7 +403,7 @@ class Do_SConsignDB:
 
     def printentries(self, dir, val):
         print '=== ' + dir + ':'
-        printentries(cPickle.loads(val), dir)
+        printentries(pickle.loads(val), dir)
 
 def Do_SConsignDir(name):
     try:
@@ -416,7 +415,7 @@ def Do_SConsignDir(name):
         sconsign = SCons.SConsign.Dir(fp)
     except KeyboardInterrupt:
         raise
-    except cPickle.UnpicklingError:
+    except pickle.UnpicklingError:
         sys.stderr.write("sconsign: ignoring invalid .sconsign file `%s'\n" % (name))
         return
     except Exception, e:

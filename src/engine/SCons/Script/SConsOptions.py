@@ -28,12 +28,7 @@ import re
 import sys
 import textwrap
 
-try:
-    no_hyphen_re = re.compile(r'(\s+|(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w))')
-except re.error:
-    # Pre-2.0 Python versions don't have the (?<= negative
-    # look-behind assertion.
-    no_hyphen_re = re.compile(r'(\s+|-*\w{2,}-(?=\w{2,}))')
+no_hyphen_re = re.compile(r'(\s+|(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w))')
 
 try:
     from gettext import gettext
@@ -65,7 +60,7 @@ def diskcheck_convert(value):
         elif v in diskcheck_all:
             result.append(v)
         else:
-            raise ValueError, v
+            raise ValueError(v)
     return result
 
 class SConsValues(optparse.Values):
@@ -139,7 +134,7 @@ class SConsValues(optparse.Values):
         Sets an option from an SConscript file.
         """
         if not name in self.settable:
-            raise SCons.Errors.UserError, "This option is not settable from a SConscript file: %s"%name
+            raise SCons.Errors.UserError("This option is not settable from a SConscript file: %s"%name)
 
         if name == 'num_jobs':
             try:
@@ -147,19 +142,19 @@ class SConsValues(optparse.Values):
                 if value < 1:
                     raise ValueError
             except ValueError:
-                raise SCons.Errors.UserError, "A positive integer is required: %s"%repr(value)
+                raise SCons.Errors.UserError("A positive integer is required: %s"%repr(value))
         elif name == 'max_drift':
             try:
                 value = int(value)
             except ValueError:
-                raise SCons.Errors.UserError, "An integer is required: %s"%repr(value)
+                raise SCons.Errors.UserError("An integer is required: %s"%repr(value))
         elif name == 'duplicate':
             try:
                 value = str(value)
             except ValueError:
-                raise SCons.Errors.UserError, "A string is required: %s"%repr(value)
+                raise SCons.Errors.UserError("A string is required: %s"%repr(value))
             if not value in SCons.Node.FS.Valid_Duplicates:
-                raise SCons.Errors.UserError, "Not a valid duplication style: %s" % value
+                raise SCons.Errors.UserError("Not a valid duplication style: %s" % value)
             # Set the duplicate style right away so it can affect linking
             # of SConscript files.
             SCons.Node.FS.set_duplicate(value)
@@ -167,7 +162,7 @@ class SConsValues(optparse.Values):
             try:
                 value = diskcheck_convert(value)
             except ValueError, v:
-                raise SCons.Errors.UserError, "Not a valid diskcheck value: %s"%v
+                raise SCons.Errors.UserError("Not a valid diskcheck value: %s"%v)
             if 'diskcheck' not in self.__dict__:
                 # No --diskcheck= option was specified on the command line.
                 # Set this right away so it can affect the rest of the
@@ -177,12 +172,12 @@ class SConsValues(optparse.Values):
             try:
                 value = int(value)
             except ValueError:
-                raise SCons.Errors.UserError, "An integer is required: %s"%repr(value)
+                raise SCons.Errors.UserError("An integer is required: %s"%repr(value))
         elif name == 'md5_chunksize':
             try:
                 value = int(value)
             except ValueError:
-                raise SCons.Errors.UserError, "An integer is required: %s"%repr(value)
+                raise SCons.Errors.UserError("An integer is required: %s"%repr(value))
         elif name == 'warn':
             if SCons.Util.is_String(value):
                 value = [value]
@@ -214,7 +209,7 @@ class SConsOption(optparse.Option):
     def _check_nargs_optional(self):
         if self.nargs == '?' and self._short_opts:
             fmt = "option %s: nargs='?' is incompatible with short options"
-            raise SCons.Errors.UserError, fmt % self._short_opts[0]
+            raise SCons.Errors.UserError(fmt % self._short_opts[0])
 
     try:
         _orig_CONST_ACTIONS = optparse.Option.CONST_ACTIONS
@@ -604,7 +599,7 @@ def Parser(version):
     debug_options = ["count", "explain", "findlibs",
                      "includes", "memoizer", "memory", "objects",
                      "pdb", "presub", "stacktrace",
-                     "time"] + deprecated_debug_options.keys()
+                     "time"] + list(deprecated_debug_options.keys())
 
     def opt_debug(option, opt, value, parser,
                   debug_options=debug_options,

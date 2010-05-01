@@ -85,20 +85,23 @@ class Checker:
         else:
             return os.path.isfile(path)
 
-    def visit(self, result, dirname, names):
-        for name, path in [(n, os.path.join(dirname, n)) for n in names]:
-            if self.remove_this(name, path):
-                names.remove(name)
-            elif self.search_this(path):
-                body = open(path, 'r').read()
-                for expr in self.expressions:
-                    if not expr.search(body):
-                        msg = '%s: missing %s' % (path, repr(expr.pattern))
-                        result.append(msg)
-
     def find_missing(self):
         result = []
-        os.path.walk(self.directory, self.visit, result)
+        for dirpath, dirnames, filenames in os.walk(self.directory):
+            if '.svn' in dirnames:
+                dirnames.remove('.svn')
+            for dname in dirnames[:]:
+                dpath = os.path.join(dirpath, dname)
+                if self.remove_this(dname, dpath):
+                    dirnames.remove(dname)
+            for fname in filenames:
+                fpath = os.path.join(dirpath, fname)
+                if self.search_this(fpath) and not self.remove_this(fname, fpath):
+                    body = open(fpath, 'r').read()
+                    for expr in self.expressions:
+                        if not expr.search(body):
+                            msg = '%s: missing %s' % (fpath, repr(expr.pattern))
+                            result.append(msg)
         return result
 
 class CheckUnexpandedStrings(Checker):
@@ -129,11 +132,8 @@ check_list = [
         'src',
         search_list = [ '*.py' ],
         remove_list = [
-            'engine/SCons/compat/_scons_optparse.py',
             'engine/SCons/compat/_scons_sets.py',
-            'engine/SCons/compat/_scons_shlex.py',
             'engine/SCons/compat/_scons_subprocess.py',
-            'engine/SCons/compat/_scons_textwrap.py',
             'engine/SCons/Conftest.py',
             'engine/SCons/dblite.py',
         ],
@@ -161,11 +161,8 @@ check_list = [
             'debian',
             'dist',
             'gentoo',
-            'engine/SCons/compat/_scons_optparse.py',
             'engine/SCons/compat/_scons_sets.py',
-            'engine/SCons/compat/_scons_shlex.py',
             'engine/SCons/compat/_scons_subprocess.py',
-            'engine/SCons/compat/_scons_textwrap.py',
             'engine/SCons/Conftest.py',
             'engine/SCons/dblite.py',
             'MANIFEST',
@@ -181,11 +178,8 @@ check_list = [
     CheckExpandedCopyright(
         build_local,
         remove_list = [
-            'SCons/compat/_scons_optparse.py',
             'SCons/compat/_scons_sets.py',
-            'SCons/compat/_scons_shlex.py',
             'SCons/compat/_scons_subprocess.py',
-            'SCons/compat/_scons_textwrap.py',
             'SCons/Conftest.py',
             'SCons/dblite.py',
             'scons-%s.egg-info' % scons_version,
@@ -225,11 +219,8 @@ check_list = [
             'src/engine/MANIFEST.in',
             'src/engine/MANIFEST-xml.in',
             'src/engine/setup.cfg',
-            'src/engine/SCons/compat/_scons_optparse.py',
             'src/engine/SCons/compat/_scons_sets.py',
-            'src/engine/SCons/compat/_scons_shlex.py',
             'src/engine/SCons/compat/_scons_subprocess.py',
-            'src/engine/SCons/compat/_scons_textwrap.py',
             'src/engine/SCons/Conftest.py',
             'src/engine/SCons/dblite.py',
             'src/script/MANIFEST.in',

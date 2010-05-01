@@ -32,10 +32,10 @@ it goes here.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+import SCons.compat
 
 import os
 import os.path
@@ -268,13 +268,10 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
         sys.stderr.write(errfmt % (nodename, buildError))
 
         if (buildError.exc_info[2] and buildError.exc_info[1] and 
-           # TODO(1.5)
-           #not isinstance(
-           #    buildError.exc_info[1], 
-           #    (EnvironmentError, SCons.Errors.StopError, SCons.Errors.UserError))):
-           not isinstance(buildError.exc_info[1], EnvironmentError) and
-           not isinstance(buildError.exc_info[1], SCons.Errors.StopError) and
-           not isinstance(buildError.exc_info[1], SCons.Errors.UserError)):
+           not isinstance(
+               buildError.exc_info[1], 
+               (EnvironmentError, SCons.Errors.StopError,
+                            SCons.Errors.UserError))):
             type, value, trace = buildError.exc_info
             traceback.print_exception(type, value, trace)
         elif tb and print_stacktrace:
@@ -526,7 +523,7 @@ class MemStats(Stats):
         self.stats.append(SCons.Debug.memory())
     def do_print(self):
         fmt = 'Memory %-32s %12d\n'
-        for label, stats in map(None, self.labels, self.stats):
+        for label, stats in zip(self.labels, self.stats):
             self.outfp.write(fmt % (label, stats))
 
 memory_stats = MemStats()
@@ -592,7 +589,7 @@ def _scons_internal_warning(e):
     *current call stack* rather than sys.exc_info() to get our stack trace.
     This is used by the warnings framework to print warnings."""
     filename, lineno, routine, dummy = find_deepest_user_frame(traceback.extract_stack())
-    sys.stderr.write("\nscons: warning: %s\n" % e[0])
+    sys.stderr.write("\nscons: warning: %s\n" % e.args[0])
     sys.stderr.write('File "%s", line %d, in %s\n' % (filename, lineno, routine))
 
 def _scons_internal_error():
@@ -681,7 +678,7 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
     site_dir = os.path.join(topdir.path, site_dir_name)
     if not os.path.exists(site_dir):
         if err_if_not_found:
-            raise SCons.Errors.UserError, "site dir %s not found."%site_dir
+            raise SCons.Errors.UserError("site dir %s not found."%site_dir)
         return
 
     site_init_filename = "site_init.py"
@@ -708,7 +705,7 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
                     m = sys.modules['SCons.Script']
                 except Exception, e:
                     fmt = 'cannot import site_init.py: missing SCons.Script module %s'
-                    raise SCons.Errors.InternalError, fmt % repr(e)
+                    raise SCons.Errors.InternalError(fmt % repr(e))
                 try:
                     # This is the magic.
                     exec fp in m.__dict__
@@ -849,7 +846,7 @@ def _main(parser):
             # Give them the options usage now, before we fail
             # trying to read a non-existent SConstruct file.
             raise SConsPrintHelpException
-        raise SCons.Errors.UserError, "No SConstruct file found."
+        raise SCons.Errors.UserError("No SConstruct file found.")
 
     if scripts[0] == "-":
         d = fs.getcwd()
@@ -1226,10 +1223,8 @@ def _exec_main(parser, values):
         import pdb
         pdb.Pdb().runcall(_main, parser)
     elif options.profile_file:
-        try:
-            from cProfile import Profile
-        except ImportError, e:
-            from profile import Profile
+        # compat layer imports "cProfile" for us if it's available.
+        from profile import Profile
 
         # Some versions of Python 2.4 shipped a profiler that had the
         # wrong 'c_exception' entry in its dispatch table.  Make sure

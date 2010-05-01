@@ -41,11 +41,10 @@ use_dl_lib = "env.Program(target = 'dlopenprog', source = 'dlopenprog.c', LIBS=[
 
 dlopen_line = {
     'darwin' : no_dl_lib,
-    'darwin8' : no_dl_lib,   # ONLY NEEDED FOR 1.5.2
     'freebsd4' : no_dl_lib,
     'linux2' : use_dl_lib,
 }
-platforms_with_dlopen = dlopen_line.keys()
+platforms_with_dlopen = list(dlopen_line.keys())
 
 test.write('SConstruct', """
 env = Environment()

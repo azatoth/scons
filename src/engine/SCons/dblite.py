@@ -1,11 +1,14 @@
 # dblite.py module contributed by Ralf W. Grosse-Kunstleve.
 # Extended for Unicode by Steven Knight.
 
-import cPickle
-import time
-import shutil
+import SCons.compat
+
+import builtins
 import os
-import __builtin__
+# compat layer imports "cPickle" for us if it's available.
+import pickle
+import shutil
+import time
 
 keep_all_files = 00000
 ignore_corrupt_dbfiles = 0
@@ -41,8 +44,8 @@ class dblite:
   # See the discussion at:
   #   http://mail.python.org/pipermail/python-bugs-list/2003-March/016877.html
 
-  _open = __builtin__.open
-  _cPickle_dump = cPickle.dump
+  _open = builtins.open
+  _pickle_dump = staticmethod(pickle.dump)
   _os_chmod = os.chmod
   try:
       _os_chown = os.chown
@@ -95,8 +98,8 @@ class dblite:
         p = f.read()
         if (len(p) > 0):
           try:
-            self._dict = cPickle.loads(p)
-          except (cPickle.UnpicklingError, EOFError):
+            self._dict = pickle.loads(p)
+          except (pickle.UnpicklingError, EOFError):
             if (ignore_corrupt_dbfiles == 0): raise
             if (ignore_corrupt_dbfiles == 1):
               corruption_warning(self._file_name)
@@ -108,7 +111,7 @@ class dblite:
   def sync(self):
     self._check_writable()
     f = self._open(self._tmp_name, "wb", self._mode)
-    self._cPickle_dump(self._dict, f, 1)
+    self._pickle_dump(self._dict, f, 1)
     f.close()
     # Windows doesn't allow renaming if the file exists, so unlink
     # it first, chmod'ing it to make sure we can do so.  On UNIX, we
@@ -141,14 +144,14 @@ class dblite:
   def __setitem__(self, key, value):
     self._check_writable()
     if (not is_string(key)):
-      raise TypeError, "key `%s' must be a string but is %s" % (key, type(key))
+      raise TypeError("key `%s' must be a string but is %s" % (key, type(key)))
     if (not is_string(value)):
-      raise TypeError, "value `%s' must be a string but is %s" % (value, type(value))
+      raise TypeError("value `%s' must be a string but is %s" % (value, type(value)))
     self._dict[key] = value
     self._needs_sync = 0001
 
   def keys(self):
-    return self._dict.keys()
+    return list(self._dict.keys())
 
   def has_key(self, key):
     return key in self._dict
@@ -195,7 +198,7 @@ def _exercise():
   except IOError, e:
     assert str(e) == "Read-only database: tmp.dblite"
   else:
-    raise RuntimeError, "IOError expected."
+    raise RuntimeError("IOError expected.")
   db = open("tmp", "w")
   assert len(db) == 4
   db["ping"] = "pong"
@@ -205,26 +208,26 @@ def _exercise():
   except TypeError, e:
     assert str(e) == "key `(1, 2)' must be a string but is <type 'tuple'>", str(e)
   else:
-    raise RuntimeError, "TypeError exception expected"
+    raise RuntimeError("TypeError exception expected")
   try:
     db["list"] = [1,2]
   except TypeError, e:
     assert str(e) == "value `[1, 2]' must be a string but is <type 'list'>", str(e)
   else:
-    raise RuntimeError, "TypeError exception expected"
+    raise RuntimeError("TypeError exception expected")
   db = open("tmp", "r")
   assert len(db) == 5
   db = open("tmp", "n")
   assert len(db) == 0
-  _open("tmp.dblite", "w")
+  dblite._open("tmp.dblite", "w")
   db = open("tmp", "r")
-  _open("tmp.dblite", "w").write("x")
+  dblite._open("tmp.dblite", "w").write("x")
   try:
     db = open("tmp", "r")
-  except cPickle.UnpicklingError:
+  except pickle.UnpicklingError:
     pass
   else:
-    raise RuntimeError, "cPickle exception expected."
+    raise RuntimeError("pickle exception expected.")
   global ignore_corrupt_dbfiles
   ignore_corrupt_dbfiles = 2
   db = open("tmp", "r")
@@ -235,7 +238,7 @@ def _exercise():
   except IOError, e:
     assert str(e) == "[Errno 2] No such file or directory: 'tmp.dblite'", str(e)
   else:
-    raise RuntimeError, "IOError expected."
+    raise RuntimeError("IOError expected.")
   print "OK"
 
 if (__name__ == "__main__"):

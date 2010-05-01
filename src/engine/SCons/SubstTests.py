@@ -26,12 +26,10 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import SCons.compat
 
 import os
-import os.path
-import StringIO
 import sys
 import unittest
 
-from UserDict import UserDict
+from collections import UserDict
 
 import SCons.Errors
 
@@ -208,7 +206,7 @@ class SubstTestCase(unittest.TestCase):
         'T'         : ('x', 'y'),
         'CS'        : cs,
         'CL'        : cl,
-        'US'        : UserString.UserString('us'),
+        'US'        : collections.UserString('us'),
 
         # Test function calls within ${}.
         'FUNCCALL'  : '${FUNC1("$AAA $FUNC2 $BBB")}',
@@ -366,9 +364,9 @@ class scons_subst_TestCase(SubstTestCase):
         '$CL',                  'cl',
 
         # Various uses of UserString.
-        UserString.UserString('x'),         'x',
-        UserString.UserString('$X'),        'x',
-        UserString.UserString('$US'),       'us',
+        collections.UserString('x'),         'x',
+        collections.UserString('$X'),        'x',
+        collections.UserString('$US'),       'us',
         '$US',                              'us',
 
         # Test function calls within ${}.
@@ -524,7 +522,7 @@ class scons_subst_TestCase(SubstTestCase):
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
     def test_subst_syntax_errors(self):
         """Test scons_subst():  handling syntax errors"""
@@ -533,16 +531,14 @@ class scons_subst_TestCase(SubstTestCase):
             scons_subst('$foo.bar.3.0', env)
         except SCons.Errors.UserError, e:
             expect = [
-                # Python 1.5
-                "SyntaxError `invalid syntax' trying to evaluate `$foo.bar.3.0'",
-                # Python 2.2, 2.3, 2.4
+                # Python 2.3, 2.4
                 "SyntaxError `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'",
                 # Python 2.5
                 "SyntaxError `invalid syntax (<string>, line 1)' trying to evaluate `$foo.bar.3.0'",
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
     def test_subst_type_errors(self):
         """Test scons_subst():  handling type errors"""
@@ -551,14 +547,14 @@ class scons_subst_TestCase(SubstTestCase):
             scons_subst("${NONE[2]}", env, gvars={'NONE':None})
         except SCons.Errors.UserError, e:
             expect = [
-                # Python 1.5, 2.2, 2.3, 2.4
+                # Python 2.3, 2.4
                 "TypeError `unsubscriptable object' trying to evaluate `${NONE[2]}'",
                 # Python 2.5 and later
                 "TypeError `'NoneType' object is unsubscriptable' trying to evaluate `${NONE[2]}'",
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
         try:
             def func(a, b, c):
@@ -566,14 +562,12 @@ class scons_subst_TestCase(SubstTestCase):
             scons_subst("${func(1)}", env, gvars={'func':func})
         except SCons.Errors.UserError, e:
             expect = [
-                # Python 1.5
-                "TypeError `not enough arguments; expected 3, got 1' trying to evaluate `${func(1)}'",
-                # Python 2.2, 2.3, 2.4, 2.5
+                # Python 2.3, 2.4, 2.5
                 "TypeError `func() takes exactly 3 arguments (1 given)' trying to evaluate `${func(1)}'"
             ]
             assert str(e) in expect, repr(str(e))
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
     def test_subst_raw_function(self):
         """Test scons_subst():  fetch function with SUBST_RAW plus conv"""
@@ -758,12 +752,12 @@ class scons_subst_list_TestCase(SubstTestCase):
         ['$CL'],                [['cl']],
 
         # Various uses of UserString.
-        UserString.UserString('x'),         [['x']],
-        [UserString.UserString('x')],       [['x']],
-        UserString.UserString('$X'),        [['x']],
-        [UserString.UserString('$X')],      [['x']],
-        UserString.UserString('$US'),       [['us']],
-        [UserString.UserString('$US')],     [['us']],
+        collections.UserString('x'),         [['x']],
+        [collections.UserString('x')],       [['x']],
+        collections.UserString('$X'),        [['x']],
+        [collections.UserString('$X')],      [['x']],
+        collections.UserString('$US'),       [['us']],
+        [collections.UserString('$US')],     [['us']],
         '$US',                              [['us']],
         ['$US'],                            [['us']],
 
@@ -978,7 +972,7 @@ class scons_subst_list_TestCase(SubstTestCase):
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
     def test_subst_syntax_errors(self):
         """Test scons_subst_list():  handling syntax errors"""
@@ -993,7 +987,7 @@ class scons_subst_list_TestCase(SubstTestCase):
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected SyntaxError"
+            raise AssertionError("did not catch expected SyntaxError")
 
     def test_subst_raw_function(self):
         """Test scons_subst_list():  fetch function with SUBST_RAW plus conv"""

@@ -29,8 +29,6 @@ selection method.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -73,17 +71,19 @@ def emit_java_classes(target, source, env):
             slist.append(entry)
         elif isinstance(entry, SCons.Node.FS.Dir):
             result = SCons.Util.OrderedDict()
-            def visit(arg, dirname, names, dirnode=entry.rdir()):
-                java_files = sorted([n for n in names if _my_normcase(n[-len(js):]) == js])
-                mydir = dirnode.Dir(dirname)
+            dirnode = entry.rdir()
+            def find_java_files(arg, dirpath, filenames):
+                java_files = sorted([n for n in filenames
+                                       if _my_normcase(n).endswith(js)])
+                mydir = dirnode.Dir(dirpath)
                 java_paths = [mydir.File(f) for f in java_files]
                 for jp in java_paths:
                      arg[jp] = True
+            for dirpath, dirnames, filenames in os.walk(dirnode.get_abspath()):
+               find_java_files(result, dirpath, filenames)
+            entry.walk(find_java_files, result)
 
-            os.path.walk(entry.rdir().get_abspath(), visit, result)
-            entry.walk(visit, result)
-
-            slist.extend(result.keys())
+            slist.extend(list(result.keys()))
         else:
             raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % entry.__class__)
 

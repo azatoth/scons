@@ -20,8 +20,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -72,12 +70,8 @@ ignore = [
     'SCons/compat/__init__.py',
     'SCons/compat/_scons_UserString.py',
     'SCons/compat/_scons_hashlib.py',
-    'SCons/compat/_scons_itertools.py',
-    'SCons/compat/_scons_optparse.py',
     'SCons/compat/_scons_sets.py',
-    'SCons/compat/_scons_shlex.py',
     'SCons/compat/_scons_subprocess.py',
-    'SCons/compat/_scons_textwrap.py',
     'SCons/compat/builtins.py',
 ]
 

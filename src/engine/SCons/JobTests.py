@@ -19,8 +19,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -398,7 +396,7 @@ class badnode (goodnode):
         goodnode.__init__(self)
         self.expect_to_be = SCons.Node.failed
     def build(self, **kw):
-        raise Exception, 'badnode exception'
+        raise Exception('badnode exception')
 
 class slowbadnode (badnode):
     def build(self, **kw):
@@ -407,11 +405,11 @@ class slowbadnode (badnode):
         # it is faster than slowgoodnode then these could complete
         # while the scheduler is sleeping.
         time.sleep(0.05)
-        raise Exception, 'slowbadnode exception'
+        raise Exception('slowbadnode exception')
 
 class badpreparenode (badnode):
     def prepare(self):
-        raise Exception, 'badpreparenode exception'
+        raise Exception('badpreparenode exception')
 
 class _SConsTaskTest(unittest.TestCase):
 

@@ -19,14 +19,14 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
+import collections
 import sys
 import unittest
-import UserDict
 
 import SCons.Scanner
 
@@ -34,9 +34,9 @@ class DummyFS:
     def File(self, name):
         return DummyNode(name)
 
-class DummyEnvironment(UserDict.UserDict):
+class DummyEnvironment(collections.UserDict):
     def __init__(self, dict=None, **kw):
-        UserDict.UserDict.__init__(self, dict)
+        collections.UserDict.__init__(self, dict)
         self.data.update(kw)
         self.fs = DummyFS()
     def subst(self, strSubst, target=None, source=None, conv=None):
@@ -242,7 +242,7 @@ class BaseTestCase(unittest.TestCase):
         dict = {}
         dict[s] = 777
         i = hash(id(s))
-        h = hash(dict.keys()[0])
+        h = hash(list(dict.keys())[0])
         self.failUnless(h == i,
                         "hash Scanner base class expected %s, got %s" % (i, h))
 
@@ -569,14 +569,7 @@ class ClassicCPPTestCase(unittest.TestCase):
             assert n == 'path/bbb', n
             assert i == 'bbb', i
 
-            # TODO(1.5):  remove when 2.2 is minimal; replace ccc
-            # variable in find_include() call below with in-line u'ccc'.
-            try:
-                ccc = eval("u'ccc'")
-            except SyntaxError:
-                ccc = 'ccc'
-
-            n, i = s.find_include(('<', ccc), 'foo', ('path',))
+            n, i = s.find_include(('<', u'ccc'), 'foo', ('path',))
             assert n == 'path/ccc', n
             assert i == 'ccc', i
 

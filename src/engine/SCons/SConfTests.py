@@ -23,16 +23,18 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
+import io
 import os
 import re
-import StringIO
 import sys
 from types import *
 import unittest
 
 import TestCmd
 
-sys.stdout = StringIO.StringIO()
+sys.stdout = io.StringIO()
 
 if sys.platform == 'win32':
     existing_lib = "msvcrt"
@@ -83,7 +85,7 @@ class SConfTestCase(unittest.TestCase):
         if (not self.scons_env.Detect( self.scons_env.subst('$CXX') ) or
             not self.scons_env.Detect( self.scons_env.subst('$CC') ) or
             not self.scons_env.Detect( self.scons_env.subst('$LINK') )):
-            raise Exception, "This test needs an installed compiler!"
+            raise Exception("This test needs an installed compiler!")
         if self.scons_env['CXX'] == 'g++':
             global existing_lib
             existing_lib = 'm'
@@ -96,11 +98,11 @@ class SConfTestCase(unittest.TestCase):
              # original builtin functions whenever we have to reset
              # all of our global state.
 
-             import __builtin__
+             import builtins
              import SCons.Platform.win32
 
-             __builtin__.file = SCons.Platform.win32._builtin_file
-             __builtin__.open = SCons.Platform.win32._builtin_open
+             builtins.file = SCons.Platform.win32._builtin_file
+             builtins.open = SCons.Platform.win32._builtin_open
 
     def _baseTryXXX(self, TryFunc):
         # TryCompile and TryLink are much the same, so we can test them

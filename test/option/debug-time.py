@@ -20,7 +20,7 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
+from __future__ import division
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -110,7 +110,9 @@ expected_total_time = complete_time - overhead
 
 pattern = r'Command execution time: (\d+\.\d+) seconds'
 times = list(map(float, re.findall(pattern, test.stdout())))
-expected_command_time = reduce(lambda x, y: x + y, times, 0.0)
+expected_command_time = 0.0
+for t in times:
+    expected_command_time += t
 
 
 stdout = test.stdout()

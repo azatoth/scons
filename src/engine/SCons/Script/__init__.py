@@ -39,9 +39,9 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import time
 start_time = time.time()
 
+import collections
 import os
 import sys
-import UserList
 
 # Special chicken-and-egg handling of the "--debug=memoizer" flag:
 #
@@ -64,9 +64,8 @@ if "--debug=memoizer" in _args:
     try:
         SCons.Memoize.EnableMemoization()
     except SCons.Warnings.Warning:
-        # Some warning was thrown (inability to --debug=memoizer on
-        # Python 1.5.2 because it doesn't have metaclasses).  Arrange
-        # for it to be displayed or not after warnings are configured.
+        # Some warning was thrown.  Arrange for it to be displayed
+        # or not after warnings are configured.
         import Main
         exc_type, exc_value, tb = sys.exc_info()
         Main.delayed_warnings.append((exc_type, exc_value))
@@ -183,7 +182,7 @@ CScan                   = SCons.Defaults.CScan
 DefaultEnvironment      = SCons.Defaults.DefaultEnvironment
 
 # Other variables we provide.
-class TargetList(UserList.UserList):
+class TargetList(collections.UserList):
     def _do_nothing(self, *args, **kw):
         pass
     def _add_Default(self, list):

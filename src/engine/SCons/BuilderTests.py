@@ -32,12 +32,12 @@ import SCons.compat
 def Func():
     pass
 
+import collections
+import io
 import os.path
 import re
 import sys
-import StringIO
 import unittest
-import UserList
 
 import TestCmd
 
@@ -48,7 +48,7 @@ import SCons.Errors
 import SCons.Subst
 import SCons.Util
 
-sys.stdout = StringIO.StringIO()
+sys.stdout = io.StringIO()
 
 # Initial setup of the common environment for all tests,
 # a temporary working directory containing a
@@ -124,7 +124,7 @@ class Environment:
     def has_key(self, item):
         return item in self.d
     def keys(self):
-        return self.d.keys()
+        return list(self.d.keys())
     def get(self, key, value=None):
         return self.d.get(key, value)
     def Override(self, overrides):
@@ -135,7 +135,7 @@ class Environment:
     def _update(self, dict):
         self.d.update(dict)
     def items(self):
-        return self.d.items()
+        return list(self.d.items())
     def sig_dict(self):
         d = {}
         for k,v in self.items(): d[k] = v
@@ -253,7 +253,7 @@ class BuilderTestCase(unittest.TestCase):
         assert not hasattr(n2, 'env')
 
         l = [1]
-        ul = UserList.UserList([2])
+        ul = collections.UserList([2])
         try:
             l.extend(ul)
         except TypeError:
@@ -344,7 +344,7 @@ class BuilderTestCase(unittest.TestCase):
         except SCons.Errors.UserError, e:
             pass
         else:
-            raise "Did not catch expected UserError."
+            raise Exception("Did not catch expected UserError.")
 
         builder = SCons.Builder.Builder(action="foo")
         target = builder(env, None, source='n22', srcdir='src_dir')[0]
@@ -706,21 +706,10 @@ class BuilderTestCase(unittest.TestCase):
         tgt.build()
         assert env['CNT'][0] == 2
         tgts = builder(env, None, infiles[2:4])
-        try:
-            [].extend(UserList.UserList())
-        except TypeError:
-            # Old Python version (1.5.2) that can't handle extending
-            # a list with list-like objects.  That means the return
-            # value from the builder call is a real list with Nodes,
-            # and doesn't have a __str__() method that stringifies
-            # the individual elements.  Since we're gong to drop 1.5.2
-            # support anyway, don't bother trying to test for it.
-            pass
-        else:
-            s = list(map(str, tgts))
-            expect = [test.workpath('2.out'), test.workpath('3.out')]
-            expect = list(map(os.path.normcase, expect))
-            assert list(map(os.path.normcase, s)) == expect, s
+        s = list(map(str, tgts))
+        expect = [test.workpath('2.out'), test.workpath('3.out')]
+        expect = list(map(os.path.normcase, expect))
+        assert list(map(os.path.normcase, s)) == expect, s
         for t in tgts: t.prepare()
         tgts[0].build()
         tgts[1].build()

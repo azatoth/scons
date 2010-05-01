@@ -13,7 +13,7 @@
   <listitem>
     <para>
 
-      &SCons; will be written to Python version 1.5.2 (to ensure
+      &SCons; will be written to Python version 2.4 (to ensure
       usability by a wide install base).
 
     </para>
@@ -181,7 +181,7 @@
 
     <para>
 
-      In practice, these restrictions can be overridden as necessary­for
+      In practice, these restrictions can be overridden as necessary--for
       example, when changing comments or documentation.
 
     </para>

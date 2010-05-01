@@ -213,7 +213,7 @@ version.
 # PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS,
 # AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
+from __future__ import division
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
 __revision__ = "TestCmd.py 0.37.D001 2010/01/11 16:55:50 knight"
@@ -221,7 +221,6 @@ __version__ = "0.37"
 
 import errno
 import os
-import os.path
 import re
 import shutil
 import stat
@@ -229,19 +228,23 @@ import sys
 import tempfile
 import time
 import traceback
-import UserList
+try:
+    from collections import UserList, UserString
+except ImportError:
+    # no 'collections' module or no UserFoo in collections
+    exec('from UserList import UserList')
+    exec('from UserString import UserString')
 
 try:
     # pre-2.7 doesn't have the memoryview() built-in
     memoryview
 except NameError:
     class memoryview:
-        from types import SliceType
         def __init__(self, obj):
             # wrapping buffer in () keeps the fixer from changing it
             self.obj = (buffer)(obj)
         def __getitem__(self, indx):
-            if isinstance(indx, self.SliceType):
+            if isinstance(indx, slice):
                 return self.obj[indx.start:indx.stop]
             else:
                 return self.obj[indx]
@@ -254,7 +257,8 @@ __all__ = [
     'match_exact',
     'match_re',
     'match_re_dotall',
-    'python_executable',
+    'python',
+    '_python_',
     'TestCmd'
 ]
 
@@ -264,24 +268,15 @@ except ImportError:
     __all__.append('simple_diff')
 
 def is_List(e):
-    return isinstance(e, list) \
-        or isinstance(e, UserList.UserList)
+    return isinstance(e, (list,UserList))
 
-try:
-    from UserString import UserString
-except ImportError:
-    class UserString:
-        pass
-
-try: unicode
+try: eval('unicode')
 except NameError:
     def is_String(e):
-        return isinstance(e, str) or isinstance(e, UserString)
+        return isinstance(e, (str,UserString))
 else:
     def is_String(e):
-        return isinstance(e, str) \
-            or isinstance(e, unicode) \
-            or isinstance(e, UserString)
+        return isinstance(e, (str,unicode,UserString))
 
 tempfile.template = 'testcmd.'
 if os.name in ('posix', 'nt'):
@@ -293,8 +288,6 @@ re_space = re.compile('\s')
 
 _Cleanup = []
 
-_chain_to_exitfunc = None
-
 def _clean():
     global _Cleanup
     cleanlist = [_f for _f in _Cleanup if _f]
@@ -302,27 +295,8 @@ def _clean():
     cleanlist.reverse()
     for test in cleanlist:
         test.cleanup()
-    if _chain_to_exitfunc:
-        _chain_to_exitfunc()
-
-try:
-    import atexit
-except ImportError:
-    # TODO(1.5): atexit requires python 2.0, so chain sys.exitfunc
-    try:
-        _chain_to_exitfunc = sys.exitfunc
-    except AttributeError:
-        pass
-    sys.exitfunc = _clean
-else:
-    atexit.register(_clean)
-
-class Collector:
-    def __init__(self, top):
-        self.entries = [top]
-    def __call__(self, arg, dirname, names):
-        pathjoin = lambda n: os.path.join(dirname, n)
-        self.entries.extend(list(map(pathjoin, names)))
+import atexit
+atexit.register(_clean)
 
 def _caller(tblist, skip):
     string = ""
@@ -438,7 +412,7 @@ def match_re(lines = None, res = None):
             expr = re.compile(s)
         except re.error, e:
             msg = "Regular expression error in %s: %s"
-            raise re.error, msg % (repr(s), e[0])
+            raise re.error(msg % (repr(s), e[0]))
         if not expr.search(lines[i]):
             return
     return 1
@@ -455,7 +429,7 @@ def match_re_dotall(lines = None, res = None):
         expr = re.compile(s, re.DOTALL)
     except re.error, e:
         msg = "Regular expression error in %s: %s"
-        raise re.error, msg % (repr(s), e[0])
+        raise re.error(msg % (repr(s), e[0]))
     if expr.match(lines):
         return 1
 
@@ -511,7 +485,7 @@ def diff_re(a, b, fromfile='', tofile='',
             expr = re.compile(s)
         except re.error, e:
             msg = "Regular expression error in %s: %s"
-            raise re.error, msg % (repr(s), e[0])
+            raise re.error(msg % (repr(s), e[0]))
         if not expr.search(bline):
             result.append("%sc%s" % (i+1, i+1))
             result.append('< ' + repr(a[i]))
@@ -520,13 +494,31 @@ def diff_re(a, b, fromfile='', tofile='',
         i = i+1
     return result
 
-if os.name == 'java':
-
-    python_executable = os.path.join(sys.prefix, 'jython')
-
+if os.name == 'posix':
+    def escape(arg):
+        "escape shell special characters"
+        slash = '\\'
+        special = '"$'
+        arg = arg.replace(slash, slash+slash)
+        for c in special:
+            arg = arg.replace(c, slash+c)
+        if re_space.search(arg):
+            arg = '"' + arg + '"'
+        return arg
 else:
+    # Windows does not allow special characters in file names
+    # anyway, so no need for an escape function, we will just quote
+    # the arg.
+    def escape(arg):
+        if re_space.search(arg):
+            arg = '"' + arg + '"'
+        return arg
 
-    python_executable = sys.executable
+if os.name == 'java':
+    python = os.path.join(sys.prefix, 'jython')
+else:
+    python = os.environ.get("python_executable", sys.executable)
+_python_ = escape(python)
 
 if sys.platform == 'win32':
 
@@ -581,9 +573,8 @@ except ImportError:
     # The subprocess module doesn't exist in this version of Python,
     # so we're going to cobble up something that looks just enough
     # like its API for our purposes below.
-    import new
-
-    subprocess = new.module('subprocess')
+    from types import ModuleType
+    subprocess = ModuleType('subprocess')
 
     subprocess.PIPE = 'PIPE'
     subprocess.STDOUT = 'STDOUT'
@@ -766,7 +757,7 @@ class Popen(subprocess.Popen):
             try:
                 written = os.write(self.stdin.fileno(), input)
             except OSError, why:
-                if why[0] == errno.EPIPE: #broken pipe
+                if why.args[0] == errno.EPIPE: #broken pipe
                     return self._close('stdin')
                 raise
 
@@ -922,30 +913,7 @@ class TestCmd(object):
             width = self.banner_width
         return s + self.banner_char * (width - len(s))
 
-    if os.name == 'posix':
-
-        def escape(self, arg):
-            "escape shell special characters"
-            slash = '\\'
-            special = '"$'
-
-            arg = arg.replace(slash, slash+slash)
-            for c in special:
-                arg = arg.replace(c, slash+c)
-
-            if re_space.search(arg):
-                arg = '"' + arg + '"'
-            return arg
-
-    else:
-
-        # Windows does not allow special characters in file names
-        # anyway, so no need for an escape function, we will just quote
-        # the arg.
-        def escape(self, arg):
-            if re_space.search(arg):
-                arg = '"' + arg + '"'
-            return arg
+    escape = staticmethod(escape)
 
     def canonicalize(self, path):
         if is_List(path):
@@ -1128,7 +1096,7 @@ class TestCmd(object):
         """
         file = self.canonicalize(file)
         if mode[0] != 'r':
-            raise ValueError, "mode must begin with 'r'"
+            raise ValueError("mode must begin with 'r'")
         return open(file, mode).read()
 
     def rmdir(self, dir):
@@ -1462,29 +1430,21 @@ class TestCmd(object):
             # It's a directory and we're trying to turn on read
             # permission, so it's also pretty easy, just chmod the
             # directory and then chmod every entry on our walk down the
-            # tree.  Because os.path.walk() is top-down, we'll enable
-            # read permission on any directories that have it disabled
-            # before os.path.walk() tries to list their contents.
-            do_chmod(top)
-
-            def chmod_entries(arg, dirname, names, do_chmod=do_chmod):
-                for n in names:
-                    do_chmod(os.path.join(dirname, n))
-
-            os.path.walk(top, chmod_entries, None)
+            # tree.
+            for dirpath, dirnames, filenames in os.walk(top):
+                do_chmod(dirpath)
+                for fn in filenames:
+                    do_chmod(os.path.join(dirpath, fn))
         else:
             # It's a directory and we're trying to turn off read
-            # permission, which means we have to chmod the directoreis
+            # permission, which means we have to chmod the directories
             # in the tree bottom-up, lest disabling read permission from
             # the top down get in the way of being able to get at lower
-            # parts of the tree.  But os.path.walk() visits things top
-            # down, so we just use an object to collect a list of all
-            # of the entries in the tree, reverse the list, and then
-            # chmod the reversed (bottom-up) list.
-            col = Collector(top)
-            os.path.walk(top, col, None)
-            col.entries.reverse()
-            for d in col.entries: do_chmod(d)
+            # parts of the tree.
+            for dirpath, dirnames, filenames in os.walk(top, topdown=0):
+                for fn in filenames:
+                    do_chmod(os.path.join(dirpath, fn))
+                do_chmod(dirpath)
 
     def writable(self, top, write=1):
         """Make the specified directory tree writable (write == 1)
@@ -1518,9 +1478,10 @@ class TestCmd(object):
         if os.path.isfile(top):
             do_chmod(top)
         else:
-            col = Collector(top)
-            os.path.walk(top, col, None)
-            for d in col.entries: do_chmod(d)
+            for dirpath, dirnames, filenames in os.walk(top, topdown=0):
+                for fn in filenames:
+                    do_chmod(os.path.join(dirpath, fn))
+                do_chmod(dirpath)
 
     def executable(self, top, execute=1):
         """Make the specified directory tree executable (execute == 1)
@@ -1551,29 +1512,21 @@ class TestCmd(object):
             # It's a directory and we're trying to turn on execute
             # permission, so it's also pretty easy, just chmod the
             # directory and then chmod every entry on our walk down the
-            # tree.  Because os.path.walk() is top-down, we'll enable
-            # execute permission on any directories that have it disabled
-            # before os.path.walk() tries to list their contents.
-            do_chmod(top)
-
-            def chmod_entries(arg, dirname, names, do_chmod=do_chmod):
-                for n in names:
-                    do_chmod(os.path.join(dirname, n))
-
-            os.path.walk(top, chmod_entries, None)
+            # tree.
+            for dirpath, dirnames, filenames in os.walk(top):
+                do_chmod(dirpath)
+                for fn in filenames:
+                    do_chmod(os.path.join(dirpath, fn))
         else:
             # It's a directory and we're trying to turn off execute
             # permission, which means we have to chmod the directories
             # in the tree bottom-up, lest disabling execute permission from
             # the top down get in the way of being able to get at lower
-            # parts of the tree.  But os.path.walk() visits things top
-            # down, so we just use an object to collect a list of all
-            # of the entries in the tree, reverse the list, and then
-            # chmod the reversed (bottom-up) list.
-            col = Collector(top)
-            os.path.walk(top, col, None)
-            col.entries.reverse()
-            for d in col.entries: do_chmod(d)
+            # parts of the tree.
+            for dirpath, dirnames, filenames in os.walk(top, topdown=0):
+                for fn in filenames:
+                    do_chmod(os.path.join(dirpath, fn))
+                do_chmod(dirpath)
 
     def write(self, file, content, mode = 'wb'):
         """Writes the specified content text (second argument) to the
@@ -1586,7 +1539,7 @@ class TestCmd(object):
         """
         file = self.canonicalize(file)
         if mode[0] != 'w':
-            raise ValueError, "mode must begin with 'w'"
+            raise ValueError("mode must begin with 'w'")
         open(file, mode).write(content)
 
 # Local Variables:

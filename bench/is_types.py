@@ -5,59 +5,13 @@
 # src/engine/SCons/Util.py.
 
 import types
-from UserDict import UserDict
-from UserList import UserList
-
 try:
-    from UserString import UserString
+    from collections import UserDict, UserList, UserString
 except ImportError:
-    # "Borrowed" from the Python 2.2 UserString module
-    # and modified slightly for use with SCons.
-    class UserString:
-        def __init__(self, seq):
-            if isinstance(seq, str):
-                self.data = seq
-            elif isinstance(seq, UserString):
-                self.data = seq.data[:]
-            else:
-                self.data = str(seq)
-        def __str__(self): return str(self.data)
-        def __repr__(self): return repr(self.data)
-        def __int__(self): return int(self.data)
-        def __long__(self): return long(self.data)
-        def __float__(self): return float(self.data)
-        def __complex__(self): return complex(self.data)
-        def __hash__(self): return hash(self.data)
-
-        def __cmp__(self, s):
-            if isinstance(s, UserString):
-                return cmp(self.data, s.data)
-            else:
-                return cmp(self.data, s)
-        def __contains__(self, char):
-            return char in self.data
-
-        def __len__(self): return len(self.data)
-        def __getitem__(self, index): return self.__class__(self.data[index])
-        def __getslice__(self, start, end):
-            start = max(start, 0); end = max(end, 0)
-            return self.__class__(self.data[start:end])
-
-        def __add__(self, other):
-            if isinstance(other, UserString):
-                return self.__class__(self.data + other.data)
-            elif is_String(other):
-                return self.__class__(self.data + other)
-            else:
-                return self.__class__(self.data + str(other))
-        def __radd__(self, other):
-            if is_String(other):
-                return self.__class__(other + self.data)
-            else:
-                return self.__class__(str(other) + self.data)
-        def __mul__(self, n):
-            return self.__class__(self.data*n)
-        __rmul__ = __mul__
+    # No 'collections' module or no UserFoo in collections
+    exec('from UserDict import UserDict')
+    exec('from UserList import UserList')
+    exec('from UserString import UserString')
 
 InstanceType = types.InstanceType
 DictType = dict
@@ -75,19 +29,17 @@ else:
 # User* type.
 
 def original_is_Dict(e):
-    return isinstance(e, dict) or isinstance(e, UserDict)
+    return isinstance(e, (dict,UserDict))
 
 def original_is_List(e):
-    return isinstance(e, list) or isinstance(e, UserList)
+    return isinstance(e, (list,UserList))
 
 if UnicodeType is not None:
     def original_is_String(e):
-        return isinstance(e, str) \
-            or isinstance(e, unicode) \
-            or isinstance(e, UserString)
+        return isinstance(e, (str,unicode,UserString))
 else:
     def original_is_String(e):
-        return isinstance(e, str) or isinstance(e, UserString)
+        return isinstance(e, (str,UserString))
 
 
 

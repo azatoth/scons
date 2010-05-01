@@ -20,39 +20,33 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 """
-Verify that all subcommands show up in the global help.
-
-This makes sure that each do_*() function attached to the SConsTimer
-class has a line in the help string.
+Test the ability to configure the $PCHCOM construction variable.
 """
 
-import TestSCons_time
+import TestSCons
+import sys
 
-test = TestSCons_time.TestSCons_time()
+_python_ = TestSCons._python_
 
-# Compile the scons-time script as a module.
-c = compile(test.read(test.program, mode='r'), test.program, 'exec')
+test = TestSCons.TestSCons()
 
-# Evaluate the module in a global name space so we can get at SConsTimer.
-globals = {}
-try: eval(c, globals)
-except: pass
+if sys.platform != 'win32':
+    msg = "Skipping Visual C/C++ test on non-Windows platform '%s'\n" % sys.platform
+    test.skip_test(msg)
 
-# Extract all subcommands from the the do_*() functions.
-functions = list(globals['SConsTimer'].__dict__.keys())
-do_funcs = [x for x in functions if x[:3] == 'do_']
+test.write('SConstruct', """
+env_64 = Environment(tools=['default', 'msvc'],
+                  TARGET_ARCH = 'amd64')
+env_32 = Environment(tools=['default', 'msvc'],
+                  TARGET_ARCH = 'x86')
+""" % locals())
 
-subcommands = [x[3:] for x in do_funcs]
-
-expect = ['    %s ' % x for x in subcommands]
-
-test.run(arguments = 'help')
-
-test.must_contain_all_lines(test.stdout(), expect)
+test.run(arguments = ".")
 
 test.pass_test()
 

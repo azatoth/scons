@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -20,41 +19,33 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
+__doc__ = """
+collections compatibility module for older (pre-2.4) Python versions
+
+This does not not NOT (repeat, *NOT*) provide complete collections
+functionality.  It only wraps the portions of collections functionality
+used by SCons, in an interface that looks enough like collections for
+our purposes.
+"""
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-"""
-Verify that all subcommands show up in the global help.
+# Use the "imp" module to protect the imports below from fixers.
+import imp
 
-This makes sure that each do_*() function attached to the SConsTimer
-class has a line in the help string.
-"""
+_UserDict = imp.load_module('UserDict', *imp.find_module('UserDict'))
+_UserList = imp.load_module('UserList', *imp.find_module('UserList'))
+_UserString = imp.load_module('UserString', *imp.find_module('UserString'))
 
-import TestSCons_time
+UserDict = _UserDict.UserDict
+UserList = _UserList.UserList
+UserString = _UserString.UserString
 
-test = TestSCons_time.TestSCons_time()
-
-# Compile the scons-time script as a module.
-c = compile(test.read(test.program, mode='r'), test.program, 'exec')
-
-# Evaluate the module in a global name space so we can get at SConsTimer.
-globals = {}
-try: eval(c, globals)
-except: pass
-
-# Extract all subcommands from the the do_*() functions.
-functions = list(globals['SConsTimer'].__dict__.keys())
-do_funcs = [x for x in functions if x[:3] == 'do_']
-
-subcommands = [x[3:] for x in do_funcs]
-
-expect = ['    %s ' % x for x in subcommands]
-
-test.run(arguments = 'help')
-
-test.must_contain_all_lines(test.stdout(), expect)
-
-test.pass_test()
+del _UserDict
+del _UserList
+del _UserString
 
 # Local Variables:
 # tab-width:4

@@ -25,8 +25,6 @@ customizable variables to an SCons build.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -84,11 +82,11 @@ class Variables:
         # if we get a list or a tuple, we take the first element as the
         # option key and store the remaining in aliases.
         if SCons.Util.is_List(key) or SCons.Util.is_Tuple(key):
-          option.key     = key[0]
-          option.aliases = key[1:]
+            option.key     = key[0]
+            option.aliases = key[1:]
         else:
-          option.key     = key
-          option.aliases = [ key ]
+            option.key     = key
+            option.aliases = [ key ]
         option.help = help
         option.default = default
         option.validator = validator
@@ -99,10 +97,8 @@ class Variables:
         # options might be added after the 'unknown' dict has been set up,
         # so we remove the key and all its aliases from that dict
         for alias in list(option.aliases) + [ option.key ]:
-          # TODO(1.5)
-          #if alias in self.unknown:
-          if alias in self.unknown.keys():
-            del self.unknown[alias]
+            if alias in self.unknown:
+                del self.unknown[alias]
 
     def keys(self):
         """
@@ -128,8 +124,8 @@ class Variables:
             return
 
         if not SCons.Util.is_String(key) or \
-           not SCons.Environment.is_valid_construction_var(key):
-            raise SCons.Errors.UserError, "Illegal Variables.Add() key `%s'" % str(key)
+            not SCons.Environment.is_valid_construction_var(key):
+                raise SCons.Errors.UserError("Illegal Variables.Add() key `%s'" % str(key))
 
         self._do_add(key, help, default, validator, converter)
 
@@ -211,7 +207,7 @@ class Variables:
                     except TypeError:
                         env[option.key] = option.converter(value, env)
                 except ValueError, x:
-                    raise SCons.Errors.UserError, 'Error converting option: %s\n%s'%(option.key, x)
+                    raise SCons.Errors.UserError('Error converting option: %s\n%s'%(option.key, x))
 
 
         # Finally validate the values:
@@ -273,7 +269,7 @@ class Variables:
                 fh.close()
 
         except IOError, x:
-            raise SCons.Errors.UserError, 'Error writing options to file: %s\n%s' % (filename, x)
+            raise SCons.Errors.UserError('Error writing options to file: %s\n%s' % (filename, x))
 
     def GenerateHelpText(self, env, sort=None):
         """
@@ -284,7 +280,7 @@ class Variables:
         """
 
         if sort:
-            options = sorted(self.options, cmp=lambda x,y: sort(x.key,y.key))
+            options = sorted(self.options, key=lambda x: x.key)
         else:
             options = self.options
 

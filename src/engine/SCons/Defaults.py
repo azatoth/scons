@@ -31,13 +31,12 @@ from distutils.msvccompiler.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import division
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 
-
 import os
-import os.path
 import errno
 import shutil
 import stat
@@ -118,7 +117,7 @@ def SharedFlagChecker(source, target, env):
             except AttributeError:
                 shared = None
             if not shared:
-                raise SCons.Errors.UserError, "Source file: %s is static and is not compatible with shared target: %s" % (src, target[0])
+                raise SCons.Errors.UserError("Source file: %s is static and is not compatible with shared target: %s" % (src, target[0]))
 
 SharedCheck = SCons.Action.Action(SharedFlagChecker, None)
 
@@ -223,7 +222,8 @@ def mkdir_func(dest):
             os.makedirs(str(entry))
         except os.error, e:
             p = str(entry)
-            if (e[0] == errno.EEXIST or (sys.platform=='win32' and e[0]==183)) \
+            if (e.args[0] == errno.EEXIST or
+                    (sys.platform=='win32' and e.args[0]==183)) \
                     and os.path.isdir(str(entry)):
                 pass            # not an error if already exists
             else:
@@ -434,7 +434,7 @@ class Variable_Method_Caller:
         self.variable = variable
         self.method = method
     def __call__(self, *args, **kw):
-        try: 1/0
+        try: 1//0
         except ZeroDivisionError: 
             # Don't start iterating with the current stack-frame to
             # prevent creating reference cycles (f_back is safe).

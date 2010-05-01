@@ -34,8 +34,6 @@ tool definition.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -114,7 +112,7 @@ class Tool:
                         file.close()
             except ImportError, e:
                 if str(e)!="No module named %s"%self.name:
-                    raise SCons.Errors.EnvironmentError, e
+                    raise SCons.Errors.EnvironmentError(e)
                 try:
                     import zipimport
                 except ImportError:
@@ -144,7 +142,7 @@ class Tool:
                     return module
                 except ImportError, e:
                     if str(e)!="No module named %s"%self.name:
-                        raise SCons.Errors.EnvironmentError, e
+                        raise SCons.Errors.EnvironmentError(e)
                     try:
                         import zipimport
                         importer = zipimport.zipimporter( sys.modules['SCons.Tool'].__path__[0] )
@@ -153,10 +151,10 @@ class Tool:
                         return module
                     except ImportError, e:
                         m = "No tool named '%s': %s" % (self.name, e)
-                        raise SCons.Errors.EnvironmentError, m
+                        raise SCons.Errors.EnvironmentError(m)
             except ImportError, e:
                 m = "No tool named '%s': %s" % (self.name, e)
-                raise SCons.Errors.EnvironmentError, m
+                raise SCons.Errors.EnvironmentError(m)
 
     def __call__(self, env, *args, **kw):
         if self.init_kw is not None:

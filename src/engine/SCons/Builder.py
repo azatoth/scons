@@ -96,13 +96,10 @@ There are the following methods for internal use within this module:
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import UserDict
-import UserList
+import collections
 
 import SCons.Action
 from SCons.Debug import logInstanceCreation
@@ -123,7 +120,7 @@ def match_splitext(path, suffixes = []):
     if suffixes:
         matchsuf = [S for S in suffixes if path[-len(S):] == S]
         if matchsuf:
-            suf = max(list(map(None, list(map(len, matchsuf)), matchsuf)))[1]
+            suf = max([(len(_f),_f) for _f in matchsuf])[1]
             return [path[:-len(suf)], path[-len(suf):]]
     return SCons.Util.splitext(path)
 
@@ -139,7 +136,7 @@ class DictCmdGenerator(SCons.Util.Selector):
         self.source_ext_match = source_ext_match
 
     def src_suffixes(self):
-        return self.keys()
+        return list(self.keys())
 
     def add_action(self, suffix, action):
         """Add a suffix-action pair to the mapping.
@@ -171,10 +168,10 @@ class DictCmdGenerator(SCons.Util.Selector):
         try:
             ret = SCons.Util.Selector.__call__(self, env, source, ext)
         except KeyError, e:
-            raise UserError("Ambiguous suffixes after environment substitution: %s == %s == %s" % (e[0], e[1], e[2]))
+            raise UserError("Ambiguous suffixes after environment substitution: %s == %s == %s" % (e.args[0], e.args[1], e.args[2]))
         if ret is None:
             raise UserError("While building `%s' from `%s': Don't know how to build from a source file with suffix `%s'.  Expected a suffix in this list: %s." % \
-                            (repr(list(map(str, target))), repr(list(map(str, source))), ext, repr(self.keys())))
+                            (repr(list(map(str, target))), repr(list(map(str, source))), ext, repr(list(self.keys()))))
         return ret
 
 class CallableSelector(SCons.Util.Selector):
@@ -200,7 +197,7 @@ class DictEmitter(SCons.Util.Selector):
             target, source = emitter(target, source, env)
         return (target, source)
 
-class ListEmitter(UserList.UserList):
+class ListEmitter(collections.UserList):
     """A callable list of emitters that calls each in sequence,
     returning the result.
     """
@@ -218,7 +215,7 @@ misleading_keywords = {
     'sources'   : 'source',
 }
 
-class OverrideWarner(UserDict.UserDict):
+class OverrideWarner(collections.UserDict):
     """A class for warning about keyword arguments that we use as
     overrides in a Builder call.
 
@@ -227,7 +224,7 @@ class OverrideWarner(UserDict.UserDict):
     warnings once, no matter how many Builders are invoked.
     """
     def __init__(self, dict):
-        UserDict.UserDict.__init__(self, dict)
+        collections.UserDict.__init__(self, dict)
         if __debug__: logInstanceCreation(self, 'Builder.OverrideWarner')
         self.already_warned = None
     def warn(self):
@@ -245,7 +242,7 @@ def Builder(**kw):
     composite = None
     if 'generator' in kw:
         if 'action' in kw:
-            raise UserError, "You must not specify both an action and a generator."
+            raise UserError("You must not specify both an action and a generator.")
         kw['action'] = SCons.Action.CommandGeneratorAction(kw['generator'], {})
         del kw['generator']
     elif 'action' in kw:
@@ -268,7 +265,7 @@ def Builder(**kw):
             # a callable to use as the actual emitter.
             var = SCons.Util.get_environment_var(emitter)
             if not var:
-                raise UserError, "Supplied emitter '%s' does not appear to refer to an Environment variable" % emitter
+                raise UserError("Supplied emitter '%s' does not appear to refer to an Environment variable" % emitter)
             kw['emitter'] = EmitterProxy(var)
         elif SCons.Util.is_Dict(emitter):
             kw['emitter'] = DictEmitter(emitter)
@@ -292,7 +289,7 @@ def _node_errors(builder, env, tlist, slist):
     # were specified.
     for t in tlist:
         if t.side_effect:
-            raise UserError, "Multiple ways to build the same target were specified for: %s" % t
+            raise UserError("Multiple ways to build the same target were specified for: %s" % t)
         if t.has_explicit_builder():
             if not t.env is None and not t.env is env:
                 action = t.builder.action
@@ -304,22 +301,22 @@ def _node_errors(builder, env, tlist, slist):
                     SCons.Warnings.warn(SCons.Warnings.DuplicateEnvironmentWarning, msg)
                 else:
                     msg = "Two environments with different actions were specified for the same target: %s" % t
-                    raise UserError, msg
+                    raise UserError(msg)
             if builder.multi:
                 if t.builder != builder:
                     msg = "Two different builders (%s and %s) were specified for the same target: %s" % (t.builder.get_name(env), builder.get_name(env), t)
-                    raise UserError, msg
+                    raise UserError(msg)
                 # TODO(batch):  list constructed each time!
                 if t.get_executor().get_all_targets() != tlist:
                     msg = "Two different target lists have a target in common: %s  (from %s and from %s)" % (t, list(map(str, t.get_executor().get_all_targets())), list(map(str, tlist)))
-                    raise UserError, msg
+                    raise UserError(msg)
             elif t.sources != slist:
                 msg = "Multiple ways to build the same target were specified for: %s  (from %s and from %s)" % (t, list(map(str, t.sources)), list(map(str, slist)))
-                raise UserError, msg
+                raise UserError(msg)
 
     if builder.single_source:
         if len(slist) > 1:
-            raise UserError, "More than one source given for single-source builder: targets=%s sources=%s" % (list(map(str,tlist)), list(map(str,slist)))
+            raise UserError("More than one source given for single-source builder: targets=%s sources=%s" % (list(map(str,tlist)), list(map(str,slist))))
 
 class EmitterProxy:
     """This is a callable class that can act as a
@@ -430,7 +427,7 @@ class BuilderBase:
         self.src_builder = src_builder
 
     def __nonzero__(self):
-        raise InternalError, "Do not test for the Node.builder attribute directly; use Node.has_builder() instead"
+        raise InternalError("Do not test for the Node.builder attribute directly; use Node.has_builder() instead")
 
     def get_name(self, env):
         """Attempts to get the name of the Builder.
@@ -441,8 +438,8 @@ class BuilderBase:
         name (if there is one) or the name of the class (by default)."""
 
         try:
-            index = env['BUILDERS'].values().index(self)
-            return env['BUILDERS'].keys()[index]
+            index = list(env['BUILDERS'].values()).index(self)
+            return list(env['BUILDERS'].keys())[index]
         except (AttributeError, KeyError, TypeError, ValueError):
             try:
                 return self.name
@@ -576,8 +573,8 @@ class BuilderBase:
         if executor is None:
             if not self.action:
                 fmt = "Builder %s must have an action to build %s."
-                raise UserError, fmt % (self.get_name(env or self.env),
-                                        list(map(str,tlist)))
+                raise UserError(fmt % (self.get_name(env or self.env),
+                                        list(map(str,tlist))))
             key = self.action.batch_key(env or self.env, tlist, slist)
             if key:
                 try:

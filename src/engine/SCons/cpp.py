@@ -26,11 +26,8 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 __doc__ = """
 SCons C Pre-Processor module
 """
-
-# TODO(1.5):  remove this import
-# This module doesn't use anything from SCons by name, but we import SCons
-# here to pull in zip() from the SCons.compat layer for early Pythons.
-import SCons
+#TODO 2.3 and before has no sorted()
+import SCons.compat
 
 import os
 import re
@@ -133,7 +130,7 @@ CPP_to_Python_Ops_Sub = lambda m: CPP_to_Python_Ops_Dict[m.group(0)]
 # re module, as late as version 2.2.2, empirically matches the
 # "!" in "!=" first, instead of finding the longest match.
 # What's up with that?
-l = sorted(CPP_to_Python_Ops_Dict.keys(), cmp=lambda a, b: cmp(len(b), len(a)))
+l = sorted(CPP_to_Python_Ops_Dict.keys(), key=lambda a: len(a), reverse=True)
 
 # Turn the list of keys into one regular expression that will allow us
 # to substitute all of the operators at once.
@@ -191,9 +188,7 @@ class FunctionEvaluator:
         self.args = function_arg_separator.split(args)
         try:
             expansion = expansion.split('##')
-        except (AttributeError, TypeError):
-            # Python 1.5 throws TypeError if "expansion" isn't a string,
-            # later versions throw AttributeError.
+        except AttributeError:
             pass
         self.expansion = expansion
     def __call__(self, *values):
@@ -202,7 +197,7 @@ class FunctionEvaluator:
         with the specified values.
         """
         if len(self.args) != len(values):
-            raise ValueError, "Incorrect number of arguments to `%s'" % self.name
+            raise ValueError("Incorrect number of arguments to `%s'" % self.name)
         # Create a dictionary that maps the macro arguments to the
         # corresponding values in this "call."  We'll use this when we
         # eval() the expansion so that arguments will get expanded to

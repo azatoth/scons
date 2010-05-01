@@ -26,12 +26,12 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import SCons.compat
 
 import copy
+import io
 import os
-import StringIO
 import sys
 import TestCmd
 import unittest
-import UserList
+from collections import UserDict as UD, UserList as UL
 
 from SCons.Environment import *
 import SCons.Warnings
@@ -40,7 +40,7 @@ def diff_env(env1, env2):
     s1 = "env1 = {\n"
     s2 = "env2 = {\n"
     d = {}
-    for k in env1._dict.keys() + env2._dict.keys():
+    for k in list(env1._dict.keys()) + list(env2._dict.keys()):
         d[k] = None
     for k in sorted(d.keys()):
         if k in env1:
@@ -60,7 +60,7 @@ def diff_dict(d1, d2):
     s1 = "d1 = {\n"
     s2 = "d2 = {\n"
     d = {}
-    for k in d1.keys() + d2.keys():
+    for k in list(d1.keys()) + list(d2.keys()):
         d[k] = None
     for k in sorted(d.keys()):
         if k in d1:
@@ -126,15 +126,15 @@ class Scanner:
 
 
 
-class CLVar(UserList.UserList):
+class CLVar(UL):
     def __init__(self, seq):
         if isinstance(seq, str):
             seq = seq.split()
-        UserList.UserList.__init__(self, seq)
+        UL.__init__(self, seq)
     def __add__(self, other):
-        return UserList.UserList.__add__(self, CLVar(other))
+        return UL.__add__(self, CLVar(other))
     def __radd__(self, other):
-        return UserList.UserList.__radd__(self, CLVar(other))
+        return UL.__radd__(self, CLVar(other))
     def __coerce__(self, other):
         return (self, CLVar(other))
 
@@ -234,23 +234,15 @@ class SubstitutionTestCase(unittest.TestCase):
     def test_contains(self):
         """Test the SubstitutionEnvironment __contains__() method
         """
-        try:
-            'x' in {'x':1}
-        except TypeError:
-            # TODO(1.5)
-            # An early version of Python that doesn't support "in"
-            # on dictionaries.  Just pass the test.
-            pass
-        else:
-            env = SubstitutionEnvironment(XXX = 'x')
-            assert 'XXX' in env
-            assert not 'YYY' in env
+        env = SubstitutionEnvironment(XXX = 'x')
+        assert 'XXX' in env
+        assert not 'YYY' in env
 
     def test_items(self):
         """Test the SubstitutionEnvironment items() method
         """
         env = SubstitutionEnvironment(XXX = 'x', YYY = 'y')
-        items = env.items()
+        items = list(env.items())
         assert items == [('XXX','x'), ('YYY','y')], items
 
     def test_arg2nodes(self):
@@ -645,21 +637,21 @@ sys.exit(0)
         python = '"' + sys.executable + '"'
 
         try:
-            sys.stderr = StringIO.StringIO()
+            sys.stderr = io.StringIO()
             cmd = '%s %s' % (python, test.workpath('stdout.py'))
             output = env.backtick(cmd)
             errout = sys.stderr.getvalue()
             assert output == 'this came from stdout.py\n', output
             assert errout == '', errout
 
-            sys.stderr = StringIO.StringIO()
+            sys.stderr = io.StringIO()
             cmd = '%s %s' % (python, test.workpath('stderr.py'))
             output = env.backtick(cmd)
             errout = sys.stderr.getvalue()
             assert output == '', output
             assert errout == 'this came from stderr.py\n', errout
 
-            sys.stderr = StringIO.StringIO()
+            sys.stderr = io.StringIO()
             cmd = '%s %s' % (python, test.workpath('fail.py'))
             try:
                 env.backtick(cmd)
@@ -668,7 +660,7 @@ sys.exit(0)
             else:
                 self.fail("did not catch expected OSError")
 
-            sys.stderr = StringIO.StringIO()
+            sys.stderr = io.StringIO()
             cmd = '%s %s' % (python, test.workpath('echo.py'))
             env['ENV'] = os.environ.copy()
             env['ENV']['ECHO'] = 'this came from ECHO'
@@ -1479,11 +1471,6 @@ def exists(env):
         b2 = Environment()['BUILDERS']
         assert b1 == b2, diff_dict(b1, b2)
 
-        import UserDict
-        UD = UserDict.UserDict
-        import UserList
-        UL = UserList.UserList
-
         cases = [
             'a1',       'A1',           'a1A1',
             'a2',       ['A2'],         ['a2', 'A2'],
@@ -1610,7 +1597,7 @@ def exists(env):
             def __str__(self):
                 return self.name
             def __cmp__(self, other):
-                raise "should not compare"
+                raise Exception("should not compare")
 
         ccc = C('ccc')
 
@@ -1711,17 +1698,8 @@ def exists(env):
         env['CLVar'] = CLVar([])
         env.AppendUnique(CLVar = 'bar')
         result = env['CLVar']
-        if sys.version[0] == '1' or sys.version[:3] == '2.0':
-            # Python 2.0 and before have a quirky behavior where CLVar([])
-            # actually matches '' and [] due to different __coerce__()
-            # semantics in the UserList implementation.  It isn't worth a
-            # lot of effort to get this corner case to work identically
-            # (support for Python 1.5 support will die soon anyway),
-            # so just treat it separately for now.
-            assert result == 'bar', result
-        else:
-            assert isinstance(result, CLVar), repr(result)
-            assert result == ['bar'], result
+        assert isinstance(result, CLVar), repr(result)
+        assert result == ['bar'], result
 
         env['CLVar'] = CLVar(['abc'])
         env.AppendUnique(CLVar = 'bar')
@@ -2151,11 +2129,6 @@ f5: \
     def test_Prepend(self):
         """Test prepending to construction variables in an Environment
         """
-        import UserDict
-        UD = UserDict.UserDict
-        import UserList
-        UL = UserList.UserList
-
         cases = [
             'a1',       'A1',           'A1a1',
             'a2',       ['A2'],         ['A2', 'a2'],
@@ -2366,17 +2339,8 @@ f5: \
         env['CLVar'] = CLVar([])
         env.PrependUnique(CLVar = 'bar')
         result = env['CLVar']
-        if sys.version[0] == '1' or sys.version[:3] == '2.0':
-            # Python 2.0 and before have a quirky behavior where CLVar([])
-            # actually matches '' and [] due to different __coerce__()
-            # semantics in the UserList implementation.  It isn't worth a
-            # lot of effort to get this corner case to work identically
-            # (support for Python 1.5 support will die soon anyway),
-            # so just treat it separately for now.
-            assert result == 'bar', result
-        else:
-            assert isinstance(result, CLVar), repr(result)
-            assert result == ['bar'], result
+        assert isinstance(result, CLVar), repr(result)
+        assert result == ['bar'], result
 
         env['CLVar'] = CLVar(['abc'])
         env.PrependUnique(CLVar = 'bar')
@@ -3634,24 +3598,16 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
 
     def test_contains(self):
         """Test the OverrideEnvironment __contains__() method"""
-        try:
-            'x' in {'x':1}
-        except TypeError:
-            # TODO(1.5)
-            # An early version of Python that doesn't support "in"
-            # on dictionaries.  Just pass the test.
-            pass
-        else:
-            env, env2, env3 = self.envs
-            assert 'XXX' in env
-            assert 'XXX' in env2
-            assert 'XXX' in env3
-            assert 'YYY' in env
-            assert 'YYY' in env2
-            assert 'YYY' in env3
-            assert not 'ZZZ' in env
-            assert not 'ZZZ' in env2
-            assert 'ZZZ' in env3
+        env, env2, env3 = self.envs
+        assert 'XXX' in env
+        assert 'XXX' in env2
+        assert 'XXX' in env3
+        assert 'YYY' in env
+        assert 'YYY' in env2
+        assert 'YYY' in env3
+        assert not 'ZZZ' in env
+        assert not 'ZZZ' in env2
+        assert 'ZZZ' in env3
 
     def test_items(self):
         """Test the OverrideEnvironment Dictionary() method"""

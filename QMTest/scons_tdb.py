@@ -20,14 +20,13 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
+from __future__ import division
 
 """
 QMTest classes to support SCons' testing and Aegis-inspired workflow.
 
 Thanks to Stefan Seefeld for the initial code.
 """
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -494,7 +493,7 @@ class Database(database.Database):
             dirs = [d for d in dircache.listdir(path)
                     if os.path.isdir(os.path.join(path, d))]
         else:
-            dirs = self.is_a_test.keys()
+            dirs = list(self.is_a_test.keys())
 
         dirs.sort()
         return dirs
@@ -524,7 +523,7 @@ class Database(database.Database):
                        for d in dircache.listdir(path)
                        if os.path.isdir(os.path.join(path, d))]
             else:
-                ids = self.is_a_test.keys()
+                ids = list(self.is_a_test.keys())
 
         if scan_subdirs:
             for d in dircache.listdir(path):

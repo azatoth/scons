@@ -29,33 +29,19 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
+from __future__ import division
 from __future__ import nested_scopes
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import getopt
 import glob
 import os
-import os.path
 import re
 import shutil
 import sys
 import tempfile
 import time
-
-try:
-    False
-except NameError:
-    # Pre-2.2 Python has no False keyword.
-    False = not 1
-
-try:
-    True
-except NameError:
-    # Pre-2.2 Python has no True keyword.
-    True = not 0
 
 try:
     sorted
@@ -81,6 +67,20 @@ except NameError:
         if reverse:
             result.reverse()
         return result
+
+if os.environ.get('SCONS_HORRIBLE_REGRESSION_TEST_HACK') is not None:
+    # We can't apply the 'callable' fixer until the floor is 2.6, but the
+    # '-3' option to Python 2.6 and 2.7 generates almost ten thousand
+    # warnings.  This hack allows us to run regression tests with the '-3'
+    # option by replacing the callable() built-in function with a hack
+    # that performs the same function but doesn't generate the warning.
+    # Note that this hack is ONLY intended to be used for regression
+    # testing, and should NEVER be used for real runs.
+    from types import ClassType
+    def callable(obj):
+        if hasattr(obj, '__call__'): return True
+        if isinstance(obj, (ClassType, type)): return True
+        return False
 
 def make_temp_file(**kw):
     try:
@@ -120,12 +120,12 @@ class Plotter:
         between 5 and 9 horizontal lines on the graph, on some set of
         boundaries that are multiples of 10/100/1000/etc.
         """
-        i = largest / 5
+        i = largest // 5
         if not i:
             return largest
         multiplier = 1
         while i >= 10:
-            i = i / 10
+            i = i // 10
             multiplier = multiplier * 10
         return i * multiplier
 
@@ -133,7 +133,7 @@ class Plotter:
         # Round up to next integer.
         largest = int(largest) + 1
         increment = self.increment_size(largest)
-        return ((largest + increment - 1) / increment) * increment
+        return ((largest + increment - 1) // increment) * increment
 
 class Line:
     def __init__(self, points, type, title, label, comment, fmt="%s %s"):
@@ -295,12 +295,11 @@ def unzip(fname):
         open(name, 'w').write(zf.read(name))
 
 def read_tree(dir):
-    def read_files(arg, dirname, fnames):
-        for fn in fnames:
-            fn = os.path.join(dirname, fn)
+    for dirpath, dirnames, filenames in os.walk(dir):
+        for fn in filenames:
+            fn = os.path.join(dirpath, fn)
             if os.path.isfile(fn):
                 open(fn, 'rb').read()
-    os.path.walk('.', read_files, None)
 
 def redirect_to_file(command, log):
     return '%s > %s 2>&1' % (command, log)

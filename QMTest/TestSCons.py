@@ -13,7 +13,7 @@ attributes defined in this subclass.
 """
 
 # __COPYRIGHT__
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
+from __future__ import division
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -22,14 +22,6 @@ import re
 import shutil
 import sys
 import time
-
-try:
-    x = True
-except NameError:
-    True = not 0
-    False = not 1
-else:
-    del x
 
 from TestCommon import *
 from TestCommon import __all__
@@ -81,8 +73,6 @@ else:
     machine = uname()[4]
     machine = machine_map.get(machine, machine)
 
-python = python_executable
-_python_ = '"' + python_executable + '"'
 _exe = exe_suffix
 _obj = obj_suffix
 _shobj = shobj_suffix
@@ -417,8 +407,6 @@ class TestSCons(TestCommon):
                 kw['arguments'] = option + arguments
             else:
                 kw['arguments'] = option + ' ' + arguments
-        # TODO(1.5)
-        #return self.run(**kw)
         return self.run(**kw)
 
     def diff_substr(self, expect, actual, prelen=20, postlen=40):
@@ -652,6 +640,15 @@ class TestSCons(TestCommon):
             self.skip_test("Could not find Java rmic, skipping non-simulated test(s).\n")
         return where_rmic
 
+    def java_get_class_files(self, dir):
+        result = []
+        for dirpath, dirnames, filenames in os.walk(dir):
+            for fname in filenames:
+                if fname.endswith('.class'):
+                    result.append(os.path.join(dirpath, fname))
+        return sorted(result)
+
+
     def Qt_dummy_installation(self, dir='qt'):
         # create a dummy qt installation
 
@@ -806,14 +803,14 @@ SConscript( sconscript )
                           logfile, sconf_dir, sconstruct,
                           doCheckLog=1, doCheckStdout=1):
 
-        class NoMatch:
+        class NoMatch(Exception):
             def __init__(self, p):
                 self.pos = p
 
         def matchPart(log, logfile, lastEnd, NoMatch=NoMatch):
             m = re.match(log, logfile[lastEnd:])
             if not m:
-                raise NoMatch, lastEnd
+                raise NoMatch(lastEnd)
             return m.end() + lastEnd
         try:
             #print len(os.linesep)
@@ -888,7 +885,7 @@ SConscript( sconscript )
                 log = ""
             if doCheckLog: lastEnd = matchPart(ls, logfile, lastEnd)
             if doCheckLog and lastEnd != len(logfile):
-                raise NoMatch, lastEnd
+                raise NoMatch(lastEnd)
             
         except NoMatch, m:
             print "Cannot match log file against log regexp."
@@ -998,13 +995,13 @@ class Stat:
 StatList = [
     Stat('memory-initial', 'kbytes',
          r'Memory before reading SConscript files:\s+(\d+)',
-         convert=lambda s: int(s) / 1024),
+         convert=lambda s: int(s) // 1024),
     Stat('memory-prebuild', 'kbytes',
          r'Memory before building targets:\s+(\d+)',
-         convert=lambda s: int(s) / 1024),
+         convert=lambda s: int(s) // 1024),
     Stat('memory-final', 'kbytes',
          r'Memory after building targets:\s+(\d+)',
-         convert=lambda s: int(s) / 1024),
+         convert=lambda s: int(s) // 1024),
 
     Stat('time-sconscript', 'seconds',
          r'Total SConscript file execution time:\s+([\d.]+) seconds'),
@@ -1046,8 +1043,6 @@ class TimeSCons(TestSCons):
         if 'verbose' not in kw and not self.calibrate:
             kw['verbose'] = True
 
-        # TODO(1.5)
-        #TestSCons.__init__(self, *args, **kw)
         TestSCons.__init__(self, *args, **kw)
 
         # TODO(sgk):    better way to get the script dir than sys.argv[0]
@@ -1081,15 +1076,9 @@ class TimeSCons(TestSCons):
                 options.append('%s=%s' % (variable, value))
             kw['options'] = ' '.join(options)
         if self.calibrate:
-            # TODO(1.5)
-            #self.calibration(*args, **kw)
             self.calibration(*args, **kw)
         else:
             self.uptime()
-            # TODO(1.5)
-            #self.startup(*args, **kw)
-            #self.full(*args, **kw)
-            #self.null(*args, **kw)
             self.startup(*args, **kw)
             self.full(*args, **kw)
             self.null(*args, **kw)
@@ -1110,8 +1099,6 @@ class TimeSCons(TestSCons):
                    "seconds",
                    sort=0)
         for name, args in stats.items():
-            # TODO(1.5)
-            #self.trace(name, trace, *args)
             self.trace(name, trace, **args)
 
     def uptime(self):
@@ -1151,8 +1138,6 @@ class TimeSCons(TestSCons):
         # won't report any statistics for it, but we can still execute
         # the full and null builds.
         kw['status'] = None
-        # TODO(1.5)
-        #self.run(*args, **kw)
         self.run(*args, **kw)
         sys.stdout.write(self.stdout())
         stats = self.collect_stats(self.stdout())
@@ -1165,16 +1150,10 @@ class TimeSCons(TestSCons):
         """
         Runs a full build of SCons.
         """
-        # TODO(1.5)
-        #self.run(*args, **kw)
         self.run(*args, **kw)
         sys.stdout.write(self.stdout())
         stats = self.collect_stats(self.stdout())
         self.report_traces('full', stats)
-        # TODO(1.5)
-        #self.trace('full-memory', 'initial', **stats['memory-initial'])
-        #self.trace('full-memory', 'prebuild', **stats['memory-prebuild'])
-        #self.trace('full-memory', 'final', **stats['memory-final'])
         self.trace('full-memory', 'initial', **stats['memory-initial'])
         self.trace('full-memory', 'prebuild', **stats['memory-prebuild'])
         self.trace('full-memory', 'final', **stats['memory-final'])
@@ -1185,8 +1164,6 @@ class TimeSCons(TestSCons):
         information (the variable(s) that were set for this configuration,
         and the elapsed time to run.
         """
-        # TODO(1.5)
-        #self.run(*args, **kw)
         self.run(*args, **kw)
         if self.variables:
             for variable, value in self.variables.items():
@@ -1199,11 +1176,7 @@ class TimeSCons(TestSCons):
         """
         # TODO(sgk):  allow the caller to specify the target (argument)
         # that must be up-to-date.
-        # TODO(1.5)
-        #self.up_to_date(arguments='.', **kw)
-        kw = kw.copy()
-        kw['arguments'] = '.'
-        self.up_to_date(**kw)
+        self.up_to_date(arguments='.', **kw)
         sys.stdout.write(self.stdout())
         stats = self.collect_stats(self.stdout())
         # time-commands should always be 0.0 on a null build, because
@@ -1214,10 +1187,6 @@ class TimeSCons(TestSCons):
         if float(stats['time-commands']['value']) == 0.0:
             del stats['time-commands']
         self.report_traces('null', stats)
-        # TODO(1.5)
-        #self.trace('null-memory', 'initial', **stats['memory-initial'])
-        #self.trace('null-memory', 'prebuild', **stats['memory-prebuild'])
-        #self.trace('null-memory', 'final', **stats['memory-final'])
         self.trace('null-memory', 'initial', **stats['memory-initial'])
         self.trace('null-memory', 'prebuild', **stats['memory-prebuild'])
         self.trace('null-memory', 'final', **stats['memory-final'])
@@ -1240,8 +1209,6 @@ class TimeSCons(TestSCons):
         kw['options'] = kw.get('options', '') + ' --debug=memory --debug=time'
         self.startTime = time.time()
         try:
-            # TODO(1.5)
-            #result = TestSCons.run(self, *args, **kw)
             result = TestSCons.run(self, *args, **kw)
         finally:
             self.endTime = time.time()
@@ -1259,12 +1226,8 @@ class TimeSCons(TestSCons):
         for root, dirs, files in os.walk(source_dir):
             if '.svn' in dirs:
                 dirs.remove('.svn')
-            # TODO(1.5)
-            #dirs = [ d for d in dirs if not d.startswith('TimeSCons-') ]
-            #files = [ f for f in files if not f.startswith('TimeSCons-') ]
-            not_timescons_entries = lambda s: not s.startswith('TimeSCons-')
-            dirs = list(filter(not_timescons_entries, dirs))
-            files = list(filter(not_timescons_entries, files))
+            dirs = [ d for d in dirs if not d.startswith('TimeSCons-') ]
+            files = [ f for f in files if not f.startswith('TimeSCons-') ]
             for dirname in dirs:
                 source = os.path.join(root, dirname)
                 destination = source.replace(source_dir, dest_dir)

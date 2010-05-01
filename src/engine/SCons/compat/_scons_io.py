@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # __COPYRIGHT__
 #
@@ -20,41 +19,24 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
+__doc__ = """
+io compatibility module for older (pre-2.6) Python versions
+
+This does not not NOT (repeat, *NOT*) provide complete io
+functionality.  It only wraps the portions of io functionality used
+by SCons, in an interface that looks enough like io for our purposes.
+"""
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-"""
-Verify that all subcommands show up in the global help.
+# Use the "imp" module to protect the imports below from fixers.
+import imp
 
-This makes sure that each do_*() function attached to the SConsTimer
-class has a line in the help string.
-"""
-
-import TestSCons_time
-
-test = TestSCons_time.TestSCons_time()
-
-# Compile the scons-time script as a module.
-c = compile(test.read(test.program, mode='r'), test.program, 'exec')
-
-# Evaluate the module in a global name space so we can get at SConsTimer.
-globals = {}
-try: eval(c, globals)
-except: pass
-
-# Extract all subcommands from the the do_*() functions.
-functions = list(globals['SConsTimer'].__dict__.keys())
-do_funcs = [x for x in functions if x[:3] == 'do_']
-
-subcommands = [x[3:] for x in do_funcs]
-
-expect = ['    %s ' % x for x in subcommands]
-
-test.run(arguments = 'help')
-
-test.must_contain_all_lines(test.stdout(), expect)
-
-test.pass_test()
+_cStringIO = imp.load_module('cStringIO', *imp.find_module('cStringIO'))
+StringIO = _cStringIO.StringIO
+del _cStringIO
 
 # Local Variables:
 # tab-width:4
