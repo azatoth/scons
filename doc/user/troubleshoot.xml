@@ -286,7 +286,7 @@
         'DSUFFIXES': ['.d'],
         'Dir': &lt;SCons.Defaults.Variable_Method_Caller instance at 0x700000&gt;,
         'Dirs': &lt;SCons.Defaults.Variable_Method_Caller instance at 0x700000&gt;,
-        'ENV': {'PATH': '/usr/local/bin:/opt/bin:/bin:/usr/bin'},
+        'ENV': { 'PATH': '/usr/local/bin:/opt/bin:/bin:/usr/bin'},
         'ESCAPE': &lt;function escape at 0x700000&gt;,
         'File': &lt;SCons.Defaults.Variable_Method_Caller instance at 0x700000&gt;,
         'HOST_ARCH': None,
@@ -312,7 +312,6 @@
         'SHOBJPREFIX': '$OBJPREFIX',
         'SHOBJSUFFIX': '$OBJSUFFIX',
         'SPAWN': &lt;function spawnvpe_spawn at 0x700000&gt;,
-        'TARGET_ARCH': None,
         'TARGET_OS': None,
         'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0x700000&gt;,
         'TEMPFILEPREFIX': '@',
@@ -424,7 +423,6 @@
         'SHOBJSUFFIX': '$OBJSUFFIX',
         'SPAWN': &lt;function spawn at 0x700000&gt;,
         'STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME': 1,
-        'TARGET_ARCH': '',
         'TARGET_OS': 'win32',
         'TEMPFILE': &lt;class SCons.Platform.TempFileMunge at 0x700000&gt;,
         'TEMPFILEPREFIX': '@',
@@ -489,7 +487,7 @@
     <screen>
       % <userinput>scons</userinput>
       scons: Reading SConscript files ...
-      {'PATH': '/usr/local/bin:/opt/bin:/bin:/usr/bin'}
+      { 'PATH': '/usr/local/bin:/opt/bin:/bin:/usr/bin'}
       scons: done reading SConscript files.
       scons: Building targets ...
       scons: `.' is up to date.
