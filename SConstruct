@@ -154,7 +154,7 @@ checkpoint = ARGUMENTS.get('CHECKPOINT', '')
 if checkpoint:
     if checkpoint == 'd':
         import time
-        checkpoint = time.strftime('d%Y%m%d', time.localtime(time.time()))
+        checkpoint = time.strftime('%Y%m%d', time.localtime(time.time()))
     elif checkpoint == 'r':
         checkpoint = 'r' + revision
     version = version + '.alpha.' + checkpoint
