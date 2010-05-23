@@ -21,7 +21,7 @@ the instructions on the following page:
 
 
 
-RELEASE 1.3.0.d20100501 - Sat, 01 May 2010 13:02:52 -0700
+RELEASE 1.3.0.d20100523 - Sun, 23 May 2010 14:11:49 -0700 
 
   Please consult the CHANGES.txt file for a list of specific changes
   since last release.
@@ -35,6 +35,9 @@ RELEASE 1.3.0.d20100501 - Sat, 01 May 2010 13:02:52 -0700
        a specific target architecture.
 
     -- Fixed case-sensitivity problem with scanners in cygwin python
+
+    -- Fixed MSVC initialization issue where PATH,LIB,LIBPATH were
+       leaking from the os.environ into the Environment.
 
 
   Please note the following important changes in this release:

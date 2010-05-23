@@ -602,7 +602,8 @@ def get_default_ENV(env):
     global default_ENV
     try:
         return env['ENV']
-    except KeyError:
+    except (KeyError,TypeError):
+        # TypeError handles when the env passed in is None
         if not default_ENV:
             import SCons.Environment
             # This is a hideously expensive way to get a default shell
@@ -610,14 +611,14 @@ def get_default_ENV(env):
             # setup to get the default ENV.  Fortunately, it's incredibly
             # rare for an Environment not to have a shell environment, so
             # we're not going to worry about it overmuch.
-            default_ENV = SCons.Environment.Environment()['ENV']
+            default_ENV = SCons.Environment.Environment(tools=[])['ENV']
         return default_ENV
 
 # This function is still in draft mode.  We're going to need something like
 # it in the long run as more and more places use subprocess, but I'm sure
 # it'll have to be tweaked to get the full desired functionality.
 # one special arg (so far?), 'error', to tell what to do with exceptions.
-def _subproc(env, cmd, error = 'ignore', **kw):
+def _subproc(scons_env, cmd, error = 'ignore', **kw):
     """Do common setup for a subprocess.Popen() call"""
     # allow std{in,out,err} to be "'devnull'"
     io = kw.get('stdin')
@@ -632,7 +633,7 @@ def _subproc(env, cmd, error = 'ignore', **kw):
 
     # Figure out what shell environment to use
     ENV = kw.get('env', None)
-    if ENV is None: ENV = get_default_ENV(env)
+    if ENV is None: ENV = get_default_ENV(scons_env)
 
     # Ensure that the ENV values are all strings:
     new_env = {}
