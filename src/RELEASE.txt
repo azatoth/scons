@@ -1,4 +1,4 @@
-  A new SCons checkpoint release, 2.0.0.alpha.20100508, is now available.
+  A new SCons checkpoint release, 2.0.0.alpha.20100524, is now available.
   The primary purpose of this release is to remove support for
   Python versions prior to 2.4 and streamline the SCons code base
   using more modern python idioms.
