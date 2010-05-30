@@ -233,7 +233,7 @@ This functionality could be invoked as in the following example:
 
     <screen>
       % <userinput>scons -Q</userinput>
-      AttributeError: SConsEnvironment instance has no attribute 'Program':
+      AttributeError: 'SConsEnvironment' object has no attribute 'Program':
         File "/home/my/project/SConstruct", line 4:
           env.Program('hello.c')
     </screen>

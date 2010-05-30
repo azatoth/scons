@@ -7,7 +7,7 @@
                             Change Log
 
 
-RELEASE 2.0.0.alpha.20100508 - Sat, 08 May 2010 14:29:17 -0700
+RELEASE 2.0.0.alpha.20100525 - Tue, 25 May 2010 21:06:56 -0700
 
   From Dirk Baechle:
 
