@@ -7,7 +7,7 @@
                             Change Log
 
 
-RELEASE 2.0.0.alpha.20100525 - Tue, 25 May 2010 21:06:56 -0700
+RELEASE 2.0.0.alpha.20100530 - Sun, 30 May 2010 08:48:58 -0700
 
   From Dirk Baechle:
 
@@ -40,6 +40,9 @@ RELEASE 2.0.0.alpha.20100525 - Tue, 25 May 2010 21:06:56 -0700
     - Add a '-3' option to runtest to print 3.x incompatibility warnings.
 
     - Convert old-style classes into new-style classes.
+
+    - Fix "Ignoring corrupt sconsign entry" warnings when building
+      in a tree with a pre-2.0 .sconsign file.
 
   From Greg Noel:
 
