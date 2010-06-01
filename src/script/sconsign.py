@@ -22,8 +22,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -38,7 +36,6 @@ __date__ = "__DATE__"
 __developer__ = "__DEVELOPER__"
 
 import os
-import os.path
 import sys
 import time
 
@@ -172,9 +169,11 @@ sys.path = libs + sys.path
 # END STANDARD SCons SCRIPT HEADER
 ##############################################################################
 
-import cPickle
-import imp
+import SCons.compat   # so pickle will import cPickle instead
+
 import whichdb
+import pickle
+import imp
 
 import SCons.SConsign
 
@@ -202,7 +201,7 @@ def my_import(mname):
         fp, pathname, description = imp.find_module(mname)
     return imp.load_module(mname, fp, pathname, description)
 
-class Flagger:
+class Flagger(object):
     default_value = 1
     def __setitem__(self, item, value):
         self.__dict__[item] = value
@@ -249,7 +248,7 @@ def map_bkids(entry, name):
     except AttributeError:
         return None
     result = []
-    for i in xrange(len(bkids)):
+    for i in range(len(bkids)):
         result.append(nodeinfo_string(bkids[i], bkidsigs[i], "        "))
     if result == []:
         return None
@@ -282,8 +281,7 @@ def nodeinfo_raw(name, ninfo, prefix=""):
     try:
         keys = ninfo.field_list + ['_version_id']
     except AttributeError:
-        keys = d.keys()
-        keys.sort()
+        keys = sorted(d.keys())
     l = []
     for k in keys:
         l.append('%s: %s' % (repr(k), repr(d.get(k))))
@@ -336,9 +334,7 @@ def printentries(entries, location):
                     print nodeinfo_string(name, entry.ninfo)
                 printfield(name, entry.binfo)
     else:
-        names = entries.keys()
-        names.sort()
-        for name in names:
+        for name in sorted(entries.keys()):
             entry = entries[name]
             try:
                 ninfo = entry.ninfo
@@ -348,7 +344,7 @@ def printentries(entries, location):
                 print nodeinfo_string(name, entry.ninfo)
             printfield(name, entry.binfo)
 
-class Do_SConsignDB:
+class Do_SConsignDB(object):
     def __init__(self, dbm_name, dbm):
         self.dbm_name = dbm_name
         self.dbm = dbm
@@ -386,7 +382,7 @@ class Do_SConsignDB:
                 return
         except KeyboardInterrupt:
             raise
-        except cPickle.UnpicklingError:
+        except pickle.UnpicklingError:
             sys.stderr.write("sconsign: ignoring invalid `%s' file `%s'\n" % (self.dbm_name, fname))
             return
         except Exception, e:
@@ -402,14 +398,12 @@ class Do_SConsignDB:
                 else:
                     self.printentries(dir, val)
         else:
-            keys = db.keys()
-            keys.sort()
-            for dir in keys:
+            for dir in sorted(db.keys()):
                 self.printentries(dir, db[dir])
 
     def printentries(self, dir, val):
         print '=== ' + dir + ':'
-        printentries(cPickle.loads(val), dir)
+        printentries(pickle.loads(val), dir)
 
 def Do_SConsignDir(name):
     try:
@@ -421,7 +415,7 @@ def Do_SConsignDir(name):
         sconsign = SCons.SConsign.Dir(fp)
     except KeyboardInterrupt:
         raise
-    except cPickle.UnpicklingError:
+    except pickle.UnpicklingError:
         sys.stderr.write("sconsign: ignoring invalid .sconsign file `%s'\n" % (name))
         return
     except Exception, e:

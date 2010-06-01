@@ -53,15 +53,6 @@ filename = os.path.splitext(filename)[0]+extension
 import os.path
 filenames = [os.path.join(prefix, x) for x in filenames]
 </programlisting>
-
-<simpara>or in Python 1.5.2:</simpara>
-
-<programlisting>
-import os.path
-new_filenames = [] 
-for x in filenames:
-    new_filenames.append(os.path.join(prefix, x))
-</programlisting>
 </example>
 
 <example>
@@ -69,13 +60,6 @@ for x in filenames:
 <programlisting>
 if filename.find(old_prefix) == 0:
     filename = filename.replace(old_prefix, new_prefix)
-</programlisting>
-
-<simpara>or in Python 1.5.2:</simpara>
-
-<programlisting>
-if filename.find(old_prefix) == 0:
-    filename = filename.replace(old_prefix, new_prefix)      
 </programlisting>
 </example>
 
@@ -85,16 +69,6 @@ of extensions</title>
 <programlisting>
 import os.path
 filenames = [x for x in filenames if os.path.splitext(x)[1] in extensions]
-</programlisting>
-
-<simpara>or in Python 1.5.2:</simpara>
-
-<programlisting>
-import os.path
-new_filenames = []
-for x in filenames:
-    if os.path.splitext(x)[1] in extensions:
-        new_filenames.append(x)
 </programlisting>
 </example>
 

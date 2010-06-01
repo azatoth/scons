@@ -25,7 +25,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
 import sys
-import types
 import unittest
 
 import TestCmd
@@ -42,7 +41,7 @@ import SCons.Scanner.Dir
 #    def Entry(self, name):
 #        return self.fs.Entry(name)
 
-class DummyEnvironment:
+class DummyEnvironment(object):
     def __init__(self, root):
         self.fs = SCons.Node.FS.FS(root)
     def Dir(self, name):

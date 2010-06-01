@@ -23,11 +23,12 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os.path
+import SCons.compat
+
+import collections
+import os
 import sys
-import types
 import unittest
-import UserDict
 
 import TestCmd
 import SCons.Node.FS
@@ -65,9 +66,9 @@ test.write('incNO.tex', "\n")
 
 # define some helpers:
 #   copied from CTest.py
-class DummyEnvironment(UserDict.UserDict):
+class DummyEnvironment(collections.UserDict):
     def __init__(self, **kw):
-        UserDict.UserDict.__init__(self)
+        collections.UserDict.__init__(self)
         self.data.update(kw)
         self.fs = SCons.Node.FS.FS(test.workpath(''))
 
@@ -85,7 +86,7 @@ class DummyEnvironment(UserDict.UserDict):
         return [[strSubst]]
 
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
         return list(map(self.subst, path))
 

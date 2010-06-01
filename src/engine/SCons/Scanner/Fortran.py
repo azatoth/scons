@@ -25,8 +25,6 @@ This module implements the dependency scanner for Fortran code.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -123,9 +121,7 @@ class F90Scanner(SCons.Scanner.Classic):
                 sortkey = self.sort_key(dep)
                 nodes.append((sortkey, n))
 
-        nodes.sort()
-        nodes = [pair[1] for pair in nodes]
-        return nodes
+        return [pair[1] for pair in sorted(nodes)]
 
 def FortranScan(path_variable="FORTRANPATH"):
     """Return a prototype Scanner instance for scanning source files

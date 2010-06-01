@@ -96,13 +96,15 @@ way for wrapping up the functions.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import cPickle
+import SCons.compat
+
 import dis
 import os
+# compat layer imports "cPickle" for us if it's available.
+import pickle
 import re
 import sys
 import subprocess
@@ -117,7 +119,7 @@ import SCons.Subst
 is_String = SCons.Util.is_String
 is_List = SCons.Util.is_List
 
-class _null:
+class _null(object):
     pass
 
 print_actions = 1
@@ -208,8 +210,8 @@ def _object_contents(obj):
                 except AttributeError:
                     # Should be a pickable Python object.
                     try:
-                        return cPickle.dumps(obj)
-                    except (cPickle.PicklingError, TypeError):
+                        return pickle.dumps(obj)
+                    except (pickle.PicklingError, TypeError):
                         # This is weird, but it seems that nested classes
                         # are unpickable. The Python docs say it should
                         # always be a PicklingError, but some Python
@@ -299,7 +301,7 @@ def _actionAppend(act1, act2):
     a1 = Action(act1)
     a2 = Action(act2)
     if a1 is None or a2 is None:
-        raise TypeError, "Cannot append %s to %s" % (type(act1), type(act2))
+        raise TypeError("Cannot append %s to %s" % (type(act1), type(act2)))
     if isinstance(a1, ListAction):
         if isinstance(a2, ListAction):
             return ListAction(a1.list + a2.list)
@@ -353,7 +355,6 @@ def _do_create_action(act, kw):
         return act
 
     if is_List(act):
-        #TODO(1.5) return CommandAction(act, **kw)
         return CommandAction(act, **kw)
 
     if callable(act):
@@ -380,7 +381,6 @@ def _do_create_action(act, kw):
             return LazyAction(var, kw)
         commands = str(act).split('\n')
         if len(commands) == 1:
-            #TODO(1.5) return CommandAction(commands[0], **kw)
             return CommandAction(commands[0], **kw)
         # The list of string commands may include a LazyAction, so we
         # reprocess them via _do_create_list_action.
@@ -409,7 +409,7 @@ def Action(act, *args, **kw):
         return _do_create_list_action(act, kw)
     return _do_create_action(act, kw)
 
-class ActionBase:
+class ActionBase(object):
     """Base class for all types of action objects that can be held by
     other objects (Builders, Executors, etc.)  This provides the
     common methods for manipulating and combining those actions."""
@@ -497,7 +497,7 @@ class _ActionAction(ActionBase):
             SCons.Util.AddMethod(self, batch_key, 'batch_key')
 
     def print_cmd_line(self, s, target, source, env):
-        sys.stdout.write(s + "\n")
+        sys.stdout.write(s + u"\n")
 
     def __call__(self, target, source, env,
                                exitstatfunc=_null,
@@ -536,7 +536,7 @@ class _ActionAction(ActionBase):
                 source = executor.get_all_sources()
             t = ' and '.join(map(str, target))
             l = '\n  '.join(self.presub_lines(env))
-            out = "Building %s with action:\n  %s\n" % (t, l)
+            out = u"Building %s with action:\n  %s\n" % (t, l)
             sys.stdout.write(out)
         cmd = None
         if show and self.strfunction:
@@ -659,12 +659,12 @@ def _subproc(env, cmd, error = 'ignore', **kw):
     except EnvironmentError, e:
         if error == 'raise': raise
         # return a dummy Popen instance that only returns error
-        class dummyPopen:
+        class dummyPopen(object):
             def __init__(self, e): self.exception = e
             def communicate(self): return ('','')
             def wait(self): return -self.exception.errno
             stdin = None
-            class f:
+            class f(object):
                 def read(self): return ''
                 def readline(self): return ''
             stdout = stderr = f()
@@ -684,12 +684,11 @@ class CommandAction(_ActionAction):
         # variables.
         if __debug__: logInstanceCreation(self, 'Action.CommandAction')
 
-        #TODO(1.5) _ActionAction.__init__(self, **kw)
         _ActionAction.__init__(self, **kw)
         if is_List(cmd):
             if list(filter(is_List, cmd)):
-                raise TypeError, "CommandAction should be given only " \
-                      "a single command"
+                raise TypeError("CommandAction should be given only " \
+                      "a single command")
         self.cmd_list = cmd
 
     def __str__(self):
@@ -704,7 +703,7 @@ class CommandAction(_ActionAction):
             result = env.subst_list(self.cmd_list, 0, target, source)
         silent = None
         ignore = None
-        while 1:
+        while True:
             try: c = result[0][0][0]
             except IndexError: c = None
             if c == '@': silent = 1
@@ -859,7 +858,6 @@ class CommandGeneratorAction(ActionBase):
                              source=source,
                              env=env,
                              for_signature=for_signature)
-        #TODO(1.5) gen_cmd = Action(ret, **self.gen_kw)
         gen_cmd = Action(ret, **self.gen_kw)
         if not gen_cmd:
             raise SCons.Errors.UserError("Object returned from command generator: %s cannot be used to create an Action." % repr(ret))
@@ -947,7 +945,6 @@ class LazyAction(CommandGeneratorAction, CommandAction):
             c = env.get(self.var, '')
         else:
             c = ''
-        #TODO(1.5) gen_cmd = Action(c, **self.gen_kw)
         gen_cmd = Action(c, **self.gen_kw)
         if not gen_cmd:
             raise SCons.Errors.UserError("$%s value %s cannot be used to create an Action." % (self.var, repr(c)))
@@ -986,7 +983,6 @@ class FunctionAction(_ActionAction):
                 # This is weird, just do the best we can.
                 self.funccontents = _object_contents(execfunction)
 
-        #TODO(1.5) _ActionAction.__init__(self, **kw)
         _ActionAction.__init__(self, **kw)
 
     def function_name(self):
@@ -1147,9 +1143,9 @@ class ListAction(ActionBase):
         for act in self.list:
             for var in act.get_varlist(target, source, env, executor):
                 result[var] = True
-        return result.keys()
+        return list(result.keys())
 
-class ActionCaller:
+class ActionCaller(object):
     """A class for delaying calling an Action function with specific
     (positional and keyword) arguments until the Action is actually
     executed.
@@ -1209,20 +1205,17 @@ class ActionCaller:
     def __call__(self, target, source, env, executor=None):
         args = self.subst_args(target, source, env)
         kw = self.subst_kw(target, source, env)
-        #TODO(1.5) return self.parent.actfunc(*args, **kw)
         return self.parent.actfunc(*args, **kw)
 
     def strfunction(self, target, source, env):
         args = self.subst_args(target, source, env)
         kw = self.subst_kw(target, source, env)
-        #TODO(1.5) return self.parent.strfunc(*args, **kw)
         return self.parent.strfunc(*args, **kw)
 
     def __str__(self):
-        #TODO(1.5) return self.parent.strfunc(*self.args, **self.kw)
         return self.parent.strfunc(*self.args, **self.kw)
 
-class ActionFactory:
+class ActionFactory(object):
     """A factory class that will wrap up an arbitrary function
     as an SCons-executable Action object.
 

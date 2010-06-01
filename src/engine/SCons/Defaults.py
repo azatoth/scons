@@ -31,18 +31,16 @@ from distutils.msvccompiler.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import division
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 
-
 import os
-import os.path
 import errno
 import shutil
 import stat
 import time
-import types
 import sys
 
 import SCons.Action
@@ -119,7 +117,7 @@ def SharedFlagChecker(source, target, env):
             except AttributeError:
                 shared = None
             if not shared:
-                raise SCons.Errors.UserError, "Source file: %s is static and is not compatible with shared target: %s" % (src, target[0])
+                raise SCons.Errors.UserError("Source file: %s is static and is not compatible with shared target: %s" % (src, target[0]))
 
 SharedCheck = SCons.Action.Action(SharedFlagChecker, None)
 
@@ -224,7 +222,8 @@ def mkdir_func(dest):
             os.makedirs(str(entry))
         except os.error, e:
             p = str(entry)
-            if (e[0] == errno.EEXIST or (sys.platform=='win32' and e[0]==183)) \
+            if (e.args[0] == errno.EEXIST or
+                    (sys.platform=='win32' and e.args[0]==183)) \
                     and os.path.isdir(str(entry)):
                 pass            # not an error if already exists
             else:
@@ -373,7 +372,7 @@ def processDefines(defs):
     if SCons.Util.is_List(defs):
         l = []
         for d in defs:
-            if SCons.Util.is_List(d) or type(d) is types.TupleType:
+            if SCons.Util.is_List(d) or isinstance(d, tuple):
                 l.append(str(d[0]) + '=' + str(d[1]))
             else:
                 l.append(str(d))
@@ -385,10 +384,7 @@ def processDefines(defs):
         # Consequently, we have to sort the keys to ensure a
         # consistent order...
         l = []
-        keys = defs.keys()
-        keys.sort()
-        for k in keys:
-            v = defs[k]
+        for k,v in sorted(defs.items()):
             if v is None:
                 l.append(str(k))
             else:
@@ -404,7 +400,7 @@ def _defines(prefix, defs, suffix, env, c=_concat_ixes):
 
     return c(prefix, env.subst_path(processDefines(defs)), suffix, env)
     
-class NullCmdGenerator:
+class NullCmdGenerator(object):
     """This is a callable class that can be used in place of other
     command generators if you don't want them to do anything.
 
@@ -422,7 +418,7 @@ class NullCmdGenerator:
     def __call__(self, target, source, env, for_signature=None):
         return self.cmd
 
-class Variable_Method_Caller:
+class Variable_Method_Caller(object):
     """A class for finding a construction variable on the stack and
     calling one of its methods.
 
@@ -438,7 +434,7 @@ class Variable_Method_Caller:
         self.variable = variable
         self.method = method
     def __call__(self, *args, **kw):
-        try: 1/0
+        try: 1//0
         except ZeroDivisionError: 
             # Don't start iterating with the current stack-frame to
             # prevent creating reference cycles (f_back is safe).

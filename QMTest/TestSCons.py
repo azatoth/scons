@@ -13,7 +13,7 @@ attributes defined in this subclass.
 """
 
 # __COPYRIGHT__
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
+from __future__ import division
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -23,25 +23,6 @@ import shutil
 import sys
 import time
 
-import __builtin__
-try:
-    __builtin__.zip
-except AttributeError:
-    def zip(*lists):
-        result = []
-        for i in xrange(len(lists[0])):
-            result.append(tuple([l[i] for l in lists]))
-        return result
-    __builtin__.zip = zip
-
-try:
-    x = True
-except NameError:
-    True = not 0
-    False = not 1
-else:
-    del x
-
 from TestCommon import *
 from TestCommon import __all__
 
@@ -50,9 +31,12 @@ from TestCommon import __all__
 # here provides some independent verification that what we packaged
 # conforms to what we expect.
 
-default_version = '1.3.0'
+default_version = '2.0.0'
 
 copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010'
+
+python_version_unsupported = (2, 3, 0)
+python_version_deprecated = (2, 4, 0)
 
 # In the checked-in source, the value of SConsVersion in the following
 # line must remain "__ VERSION __" (without the spaces) so the built
@@ -92,8 +76,6 @@ else:
     machine = uname()[4]
     machine = machine_map.get(machine, machine)
 
-python = python_executable
-_python_ = '"' + python_executable + '"'
 _exe = exe_suffix
 _obj = obj_suffix
 _shobj = shobj_suffix
@@ -154,8 +136,7 @@ else:
     fortran_lib = gccFortranLibs()
 
 
-
-file_expr = r"""File "[^"]*", line \d+, in .+
+file_expr = r"""File "[^"]*", line \d+, in [^\n]+
 """
 
 # re.escape escapes too much.
@@ -165,15 +146,6 @@ def re_escape(str):
     return str
 
 
-
-try:
-    sys.version_info
-except AttributeError:
-    # Pre-1.6 Python has no sys.version_info
-    version_string = sys.version.split()[0]
-    version_ints = list(map(int, version_string.split('.')))
-    sys.version_info = tuple(version_ints + ['final', 0])
-
 def python_version_string():
     return sys.version.split()[0]
 
@@ -181,10 +153,10 @@ def python_minor_version_string():
     return sys.version[:3]
 
 def unsupported_python_version(version=sys.version_info):
-    return version < (1, 5, 2)
+    return version < python_version_unsupported
 
 def deprecated_python_version(version=sys.version_info):
-    return version < (2, 4, 0)
+    return version < python_version_deprecated
 
 if deprecated_python_version():
     msg = r"""
@@ -197,6 +169,38 @@ scons: warning: Support for pre-2.4 Python (%s) is deprecated.
 else:
     deprecated_python_expr = ""
 
+
+def initialize_sconsflags(ignore_python_version):
+    """
+    Add the --warn=no-python-version option to SCONSFLAGS for every
+    command so test scripts don't have to filter out Python version
+    deprecation warnings.
+    Same for --warn=no-visual-c-missing.
+    """
+    save_sconsflags = os.environ.get('SCONSFLAGS')
+    if save_sconsflags:
+        sconsflags = [save_sconsflags]
+    else:
+        sconsflags = []
+    if ignore_python_version and deprecated_python_version():
+        sconsflags.append('--warn=no-python-version')
+    # Provide a way to suppress or provide alternate flags for
+    # TestSCons purposes by setting TESTSCONS_SCONSFLAGS.
+    # (The intended use case is to set it to null when running
+    # timing tests of earlier versions of SCons which don't
+    # support the --warn=no-visual-c-missing warning.)
+    visual_c = os.environ.get('TESTSCONS_SCONSFLAGS',
+                              '--warn=no-visual-c-missing')
+    if visual_c:
+        sconsflags.append(visual_c)
+    os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
+    return save_sconsflags
+
+def restore_sconsflags(sconsflags):
+    if sconsflags is None:
+        del os.environ['SCONSFLAGS']
+    else:
+        os.environ['SCONSFLAGS'] = sconsflags
 
 
 class TestSCons(TestCommon):
@@ -255,18 +259,9 @@ class TestSCons(TestCommon):
         # TERM can cause test failures due to control chars in prompts etc.
         os.environ['TERM'] = 'dumb'
         
-        self.ignore_python_version=kw.get('ignore_python_version',1)
-        if kw.get('ignore_python_version',-1) != -1:
+        self.ignore_python_version = kw.get('ignore_python_version',1)
+        if kw.get('ignore_python_version', -1) != -1:
             del kw['ignore_python_version']
-
-        if self.ignore_python_version and deprecated_python_version():
-            sconsflags = os.environ.get('SCONSFLAGS')
-            if sconsflags:
-                sconsflags = [sconsflags]
-            else:
-                sconsflags = []
-            sconsflags = sconsflags + ['--warn=no-python-version']
-            os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
 
         TestCommon.__init__(self, **kw)
 
@@ -357,38 +352,42 @@ class TestSCons(TestCommon):
 
     def run(self, *args, **kw):
         """
-        Add the --warn=no-python-version option to SCONSFLAGS every
-        command so test scripts don't have to filter out Python version
-        deprecation warnings.
-        Same for --warn=no-visual-c-missing.
+        Set up SCONSFLAGS for every command so test scripts don't need
+        to worry about unexpected warnings in their output.
         """
-        save_sconsflags = os.environ.get('SCONSFLAGS')
-        if save_sconsflags:
-            sconsflags = [save_sconsflags]
-        else:
-            sconsflags = []
-        if self.ignore_python_version and deprecated_python_version():
-            sconsflags = sconsflags + ['--warn=no-python-version']
-        # Provide a way to suppress or provide alternate flags for
-        # TestSCons purposes by setting TESTSCONS_SCONSFLAGS.
-        # (The intended use case is to set it to null when running
-        # timing tests of earlier versions of SCons which don't
-        # support the --warn=no-visual-c-missing warning.)
-        sconsflags = sconsflags + [os.environ.get('TESTSCONS_SCONSFLAGS',
-                                                  '--warn=no-visual-c-missing')]
-        os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
+        sconsflags = initialize_sconsflags(self.ignore_python_version)
         try:
-            result = TestCommon.run(self, *args, **kw)
+            TestCommon.run(self, *args, **kw)
         finally:
-            sconsflags = save_sconsflags
-        return result
+            restore_sconsflags(sconsflags)
 
-    def up_to_date(self, options = None, arguments = None, read_str = "", **kw):
+# Modifying the options should work and ought to be simpler, but this
+# class is used for more than just running 'scons' itself.  If there's
+# an automated  way of determining whether it's running 'scons' or
+# something else, this code should be resurected.
+#        options = kw.get('options')
+#        if options:
+#            options = [options]
+#        else:
+#            options = []
+#        if self.ignore_python_version and deprecated_python_version():
+#            options.append('--warn=no-python-version')
+#        # Provide a way to suppress or provide alternate flags for
+#        # TestSCons purposes by setting TESTSCONS_SCONSFLAGS.
+#        # (The intended use case is to set it to null when running
+#        # timing tests of earlier versions of SCons which don't
+#        # support the --warn=no-visual-c-missing warning.)
+#        visual_c = os.environ.get('TESTSCONS_SCONSFLAGS',
+#                                      '--warn=no-visual-c-missing')
+#        if visual_c:
+#            options.append(visual_c)
+#        kw['options'] = ' '.join(options)
+#        TestCommon.run(self, *args, **kw)
+
+    def up_to_date(self, arguments = '.', read_str = "", **kw):
         s = ""
         for arg in arguments.split():
             s = s + "scons: `%s' is up to date.\n" % arg
-            if options:
-                arguments = options + " " + arguments
         kw['arguments'] = arguments
         stdout = self.wrap_stdout(read_str = read_str, build_str = s)
         # Append '.*' so that timing output that comes after the
@@ -397,7 +396,7 @@ class TestSCons(TestCommon):
         kw['match'] = self.match_re_dotall
         self.run(**kw)
 
-    def not_up_to_date(self, options = None, arguments = None, **kw):
+    def not_up_to_date(self, arguments = '.', **kw):
         """Asserts that none of the targets listed in arguments is
         up to date, but does not make any assumptions on other targets.
         This function is most useful in conjunction with the -n option.
@@ -405,8 +404,6 @@ class TestSCons(TestCommon):
         s = ""
         for arg in arguments.split():
             s = s + "(?!scons: `%s' is up to date.)" % re.escape(arg)
-            if options:
-                arguments = options + " " + arguments
         s = '('+s+'[^\n]*\n)*'
         kw['arguments'] = arguments
         stdout = re.escape(self.wrap_stdout(build_str='ARGUMENTSGOHERE'))
@@ -428,9 +425,94 @@ class TestSCons(TestCommon):
                 kw['arguments'] = option + arguments
             else:
                 kw['arguments'] = option + ' ' + arguments
-        # TODO(1.5)
-        #return self.run(**kw)
         return self.run(**kw)
+
+    def deprecated_wrap(self, msg):
+        """
+        Calculate the pattern that matches a deprecation warning.
+        """
+        return '\nscons: warning: ' + re_escape(msg) + '\n' + file_expr
+
+    def deprecated_fatal(self, warn, msg):
+        """
+        Determines if the warning has turned into a fatal error.  If so,
+        passes the test, as any remaining runs are now moot.
+
+        This method expects a SConscript to be present that will causes
+        the warning.  The method writes a SConstruct that calls the
+        SConsscript and looks to see what type of result occurs.
+
+        The pattern that matches the warning is returned.
+
+        TODO: Actually detect that it's now an error.  We don't have any
+        cases yet, so there's no way to test it.
+        """
+        self.write('SConstruct', """if True:
+            WARN = ARGUMENTS.get('WARN')
+            if WARN: SetOption('warn', WARN)
+            SConscript('SConscript')
+        """)
+
+        def err_out():
+            # TODO calculate stderr for fatal error
+            return re_escape('put something here')
+
+        # no option, should get one of nothing, warning, or error
+        warning = self.deprecated_wrap(msg)
+        self.run(arguments = '.', stderr = None)
+        stderr = self.stderr()
+        if stderr:
+            # most common case done first
+            if match_re_dotall(stderr, warning):
+               # expected output
+               pass
+            elif match_re_dotall(stderr, err_out()):
+               # now a fatal error; skip the rest of the tests
+               self.pass_test()
+            else:
+               # test failed; have to do this by hand...
+               print self.banner('STDOUT ')
+               print self.stdout()
+               print self.diff(warning, stderr, 'STDERR ')
+               self.fail_test()
+
+        return warning
+
+    def deprecated_warning(self, warn, msg):
+        """
+        Verifies the expected behavior occurs for deprecation warnings.
+        This method expects a SConscript to be present that will causes
+        the warning.  The method writes a SConstruct and exercises various
+        combinations of command-line options and SetOption parameters to
+        validate that it performs correctly.
+
+        The pattern that matches the warning is returned.
+        """
+        warning = self.deprecated_fatal(warn, msg)
+
+        def RunPair(option, expected):
+            # run the same test with the option on the command line and
+            # then with the option passed via SetOption().
+            self.run(options = '--warn=' + option,
+                     arguments = '.',
+                     stderr = expected,
+                     match = match_re_dotall)
+            self.run(options = 'WARN=' + option,
+                     arguments = '.',
+                     stderr = expected,
+                     match = match_re_dotall)
+
+        # all warnings off, should get no output
+        RunPair('no-deprecated', '')
+
+        # warning enabled, should get expected output
+        RunPair(warn, warning)
+
+        # warning disabled, should get either nothing or mandatory message
+        expect = """()|(Can not disable mandataory warning: 'no-%s'\n\n%s)""" % (warn, warning)
+        RunPair('no-' + warn, expect)
+
+        return warning
 
     def diff_substr(self, expect, actual, prelen=20, postlen=40):
         i = 0
@@ -476,7 +558,6 @@ class TestSCons(TestCommon):
         s = re.sub(r'/Length \d+ *\n/Filter /FlateDecode\n',
                    r'/Length XXXX\n/Filter /FlateDecode\n', s)
 
-
         try:
             import zlib
         except ImportError:
@@ -515,9 +596,7 @@ class TestSCons(TestCommon):
         import glob
         result = []
         for p in patterns:
-            paths = glob.glob(p)
-            paths.sort()
-            result.extend(paths)
+            result.extend(sorted(glob.glob(p)))
         return result
 
 
@@ -665,6 +744,15 @@ class TestSCons(TestCommon):
             self.skip_test("Could not find Java rmic, skipping non-simulated test(s).\n")
         return where_rmic
 
+    def java_get_class_files(self, dir):
+        result = []
+        for dirpath, dirnames, filenames in os.walk(dir):
+            for fname in filenames:
+                if fname.endswith('.class'):
+                    result.append(os.path.join(dirpath, fname))
+        return sorted(result)
+
+
     def Qt_dummy_installation(self, dir='qt'):
         # create a dummy qt installation
 
@@ -770,7 +858,7 @@ else:
         self.QT_LIB_DIR = self.workpath(dir, 'lib')
 
     def Qt_create_SConstruct(self, place):
-        if type(place) is type([]):
+        if isinstance(place, list):
             place = test.workpath(*place)
         self.write(place, """\
 if ARGUMENTS.get('noqtdir', 0): QTDIR=None
@@ -819,14 +907,14 @@ SConscript( sconscript )
                           logfile, sconf_dir, sconstruct,
                           doCheckLog=1, doCheckStdout=1):
 
-        class NoMatch:
+        class NoMatch(Exception):
             def __init__(self, p):
                 self.pos = p
 
         def matchPart(log, logfile, lastEnd, NoMatch=NoMatch):
             m = re.match(log, logfile[lastEnd:])
             if not m:
-                raise NoMatch, lastEnd
+                raise NoMatch(lastEnd)
             return m.end() + lastEnd
         try:
             #print len(os.linesep)
@@ -901,7 +989,7 @@ SConscript( sconscript )
                 log = ""
             if doCheckLog: lastEnd = matchPart(ls, logfile, lastEnd)
             if doCheckLog and lastEnd != len(logfile):
-                raise NoMatch, lastEnd
+                raise NoMatch(lastEnd)
             
         except NoMatch, m:
             print "Cannot match log file against log regexp."
@@ -967,7 +1055,12 @@ print py_ver
         """
         if 'stdin' not in kw:
             kw['stdin'] = True
-        return TestCommon.start(self, *args, **kw)
+        sconsflags = initialize_sconsflags(self.ignore_python_version)
+        try:
+            p = TestCommon.start(self, *args, **kw)
+        finally:
+            restore_sconsflags(sconsflags)
+        return p
 
     def wait_for(self, fname, timeout=10.0, popen=None):
         """
@@ -1011,13 +1104,13 @@ class Stat:
 StatList = [
     Stat('memory-initial', 'kbytes',
          r'Memory before reading SConscript files:\s+(\d+)',
-         convert=lambda s: int(s) / 1024),
+         convert=lambda s: int(s) // 1024),
     Stat('memory-prebuild', 'kbytes',
          r'Memory before building targets:\s+(\d+)',
-         convert=lambda s: int(s) / 1024),
+         convert=lambda s: int(s) // 1024),
     Stat('memory-final', 'kbytes',
          r'Memory after building targets:\s+(\d+)',
-         convert=lambda s: int(s) / 1024),
+         convert=lambda s: int(s) // 1024),
 
     Stat('time-sconscript', 'seconds',
          r'Total SConscript file execution time:\s+([\d.]+) seconds'),
@@ -1059,8 +1152,6 @@ class TimeSCons(TestSCons):
         if 'verbose' not in kw and not self.calibrate:
             kw['verbose'] = True
 
-        # TODO(1.5)
-        #TestSCons.__init__(self, *args, **kw)
         TestSCons.__init__(self, *args, **kw)
 
         # TODO(sgk):    better way to get the script dir than sys.argv[0]
@@ -1094,15 +1185,9 @@ class TimeSCons(TestSCons):
                 options.append('%s=%s' % (variable, value))
             kw['options'] = ' '.join(options)
         if self.calibrate:
-            # TODO(1.5)
-            #self.calibration(*args, **kw)
             self.calibration(*args, **kw)
         else:
             self.uptime()
-            # TODO(1.5)
-            #self.startup(*args, **kw)
-            #self.full(*args, **kw)
-            #self.null(*args, **kw)
             self.startup(*args, **kw)
             self.full(*args, **kw)
             self.null(*args, **kw)
@@ -1123,8 +1208,6 @@ class TimeSCons(TestSCons):
                    "seconds",
                    sort=0)
         for name, args in stats.items():
-            # TODO(1.5)
-            #self.trace(name, trace, *args)
             self.trace(name, trace, **args)
 
     def uptime(self):
@@ -1164,8 +1247,6 @@ class TimeSCons(TestSCons):
         # won't report any statistics for it, but we can still execute
         # the full and null builds.
         kw['status'] = None
-        # TODO(1.5)
-        #self.run(*args, **kw)
         self.run(*args, **kw)
         sys.stdout.write(self.stdout())
         stats = self.collect_stats(self.stdout())
@@ -1178,16 +1259,10 @@ class TimeSCons(TestSCons):
         """
         Runs a full build of SCons.
         """
-        # TODO(1.5)
-        #self.run(*args, **kw)
         self.run(*args, **kw)
         sys.stdout.write(self.stdout())
         stats = self.collect_stats(self.stdout())
         self.report_traces('full', stats)
-        # TODO(1.5)
-        #self.trace('full-memory', 'initial', **stats['memory-initial'])
-        #self.trace('full-memory', 'prebuild', **stats['memory-prebuild'])
-        #self.trace('full-memory', 'final', **stats['memory-final'])
         self.trace('full-memory', 'initial', **stats['memory-initial'])
         self.trace('full-memory', 'prebuild', **stats['memory-prebuild'])
         self.trace('full-memory', 'final', **stats['memory-final'])
@@ -1198,8 +1273,6 @@ class TimeSCons(TestSCons):
         information (the variable(s) that were set for this configuration,
         and the elapsed time to run.
         """
-        # TODO(1.5)
-        #self.run(*args, **kw)
         self.run(*args, **kw)
         if self.variables:
             for variable, value in self.variables.items():
@@ -1212,11 +1285,7 @@ class TimeSCons(TestSCons):
         """
         # TODO(sgk):  allow the caller to specify the target (argument)
         # that must be up-to-date.
-        # TODO(1.5)
-        #self.up_to_date(arguments='.', **kw)
-        kw = kw.copy()
-        kw['arguments'] = '.'
-        self.up_to_date(**kw)
+        self.up_to_date(arguments='.', **kw)
         sys.stdout.write(self.stdout())
         stats = self.collect_stats(self.stdout())
         # time-commands should always be 0.0 on a null build, because
@@ -1227,10 +1296,6 @@ class TimeSCons(TestSCons):
         if float(stats['time-commands']['value']) == 0.0:
             del stats['time-commands']
         self.report_traces('null', stats)
-        # TODO(1.5)
-        #self.trace('null-memory', 'initial', **stats['memory-initial'])
-        #self.trace('null-memory', 'prebuild', **stats['memory-prebuild'])
-        #self.trace('null-memory', 'final', **stats['memory-final'])
         self.trace('null-memory', 'initial', **stats['memory-initial'])
         self.trace('null-memory', 'prebuild', **stats['memory-prebuild'])
         self.trace('null-memory', 'final', **stats['memory-final'])
@@ -1253,8 +1318,6 @@ class TimeSCons(TestSCons):
         kw['options'] = kw.get('options', '') + ' --debug=memory --debug=time'
         self.startTime = time.time()
         try:
-            # TODO(1.5)
-            #result = TestSCons.run(self, *args, **kw)
             result = TestSCons.run(self, *args, **kw)
         finally:
             self.endTime = time.time()
@@ -1272,12 +1335,8 @@ class TimeSCons(TestSCons):
         for root, dirs, files in os.walk(source_dir):
             if '.svn' in dirs:
                 dirs.remove('.svn')
-            # TODO(1.5)
-            #dirs = [ d for d in dirs if not d.startswith('TimeSCons-') ]
-            #files = [ f for f in files if not f.startswith('TimeSCons-') ]
-            not_timescons_entries = lambda s: not s.startswith('TimeSCons-')
-            dirs = list(filter(not_timescons_entries, dirs))
-            files = list(filter(not_timescons_entries, files))
+            dirs = [ d for d in dirs if not d.startswith('TimeSCons-') ]
+            files = [ f for f in files if not f.startswith('TimeSCons-') ]
             for dirname in dirs:
                 source = os.path.join(root, dirname)
                 destination = source.replace(source_dir, dest_dir)

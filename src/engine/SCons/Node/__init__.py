@@ -40,14 +40,12 @@ be able to depend on any other type of "thing."
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import collections
 import copy
-from itertools import chain, izip
-import UserList
+from itertools import chain
 
 from SCons.Debug import logInstanceCreation
 import SCons.Executor
@@ -99,7 +97,7 @@ Annotate = do_nothing
 
 # Classes for signature info for Nodes.
 
-class NodeInfoBase:
+class NodeInfoBase(object):
     """
     The generic base class for signature information for a Node.
 
@@ -107,7 +105,7 @@ class NodeInfoBase:
     logic for dealing with their own Node-specific signature information.
     """
     current_version_id = 1
-    def __init__(self, node):
+    def __init__(self, node=None):
         # Create an object attribute from the class attribute so it ends up
         # in the pickled data in the .sconsign file.
         self._version_id = self.current_version_id
@@ -136,8 +134,7 @@ class NodeInfoBase:
             try:
                 field_list = self.field_list
             except AttributeError:
-                field_list = self.__dict__.keys()
-                field_list.sort()
+                field_list = sorted(self.__dict__.keys())
         fields = []
         for field in field_list:
             try:
@@ -150,7 +147,7 @@ class NodeInfoBase:
             fields.append(f)
         return fields
 
-class BuildInfoBase:
+class BuildInfoBase(object):
     """
     The generic base class for build information for a Node.
 
@@ -161,7 +158,7 @@ class BuildInfoBase:
     implicit dependencies, and action information.
     """
     current_version_id = 1
-    def __init__(self, node):
+    def __init__(self, node=None):
         # Create an object attribute from the class attribute so it ends up
         # in the pickled data in the .sconsign file.
         self._version_id = self.current_version_id
@@ -172,7 +169,7 @@ class BuildInfoBase:
     def merge(self, other):
         self.__dict__.update(other.__dict__)
 
-class Node:
+class Node(object):
     """The base Node class, for entities that we know how to
     build, or use to build other Nodes.
     """
@@ -182,7 +179,7 @@ class Node:
 
     memoizer_counters = []
 
-    class Attrs:
+    class Attrs(object):
         pass
 
     def __init__(self):
@@ -351,12 +348,12 @@ class Node:
         for d in self.depends:
             if d.missing():
                 msg = "Explicit dependency `%s' not found, needed by target `%s'."
-                raise SCons.Errors.StopError, msg % (d, self)
+                raise SCons.Errors.StopError(msg % (d, self))
         if self.implicit is not None:
             for i in self.implicit:
                 if i.missing():
                     msg = "Implicit dependency `%s' not found, needed by target `%s'."
-                    raise SCons.Errors.StopError, msg % (i, self)
+                    raise SCons.Errors.StopError(msg % (i, self))
         self.binfo = self.get_binfo()
 
     def build(self, **kw):
@@ -1052,7 +1049,7 @@ class Node:
             if t: Trace(': old %s new %s' % (len(then), len(children)))
             result = True
 
-        for child, prev_ni in izip(children, then):
+        for child, prev_ni in zip(children, then):
             if child.changed_since_last_build(self, prev_ni):
                 if t: Trace(': %s changed' % child)
                 result = True
@@ -1198,8 +1195,8 @@ class Node:
         new_bkids    = new.bsources    + new.bdepends    + new.bimplicit
         new_bkidsigs = new.bsourcesigs + new.bdependsigs + new.bimplicitsigs
 
-        osig = dict(izip(old_bkids, old_bkidsigs))
-        nsig = dict(izip(new_bkids, new_bkidsigs))
+        osig = dict(zip(old_bkids, old_bkidsigs))
+        nsig = dict(zip(new_bkids, new_bkidsigs))
 
         # The sources and dependencies we'll want to report are all stored
         # as relative paths to this target's directory, but we want to
@@ -1255,29 +1252,20 @@ class Node:
             lines = ["%s:\n" % preamble] + lines
             return ( ' '*11).join(lines)
 
-try:
-    [].extend(UserList.UserList([]))
-except TypeError:
-    # Python 1.5.2 doesn't allow a list to be extended by list-like
-    # objects (such as UserList instances), so just punt and use
-    # real lists.
-    def NodeList(l):
-        return l
-else:
-    class NodeList(UserList.UserList):
-        def __str__(self):
-            return str(list(map(str, self.data)))
+class NodeList(collections.UserList):
+    def __str__(self):
+        return str(list(map(str, self.data)))
 
 def get_children(node, parent): return node.children()
 def ignore_cycle(node, stack): pass
 def do_nothing(node, parent): pass
 
-class Walker:
+class Walker(object):
     """An iterator for walking a Node tree.
 
     This is depth-first, children are visited before the parent.
     The Walker object can be initialized with any node, and
-    returns the next node on the descent with each next() call.
+    returns the next node on the descent with each get_next() call.
     'kids_func' is an optional function that will be called to
     get the children of a node instead of calling 'children'.
     'cycle_func' is an optional function that will be called
@@ -1297,7 +1285,7 @@ class Walker:
         self.history = {} # used to efficiently detect and avoid cycles
         self.history[node] = None
 
-    def next(self):
+    def get_next(self):
         """Return the next node for this walk of the tree.
 
         This function is intentionally iterative, not recursive,

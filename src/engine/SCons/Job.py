@@ -52,7 +52,7 @@ default_stack_size = 256
 interrupt_msg = 'Build interrupted.'
 
 
-class InterruptState:
+class InterruptState(object):
    def __init__(self):
        self.interrupted = False
 
@@ -63,7 +63,7 @@ class InterruptState:
        return self.interrupted
 
 
-class Jobs:
+class Jobs(object):
     """An instance of this class initializes N jobs, and provides
     methods for starting, stopping, and waiting on all N jobs.
     """
@@ -163,7 +163,7 @@ class Jobs:
         except AttributeError:
             pass
 
-class Serial:
+class Serial(object):
     """This class is used to execute tasks in series, and is more efficient
     than Parallel, but is only appropriate for non-parallel builds. Only
     one instance of this class should be in existence at a time.
@@ -189,7 +189,7 @@ class Serial:
         fails to execute (i.e. execute() raises an exception), then the job will
         stop."""
         
-        while 1:
+        while True:
             task = self.taskmaster.next_task()
 
             if task is None:
@@ -242,7 +242,7 @@ else:
             self.start()
 
         def run(self):
-            while 1:
+            while True:
                 task = self.requestQueue.get()
 
                 if task is None:
@@ -264,7 +264,7 @@ else:
 
                 self.resultsQueue.put((task, ok))
 
-    class ThreadPool:
+    class ThreadPool(object):
         """This class is responsible for spawning and managing worker threads."""
 
         def __init__(self, num, stack_size, interrupted):
@@ -295,9 +295,7 @@ else:
                 worker = Worker(self.requestQueue, self.resultsQueue, interrupted)
                 self.workers.append(worker)
 
-            # Once we drop Python 1.5 we can change the following to:
-            #if 'prev_size' in locals():
-            if 'prev_size' in locals().keys():
+            if 'prev_size' in locals():
                 threading.stack_size(prev_size)
 
         def put(self, task):
@@ -340,7 +338,7 @@ else:
                 worker.join(1.0)
             self.workers = []
 
-    class Parallel:
+    class Parallel(object):
         """This class is used to execute tasks in parallel, and is somewhat 
         less efficient than Serial, but is appropriate for parallel builds.
 
@@ -376,7 +374,7 @@ else:
 
             jobs = 0
             
-            while 1:
+            while True:
                 # Start up as many available tasks as we're
                 # allowed to.
                 while jobs < self.maxjobs:
@@ -404,7 +402,7 @@ else:
 
                 # Let any/all completed tasks finish up before we go
                 # back and put the next batch of tasks on the queue.
-                while 1:
+                while True:
                     task, ok = self.tp.get()
                     jobs = jobs - 1
 

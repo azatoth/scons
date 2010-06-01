@@ -30,7 +30,7 @@ import SCons.Memoize
 
 
 
-class FakeObject:
+class FakeObject(object):
 
     __metaclass__ = SCons.Memoize.Memoized_Metaclass
 
@@ -85,7 +85,7 @@ class FakeObject:
                 return mc
         return  None
 
-class Returner:
+class Returner(object):
     def __init__(self, result):
         self.result = result
         self.calls = 0
@@ -132,12 +132,8 @@ class CountDictTestCase(unittest.TestCase):
 
         c = obj.get_memoizer_counter('dict')
 
-        if SCons.Memoize.use_metaclass:
-            assert c.hit == 3, c.hit
-            assert c.miss == 2, c.miss
-        else:
-            assert c.hit == 0, c.hit
-            assert c.miss == 0, c.miss
+        assert c.hit == 3, c.hit
+        assert c.miss == 2, c.miss
 
 
 class CountValueTestCase(unittest.TestCase):
@@ -171,12 +167,8 @@ class CountValueTestCase(unittest.TestCase):
 
         c = obj.get_memoizer_counter('value')
 
-        if SCons.Memoize.use_metaclass:
-            assert c.hit == 3, c.hit
-            assert c.miss == 1, c.miss
-        else:
-            assert c.hit == 0, c.hit
-            assert c.miss == 0, c.miss
+        assert c.hit == 3, c.hit
+        assert c.miss == 1, c.miss
 
 
 if __name__ == "__main__":

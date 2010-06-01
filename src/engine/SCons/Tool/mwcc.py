@@ -99,7 +99,7 @@ def find_versions():
             product_key = SCons.Util.RegOpenKeyEx(HLM, product)
 
             i = 0
-            while 1:
+            while True:
                 name = product + '\\' + SCons.Util.RegEnumKey(product_key, i)
                 name_key = SCons.Util.RegOpenKeyEx(HLM, name)
 
@@ -119,7 +119,7 @@ def find_versions():
     return versions
 
 
-class MWVersion:
+class MWVersion(object):
     def __init__(self, version, path, platform):
         self.version = version
         self.path = path

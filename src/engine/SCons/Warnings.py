@@ -36,20 +36,8 @@ import SCons.Errors
 class Warning(SCons.Errors.UserError):
     pass
 
-class MandatoryWarning(Warning):
+class WarningOnByDefault(Warning):
     pass
-
-
-
-class FutureDeprecatedWarning(Warning):
-    pass
-
-class DeprecatedWarning(Warning):
-    pass
-
-class MandatoryDeprecatedWarning(MandatoryWarning):
-    pass
-
 
 
 # NOTE:  If you add a new warning class, add it to the man page, too!
@@ -57,69 +45,51 @@ class MandatoryDeprecatedWarning(MandatoryWarning):
 class CacheWriteErrorWarning(Warning):
     pass
 
-class CorruptSConsignWarning(Warning):
+class CorruptSConsignWarning(WarningOnByDefault):
     pass
 
 class DependencyWarning(Warning):
     pass
 
-class DeprecatedCopyWarning(DeprecatedWarning):
+class DuplicateEnvironmentWarning(WarningOnByDefault):
     pass
 
-class DeprecatedOptionsWarning(DeprecatedWarning):
+class FutureReservedVariableWarning(WarningOnByDefault):
     pass
 
-class DeprecatedSourceSignaturesWarning(DeprecatedWarning):
+class LinkWarning(WarningOnByDefault):
     pass
 
-class DeprecatedTargetSignaturesWarning(DeprecatedWarning):
+class MisleadingKeywordsWarning(WarningOnByDefault):
     pass
 
-class DuplicateEnvironmentWarning(Warning):
+class MissingSConscriptWarning(WarningOnByDefault):
     pass
 
-class FutureReservedVariableWarning(Warning):
+class NoMD5ModuleWarning(WarningOnByDefault):
     pass
 
-class LinkWarning(Warning):
+class NoMetaclassSupportWarning(WarningOnByDefault):
     pass
 
-class MisleadingKeywordsWarning(Warning):
+class NoObjectCountWarning(WarningOnByDefault):
     pass
 
-class MissingSConscriptWarning(Warning):
+class NoParallelSupportWarning(WarningOnByDefault):
     pass
 
-class NoMD5ModuleWarning(Warning):
+class ReservedVariableWarning(WarningOnByDefault):
     pass
 
-class NoMetaclassSupportWarning(Warning):
+class StackSizeWarning(WarningOnByDefault):
     pass
 
-class NoObjectCountWarning(Warning):
-    pass
-
-class NoParallelSupportWarning(Warning):
-    pass
-
-class PythonVersionWarning(DeprecatedWarning):
-    pass
-
-class ReservedVariableWarning(Warning):
-    pass
-
-class StackSizeWarning(Warning):
-    pass
-
-class TaskmasterNeedsExecuteWarning(FutureDeprecatedWarning):
-    pass
-
-class VisualCMissingWarning(Warning):
+class VisualCMissingWarning(WarningOnByDefault):
     pass
 
 # Used when MSVC_VERSION and MSVS_VERSION do not point to the
 # same version (MSVS_VERSION is deprecated)
-class VisualVersionMismatch(Warning):
+class VisualVersionMismatch(WarningOnByDefault):
     pass
 
 class VisualStudioMissingWarning(Warning):
@@ -128,12 +98,62 @@ class VisualStudioMissingWarning(Warning):
 class FortranCxxMixWarning(LinkWarning):
     pass
 
-_warningAsException = 0
+
+# Deprecation warnings
+
+class FutureDeprecatedWarning(Warning):
+    pass
+
+class DeprecatedWarning(Warning):
+    pass
+
+class MandatoryDeprecatedWarning(DeprecatedWarning):
+    pass
+
+
+# Special case; base always stays DeprecatedWarning
+class PythonVersionWarning(DeprecatedWarning):
+    pass
+
+class DeprecatedSourceCodeWarning(FutureDeprecatedWarning):
+    pass
+
+class DeprecatedBuildDirWarning(DeprecatedWarning):
+    pass
+
+class TaskmasterNeedsExecuteWarning(DeprecatedWarning):
+    pass
+
+class DeprecatedCopyWarning(MandatoryDeprecatedWarning):
+    pass
+
+class DeprecatedOptionsWarning(MandatoryDeprecatedWarning):
+    pass
+
+class DeprecatedSourceSignaturesWarning(MandatoryDeprecatedWarning):
+    pass
+
+class DeprecatedTargetSignaturesWarning(MandatoryDeprecatedWarning):
+    pass
+
+class DeprecatedDebugOptionsWarning(MandatoryDeprecatedWarning):
+    pass
+
+class DeprecatedSigModuleWarning(MandatoryDeprecatedWarning):
+    pass
+
+class DeprecatedBuilderKeywordsWarning(MandatoryDeprecatedWarning):
+    pass
+
 
 # The below is a list of 2-tuples.  The first element is a class object.
 # The second element is true if that class is enabled, false if it is disabled.
 _enabled = []
 
+# If set, raise the warning as an exception
+_warningAsException = 0
+
+# If not None, a function to call with the warning
 _warningOut = None
 
 def suppressWarningClass(clazz):
@@ -142,7 +162,7 @@ def suppressWarningClass(clazz):
     _enabled.insert(0, (clazz, 0))
 
 def enableWarningClass(clazz):
-    """Suppresses all warnings that are of type clazz or
+    """Enables all warnings that are of type clazz or
     derived from clazz."""
     _enabled.insert(0, (clazz, 1))
 
@@ -181,8 +201,7 @@ def process_warn_strings(arguments):
     "Warning" is appended to get the class name.
 
     For example, 'deprecated' will enable the DeprecatedWarning
-    class.  'no-dependency' will disable the .DependencyWarning
-    class.
+    class.  'no-dependency' will disable the DependencyWarning class.
 
     As a special case, --warn=all and --warn=no-all will enable or
     disable (respectively) the base Warning class of all warnings.

@@ -2,15 +2,13 @@
 # SConstruct file to build scons packages during development.
 #
 # See the README file for an overview of how SCons is built and tested.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 # When this gets changed, you must also change the copyright_years string
 # in QMTest/TestSCons.py so the test scripts look for the right string.
 copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010'
 
 # This gets inserted into the man pages to reflect the month of release.
-month_year = 'January 2010'
+month_year = 'May 2010'
 
 #
 # __COPYRIGHT__
@@ -45,7 +43,7 @@ import sys
 import tempfile
 
 project = 'scons'
-default_version = '1.3.0'
+default_version = '2.0.0'
 copyright = "Copyright (c) %s The SCons Foundation" % copyright_years
 
 platform = distutils.util.get_platform()
@@ -156,10 +154,10 @@ checkpoint = ARGUMENTS.get('CHECKPOINT', '')
 if checkpoint:
     if checkpoint == 'd':
         import time
-        checkpoint = time.strftime('d%Y%m%d', time.localtime(time.time()))
+        checkpoint = time.strftime('%Y%m%d', time.localtime(time.time()))
     elif checkpoint == 'r':
         checkpoint = 'r' + revision
-    version = version + '.' + checkpoint
+    version = version + '.beta.' + checkpoint
 
 build_id = ARGUMENTS.get('BUILD_ID')
 if build_id is None:
@@ -280,8 +278,7 @@ runtest.py -p option to run tests against what's been actually packaged:
 
 """)
 
-aliases = packaging_flavors + [('doc', 'The SCons documentation.')]
-aliases.sort()
+aliases = sorted(packaging_flavors + [('doc', 'The SCons documentation.')])
 
 for alias, help_text in aliases:
     tw = textwrap.TextWrapper(
@@ -768,7 +765,7 @@ for p in [ scons ]:
             MANIFEST_in_list.append(MANIFEST_in)
             files = [x[:-1] for x in open(MANIFEST_in).readlines()]
             raw_files.extend(files)
-            src_files.extend([os.path.join(subdir, x) for x in files])
+            src_files.extend([os.path.join(ssubdir, x) for x in files])
             for f in files:
                 r = os.path.join(sp['rpm_dir'], f)
                 rpm_files.append(r)
@@ -882,8 +879,8 @@ for p in [ scons ]:
         # Run setup.py in the unpacked subdirectory to "install" everything
         # into our build/test subdirectory.  The runtest.py script will set
         # PYTHONPATH so that the tests only look under build/test-{package},
-        # and under etc (for the testing modules TestCmd.py, TestSCons.py,
-        # and unittest.py).  This makes sure that our tests pass with what
+        # and under QMTest (for the testing modules TestCmd.py, TestSCons.py,
+        # etc.).  This makes sure that our tests pass with what
         # we really packaged, not because of something hanging around in
         # the development directory.
         #
@@ -949,8 +946,8 @@ for p in [ scons ]:
         # Run setup.py in the unpacked subdirectory to "install" everything
         # into our build/test subdirectory.  The runtest.py script will set
         # PYTHONPATH so that the tests only look under build/test-{package},
-        # and under etc (for the testing modules TestCmd.py, TestSCons.py,
-        # and unittest.py).  This makes sure that our tests pass with what
+        # and under QMTest (for the testing modules TestCmd.py, TestSCons.py,
+        # etc.).  This makes sure that our tests pass with what
         # we really packaged, not because of something hanging around in
         # the development directory.
         #
@@ -1264,10 +1261,10 @@ if sfiles:
             # Run setup.py in the unpacked subdirectory to "install" everything
             # into our build/test subdirectory.  The runtest.py script will set
             # PYTHONPATH so that the tests only look under build/test-{package},
-            # and under etc (for the testing modules TestCmd.py, TestSCons.py,
-            # and unittest.py).  This makes sure that our tests pass with what
-            # we really packaged, not because of something hanging around in
-            # the development directory.
+            # and under QMTest (for the testing modules TestCmd.py,
+            # TestSCons.py, etc.).  This makes sure that our tests pass with
+            # what we really packaged, not because of something hanging around
+            # in the development directory.
             #
             # We can get away with calling setup.py using a directory path
             # like this because we put a preamble in it that will chdir()
@@ -1318,10 +1315,10 @@ if sfiles:
             # Run setup.py in the unpacked subdirectory to "install" everything
             # into our build/test subdirectory.  The runtest.py script will set
             # PYTHONPATH so that the tests only look under build/test-{package},
-            # and under etc (for the testing modules TestCmd.py, TestSCons.py,
-            # and unittest.py).  This makes sure that our tests pass with what
-            # we really packaged, not because of something hanging around in
-            # the development directory.
+            # and under QMTest (for the testing modules TestCmd.py,
+            # TestSCons.py, etc.).  This makes sure that our tests pass with
+            # what we really packaged, not because of something hanging
+            # around in the development directory.
             #
             # We can get away with calling setup.py using a directory path
             # like this because we put a preamble in it that will chdir()

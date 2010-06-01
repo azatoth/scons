@@ -51,7 +51,10 @@ class my_Environment(Environment):
 env = my_Environment()
 env.Command('f0.out', 'f0.in', copy_action)
 
-from UserString import UserString
+try:
+    from collections import UserString
+except ImportError:
+    exec('from UserString import UserString')
 try:
     class mystr(str):
         pass

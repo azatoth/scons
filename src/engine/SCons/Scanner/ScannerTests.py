@@ -19,24 +19,24 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
+import collections
 import sys
 import unittest
-import UserDict
 
 import SCons.Scanner
 
-class DummyFS:
+class DummyFS(object):
     def File(self, name):
         return DummyNode(name)
 
-class DummyEnvironment(UserDict.UserDict):
+class DummyEnvironment(collections.UserDict):
     def __init__(self, dict=None, **kw):
-        UserDict.UserDict.__init__(self, dict)
+        collections.UserDict.__init__(self, dict)
         self.data.update(kw)
         self.fs = DummyFS()
     def subst(self, strSubst, target=None, source=None, conv=None):
@@ -48,13 +48,13 @@ class DummyEnvironment(UserDict.UserDict):
             return [self.data[strSubst[1:]]]
         return [[strSubst]]
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
         return list(map(self.subst, path))
     def get_factory(self, factory):
         return factory or self.fs.File
 
-class DummyNode:
+class DummyNode(object):
     def __init__(self, name, search_result=()):
         self.name = name
         self.search_result = tuple(search_result)
@@ -106,7 +106,7 @@ class ScannerTestCase(unittest.TestCase):
         
 class BaseTestCase(unittest.TestCase):
 
-    class skey_node:
+    class skey_node(object):
         def __init__(self, key):
             self.key = key
         def scanner_key(self):
@@ -134,7 +134,7 @@ class BaseTestCase(unittest.TestCase):
         self.failUnless(self.env == env, "the environment was passed incorrectly")
         self.failUnless(scanned_strs == deps, "the dependencies were returned incorrectly")
         for d in scanned:
-            self.failUnless(type(d) != type(""), "got a string in the dependencies")
+            self.failUnless(not isinstance(d, str), "got a string in the dependencies")
 
         if len(args) > 0:
             self.failUnless(self.arg == args[0], "the argument was passed incorrectly")
@@ -242,7 +242,7 @@ class BaseTestCase(unittest.TestCase):
         dict = {}
         dict[s] = 777
         i = hash(id(s))
-        h = hash(dict.keys()[0])
+        h = hash(list(dict.keys())[0])
         self.failUnless(h == i,
                         "hash Scanner base class expected %s, got %s" % (i, h))
 
@@ -338,7 +338,7 @@ class BaseTestCase(unittest.TestCase):
         assert s == 'xyzzy', s
 
 class SelectorTestCase(unittest.TestCase):
-    class skey_node:
+    class skey_node(object):
         def __init__(self, key):
             self.key = key
         def scanner_key(self):
@@ -397,7 +397,7 @@ class SelectorTestCase(unittest.TestCase):
 class CurrentTestCase(unittest.TestCase):
     def test_class(self):
         """Test the Scanner.Current class"""
-        class MyNode:
+        class MyNode(object):
             def __init__(self):
                 self.called_has_builder = None
                 self.called_is_up_to_date = None
@@ -471,7 +471,7 @@ class ClassicTestCase(unittest.TestCase):
 
     def test_scan(self):
         """Test the Scanner.Classic scan() method"""
-        class MyNode:
+        class MyNode(object):
             def __init__(self, name):
                 self.name = name
                 self._rfile = self
@@ -569,14 +569,7 @@ class ClassicCPPTestCase(unittest.TestCase):
             assert n == 'path/bbb', n
             assert i == 'bbb', i
 
-            # TODO(1.5):  remove when 2.2 is minimal; replace ccc
-            # variable in find_include() call below with in-line u'ccc'.
-            try:
-                ccc = eval("u'ccc'")
-            except SyntaxError:
-                ccc = 'ccc'
-
-            n, i = s.find_include(('<', ccc), 'foo', ('path',))
+            n, i = s.find_include(('<', u'ccc'), 'foo', ('path',))
             assert n == 'path/ccc', n
             assert i == 'ccc', i
 

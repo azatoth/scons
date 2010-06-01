@@ -26,19 +26,17 @@ Nodes.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import UserList
+import collections
 
 from SCons.Debug import logInstanceCreation
 import SCons.Errors
 import SCons.Memoize
 
 
-class Batch:
+class Batch(object):
     """Remembers exact association between targets
     and sources of executor."""
     def __init__(self, targets=[], sources=[]):
@@ -47,15 +45,15 @@ class Batch:
 
 
 
-class TSList(UserList.UserList):
+class TSList(collections.UserList):
     """A class that implements $TARGETS or $SOURCES expansions by wrapping
     an executor Method.  This class is used in the Executor.lvars()
     to delay creation of NodeList objects until they're needed.
 
-    Note that we subclass UserList.UserList purely so that the
+    Note that we subclass collections.UserList purely so that the
     is_Sequence() function will identify an object of this class as
     a list during variable expansion.  We're not really using any
-    UserList.UserList methods in practice.
+    collections.UserList methods in practice.
     """
     def __init__(self, func):
         self.func = func
@@ -76,7 +74,7 @@ class TSList(UserList.UserList):
         nl = self.func()
         return repr(nl)
 
-class TSObject:
+class TSObject(object):
     """A class that implements $TARGET or $SOURCE expansions by wrapping
     an Executor method.
     """
@@ -110,7 +108,7 @@ def rfile(node):
         return rfile()
 
 
-class Executor:
+class Executor(object):
     """A class for controlling instances of executing an action.
 
     This largely exists to hold a single association of an action,
@@ -226,7 +224,7 @@ class Executor:
         if not SCons.Util.is_List(action):
             if not action:
                 import SCons.Errors
-                raise SCons.Errors.UserError, "Executor must have an action."
+                raise SCons.Errors.UserError("Executor must have an action.")
             action = [action]
         self.action_list = action
 
@@ -237,16 +235,14 @@ class Executor:
         """Returns all targets for all batches of this Executor."""
         result = []
         for batch in self.batches:
-            # TODO(1.5):  remove the list() cast
-            result.extend(list(batch.targets))
+            result.extend(batch.targets)
         return result
 
     def get_all_sources(self):
         """Returns all sources for all batches of this Executor."""
         result = []
         for batch in self.batches:
-            # TODO(1.5):  remove the list() cast
-            result.extend(list(batch.sources))
+            result.extend(batch.sources)
         return result
 
     def get_all_children(self):
@@ -271,8 +267,7 @@ class Executor:
         """
         result = SCons.Util.UniqueList([])
         for target in self.get_all_targets():
-            # TODO(1.5):  remove the list() cast
-            result.extend(list(target.prerequisites))
+            result.extend(target.prerequisites)
         return result
 
     def get_action_side_effects(self):
@@ -394,7 +389,7 @@ class Executor:
         for s in self.get_all_sources():
             if s.missing():
                 msg = "Source `%s' not found, needed by target `%s'."
-                raise SCons.Errors.StopError, msg % (s, self.batches[0].targets[0])
+                raise SCons.Errors.StopError(msg % (s, self.batches[0].targets[0]))
 
     def add_pre_action(self, action):
         self.pre_actions.append(action)
@@ -571,7 +566,7 @@ def get_NullEnvironment():
         nullenv = NullEnvironment()
     return nullenv
 
-class Null:
+class Null(object):
     """A null Executor, with a null build Environment, that does
     nothing when the rest of the methods call it.
 

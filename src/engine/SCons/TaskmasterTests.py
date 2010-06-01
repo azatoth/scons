@@ -20,8 +20,11 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import division
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+import SCons.compat
 
 import copy
 import sys
@@ -37,7 +40,7 @@ visited_nodes = []
 executed = None
 scan_called = 0
 
-class Node:
+class Node(object):
     def __init__(self, name, kids = [], scans = []):
         self.name = name
         self.kids = kids
@@ -47,7 +50,7 @@ class Node:
         self.scanner = None
         self.targets = [self]
         self.prerequisites = []
-        class Builder:
+        class Builder(object):
             def targets(self, node):
                 return node.targets
         self.builder = Builder()
@@ -167,7 +170,7 @@ class Node:
 
     def get_executor(self):
         if not hasattr(self, 'executor'):
-            class Executor:
+            class Executor(object):
                 def prepare(self):
                     pass
                 def get_action_targets(self):
@@ -537,7 +540,7 @@ class TaskmasterTestCase(unittest.TestCase):
         """
         class MyTask(SCons.Taskmaster.Task):
             def make_ready(self):
-                raise MyException, "from make_ready()"
+                raise MyException("from make_ready()")
 
         n1 = Node("n1")
         tm = SCons.Taskmaster.Taskmaster(targets = [n1], tasker = MyTask)
@@ -613,7 +616,7 @@ class TaskmasterTestCase(unittest.TestCase):
         """
         class StopNode(Node):
             def children(self):
-                raise SCons.Errors.StopError, "stop!"
+                raise SCons.Errors.StopError("stop!")
         class ExitNode(Node):
             def children(self):
                 sys.exit(77)
@@ -829,9 +832,9 @@ class TaskmasterTestCase(unittest.TestCase):
         assert n10.prepared
 
         # Make sure we call an Executor's prepare() method.
-        class ExceptionExecutor:
+        class ExceptionExecutor(object):
             def prepare(self):
-                raise Exception, "Executor.prepare() exception"
+                raise Exception("Executor.prepare() exception")
             def get_all_targets(self):
                 return self.nodes
             def get_all_children(self):
@@ -854,7 +857,7 @@ class TaskmasterTestCase(unittest.TestCase):
         except Exception, e:
             assert str(e) == "Executor.prepare() exception", e
         else:
-            raise AssertionError, "did not catch expected exception"
+            raise AssertionError("did not catch expected exception")
 
     def test_execute(self):
         """Test executing a task
@@ -879,7 +882,7 @@ class TaskmasterTestCase(unittest.TestCase):
         except SCons.Errors.UserError:
             pass
         else:
-            raise TestFailed, "did not catch expected UserError"
+            raise TestFailed("did not catch expected UserError")
 
         def raise_BuildError():
             raise SCons.Errors.BuildError
@@ -892,7 +895,7 @@ class TaskmasterTestCase(unittest.TestCase):
         except SCons.Errors.BuildError:
             pass
         else:
-            raise TestFailed, "did not catch expected BuildError"
+            raise TestFailed("did not catch expected BuildError")
 
         # On a generic (non-BuildError) exception from a Builder,
         # the target should throw a BuildError exception with the
@@ -910,9 +913,9 @@ class TaskmasterTestCase(unittest.TestCase):
             assert e.errstr == "OtherError : ", e.errstr
             assert len(e.exc_info) == 3, e.exc_info
             exc_traceback = sys.exc_info()[2]
-            assert type(e.exc_info[2]) == type(exc_traceback), e.exc_info[2]
+            assert isinstance(e.exc_info[2], type(exc_traceback)), e.exc_info[2]
         else:
-            raise TestFailed, "did not catch expected BuildError"
+            raise TestFailed("did not catch expected BuildError")
 
         built_text = None
         cache_text = []
@@ -967,7 +970,7 @@ class TaskmasterTestCase(unittest.TestCase):
         t.exception_set(3)
         assert t.exception == 3
 
-        try: 1/0
+        try: 1//0
         except: pass
         t.exception_set(None)
         exc_type, exc_value, exc_tb = t.exception
@@ -1008,7 +1011,7 @@ class TaskmasterTestCase(unittest.TestCase):
             pass
 
         try:
-            1/0
+            1//0
         except:
             tb = sys.exc_info()[2]
         t.exception_set((Exception3, "arg", tb))
@@ -1054,9 +1057,9 @@ class TaskmasterTestCase(unittest.TestCase):
     def test_trace(self):
         """Test Taskmaster tracing
         """
-        import StringIO
+        import io
 
-        trace = StringIO.StringIO()
+        trace = io.StringIO()
         n1 = Node("n1")
         n2 = Node("n2")
         n3 = Node("n3", [n1, n2])

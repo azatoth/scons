@@ -19,17 +19,16 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
+import collections
 import os
 import re
 import sys
-import types
 import unittest
-import UserList
 
 import SCons.Errors
 import SCons.Node
@@ -50,13 +49,13 @@ def _actionAppend(a1, a2):
             all.append(curr_a)
         elif isinstance(curr_a, MyListAction):
             all.extend(curr_a.list)
-        elif type(curr_a) == type([1,2]):
+        elif isinstance(curr_a, list):
             all.extend(curr_a)
         else:
-            raise 'Cannot Combine Actions'
+            raise Exception('Cannot Combine Actions')
     return MyListAction(all)
 
-class MyActionBase:
+class MyActionBase(object):
     def __add__(self, other):
         return _actionAppend(self, other)
 
@@ -83,7 +82,7 @@ class MyAction(MyActionBase):
     def get_implicit_deps(self, target, source, env):
         return []
 
-class MyExecutor:
+class MyExecutor(object):
     def __init__(self, env=None, targets=[], sources=[]):
         self.env = env
         self.targets = targets
@@ -114,7 +113,7 @@ class MyListAction(MyActionBase):
         for A in self.list:
             A(target, source, env)
 
-class Environment:
+class Environment(object):
     def __init__(self, **kw):
         self._dict = {}
         self._dict.update(kw)
@@ -133,7 +132,7 @@ class Environment:
     def get_scanner(self, scanner_key):
         return self._dict['SCANNERS'][0]
 
-class Builder:
+class Builder(object):
     def __init__(self, env=None, is_explicit=1):
         if env is None: env = Environment()
         self.env = env
@@ -167,19 +166,19 @@ class ListBuilder(Builder):
         target = self.nodes[0]
         self.status = Builder.execute(self, target, source, env)
 
-class FailBuilder:
+class FailBuilder(object):
     def execute(self, target, source, env):
         return 1
 
-class ExceptBuilder:
+class ExceptBuilder(object):
     def execute(self, target, source, env):
         raise SCons.Errors.BuildError
 
-class ExceptBuilder2:
+class ExceptBuilder2(object):
     def execute(self, target, source, env):
-        raise "foo"
+        raise Exception("foo")
 
-class Scanner:
+class Scanner(object):
     called = None
     def __call__(self, node):
         self.called = 1
@@ -205,16 +204,19 @@ class MyNode(SCons.Node.Node):
     def get_found_includes(self, env, scanner, target):
         return scanner(self)
 
-class Calculator:
+class Calculator(object):
     def __init__(self, val):
         self.max_drift = 0
-        class M:
+        class M(object):
             def __init__(self, val):
                 self.val = val
             def signature(self, args):
                 return self.val
             def collect(self, args):
-                return reduce(lambda x, y: x+y, args, self.val)
+                result = self.val
+                for a in args:
+                    result += a
+                return result
         self.module = M(val)
 
 
@@ -382,7 +384,7 @@ class NodeTestCase(unittest.TestCase):
         else:
             self.fail("did not catch expected AttributeError")
 
-        class Builder:
+        class Builder(object):
             action = 'act'
             env = 'env1'
             overrides = {}
@@ -616,7 +618,7 @@ class NodeTestCase(unittest.TestCase):
 
         class testNode2(SCons.Node.Node):
             def __str__(self): return 'null_binfo'
-        class FS:
+        class FS(object):
             pass
         node = testNode2()
         node.fs = FS()
@@ -625,8 +627,8 @@ class NodeTestCase(unittest.TestCase):
         assert result is None, result
 
         def get_null_info():
-            class Null_SConsignEntry:
-                class Null_BuildInfo:
+            class Null_SConsignEntry(object):
+                class Null_BuildInfo(object):
                     def prepare_dependencies(self):
                         pass
                 binfo = Null_BuildInfo()
@@ -786,7 +788,7 @@ class NodeTestCase(unittest.TestCase):
         except:
             pass
         else:
-            raise "did not catch expected exception"
+            raise Exception("did not catch expected exception")
         assert node.depends == [zero, one, two, three, four]
 
 
@@ -818,7 +820,7 @@ class NodeTestCase(unittest.TestCase):
         except:
             pass
         else:
-            raise "did not catch expected exception"
+            raise Exception("did not catch expected exception")
         assert node.sources == [zero, one, two, three, four], node.sources
 
     def test_add_ignore(self):
@@ -849,7 +851,7 @@ class NodeTestCase(unittest.TestCase):
         except:
             pass
         else:
-            raise "did not catch expected exception"
+            raise Exception("did not catch expected exception")
         assert node.ignore == [zero, one, two, three, four]
 
     def test_get_found_includes(self):
@@ -1102,22 +1104,22 @@ class NodeTestCase(unittest.TestCase):
 
         nw = SCons.Node.Walker(n1)
         assert not nw.is_done()
-        assert nw.next().name ==  "n1"
+        assert nw.get_next().name ==  "n1"
         assert nw.is_done()
-        assert nw.next() is None
+        assert nw.get_next() is None
 
         n2 = MyNode("n2")
         n3 = MyNode("n3")
         n1.add_source([n2, n3])
 
         nw = SCons.Node.Walker(n1)
-        n = nw.next()
+        n = nw.get_next()
         assert n.name ==  "n2", n.name
-        n = nw.next()
+        n = nw.get_next()
         assert n.name ==  "n3", n.name
-        n = nw.next()
+        n = nw.get_next()
         assert n.name ==  "n1", n.name
-        n = nw.next()
+        n = nw.get_next()
         assert n is None, n
 
         n4 = MyNode("n4")
@@ -1128,17 +1130,17 @@ class NodeTestCase(unittest.TestCase):
         n3.add_dependency([n6, n7])
 
         nw = SCons.Node.Walker(n1)
-        assert nw.next().name ==  "n4"
-        assert nw.next().name ==  "n5"
+        assert nw.get_next().name ==  "n4"
+        assert nw.get_next().name ==  "n5"
         assert n2 in nw.history
-        assert nw.next().name ==  "n2"
-        assert nw.next().name ==  "n6"
-        assert nw.next().name ==  "n7"
+        assert nw.get_next().name ==  "n2"
+        assert nw.get_next().name ==  "n6"
+        assert nw.get_next().name ==  "n7"
         assert n3 in nw.history
-        assert nw.next().name ==  "n3"
+        assert nw.get_next().name ==  "n3"
         assert n1 in nw.history
-        assert nw.next().name ==  "n1"
-        assert nw.next() is None
+        assert nw.get_next().name ==  "n1"
+        assert nw.get_next() is None
 
         n8 = MyNode("n8")
         n8.add_dependency([n3])
@@ -1151,16 +1153,16 @@ class NodeTestCase(unittest.TestCase):
         global cycle_detected
 
         nw = SCons.Node.Walker(n3, cycle_func = cycle)
-        n = nw.next()
+        n = nw.get_next()
         assert n.name == "n6", n.name
-        n = nw.next()
+        n = nw.get_next()
         assert n.name == "n8", n.name
         assert cycle_detected
         cycle_detected = None
-        n = nw.next()
+        n = nw.get_next()
         assert n.name == "n7", n.name
-        n = nw.next()
-        assert nw.next() is None
+        n = nw.get_next()
+        assert nw.get_next() is None
 
     def test_abspath(self):
         """Test the get_abspath() method."""
@@ -1275,16 +1277,9 @@ class NodeListTestCase(unittest.TestCase):
         nl = SCons.Node.NodeList([n3, n2, n1])
 
         l = [1]
-        ul = UserList.UserList([2])
-        try:
-            l.extend(ul)
-        except TypeError:
-            # An older version of Python (*cough* 1.5.2 *cough*)
-            # that doesn't allow UserList objects to extend lists.
-            pass
-        else:
-            s = str(nl)
-            assert s == "['n3', 'n2', 'n1']", s
+        ul = collections.UserList([2])
+        s = str(nl)
+        assert s == "['n3', 'n2', 'n1']", s
 
         r = repr(nl)
         r = re.sub('at (0[xX])?[0-9a-fA-F]+', 'at 0x', r)

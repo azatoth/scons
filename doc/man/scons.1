@@ -380,7 +380,7 @@ try to access a list member that
 does not exist.
 
 .B scons
-requires Python version 1.5.2 or later.
+requires Python version 2.4 or later.
 There should be no other dependencies or requirements to run
 .B scons.
 
@@ -591,10 +591,9 @@ Print how many objects are created
 of the various classes used internally by SCons
 before and after reading the SConscript files
 and before and after building targets.
-This is not supported when run under Python versions earlier than 2.1,
-when SCons is executed with the Python
+This is not supported when SCons is executed with the Python
 .B -O
-(optimized) option,
+(optimized) option
 or when the SCons modules
 have been compiled with optimization
 (that is, when executing from
@@ -642,7 +641,6 @@ Prints a summary of hits and misses using the Memoizer,
 an internal subsystem that counts
 how often SCons uses cached values in memory
 instead of recomputing them each time they're needed.
-Only available when using Python 2.2 or later.
 
 .TP
 --debug=memory
@@ -658,7 +656,6 @@ A deprecated option preserved for backwards compatibility.
 --debug=objects
 Prints a list of the various objects
 of the various classes used internally by SCons.
-This only works when run under Python 2.1 or later.
 
 .TP
 --debug=pdb
@@ -2271,11 +2268,13 @@ and
 Builders by adding them
 to the
 .B SourceFileScanner
-object as follows:
-
+object.
 See the section "Scanner Objects,"
-below, for a more information about
-defining your own Scanner objects.
+below, for more information about
+defining your own Scanner objects
+and using the
+.B SourceFileScanner
+object.
 
 .SS Methods and Functions to Do Things
 In addition to Builder methods,
@@ -2446,13 +2445,6 @@ method (with a few additional capabilities noted below);
 see the documentation for
 .B optparse
 for a thorough discussion of its option-processing capabities.
-(Note that although the
-.B optparse
-module was not a standard module until Python 2.3,
-.B scons
-contains a compatible version of the module
-that is used to provide identical functionality
-when run by earlier Python versions.)
 
 In addition to the arguments and values supported by the
 .B optparse.add_option ()
@@ -2791,6 +2783,10 @@ to be used to fetch source files
 using BitKeeper.
 The returned Builder
 is intended to be passed to the
+.B SourceCode
+function.
+
+This function is deprecated.  For details, see the entry for the
 .B SourceCode
 function.
 
@@ -3175,6 +3171,10 @@ so that you only have to
 replicate part of the repository
 directory hierarchy in your
 local build directory.
+
+This function is deprecated.  For details, see the entry for the
+.B SourceCode
+function.
 
 Examples:
 
@@ -3743,7 +3743,7 @@ in the path specified by
 .IR dirs .
 .I dirs
 may be a list of directory names or a single directory name.
-In addition to searching for files that exist in the filesytem,
+In addition to searching for files that exist in the filesystem,
 this function also searches for derived files
 that have not yet been built.
 
@@ -4727,6 +4727,10 @@ is intended to be passed to the
 .B SourceCode
 function.
 
+This function is deprecated.  For details, see the entry for the
+.B SourceCode
+function.
+
 Example:
 
 .ES
@@ -4842,7 +4846,7 @@ will overwrite itself on a display:
 
 .ES
 import sys
-class ProgressCounter:
+class ProgressCounter(object):
     count = 0
     def __call__(self, node, *args, **kw):
         self.count += 100
@@ -5020,6 +5024,10 @@ is intended to be passed to the
 .B SourceCode
 function:
 
+This function is deprecated.  For details, see the entry for the
+.B SourceCode
+function.
+
 Examples:
 
 .ES
@@ -5185,6 +5193,10 @@ to be used to fetch source files
 from SCCS.
 The returned Builder
 is intended to be passed to the
+.B SourceCode
+function.
+
+This function is deprecated.  For details, see the entry for the
 .B SourceCode
 function.
 
@@ -5500,7 +5512,7 @@ The default is to use a custom
 .B SCons.dblite
 module that uses pickled
 Python data structures,
-and which works on all Python versions from 1.5.2 on.
+and which works on all Python versions.
 
 Examples:
 
@@ -5646,6 +5658,13 @@ function.
 .RI SourceCode( entries ", " builder )
 .TP
 .RI env.SourceCode( entries ", " builder )
+This function and its associate factory functions are deprecated.
+There is no replacement.
+The intended use was to keep a local tree in sync with an archive,
+but in actuality the function only causes the archive
+to be fetched on the first run.
+Synchronizing with the archive is best done external to SCons.
+
 Arrange for non-existent source files to
 be fetched from a source code management system
 using the specified
@@ -5833,6 +5852,10 @@ source_nodes = env.subst('$EXPAND_TO_NODELIST',
 '\"replicate part of the repository
 '\"directory hierarchy in your
 '\"local build directory.
+'\"
+'\"This function is deprecated.  For details, see the entry for the
+'\".B SourceCode
+'\"function.
 '\"
 '\"Example:
 '\"
@@ -7393,7 +7416,7 @@ vars.Add('CC', 'The C compiler')
 
 def validate_color(key, val, env):
     if not val in ['red', 'blue', 'yellow']:
-        raise "Invalid color value '%s'" % val
+        raise Exception("Invalid color value '%s'" % val)
 vars.Add('COLOR', validator=valid_color)
 .EE
 
@@ -8004,7 +8027,7 @@ may be indicated by a dictionary entry with a key value of None.
 .P
 
 .ES
-b = Builder("build_it < $SOURCE > $TARGET"
+b = Builder("build_it < $SOURCE > $TARGET",
             prefix = "file-")
 
 def gen_prefix(env, sources):
@@ -9257,7 +9280,7 @@ be associated with the
 instantiation of the class:
 
 .ES
-class foo:
+class foo(object):
     def __init__(self, arg):
         self.arg = arg
 
@@ -9380,7 +9403,9 @@ You can use the
 function to define
 objects to scan
 new file types for implicit dependencies.
-Scanner accepts the following arguments:
+The
+.B Scanner
+function accepts the following arguments:
 
 .IP function
 This can be either:
@@ -9531,6 +9556,7 @@ that should be scanned recursively;
 this can be used to select a specific subset of
 Nodes for additional scanning.
 
+.RE
 Note that
 .B scons
 has a global

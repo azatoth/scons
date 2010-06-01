@@ -111,7 +111,7 @@ def platform_module(name = platform_default()):
                     importer = zipimport.zipimporter( sys.modules['SCons.Platform'].__path__[0] )
                     mod = importer.load_module(full_name)
                 except ImportError:
-                    raise SCons.Errors.UserError, "No platform named '%s'" % name
+                    raise SCons.Errors.UserError("No platform named '%s'" % name)
             setattr(SCons.Platform, name, mod)
     return sys.modules[full_name]
 
@@ -120,14 +120,18 @@ def DefaultToolList(platform, env):
     """
     return SCons.Tool.tool_list(platform, env)
 
-class PlatformSpec:
-    def __init__(self, name):
+class PlatformSpec(object):
+    def __init__(self, name, generate):
         self.name = name
+        self.generate = generate
+
+    def __call__(self, *args, **kw):
+        return self.generate(*args, **kw)
 
     def __str__(self):
         return self.name
         
-class TempFileMunge:
+class TempFileMunge(object):
     """A callable class.  You can set an Environment variable to this,
     then call it with a string argument, then it will perform temporary
     file substitution on it.  This is used to circumvent the long command
@@ -166,7 +170,10 @@ class TempFileMunge:
         except ValueError:
             maxline = 2048
 
-        if (reduce(lambda x, y: x + len(y), cmd, 0) + len(cmd)) <= maxline:
+        length = 0
+        for c in cmd:
+            length += len(c)
+        if length <= maxline:
             return self.cmd
 
         # We do a normpath because mktemp() has what appears to be
@@ -224,8 +231,7 @@ def Platform(name = platform_default()):
     """Select a canned Platform specification.
     """
     module = platform_module(name)
-    spec = PlatformSpec(name)
-    spec.__call__ = module.generate
+    spec = PlatformSpec(name, module.generate)
     return spec
 
 # Local Variables:

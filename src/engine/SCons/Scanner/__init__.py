@@ -35,7 +35,7 @@ import SCons.Node.FS
 import SCons.Util
 
 
-class _Null:
+class _Null(object):
     pass
 
 # This is used instead of None as a default argument value so None can be
@@ -61,7 +61,7 @@ def Scanner(function, *args, **kw):
 
 
 
-class FindPathDirs:
+class FindPathDirs(object):
     """A class to bind a specific *PATH variable name to a function that
     will return all of the *path directories."""
     def __init__(self, variable):
@@ -79,7 +79,7 @@ class FindPathDirs:
 
 
 
-class Base:
+class Base(object):
     """
     The base class for dependency scanners.  This implements
     straightforward, single-pass scanning of a single file.
@@ -170,7 +170,7 @@ class Base:
 
         if skeys is _null:
             if SCons.Util.is_Dict(function):
-                skeys = function.keys()
+                skeys = list(function.keys())
             else:
                 skeys = []
         self.skeys = skeys
@@ -281,7 +281,7 @@ class Selector(Base):
     def __init__(self, dict, *args, **kw):
         Base.__init__(self, None, *args, **kw)
         self.dict = dict
-        self.skeys = dict.keys()
+        self.skeys = list(dict.keys())
 
     def __call__(self, node, env, path = ()):
         return self.select(node)(node, env, path)
@@ -378,12 +378,9 @@ class Classic(Current):
                 SCons.Warnings.warn(SCons.Warnings.DependencyWarning,
                                     "No dependency generated for file: %s (included from: %s) -- file not found" % (i, node))
             else:
-                sortkey = self.sort_key(include)
-                nodes.append((sortkey, n))
+                nodes.append((self.sort_key(include), n))
 
-        nodes.sort()
-        nodes = [pair[1] for pair in nodes]
-        return nodes
+        return [pair[1] for pair in sorted(nodes)]
 
 class ClassicCPP(Classic):
     """

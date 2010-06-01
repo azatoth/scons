@@ -20,8 +20,11 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import division
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+import SCons.compat
 
 import os
 import os.path
@@ -41,7 +44,7 @@ built_it = None
 
 scanner_count = 0
 
-class Scanner:
+class Scanner(object):
     def __init__(self, node=None):
         global scanner_count
         scanner_count = scanner_count + 1
@@ -58,7 +61,7 @@ class Scanner:
     def recurse_nodes(self, nodes):
         return nodes
 
-class Environment:
+class Environment(object):
     def __init__(self):
         self.scanner = Scanner()
     def Dictionary(self, *args):
@@ -72,7 +75,7 @@ class Environment:
     def _update(self, dict):
         pass
 
-class Action:
+class Action(object):
     def __call__(self, targets, sources, env, **kw):
         global built_it
         if kw.get('execute', 1):
@@ -89,7 +92,7 @@ class Action:
     def get_implicit_deps(self, target, source, env):
         return []
 
-class Builder:
+class Builder(object):
     def __init__(self, factory, action=Action()):
         self.factory = factory
         self.env = Environment()
@@ -356,7 +359,7 @@ class VariantDirTestCase(unittest.TestCase):
 
         save_Link = SCons.Node.FS.Link
         def Link_IOError(target, source, env):
-            raise IOError, (17, "Link_IOError")
+            raise IOError(17, "Link_IOError")
         SCons.Node.FS.Link = SCons.Action.Action(Link_IOError, None)
 
         test.write(['work', 'src', 'IOError'], "work/src/IOError\n")
@@ -426,7 +429,7 @@ class VariantDirTestCase(unittest.TestCase):
         assert r == d1, "%s != %s" % (r, d1)
 
         # verify the link creation attempts in file_link()
-        class LinkSimulator :
+        class LinkSimulator (object):
             """A class to intercept os.[sym]link() calls and track them."""
 
             def __init__( self, duplicate, link, symlink, copy ) :
@@ -890,7 +893,7 @@ class FSTestCase(_tempdirTestCase):
         except TypeError:
             pass
         else:
-            raise Exception, "did not catch expected TypeError"
+            raise Exception("did not catch expected TypeError")
 
         assert x1.Entry(x4) == x4
         try:
@@ -898,7 +901,7 @@ class FSTestCase(_tempdirTestCase):
         except TypeError:
             pass
         else:
-            raise Exception, "did not catch expected TypeError"
+            raise Exception("did not catch expected TypeError")
 
         x6 = x1.File(x6)
         assert isinstance(x6, SCons.Node.FS.File)
@@ -1144,7 +1147,7 @@ class FSTestCase(_tempdirTestCase):
 
         # Make sure we can scan this file even if the target isn't
         # a file that has a scanner (it might be an Alias, e.g.).
-        class DummyNode:
+        class DummyNode(object):
             pass
 
         deps = f12.get_found_includes(env, s, DummyNode())
@@ -1187,17 +1190,12 @@ class FSTestCase(_tempdirTestCase):
         f1 = fs.File(test.workpath("binary_file"))
         assert f1.get_contents() == "Foo\x1aBar", f1.get_contents()
 
-        try:
-            # TODO(1.5)
-            eval('test_string = u"Foo\x1aBar"')
-        except SyntaxError:
-            pass
-        else:
-            # This tests to make sure we can decode UTF-8 text files.
-            test.write("utf8_file", test_string.encode('utf-8'))
-            f1 = fs.File(test.workpath("utf8_file"))
-            assert eval('f1.get_text_contents() == u"Foo\x1aBar"'), \
-                   f1.get_text_contents()
+        # This tests to make sure we can decode UTF-8 text files.
+        test_string = u"Foo\x1aBar"
+        test.write("utf8_file", test_string.encode('utf-8'))
+        f1 = fs.File(test.workpath("utf8_file"))
+        assert eval('f1.get_text_contents() == u"Foo\x1aBar"'), \
+               f1.get_text_contents()
 
         def nonexistent(method, s):
             try:
@@ -1205,7 +1203,7 @@ class FSTestCase(_tempdirTestCase):
             except SCons.Errors.UserError:
                 pass
             else:
-                raise Exception, "did not catch expected UserError"
+                raise Exception("did not catch expected UserError")
 
         nonexistent(fs.Entry, 'nonexistent')
         nonexistent(fs.Entry, 'nonexistent/foo')
@@ -1310,7 +1308,7 @@ class FSTestCase(_tempdirTestCase):
             # We round down the current time to the nearest even integer
             # value, subtract two to make sure the timestamp is not "now,"
             # and then convert it back to a float.
-            tstamp = float(int(time.time() / 2) * 2) - 2
+            tstamp = float(int(time.time() // 2) * 2) - 2.0
             os.utime(test.workpath("tstamp"), (tstamp - 2.0, tstamp))
             f = fs.File("tstamp")
             t = f.get_timestamp()
@@ -1328,7 +1326,7 @@ class FSTestCase(_tempdirTestCase):
         f2 = test.workpath('tdir2', 'file2')
         test.write(f1, 'file1\n')
         test.write(f2, 'file2\n')
-        current_time = float(int(time.time() / 2) * 2)
+        current_time = float(int(time.time() // 2) * 2)
         t1 = current_time - 4.0
         t2 = current_time - 2.0
         os.utime(f1, (t1 - 2.0, t1))
@@ -1659,16 +1657,11 @@ class FSTestCase(_tempdirTestCase):
     def test_proxy(self):
         """Test a Node.FS object wrapped in a proxy instance"""
         f1 = self.fs.File('fff')
-        class Proxy:
-            # Simplest possibly Proxy class that works for our test,
-            # this is stripped down from SCons.Util.Proxy.
-            def __init__(self, subject):
-                self.__subject = subject
-            def __getattr__(self, name):
-                return getattr(self.__subject, name)
-        p = Proxy(f1)
+        class MyProxy(SCons.Util.Proxy):
+            __str__ = SCons.Util.Delegate('__str__')
+        p = MyProxy(f1)
         f2 = self.fs.Entry(p)
-        assert f1 is f2, (f1, f2)
+        assert f1 is f2, (f1, str(f1), f2, str(f2))
 
 
 
@@ -1722,8 +1715,7 @@ class DirTestCase(_tempdirTestCase):
         fs.Dir(os.path.join('ddd', 'd1', 'f4'))
         fs.Dir(os.path.join('ddd', 'd1', 'f5'))
         dir.scan()
-        kids = [x.path for x in dir.children(None)]
-        kids.sort()
+        kids = sorted([x.path for x in dir.children(None)])
         assert kids == [os.path.join('ddd', 'd1'),
                         os.path.join('ddd', 'f1'),
                         os.path.join('ddd', 'f2'),
@@ -1748,7 +1740,6 @@ class DirTestCase(_tempdirTestCase):
         e = self.fs.Dir(os.path.join('d', 'empty'))
         s = self.fs.Dir(os.path.join('d', 'sub'))
 
-        #TODO(1.5) files = d.get_contents().split('\n')
         files = d.get_contents().split('\n')
 
         assert e.get_contents() == '', e.get_contents()
@@ -1768,14 +1759,12 @@ class DirTestCase(_tempdirTestCase):
 
         fs.File(os.path.join('ddd', 'f1'))
         dir.scan()
-        kids = [x.path for x in dir.children()]
-        kids.sort()
+        kids = sorted([x.path for x in dir.children()])
         assert kids == [os.path.join('ddd', 'f1')], kids
 
         fs.File(os.path.join('ddd', 'f2'))
         dir.scan()
-        kids = [x.path for x in dir.children()]
-        kids.sort()
+        kids = sorted([x.path for x in dir.children()])
         assert kids == [os.path.join('ddd', 'f1'),
                         os.path.join('ddd', 'f2')], kids
 
@@ -2087,14 +2076,17 @@ class EntryTestCase(_tempdirTestCase):
         assert e4n.__class__ is SCons.Node.FS.File, e4n.__class__
         assert not exists, "e4n exists?"
 
-        class MyCalc:
+        class MyCalc(object):
             def __init__(self, val):
                 self.max_drift = 0
-                class M:
+                class M(object):
                     def __init__(self, val):
                         self.val = val
                     def collect(self, args):
-                        return reduce(lambda x, y: x+y, args)
+                        result = 0
+                        for a in args:
+                            result += a
+                        return result
                     def signature(self, executor):
                         return self.val + 222
                 self.module = M(val)
@@ -2240,8 +2232,7 @@ class GlobTestCase(_tempdirTestCase):
         strings_kwargs = copy.copy(kwargs)
         strings_kwargs['strings'] = True
         for input, string_expect, node_expect in cases:
-            r = self.fs.Glob(input, **strings_kwargs)
-            r.sort()
+            r = sorted(self.fs.Glob(input, **strings_kwargs))
             assert r == string_expect, "Glob(%s, strings=True) expected %s, got %s" % (input, string_expect, r)
 
         # Now execute all of the cases without string=True and look for
@@ -2253,16 +2244,15 @@ class GlobTestCase(_tempdirTestCase):
         for input, string_expect, node_expect in cases:
             r = self.fs.Glob(input, **kwargs)
             if node_expect:
-                r.sort(lambda a,b: cmp(a.path, b.path))
+                r = sorted(r, key=lambda a: a.path)
                 result = []
                 for n in node_expect:
-                    if type(n) == type(''):
+                    if isinstance(n, str):
                         n = self.fs.Entry(n)
                     result.append(n)
                 fmt = lambda n: "%s %s" % (repr(n), repr(str(n)))
             else:
-                r = list(map(str, r))
-                r.sort()
+                r = sorted(map(str, r))
                 result = string_expect
                 fmt = lambda n: n
             if r != result:
@@ -2792,7 +2782,7 @@ class RepositoryTestCase(_tempdirTestCase):
             # We round down the current time to the nearest even integer
             # value, subtract two to make sure the timestamp is not "now,"
             # and then convert it back to a float.
-            tstamp = float(int(time.time() / 2) * 2) - 2
+            tstamp = float(int(time.time() // 2) * 2) - 2.0
             os.utime(test.workpath("rep2", "tstamp"), (tstamp - 2.0, tstamp))
             f = fs.File("tstamp")
             t = f.get_timestamp()
@@ -2823,8 +2813,8 @@ class RepositoryTestCase(_tempdirTestCase):
         try:
             eval('test_string = u"Con\x1aTents\n"')
         except SyntaxError:
-            import UserString
-            class FakeUnicodeString(UserString.UserString):
+            import collections
+            class FakeUnicodeString(collections.UserString):
                 def encode(self, encoding):
                     return str(self)
             test_string = FakeUnicodeString("Con\x1aTents\n")
@@ -2896,11 +2886,11 @@ class find_fileTestCase(unittest.TestCase):
         # 'bar/baz' as a Dir.
         SCons.Node.FS.find_file('baz/no_file_here', paths)
 
-        import StringIO
+        import io
         save_sys_stdout = sys.stdout
 
         try:
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             SCons.Node.FS.find_file('foo2', paths, verbose="xyz")
             expect = "  xyz: looking for 'foo2' in '.' ...\n" + \
@@ -2908,7 +2898,7 @@ class find_fileTestCase(unittest.TestCase):
             c = sio.getvalue()
             assert c == expect, c
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             SCons.Node.FS.find_file('baz2', paths, verbose=1)
             expect = "  find_file: looking for 'baz2' in '.' ...\n" + \
@@ -2917,7 +2907,7 @@ class find_fileTestCase(unittest.TestCase):
             c = sio.getvalue()
             assert c == expect, c
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             SCons.Node.FS.find_file('on_disk', paths, verbose=1)
             expect = "  find_file: looking for 'on_disk' in '.' ...\n" + \
@@ -2957,8 +2947,8 @@ class stored_infoTestCase(unittest.TestCase):
         bi = f.get_stored_info()
         assert hasattr(bi, 'ninfo')
 
-        class MySConsign:
-            class Null:
+        class MySConsign(object):
+            class Null(object):
                 def __init__(self):
                     self.xyzzy = 7
             def get_entry(self, name):

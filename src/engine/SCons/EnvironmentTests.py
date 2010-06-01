@@ -23,13 +23,15 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
 import copy
+import io
 import os
-import StringIO
 import sys
 import TestCmd
 import unittest
-import UserList
+from collections import UserDict as UD, UserList as UL
 
 from SCons.Environment import *
 import SCons.Warnings
@@ -38,11 +40,9 @@ def diff_env(env1, env2):
     s1 = "env1 = {\n"
     s2 = "env2 = {\n"
     d = {}
-    for k in env1._dict.keys() + env2._dict.keys():
+    for k in list(env1._dict.keys()) + list(env2._dict.keys()):
         d[k] = None
-    keys = d.keys()
-    keys.sort()
-    for k in keys:
+    for k in sorted(d.keys()):
         if k in env1:
            if k in env2:
                if env1[k] != env2[k]:
@@ -60,11 +60,9 @@ def diff_dict(d1, d2):
     s1 = "d1 = {\n"
     s2 = "d2 = {\n"
     d = {}
-    for k in d1.keys() + d2.keys():
+    for k in list(d1.keys()) + list(d2.keys()):
         d[k] = None
-    keys = d.keys()
-    keys.sort()
-    for k in keys:
+    for k in sorted(d.keys()):
         if k in d1:
            if k in d2:
                if d1[k] != d2[k]:
@@ -102,7 +100,7 @@ class Builder(SCons.Builder.BuilderBase):
 
 scanned_it = {}
 
-class Scanner:
+class Scanner(object):
     """A dummy Scanner class for testing purposes.  "Scanning"
     a target is simply setting a value in the dictionary.
     """
@@ -128,21 +126,21 @@ class Scanner:
 
 
 
-class CLVar(UserList.UserList):
+class CLVar(UL):
     def __init__(self, seq):
-        if type(seq) == type(''):
+        if isinstance(seq, str):
             seq = seq.split()
-        UserList.UserList.__init__(self, seq)
+        UL.__init__(self, seq)
     def __add__(self, other):
-        return UserList.UserList.__add__(self, CLVar(other))
+        return UL.__add__(self, CLVar(other))
     def __radd__(self, other):
-        return UserList.UserList.__radd__(self, CLVar(other))
+        return UL.__radd__(self, CLVar(other))
     def __coerce__(self, other):
         return (self, CLVar(other))
 
 
 
-class DummyNode:
+class DummyNode(object):
     def __init__(self, name):
         self.name = name
     def __str__(self):
@@ -155,7 +153,7 @@ class DummyNode:
 def test_tool( env ):
     env['_F77INCFLAGS'] = '$( ${_concat(INCPREFIX, F77PATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)'
 
-class TestEnvironmentFixture:
+class TestEnvironmentFixture(object):
     def TestEnvironment(self, *args, **kw):
         if not kw or 'tools' not in kw:
             kw['tools'] = [test_tool]
@@ -236,23 +234,15 @@ class SubstitutionTestCase(unittest.TestCase):
     def test_contains(self):
         """Test the SubstitutionEnvironment __contains__() method
         """
-        try:
-            'x' in {'x':1}
-        except TypeError:
-            # TODO(1.5)
-            # An early version of Python that doesn't support "in"
-            # on dictionaries.  Just pass the test.
-            pass
-        else:
-            env = SubstitutionEnvironment(XXX = 'x')
-            assert 'XXX' in env
-            assert not 'YYY' in env
+        env = SubstitutionEnvironment(XXX = 'x')
+        assert 'XXX' in env
+        assert not 'YYY' in env
 
     def test_items(self):
         """Test the SubstitutionEnvironment items() method
         """
         env = SubstitutionEnvironment(XXX = 'x', YYY = 'y')
-        items = env.items()
+        items = list(env.items())
         assert items == [('XXX','x'), ('YYY','y')], items
 
     def test_arg2nodes(self):
@@ -273,8 +263,9 @@ class SubstitutionTestCase(unittest.TestCase):
         assert isinstance(nodes[0], X)
         assert nodes[0].name == "Util.py UtilTests.py"
 
-        import types
-        if hasattr(types, 'UnicodeType'):
+        try: unicode
+        except NameError: pass
+        else:
             code = """if 1:
                 nodes = env.arg2nodes(u"Util.py UtilTests.py", Factory)
                 assert len(nodes) == 1, nodes
@@ -304,7 +295,7 @@ class SubstitutionTestCase(unittest.TestCase):
         assert len(nodes) == 1, nodes
         assert isinstance(nodes[0], SConsNode), node
 
-        class OtherNode:
+        class OtherNode(object):
             pass
         nodes = env.arg2nodes(OtherNode())
         assert len(nodes) == 1, nodes
@@ -546,13 +537,13 @@ class SubstitutionTestCase(unittest.TestCase):
     def test_subst_path(self):
         """Test substituting a path list
         """
-        class MyProxy:
+        class MyProxy(object):
             def __init__(self, val):
                 self.val = val
             def get(self):
                 return self.val + '-proxy'
 
-        class MyNode:
+        class MyNode(object):
             def __init__(self, val):
                 self.val = val
             def get_subst_proxy(self):
@@ -560,7 +551,7 @@ class SubstitutionTestCase(unittest.TestCase):
             def __str__(self):
                 return self.val
 
-        class MyObj:
+        class MyObj(object):
             def get(self):
                 return self
 
@@ -592,7 +583,7 @@ class SubstitutionTestCase(unittest.TestCase):
         r = env.subst_path(['$PROXY', MyProxy('my2'), n])
         assert r == ['my1-proxy', 'my2-proxy', n], r
 
-        class StringableObj:
+        class StringableObj(object):
             def __init__(self, s):
                 self.s = s
             def __str__(self):
@@ -646,21 +637,21 @@ sys.exit(0)
         python = '"' + sys.executable + '"'
 
         try:
-            sys.stderr = StringIO.StringIO()
+            sys.stderr = io.StringIO()
             cmd = '%s %s' % (python, test.workpath('stdout.py'))
             output = env.backtick(cmd)
             errout = sys.stderr.getvalue()
             assert output == 'this came from stdout.py\n', output
             assert errout == '', errout
 
-            sys.stderr = StringIO.StringIO()
+            sys.stderr = io.StringIO()
             cmd = '%s %s' % (python, test.workpath('stderr.py'))
             output = env.backtick(cmd)
             errout = sys.stderr.getvalue()
             assert output == '', output
             assert errout == 'this came from stderr.py\n', errout
 
-            sys.stderr = StringIO.StringIO()
+            sys.stderr = io.StringIO()
             cmd = '%s %s' % (python, test.workpath('fail.py'))
             try:
                 env.backtick(cmd)
@@ -669,7 +660,7 @@ sys.exit(0)
             else:
                 self.fail("did not catch expected OSError")
 
-            sys.stderr = StringIO.StringIO()
+            sys.stderr = io.StringIO()
             cmd = '%s %s' % (python, test.workpath('echo.py'))
             env['ENV'] = os.environ.copy()
             env['ENV']['ECHO'] = 'this came from ECHO'
@@ -913,7 +904,7 @@ class BaseTestCase(unittest.TestCase,TestEnvironmentFixture):
 
     def test_variables(self):
         """Test that variables only get applied once."""
-        class FakeOptions:
+        class FakeOptions(object):
             def __init__(self, key, val):
                 self.calls = 0
                 self.key = key
@@ -1314,7 +1305,7 @@ env4.builder1.env, env3)
 
     def test_platform(self):
         """Test specifying a platform callable when instantiating."""
-        class platform:
+        class platform(object):
             def __str__(self):        return "TestPlatform"
             def __call__(self, env):  env['XYZZY'] = 777
 
@@ -1329,7 +1320,7 @@ env4.builder1.env, env3)
 
     def test_Default_PLATFORM(self):
         """Test overriding the default PLATFORM variable"""
-        class platform:
+        class platform(object):
             def __str__(self):        return "DefaultTestPlatform"
             def __call__(self, env):  env['XYZZY'] = 888
 
@@ -1480,11 +1471,6 @@ def exists(env):
         b2 = Environment()['BUILDERS']
         assert b1 == b2, diff_dict(b1, b2)
 
-        import UserDict
-        UD = UserDict.UserDict
-        import UserList
-        UL = UserList.UserList
-
         cases = [
             'a1',       'A1',           'a1A1',
             'a2',       ['A2'],         ['a2', 'A2'],
@@ -1605,13 +1591,13 @@ def exists(env):
         assert isinstance(result, CLVar), repr(result)
         assert result == ['foo', 'bar'], result
 
-        class C:
+        class C(object):
             def __init__(self, name):
                 self.name = name
             def __str__(self):
                 return self.name
             def __cmp__(self, other):
-                raise "should not compare"
+                raise Exception("should not compare")
 
         ccc = C('ccc')
 
@@ -1712,17 +1698,8 @@ def exists(env):
         env['CLVar'] = CLVar([])
         env.AppendUnique(CLVar = 'bar')
         result = env['CLVar']
-        if sys.version[0] == '1' or sys.version[:3] == '2.0':
-            # Python 2.0 and before have a quirky behavior where CLVar([])
-            # actually matches '' and [] due to different __coerce__()
-            # semantics in the UserList implementation.  It isn't worth a
-            # lot of effort to get this corner case to work identically
-            # (support for Python 1.5 support will die soon anyway),
-            # so just treat it separately for now.
-            assert result == 'bar', result
-        else:
-            assert isinstance(result, CLVar), repr(result)
-            assert result == ['bar'], result
+        assert isinstance(result, CLVar), repr(result)
+        assert result == ['bar'], result
 
         env['CLVar'] = CLVar(['abc'])
         env.AppendUnique(CLVar = 'bar')
@@ -1765,7 +1742,7 @@ def exists(env):
 
         # Ensure that lists and dictionaries are
         # deep copied, but not instances.
-        class TestA:
+        class TestA(object):
             pass
         env1 = self.TestEnvironment(XXX=TestA(), YYY = [ 1, 2, 3 ],
                            ZZZ = { 1:2, 3:4 })
@@ -2001,7 +1978,7 @@ def generate(env):
                           RPATH=[])
 
         orig_backtick = env.backtick
-        class my_backtick:
+        class my_backtick(object):
             def __init__(self, save_command, output):
                 self.save_command = save_command
                 self.output = output
@@ -2152,11 +2129,6 @@ f5: \
     def test_Prepend(self):
         """Test prepending to construction variables in an Environment
         """
-        import UserDict
-        UD = UserDict.UserDict
-        import UserList
-        UL = UserList.UserList
-
         cases = [
             'a1',       'A1',           'A1a1',
             'a2',       ['A2'],         ['A2', 'a2'],
@@ -2367,17 +2339,8 @@ f5: \
         env['CLVar'] = CLVar([])
         env.PrependUnique(CLVar = 'bar')
         result = env['CLVar']
-        if sys.version[0] == '1' or sys.version[:3] == '2.0':
-            # Python 2.0 and before have a quirky behavior where CLVar([])
-            # actually matches '' and [] due to different __coerce__()
-            # semantics in the UserList implementation.  It isn't worth a
-            # lot of effort to get this corner case to work identically
-            # (support for Python 1.5 support will die soon anyway),
-            # so just treat it separately for now.
-            assert result == 'bar', result
-        else:
-            assert isinstance(result, CLVar), repr(result)
-            assert result == ['bar'], result
+        assert isinstance(result, CLVar), repr(result)
+        assert result == ['bar'], result
 
         env['CLVar'] = CLVar(['abc'])
         env.PrependUnique(CLVar = 'bar')
@@ -2708,7 +2671,7 @@ def generate(env):
 
     def test_VariantDir(self):
         """Test the VariantDir() method"""
-        class MyFS:
+        class MyFS(object):
              def Dir(self, name):
                  return name
              def VariantDir(self, variant_dir, src_dir, duplicate):
@@ -2896,7 +2859,7 @@ def generate(env):
 
     def test_Dir(self):
         """Test the Dir() method"""
-        class MyFS:
+        class MyFS(object):
             def Dir(self, name):
                 return 'Dir(%s)' % name
 
@@ -2959,7 +2922,7 @@ def generate(env):
     def test_Execute(self):
         """Test the Execute() method"""
 
-        class MyAction:
+        class MyAction(object):
             def __init__(self, *args, **kw):
                 self.args = args
             def __call__(self, target, source, env):
@@ -2973,7 +2936,7 @@ def generate(env):
 
     def test_Entry(self):
         """Test the Entry() method"""
-        class MyFS:
+        class MyFS(object):
             def Entry(self, name):
                 return 'Entry(%s)' % name
 
@@ -2997,7 +2960,7 @@ def generate(env):
 
     def test_File(self):
         """Test the File() method"""
-        class MyFS:
+        class MyFS(object):
             def File(self, name):
                 return 'File(%s)' % name
 
@@ -3122,7 +3085,7 @@ def generate(env):
 
     def test_Repository(self):
         """Test the Repository() method."""
-        class MyFS:
+        class MyFS(object):
             def __init__(self):
                 self.list = []
             def Repository(self, *dirs):
@@ -3160,7 +3123,7 @@ def generate(env):
         """Test the SConsignFile() method"""
         import SCons.SConsign
 
-        class MyFS:
+        class MyFS(object):
             SConstruct_dir = os.sep + 'dir'
 
         env = self.TestEnvironment(FOO = 'SConsign',
@@ -3635,24 +3598,16 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
 
     def test_contains(self):
         """Test the OverrideEnvironment __contains__() method"""
-        try:
-            'x' in {'x':1}
-        except TypeError:
-            # TODO(1.5)
-            # An early version of Python that doesn't support "in"
-            # on dictionaries.  Just pass the test.
-            pass
-        else:
-            env, env2, env3 = self.envs
-            assert 'XXX' in env
-            assert 'XXX' in env2
-            assert 'XXX' in env3
-            assert 'YYY' in env
-            assert 'YYY' in env2
-            assert 'YYY' in env3
-            assert not 'ZZZ' in env
-            assert not 'ZZZ' in env2
-            assert 'ZZZ' in env3
+        env, env2, env3 = self.envs
+        assert 'XXX' in env
+        assert 'XXX' in env2
+        assert 'XXX' in env3
+        assert 'YYY' in env
+        assert 'YYY' in env2
+        assert 'YYY' in env3
+        assert not 'ZZZ' in env
+        assert not 'ZZZ' in env2
+        assert 'ZZZ' in env3
 
     def test_items(self):
         """Test the OverrideEnvironment Dictionary() method"""
@@ -3667,14 +3622,11 @@ class OverrideEnvironmentTestCase(unittest.TestCase,TestEnvironmentFixture):
     def test_items(self):
         """Test the OverrideEnvironment items() method"""
         env, env2, env3 = self.envs
-        items = env.items()
-        items.sort()
+        items = sorted(env.items())
         assert items == [('XXX', 'x'), ('YYY', 'y')], items
-        items = env2.items()
-        items.sort()
+        items = sorted(env2.items())
         assert items == [('XXX', 'x2'), ('YYY', 'y')], items
-        items = env3.items()
-        items.sort()
+        items = sorted(env3.items())
         assert items == [('XXX', 'x3'), ('YYY', 'y3'), ('ZZZ', 'z3')], items
 
     def test_gvars(self):

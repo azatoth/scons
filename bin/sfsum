@@ -41,7 +41,7 @@ SFName = {
     'Christoph Wiedemann'       : 'wiedeman',
 }
 
-class Artifact:
+class Artifact(object):
     """Just a place to hold attributes that we find in the XML."""
     pass
 
@@ -119,9 +119,9 @@ if __name__ == '__main__':
 
     # Hard-coded search for 'Open' bugs.  This should be easily
     # generalized once we figure out other things for this script to do.
-    bugs = filter(lambda x: x.status == 'Open', Artifacts['Bugs'])
+    bugs = [x for x in Artifacts['Bugs'] if x.status == 'Open']
 
-    print Artifacts.keys()
+    print list(Artifacts.keys())
 
     print "%d open bugs" % len(bugs)
 

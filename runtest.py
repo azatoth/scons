@@ -24,6 +24,8 @@
 #
 # Options:
 #
+#       -3              Run with the python -3 option,
+#
 #       -a              Run all tests; does a virtual 'find' for
 #                       all SCons tests under the current directory.
 #
@@ -83,8 +85,6 @@
 # library directory.  If we ever resurrect that as the default, then
 # you can find the appropriate code in the 0.04 version of this script,
 # rather than reinventing that wheel.)
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 import getopt
 import glob
@@ -94,8 +94,30 @@ import stat
 import sys
 import time
 
-if not hasattr(os, 'WEXITSTATUS'):
-    os.WEXITSTATUS = lambda x: x
+try:
+    sorted
+except NameError:
+    # Pre-2.4 Python has no sorted() function.
+    #
+    # The pre-2.4 Python list.sort() method does not support
+    # list.sort(key=) nor list.sort(reverse=) keyword arguments, so
+    # we must implement the functionality of those keyword arguments
+    # by hand instead of passing them to list.sort().
+    def sorted(iterable, cmp=None, key=None, reverse=0):
+        if key is not None:
+            result = [(key(x), x) for x in iterable]
+        else:
+            result = iterable[:]
+        if cmp is None:
+            # Pre-2.3 Python does not support list.sort(None).
+            result.sort()
+        else:
+            result.sort(cmp)
+        if key is not None:
+            result = [t1 for t0,t1 in result]
+        if reverse:
+            result.reverse()
+        return result
 
 cwd = os.getcwd()
 
@@ -109,6 +131,7 @@ list_only = None
 printcommand = 1
 package = None
 print_passed_summary = None
+python3incompatibilities = None
 scons = None
 scons_exec = None
 outputfile = None
@@ -122,6 +145,7 @@ spe = None
 helpstr = """\
 Usage: runtest.py [OPTIONS] [TEST ...]
 Options:
+  -3                          Warn about Python 3.x incompatibilities.
   -a, --all                   Run all tests.
   --aegis                     Print results in Aegis format.
   -b BASE, --baseline BASE    Run test scripts against baseline BASE.
@@ -159,7 +183,7 @@ Options:
   --xml                       Print results in SCons XML format.
 """
 
-opts, args = getopt.getopt(sys.argv[1:], "ab:df:hlno:P:p:qv:Xx:t",
+opts, args = getopt.getopt(sys.argv[1:], "3ab:df:hlno:P:p:qv:Xx:t",
                             ['all', 'aegis', 'baseline=', 'builddir=',
                              'debug', 'file=', 'help',
                              'list', 'no-exec', 'noqmtest', 'output=',
@@ -169,7 +193,9 @@ opts, args = getopt.getopt(sys.argv[1:], "ab:df:hlno:P:p:qv:Xx:t",
                              'verbose=', 'xml'])
 
 for o, a in opts:
-    if o in ['-a', '--all']:
+    if o in ['-3']:
+        python3incompatibilities = 1
+    elif o in ['-a', '--all']:
         all = 1
     elif o in ['-b', '--baseline']:
         baseline = a
@@ -336,7 +362,7 @@ else:
         command_args = list(map(escape, command_args))
         return os.spawnv(os.P_WAIT, command, command_args)
 
-class Base:
+class Base(object):
     def __init__(self, path, spe=None):
         self.path = path
         self.abspath = os.path.abspath(path)
@@ -577,26 +603,33 @@ if old_pythonpath:
                                os.pathsep + \
                                old_pythonpath
 
+if python3incompatibilities:
+    os.environ['SCONS_HORRIBLE_REGRESSION_TEST_HACK'] = '1'
+
 tests = []
 
-def find_Tests_py(tdict, dirname, names):
-    for n in [n for n in names if n[-8:] == "Tests.py"]:
-        tdict[os.path.join(dirname, n)] = 1
+def find_Tests_py(directory):
+    result = []
+    for dirpath, dirnames, filenames in os.walk(directory):
+        for fname in filenames:
+            if fname.endswith("Tests.py"):
+                result.append(os.path.join(dirpath, fname))
+    return sorted(result)
 
-def find_py(tdict, dirname, names):
-    tests = [n for n in names if n[-3:] == ".py"]
-    try:
-        excludes = open(os.path.join(dirname,".exclude_tests")).readlines()
-    except (OSError, IOError):
-        pass
-    else:
-        for exclude in excludes:
-            exclude = exclude.split('#' , 1)[0]
-            exclude = exclude.strip()
-            if not exclude: continue
-            tests = [n for n in tests if n != exclude]
-    for n in tests:
-        tdict[os.path.join(dirname, n)] = 1
+def find_py(directory):
+    result = []
+    for dirpath, dirnames, filenames in os.walk(directory):
+        try:
+            exclude_fp = open(os.path.join(dirpath, ".exclude_tests"))
+        except EnvironmentError:
+            excludes = []
+        else:
+            excludes = [ e.split('#', 1)[0].strip()
+                         for e in exclude_fp.readlines() ]
+        for fname in filenames:
+            if fname.endswith(".py") and fname not in excludes:
+                result.append(os.path.join(dirpath, fname))
+    return sorted(result)
 
 if args:
     if spe:
@@ -614,14 +647,11 @@ if args:
         for a in args:
             for path in glob.glob(a):
                 if os.path.isdir(path):
-                    tdict = {}
                     if path[:3] == 'src':
-                        os.path.walk(path, find_Tests_py, tdict)
+                        tests.extend(find_Tests_py(path))
+
                     elif path[:4] == 'test':
-                        os.path.walk(path, find_py, tdict)
-                    t = tdict.keys()
-                    t.sort()
-                    tests.extend(t)
+                        tests.extend(find_py(path))
                 else:
                     tests.append(path)
 elif testlistfile:
@@ -640,25 +670,22 @@ elif all and not qmtest:
     # still be executed by hand, though, and are routinely executed
     # by the Aegis packaging build to make sure that we're building
     # things correctly.)
-    tdict = {}
-    os.path.walk('src', find_Tests_py, tdict)
-    os.path.walk('test', find_py, tdict)
+    tests.extend(find_Tests_py('src'))
+    tests.extend(find_py('test'))
     if format == '--aegis' and aegis:
         cmd = "aegis -list -unf pf 2>/dev/null"
         for line in os.popen(cmd, "r").readlines():
             a = line.split()
-            if a[0] == "test" and a[-1] not in tdict:
-                tdict[a[-1]] = Test(a[-1], spe)
+            if a[0] == "test" and a[-1] not in tests:
+                tests.append(Test(a[-1], spe))
         cmd = "aegis -list -unf cf 2>/dev/null"
         for line in os.popen(cmd, "r").readlines():
             a = line.split()
             if a[0] == "test":
                 if a[1] == "remove":
-                    del tdict[a[-1]]
-                elif a[-1] not in tdict:
-                    tdict[a[-1]] = Test(a[-1], spe)
-
-    tests = tdict.keys()
+                    tests.remove(a[-1])
+                elif a[-1] not in tests:
+                    tests.append(Test(a[-1], spe))
     tests.sort()
 
 if qmtest:
@@ -720,9 +747,10 @@ if qmtest:
 
 tests = list(map(Test, tests))
 
-class Unbuffered:
+class Unbuffered(object):
     def __init__(self, file):
         self.file = file
+        self.softspace = 0  ## backward compatibility; not supported in Py3k
     def write(self, arg):
         self.file.write(arg)
         self.file.flush()
@@ -743,6 +771,7 @@ if not python:
         python = os.path.join(sys.prefix, 'jython')
     else:
         python = sys.executable
+os.environ["python_executable"] = python
 
 # time.clock() is the suggested interface for doing benchmarking timings,
 # but time.time() does a better job on Linux systems, so let that be
@@ -761,6 +790,8 @@ else:
 total_start_time = time_func()
 for t in tests:
     command_args = ['-tt']
+    if python3incompatibilities:
+        command_args.append('-3')
     if debug:
         command_args.append(debug)
     command_args.append(t.path)

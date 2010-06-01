@@ -20,8 +20,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -90,7 +88,7 @@ for f in files:
     contents = open(os.path.join(scons_lib_dir, f)).read()
     try_except_lines = {}
     lastend = 0
-    while 1:
+    while True:
         match = tryexc_pat.search( contents, lastend )
         if match is None:
             break

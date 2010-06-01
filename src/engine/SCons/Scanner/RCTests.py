@@ -27,11 +27,10 @@ import TestCmd
 import SCons.Scanner.RC
 import unittest
 import sys
+import collections
 import os
-import os.path
 import SCons.Node.FS
 import SCons.Warnings
-import UserDict
 
 test = TestCmd.TestCmd(workdir = '')
 
@@ -71,9 +70,9 @@ for h in headers:
 
 # define some helpers:
 
-class DummyEnvironment(UserDict.UserDict):
+class DummyEnvironment(collections.UserDict):
     def __init__(self,**kw):
-        UserDict.UserDict.__init__(self)
+        collections.UserDict.__init__(self)
         self.data.update(kw)
         self.fs = SCons.Node.FS.FS(test.workpath(''))
         
@@ -86,7 +85,7 @@ class DummyEnvironment(UserDict.UserDict):
         return strSubst
 
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
         return list(map(self.subst, path))
 
@@ -112,10 +111,8 @@ if os.path.normcase('foo') == os.path.normcase('FOO'):
     my_normpath = os.path.normcase
 
 def deps_match(self, deps, headers):
-    scanned = list(map(my_normpath, list(map(str, deps))))
-    expect = list(map(my_normpath, headers))
-    scanned.sort()
-    expect.sort()
+    scanned = sorted(map(my_normpath, list(map(str, deps))))
+    expect = sorted(map(my_normpath, headers))
     self.failUnless(scanned == expect, "expect %s != scanned %s" % (expect, scanned))
 
 # define some tests:

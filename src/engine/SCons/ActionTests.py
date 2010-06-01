@@ -23,6 +23,8 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
 # Define a null function and a null class for use as builder actions.
 # Where these are defined in the file seems to affect their byte-code
 # contents, so try to minimize changes by defining them here, before we
@@ -30,17 +32,17 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 def GlobalFunc():
     pass
 
-class GlobalActFunc:
+class GlobalActFunc(object):
     def __call__(self):
         pass
 
+import collections
+import io
 import os
 import re
-import StringIO
 import sys
 import types
 import unittest
-import UserDict
 
 import SCons.Action
 import SCons.Environment
@@ -97,9 +99,9 @@ scons_env = SCons.Environment.Environment()
 
 # Capture all the stuff the Actions will print,
 # so it doesn't clutter the output.
-sys.stdout = StringIO.StringIO()
+sys.stdout = io.StringIO()
 
-class CmdStringHolder:
+class CmdStringHolder(object):
     def __init__(self, cmd, literal=None):
         self.data = str(cmd)
         self.literal = literal
@@ -124,7 +126,7 @@ class CmdStringHolder:
         else:
             return self.data
 
-class Environment:
+class Environment(object):
     def __init__(self, **kw):
         self.d = {}
         self.d['SHELL'] = scons_env['SHELL']
@@ -150,7 +152,7 @@ class Environment:
     def get(self, key, value=None):
         return self.d.get(key, value)
     def items(self):
-        return self.d.items()
+        return list(self.d.items())
     def Dictionary(self):
         return self.d
     def Clone(self, **kw):
@@ -168,7 +170,7 @@ class Environment:
         d['SOURCE'] = d['SOURCES'][0]
         return d
 
-class DummyNode:
+class DummyNode(object):
     def __init__(self, name):
         self.name = name
     def str_for_display(self):
@@ -191,7 +193,6 @@ _null = SCons.Action._null
 
 def test_varlist(pos_call, str_call, cmd, cmdstrfunc, **kw):
     def call_action(a, pos_call=pos_call, str_call=str_call, kw=kw):
-        #FUTURE a = SCons.Action.Action(*a, **kw)
         a = SCons.Action.Action(*a, **kw)
         # returned object must provide these entry points
         assert hasattr(a, '__call__')
@@ -274,7 +275,7 @@ def test_positional_args(pos_callback, cmd, **kw):
             m = 'Invalid command display variable'
             assert s.find(m) != -1, 'Unexpected string:  %s' % s
         else:
-            raise Exception, "did not catch expected UserError"
+            raise Exception("did not catch expected UserError")
 
     return act
 
@@ -304,7 +305,9 @@ class ActionTestCase(unittest.TestCase):
         # a singleton list returns the contained action
         test_positional_args(cmd_action, ["string"])
 
-        if hasattr(types, 'UnicodeType'):
+        try: unicode
+        except NameError: pass
+        else:
             a2 = eval("SCons.Action.Action(u'string')")
             assert isinstance(a2, SCons.Action.CommandAction), a2
 
@@ -491,7 +494,7 @@ class _ActionActionTestCase(unittest.TestCase):
             m = 'Cannot have both strfunction and cmdstr args to Action()'
             assert s.find(m) != -1, 'Unexpected string:  %s' % s
         else:
-            raise Exception, "did not catch expected UserError"
+            raise Exception("did not catch expected UserError")
 
     def test___cmp__(self):
         """Test Action comparison
@@ -513,7 +516,7 @@ class _ActionActionTestCase(unittest.TestCase):
                 pass
             a = SCons.Action.Action(execfunc)
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             a.print_cmd_line("foo bar", None, None, None)
             s = sio.getvalue()
@@ -540,22 +543,22 @@ class _ActionActionTestCase(unittest.TestCase):
             env = Environment()
 
             def execfunc(target, source, env):
-                assert type(target) is type([]), type(target)
-                assert type(source) is type([]), type(source)
+                assert isinstance(target, list), type(target)
+                assert isinstance(source, list), type(source)
                 return 7
             a = SCons.Action.Action(execfunc)
 
             def firstfunc(target, source, env):
-                assert type(target) is type([]), type(target)
-                assert type(source) is type([]), type(source)
+                assert isinstance(target, list), type(target)
+                assert isinstance(source, list), type(source)
                 return 0
             def lastfunc(target, source, env):
-                assert type(target) is type([]), type(target)
-                assert type(source) is type([]), type(source)
+                assert isinstance(target, list), type(target)
+                assert isinstance(source, list), type(source)
                 return 9
             b = SCons.Action.Action([firstfunc, execfunc, lastfunc])
             
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a("out", "in", env)
             assert result.status == 7, result
@@ -565,14 +568,14 @@ class _ActionActionTestCase(unittest.TestCase):
             a.chdir = 'xyz'
             expect = "os.chdir(%s)\nexecfunc(['out'], ['in'])\nos.chdir(%s)\n"
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a("out", "in", env)
             assert result.status == 7, result.status
             s = sio.getvalue()
             assert s == expect % (repr('xyz'), repr(test.workpath())), s
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a("out", "in", env, chdir='sub')
             assert result.status == 7, result.status
@@ -581,7 +584,7 @@ class _ActionActionTestCase(unittest.TestCase):
 
             a.chdir = None
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = b("out", "in", env)
             assert result.status == 7, result.status
@@ -590,14 +593,14 @@ class _ActionActionTestCase(unittest.TestCase):
 
             SCons.Action.execute_actions = 0
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a("out", "in", env)
             assert result == 0, result
             s = sio.getvalue()
             assert s == "execfunc(['out'], ['in'])\n", s
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = b("out", "in", env)
             assert result == 0, result
@@ -607,35 +610,35 @@ class _ActionActionTestCase(unittest.TestCase):
             SCons.Action.print_actions_presub = 1
             SCons.Action.execute_actions = 1
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a("out", "in", env)
             assert result.status == 7, result.status
             s = sio.getvalue()
             assert s == "Building out with action:\n  execfunc(target, source, env)\nexecfunc(['out'], ['in'])\n", s
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a("out", "in", env, presub=0)
             assert result.status == 7, result.status
             s = sio.getvalue()
             assert s == "execfunc(['out'], ['in'])\n", s
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a("out", "in", env, presub=1)
             assert result.status == 7, result.status
             s = sio.getvalue()
             assert s == "Building out with action:\n  execfunc(target, source, env)\nexecfunc(['out'], ['in'])\n", s
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = b(["out"], "in", env, presub=1)
             assert result.status == 7, result.status
             s = sio.getvalue()
             assert s == "Building out with action:\n  firstfunc(target, source, env)\nfirstfunc(['out'], ['in'])\nBuilding out with action:\n  execfunc(target, source, env)\nexecfunc(['out'], ['in'])\n", s
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = b(["out", "list"], "in", env, presub=1)
             assert result.status == 7, result.status
@@ -644,14 +647,14 @@ class _ActionActionTestCase(unittest.TestCase):
 
             a2 = SCons.Action.Action(execfunc)
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a2("out", "in", env)
             assert result.status == 7, result.status
             s = sio.getvalue()
             assert s == "Building out with action:\n  execfunc(target, source, env)\nexecfunc(['out'], ['in'])\n", s
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a2("out", "in", env, presub=0)
             assert result.status == 7, result.status
@@ -660,14 +663,14 @@ class _ActionActionTestCase(unittest.TestCase):
 
             SCons.Action.execute_actions = 0
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a2("out", "in", env, presub=0)
             assert result == 0, result
             s = sio.getvalue()
             assert s == "execfunc(['out'], ['in'])\n", s
 
-            sio = StringIO.StringIO()
+            sio = io.StringIO()
             sys.stdout = sio
             result = a("out", "in", env, presub=0, execute=1, show=0)
             assert result.status == 7, result.status
@@ -947,17 +950,17 @@ class CommandActionTestCase(unittest.TestCase):
         s = act.strfunction([], [], env)
         assert s == "sf was called", s
 
-        class actclass1:
+        class actclass1(object):
             def __init__(self, targets, sources, env):
                 pass
             def __call__(self):
                 return 1
-        class actclass2:
+        class actclass2(object):
             def __init__(self, targets, sources, env):
                 self.strfunction = 5
             def __call__(self):
                 return 2
-        class actclass3:
+        class actclass3(object):
             def __init__(self, targets, sources, env):
                 pass
             def __call__(self):
@@ -965,7 +968,7 @@ class CommandActionTestCase(unittest.TestCase):
             def strfunction(self, targets, sources, env):
                 return 'actclass3 on %s to get %s'%(str(sources[0]),
                                                     str(targets[0]))
-        class actclass4:
+        class actclass4(object):
             def __init__(self, targets, sources, env):
                 pass
             def __call__(self):
@@ -1094,7 +1097,7 @@ class CommandActionTestCase(unittest.TestCase):
         c = test.read(outfile, 'r')
         assert c == "act.py: 'out5' 'XYZZY'\nact.py: 'xyzzy5'\n", c
 
-        class Obj:
+        class Obj(object):
             def __init__(self, str):
                 self._str = str
             def __str__(self):
@@ -1252,7 +1255,7 @@ class CommandActionTestCase(unittest.TestCase):
     def test_set_handler(self):
         """Test setting the command handler...
         """
-        class Test:
+        class Test(object):
             def __init__(self):
                 self.executed = 0
         t=Test()
@@ -1263,7 +1266,7 @@ class CommandActionTestCase(unittest.TestCase):
         def escape_func(cmd):
             return '**' + cmd + '**'
 
-        class LiteralStr:
+        class LiteralStr(object):
             def __init__(self, x):
                 self.data = x
             def __str__(self):
@@ -1449,7 +1452,7 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
         assert self.dummy==2, self.dummy
         del self.dummy
 
-        class DummyFile:
+        class DummyFile(object):
             def __init__(self, t):
                 self.t = t
             def rfile(self):
@@ -1503,9 +1506,7 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
         def f_global(target, source, env, for_signature):
             return SCons.Action.Action(GlobalFunc)
 
-        # TODO(1.5):
-        #def f_local(target, source, env, for_signature):
-        def f_local(target, source, env, for_signature, LocalFunc=LocalFunc):
+        def f_local(target, source, env, for_signature):
             return SCons.Action.Action(LocalFunc)
 
         env = Environment(XYZ = 'foo')
@@ -1521,9 +1522,7 @@ class CommandGeneratorActionTestCase(unittest.TestCase):
         def f_global(target, source, env, for_signature):
             return SCons.Action.Action(GlobalFunc, varlist=['XYZ'])
 
-        # TODO(1.5):
-        #def f_local(target, source, env, for_signature):
-        def f_local(target, source, env, for_signature, LocalFunc=LocalFunc):
+        def f_local(target, source, env, for_signature):
             return SCons.Action.Action(LocalFunc, varlist=['XYZ'])
 
         matches_foo = [x + "foo" for x in func_matches]
@@ -1568,7 +1567,7 @@ class FunctionActionTestCase(unittest.TestCase):
         s = str(a)
         assert s == "func1(target, source, env)", s
 
-        class class1:
+        class class1(object):
             def __call__(self):
                 pass
         a = SCons.Action.FunctionAction(class1(), {})
@@ -1612,7 +1611,7 @@ class FunctionActionTestCase(unittest.TestCase):
         c = test.read(outfile2, 'r')
         assert c == "function1\n", c
 
-        class class1a:
+        class class1a(object):
             def __init__(self, target, source, env):
                 open(env['out'], 'w').write("class1a\n")
 
@@ -1622,7 +1621,7 @@ class FunctionActionTestCase(unittest.TestCase):
         c = test.read(outfile, 'r')
         assert c == "class1a\n", c
 
-        class class1b:
+        class class1b(object):
             def __call__(self, target, source, env):
                 open(env['out'], 'w').write("class1b\n")
                 return 2
@@ -1690,14 +1689,14 @@ class FunctionActionTestCase(unittest.TestCase):
         c = a.get_contents(target=[], source=[], env=Environment(XYZ='foo'))
         assert c in matches_foo, repr(c)
 
-        class Foo:
+        class Foo(object):
             def get_contents(self, target, source, env):
                 return 'xyzzy'
         a = factory(Foo())
         c = a.get_contents(target=[], source=[], env=Environment())
         assert c == 'xyzzy', repr(c)
 
-        class LocalClass:
+        class LocalClass(object):
             def LocalMethod(self):
                 pass
         lc = LocalClass()
@@ -1779,12 +1778,12 @@ class ListActionTestCase(unittest.TestCase):
             open(env['out'], 'a').write("function2\n")
             return 0
 
-        class class2a:
+        class class2a(object):
             def __call__(self, target, source, env):
                 open(env['out'], 'a').write("class2a\n")
                 return 0
 
-        class class2b:
+        class class2b(object):
             def __init__(self, target, source, env):
                 open(env['out'], 'a').write("class2b\n")
         act = SCons.Action.ListAction([cmd2, function2, class2a(), class2b])
@@ -1936,7 +1935,7 @@ class ActionCallerTestCase(unittest.TestCase):
             "d\x00\x00S"
         ]
 
-        class LocalActFunc:
+        class LocalActFunc(object):
             def __call__(self):
                 pass
 

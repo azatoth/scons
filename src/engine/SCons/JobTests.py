@@ -19,8 +19,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -40,7 +38,7 @@ num_jobs = 11
 # how many tasks to perform for the test
 num_tasks = num_jobs*5
 
-class DummyLock:
+class DummyLock(object):
     "fake lock class to use if threads are not supported"
     def acquire(self):
         pass
@@ -48,13 +46,13 @@ class DummyLock:
     def release(self):
         pass
 
-class NoThreadsException:
+class NoThreadsException(object):
     "raised by the ParallelTestCase if threads are not supported"
 
     def __str__(self):
         return "the interpreter doesn't support threads"
 
-class Task:
+class Task(object):
     """A dummy task class for testing purposes."""
 
     def __init__(self, i, taskmaster):
@@ -114,7 +112,7 @@ class RandomTask(Task):
             x = math.sin(i)
         time.sleep(0.01)
 
-class ExceptionTask:
+class ExceptionTask(object):
     """A dummy task class for testing purposes."""
 
     def __init__(self, i, taskmaster):
@@ -152,7 +150,7 @@ class ExceptionTask:
     def exception_set(self):
         self.taskmaster.exception_set()
 
-class Taskmaster:
+class Taskmaster(object):
     """A dummy taskmaster class for testing the job classes."""
 
     def __init__(self, n, test_case, Task):
@@ -369,7 +367,7 @@ import SCons.Taskmaster
 import SCons.Node
 import time
 
-class DummyNodeInfo:
+class DummyNodeInfo(object):
     def update(self, obj):
         pass
 
@@ -398,7 +396,7 @@ class badnode (goodnode):
         goodnode.__init__(self)
         self.expect_to_be = SCons.Node.failed
     def build(self, **kw):
-        raise Exception, 'badnode exception'
+        raise Exception('badnode exception')
 
 class slowbadnode (badnode):
     def build(self, **kw):
@@ -407,11 +405,11 @@ class slowbadnode (badnode):
         # it is faster than slowgoodnode then these could complete
         # while the scheduler is sleeping.
         time.sleep(0.05)
-        raise Exception, 'slowbadnode exception'
+        raise Exception('slowbadnode exception')
 
 class badpreparenode (badnode):
     def prepare(self):
-        raise Exception, 'badpreparenode exception'
+        raise Exception('badpreparenode exception')
 
 class _SConsTaskTest(unittest.TestCase):
 
@@ -527,8 +525,8 @@ if __name__ == "__main__":
     result = runner.run(suite())
     if (len(result.failures) == 0
         and len(result.errors) == 1
-        and type(result.errors[0][0]) == SerialTestCase
-        and type(result.errors[0][1][0]) == NoThreadsException):
+        and isinstance(result.errors[0][0], SerialTestCase)
+        and isinstance(result.errors[0][1][0], NoThreadsException)):
         sys.exit(2)
     elif not result.wasSuccessful():
         sys.exit(1)

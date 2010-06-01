@@ -23,20 +23,19 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
 import os
-import os.path
-import StringIO
 import sys
-import types
 import unittest
 
-from UserDict import UserDict
+from collections import UserDict
 
 import SCons.Errors
 
 from SCons.Subst import *
 
-class DummyNode:
+class DummyNode(object):
     """Simple node work-alike."""
     def __init__(self, name):
         self.name = os.path.normpath(name)
@@ -49,7 +48,7 @@ class DummyNode:
     def get_subst_proxy(self):
         return self
 
-class DummyEnv:
+class DummyEnv(object):
     def __init__(self, dict={}):
         self.dict = dict
 
@@ -84,7 +83,7 @@ def CmdGen1(target, source, env, for_signature):
     assert str(source) == 's', source
     return "${CMDGEN2('foo', %d)}" % for_signature
 
-class CmdGen2:
+class CmdGen2(object):
     def __init__(self, mystr, forsig):
         self.mystr = mystr
         self.expect_for_signature = forsig
@@ -107,7 +106,7 @@ class SubstTestCase(unittest.TestCase):
         """Simple node work-alike with some extra stuff for testing."""
         def __init__(self, name):
             DummyNode.__init__(self, name)
-            class Attribute:
+            class Attribute(object):
                 pass
             self.attribute = Attribute()
             self.attribute.attr1 = 'attr$1-' + os.path.basename(name)
@@ -116,7 +115,7 @@ class SubstTestCase(unittest.TestCase):
             return self.name + extra
         foo = 1
 
-    class TestLiteral:
+    class TestLiteral(object):
         def __init__(self, literal):
             self.literal = literal
         def __str__(self):
@@ -124,7 +123,7 @@ class SubstTestCase(unittest.TestCase):
         def is_literal(self):
             return 1
 
-    class TestCallable:
+    class TestCallable(object):
         def __init__(self, value):
             self.value = value
         def __call__(self):
@@ -148,7 +147,7 @@ class SubstTestCase(unittest.TestCase):
     def _defines(defs):
         l = []
         for d in defs:
-            if SCons.Util.is_List(d) or type(d) is types.TupleType:
+            if SCons.Util.is_List(d) or isinstance(d, tuple):
                 l.append(str(d[0]) + '=' + str(d[1]))
             else:
                 l.append(str(d))
@@ -207,7 +206,7 @@ class SubstTestCase(unittest.TestCase):
         'T'         : ('x', 'y'),
         'CS'        : cs,
         'CL'        : cl,
-        'US'        : UserString.UserString('us'),
+        'US'        : collections.UserString('us'),
 
         # Test function calls within ${}.
         'FUNCCALL'  : '${FUNC1("$AAA $FUNC2 $BBB")}',
@@ -365,9 +364,9 @@ class scons_subst_TestCase(SubstTestCase):
         '$CL',                  'cl',
 
         # Various uses of UserString.
-        UserString.UserString('x'),         'x',
-        UserString.UserString('$X'),        'x',
-        UserString.UserString('$US'),       'us',
+        collections.UserString('x'),         'x',
+        collections.UserString('$X'),        'x',
+        collections.UserString('$US'),       'us',
         '$US',                              'us',
 
         # Test function calls within ${}.
@@ -512,7 +511,7 @@ class scons_subst_TestCase(SubstTestCase):
         """Test scons_subst():  handling attribute errors"""
         env = DummyEnv(self.loc)
         try:
-            class Foo:
+            class Foo(object):
                 pass
             scons_subst('${foo.bar}', env, gvars={'foo':Foo()})
         except SCons.Errors.UserError, e:
@@ -520,10 +519,11 @@ class scons_subst_TestCase(SubstTestCase):
                 "AttributeError `bar' trying to evaluate `${foo.bar}'",
                 "AttributeError `Foo instance has no attribute 'bar'' trying to evaluate `${foo.bar}'",
                 "AttributeError `'Foo' instance has no attribute 'bar'' trying to evaluate `${foo.bar}'",
+                "AttributeError `'Foo' object has no attribute 'bar'' trying to evaluate `${foo.bar}'",
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
     def test_subst_syntax_errors(self):
         """Test scons_subst():  handling syntax errors"""
@@ -532,16 +532,14 @@ class scons_subst_TestCase(SubstTestCase):
             scons_subst('$foo.bar.3.0', env)
         except SCons.Errors.UserError, e:
             expect = [
-                # Python 1.5
-                "SyntaxError `invalid syntax' trying to evaluate `$foo.bar.3.0'",
-                # Python 2.2, 2.3, 2.4
+                # Python 2.3, 2.4
                 "SyntaxError `invalid syntax (line 1)' trying to evaluate `$foo.bar.3.0'",
                 # Python 2.5
                 "SyntaxError `invalid syntax (<string>, line 1)' trying to evaluate `$foo.bar.3.0'",
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
     def test_subst_type_errors(self):
         """Test scons_subst():  handling type errors"""
@@ -550,14 +548,14 @@ class scons_subst_TestCase(SubstTestCase):
             scons_subst("${NONE[2]}", env, gvars={'NONE':None})
         except SCons.Errors.UserError, e:
             expect = [
-                # Python 1.5, 2.2, 2.3, 2.4
+                # Python 2.3, 2.4
                 "TypeError `unsubscriptable object' trying to evaluate `${NONE[2]}'",
                 # Python 2.5 and later
                 "TypeError `'NoneType' object is unsubscriptable' trying to evaluate `${NONE[2]}'",
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
         try:
             def func(a, b, c):
@@ -565,14 +563,12 @@ class scons_subst_TestCase(SubstTestCase):
             scons_subst("${func(1)}", env, gvars={'func':func})
         except SCons.Errors.UserError, e:
             expect = [
-                # Python 1.5
-                "TypeError `not enough arguments; expected 3, got 1' trying to evaluate `${func(1)}'",
-                # Python 2.2, 2.3, 2.4, 2.5
+                # Python 2.3, 2.4, 2.5
                 "TypeError `func() takes exactly 3 arguments (1 given)' trying to evaluate `${func(1)}'"
             ]
             assert str(e) in expect, repr(str(e))
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
     def test_subst_raw_function(self):
         """Test scons_subst():  fetch function with SUBST_RAW plus conv"""
@@ -757,12 +753,12 @@ class scons_subst_list_TestCase(SubstTestCase):
         ['$CL'],                [['cl']],
 
         # Various uses of UserString.
-        UserString.UserString('x'),         [['x']],
-        [UserString.UserString('x')],       [['x']],
-        UserString.UserString('$X'),        [['x']],
-        [UserString.UserString('$X')],      [['x']],
-        UserString.UserString('$US'),       [['us']],
-        [UserString.UserString('$US')],     [['us']],
+        collections.UserString('x'),         [['x']],
+        [collections.UserString('x')],       [['x']],
+        collections.UserString('$X'),        [['x']],
+        [collections.UserString('$X')],      [['x']],
+        collections.UserString('$US'),       [['us']],
+        [collections.UserString('$US')],     [['us']],
         '$US',                              [['us']],
         ['$US'],                            [['us']],
 
@@ -966,7 +962,7 @@ class scons_subst_list_TestCase(SubstTestCase):
         """Test scons_subst_list():  handling attribute errors"""
         env = DummyEnv()
         try:
-            class Foo:
+            class Foo(object):
                 pass
             scons_subst_list('${foo.bar}', env, gvars={'foo':Foo()})
         except SCons.Errors.UserError, e:
@@ -974,10 +970,11 @@ class scons_subst_list_TestCase(SubstTestCase):
                 "AttributeError `bar' trying to evaluate `${foo.bar}'",
                 "AttributeError `Foo instance has no attribute 'bar'' trying to evaluate `${foo.bar}'",
                 "AttributeError `'Foo' instance has no attribute 'bar'' trying to evaluate `${foo.bar}'",
+                "AttributeError `'Foo' object has no attribute 'bar'' trying to evaluate `${foo.bar}'",
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected UserError"
+            raise AssertionError("did not catch expected UserError")
 
     def test_subst_syntax_errors(self):
         """Test scons_subst_list():  handling syntax errors"""
@@ -992,7 +989,7 @@ class scons_subst_list_TestCase(SubstTestCase):
             ]
             assert str(e) in expect, e
         else:
-            raise AssertionError, "did not catch expected SyntaxError"
+            raise AssertionError("did not catch expected SyntaxError")
 
     def test_subst_raw_function(self):
         """Test scons_subst_list():  fetch function with SUBST_RAW plus conv"""
@@ -1110,7 +1107,7 @@ class quote_spaces_TestCase(unittest.TestCase):
         q = quote_spaces('x\tx')
         assert q == '"x\tx"', q
 
-    class Node:
+    class Node(object):
         def __init__(self, name, children=[]):
             self.children = children
             self.name = name
@@ -1180,16 +1177,14 @@ class subst_dict_TestCase(unittest.TestCase):
         s1 = DummyNode('s1')
         s2 = DummyNode('s2')
         d = subst_dict(target=[t1, t2], source=[s1, s2])
-        TARGETS = [str(x) for x in d['TARGETS']]
-        TARGETS.sort()
+        TARGETS = sorted([str(x) for x in d['TARGETS']])
         assert TARGETS == ['t1', 't2'], d['TARGETS']
         assert str(d['TARGET']) == 't1', d['TARGET']
-        SOURCES = [str(x) for x in d['SOURCES']]
-        SOURCES.sort()
+        SOURCES = sorted([str(x) for x in d['SOURCES']])
         assert SOURCES == ['s1', 's2'], d['SOURCES']
         assert str(d['SOURCE']) == 's1', d['SOURCE']
 
-        class V:
+        class V(object):
             # Fake Value node with no rfile() method.
             def __init__(self, name):
                 self.name = name
@@ -1209,11 +1204,9 @@ class subst_dict_TestCase(unittest.TestCase):
         s4 = N('s4')
         s5 = V('s5')
         d = subst_dict(target=[t3, t4, t5], source=[s3, s4, s5])
-        TARGETS = [str(x) for x in d['TARGETS']]
-        TARGETS.sort()
+        TARGETS = sorted([str(x) for x in d['TARGETS']])
         assert TARGETS == ['t4', 'v-t3', 'v-t5'], TARGETS
-        SOURCES = [str(x) for x in d['SOURCES']]
-        SOURCES.sort()
+        SOURCES = sorted([str(x) for x in d['SOURCES']])
         assert SOURCES == ['s3', 'v-rstr-s4', 'v-s5'], SOURCES
 
 if __name__ == "__main__":

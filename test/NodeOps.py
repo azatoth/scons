@@ -70,7 +70,7 @@ if %(_E)s:
   real1 = [os.path.exists(str(N)) for N in Nodes]
   exists = [N.exists() for N in Nodes]
   real2 = [os.path.exists(str(N)) for N in Nodes]
-  for N,D,R,E,F in map(None, Nodes, derived, real1, exists, real2):
+  for N,D,R,E,F in zip(Nodes, derived, real1, exists, real2):
     print '%%s: %%s %%s %%s %%s'%%(N,D,R,E,F)
 foo.SharedLibrary(target = 'foo', source = 'foo%(_obj)s')
 bar.SharedLibrary(target = 'bar', source = 'bar%(_obj)s')
@@ -120,13 +120,6 @@ doIt()
 sconscript = r"""
 import os
 Import('*')
-
-import __builtin__
-try:
-    __builtin__.True
-except AttributeError:
-    __builtin__.True = 1
-    __builtin__.False = 0
 
 def mycopy(env, source, target):
     open(str(target[0]),'w').write(open(str(source[0]),'r').read())

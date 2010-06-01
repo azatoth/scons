@@ -25,7 +25,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
 import sys
-import types
 import unittest
 
 import TestCmd
@@ -44,7 +43,7 @@ for h in libs:
 
 # define some helpers:
 
-class DummyEnvironment:
+class DummyEnvironment(object):
     def __init__(self, **kw):
         self._dict = {'LIBSUFFIXES' : '.lib'}
         self._dict.update(kw)
@@ -79,7 +78,7 @@ class DummyEnvironment:
         return s
 
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
         return list(map(self.subst, path))
 
@@ -92,7 +91,7 @@ class DummyEnvironment:
     def File(self, filename):
         return self.fs.File(test.workpath(filename))
 
-class DummyNode:
+class DummyNode(object):
     def __init__(self, name):
         self.name = name
     def rexists(self):
@@ -101,8 +100,7 @@ class DummyNode:
         return self.name
     
 def deps_match(deps, libs):
-    deps=list(map(str, deps))
-    deps.sort()
+    deps=sorted(map(str, deps))
     libs.sort()
     return list(map(os.path.normpath, deps)) == list(map(os.path.normpath, libs))
 
@@ -232,7 +230,9 @@ def suite():
     suite.addTest(ProgramScannerTestCase6())
     suite.addTest(ProgramScannerTestCase7())
     suite.addTest(ProgramScannerTestCase8())
-    if hasattr(types, 'UnicodeType'):
+    try: unicode
+    except NameError: pass
+    else:
         code = """if 1:
             class ProgramScannerTestCase4(unittest.TestCase):
                 def runTest(self):

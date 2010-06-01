@@ -88,7 +88,6 @@
 # Error output gets passed through to your error output so you
 # can see if there are any problems executing the command.
 #
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 import optparse
 import os
@@ -118,7 +117,7 @@ import TestCmd
 sgmllib.entityref = re.compile('&([a-zA-Z][-_.a-zA-Z0-9]*)[^-_a-zA-Z0-9]')
 
 # Classes for collecting different types of data we're interested in.
-class DataCollector:
+class DataCollector(object):
     """Generic class for collecting data between a start tag and end
     tag.  We subclass for various types of tags we care about."""
     def __init__(self):
@@ -204,7 +203,7 @@ Sep = {
 orig = SCons.Node.FS.EntryProxy
 class MyEntryProxy(orig):
     def __str__(self):
-        return string.replace(str(self._Proxy__subject), os.sep, Sep)
+        return str(self._subject).replace(os.sep, Sep)
 SCons.Node.FS.EntryProxy = MyEntryProxy
 
 # Slip our own RDirs() method into the Node.FS.File class so that the
@@ -213,11 +212,10 @@ SCons.Node.FS.EntryProxy = MyEntryProxy
 # running on to what's appropriate for the example system.
 orig_RDirs = SCons.Node.FS.File.RDirs
 def my_RDirs(self, pathlist, orig_RDirs=orig_RDirs):
-    return map(lambda x: string.replace(str(x), os.sep, Sep),
-               orig_RDirs(self, pathlist))
+    return [str(x).replace(os.sep, Sep) for x in orig_RDirs(self, pathlist)]
 SCons.Node.FS.File.RDirs = my_RDirs
 
-class Curry:
+class Curry(object):
     def __init__(self, fun, *args, **kwargs):
         self.fun = fun
         self.pending = args[:]
@@ -235,13 +233,13 @@ class Curry:
 def Str(target, source, env, cmd=""):
     result = []
     for cmd in env.subst_list(cmd, target=target, source=source):
-        result.append(string.join(map(str, cmd)))
-    return string.join(result, '\\n')
+        result.append(' '.join(map(str, cmd)))
+    return '\\n'.join(result)
 
-class ToolSurrogate:
+class ToolSurrogate(object):
     def __init__(self, tool, variable, func, varlist):
         self.tool = tool
-        if not type(variable) is type([]):
+        if not isinstance(variable, list):
             variable = [variable]
         self.variable = variable
         self.func = func
@@ -323,16 +321,13 @@ def JavaHCom(target, source, env):
     for t, s in zip(tlist, slist):
         open(t, "wb").write(open(s, "rb").read())
 
-def find_class_files(arg, dirname, names):
-    class_files = filter(lambda n: n[-6:] == '.class', names)
-    paths = map(lambda n: os.path.join(dirname, n), class_files)
-    arg.extend(paths)
-
 def JarCom(target, source, env):
     target = str(target[0])
     class_files = []
     for src in map(str, source):
-        os.path.walk(src, find_class_files, class_files)
+        for dirpath, dirnames, filenames in os.walk(src):
+            class_files.extend([ os.path.join(dirpath, f)
+                                 for f in filenames if f.endswith('.class') ])
     f = open(target, "wb")
     for cf in class_files:
         f.write(open(cf, "rb").read())
@@ -379,7 +374,7 @@ ToolList = {
 }
 
 toollist = ToolList[platform]
-filter_tools = string.split('%(tools)s')
+filter_tools = '%(tools)s'.split()
 if filter_tools:
     toollist = [x for x in toollist if x[0] in filter_tools]
 
@@ -477,10 +472,7 @@ def command_edit(args, c, test, dict):
 
 def command_ls(args, c, test, dict):
     def ls(a):
-        files = os.listdir(a)
-        files = [x for x in files if x[0] != '.']
-        files.sort()
-        return ['  '.join(files)]
+        return ['  '.join(sorted([x for x in os.listdir(a) if x[0] != '.']))]
     if args:
         l = []
         for a in args:
@@ -508,14 +500,11 @@ def ExecuteCommand(args, c, t, dict):
     return func(args[1:], c, t, dict)
 
 class MySGML(sgmllib.SGMLParser):
-    """A subclass of the standard Python 2.2 sgmllib SGML parser.
+    """A subclass of the standard Python sgmllib SGML parser.
 
     This extends the standard sgmllib parser to recognize, and do cool
     stuff with, the added tags that describe our SCons examples,
     commands, and other stuff.
-
-    Note that this doesn't work with the 1.5.2 sgmllib module, because
-    that didn't have the ability to work with ENTITY declarations.
     """
     def __init__(self, outfp):
         sgmllib.SGMLParser.__init__(self)
@@ -567,6 +556,12 @@ class MySGML(sgmllib.SGMLParser):
     # Here is where the heavy lifting begins.  The following methods
     # handle the begin-end tags of our SCons examples.
 
+    def for_display(self, contents):
+        contents = contents.replace('__ROOT__', '')
+        contents = contents.replace('<', '&lt;')
+        contents = contents.replace('>', '&gt;')
+        return contents
+
     def start_scons_example(self, attrs):
         t = [t for t in attrs if t[0] == 'name']
         if t:
@@ -592,9 +587,7 @@ class MySGML(sgmllib.SGMLParser):
                     i = len(f.data) - 1
                     while f.data[i] == ' ':
                         i = i - 1
-                    output = f.data[:i+1].replace('__ROOT__', '')
-                    output = output.replace('<', '&lt;')
-                    output = output.replace('>', '&gt;')
+                    output = self.for_display(f.data[:i+1])
                     self.outfp.write(output)
             if e.data and e.data[0] == '\n':
                 e.data = e.data[1:]
@@ -776,8 +769,7 @@ class MySGML(sgmllib.SGMLParser):
                 content = engine_re.sub(r' File "bootstrap/src/engine/SCons/', content)
                 content = file_re.sub(r'\1 <module>', content)
                 content = nodelist_re.sub(r"\1 'NodeList' object \2", content)
-                content = content.replace('<', '&lt;')
-                content = content.replace('>', '&gt;')
+                content = self.for_display(content)
                 self.outfp.write(p + content + '\n')
 
         if o.data[0] == '\n':
@@ -814,7 +806,7 @@ class MySGML(sgmllib.SGMLParser):
     def end_sconstruct(self):
         f = self.f
         self.outfp.write('<programlisting>')
-        output = f.data.replace('__ROOT__', '')
+        output = self.for_display(f.data)
         self.outfp.write(output + '</programlisting>')
         delattr(self, 'f')
         self.afunclist = self.afunclist[:-1]

@@ -24,8 +24,6 @@ The rpm packager.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -302,7 +300,7 @@ def build_specfile_filesection(spec, files):
 
     return str
 
-class SimpleTagCompiler:
+class SimpleTagCompiler(object):
     """ This class is a simple string substition utility:
     the replacement specfication is stored in the tagset dictionary, something
     like:
@@ -333,7 +331,7 @@ class SimpleTagCompiler:
         def strip_country_code(tag):
             return tag[:-2]
 
-        replacements = self.tagset.items()
+        replacements = list(self.tagset.items())
 
         str = ""
         #domestic = [ (k,v) for k,v in replacements if not is_international(k) ]

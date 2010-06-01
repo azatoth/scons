@@ -34,8 +34,6 @@ tool definition.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -86,7 +84,7 @@ for suffix in LaTeXSuffixes:
     SourceFileScanner.add_scanner(suffix, LaTeXScanner)
     SourceFileScanner.add_scanner(suffix, PDFLaTeXScanner)
 
-class Tool:
+class Tool(object):
     def __init__(self, name, toolpath=[], **kw):
         self.name = name
         self.toolpath = toolpath + DefaultToolpath
@@ -114,7 +112,7 @@ class Tool:
                         file.close()
             except ImportError, e:
                 if str(e)!="No module named %s"%self.name:
-                    raise SCons.Errors.EnvironmentError, e
+                    raise SCons.Errors.EnvironmentError(e)
                 try:
                     import zipimport
                 except ImportError:
@@ -144,7 +142,7 @@ class Tool:
                     return module
                 except ImportError, e:
                     if str(e)!="No module named %s"%self.name:
-                        raise SCons.Errors.EnvironmentError, e
+                        raise SCons.Errors.EnvironmentError(e)
                     try:
                         import zipimport
                         importer = zipimport.zipimporter( sys.modules['SCons.Tool'].__path__[0] )
@@ -153,10 +151,10 @@ class Tool:
                         return module
                     except ImportError, e:
                         m = "No tool named '%s': %s" % (self.name, e)
-                        raise SCons.Errors.EnvironmentError, m
+                        raise SCons.Errors.EnvironmentError(m)
             except ImportError, e:
                 m = "No tool named '%s': %s" % (self.name, e)
-                raise SCons.Errors.EnvironmentError, m
+                raise SCons.Errors.EnvironmentError(m)
 
     def __call__(self, env, *args, **kw):
         if self.init_kw is not None:
@@ -429,7 +427,7 @@ def CreateJavaFileBuilder(env):
         env['JAVASUFFIX'] = '.java'
     return java_file
 
-class ToolInitializerMethod:
+class ToolInitializerMethod(object):
     """
     This is added to a construction environment in place of a
     method(s) normally called for a Builder (env.Object, env.StaticObject,
@@ -477,7 +475,7 @@ class ToolInitializerMethod:
             return [], []
         return builder(*args, **kw)
 
-class ToolInitializer:
+class ToolInitializer(object):
     """
     A class for delayed initialization of Tools modules.
 
@@ -647,21 +645,28 @@ def tool_list(platform, env):
         fortran_compiler = FindTool(fortran_compilers, env) or fortran_compilers[0]
         ar = FindTool(ars, env) or ars[0]
 
-    other_tools = FindAllTools(['BitKeeper', 'CVS',
-                                'dmd',
-                                'filesystem',
-                                'dvipdf', 'dvips', 'gs',
-                                'jar', 'javac', 'javah',
-                                'latex', 'lex',
-                                'm4', #'midl', 'msvs',
-                                'pdflatex', 'pdftex', 'Perforce',
-                                'RCS', 'rmic', 'rpcgen',
-                                'SCCS',
-                                # 'Subversion',
-                                'swig',
-                                'tar', 'tex',
-                                'yacc', 'zip', 'rpm', 'wix']+other_plat_tools,
-                               env)
+    other_tools = FindAllTools(other_plat_tools + [
+                               'dmd',
+                               #TODO: merge 'install' into 'filesystem' and
+                               # make 'filesystem' the default
+                               'filesystem',
+                               'm4',
+                               'wix', #'midl', 'msvs',
+                               # Parser generators
+                               'lex', 'yacc',
+                               # Foreign function interface
+                               'rpcgen', 'swig',
+                               # Java
+                               'jar', 'javac', 'javah', 'rmic',
+                               # TeX
+                               'dvipdf', 'dvips', 'gs',
+                               'tex', 'latex', 'pdflatex', 'pdftex',
+                               # Archivers
+                               'tar', 'zip', 'rpm',
+                               # SourceCode factories
+                               'BitKeeper', 'CVS', 'Perforce',
+                               'RCS', 'SCCS', # 'Subversion',
+                               ], env)
 
     tools = ([linker, c_compiler, cxx_compiler,
               fortran_compiler, assembler, ar]

@@ -2,7 +2,6 @@
 #
 # Module for handling SCons documentation processing.
 #
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __doc__ = """
 This module parses home-brew XML files that document various things
@@ -147,7 +146,7 @@ class Tool(Item):
 class ConstructionVariable(Item):
     pass
 
-class Chunk:
+class Chunk(object):
     def __init__(self, tag, body=None):
         self.tag = tag
         if not body:
@@ -159,7 +158,7 @@ class Chunk:
     def append(self, data):
         self.body.append(data)
 
-class Arguments:
+class Arguments(object):
     def __init__(self, signature, body=None):
         if not body:
             body = []
@@ -176,7 +175,7 @@ class Arguments:
     def append(self, data):
         self.body.append(data)
 
-class Summary:
+class Summary(object):
     def __init__(self):
         self.body = []
         self.collect = []
@@ -218,7 +217,7 @@ class SConsDocHandler(xml.sax.handler.ContentHandler,
     def __init__(self):
         self._start_dispatch = {}
         self._end_dispatch = {}
-        keys = self.__class__.__dict__.keys()
+        keys = list(self.__class__.__dict__.keys())
         start_tag_method_names = [k for k in keys if k[:6] == 'start_']
         end_tag_method_names = [k for k in keys if k[:4] == 'end_']
         for method_name in start_tag_method_names:
@@ -354,15 +353,13 @@ class SConsDocHandler(xml.sax.handler.ContentHandler,
     def start_uses(self, attrs):
         self.begin_collecting([])
     def end_uses(self):
-        self.current_object.uses = ''.join(self.collect).split()
-        self.current_object.uses.sort()
+        self.current_object.uses = sorted(''.join(self.collect).split())
         self.end_collecting()
 
     def start_sets(self, attrs):
         self.begin_collecting([])
     def end_sets(self):
-        self.current_object.sets = ''.join(self.collect).split()
-        self.current_object.sets.sort()
+        self.current_object.sets = sorted(''.join(self.collect).split())
         self.end_collecting()
 
     # Stuff for the ErrorHandler portion.

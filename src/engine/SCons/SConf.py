@@ -28,12 +28,13 @@ Autoconf-like configuration support.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
+import io
 import os
 import re
-import StringIO
 import sys
 import traceback
-import types
 
 import SCons.Action
 import SCons.Builder
@@ -78,7 +79,7 @@ def SetCacheMode(mode):
     elif mode == "cache":
         cache_mode = CACHE
     else:
-        raise ValueError, "SCons.SConf.SetCacheMode: Unknown mode " + mode
+        raise ValueError("SCons.SConf.SetCacheMode: Unknown mode " + mode)
 
 progress_display = SCons.Util.display # will be overwritten by SCons.Script
 def SetProgressDisplay(display):
@@ -154,10 +155,6 @@ def _stringSource( target, source, env ):
     return (str(target[0]) + ' <-\n  |' +
             source[0].get_contents().replace( '\n', "\n  |" ) )
 
-# python 2.2 introduces types.BooleanType
-BooleanTypes = [types.IntType]
-if hasattr(types, 'BooleanType'): BooleanTypes.append(types.BooleanType)
-
 class SConfBuildInfo(SCons.Node.FS.FileBuildInfo):
     """
     Special build info for targets of configure tests. Additional members
@@ -172,13 +169,13 @@ class SConfBuildInfo(SCons.Node.FS.FileBuildInfo):
         self.string = string
 
 
-class Streamer:
+class Streamer(object):
     """
     'Sniffer' for a file-like writable object. Similar to the unix tool tee.
     """
     def __init__(self, orig):
         self.orig = orig
-        self.s = StringIO.StringIO()
+        self.s = io.StringIO()
 
     def write(self, str):
         if self.orig:
@@ -371,7 +368,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
                     sconsign.set_entry(t.name, sconsign_entry)
                     sconsign.merge()
 
-class SConfBase:
+class SConfBase(object):
     """This is simply a class to represent a configure context. After
     creating a SConf object, you can call any tests. After finished with your
     tests, be sure to call the Finish() method, which returns the modified
@@ -397,8 +394,7 @@ class SConfBase:
             SConfFS = SCons.Node.FS.default_fs or \
                       SCons.Node.FS.FS(env.fs.pathTop)
         if sconf_global is not None:
-            raise (SCons.Errors.UserError,
-                   "Only one SConf object may be active at one time")
+            raise SCons.Errors.UserError
         self.env = env
         if log_file is not None:
             log_file = SConfFS.File(env.subst(log_file))
@@ -632,15 +628,14 @@ class SConfBase:
                 return( 1, outputStr)
         return (0, "")
 
-    class TestWrapper:
+    class TestWrapper(object):
         """A wrapper around Tests (to ensure sanity)"""
         def __init__(self, test, sconf):
             self.test = test
             self.sconf = sconf
         def __call__(self, *args, **kw):
             if not self.sconf.active:
-                raise (SCons.Errors.UserError,
-                       "Test called after sconf.Finish()")
+                raise SCons.Errors.UserError
             context = CheckContext(self.sconf)
             ret = self.test(context, *args, **kw)
             if self.sconf.config_h is not None:
@@ -721,7 +716,7 @@ class SConfBase:
         global sconf_global, _ac_config_hs
 
         if not self.active:
-            raise SCons.Errors.UserError, "Finish may be called only once!"
+            raise SCons.Errors.UserError("Finish may be called only once!")
         if self.logstream is not None and not dryrun:
             self.logstream.write("\n")
             self.logstream.close()
@@ -736,7 +731,7 @@ class SConfBase:
             _ac_config_hs[self.config_h] = self.config_h_text
         self.env.fs = self.lastEnvFs
 
-class CheckContext:
+class CheckContext(object):
     """Provides a context for configure tests. Defines how a test writes to the
     screen and log file.
 
@@ -785,15 +780,15 @@ class CheckContext:
         string. In case of an integer, the written text will be 'yes' or 'no'.
         The result is only displayed when self.did_show_result is not set.
         """
-        if type(res) in BooleanTypes:
+        if isinstance(res, (int, bool)):
             if res:
                 text = "yes"
             else:
                 text = "no"
-        elif type(res) == types.StringType:
+        elif isinstance(res, str):
             text = res
         else:
-            raise TypeError, "Expected string, int or bool, got " + str(type(res))
+            raise TypeError("Expected string, int or bool, got " + str(type(res)))
 
         if self.did_show_result == 0:
             # Didn't show result yet, do it now.
@@ -821,7 +816,7 @@ class CheckContext:
         elif( attr == 'lastTarget' ):
             return self.sconf.lastTarget
         else:
-            raise AttributeError, "CheckContext instance has no attribute '%s'" % attr
+            raise AttributeError("CheckContext instance has no attribute '%s'" % attr)
 
     #### Stuff used by Conftest.py (look there for explanations).
 

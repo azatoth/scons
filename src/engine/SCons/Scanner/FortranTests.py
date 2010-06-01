@@ -207,7 +207,7 @@ test.write(['modules', 'use.mod'], "\n")
 
 # define some helpers:
 
-class DummyEnvironment:
+class DummyEnvironment(object):
     def __init__(self, listCppPath):
         self.path = listCppPath
         self.fs = SCons.Node.FS.FS(test.workpath(''))
@@ -218,7 +218,7 @@ class DummyEnvironment:
         elif len(args) == 1 and args[0] == 'FORTRANPATH':
             return self.path
         else:
-            raise KeyError, "Dummy environment only has FORTRANPATH attribute."
+            raise KeyError("Dummy environment only has FORTRANPATH attribute.")
 
     def has_key(self, key):
         return key in self.Dictionary()
@@ -238,7 +238,7 @@ class DummyEnvironment:
         return arg
 
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
         return list(map(self.subst, path))
 
@@ -390,7 +390,7 @@ class FortranScannerTestCase10(unittest.TestCase):
 class FortranScannerTestCase11(unittest.TestCase):
     def runTest(self):
         SCons.Warnings.enableWarningClass(SCons.Warnings.DependencyWarning)
-        class TestOut:
+        class TestOut(object):
             def __call__(self, x):
                 self.out = x
 

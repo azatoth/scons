@@ -20,8 +20,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -60,11 +58,10 @@ lines = [x[0] == '-' and x[1:] or x for x in lines]
 options = [x.split()[0] for x in lines]
 options = [x[-1] == ',' and x[:-1] or x for x in options]
 lowered = [x.lower() for x in options]
-sorted = lowered[:]
-sorted.sort()
-if lowered != sorted:
+ordered = sorted(lowered)
+if lowered != ordered:
     print "lowered =", lowered
-    print "sorted =", sorted
+    print "sorted =", ordered
     test.fail_test()
 
 test.pass_test()

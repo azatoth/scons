@@ -46,7 +46,7 @@ TimeSCons_revision = 4569
 TimeSCons_pieces = ['QMTest', 'timings', 'runtest.py']
 
 
-class CommandRunner:
+class CommandRunner(object):
     """
     Executor class for commands, including "commands" implemented by
     Python functions.
@@ -81,11 +81,11 @@ class CommandRunner:
     def display(self, command, stdout=None, stderr=None):
         if not self.verbose:
             return
-        if type(command) == type(()):
+        if isinstance(command, tuple):
             func = command[0]
             args = command[1:]
             s = '%s(%s)' % (func.__name__, ', '.join(map(repr, args)))
-        if type(command) == type([]):
+        if isinstance(command, list):
             # TODO:    quote arguments containing spaces
             # TODO:    handle meta characters?
             s = ' '.join(command)
@@ -102,12 +102,12 @@ class CommandRunner:
         """
         if not self.active:
             return 0
-        if type(command) == type(''):
+        if isinstance(command, str):
             command = self.subst(command)
             cmdargs = shlex.split(command)
             if cmdargs[0] == 'cd':
                  command = (os.chdir,) + tuple(cmdargs[1:])
-        if type(command) == type(()):
+        if isinstance(command, tuple):
             func = command[0]
             args = command[1:]
             return func(*args)
@@ -260,13 +260,15 @@ def do_revisions(cr, opts, branch, revisions, scripts):
                 lf = os.path.join(opts.origin, opts.logsdir, subdir, log_name)
                 out = open(lf, 'w')
                 err = None
+                close_out = True
             else:
                 out = stdout
                 err = stderr
+                close_out = False
             s = cr.run(script_command(script), stdout=out, stderr=err)
             if s and status == 0:
                 status = s
-            if out not in (sys.stdout, None):
+            if close_out:
                 out.close()
                 out = None
 

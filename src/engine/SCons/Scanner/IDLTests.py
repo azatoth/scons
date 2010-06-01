@@ -186,7 +186,7 @@ test.write([ 'repository', 'src', 'ddd.idl'], "\n")
 
 # define some helpers:
 
-class DummyEnvironment:
+class DummyEnvironment(object):
     def __init__(self, listCppPath):
         self.path = listCppPath
         self.fs = SCons.Node.FS.FS(test.workpath(''))
@@ -197,13 +197,13 @@ class DummyEnvironment:
         elif len(args) == 1 and args[0] == 'CPPPATH':
             return self.path
         else:
-            raise KeyError, "Dummy environment only has CPPPATH attribute."
+            raise KeyError("Dummy environment only has CPPPATH attribute.")
 
     def subst(self, arg, target=None, source=None, conv=None):
         return arg
 
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
         return list(map(self.subst, path))
 
@@ -337,7 +337,7 @@ class IDLScannerTestCase7(unittest.TestCase):
 class IDLScannerTestCase8(unittest.TestCase):
     def runTest(self):
         SCons.Warnings.enableWarningClass(SCons.Warnings.DependencyWarning)
-        class TestOut:
+        class TestOut(object):
             def __call__(self, x):
                 self.out = x
 

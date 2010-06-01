@@ -23,6 +23,8 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
 # Define a null function for use as a builder action.
 # Where this is defined in the file seems to affect its
 # byte-code contents, so try to minimize changes by
@@ -30,13 +32,12 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 def Func():
     pass
 
+import collections
+import io
 import os.path
 import re
 import sys
-import types
-import StringIO
 import unittest
-import UserList
 
 import TestCmd
 
@@ -47,7 +48,7 @@ import SCons.Errors
 import SCons.Subst
 import SCons.Util
 
-sys.stdout = StringIO.StringIO()
+sys.stdout = io.StringIO()
 
 # Initial setup of the common environment for all tests,
 # a temporary working directory containing a
@@ -70,7 +71,7 @@ scons_env = SCons.Environment.Environment()
 
 env_arg2nodes_called = None
 
-class Environment:
+class Environment(object):
     def __init__(self, **kw):
         self.d = {}
         self.d['SHELL'] = scons_env['SHELL']
@@ -123,7 +124,7 @@ class Environment:
     def has_key(self, item):
         return item in self.d
     def keys(self):
-        return self.d.keys()
+        return list(self.d.keys())
     def get(self, key, value=None):
         return self.d.get(key, value)
     def Override(self, overrides):
@@ -134,7 +135,7 @@ class Environment:
     def _update(self, dict):
         self.d.update(dict)
     def items(self):
-        return self.d.items()
+        return list(self.d.items())
     def sig_dict(self):
         d = {}
         for k,v in self.items(): d[k] = v
@@ -146,7 +147,7 @@ class Environment:
     def __cmp__(self, other):
         return cmp(self.scanner, other.scanner) or cmp(self.d, other.d)
 
-class MyAction:
+class MyAction(object):
     def __init__(self, action):
         self.action = action
     def __call__(self, *args, **kw):
@@ -154,7 +155,7 @@ class MyAction:
     def get_executor(self, env, overrides, tlist, slist, executor_kw):
         return ['executor'] + [self.action]
 
-class MyNode_without_target_from_source:
+class MyNode_without_target_from_source(object):
     def __init__(self, name):
         self.name = name
         self.sources = []
@@ -217,7 +218,7 @@ class BuilderTestCase(unittest.TestCase):
             exc_caught = 1
         assert exc_caught, "did not catch expected InternalError exception"
 
-        class Node:
+        class Node(object):
              pass
 
         n = Node()
@@ -252,7 +253,7 @@ class BuilderTestCase(unittest.TestCase):
         assert not hasattr(n2, 'env')
 
         l = [1]
-        ul = UserList.UserList([2])
+        ul = collections.UserList([2])
         try:
             l.extend(ul)
         except TypeError:
@@ -304,7 +305,8 @@ class BuilderTestCase(unittest.TestCase):
         #be = target.get_build_env()
         #assert be['VAR'] == 'foo', be['VAR']
 
-        if not hasattr(types, 'UnicodeType'):
+        try: unicode
+        except NameError:
             uni = str
         else:
             uni = unicode
@@ -342,7 +344,7 @@ class BuilderTestCase(unittest.TestCase):
         except SCons.Errors.UserError, e:
             pass
         else:
-            raise "Did not catch expected UserError."
+            raise Exception("Did not catch expected UserError.")
 
         builder = SCons.Builder.Builder(action="foo")
         target = builder(env, None, source='n22', srcdir='src_dir')[0]
@@ -421,7 +423,7 @@ class BuilderTestCase(unittest.TestCase):
     def test_target_factory(self):
         """Test a Builder that creates target nodes of a specified class
         """
-        class Foo:
+        class Foo(object):
             pass
         def FooFactory(target):
             global Foo
@@ -433,7 +435,7 @@ class BuilderTestCase(unittest.TestCase):
     def test_source_factory(self):
         """Test a Builder that creates source nodes of a specified class
         """
-        class Foo:
+        class Foo(object):
             pass
         def FooFactory(source):
             global Foo
@@ -566,13 +568,11 @@ class BuilderTestCase(unittest.TestCase):
                 "Unexpected tgt.sources[0] name: %s" % tgt.sources[0].path
 
         b2 = SCons.Builder.Builder(src_suffix = '.2', src_builder = b1)
-        r = b2.src_suffixes(env)
-        r.sort()
+        r = sorted(b2.src_suffixes(env))
         assert r == ['.2', '.c'], r
 
         b3 = SCons.Builder.Builder(action = {'.3a' : '', '.3b' : ''})
-        s = b3.src_suffixes(env)
-        s.sort()
+        s = sorted(b3.src_suffixes(env))
         assert s == ['.3a', '.3b'], s
 
         b4 = SCons.Builder.Builder(src_suffix = '$XSUFFIX')
@@ -706,21 +706,10 @@ class BuilderTestCase(unittest.TestCase):
         tgt.build()
         assert env['CNT'][0] == 2
         tgts = builder(env, None, infiles[2:4])
-        try:
-            [].extend(UserList.UserList())
-        except TypeError:
-            # Old Python version (1.5.2) that can't handle extending
-            # a list with list-like objects.  That means the return
-            # value from the builder call is a real list with Nodes,
-            # and doesn't have a __str__() method that stringifies
-            # the individual elements.  Since we're gong to drop 1.5.2
-            # support anyway, don't bother trying to test for it.
-            pass
-        else:
-            s = list(map(str, tgts))
-            expect = [test.workpath('2.out'), test.workpath('3.out')]
-            expect = list(map(os.path.normcase, expect))
-            assert list(map(os.path.normcase, s)) == expect, s
+        s = list(map(str, tgts))
+        expect = [test.workpath('2.out'), test.workpath('3.out')]
+        expect = list(map(os.path.normcase, expect))
+        assert list(map(os.path.normcase, s)) == expect, s
         for t in tgts: t.prepare()
         tgts[0].build()
         tgts[1].build()
@@ -853,7 +842,7 @@ class BuilderTestCase(unittest.TestCase):
     def test_target_scanner(self):
         """Testing ability to set target and source scanners through a builder."""
         global instanced
-        class TestScanner:
+        class TestScanner(object):
             pass
         tscan = TestScanner()
         sscan = TestScanner()
@@ -895,7 +884,7 @@ class BuilderTestCase(unittest.TestCase):
         
     def test_src_scanner(slf):
         """Testing ability to set a source file scanner through a builder."""
-        class TestScanner:
+        class TestScanner(object):
             def key(self, env):
                  return 'TestScannerkey'
             def instance(self, env):
@@ -924,7 +913,7 @@ class BuilderTestCase(unittest.TestCase):
 
         # An Environment that has suffix-specified SCANNERS should
         # provide a source scanner to the target.
-        class EnvTestScanner:
+        class EnvTestScanner(object):
             def key(self, env):
                  return '.y'
             def instance(self, env):
@@ -1032,8 +1021,7 @@ class BuilderTestCase(unittest.TestCase):
         bld.set_src_suffix(['.bar', '.foo'])
         r = bld.get_src_suffix(env)
         assert r == '.bar', r
-        r = bld.src_suffixes(env)
-        r.sort()
+        r = sorted(bld.src_suffixes(env))
         assert r == ['.bar', '.foo'], r
 
         # adjust_suffix normalizes the suffix, adding a `.' if needed
@@ -1153,8 +1141,7 @@ class BuilderTestCase(unittest.TestCase):
         assert r is None, r
         r = builder.get_src_suffix(env)
         assert r == '.src_sfx1', r
-        r = builder.src_suffixes(env)
-        r.sort()
+        r = sorted(builder.src_suffixes(env))
         assert r == ['.src_sfx1', '.src_sfx2'], r
 
 

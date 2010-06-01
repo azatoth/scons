@@ -129,9 +129,7 @@ def catdir(env, source, target):
     outfp = open(target, "wb")
     for src in source:
         s = str(src)
-        l = os.listdir(s)
-        l.sort()
-        for f in l:
+        for f in sorted(os.listdir(s)):
             f = os.path.join(s, f)
             if os.path.isfile(f):
                 outfp.write(open(f, "rb").read())
@@ -161,7 +159,7 @@ test.write(['work3', 'SConstruct'], """\
 #/SConstruct ------------------------------------------
 import os
 env = Environment(ENV = os.environ)
-BuildDir('build', 'sub1', duplicate=0)
+VariantDir('build', 'sub1', duplicate=0)
 base = '#build/sub1'
 Export('env base')
 SConscript('sub1/SConscript', exports='env')

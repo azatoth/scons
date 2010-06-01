@@ -5,66 +5,23 @@
 # src/engine/SCons/Util.py.
 
 import types
-from UserDict import UserDict
-from UserList import UserList
-
 try:
-    from UserString import UserString
+    from collections import UserDict, UserList, UserString
 except ImportError:
-    # "Borrowed" from the Python 2.2 UserString module
-    # and modified slightly for use with SCons.
-    class UserString:
-        def __init__(self, seq):
-            if type(seq) == type(''):
-                self.data = seq
-            elif isinstance(seq, UserString):
-                self.data = seq.data[:]
-            else:
-                self.data = str(seq)
-        def __str__(self): return str(self.data)
-        def __repr__(self): return repr(self.data)
-        def __int__(self): return int(self.data)
-        def __long__(self): return long(self.data)
-        def __float__(self): return float(self.data)
-        def __complex__(self): return complex(self.data)
-        def __hash__(self): return hash(self.data)
-
-        def __cmp__(self, s):
-            if isinstance(s, UserString):
-                return cmp(self.data, s.data)
-            else:
-                return cmp(self.data, s)
-        def __contains__(self, char):
-            return char in self.data
-
-        def __len__(self): return len(self.data)
-        def __getitem__(self, index): return self.__class__(self.data[index])
-        def __getslice__(self, start, end):
-            start = max(start, 0); end = max(end, 0)
-            return self.__class__(self.data[start:end])
-
-        def __add__(self, other):
-            if isinstance(other, UserString):
-                return self.__class__(self.data + other.data)
-            elif is_String(other):
-                return self.__class__(self.data + other)
-            else:
-                return self.__class__(self.data + str(other))
-        def __radd__(self, other):
-            if is_String(other):
-                return self.__class__(other + self.data)
-            else:
-                return self.__class__(str(other) + self.data)
-        def __mul__(self, n):
-            return self.__class__(self.data*n)
-        __rmul__ = __mul__
+    # No 'collections' module or no UserFoo in collections
+    exec('from UserDict import UserDict')
+    exec('from UserList import UserList')
+    exec('from UserString import UserString')
 
 InstanceType = types.InstanceType
-DictType = types.DictType
-ListType = types.ListType
-StringType = types.StringType
-if hasattr(types, 'UnicodeType'):
-    UnicodeType = types.UnicodeType
+DictType = dict
+ListType = list
+StringType = str
+try: unicode
+except NameError:
+    UnicodeType = None
+else:
+    UnicodeType = unicode
 
 
 # The original implementations, pretty straightforward checks for the
@@ -72,19 +29,17 @@ if hasattr(types, 'UnicodeType'):
 # User* type.
 
 def original_is_Dict(e):
-    return type(e) is types.DictType or isinstance(e, UserDict)
+    return isinstance(e, (dict,UserDict))
 
 def original_is_List(e):
-    return type(e) is types.ListType or isinstance(e, UserList)
+    return isinstance(e, (list,UserList))
 
-if hasattr(types, 'UnicodeType'):
+if UnicodeType is not None:
     def original_is_String(e):
-        return type(e) is types.StringType \
-            or type(e) is types.UnicodeType \
-            or isinstance(e, UserString)
+        return isinstance(e, (str,unicode,UserString))
 else:
     def original_is_String(e):
-        return type(e) is types.StringType or isinstance(e, UserString)
+        return isinstance(e, (str,UserString))
 
 
 
@@ -93,22 +48,22 @@ else:
 # type.
 
 def checkInstanceType_is_Dict(e):
-    return type(e) is types.DictType or \
-           (type(e) is types.InstanceType and isinstance(e, UserDict))
+    return isinstance(e, dict) or \
+           (isinstance(e, types.InstanceType) and isinstance(e, UserDict))
 
 def checkInstanceType_is_List(e):
-    return type(e) is types.ListType \
-        or (type(e) is types.InstanceType and isinstance(e, UserList))
+    return isinstance(e, list) \
+        or (isinstance(e, types.InstanceType) and isinstance(e, UserList))
 
-if hasattr(types, 'UnicodeType'):
+if UnicodeType is not None:
     def checkInstanceType_is_String(e):
-        return type(e) is types.StringType \
-            or type(e) is types.UnicodeType \
-            or (type(e) is types.InstanceType and isinstance(e, UserString))
+        return isinstance(e, str) \
+            or isinstance(e, unicode) \
+            or (isinstance(e, types.InstanceType) and isinstance(e, UserString))
 else:
     def checkInstanceType_is_String(e):
-        return type(e) is types.StringType \
-            or (type(e) is types.InstanceType and isinstance(e, UserString))
+        return isinstance(e, str) \
+            or (isinstance(e, types.InstanceType) and isinstance(e, UserString))
 
 
 
@@ -117,24 +72,24 @@ else:
 
 def cache_type_e_is_Dict(e):
     t = type(e)
-    return t is types.DictType or \
+    return t is dict or \
            (t is types.InstanceType and isinstance(e, UserDict))
 
 def cache_type_e_is_List(e):
     t = type(e)
-    return t is types.ListType \
+    return t is list \
         or (t is types.InstanceType and isinstance(e, UserList))
 
-if hasattr(types, 'UnicodeType'):
+if UnicodeType is not None:
     def cache_type_e_is_String(e):
         t = type(e)
-        return t is types.StringType \
-            or t is types.UnicodeType \
+        return t is str \
+            or t is unicode \
             or (t is types.InstanceType and isinstance(e, UserString))
 else:
     def cache_type_e_is_String(e):
         t = type(e)
-        return t is types.StringType \
+        return t is str \
             or (t is types.InstanceType and isinstance(e, UserString))
 
 
@@ -153,7 +108,7 @@ def global_cache_type_e_is_List(e):
     return t is ListType \
         or (t is InstanceType and isinstance(e, UserList))
 
-if hasattr(types, 'UnicodeType'):
+if UnicodeType is not None:
     def global_cache_type_e_is_String(e):
         t = type(e)
         return t is StringType \
@@ -171,18 +126,18 @@ else:
 # to their corresponding underlying types.
 
 instanceTypeMap = {
-    UserDict : types.DictType,
-    UserList : types.ListType,
-    UserString : types.StringType,
+    UserDict : dict,
+    UserList : list,
+    UserString : str,
 }
 
-if hasattr(types, 'UnicodeType'):
+if UnicodeType is not None:
     def myType(obj):
         t = type(obj)
         if t is types.InstanceType:
             t = instanceTypeMap.get(obj.__class__, t)
-        elif t is types.UnicodeType:
-            t = types.StringType
+        elif t is unicode:
+            t = str
         return t
 else:
     def myType(obj):
@@ -192,13 +147,13 @@ else:
         return t
 
 def myType_is_Dict(e):
-    return myType(e) is types.DictType
+    return myType(e) is dict
 
 def myType_is_List(e):
-    return myType(e) is types.ListType
+    return myType(e) is list
 
 def myType_is_String(e):
-    return myType(e) is types.StringType
+    return myType(e) is str
 
 
 
@@ -289,7 +244,7 @@ def Func12(obj):
 #       {'keyword' : 'arguments'},
 #   ),
 
-class A:
+class A(object):
     pass
 
 Data = [

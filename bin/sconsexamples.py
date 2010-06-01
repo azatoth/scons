@@ -66,8 +66,6 @@
 # output from SCons, and insert it into the text as appropriate.
 # Error output gets passed through to your error output so you
 # can see if there are any problems executing the command.
-#
-from __future__ import generators  ### KEEP FOR COMPATIBILITY FIXERS
 
 import os
 import os.path
@@ -93,7 +91,7 @@ import TestCmd
 # Override it with our own regular expression that adds underscore.
 sgmllib.entityref = re.compile('&([a-zA-Z][-_.a-zA-Z0-9]*)[^-_a-zA-Z0-9]')
 
-class DataCollector:
+class DataCollector(object):
     """Generic class for collecting data between a start tag and end
     tag.  We subclass for various types of tags we care about."""
     def __init__(self):
@@ -160,7 +158,7 @@ import SCons.Defaults
 
 platform = '%s'
 
-class Curry:
+class Curry(object):
     def __init__(self, fun, *args, **kwargs):
         self.fun = fun
         self.pending = args[:]
@@ -181,7 +179,7 @@ def Str(target, source, env, cmd=""):
         result.append(" ".join(map(str, cmd)))
     return '\\n'.join(result)
 
-class ToolSurrogate:
+class ToolSurrogate(object):
     def __init__(self, tool, variable, func):
         self.tool = tool
         self.variable = variable
@@ -222,10 +220,7 @@ SConscript('SConstruct')
 """
 
 class MySGML(sgmllib.SGMLParser):
-    """A subclass of the standard Python 2.2 sgmllib SGML parser.
-
-    Note that this doesn't work with the 1.5.2 sgmllib module, because
-    that didn't have the ability to work with ENTITY declarations.
+    """A subclass of the standard Python sgmllib SGML parser.
     """
     def __init__(self):
         sgmllib.SGMLParser.__init__(self)
