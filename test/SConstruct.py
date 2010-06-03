@@ -27,16 +27,15 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import TestCmd
 import TestSCons
 
-test = TestSCons.TestSCons(match = TestCmd.match_re)
+test = TestSCons.TestSCons()
 
 test.run(arguments = ".",
          status = 2,
          stdout = "",
          stderr = r"""
 scons: \*\*\* No SConstruct file found.
-""" + TestSCons.file_expr)
-
-test.match_function = TestCmd.match_exact
+""" + TestSCons.file_expr,
+         match = TestCmd.match_re)
 
 wpath = test.workpath()
 
