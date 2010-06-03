@@ -20,7 +20,7 @@ SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 """
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCommonTests.py 1.2.D015 2010/06/03 12:11:53 knight"
+__revision__ = "TestCommonTests.py 1.3.D001 2010/06/03 12:58:27 knight"
 
 import difflib
 import os

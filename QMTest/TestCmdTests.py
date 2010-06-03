@@ -20,7 +20,7 @@ SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 """
 
 __author__ = "Steven Knight <knight at baldmt dot com>"
-__revision__ = "TestCmdTests.py 1.2.D014 2010/06/03 12:02:51 knight"
+__revision__ = "TestCmdTests.py 1.3.D001 2010/06/03 12:58:27 knight"
 
 import os
 import shutil
