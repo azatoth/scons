@@ -38,6 +38,7 @@ import os.path
 import re
 import shutil
 import sys
+import platform
 
 import SCons.Action
 import SCons.Node
