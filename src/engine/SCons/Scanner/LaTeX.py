@@ -168,7 +168,8 @@ class LaTeX(SCons.Scanner.Base):
         # Without the \n,  the ^ could match the beginning of a *previous*
         # line followed by one or more newline characters (i.e. blank
         # lines), interfering with a match on the next line.
-        regex = r'^[^%\n]*\\(include|includegraphics(?:\[[^\]]+\])?|lstinputlisting(?:\[[^\]]+\])?|input|bibliography|usepackage){([^}]*)}'
+        # add option for whitespace before the '[options]' or the '{filename}'
+        regex = r'^[^%\n]*\\(include|includegraphics(?:\s*\[[^\]]+\])?|lstinputlisting(?:\[[^\]]+\])?|input|bibliography|usepackage)\s*{([^}]*)}'
         self.cre = re.compile(regex, re.M)
         self.graphics_extensions = graphics_extensions
 
@@ -281,7 +282,8 @@ class LaTeX(SCons.Scanner.Base):
 
         # Cache the includes list in node so we only scan it once:
         # path_dict = dict(list(path))
-        noopt_cre = re.compile('\[.*$')
+        # add option for whitespace (\s) before the '['
+        noopt_cre = re.compile('\s*\[.*$')
         if node.includes != None:
             includes = node.includes
         else:
