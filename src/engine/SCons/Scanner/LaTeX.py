@@ -288,7 +288,7 @@ class LaTeX(SCons.Scanner.Base):
         for line in text.splitlines():
             line,comment = self.comment_re.findall(line)[0]
             if line_continues_a_comment == True:
-                out[-1] = out[-1] + ' ' + line.lstrip()
+                out[-1] = out[-1] + line.lstrip()
             else:
                 out.append(line)
             line_continues_a_comment = len(comment) > 0
