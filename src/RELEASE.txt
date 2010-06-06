@@ -6,7 +6,6 @@
   The primary purpose of this release is to remove support for
   Python versions prior to 2.4 and streamline the SCons code base
   using more modern python idioms.
-
   The checkpoint is available at the SCons download page:
 
           http://www.scons.org/download.php
