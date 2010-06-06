@@ -29,16 +29,14 @@ Verify that the swig tool generates file names that we expect.
 """
 
 import TestSCons
+import sys
 
 _exe   = TestSCons._exe
 _obj   = TestSCons._obj
 
 test = TestSCons.TestSCons()
 
-python = test.where_is('python')
-if not python:
-    test,skip_test('Can not find installed "python", skipping test.\n')
-
+python = sys.executable
 
 test.write('myswig.py', r"""
 import getopt
