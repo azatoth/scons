@@ -476,8 +476,14 @@ def msvs_setup_env(env):
         # TODO(1.5):
         #vscommonvarnames = [ vs.common_tools_var for vs in msvs_list ]
         vscommonvarnames = map(lambda vs: vs.common_tools_var, msvs_list)
-        nenv = normalize_env(env['ENV'], vscommonvarnames + ['COMSPEC'])
-        output = get_output(batfilename, arch, env=nenv)
+        save_ENV = env['ENV']
+        nenv = normalize_env(env['ENV'],
+                             ['COMSPEC'] + vscommonvarnames,
+                             force=True)
+        try:
+            output = get_output(batfilename, arch, env=nenv)
+        finally:
+            env['ENV'] = save_ENV
         vars = parse_output(output, vars)
 
         for k, v in vars.items():
