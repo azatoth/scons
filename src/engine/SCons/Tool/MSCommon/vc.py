@@ -74,7 +74,6 @@ _ARCH_TO_CANONICAL = {
     "x86": "x86",
     "amd64": "amd64",
     "i386": "x86",
-    "i686": "x86",
     "emt64": "amd64",
     "x86_64": "amd64",
     "itanium": "ia64",
