@@ -43,7 +43,7 @@ import sys
 import tempfile
 
 project = 'scons'
-default_version = '2.0.0'
+default_version = '2.0.0.candidate.20100607'
 copyright = "Copyright (c) %s The SCons Foundation" % copyright_years
 
 platform = distutils.util.get_platform()
