@@ -1,4 +1,4 @@
-  A new SCons checkpoint release, 2.0.0.beta.20100605, is now available
+  A new SCons checkpoint release, 2.0.0.candidate.20100607, is now available
   on the SCons download page:
 
           http://www.scons.org/download.php
