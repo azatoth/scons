@@ -84,6 +84,9 @@ RELEASE 2.0.0.candidate.20100607 - Mon, 07 Jun 2010 21:23:31 -0700
 
     - Start deprecation cycle for SourceCode() and related factories
 
+    - Fixed a problem with is_Dict() not identifying some objects derived
+      from UserDict.
+
   From Jim Randall:
 
     - Document the AllowSubstExceptions() function in the User's Guide.
