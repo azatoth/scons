@@ -30,8 +30,13 @@ project (.dsp) and solution (.dsw) files.
 """
 
 import TestSConsMSVS
+import sys
+
 
 test = TestSConsMSVS.TestSConsMSVS()
+host_arch = test.get_vs_host_arch()
+
+
 
 # Make the test infrastructure think we have this version of MSVS installed.
 test._msvs_versions = ['6.0']
@@ -44,7 +49,8 @@ expected_dswfile = TestSConsMSVS.expected_dswfile_6_0
 
 
 test.write('SConstruct', """\
-env=Environment(platform='win32', tools=['msvs'], MSVS_VERSION='6.0')
+env=Environment(platform='win32', tools=['msvs'],
+                MSVS_VERSION='6.0',HOST_ARCH='%(HOST_ARCH)s')
 
 testsrc = ['test.c']
 testincs = ['sdk.h']
@@ -66,7 +72,7 @@ env.MSVSSolution(target = 'Test.dsw',
                  slnguid = '{SLNGUID}',
                  projects = [p],
                  variant = 'Release')
-""")
+"""%{'HOST_ARCH':host_arch})
 
 test.run(arguments=".")
 

@@ -43,18 +43,15 @@ cases.  On Unix, you can use clock() to measure CPU time.
 Note: there is a certain baseline overhead associated with executing a
 pass statement.  The code here doesn't try to hide it, but you should
 be aware of it.  The baseline overhead can be measured by invoking the
-program without arguments.
-
-The baseline overhead differs between Python versions!  Also, to
-fairly compare older Python versions to Python 2.3, you may want to
-use python -O for the older versions to avoid timing SET_LINENO
-instructions.
+program without arguments.  The baseline overhead differs between
+Python versions!
 """
+from __future__ import division
 
 try:
     import gc
 except ImportError:
-    class _fake_gc:
+    class _fake_gc(object):
         def isenabled(self):
             return None
         def enable(self):
@@ -69,8 +66,6 @@ try:
 except ImportError:
     # Must be an older Python version (see timeit() below)
     itertools = None
-
-import string
 
 __all__ = ["Timer"]
 
@@ -100,9 +95,9 @@ def inner(_it, _timer):
 
 def reindent(src, indent):
     """Helper to reindent a multi-line statement."""
-    return string.replace(src, "\n", "\n" + " "*indent)
+    return src.replace("\n", "\n" + " "*indent)
 
-class Timer:
+class Timer(object):
     """Class for timing execution speed of small code snippets.
 
     The constructor takes a statement to be timed, an additional
@@ -226,7 +221,7 @@ def main(args=None):
         print "use -h/--help for command line help"
         return 2
     timer = default_timer
-    stmt = string.join(args, "\n") or "pass"
+    stmt = "\n".join(args) or "pass"
     number = 0 # auto-determine
     setup = []
     repeat = default_repeat
@@ -252,7 +247,7 @@ def main(args=None):
         if o in ("-h", "--help"):
             print __doc__,
             return 0
-    setup = string.join(setup, "\n") or "pass"
+    setup = "\n".join(setup) or "pass"
     # Include the current directory, so that local imports work (sys.path
     # contains the directory of this script, rather than the current
     # directory)
@@ -279,7 +274,7 @@ def main(args=None):
         return 1
     best = min(r)
     if verbose:
-        print "raw times:", string.join(map(lambda x, p=precision: "%.*g" % (p, x), r))
+        print "raw times:", ' '.join(["%.*g" % (precision, x) for x in r])
     print "%d loops," % number,
     usec = best * 1e6 / number
     if usec < 1000:

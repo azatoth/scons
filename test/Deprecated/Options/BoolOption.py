@@ -28,14 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Test the BoolOption canned Option type.
 """
 
-import string
-
-try:
-    True, False
-except NameError:
-    True = (0 == 0)
-    False = (0 != 0)
-
 import TestSCons
 
 test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
@@ -43,12 +35,12 @@ test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 SConstruct_path = test.workpath('SConstruct')
 
 def check(expect):
-    result = string.split(test.stdout(), '\n')
+    result = test.stdout().split('\n')
     assert result[1:len(expect)+1] == expect, (result[1:len(expect)+1], expect)
 
 
-
 test.write(SConstruct_path, """\
+SetOption('warn', 'deprecated-options')
 from SCons.Options.BoolOption import BoolOption
 BO = BoolOption
 
@@ -89,7 +81,6 @@ Invalid value for boolean option: irgendwas
 """ + TestSCons.file_expr)
 
 test.run(arguments='warnings=irgendwas', stderr=expect_stderr, status=2)
-
 
 
 test.pass_test()

@@ -20,7 +20,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -29,7 +28,6 @@ Verify behavior of the -H and --help-options options.
 """
 
 import re
-import string
 
 import TestSCons
 
@@ -53,18 +51,17 @@ test.must_contain_all_lines(test.stdout(), expect)
 ignored_re = re.compile('.*Ignored for compatibility\\.\n', re.S)
 stdout = ignored_re.sub('', test.stdout())
 
-lines = string.split(stdout, '\n')
-lines = filter(lambda x: x[:3] == '  -', lines)
-lines = map(lambda x: x[3:], lines)
-lines = map(lambda x: x[0] == '-' and x[1:] or x, lines)
-options = map(lambda x: string.split(x)[0], lines)
-options = map(lambda x: x[-1] == ',' and x[:-1] or x, options)
-lowered = map(lambda x: string.lower(x), options)
-sorted = lowered[:]
-sorted.sort()
-if lowered != sorted:
+lines = stdout.split('\n')
+lines = [x for x in lines if x[:3] == '  -']
+lines = [x[3:] for x in lines]
+lines = [x[0] == '-' and x[1:] or x for x in lines]
+options = [x.split()[0] for x in lines]
+options = [x[-1] == ',' and x[:-1] or x for x in options]
+lowered = [x.lower() for x in options]
+ordered = sorted(lowered)
+if lowered != ordered:
     print "lowered =", lowered
-    print "sorted =", sorted
+    print "sorted =", ordered
     test.fail_test()
 
 test.pass_test()

@@ -23,12 +23,12 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os.path
-import string
+import SCons.compat
+
+import collections
+import os
 import sys
-import types
 import unittest
-import UserDict
 
 import TestCmd
 import SCons.Node.FS
@@ -66,9 +66,9 @@ test.write('incNO.tex', "\n")
 
 # define some helpers:
 #   copied from CTest.py
-class DummyEnvironment(UserDict.UserDict):
+class DummyEnvironment(collections.UserDict):
     def __init__(self, **kw):
-        UserDict.UserDict.__init__(self)
+        collections.UserDict.__init__(self)
         self.data.update(kw)
         self.fs = SCons.Node.FS.FS(test.workpath(''))
 
@@ -86,9 +86,9 @@ class DummyEnvironment(UserDict.UserDict):
         return [[strSubst]]
 
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
-        return map(self.subst, path)
+        return list(map(self.subst, path))
 
     def get_calculator(self):
         return None
@@ -109,8 +109,8 @@ else:
 
 def deps_match(self, deps, headers):
     global my_normpath
-    scanned = map(my_normpath, map(str, deps))
-    expect = map(my_normpath, headers)
+    scanned = list(map(my_normpath, list(map(str, deps))))
+    expect = list(map(my_normpath, headers))
     self.failUnless(scanned == expect, "expect %s != scanned %s" % (expect, scanned))
 
 

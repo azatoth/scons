@@ -19,14 +19,12 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
 import stat
-import string
 import sys
 
 Version = "__VERSION__"
@@ -77,7 +75,7 @@ _install_lib = distutils.command.install_lib.install_lib
 _install_scripts = distutils.command.install_scripts.install_scripts
 _build_scripts = distutils.command.build_scripts.build_scripts
 
-class _options:
+class _options(object):
     pass
 
 Options = _options()
@@ -198,7 +196,7 @@ def get_scons_prefix(libdir, is_win32):
         if head == os.sep:
             break
         head, tail = os.path.split(head)
-        if string.lower(tail)[:6] == "python":
+        if tail.lower()[:6] == "python":
             # Found the Python library directory...
             if is_win32:
                 # ...on Win32 systems, "scons" goes in the directory:
@@ -297,8 +295,8 @@ class install_scripts(_install_scripts):
             create_version_script = self.do_nothing
 
         inputs = self.get_inputs()
-        bat_scripts = filter(lambda x: x[-4:] == '.bat', inputs)
-        non_bat_scripts = filter(lambda x: x[-4:] != '.bat', inputs)
+        bat_scripts = [x for x in inputs if x[-4:] == '.bat']
+        non_bat_scripts = [x for x in inputs if x[-4:] != '.bat']
 
         self.outfiles = []
         self.mkpath(self.install_dir)
@@ -415,10 +413,10 @@ arguments = {
                           'build_scripts'   : build_scripts}
 }
 
-apply(distutils.core.setup, (), arguments)
+distutils.core.setup(**arguments)
 
 if Installed:
-    print string.join(Installed, '\n')
+    print '\n'.join(Installed)
 
 # Local Variables:
 # tab-width:4

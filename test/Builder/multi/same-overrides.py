@@ -28,8 +28,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 Verify that everything works if two multi calls have the same overrides.
 """
 
-import string
-
 import TestSCons
 
 test = TestSCons.TestSCons(match=TestSCons.match_re)
@@ -56,13 +54,10 @@ env.B(target = 'file4.out', source = 'file4b.in', foo=3)
 test.write('file4a.in', 'file4a.in\n')
 test.write('file4b.in', 'file4b.in\n')
 
-python_expr = string.replace(TestSCons.python, '\\', '\\\\')
-act = TestSCons.re_escape('"%s" build.py \$foo \$TARGET \$SOURCES' % python_expr)
-
 expect = ("""
 scons: warning: Two different environments were specified for target file4.out,
-\tbut they appear to have the same action: %s
-""" % act) + TestSCons.file_expr
+\tbut they appear to have the same action: %s build.py .foo .TARGET .SOURCES
+""" % TestSCons.re_escape(_python_)) + TestSCons.file_expr
 
 test.run(arguments='file4.out', stderr=expect)
 

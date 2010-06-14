@@ -33,21 +33,13 @@ import TestSCons
 
 test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
-test.write('SConstruct', """
+test.write('SConscript', """
 env = Environment().Copy()
 env.Copy()
 """)
 
-expect = """
-scons: warning: The env.Copy() method is deprecated; use the env.Clone() method instead.
-"""
-
-test.run(arguments = '.',
-         stderr = TestSCons.re_escape(expect) + TestSCons.file_expr)
-
-test.run(arguments = '--warn=no-deprecated .')
-
-test.run(arguments = '--warn=no-deprecated-copy .')
+msg = """The env.Copy() method is deprecated; use the env.Clone() method instead."""
+test.deprecated_warning('deprecated-copy', msg)
 
 test.pass_test()
 

@@ -29,7 +29,6 @@ Verify a lot of the basic operation of the --debug=explain option.
 """
 
 import os
-import string
 
 import TestSCons
 
@@ -94,8 +93,8 @@ kscan = Scanner(name = 'kfile',
                 argument = None,
                 skeys = ['.k'])
 
-cat = Builder(action = [[r'%(_python_)s', r'%(cat_py)s', '$TARGET', '$SOURCES']])
-one_cat = Builder( action = [[r'%(_python_)s', r'%(cat_py)s', '$TARGET', '${SOURCES[0]}']])
+cat = Builder(action = [[r'%(python)s', r'%(cat_py)s', '$TARGET', '$SOURCES']])
+one_cat = Builder( action = [[r'%(python)s', r'%(cat_py)s', '$TARGET', '${SOURCES[0]}']])
 
 env = Environment()
 env.Append(BUILDERS = {'Cat':cat, 'OneCat':one_cat},
@@ -317,7 +316,7 @@ Import("env")
 env.Cat('file3', ['zzz', 'yyy', 'xxx'])
 """)
 
-python_sep = string.replace(python, '\\', '\\\\')
+python_sep = python.replace('\\', '\\\\')
 
 expect = test.wrap_stdout("""\
 scons: rebuilding `file3' because the dependency order changed:
@@ -342,9 +341,9 @@ env.AddPreAction(f3, r'%(_python_)s %(cat_py)s ${TARGET}.alt $SOURCES')
 
 expect = test.wrap_stdout("""\
 scons: rebuilding `file3' because the build action changed:
-               old: %(_python_)s %(cat_py)s $TARGET $SOURCES
+               old: %(python)s %(cat_py)s $TARGET $SOURCES
                new: %(_python_)s %(cat_py)s ${TARGET}.alt $SOURCES
-                    %(_python_)s %(cat_py)s $TARGET $SOURCES
+                    %(python)s %(cat_py)s $TARGET $SOURCES
                     %(_python_)s %(cat_py)s ${TARGET}.yyy $SOURCES yyy
 %(_python_)s %(cat_py)s file3.alt zzz yyy xxx
 %(_python_)s %(cat_py)s file3 zzz yyy xxx
@@ -370,10 +369,10 @@ env.AddPreAction(f3, r'%(_python_)s %(cat_py)s ${TARGET}.alt $SOURCES')
 expect = test.wrap_stdout("""\
 scons: rebuilding `file3' because the build action changed:
                old: %(_python_)s %(cat_py)s ${TARGET}.alt $SOURCES
-                    %(_python_)s %(cat_py)s $TARGET $SOURCES
+                    %(python)s %(cat_py)s $TARGET $SOURCES
                     %(_python_)s %(cat_py)s ${TARGET}.yyy $SOURCES yyy
                new: %(_python_)s %(cat_py)s ${TARGET}.alt $SOURCES
-                    %(_python_)s %(cat_py)s $TARGET $SOURCES
+                    %(python)s %(cat_py)s $TARGET $SOURCES
                     %(_python_)s %(cat_py)s ${TARGET}.yyy $SOURCES xxx
 %(_python_)s %(cat_py)s file3.alt zzz yyy xxx
 %(_python_)s %(cat_py)s file3 zzz yyy xxx

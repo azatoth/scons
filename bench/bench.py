@@ -23,6 +23,7 @@
 #
 # This will allow (as much as possible) us to time just the code itself,
 # not Python function call overhead.
+from __future__ import division
 
 import getopt
 import sys
@@ -93,10 +94,9 @@ exec(open(args[0], 'rU').read())
 try:
     FunctionList
 except NameError:
-    function_names = filter(lambda x: x[:4] == FunctionPrefix, locals().keys())
-    function_names.sort()
-    l = map(lambda f, l=locals(): l[f], function_names)
-    FunctionList = filter(lambda f: type(f) == types.FunctionType, l)
+    function_names = sorted([x for x in locals().keys() if x[:4] == FunctionPrefix])
+    l = [locals()[f] for f in function_names]
+    FunctionList = [f for f in l if isinstance(f, types.FunctionType)]
 
 IterationList = [None] * Iterations
 
@@ -104,13 +104,15 @@ def timer(func, *args, **kw):
     results = []
     for i in range(Runs):
         start = Now()
-        apply(func, args, kw)
+        func(*args, **kw)
         finish = Now()
         results.append((finish - start) / Iterations)
     return results
 
 def display(label, results):
-    total = reduce(lambda x, y: x+y, results, 0.0)
+    total = 0.0
+    for r in results:
+        total += r
     print "    %8.3f" % ((total * 1e6) / len(results)), ':', label
 
 for func in FunctionList:
@@ -119,7 +121,7 @@ for func in FunctionList:
     print func.__name__ + d + ':'
 
     for label, args, kw in Data:
-        r = apply(timer, (func,)+args, kw)
+        r = timer(func, *args, **kw)
         display(label, r)
 
 # Local Variables:

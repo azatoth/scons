@@ -97,15 +97,15 @@ def simple_diff(a, b, fromfile='', tofile='',
     for op, a1, a2, b1, b2 in sm.get_opcodes():
         if op == 'delete':
             result.append("%sd%d\n" % (comma(a1, a2), b1))
-            result.extend(map(lambda l: '< ' + l, a[a1:a2]))
+            result.extend(['< ' + l for l in a[a1:a2]])
         elif op == 'insert':
             result.append("%da%s\n" % (a1, comma(b1, b2)))
-            result.extend(map(lambda l: '> ' + l, b[b1:b2]))
+            result.extend(['> ' + l for l in b[b1:b2]])
         elif op == 'replace':
             result.append("%sc%s\n" % (comma(a1, a2), comma(b1, b2)))
-            result.extend(map(lambda l: '< ' + l, a[a1:a2]))
+            result.extend(['< ' + l for l in a[a1:a2]])
             result.append('---\n')
-            result.extend(map(lambda l: '> ' + l, b[b1:b2]))
+            result.extend(['> ' + l for l in b[b1:b2]])
     return result
 
 diff_map = {
@@ -173,9 +173,7 @@ def diff_dir(left, right):
         u[l] = 1
     for r in rlist:
         u[r] = 1
-    clist = [ x for x in u.keys() if x[-4:] != '.pyc' ]
-    clist.sort()
-    for x in clist:
+    for x in sorted([ x for x in u.keys() if x[-4:] != '.pyc' ]):
         if x in llist:
             if x in rlist:
                 do_diff(os.path.join(left, x),

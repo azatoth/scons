@@ -51,7 +51,7 @@ class AliasTestCase(unittest.TestCase):
     def test_get_contents(self):
         """Test the get_contents() method
         """
-        class DummyNode:
+        class DummyNode(object):
             def __init__(self, contents):
                 self.contents = contents
             def get_csig(self):
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

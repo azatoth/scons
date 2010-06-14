@@ -30,8 +30,12 @@ solution (.sln) files that look correct when using a variant_dir.
 """
 
 import TestSConsMSVS
+import sys
+
 
 test = TestSConsMSVS.TestSConsMSVS()
+host_arch = test.get_vs_host_arch()
+
 
 # Make the test infrastructure think we have this version of MSVS installed.
 test._msvs_versions = ['7.1']
@@ -50,7 +54,7 @@ test.write('SConstruct', """\
 SConscript('src/SConscript', variant_dir='build')
 """)
 
-test.write(['src', 'SConscript'], SConscript_contents)
+test.write(['src', 'SConscript'], SConscript_contents%{'HOST_ARCH': host_arch})
 
 test.run(arguments=".")
 

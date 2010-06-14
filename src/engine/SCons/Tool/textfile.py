@@ -84,12 +84,12 @@ def _action(target, source, env):
                                          % repr(linesep), None)
 
     # create a dictionary to use for the substitutions
-    if not env.has_key('SUBST_DICT'):
+    if 'SUBST_DICT' not in env:
         subs = None    # no substitutions
     else:
         d = env['SUBST_DICT']
         if is_Dict(d):
-            d = d.items()
+            d = list(d.items())
         elif is_Sequence(d):
             pass
         else:

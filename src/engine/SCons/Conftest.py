@@ -101,7 +101,6 @@ Autoconf-like configuration support; low level implementation of tests.
 #
 
 import re
-import string
 from types import IntType
 
 #
@@ -230,7 +229,7 @@ int main()
 
 def _check_empty_program(context, comp, text, language, use_shared = False):
     """Return 0 on success, 1 otherwise."""
-    if not context.env.has_key(comp) or not context.env[comp]:
+    if comp not in context.env or not context.env[comp]:
         # The compiler construction variable is not set or empty
         return 1
 
@@ -636,7 +635,7 @@ return 0;
 """ % (call or "")
 
     if call:
-        i = string.find(call, "\n")
+        i = call.find("\n")
         if i > 0:
             calltext = call[:i] + ".."
         elif call[-1] == ';':
@@ -723,14 +722,14 @@ def _Have(context, key, have, comment = None):
              Give "have" as is should appear in the header file, include quotes
              when desired and escape special characters!
     """
-    key_up = string.upper(key)
+    key_up = key.upper()
     key_up = re.sub('[^A-Z0-9_]', '_', key_up)
     context.havedict[key_up] = have
     if have == 1:
         line = "#define %s 1\n" % key_up
     elif have == 0:
         line = "/* #undef %s */\n" % key_up
-    elif type(have) == IntType:
+    elif isinstance(have, IntType):
         line = "#define %s %d\n" % (key_up, have)
     else:
         line = "#define %s %s\n" % (key_up, str(have))
@@ -755,7 +754,7 @@ def _LogFailed(context, text, msg):
     """
     if LogInputFiles:
         context.Log("Failed program was:\n")
-        lines = string.split(text, '\n')
+        lines = text.split('\n')
         if len(lines) and lines[-1] == '':
             lines = lines[:-1]              # remove trailing empty line
         n = 1

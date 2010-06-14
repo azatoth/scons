@@ -52,9 +52,8 @@ inc2_include_h = test.workpath('inc2', 'include.h')
 
 test.write('build.py', r"""
 import os.path
-import string
 import sys
-path = string.split(sys.argv[1])
+path = sys.argv[1].split()
 input = open(sys.argv[2], 'rb')
 output = open(sys.argv[3], 'wb')
 
@@ -82,10 +81,8 @@ sys.exit(0)
 
 test.write('SConstruct', """\
 def foo(target, source, env):
-    children = source[0].children()
-    children.sort(lambda a,b: cmp(a.name, b.name))
     fp = open(str(target[0]), 'wb')
-    for c in children:
+    for c in sorted(source[0].children(), key=lambda t: t.name):
         fp.write('%s\\n' % c)
     fp.close()
 Command('list.out', 'subdir', foo, source_scanner = DirScanner)

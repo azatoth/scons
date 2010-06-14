@@ -25,7 +25,6 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import string
 
 import TestSCons
 
@@ -39,7 +38,6 @@ test.write('mytar.py', """
 import getopt
 import os
 import os.path
-import string
 import sys
 cmd_opts, args = getopt.getopt(sys.argv[1:], 'cf:x', [])
 opt_string = ''
@@ -48,6 +46,8 @@ for opt, arg in cmd_opts:
     else: opt_string = opt_string + ' ' + opt
 def process(outfile, name):
     if os.path.isdir(name):
+        ## TODO 2.5: the next three lines can be replaced by
+        #for entry in sorted(os.listdir(name)):
         entries = os.listdir(name)
         entries.sort()
         for entry in entries:
@@ -95,11 +95,10 @@ tar = test.detect('TAR', 'tar')
 if tar:
 
     test.write("wrapper.py", """import os
-import string
 import sys
 open('%s', 'wb').write("wrapper.py\\n")
-os.system(string.join(sys.argv[1:], " "))
-""" % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
+os.system(" ".join(sys.argv[1:]))
+""" % test.workpath('wrapper.out').replace('\\', '\\\\'))
 
     test.write('SConstruct', """
 foo = Environment()

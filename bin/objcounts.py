@@ -40,7 +40,7 @@ def fetch_counts(fname):
     list = [l.split() for l in lines if re.match('\s+\d', l)]
     d = {}
     for l in list:
-        d[l[-1]] = map(int, l[:-1])
+        d[l[-1]] = list(map(int, l[:-1]))
     return d
 
 c1 = fetch_counts(sys.argv[1])
@@ -86,20 +86,14 @@ def printline(c1, c2, classname):
           diffstr(c1[3], c2[3]) + \
           ' ' + classname
 
-keys = common.keys()
-keys.sort()
-for k in keys:
+for k in sorted(common.keys()):
     c = common[k]
     printline(c[0], c[1], k)
 
-keys = c1.keys()
-keys.sort()
-for k in keys:
+for k in sorted(list(c1.keys())):
     printline(c1[k], ['--']*4, k)
 
-keys = c2.keys()
-keys.sort()
-for k in keys:
+for k in sorted(list(c2.keys())):
     printline(['--']*4, c2[k], k)
 
 # Local Variables:

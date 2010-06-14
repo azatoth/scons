@@ -6,7 +6,6 @@
 
 import os.path
 import re
-import string
 import sys
 import timeit
 
@@ -17,7 +16,7 @@ import timeit
 # These wrap the basic timeit function to make it a little more
 # convenient to do side-by-side tests of code.
 
-class Timing:
+class Timing(object):
     def __init__(self, name, num, init, statement):
         self.__timer = timeit.Timer(statement, init)
         self.__num   = num
@@ -38,13 +37,11 @@ def times(num=1000000, init='', title='Results:', **statements):
         t = Timing(n, num, init, s)
         t.timeit()
         timings.append(t)
-    
+
     print
     print title
-    l = []
-    for i in timings: l.append((i.getResult(),i.name))
-    l.sort()
-    for i in l: print "  %9.3f s   %s" % i
+    for i in sorted([(i.getResult(),i.name) for i in timings]):
+        print "  %9.3f s   %s" % i
 
 # Import the necessary local SCons.* modules used by some of our
 # alternative implementations below, first manipulating sys.path so
@@ -96,7 +93,7 @@ global_valid_var = re.compile(r'[_a-zA-Z]\w*$')
 # After we're done should be the one that shows up at the top of the
 # list as we run our timings.
 
-class Environment:
+class Environment(object):
     _special_set = {
         'BUILDERS' : None,
         'SCANNERS' : None,
@@ -105,7 +102,7 @@ class Environment:
         'SOURCE'   : None,
         'SOURCES'  : None,
     }
-    _special_set_keys = _special_set.keys()
+    _special_set_keys = list(_special_set.keys())
     _valid_var = re.compile(r'[_a-zA-Z]\w*$')
     def __init__(self, **kw):
         self._dict = kw
@@ -118,7 +115,7 @@ class env_Original(Environment):
             special(self, key, value)
         else:
             if not SCons.Environment.is_valid_construction_var(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_Global_is_valid(Environment):
@@ -129,7 +126,7 @@ class env_Global_is_valid(Environment):
             special(self, key, value)
         else:
             if not is_valid_construction_var(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_Method_is_valid(Environment):
@@ -146,7 +143,7 @@ class env_Method_is_valid(Environment):
             special(self, key, value)
         else:
             if not self.is_valid_construction_var(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_regex_attribute_is_valid(Environment):
@@ -157,7 +154,7 @@ class env_regex_attribute_is_valid(Environment):
             special(self, key, value)
         else:
             if not self._valid_var.match(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_global_regex_is_valid(Environment):
@@ -168,17 +165,17 @@ class env_global_regex_is_valid(Environment):
             special(self, key, value)
         else:
             if not global_valid_var.match(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_special_set_has_key(Environment):
     """_special_set.get():  use _special_set.has_key() instead"""
     def __setitem__(self, key, value):
-        if self._special_set.has_key(key):
+        if key in self._special_set:
             self._special_set[key](self, key, value)
         else:
             if not SCons.Environment.is_valid_construction_var(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_key_in_tuple(Environment):
@@ -188,7 +185,7 @@ class env_key_in_tuple(Environment):
             self._special_set[key](self, key, value)
         else:
             if not SCons.Environment.is_valid_construction_var(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_key_in_list(Environment):
@@ -198,7 +195,7 @@ class env_key_in_list(Environment):
             self._special_set[key](self, key, value)
         else:
             if not SCons.Environment.is_valid_construction_var(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_key_in_attribute(Environment):
@@ -208,7 +205,7 @@ class env_key_in_attribute(Environment):
             self._special_set[key](self, key, value)
         else:
             if not SCons.Environment.is_valid_construction_var(key):
-                raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_try_except(Environment):
@@ -222,7 +219,7 @@ class env_try_except(Environment):
                 self._dict[key]
             except KeyError:
                 if not SCons.Environment.is_valid_construction_var(key):
-                    raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                    raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_not_has_key(Environment):
@@ -232,9 +229,9 @@ class env_not_has_key(Environment):
         if special:
             special(self, key, value)
         else:
-            if not self._dict.has_key(key) \
+            if key not in self._dict \
                 and not SCons.Environment.is_valid_construction_var(key):
-                    raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                    raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_Best_attribute(Environment):
@@ -243,20 +240,20 @@ class env_Best_attribute(Environment):
         if key in self._special_set_keys:
             self._special_set[key](self, key, value)
         else:
-            if not self._dict.has_key(key) \
+            if key not in self._dict \
                and not global_valid_var.match(key):
-                    raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                    raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_Best_has_key(Environment):
     """Best __setitem__(), with has_key"""
     def __setitem__(self, key, value):
-        if self._special_set.has_key(key):
+        if key in self._special_set:
             self._special_set[key](self, key, value)
         else:
-            if not self._dict.has_key(key) \
+            if key not in self._dict \
                and not global_valid_var.match(key):
-                    raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                    raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 class env_Best_list(Environment):
@@ -265,9 +262,9 @@ class env_Best_list(Environment):
         if key in ['BUILDERS', 'SCANNERS', 'TARGET', 'TARGETS', 'SOURCE', 'SOURCES']:
             self._special_set[key](self, key, value)
         else:
-            if not self._dict.has_key(key) \
+            if key not in self._dict \
                and not global_valid_var.match(key):
-                    raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                    raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
             self._dict[key] = value
 
 try:
@@ -278,11 +275,11 @@ else:
     class env_isalnum(Environment):
         """Greg's Folly: isalnum instead of probe"""
         def __setitem__(self, key, value):
-            if self._special_set.has_key(key):
+            if key in self._special_set:
                 self._special_set[key](self, key, value)
             else:
                 if not key.isalnum() and not global_valid_var.match(key):
-                    raise SCons.Errors.UserError, "Illegal construction variable `%s'" % key
+                    raise SCons.Errors.UserError("Illegal construction variable `%s'" % key)
                 self._dict[key] = value
 
 # We'll use the names of all the env_* classes we find later to build
@@ -324,7 +321,7 @@ common_import_variables = ['do_it'] + class_names
 
 common_imports = """
 from __main__ import %s
-""" % string.join(common_import_variables, ', ')
+""" % ', '.join(common_import_variables)
 
 # The test data (lists of variable names) that we'll use for the runs.
 
@@ -340,10 +337,10 @@ def run_it(title, init):
       s['num'] = iterations
       s['title'] = title
       s['init'] = init
-      apply(times,(),s)
+      times(**s)
 
 print 'Environment __setitem__ benchmark using',
-print 'Python', string.split(sys.version)[0],
+print 'Python', sys.version.split()[0],
 print 'on', sys.platform, os.name
 
 run_it('Results for re-adding an existing variable name 100 times:',

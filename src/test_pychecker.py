@@ -20,7 +20,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -30,7 +29,6 @@ Use pychecker to catch various Python coding errors.
 
 import os
 import os.path
-import string
 import sys
 
 import TestSCons
@@ -64,21 +62,16 @@ else:
 src_engine_ = os.path.join(src_engine, '')
 
 MANIFEST = os.path.join(src_engine, 'MANIFEST.in')
-files = string.split(open(MANIFEST).read())
+files = open(MANIFEST).read().split()
 
-files = filter(lambda f: f[-3:] == '.py', files)
+files = [f for f in files if f[-3:] == '.py']
 
 ignore = [
     'SCons/compat/__init__.py',
     'SCons/compat/_scons_UserString.py',
     'SCons/compat/_scons_hashlib.py',
-    'SCons/compat/_scons_itertools.py',
-    'SCons/compat/_scons_optparse.py',
     'SCons/compat/_scons_sets.py',
-    'SCons/compat/_scons_sets15.py',
-    'SCons/compat/_scons_shlex.py',
     'SCons/compat/_scons_subprocess.py',
-    'SCons/compat/_scons_textwrap.py',
     'SCons/compat/builtins.py',
 ]
 
@@ -90,10 +83,7 @@ for file in ignore:
         del u[file]
     except KeyError:
         pass
-
-files = u.keys()
-
-files.sort()
+files = sorted(u.keys())
 
 mismatches = []
 
@@ -131,15 +121,15 @@ for file in files:
     test.run(program=program, arguments=args, status=None, stderr=None)
 
     stdout = test.stdout()
-    stdout = string.replace(stdout, src_engine_, '')
+    stdout = stdout.replace(src_engine_, '')
 
     stderr = test.stderr()
-    stderr = string.replace(stderr, src_engine_, '')
-    stderr = string.replace(stderr, pywintypes_warning, '')
+    stderr = stderr.replace(src_engine_, '')
+    stderr = stderr.replace(pywintypes_warning, '')
 
     if test.status or stdout or stderr:
         mismatches.append('\n')
-        mismatches.append(string.join([program] + args) + '\n')
+        mismatches.append(' '.join([program] + args) + '\n')
 
         mismatches.append('STDOUT =====================================\n')
         mismatches.append(stdout)
@@ -149,7 +139,7 @@ for file in files:
             mismatches.append(stderr)
 
 if mismatches:
-    print string.join(mismatches[1:], '')
+    print ''.join(mismatches[1:])
     test.fail_test()
 
 test.pass_test()

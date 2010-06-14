@@ -49,10 +49,9 @@ opts = "-Y " + test.workpath('repository')
 test.write(['repository', 'SConstruct'], """\
 def cat(env, source, target):
     target = str(target[0])
-    source = map(str, source)
     f = open(target, "wb")
     for src in source:
-        f.write(open(src, "rb").read())
+        f.write(open(str(src), "rb").read())
     f.close()
 
 # Verify that we can glob a repository-only Node that exists
@@ -76,9 +75,7 @@ test.write(['repository', 'src', 'SConscript'], """
 Import("env")
 env.Build('xxx.out', Glob('x*.in'))
 env.Build('yyy.out', Glob('yy?.in'))
-zzz_in = Glob('*/zzz.in')
-zzz_in.sort(lambda a,b: cmp(a.abspath, b.abspath))
-env.Build('zzz.out', zzz_in)
+env.Build('zzz.out', sorted(Glob('*/zzz.in'), key=lambda t: t.abspath))
 """)
 
 test.write(['repository', 'src', 'xxx.in'], "repository/src/xxx.in\n")

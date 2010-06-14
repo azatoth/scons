@@ -23,12 +23,13 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import SCons.compat
+
+import collections
 import os
-import os.path
 import sys
 import TestCmd
 import unittest
-import UserDict
 
 import SCons.Node.FS
 import SCons.Warnings
@@ -170,9 +171,9 @@ test.write("f5b.h", "\n")
 
 # define some helpers:
 
-class DummyEnvironment(UserDict.UserDict):
+class DummyEnvironment(collections.UserDict):
     def __init__(self, **kw):
-        UserDict.UserDict.__init__(self)
+        collections.UserDict.__init__(self)
         self.data.update(kw)
         self.fs = SCons.Node.FS.FS(test.workpath(''))
 
@@ -190,9 +191,9 @@ class DummyEnvironment(UserDict.UserDict):
         return [[strSubst]]
 
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
-        return map(self.subst, path)
+        return list(map(self.subst, path))
 
     def get_calculator(self):
         return None
@@ -213,8 +214,8 @@ else:
 
 def deps_match(self, deps, headers):
     global my_normpath
-    scanned = map(my_normpath, map(str, deps))
-    expect = map(my_normpath, headers)
+    scanned = list(map(my_normpath, list(map(str, deps))))
+    expect = list(map(my_normpath, headers))
     self.failUnless(scanned == expect, "expect %s != scanned %s" % (expect, scanned))
 
 # define some tests:
@@ -310,7 +311,7 @@ class CScannerTestCase8(unittest.TestCase):
         env.fs.chdir(env.Dir(''))
         path = s.path(env, dir)
         deps2 = s(env.File('#fa.cpp'), env, path)
-        headers1 =  map(test.workpath, ['include/fa.h', 'include/fb.h'])
+        headers1 =  list(map(test.workpath, ['include/fa.h', 'include/fb.h']))
         headers2 =  ['include/fa.h', 'include/fb.h']
         deps_match(self, deps1, headers1)
         deps_match(self, deps2, headers2)
@@ -319,7 +320,7 @@ class CScannerTestCase9(unittest.TestCase):
     def runTest(self):
         """Generate a warning when we can't find a #included file"""
         SCons.Warnings.enableWarningClass(SCons.Warnings.DependencyWarning)
-        class TestOut:
+        class TestOut(object):
             def __call__(self, x):
                 self.out = x
 

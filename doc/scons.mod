@@ -157,6 +157,7 @@
 <!ENTITY AddVariables "<function>AddVariables</function>">
 <!ENTITY Alias "<function>Alias</function>">
 <!ENTITY Aliases "<function>Aliases</function>">
+<!ENTITY AllowSubstExceptions "<function>AllowSubstExceptions</function>">
 <!ENTITY AlwaysBuild "<function>AlwaysBuild</function>">
 <!ENTITY Append "<function>Append</function>">
 <!ENTITY AppendENVPath "<function>AppendENVPath</function>">
@@ -191,10 +192,12 @@
 <!ENTITY File "<function>File</function>">
 <!ENTITY FindFile "<function>FindFile</function>">
 <!ENTITY FindInstalledFiles "<function>FindInstalledFiles</function>">
+<!ENTITY FindPathDirs "<function>FindPathDirs</function>">
 <!ENTITY Finish "<function>Finish</function>">
 <!ENTITY Flatten "<function>Flatten</function>">
 <!ENTITY GenerateHelpText "<function>GenerateHelpText</function>">
 <!ENTITY GetBuildFailures "<function>GetBuildFailures</function>">
+<!ENTITY GetBuildPath "<function>GetBuildPath</function>">
 <!ENTITY GetLaunchDir "<function>GetLaunchDir</function>">
 <!ENTITY GetOption "<function>GetOption</function>">
 <!ENTITY Glob "<function>Glob</function>">
@@ -279,7 +282,9 @@
 <!ENTITY TryRun "<function>TryRun</function>">
 
 
-<!-- Python functions -->
+<!-- Python functions and classes -->
+<!ENTITY IndexError "<classname>IndexError</classname>">
+<!ENTITY NameError "<classname>NameError</classname>">
 <!ENTITY str "<function>str</function>">
 <!ENTITY zipfile "<function>zipfile</function>">
 

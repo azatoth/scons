@@ -32,7 +32,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 import os
 import os.path
 import re
-import string
 
 java_parsing = 1
 
@@ -60,7 +59,7 @@ if java_parsing:
                           r'\d*\.\d*|[A-Za-z_][\w\$\.]*|<[A-Za-z_]\w+>|' +
                           r'/\*|\*/|\[\])')
 
-    class OuterState:
+    class OuterState(object):
         """The initial state for parsing a Java file for classes,
         interfaces, and anonymous inner classes."""
         def __init__(self, version=default_java_version):
@@ -68,7 +67,7 @@ if java_parsing:
             if not version in ('1.1', '1.2', '1.3','1.4', '1.5', '1.6',
                                '5', '6'):
                 msg = "Java version %s not supported" % version
-                raise NotImplementedError, msg
+                raise NotImplementedError(msg)
 
             self.version = version
             self.listClasses = []
@@ -127,7 +126,7 @@ if java_parsing:
             self.brackets = self.brackets - 1
             if len(self.stackBrackets) and \
                self.brackets == self.stackBrackets[-1]:
-                self.listOutputs.append(string.join(self.listClasses, '$'))
+                self.listOutputs.append('$'.join(self.listClasses))
                 self.localClasses.pop()
                 self.listClasses.pop()
                 self.anonStacksStack.pop()
@@ -179,7 +178,7 @@ if java_parsing:
                 self.__getAnonStack()[-1] = self.__getAnonStack()[-1] + 1
                 for anon in self.__getAnonStack():
                     className.append(str(anon))
-                self.listOutputs.append(string.join(className, '$'))
+                self.listOutputs.append('$'.join(className))
 
             self.nextAnon = self.nextAnon + 1
             self.__getAnonStack().append(0)
@@ -187,7 +186,7 @@ if java_parsing:
         def setPackage(self, package):
             self.package = package
 
-    class AnonClassState:
+    class AnonClassState(object):
         """A state that looks for anonymous inner classes."""
         def __init__(self, old_state):
             # outer_state is always an instance of OuterState
@@ -222,7 +221,7 @@ if java_parsing:
                 self.outer_state.addAnonClass()
             return self.old_state.parseToken(token)
 
-    class SkipState:
+    class SkipState(object):
         """A state that will skip a specified number of tokens before
         reverting to the previous state."""
         def __init__(self, tokens_to_skip, old_state):
@@ -234,7 +233,7 @@ if java_parsing:
                 return self.old_state
             return self
 
-    class ClassState:
+    class ClassState(object):
         """A state we go into when we hit a class or interface keyword."""
         def __init__(self, outer_state):
             # outer_state is always an instance of OuterState
@@ -261,7 +260,7 @@ if java_parsing:
             self.outer_state.anonStacksStack.append([0])
             return self.outer_state
 
-    class IgnoreState:
+    class IgnoreState(object):
         """A state that will ignore all tokens until it gets to a
         specified token."""
         def __init__(self, ignore_until, old_state):
@@ -272,7 +271,7 @@ if java_parsing:
                 return self.old_state
             return self
 
-    class PackageState:
+    class PackageState(object):
         """The state we enter when we encounter the package keyword.
         We assume the next token will be the package name."""
         def __init__(self, outer_state):
@@ -298,7 +297,7 @@ if java_parsing:
             currstate = currstate.parseToken(token)
             if trace: trace(token, currstate)
         if initial.package:
-            package = string.replace(initial.package, '.', os.sep)
+            package = initial.package.replace('.', os.sep)
         return (package, initial.listOutputs)
 
 else:

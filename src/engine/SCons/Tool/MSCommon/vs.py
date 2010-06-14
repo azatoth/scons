@@ -40,7 +40,7 @@ from common import debug, \
 
 import SCons.Tool.MSCommon.vc
 
-class VisualStudio:
+class VisualStudio(object):
     """
     An abstract base class for trying to find installed versions of
     Visual Studio.
@@ -385,9 +385,9 @@ def get_vs_by_version(msvs):
     global SupportedVSMap
 
     debug('vs.py:get_vs_by_version()')
-    if not SupportedVSMap.has_key(msvs):
+    if msvs not in SupportedVSMap:
         msg = "Visual Studio version %s is not supported" % repr(msvs)
-        raise SCons.Errors.UserError, msg
+        raise SCons.Errors.UserError(msg)
     get_installed_visual_studios()
     vs = InstalledVSMap.get(msvs)
     debug('InstalledVSMap:%s'%InstalledVSMap)
@@ -415,15 +415,13 @@ def get_default_version(env):
     version: str
         the default version.
     """
-    if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
-        # TODO(1.5):
-        #versions = [vs.version for vs in get_installed_visual_studios()]
-        versions = map(lambda vs: vs.version, get_installed_visual_studios())
+    if 'MSVS' not in env or not SCons.Util.is_Dict(env['MSVS']):
+        versions = [vs.version for vs in get_installed_visual_studios()]
         env['MSVS'] = {'VERSIONS' : versions}
     else:
         versions = env['MSVS'].get('VERSIONS', [])
 
-    if not env.has_key('MSVS_VERSION'):
+    if 'MSVS_VERSION' not in env:
         if versions:
             env['MSVS_VERSION'] = versions[0] #use highest version by default
         else:
@@ -451,7 +449,7 @@ def get_default_arch(env):
         arch = 'x86'
     elif not arch in msvs.get_supported_arch():
         fmt = "Visual Studio version %s does not support architecture %s"
-        raise SCons.Errors.UserError, fmt % (env['MSVS_VERSION'], arch)
+        raise SCons.Errors.UserError(fmt % (env['MSVS_VERSION'], arch))
 
     return arch
 
@@ -473,11 +471,15 @@ def msvs_setup_env(env):
         vars = ('LIB', 'LIBPATH', 'PATH', 'INCLUDE')
 
         msvs_list = get_installed_visual_studios()
-        # TODO(1.5):
-        #vscommonvarnames = [ vs.common_tools_var for vs in msvs_list ]
-        vscommonvarnames = map(lambda vs: vs.common_tools_var, msvs_list)
-        nenv = normalize_env(env['ENV'], vscommonvarnames + ['COMSPEC'])
-        output = get_output(batfilename, arch, env=nenv)
+        vscommonvarnames = [vs.common_tools_var for vs in msvs_list]
+        save_ENV = env['ENV']
+        nenv = normalize_env(env['ENV'],
+                             ['COMSPEC'] + vscommonvarnames,
+                             force=True)
+        try:
+            output = get_output(batfilename, arch, env=nenv)
+        finally:
+            env['ENV'] = save_ENV
         vars = parse_output(output, vars)
 
         for k, v in vars.items():
@@ -487,9 +489,7 @@ def query_versions():
     """Query the system to get available versions of VS. A version is
     considered when a batfile is found."""
     msvs_list = get_installed_visual_studios()
-    # TODO(1.5)
-    #versions = [ msvs.version for msvs in msvs_list ]
-    versions = map(lambda msvs:  msvs.version, msvs_list)
+    versions = [msvs.version for msvs in msvs_list]
     return versions
 
 # Local Variables:

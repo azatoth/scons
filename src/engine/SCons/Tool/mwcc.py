@@ -34,7 +34,6 @@ __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
 import os.path
-import string
 
 import SCons.Util
 
@@ -80,8 +79,8 @@ def set_vars(env):
     ENV['CWFolder'] = version.path
     ENV['LM_LICENSE_FILE'] = version.license
     plus = lambda x: '+%s' % x
-    ENV['MWCIncludes'] = string.join(map(plus, version.includes), os.pathsep)
-    ENV['MWLibraries'] = string.join(map(plus, version.libs), os.pathsep)
+    ENV['MWCIncludes'] = os.pathsep.join(map(plus, version.includes))
+    ENV['MWLibraries'] = os.pathsep.join(map(plus, version.libs))
     return 1
 
 
@@ -100,7 +99,7 @@ def find_versions():
             product_key = SCons.Util.RegOpenKeyEx(HLM, product)
 
             i = 0
-            while 1:
+            while True:
                 name = product + '\\' + SCons.Util.RegEnumKey(product_key, i)
                 name_key = SCons.Util.RegOpenKeyEx(HLM, name)
 
@@ -120,7 +119,7 @@ def find_versions():
     return versions
 
 
-class MWVersion:
+class MWVersion(object):
     def __init__(self, version, path, platform):
         self.version = version
         self.path = path

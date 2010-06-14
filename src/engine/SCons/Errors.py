@@ -133,7 +133,7 @@ class ExplicitExit(Exception):
         self.node = node
         self.status = status
         self.exitstatus = status
-        apply(Exception.__init__, (self,) + args)
+        Exception.__init__(self, *args)
 
 def convert_to_BuildError(status, exc_info=None):
     """
@@ -157,9 +157,7 @@ def convert_to_BuildError(status, exc_info=None):
             status=status,      # might be 0, OK here
             exitstatus=status,      # might be 0, OK here
             exc_info=exc_info)
-    # TODO(1.5):
-    #elif isinstance(status, (StopError, UserError)):
-    elif isinstance(status, StopError) or isinstance(status, UserError):
+    elif isinstance(status, (StopError, UserError)):
         buildError = BuildError(
             errstr=str(status),
             status=2,

@@ -29,7 +29,6 @@ CacheDir support
 
 import os.path
 import stat
-import string
 import sys
 
 import SCons.Action
@@ -101,7 +100,7 @@ def CachePushFunc(target, source, env):
             # has beaten us creating the directory.
             if not fs.isdir(cachedir):
                 msg = errfmt % (str(target), cachefile)
-                raise SCons.Errors.EnvironmentError, msg
+                raise SCons.Errors.EnvironmentError(msg)
 
     try:
         if fs.islink(t.path):
@@ -122,7 +121,7 @@ def CachePushFunc(target, source, env):
 
 CachePush = SCons.Action.Action(CachePushFunc, None)
 
-class CacheDir:
+class CacheDir(object):
 
     def __init__(self, path):
         try:
@@ -158,7 +157,7 @@ class CacheDir:
             return None, None
 
         sig = node.get_cachedir_bsig()
-        subdir = string.upper(sig[0])
+        subdir = sig[0].upper()
         dir = os.path.join(self.path, subdir)
         return dir, os.path.join(dir, sig)
 

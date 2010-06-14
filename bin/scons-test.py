@@ -19,12 +19,20 @@ import getopt
 import imp
 import os
 import os.path
-import string
 import sys
 import tempfile
 import time
-import urllib
 import zipfile
+
+try:
+    # try Python 3.x style
+    from urllib.request import urlretrieve
+except ImportError:
+    # nope, must be 2.x; this hack is equivalent
+    import imp
+    # protect import from fixer
+    urlretrieve = imp.load_module('urllib',
+                                  *imp.find_module('urllib')).urlretrieve
 
 helpstr = """\
 Usage: scons-test.py [-f zipfile] [-o outdir] [-v] [--xml] [runtest arguments]
@@ -70,7 +78,7 @@ if not os.path.exists(tempdir):
 
 # Fetch the input file if it happens to be across a network somewhere.
 # Ohmigod, does Python make this simple...
-inputfile, headers = urllib.urlretrieve(inputfile)
+inputfile, headers = urlretrieve(inputfile)
 
 # Unzip the header file in the output directory.  We use our own code
 # (lifted from scons-unzip.py) to make the output subdirectory name
@@ -83,14 +91,14 @@ if outdir is None:
 
 def outname(n, outdir=outdir):
     l = []
-    while 1:
+    while True:
         n, tail = os.path.split(n)
         if not n:
             break
         l.append(tail)
     l.append(outdir)
     l.reverse()
-    return apply(os.path.join, l)
+    return os.path.join(*l)
 
 for name in zf.namelist():
     dest = outname(name)
@@ -135,7 +143,7 @@ fp.close()
 if not args:
     runtest_args = '-a'
 else:
-    runtest_args = string.join(args)
+    runtest_args = ' '.join(args)
 
 if format == '--xml':
 
@@ -205,10 +213,7 @@ if format == '--xml':
     ]
 
     print "  <environment>"
-    #keys = os.environ.keys()
-    keys = environ_keys
-    keys.sort()
-    for key in keys:
+    for key in sorted(environ_keys):
         value = os.environ.get(key)
         if value:
             print "    <variable>"

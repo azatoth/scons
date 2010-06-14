@@ -23,14 +23,13 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
 import sys
 import unittest
 
 import SCons.Executor
 
 
-class MyEnvironment:
+class MyEnvironment(object):
     def __init__(self, **kw):
         self._dict = {}
         self._dict.update(kw)
@@ -39,30 +38,30 @@ class MyEnvironment:
     def Override(self, overrides):
         d = self._dict.copy()
         d.update(overrides)
-        return apply(MyEnvironment, (), d)
+        return MyEnvironment(**d)
     def _update(self, dict):
         self._dict.update(dict)
 
-class MyAction:
+class MyAction(object):
     def __init__(self, actions=['action1', 'action2']):
         self.actions = actions
     def __call__(self, target, source, env, **kw):
         for action in self.actions:
-            apply(action, (target, source, env), kw)
+            action(target, source, env, **kw)
     def genstring(self, target, source, env):
-        return string.join(['GENSTRING'] + map(str, self.actions) + target + source)
+        return ' '.join(['GENSTRING'] + list(map(str, self.actions)) + target + source)
     def get_contents(self, target, source, env):
-        return string.join(self.actions + target + source)
+        return ' '.join(self.actions + target + source)
     def get_implicit_deps(self, target, source, env):
         return []
 
-class MyBuilder:
+class MyBuilder(object):
     def __init__(self, env, overrides):
         self.env = env
         self.overrides = overrides
         self.action = MyAction()
 
-class MyNode:
+class MyNode(object):
     def __init__(self, name=None, pre=[], post=[]):
         self.name = name
         self.implicit = []
@@ -79,7 +78,7 @@ class MyNode:
                                            [],
                                            [self],
                                            ['s1', 's2'])
-        apply(executor, (self), {})
+        executor(self)
     def get_env_scanner(self, env, kw):
         return MyScanner('dep-')
     def get_implicit_deps(self, env, scanner, path):
@@ -93,7 +92,7 @@ class MyNode:
     def disambiguate(self):
         return self
 
-class MyScanner:
+class MyScanner(object):
     def __init__(self, prefix):
         self.prefix = prefix
     def path(self, env, cwd, target, source):
@@ -120,7 +119,7 @@ class ExecutorTestCase(unittest.TestCase):
         except SCons.Errors.UserError:
             pass
         else:
-            raise "Did not catch expected UserError"
+            raise Exception("Did not catch expected UserError")
 
     def test__action_list(self):
         """Test the {get,set}_action_list() methods"""
@@ -182,10 +181,10 @@ class ExecutorTestCase(unittest.TestCase):
                                     [t],
                                     ['s1', 's2'])
 
-        class LocalScanner:
+        class LocalScanner(object):
             def path(self, env, dir, target, source):
-                target = map(str, target)
-                source = map(str, source)
+                target = list(map(str, target))
+                source = list(map(str, source))
                 return "scanner: %s, %s, %s, %s" % (env['SCANNERVAL'], dir, target, source)
         s = LocalScanner()
 
@@ -243,7 +242,7 @@ class ExecutorTestCase(unittest.TestCase):
         except SCons.Errors.BuildError:
             pass
         else:
-            raise Exception, "Did not catch expected BuildError"
+            raise Exception("Did not catch expected BuildError")
         assert result == ['pre_err'], result
         del result[:]
 
@@ -311,7 +310,7 @@ class ExecutorTestCase(unittest.TestCase):
         except SCons.Errors.StopError, e:
             assert str(e) == "Source `s2' not found, needed by target `t1'.", e
         else:
-            raise AssertionError, "did not catch expected StopError: %s" % r
+            raise AssertionError("did not catch expected StopError: %s" % r)
 
     def test_add_pre_action(self):
         """Test adding pre-actions to an Executor"""
@@ -440,13 +439,13 @@ class ExecutorTestCase(unittest.TestCase):
         x = SCons.Executor.Executor('b', env, [{}], [], [s1, s2, s3])
 
         r = x.get_unignored_sources(None, [])
-        assert r == [s1, s2, s3], map(str, r)
+        assert r == [s1, s2, s3], list(map(str, r))
 
         r = x.get_unignored_sources(None, [s2])
-        assert r == [s1, s3], map(str, r)
+        assert r == [s1, s3], list(map(str, r))
 
         r = x.get_unignored_sources(None, [s1, s3])
-        assert r == [s2], map(str, r)
+        assert r == [s2], list(map(str, r))
 
 
 
@@ -455,7 +454,7 @@ if __name__ == "__main__":
     tclasses = [ ExecutorTestCase ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

@@ -34,15 +34,15 @@ the underlying md5 module isn't available.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import md5
-import string
+from string import hexdigits
 
-class md5obj:
+class md5obj(object):
 
     md5_module = md5
 
     def __init__(self, name, string=''):
         if not name in ('MD5', 'md5'):
-            raise ValueError, "unsupported hash type"
+            raise ValueError("unsupported hash type")
         self.name = 'md5'
         self.m = self.md5_module.md5()
 
@@ -61,23 +61,8 @@ class md5obj:
     def update(self, arg):
         return self.m.update(arg)
 
-    if hasattr(md5.md5(), 'hexdigest'):
-
-        def hexdigest(self):
-            return self.m.hexdigest()
-
-    else:
-
-        # Objects created by the underlying md5 module have no native
-        # hexdigest() method (*cough* 1.5.2 *cough*), so provide an
-        # equivalent lifted from elsewhere.
-        def hexdigest(self):
-            h = string.hexdigits
-            r = ''
-            for c in self.digest():
-                i = ord(c)
-                r = r + h[(i >> 4) & 0xF] + h[i & 0xF]
-            return r
+    def hexdigest(self):
+        return self.m.hexdigest()
 
 new = md5obj
 

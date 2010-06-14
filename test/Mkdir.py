@@ -41,10 +41,9 @@ Execute(Mkdir('d1'))
 Execute(Mkdir(Dir('#d1-Dir')))
 def cat(env, source, target):
     target = str(target[0])
-    source = map(str, source)
     f = open(target, "wb")
     for src in source:
-        f.write(open(src, "rb").read())
+        f.write(open(str(src), "rb").read())
     f.close()
 Cat = Action(cat)
 env = Environment()
@@ -127,13 +126,11 @@ test.write(['work2', 'SConstruct'], """\
 import os
 def catdir(env, source, target):
     target = str(target[0])
-    source = map(str, source)
     outfp = open(target, "wb")
     for src in source:
-        l = os.listdir(src)
-        l.sort()
-        for f in l:
-            f = os.path.join(src, f)
+        s = str(src)
+        for f in sorted(os.listdir(s)):
+            f = os.path.join(s, f)
             if os.path.isfile(f):
                 outfp.write(open(f, "rb").read())
     outfp.close()
@@ -162,7 +159,7 @@ test.write(['work3', 'SConstruct'], """\
 #/SConstruct ------------------------------------------
 import os
 env = Environment(ENV = os.environ)
-BuildDir('build', 'sub1', duplicate=0)
+VariantDir('build', 'sub1', duplicate=0)
 base = '#build/sub1'
 Export('env base')
 SConscript('sub1/SConscript', exports='env')

@@ -24,6 +24,8 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import sys
+
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -136,7 +138,7 @@ genHeaderBld = SCons.Builder.Builder(
 env = Environment()
 env.Append(BUILDERS = {'GenHeader' : genHeaderBld})
 
-envdeps = map(str, range(int(optEnv['NbDeps'])))
+envdeps = list(map(str, range(int(optEnv['NbDeps']))))
 
 env.GenHeader('Out', None, ENVDEPS=envdeps)
 """)
@@ -158,79 +160,71 @@ scons: `.' is up to date.
 scons: done building targets.
 """
 
-import sys
-if sys.version[:3] == '2.1':
-    expectedStderr = """\
-%s:79: SyntaxWarning: local name 'x' in 'a' shadows use of 'x' as global in nested scope 'b'
-  def a():
-""" % test.workpath('SConstruct')
-else:
-    expectedStderr = ""
-
-def runtest(arguments, expectedOutFile, expectedRebuild=True, stderr=expectedStderr):
+def runtest(arguments, expectedOutFile, expectedRebuild=True, stderr=""):
     test.run(arguments=arguments,
              stdout=expectedRebuild and rebuildstr or nobuildstr,
-             stderr=expectedStderr)
+             stderr="")
     test.must_match('Out.gen.h', expectedOutFile)
 
-    # Should not be rebuild when ran a second time with the same
+    # Should not be rebuild when run a second time with the same
     # arguments.
 
-    test.run(arguments = arguments, stdout=nobuildstr, stderr=expectedStderr)
+    test.run(arguments = arguments, stdout=nobuildstr, stderr="")
     test.must_match('Out.gen.h', expectedOutFile)
 
 
-# Original build. 
+# We're making this script chatty to prevent timeouts on really really
+# slow buildbot slaves (*cough* Solaris *cough*).
+
+sys.stdout.write('Original build.\n')
 runtest('', """Head:0:1:Tail\n18\naaa\n""")
 
-# Changing a docstring should not cause a rebuild
+sys.stdout.write('Changing a docstring should not cause a rebuild.\n')
 runtest('docstring=ThisBuilderDoesXAndY', """Head:0:1:Tail\n18\naaa\n""", False)
 runtest('docstring=SuperBuilder', """Head:0:1:Tail\n18\naaa\n""", False)
 runtest('docstring=', """Head:0:1:Tail\n18\naaa\n""", False)
 
-# Changing a variable listed in the varlist should cause a rebuild
+sys.stdout.write('Changing a variable in the varlist should cause a rebuild.\n')
 runtest('NbDeps=3', """Head:0:1:2:Tail\n18\naaa\n""")
 runtest('NbDeps=4', """Head:0:1:2:3:Tail\n18\naaa\n""")
 runtest('', """Head:0:1:Tail\n18\naaa\n""")
 
-# Changing the function code should cause a rebuild
+sys.stdout.write('Changing the function code should cause a rebuild.\n')
 runtest('extracode=f.write("XX\\n")', """Head:0:1:Tail\n18\naaa\nXX\n""")
 runtest('extracode=a=2', """Head:0:1:Tail\n18\naaa\n""")
 runtest('', """Head:0:1:Tail\n18\naaa\n""")
 
-# Changing a constant used in the function code should cause a rebuild
+sys.stdout.write('Changing a constant in the function code should cause a rebuild.\n')
 runtest('separator=,', """Head:0,1,Tail\n18\naaa\n""")
 runtest('separator=;', """Head:0;1;Tail\n18\naaa\n""")
 runtest('', """Head:0:1:Tail\n18\naaa\n""")
 
-# Changing the code of a nested function should cause a rebuild
+sys.stdout.write('Changing the code of a nested function should cause a rebuild.\n')
 runtest('nestedfuncexp=b-xxx', """Head:0:1:Tail\n-18\naaa\n""")
 runtest('nestedfuncexp=b+xxx', """Head:0:1:Tail\n32\naaa\n""")
 runtest('', """Head:0:1:Tail\n18\naaa\n""")
 
-# Adding an extra argument should cause a rebuild.
+sys.stdout.write('Adding an extra argument should cause a rebuild.\n')
 runtest('extraarg=,xarg=2', """Head:0:1:Tail\n18\naaa\n2\n""")
 runtest('extraarg=,xarg=5', """Head:0:1:Tail\n18\naaa\n5\n""")
 runtest('', """Head:0:1:Tail\n18\naaa\n""")
 
-# Changing the value of a default argument should cause a rebuild
-# case 1: a value
+sys.stdout.write('Changing the value of a default argument should cause a rebuild:  a value.\n')
 runtest('b=0', """Head:0:1:Tail\n25\naaa\n""")
 runtest('b=9', """Head:0:1:Tail\n16\naaa\n""")
 runtest('', """Head:0:1:Tail\n18\naaa\n""")
 
-# case 2: an object
+sys.stdout.write('Changing the value of a default argument should cause a rebuild:  an object.\n')
 runtest('regexp=(aaaa)', """Head:0:1:Tail\n18\naaaa\n""")
 runtest('regexp=aa(a+)', """Head:0:1:Tail\n18\naa\n""")
 runtest('', """Head:0:1:Tail\n18\naaa\n""")
 
-# Changing the value of a closure cell value should cause a rebuild
-# case 1: a value
+sys.stdout.write('Changing the value of a closure cell value should cause a rebuild:  a value.\n')
 runtest('closure_cell_value=32', """Head:0:1:Tail\n25\naaa\n""")
 runtest('closure_cell_value=7', """Head:0:1:Tail\n0\naaa\n""")
 runtest('', """Head:0:1:Tail\n18\naaa\n""")
 
-# case 2: a default argument
+sys.stdout.write('Changing the value of a closure cell value should cause a rebuild:  a default argument.\n')
 runtest('header=MyHeader:', """MyHeader:0:1:Tail\n18\naaa\n""")
 runtest('trailer=MyTrailer', """Head:0:1:MyTrailer\n18\naaa\n""")
 runtest('', """Head:0:1:Tail\n18\naaa\n""")

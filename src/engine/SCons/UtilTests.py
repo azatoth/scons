@@ -23,15 +23,13 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import os
-import os.path
-import string
-import StringIO
-import sys
-import types
-import unittest
+import SCons.compat
 
-from UserDict import UserDict
+import io
+import os
+import sys
+import unittest
+from collections import UserDict, UserList, UserString
 
 import TestCmd
 
@@ -39,7 +37,11 @@ import SCons.Errors
 
 from SCons.Util import *
 
-class OutBuffer:
+try: eval('unicode')
+except NameError: HasUnicode = False
+else:             HasUnicode = True
+
+class OutBuffer(object):
     def __init__(self):
         self.buffer = ""
 
@@ -64,7 +66,7 @@ class UtilTestCase(unittest.TestCase):
         assert splitext('foo.bar') == ('foo','.bar')
         assert splitext(os.path.join('foo.bar', 'blat')) == (os.path.join('foo.bar', 'blat'),'')
 
-    class Node:
+    class Node(object):
         def __init__(self, name, children=[]):
             self.children = children
             self.name = name
@@ -112,9 +114,9 @@ class UtilTestCase(unittest.TestCase):
       +-windows.h
 """
 
-        lines = string.split(expect, '\n')[:-1]
-        lines = map(lambda l: '[E BSPACN ]'+l, lines)
-        withtags = string.join(lines, '\n') + '\n'
+        lines = expect.split('\n')[:-1]
+        lines = ['[E BSPACN ]'+l for l in lines]
+        withtags = '\n'.join(lines) + '\n'
 
         return foo, expect, withtags
 
@@ -137,12 +139,12 @@ class UtilTestCase(unittest.TestCase):
 """
 
         if not prune:
-            expect = string.replace(expect, '[', '')
-            expect = string.replace(expect, ']', '')
+            expect = expect.replace('[', '')
+            expect = expect.replace(']', '')
 
-        lines = string.split(expect, '\n')[:-1]
-        lines = map(lambda l: '[E BSPACN ]'+l, lines)
-        withtags = string.join(lines, '\n') + '\n'
+        lines = expect.split('\n')[:-1]
+        lines = ['[E BSPACN ]'+l for l in lines]
+        withtags = '\n'.join(lines) + '\n'
 
         return blat_o, expect, withtags
 
@@ -169,24 +171,24 @@ class UtilTestCase(unittest.TestCase):
         try:
             node, expect, withtags = self.tree_case_1()
 
-            sys.stdout = StringIO.StringIO()
+            sys.stdout = io.StringIO()
             print_tree(node, get_children)
             actual = sys.stdout.getvalue()
             assert expect == actual, (expect, actual)
 
-            sys.stdout = StringIO.StringIO()
+            sys.stdout = io.StringIO()
             print_tree(node, get_children, showtags=1)
             actual = sys.stdout.getvalue()
             assert withtags == actual, (withtags, actual)
 
             node, expect, withtags = self.tree_case_2(prune=0)
 
-            sys.stdout = StringIO.StringIO()
+            sys.stdout = io.StringIO()
             print_tree(node, get_children, 1)
             actual = sys.stdout.getvalue()
             assert expect == actual, (expect, actual)
 
-            sys.stdout = StringIO.StringIO()
+            sys.stdout = io.StringIO()
             # The following call should work here:
             #    print_tree(node, get_children, 1, showtags=1)
             # For some reason I don't understand, though, *this*
@@ -205,6 +207,7 @@ class UtilTestCase(unittest.TestCase):
     def test_is_Dict(self):
         assert is_Dict({})
         assert is_Dict(UserDict())
+        assert is_Dict(os.environ)
         try:
             class mydict(dict):
                 pass
@@ -215,13 +218,12 @@ class UtilTestCase(unittest.TestCase):
         assert not is_Dict([])
         assert not is_Dict(())
         assert not is_Dict("")
-        if hasattr(types, 'UnicodeType'):
+        if HasUnicode:
             exec "assert not is_Dict(u'')"
 
     def test_is_List(self):
         assert is_List([])
-        import UserList
-        assert is_List(UserList.UserList())
+        assert is_List(UserList())
         try:
             class mylist(list):
                 pass
@@ -232,19 +234,14 @@ class UtilTestCase(unittest.TestCase):
         assert not is_List(())
         assert not is_List({})
         assert not is_List("")
-        if hasattr(types, 'UnicodeType'):
+        if HasUnicode:
             exec "assert not is_List(u'')"
 
     def test_is_String(self):
         assert is_String("")
-        if hasattr(types, 'UnicodeType'):
+        if HasUnicode:
             exec "assert is_String(u'')"
-        try:
-            import UserString
-        except:
-            pass
-        else:
-            assert is_String(UserString.UserString(''))
+        assert is_String(UserString(''))
         try:
             class mystr(str):
                 pass
@@ -268,7 +265,7 @@ class UtilTestCase(unittest.TestCase):
         assert not is_Tuple([])
         assert not is_Tuple({})
         assert not is_Tuple("")
-        if hasattr(types, 'UnicodeType'):
+        if HasUnicode:
             exec "assert not is_Tuple(u'')"
 
     def test_to_String(self):
@@ -277,32 +274,27 @@ class UtilTestCase(unittest.TestCase):
         assert to_String([ 1, 2, 3]) == str([1, 2, 3]), to_String([1,2,3])
         assert to_String("foo") == "foo", to_String("foo")
 
-        try:
-            import UserString
+        s1=UserString('blah')
+        assert to_String(s1) == s1, s1
+        assert to_String(s1) == 'blah', s1
 
-            s1=UserString.UserString('blah')
-            assert to_String(s1) == s1, s1
-            assert to_String(s1) == 'blah', s1
-
-            class Derived(UserString.UserString):
-                pass
-            s2 = Derived('foo')
-            assert to_String(s2) == s2, s2
-            assert to_String(s2) == 'foo', s2
-
-            if hasattr(types, 'UnicodeType'):
-                s3=UserString.UserString(unicode('bar'))
-                assert to_String(s3) == s3, s3
-                assert to_String(s3) == unicode('bar'), s3
-                assert type(to_String(s3)) is types.UnicodeType, \
-                       type(to_String(s3))
-        except ImportError:
+        class Derived(UserString):
             pass
+        s2 = Derived('foo')
+        assert to_String(s2) == s2, s2
+        assert to_String(s2) == 'foo', s2
 
-        if hasattr(types, 'UnicodeType'):
+        if HasUnicode:
+            s3=UserString(unicode('bar'))
+            assert to_String(s3) == s3, s3
+            assert to_String(s3) == unicode('bar'), s3
+            assert isinstance(to_String(s3), unicode), \
+                   type(to_String(s3))
+
+        if HasUnicode:
             s4 = unicode('baz')
             assert to_String(s4) == unicode('baz'), to_String(s4)
-            assert type(to_String(s4)) is types.UnicodeType, \
+            assert isinstance(to_String(s4), unicode), \
                    type(to_String(s4))
 
     def test_WhereIs(self):
@@ -333,20 +325,20 @@ class UtilTestCase(unittest.TestCase):
                               test.workpath('sub2'),
                               test.workpath('sub3'),
                               test.workpath('sub4'),
-                            ] + string.split(env_path, os.pathsep)
+                            ] + env_path.split(os.pathsep)
 
             pathdirs_1243 = [ test.workpath('sub1'),
                               test.workpath('sub2'),
                               test.workpath('sub4'),
                               test.workpath('sub3'),
-                            ] + string.split(env_path, os.pathsep)
+                            ] + env_path.split(os.pathsep)
 
-            os.environ['PATH'] = string.join(pathdirs_1234, os.pathsep)
+            os.environ['PATH'] = os.pathsep.join(pathdirs_1234)
             wi = WhereIs('xxx.exe')
             assert wi == test.workpath(sub3_xxx_exe), wi
             wi = WhereIs('xxx.exe', pathdirs_1243)
             assert wi == test.workpath(sub4_xxx_exe), wi
-            wi = WhereIs('xxx.exe', string.join(pathdirs_1243, os.pathsep))
+            wi = WhereIs('xxx.exe', os.pathsep.join(pathdirs_1243))
             assert wi == test.workpath(sub4_xxx_exe), wi
 
             wi = WhereIs('xxx.exe',reject = sub3_xxx_exe)
@@ -354,12 +346,12 @@ class UtilTestCase(unittest.TestCase):
             wi = WhereIs('xxx.exe', pathdirs_1243, reject = sub3_xxx_exe)
             assert wi == test.workpath(sub4_xxx_exe), wi
 
-            os.environ['PATH'] = string.join(pathdirs_1243, os.pathsep)
+            os.environ['PATH'] = os.pathsep.join(pathdirs_1243)
             wi = WhereIs('xxx.exe')
             assert wi == test.workpath(sub4_xxx_exe), wi
             wi = WhereIs('xxx.exe', pathdirs_1234)
             assert wi == test.workpath(sub3_xxx_exe), wi
-            wi = WhereIs('xxx.exe', string.join(pathdirs_1234, os.pathsep))
+            wi = WhereIs('xxx.exe', os.pathsep.join(pathdirs_1234))
             assert wi == test.workpath(sub3_xxx_exe), wi
 
             if sys.platform == 'win32':
@@ -370,13 +362,13 @@ class UtilTestCase(unittest.TestCase):
                 assert wi == test.workpath(sub4_xxx_exe), wi
 
                 wi = WhereIs('xxx', path = pathdirs_1234, pathext = '.BAT;.EXE')
-                assert string.lower(wi) == string.lower(test.workpath(sub3_xxx_exe)), wi
+                assert wi.lower() == test.workpath(sub3_xxx_exe).lower(), wi
 
                 # Test that we return a normalized path even when
                 # the path contains forward slashes.
                 forward_slash = test.workpath('') + '/sub3'
                 wi = WhereIs('xxx', path = forward_slash, pathext = '.EXE')
-                assert string.lower(wi) == string.lower(test.workpath(sub3_xxx_exe)), wi
+                assert wi.lower() == test.workpath(sub3_xxx_exe).lower(), wi
 
             del os.environ['PATH']
             wi = WhereIs('xxx.exe')
@@ -399,7 +391,7 @@ class UtilTestCase(unittest.TestCase):
 
     def test_Proxy(self):
         """Test generic Proxy class."""
-        class Subject:
+        class Subject(object):
             def foo(self):
                 return 1
             def bar(self):
@@ -595,7 +587,7 @@ class UtilTestCase(unittest.TestCase):
     def test_Selector(self):
         """Test the Selector class"""
 
-        class MyNode:
+        class MyNode(object):
             def __init__(self, name):
                 self.name = name
                 self.suffix = os.path.splitext(name)[1]
@@ -676,7 +668,7 @@ class UtilTestCase(unittest.TestCase):
 
     def test_LogicalLines(self):
         """Test the LogicalLines class"""
-        fobj = StringIO.StringIO(r"""
+        fobj = io.StringIO(r"""
 foo \
 bar \
 baz
@@ -697,7 +689,7 @@ bling
 
     def test_intern(self):
         s1 = silent_intern("spam")
-        # Python 1.5 and 3.x do not have a unicode() built-in
+        # Python 3.x does not have a unicode() global function
         if sys.version[0] == '2': 
             s2 = silent_intern(unicode("unicode spam"))
         s3 = silent_intern(42)
@@ -710,7 +702,7 @@ class MD5TestCase(unittest.TestCase):
     def test_collect(self):
         """Test collecting a list of signatures into a new signature value
         """
-        s = map(MD5signature, ('111', '222', '333'))
+        s = list(map(MD5signature, ('111', '222', '333')))
         
         assert '698d51a19d8a121ce581499d7b701668' == MD5collect(s[0:1])
         assert '8980c988edc2c78cc43ccb718c06efd5' == MD5collect(s[0:2])
@@ -727,7 +719,7 @@ class MD5TestCase(unittest.TestCase):
 class NodeListTestCase(unittest.TestCase):
     def test_simple_attributes(self):
         """Test simple attributes of a NodeList class"""
-        class TestClass:
+        class TestClass(object):
             def __init__(self, name, child=None):
                 self.child = child
                 self.bar = name
@@ -743,7 +735,7 @@ class NodeListTestCase(unittest.TestCase):
 
     def test_callable_attributes(self):
         """Test callable attributes of a NodeList class"""
-        class TestClass:
+        class TestClass(object):
             def __init__(self, name, child=None):
                 self.child = child
                 self.bar = name
@@ -771,7 +763,7 @@ class NodeListTestCase(unittest.TestCase):
         r = str(nl)
         assert r == '', r
         for node in nl:
-            raise Exception, "should not enter this loop"
+            raise Exception("should not enter this loop")
 
 
 class flattenTestCase(unittest.TestCase):
@@ -791,7 +783,7 @@ if __name__ == "__main__":
                ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

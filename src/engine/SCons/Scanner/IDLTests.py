@@ -186,7 +186,7 @@ test.write([ 'repository', 'src', 'ddd.idl'], "\n")
 
 # define some helpers:
 
-class DummyEnvironment:
+class DummyEnvironment(object):
     def __init__(self, listCppPath):
         self.path = listCppPath
         self.fs = SCons.Node.FS.FS(test.workpath(''))
@@ -197,18 +197,18 @@ class DummyEnvironment:
         elif len(args) == 1 and args[0] == 'CPPPATH':
             return self.path
         else:
-            raise KeyError, "Dummy environment only has CPPPATH attribute."
+            raise KeyError("Dummy environment only has CPPPATH attribute.")
 
     def subst(self, arg, target=None, source=None, conv=None):
         return arg
 
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
-        return map(self.subst, path)
+        return list(map(self.subst, path))
 
     def has_key(self, key):
-        return self.Dictionary().has_key(key)
+        return key in self.Dictionary()
 
     def __getitem__(self,key):
         return self.Dictionary()[key]
@@ -238,8 +238,8 @@ if os.path.normcase('foo') == os.path.normcase('FOO'):
     my_normpath = os.path.normcase
 
 def deps_match(self, deps, headers):
-    scanned = map(my_normpath, map(str, deps))
-    expect = map(my_normpath, headers)
+    scanned = list(map(my_normpath, list(map(str, deps))))
+    expect = list(map(my_normpath, headers))
     self.failUnless(scanned == expect, "expect %s != scanned %s" % (expect, scanned))
 
 # define some tests:
@@ -329,7 +329,7 @@ class IDLScannerTestCase7(unittest.TestCase):
         env.fs.chdir(env.Dir(''))
         path = s.path(env, dir)
         deps2 = s(env.File('#t4.idl'), env, path)
-        headers1 =  map(test.workpath, ['include/fa.idl', 'include/fb.idl'])
+        headers1 =  list(map(test.workpath, ['include/fa.idl', 'include/fb.idl']))
         headers2 =  ['include/fa.idl', 'include/fb.idl']
         deps_match(self, deps1, headers1)
         deps_match(self, deps2, headers2)
@@ -337,7 +337,7 @@ class IDLScannerTestCase7(unittest.TestCase):
 class IDLScannerTestCase8(unittest.TestCase):
     def runTest(self):
         SCons.Warnings.enableWarningClass(SCons.Warnings.DependencyWarning)
-        class TestOut:
+        class TestOut(object):
             def __call__(self, x):
                 self.out = x
 

@@ -51,7 +51,7 @@ class ValueTestCase(unittest.TestCase):
     def test_build(self):
         """Test "building" a Value Node
         """
-        class fake_executor:
+        class fake_executor(object):
             def __call__(self, node):
                 node.write('faked')
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     ]
     for tclass in tclasses:
         names = unittest.getTestCaseNames(tclass, 'test_')
-        suite.addTests(map(tclass, names))
+        suite.addTests(list(map(tclass, names)))
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         sys.exit(1)
 

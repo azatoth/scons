@@ -25,7 +25,6 @@
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import string
 
 import TestSCons
 
@@ -45,6 +44,8 @@ for opt, arg in opts:
     if opt == '-f': out = arg
 def process(outfile, name):
     if os.path.isdir(name):
+        ## TODO 2.4: the next three lines can be replaced by
+        #for entry in sorted(os.listdir(name)):
         list = os.listdir(name)
         list.sort()
         for entry in list:
@@ -88,11 +89,10 @@ tar = test.detect('TAR', 'tar')
 if tar:
 
     test.write("wrapper.py", """import os
-import string
 import sys
 open('%s', 'wb').write("wrapper.py\\n")
-os.system(string.join(sys.argv[1:], " "))
-""" % string.replace(test.workpath('wrapper.out'), '\\', '\\\\'))
+os.system(" ".join(sys.argv[1:]))
+""" % test.workpath('wrapper.out').replace('\\', '\\\\'))
 
     test.write('SConstruct', """
 foo = Environment()

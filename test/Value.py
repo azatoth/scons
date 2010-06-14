@@ -38,7 +38,7 @@ python = TestSCons.python
 SConstruct_content = """
 Decider(r'%(source_signature)s')
 
-class Custom:
+class Custom(object):
     def __init__(self, value):  self.value = value
     def __str__(self):          return "C=" + str(self.value)
 
@@ -73,9 +73,8 @@ env.B3('f5.out', V)
 
 test.write('put.py', """\
 import os
-import string
 import sys
-open(sys.argv[-1],'wb').write(string.join(sys.argv[1:-2]))
+open(sys.argv[-1],'wb').write(" ".join(sys.argv[1:-2]))
 """)
 
 # Run all of the tests with both types of source signature
@@ -94,10 +93,11 @@ for source_signature in ['MD5', 'timestamp-newer']:
 
     out1 = """create(["f1.out"], ['/usr/local'])"""
     out2 = """create(["f2.out"], [10])"""
-    out3 = """create\\(\\["f3.out"\\], \\[<.*.Custom instance at """
+    out3 = """create\\(\\["f3.out"\\], \\[<.*.Custom (instance|object) at """
     #" <- unconfuses emacs syntax highlighting
 
     test.must_contain_all_lines(test.stdout(), [out1, out2, out7, out8])
+    #print test.stdout()
     test.fail_test(re.search(out3, test.stdout()) == None)
 
     test.must_match('f1.out', "/usr/local")
@@ -108,10 +108,10 @@ for source_signature in ['MD5', 'timestamp-newer']:
 
     test.up_to_date(arguments='.')
 
-    test.run(arguments='prefix=/usr')
+    test.run(options='prefix=/usr')
     out4 = """create(["f1.out"], ['/usr'])"""
     out5 = """create(["f2.out"], [4])"""
-    out6 = """create\\(\\["f3.out"\\], \\[<.*.Custom instance at """
+    out6 = """create\\(\\["f3.out"\\], \\[<.*.Custom (instance|object) at """
     #" <- unconfuses emacs syntax highlighting
     test.must_contain_all_lines(test.stdout(), [out4, out5])
     test.fail_test(re.search(out6, test.stdout()) == None)
@@ -121,18 +121,18 @@ for source_signature in ['MD5', 'timestamp-newer']:
     test.must_match('f3.out', "C=/usr")
     test.must_match('f4.out', '4')
 
-    test.up_to_date('prefix=/usr', '.')
+    test.up_to_date(options='prefix=/usr', arguments='.')
 
     test.unlink('f3.out')
 
-    test.run(arguments='prefix=/var')
+    test.run(options='prefix=/var')
     out4 = """create(["f1.out"], ['/var'])"""
 
     test.must_contain_all_lines(test.stdout(), [out4, out7, out8])
     test.must_not_contain_any_line(test.stdout(), [out5])
     test.fail_test(re.search(out6, test.stdout()) == None)
 
-    test.up_to_date('prefix=/var', '.')
+    test.up_to_date(options='prefix=/var', arguments='.')
 
     test.must_match('f1.out', "/var")
     test.must_match('f2.out', "4")

@@ -30,21 +30,27 @@ not directly via Python.
 """
 
 import os.path
-import string
+import sys
+
+if sys.platform == 'win32':
+    qmtest_py = 'qmtest.py'
+else:
+    qmtest_py = 'qmtest'
 
 import TestRuntest
 
 test = TestRuntest.TestRuntest()
+
+  
+qmtest = test.where_is('qmtest')
+if not qmtest:
+    test.skip_test("Could not find 'qmtest'; skipping test(s).\n")
 
 test.subdir('test')
 
 test_fail_py      = os.path.join('test', 'fail.py')
 test_no_result_py = os.path.join('test', 'no_result.py')
 test_pass_py      = os.path.join('test', 'pass.py')
-
-workpath_fail_py      = test.workpath(test_fail_py)
-workpath_no_result_py = test.workpath(test_no_result_py)
-workpath_pass_py      = test.workpath(test_pass_py)
 
 test.write_failing_test(test_fail_py)
 test.write_no_result_test(test_no_result_py)
@@ -53,38 +59,38 @@ test.write_passing_test(test_pass_py)
 # NOTE:  the FAIL and PASS lines below have trailing spaces.
 
 expect_stdout = """\
-qmtest run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" test/fail.py test/no_result.py test/pass.py
+%(qmtest_py)s run --output results.qmr --format none --result-stream="scons_tdb.AegisChangeStream" %(test_fail_py)s %(test_no_result_py)s %(test_pass_py)s
 --- TEST RESULTS -------------------------------------------------------------
 
-  test/fail.py                                  : FAIL    
+  %(test_fail_py)s                                  : FAIL    
 
     FAILING TEST STDOUT
 
     FAILING TEST STDERR
 
-  test/no_result.py                             : NO_RESULT
+  %(test_no_result_py)s                             : NO_RESULT
 
     NO RESULT TEST STDOUT
 
     NO RESULT TEST STDERR
 
-  test/pass.py                                  : PASS    
+  %(test_pass_py)s                                  : PASS    
 
 --- TESTS THAT DID NOT PASS --------------------------------------------------
 
-  test/fail.py                                  : FAIL    
+  %(test_fail_py)s                                  : FAIL    
 
-  test/no_result.py                             : NO_RESULT
+  %(test_no_result_py)s                             : NO_RESULT
 
 
 --- STATISTICS ---------------------------------------------------------------
 
        3        tests total
 
-       1 ( 33%) tests PASS
-       1 ( 33%) tests FAIL
-       1 ( 33%) tests NO_RESULT
-"""
+       1 ( 33%%) tests PASS
+       1 ( 33%%) tests FAIL
+       1 ( 33%%) tests NO_RESULT
+""" % locals()
 
 testlist = [
     test_fail_py,
@@ -92,7 +98,7 @@ testlist = [
     test_pass_py,
 ]
 
-test.run(arguments='--qmtest %s' % string.join(testlist),
+test.run(arguments='--qmtest %s' % ' '.join(testlist),
          status=1,
          stdout=expect_stdout)
 

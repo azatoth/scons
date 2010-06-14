@@ -27,9 +27,9 @@ import sys
 import unittest
 import SCons.Warnings
 
-class TestOutput:
+class TestOutput(object):
     def __call__(self, x):
-        args = x[0]
+        args = x.args[0]
         if len(args) == 1:
             args = args[0]
         self.out = str(args)
@@ -94,10 +94,6 @@ class WarningsTestCase(unittest.TestCase):
                             "Foo")
         assert to.out is None, to.out
 
-        SCons.Warnings.warn(SCons.Warnings.MandatoryWarning,
-                            "Foo")
-        assert to.out is None, to.out
-
         SCons.Warnings.enableWarningClass(SCons.Warnings.Warning)
         SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning,
                             "Foo")
@@ -106,6 +102,10 @@ class WarningsTestCase(unittest.TestCase):
         to.out = None
         SCons.Warnings.suppressWarningClass(SCons.Warnings.DeprecatedWarning)
         SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning,
+                            "Foo")
+        assert to.out is None, to.out
+
+        SCons.Warnings.warn(SCons.Warnings.MandatoryDeprecatedWarning,
                             "Foo")
         assert to.out is None, to.out
 

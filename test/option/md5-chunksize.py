@@ -24,8 +24,6 @@
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
-
 import TestSCons
 
 _python_ = TestSCons._python_
@@ -49,8 +47,8 @@ f2 = env.B(target = 'f2.out', source = 'f2.in')
 Requires(f2, f1)
 """ % locals())
 
-test.write('f1.in', str(range(10)))
-test.write('f2.in', str(range(100000)))
+test.write('f1.in', str(list(range(10))))
+test.write('f2.in', str(list(range(100000))))
 
 expected_stdout = test.wrap_stdout("""\
 %(_python_)s build.py f1.out f1.in
@@ -90,7 +88,7 @@ test.pass_test()
 #
 test2 = TestSCons.TestSCons()
 
-if string.find(sys.platform, 'linux') == -1:
+if sys.platform.find('linux') == -1:
     test2.skip_test("skipping test on non-Linux platform '%s'\n" % sys.platform)
 
 dd = test2.where_is('dd')

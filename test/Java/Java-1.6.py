@@ -20,7 +20,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -333,19 +332,9 @@ expect_6 = [
 
 failed = None
 
-def get_class_files(dir):
-    def find_class_files(arg, dirname, fnames):
-        for fname in fnames:
-            if fname[-6:] == '.class':
-                arg.append(os.path.join(dirname, fname))
-    result = []
-    os.path.walk(dir, find_class_files, result)
-    result.sort()
-    return result
-
 def classes_must_match(dir, expect):
     global failed
-    got = get_class_files(test.workpath(dir))
+    got = test.java_get_class_files(test.workpath(dir))
     if expect != got:
         sys.stderr.write("Expected the following class files in '%s':\n" % dir)
         for c in expect:
@@ -357,7 +346,7 @@ def classes_must_match(dir, expect):
 
 def classes_must_not_exist(dir, expect):
     global failed
-    present = filter(os.path.exists, expect)
+    present = list(filter(os.path.exists, expect))
     if present:
         sys.stderr.write("Found the following unexpected class files in '%s' after cleaning:\n" % dir)
         for c in present:

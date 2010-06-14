@@ -30,7 +30,7 @@ selection method.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
+from __future__ import division
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -38,7 +38,7 @@ import math, sys, os.path, glob, string, re
 
 is_windows = sys.platform == 'win32'
 is_win64 = is_windows and (os.environ['PROCESSOR_ARCHITECTURE'] == 'AMD64' or 
-                           (os.environ.has_key('PROCESSOR_ARCHITEW6432') and
+                           ('PROCESSOR_ARCHITEW6432' in os.environ and
                             os.environ['PROCESSOR_ARCHITEW6432'] == 'AMD64'))
 is_linux = sys.platform == 'linux2'
 is_mac     = sys.platform == 'darwin'
@@ -69,7 +69,7 @@ def uniquify(s):
     u = {}
     for x in s:
         u[x] = 1
-    return u.keys()
+    return list(u.keys())
 
 def linux_ver_normalize(vstr):
     """Normalize a Linux compiler version number.
@@ -81,7 +81,7 @@ def linux_ver_normalize(vstr):
     m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', vstr)
     if m:
         vmaj,vmin,build = m.groups()
-        return float(vmaj) * 10 + float(vmin) + float(build) / 1000.;
+        return float(vmaj) * 10. + float(vmin) + float(build) / 1000.;
     else:
         f = float(vstr)
         if is_windows:
@@ -117,9 +117,8 @@ def check_abi(abi):
     try:
         abi = valid_abis[abi]
     except KeyError:
-        raise SCons.Errors.UserError, \
-              "Intel compiler: Invalid ABI %s, valid values are %s"% \
-              (abi, valid_abis.keys())
+        raise SCons.Errors.UserError("Intel compiler: Invalid ABI %s, valid values are %s"% \
+              (abi, list(valid_abis.keys())))
     return abi
 
 def vercmp(a, b):
@@ -156,16 +155,14 @@ def get_intel_registry_value(valuename, version=None, abi=None):
     try:
         k = SCons.Util.RegOpenKeyEx(SCons.Util.HKEY_LOCAL_MACHINE, K)
     except SCons.Util.RegError:
-        raise MissingRegistryError, \
-              "%s was not found in the registry, for Intel compiler version %s, abi='%s'"%(K, version,abi)
+        raise MissingRegistryError("%s was not found in the registry, for Intel compiler version %s, abi='%s'"%(K, version,abi))
 
     # Get the value:
     try:
         v = SCons.Util.RegQueryValueEx(k, valuename)[0]
         return v  # or v.encode('iso-8859-1', 'replace') to remove unicode?
     except SCons.Util.RegError:
-        raise MissingRegistryError, \
-              "%s\\%s was not found in the registry."%(K, valuename)
+        raise MissingRegistryError("%s\\%s was not found in the registry."%(K, valuename))
 
 
 def get_all_compiler_versions():
@@ -243,9 +240,7 @@ def get_all_compiler_versions():
             m = re.search(r'([0-9.]+)$', d)
             if m:
                 versions.append(m.group(1))
-    versions = uniquify(versions)       # remove dups
-    versions.sort(vercmp)
-    return versions
+    return sorted(uniquify(versions))       # remove dups
 
 def get_intel_compiler_top(version, abi):
     """
@@ -257,13 +252,12 @@ def get_intel_compiler_top(version, abi):
 
     if is_windows:
         if not SCons.Util.can_read_reg:
-            raise NoRegistryModuleError, "No Windows registry module was found"
+            raise NoRegistryModuleError("No Windows registry module was found")
         top = get_intel_registry_value('ProductDir', version, abi)
         # pre-11, icl was in Bin.  11 and later, it's in Bin/<abi> apparently.
         if not os.path.exists(os.path.join(top, "Bin", "icl.exe")) \
               and not os.path.exists(os.path.join(top, "Bin", abi, "icl.exe")):
-            raise MissingDirError, \
-                  "Can't find Intel compiler in %s"%(top)
+            raise MissingDirError("Can't find Intel compiler in %s"%(top))
     elif is_mac or is_linux:
         # first dir is new (>=9.0) style, second is old (8.0) style.
         dirs=('/opt/intel/cc/%s', '/opt/intel_cc_%s')
@@ -275,8 +269,7 @@ def get_intel_compiler_top(version, abi):
                 top = d%version
                 break
         if not top:
-            raise MissingDirError, \
-                  "Can't find version %s Intel compiler in %s (abi='%s')"%(version,top, abi)
+            raise MissingDirError("Can't find version %s Intel compiler in %s (abi='%s')"%(version,top, abi))
     return top
 
 
@@ -312,9 +305,8 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
         # get_version_from_list does that mapping.
         v = get_version_from_list(version, vlist)
         if not v:
-            raise SCons.Errors.UserError, \
-                  "Invalid Intel compiler version %s: "%version + \
-                  "installed versions are %s"%(', '.join(vlist))
+            raise SCons.Errors.UserError("Invalid Intel compiler version %s: "%version + \
+                  "installed versions are %s"%(', '.join(vlist)))
         version = v
 
     # if abi is unspecified, use ia32
@@ -406,7 +398,7 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
                     # Couldn't get it from registry: use default subdir of topdir
                     env.PrependENVPath(p[0], os.path.join(topdir, p[2]))
                 else:
-                    env.PrependENVPath(p[0], string.split(path, os.pathsep))
+                    env.PrependENVPath(p[0], path.split(os.pathsep))
                     # print "ICL %s: %s, final=%s"%(p[0], path, str(env['ENV'][p[0]]))
 
     if is_windows:
@@ -445,7 +437,7 @@ def generate(env, version=None, abi=None, topdir=None, verbose=0):
         for ld in [envlicdir, reglicdir]:
             # If the string contains an '@', then assume it's a network
             # license (port@system) and good by definition.
-            if ld and (string.find(ld, '@') != -1 or os.path.exists(ld)):
+            if ld and (ld.find('@') != -1 or os.path.exists(ld)):
                 licdir = ld
                 break
         if not licdir:

@@ -45,14 +45,14 @@ if outdir is None:
 
 def outname(n, outdir=outdir):
     l = []
-    while 1:
+    while True:
         n, tail = os.path.split(n)
         if not n:
             break
         l.append(tail)
     l.append(outdir)
     l.reverse()
-    return apply(os.path.join, l)
+    return os.path.join(*l)
 
 for name in zf.namelist():
     dest = outname(name)

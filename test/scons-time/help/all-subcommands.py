@@ -20,7 +20,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -44,12 +43,12 @@ try: eval(c, globals)
 except: pass
 
 # Extract all subcommands from the the do_*() functions.
-functions = globals['SConsTimer'].__dict__.keys()
-do_funcs = filter(lambda x: x[:3] == 'do_', functions)
+functions = list(globals['SConsTimer'].__dict__.keys())
+do_funcs = [x for x in functions if x[:3] == 'do_']
 
-subcommands = map(lambda x: x[3:], do_funcs)
+subcommands = [x[3:] for x in do_funcs]
 
-expect = map(lambda x: '    %s ' % x, subcommands)
+expect = ['    %s ' % x for x in subcommands]
 
 test.run(arguments = 'help')
 

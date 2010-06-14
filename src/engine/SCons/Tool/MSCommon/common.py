@@ -99,46 +99,78 @@ def has_reg(value):
 
 # Functions for fetching environment variable settings from batch files.
 
-def normalize_env(env, keys):
+def normalize_env(env, keys, force=False):
     """Given a dictionary representing a shell environment, add the variables
     from os.environ needed for the processing of .bat files; the keys are
     controlled by the keys argument.
 
     It also makes sure the environment values are correctly encoded.
 
-    Note: the environment is copied"""
+    If force=True, then all of the key values that exist are copied
+    into the returned dictionary.  If force=false, values are only
+    copied if the key does not already exist in the copied dictionary.
+
+    Note: the environment is copied."""
     normenv = {}
     if env:
         for k in env.keys():
             normenv[k] = copy.deepcopy(env[k]).encode('mbcs')
 
         for k in keys:
-            if os.environ.has_key(k):
+            if k in os.environ and (force or not k in normenv):
                 normenv[k] = os.environ[k].encode('mbcs')
 
     return normenv
 
 def get_output(vcbat, args = None, env = None):
     """Parse the output of given bat file, with given args."""
+    
+    if env is None:
+        # Create a blank environment, for use in launching the tools
+        env = SCons.Environment.Environment(tools=[])
+
+    # TODO:  This is a hard-coded list of the variables that (may) need
+    # to be imported from os.environ[] for v[sc]*vars*.bat file
+    # execution to work.  This list should really be either directly
+    # controlled by vc.py, or else derived from the common_tools_var
+    # settings in vs.py.
+    vars = [
+        'COMSPEC',
+        'VS90COMNTOOLS',
+        'VS80COMNTOOLS',
+        'VS71COMNTOOLS',
+        'VS70COMNTOOLS',
+        'VS60COMNTOOLS',
+    ]
+    env['ENV'] = normalize_env(env['ENV'], vars, force=False)
+
     if args:
         debug("Calling '%s %s'" % (vcbat, args))
-        popen = subprocess.Popen('"%s" %s & set' % (vcbat, args),
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 env=env)
+        popen = SCons.Action._subproc(env,
+                                     '"%s" %s & set' % (vcbat, args),
+                                     stdin = 'devnull',
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
     else:
         debug("Calling '%s'" % vcbat)
-        popen = subprocess.Popen('"%s" & set' % vcbat,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 env=env)
+        popen = SCons.Action._subproc(env,
+                                     '"%s" & set' % vcbat,
+                                     stdin = 'devnull',
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
 
     # Use the .stdout and .stderr attributes directly because the
     # .communicate() method uses the threading module on Windows
     # and won't work under Pythons not built with threading.
     stdout = popen.stdout.read()
+    stderr = popen.stderr.read()
+    if stderr:
+        # TODO: find something better to do with stderr;
+        # this at least prevents errors from getting swallowed.
+        import sys
+        sys.stderr.write(stderr)
     if popen.wait() != 0:
-        raise IOError(popen.stderr.read().decode("mbcs"))
+        raise IOError(stderr.decode("mbcs"))
 
     output = stdout.decode("mbcs")
     return output
@@ -147,9 +179,7 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
     # dkeep is a dict associating key: path_list, where key is one item from
     # keep, and pat_list the associated list of paths
 
-    # TODO(1.5):  replace with the following list comprehension:
-    #dkeep = dict([(i, []) for i in keep])
-    dkeep = dict(map(lambda i: (i, []), keep))
+    dkeep = dict([(i, []) for i in keep])
 
     # rdk will  keep the regex to match the .bat file output line starts
     rdk = {}

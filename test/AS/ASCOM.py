@@ -42,7 +42,7 @@ test.write('myas.py', r"""
 import sys
 infile = open(sys.argv[2], 'rb')
 outfile = open(sys.argv[1], 'wb')
-for l in filter(lambda l: l != "#as\n", infile.readlines()):
+for l in [l for l in infile.readlines() if l != "#as\n"]:
     outfile.write(l)
 sys.exit(0)
 """)
@@ -57,6 +57,7 @@ else:
 test.write('SConstruct', """
 env = Environment(ASCOM = r'%(_python_)s myas.py $TARGET $SOURCE',
                   OBJSUFFIX = '.obj',
+                  SHOBJPREFIX = '',
                   SHOBJSUFFIX = '.shobj')
 env.Object(target = 'test1', source = 'test1.s')
 env.Object(target = 'test2', source = 'test2%(alt_s_suffix)s')

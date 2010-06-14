@@ -2,14 +2,13 @@
 # SConstruct file to build scons packages during development.
 #
 # See the README file for an overview of how SCons is built and tested.
-#
 
 # When this gets changed, you must also change the copyright_years string
 # in QMTest/TestSCons.py so the test scripts look for the right string.
 copyright_years = '2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010'
 
 # This gets inserted into the man pages to reflect the month of release.
-month_year = 'March 2010'
+month_year = 'June 2010'
 
 #
 # __COPYRIGHT__
@@ -40,12 +39,11 @@ import os
 import os.path
 import re
 import stat
-import string
 import sys
 import tempfile
 
 project = 'scons'
-default_version = '1.3.0'
+default_version = '2.0.0.final.0'
 copyright = "Copyright (c) %s The SCons Foundation" % copyright_years
 
 platform = distutils.util.get_platform()
@@ -60,7 +58,7 @@ def whereis(file):
     exts = ['']
     if platform == "win32":
         exts += ['.exe']
-    for dir in string.split(os.environ['PATH'], os.pathsep):
+    for dir in os.environ['PATH'].split(os.pathsep):
         f = os.path.join(dir, file)
         for ext in exts:
             f_ext = f + ext
@@ -106,7 +104,7 @@ if not developer:
 build_system = ARGUMENTS.get('BUILD_SYSTEM')
 if not build_system:
     import socket
-    build_system = string.split(socket.gethostname(), '.')[0]
+    build_system = socket.gethostname().split('.')[0]
 
 version = ARGUMENTS.get('VERSION', '')
 if not version:
@@ -137,7 +135,7 @@ if not revision and hg:
             revision = b.group(1) + ':' + revision
         def generate_build_id(revision):
             result = revision
-            if filter(lambda l: l[0] in 'AMR!', hg_status_lines):
+            if [l for l in hg_status_lines if l[0] in 'AMR!']:
                 result = result + '[MODIFIED]'
             return result
 
@@ -148,7 +146,7 @@ if not revision and svn:
         revision = m.group(1)
         def generate_build_id(revision):
             result = 'r' + revision
-            if filter(lambda l: l[0] in 'ACDMR', svn_status_lines):
+            if [l for l in svn_status_lines if l[0] in 'ACDMR']:
                 result = result + '[MODIFIED]'
             return result
 
@@ -156,10 +154,10 @@ checkpoint = ARGUMENTS.get('CHECKPOINT', '')
 if checkpoint:
     if checkpoint == 'd':
         import time
-        checkpoint = time.strftime('d%Y%m%d', time.localtime(time.time()))
+        checkpoint = time.strftime('%Y%m%d', time.localtime(time.time()))
     elif checkpoint == 'r':
         checkpoint = 'r' + revision
-    version = version + '.' + checkpoint
+    version = version + '.beta.' + checkpoint
 
 build_id = ARGUMENTS.get('BUILD_ID')
 if build_id is None:
@@ -175,7 +173,7 @@ python_ver = sys.version[0:3]
 
 ENV = { 'PATH' : os.environ['PATH'] }
 for key in ['LOGNAME', 'PYTHONPATH', 'LD_LIBRARY_PATH']:
-    if os.environ.has_key(key):
+    if key in os.environ:
         ENV[key] = os.environ[key]
 
 build_dir = ARGUMENTS.get('BUILDDIR', 'build')
@@ -280,8 +278,7 @@ runtest.py -p option to run tests against what's been actually packaged:
 
 """)
 
-aliases = packaging_flavors + [('doc', 'The SCons documentation.')]
-aliases.sort()
+aliases = sorted(packaging_flavors + [('doc', 'The SCons documentation.')])
 
 for alias, help_text in aliases:
     tw = textwrap.TextWrapper(
@@ -365,16 +362,16 @@ def SCons_revision(target, source, env):
     # Note:  We construct the __*__ substitution strings here
     # so that they don't get replaced when this file gets
     # copied into the tree for packaging.
-    contents = string.replace(contents, '__BUILD'     + '__', env['BUILD'])
-    contents = string.replace(contents, '__BUILDSYS'  + '__', env['BUILDSYS'])
-    contents = string.replace(contents, '__COPYRIGHT' + '__', env['COPYRIGHT'])
-    contents = string.replace(contents, '__DATE'      + '__', env['DATE'])
-    contents = string.replace(contents, '__DEVELOPER' + '__', env['DEVELOPER'])
-    contents = string.replace(contents, '__FILE'      + '__', str(source[0]))
-    contents = string.replace(contents, '__MONTH_YEAR'+ '__', env['MONTH_YEAR'])
-    contents = string.replace(contents, '__REVISION'  + '__', env['REVISION'])
-    contents = string.replace(contents, '__VERSION'   + '__', env['VERSION'])
-    contents = string.replace(contents, '__NULL'      + '__', '')
+    contents = contents.replace('__BUILD'     + '__', env['BUILD'])
+    contents = contents.replace('__BUILDSYS'  + '__', env['BUILDSYS'])
+    contents = contents.replace('__COPYRIGHT' + '__', env['COPYRIGHT'])
+    contents = contents.replace('__DATE'      + '__', env['DATE'])
+    contents = contents.replace('__DEVELOPER' + '__', env['DEVELOPER'])
+    contents = contents.replace('__FILE'      + '__', str(source[0]))
+    contents = contents.replace('__MONTH_YEAR'+ '__', env['MONTH_YEAR'])
+    contents = contents.replace('__REVISION'  + '__', env['REVISION'])
+    contents = contents.replace('__VERSION'   + '__', env['VERSION'])
+    contents = contents.replace('__NULL'      + '__', '')
     open(t, 'wb').write(contents)
     os.chmod(t, os.stat(s)[0])
 
@@ -708,7 +705,7 @@ for p in [ scons ]:
     pkg_version = "%s-%s" % (pkg, version)
 
     src = 'src'
-    if p.has_key('src_subdir'):
+    if 'src_subdir' in p:
         src = os.path.join(src, p['src_subdir'])
 
     build = os.path.join(build_dir, pkg)
@@ -747,15 +744,14 @@ for p in [ scons ]:
     # destination files.
     #
     manifest_in = File(os.path.join(src, 'MANIFEST.in')).rstr()
-    src_files = map(lambda x: x[:-1],
-                    open(manifest_in).readlines())
+    src_files = [x[:-1] for x in open(manifest_in).readlines()]
     raw_files = src_files[:]
     dst_files = src_files[:]
     rpm_files = []
 
     MANIFEST_in_list = []
 
-    if p.has_key('subpkgs'):
+    if 'subpkgs' in p:
         #
         # This package includes some sub-packages.  Read up their
         # MANIFEST.in files, and add them to our source and destination
@@ -767,9 +763,9 @@ for p in [ scons ]:
             isubdir = p['subinst_dirs'][sp['pkg']]
             MANIFEST_in = File(os.path.join(src, ssubdir, 'MANIFEST.in')).rstr()
             MANIFEST_in_list.append(MANIFEST_in)
-            files = map(lambda x: x[:-1], open(MANIFEST_in).readlines())
+            files = [x[:-1] for x in open(MANIFEST_in).readlines()]
             raw_files.extend(files)
-            src_files.extend(map(lambda x, s=ssubdir: os.path.join(s, x), files))
+            src_files.extend([os.path.join(ssubdir, x) for x in files])
             for f in files:
                 r = os.path.join(sp['rpm_dir'], f)
                 rpm_files.append(r)
@@ -778,7 +774,7 @@ for p in [ scons ]:
             for f in sp.get('extra_rpm_files', []):
                 r = os.path.join(sp['rpm_dir'], f)
                 rpm_files.append(r)
-            files = map(lambda x, i=isubdir: os.path.join(i, x), files)
+            files = [os.path.join(isubdir, x) for x in files]
             dst_files.extend(files)
             for k, f in sp['filemap'].items():
                 if f:
@@ -832,8 +828,8 @@ for p in [ scons ]:
     #
     # Now go through and arrange to create whatever packages we can.
     #
-    build_src_files = map(lambda x, b=build: os.path.join(b, x), src_files)
-    apply(Local, build_src_files, {})
+    build_src_files = [os.path.join(build, x) for x in src_files]
+    Local(*build_src_files)
 
     distutils_formats = []
 
@@ -870,9 +866,8 @@ for p in [ scons ]:
         # but that gives heartburn to Cygwin's tar, so work around it
         # with separate zcat-tar-rm commands.
         #
-        unpack_tar_gz_files = map(lambda x, u=unpack_tar_gz_dir, pv=pkg_version:
-                                         os.path.join(u, pv, x),
-                                  src_files)
+        unpack_tar_gz_files = [os.path.join(unpack_tar_gz_dir, pkg_version, x)
+                               for x in src_files]
         env.Command(unpack_tar_gz_files, dist_tar_gz, [
                     Delete(os.path.join(unpack_tar_gz_dir, pkg_version)),
                     "$ZCAT $SOURCES > .temp",
@@ -884,8 +879,8 @@ for p in [ scons ]:
         # Run setup.py in the unpacked subdirectory to "install" everything
         # into our build/test subdirectory.  The runtest.py script will set
         # PYTHONPATH so that the tests only look under build/test-{package},
-        # and under etc (for the testing modules TestCmd.py, TestSCons.py,
-        # and unittest.py).  This makes sure that our tests pass with what
+        # and under QMTest (for the testing modules TestCmd.py, TestSCons.py,
+        # etc.).  This makes sure that our tests pass with what
         # we really packaged, not because of something hanging around in
         # the development directory.
         #
@@ -893,7 +888,7 @@ for p in [ scons ]:
         # like this because we put a preamble in it that will chdir()
         # to the directory in which setup.py exists.
         #
-        dfiles = map(lambda x, d=test_tar_gz_dir: os.path.join(d, x), dst_files)
+        dfiles = [os.path.join(test_tar_gz_dir, x) for x in dst_files]
         env.Command(dfiles, unpack_tar_gz_files, [
             Delete(os.path.join(unpack_tar_gz_dir, pkg_version, 'build')),
             Delete("$TEST_TAR_GZ_DIR"),
@@ -910,21 +905,9 @@ for p in [ scons ]:
         env.Command(ebuild, os.path.join('gentoo', 'scons.ebuild.in'), SCons_revision)
         def Digestify(target, source, env):
             import md5
-            def hexdigest(s):
-                """Return a signature as a string of hex characters.
-                """
-                # NOTE:  This routine is a method in the Python 2.0 interface
-                # of the native md5 module, but we want SCons to operate all
-                # the way back to at least Python 1.5.2, which doesn't have it.
-                h = string.hexdigits
-                r = ''
-                for c in s:
-                    i = ord(c)
-                    r = r + h[(i >> 4) & 0xF] + h[i & 0xF]
-                return r
             src = source[0].rfile()
             contents = open(str(src)).read()
-            sig = hexdigest(md5.new(contents).digest())
+            sig = md5.new(contents).hexdigest()
             bytes = os.stat(str(src))[6]
             open(str(target[0]), 'w').write("MD5 %s %s %d\n" % (sig,
                                                                 src.name,
@@ -951,9 +934,8 @@ for p in [ scons ]:
         # Unpack the zip archive created by the distutils into
         # build/unpack-zip/scons-{version}.
         #
-        unpack_zip_files = map(lambda x, u=unpack_zip_dir, pv=pkg_version:
-                                      os.path.join(u, pv, x),
-                               src_files)
+        unpack_zip_files = [os.path.join(unpack_zip_dir, pkg_version, x)
+                                         for x in src_files]
 
         env.Command(unpack_zip_files, dist_zip, [
             Delete(os.path.join(unpack_zip_dir, pkg_version)),
@@ -964,8 +946,8 @@ for p in [ scons ]:
         # Run setup.py in the unpacked subdirectory to "install" everything
         # into our build/test subdirectory.  The runtest.py script will set
         # PYTHONPATH so that the tests only look under build/test-{package},
-        # and under etc (for the testing modules TestCmd.py, TestSCons.py,
-        # and unittest.py).  This makes sure that our tests pass with what
+        # and under QMTest (for the testing modules TestCmd.py, TestSCons.py,
+        # etc.).  This makes sure that our tests pass with what
         # we really packaged, not because of something hanging around in
         # the development directory.
         #
@@ -973,7 +955,7 @@ for p in [ scons ]:
         # like this because we put a preamble in it that will chdir()
         # to the directory in which setup.py exists.
         #
-        dfiles = map(lambda x, d=test_zip_dir: os.path.join(d, x), dst_files)
+        dfiles = [os.path.join(test_zip_dir, x) for x in dst_files]
         env.Command(dfiles, unpack_zip_files, [
             Delete(os.path.join(unpack_zip_dir, pkg_version, 'build')),
             Delete("$TEST_ZIP_DIR"),
@@ -1010,12 +992,12 @@ for p in [ scons ]:
             maintain multiple lists.
             """
             c = open(str(source[0]), 'rb').read()
-            c = string.replace(c, '__VERSION' + '__', env['VERSION'])
-            c = string.replace(c, '__RPM_FILES' + '__', env['RPM_FILES'])
+            c = c.replace('__VERSION' + '__', env['VERSION'])
+            c = c.replace('__RPM_FILES' + '__', env['RPM_FILES'])
             open(str(target[0]), 'wb').write(c)
 
         rpm_files.sort()
-        rpm_files_str = string.join(rpm_files, "\n") + "\n"
+        rpm_files_str = "\n".join(rpm_files) + "\n"
         rpm_spec_env = env.Clone(RPM_FILES = rpm_files_str)
         rpm_spec_action = Action(spec_function, varlist=['RPM_FILES'])
         rpm_spec_env.Command(specfile, specfile_in, rpm_spec_action)
@@ -1036,8 +1018,7 @@ for p in [ scons ]:
         AddPostAction(dist_noarch_rpm, Chmod(dist_noarch_rpm, 0644))
         AddPostAction(dist_src_rpm, Chmod(dist_src_rpm, 0644))
 
-        dfiles = map(lambda x, d=test_rpm_dir: os.path.join(d, 'usr', x),
-                     dst_files)
+        dfiles = [os.path.join(test_rpm_dir, 'usr', x) for x in dst_files]
         env.Command(dfiles,
                     dist_noarch_rpm,
                     "$RPM2CPIO $SOURCES | (cd $TEST_RPM_DIR && cpio -id)")
@@ -1060,8 +1041,7 @@ for p in [ scons ]:
             if s[:len(old)] == old:
                 s = new + s[len(old):]
             return os.path.join('usr', s)
-        dfiles = map(lambda x, t=test_deb_dir: os.path.join(t, x),
-                     map(xxx, dst_files))
+        dfiles = [os.path.join(test_deb_dir, xxx(x)) for x in dst_files]
         env.Command(dfiles,
                     deb,
                     "dpkg --fsys-tarfile $SOURCES | (cd $TEST_DEB_DIR && tar -xf -)")
@@ -1084,7 +1064,7 @@ for p in [ scons ]:
             commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY bdist_dumb -f %s" % format)
 
         commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY sdist --formats=%s" %  \
-                            string.join(distutils_formats, ','))
+                            ','.join(distutils_formats))
 
     commands.append("$PYTHON $PYTHONFLAGS $SETUP_PY bdist_wininst")
 
@@ -1117,11 +1097,11 @@ for p in [ scons ]:
         local_script = os.path.join(build_dir_local, script)
         commands.append(Move(local_script + '.py', local_script))
 
-    rf = filter(lambda x: not x in scripts, raw_files)
-    rf = map(lambda x, slv=s_l_v: os.path.join(slv, x), rf)
+    rf = [x for x in raw_files if not x in scripts]
+    rf = [os.path.join(s_l_v, x) for x in rf]
     for script in scripts:
         rf.append("%s.py" % script)
-    local_targets = map(lambda x, s=build_dir_local: os.path.join(s, x), rf)
+    local_targets = [os.path.join(build_dir_local, x) for x in rf]
 
     env.Command(local_targets, build_src_files, commands)
 
@@ -1140,9 +1120,7 @@ for p in [ scons ]:
                     local_targets,
                     "cd %s && tar czf $( ${TARGET.abspath} $) *" % build_dir_local)
 
-        unpack_targets = map(lambda x, d=test_local_tar_gz_dir:
-                                    os.path.join(d, x),
-                             rf)
+        unpack_targets = [os.path.join(test_local_tar_gz_dir, x) for x in rf]
         commands = [Delete(test_local_tar_gz_dir),
                     Mkdir(test_local_tar_gz_dir),
                     "cd %s && tar xzf $( ${SOURCE.abspath} $)" % test_local_tar_gz_dir]
@@ -1153,9 +1131,7 @@ for p in [ scons ]:
         env.Command(dist_local_zip, local_targets, zipit,
                     CD = build_dir_local, PSV = '.')
 
-        unpack_targets = map(lambda x, d=test_local_zip_dir:
-                                    os.path.join(d, x),
-                             rf)
+        unpack_targets = [os.path.join(test_local_zip_dir, x) for x in rf]
         commands = [Delete(test_local_zip_dir),
                     Mkdir(test_local_zip_dir),
                     unzipit]
@@ -1208,12 +1184,12 @@ SConscript('doc/SConscript')
 
 sfiles = None
 if hg_status_lines:
-    slines = filter(lambda l: l[0] in 'ACM', hg_status_lines)
-    sfiles = map(lambda l: l.split()[-1], slines)
+    slines = [l for l in hg_status_lines if l[0] in 'ACM']
+    sfiles = [l.split()[-1] for l in slines]
 elif svn_status_lines:
-    slines = filter(lambda l: l[0] in ' MA', svn_status_lines)
-    sentries = map(lambda l: l.split()[-1], slines)
-    sfiles = filter(os.path.isfile, sentries)
+    slines = [l for l in svn_status_lines if l[0] in ' MA']
+    sentries = [l.split()[-1] for l in slines]
+    sfiles = list(filter(os.path.isfile, sentries))
 else:
    "Not building in a Mercurial or Subversion tree; skipping building src package."
 
@@ -1228,7 +1204,7 @@ if sfiles:
     ]
 
     for p in remove_patterns:
-        sfiles = filter(lambda s, p=p: not fnmatch.fnmatch(s, p), sfiles)
+        sfiles = [s for s in sfiles if not fnmatch.fnmatch(s, p)]
 
     if sfiles:
         ps = "%s-src" % project
@@ -1245,7 +1221,7 @@ if sfiles:
         for file in sfiles:
             env.SCons_revision(os.path.join(b_ps, file), file)
 
-        b_ps_files = map(lambda x, d=b_ps: os.path.join(d, x), sfiles)
+        b_ps_files = [os.path.join(b_ps, x) for x in sfiles]
         cmds = [
             Delete(b_psv),
             Copy(b_psv, b_ps),
@@ -1254,7 +1230,7 @@ if sfiles:
 
         env.Command(b_psv_stamp, src_deps + b_ps_files, cmds)
 
-        apply(Local, b_ps_files, {})
+        Local(*b_ps_files)
 
         if gzip:
 
@@ -1264,9 +1240,8 @@ if sfiles:
             #
             # Unpack the archive into build/unpack/scons-{version}.
             #
-            unpack_tar_gz_files = map(lambda x, u=unpack_tar_gz_dir, psv=psv:
-                                             os.path.join(u, psv, x),
-                                      sfiles)
+            unpack_tar_gz_files = [os.path.join(unpack_tar_gz_dir, psv, x)
+                                   for x in sfiles]
 
             #
             # We'd like to replace the last three lines with the following:
@@ -1286,17 +1261,16 @@ if sfiles:
             # Run setup.py in the unpacked subdirectory to "install" everything
             # into our build/test subdirectory.  The runtest.py script will set
             # PYTHONPATH so that the tests only look under build/test-{package},
-            # and under etc (for the testing modules TestCmd.py, TestSCons.py,
-            # and unittest.py).  This makes sure that our tests pass with what
-            # we really packaged, not because of something hanging around in
-            # the development directory.
+            # and under QMTest (for the testing modules TestCmd.py,
+            # TestSCons.py, etc.).  This makes sure that our tests pass with
+            # what we really packaged, not because of something hanging around
+            # in the development directory.
             #
             # We can get away with calling setup.py using a directory path
             # like this because we put a preamble in it that will chdir()
             # to the directory in which setup.py exists.
             #
-            dfiles = map(lambda x, d=test_src_tar_gz_dir: os.path.join(d, x),
-                            dst_files)
+            dfiles = [os.path.join(test_src_tar_gz_dir, x) for x in dst_files]
             scons_lib_dir = os.path.join(unpack_tar_gz_dir, psv, 'src', 'engine')
             ENV = env.Dictionary('ENV').copy()
             ENV['SCONS_LIB_DIR'] = scons_lib_dir
@@ -1329,9 +1303,8 @@ if sfiles:
             #
             # Unpack the archive into build/unpack/scons-{version}.
             #
-            unpack_zip_files = map(lambda x, u=unpack_zip_dir, psv=psv:
-                                             os.path.join(u, psv, x),
-                                      sfiles)
+            unpack_zip_files = [os.path.join(unpack_zip_dir, psv, x)
+                                for x in sfiles]
 
             env.Command(unpack_zip_files, src_zip, [
                 Delete(os.path.join(unpack_zip_dir, psv)),
@@ -1342,17 +1315,16 @@ if sfiles:
             # Run setup.py in the unpacked subdirectory to "install" everything
             # into our build/test subdirectory.  The runtest.py script will set
             # PYTHONPATH so that the tests only look under build/test-{package},
-            # and under etc (for the testing modules TestCmd.py, TestSCons.py,
-            # and unittest.py).  This makes sure that our tests pass with what
-            # we really packaged, not because of something hanging around in
-            # the development directory.
+            # and under QMTest (for the testing modules TestCmd.py,
+            # TestSCons.py, etc.).  This makes sure that our tests pass with
+            # what we really packaged, not because of something hanging
+            # around in the development directory.
             #
             # We can get away with calling setup.py using a directory path
             # like this because we put a preamble in it that will chdir()
             # to the directory in which setup.py exists.
             #
-            dfiles = map(lambda x, d=test_src_zip_dir: os.path.join(d, x),
-                            dst_files)
+            dfiles = [os.path.join(test_src_zip_dir, x) for x in dst_files]
             scons_lib_dir = os.path.join(unpack_zip_dir, psv, 'src', 'engine')
             ENV = env.Dictionary('ENV').copy()
             ENV['SCONS_LIB_DIR'] = scons_lib_dir

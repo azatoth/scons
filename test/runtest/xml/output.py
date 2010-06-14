@@ -30,12 +30,12 @@ Test writing XML output to a file.
 
 import os
 import re
-import string
 
 import TestCmd
 import TestRuntest
 
-test = TestRuntest.TestRuntest(match = TestCmd.match_re)
+test = TestRuntest.TestRuntest(match = TestCmd.match_re,
+                               diff = TestCmd.diff_re)
 
 pythonstring = re.escape(TestRuntest.pythonstring)
 test_fail_py = re.escape(os.path.join('test', 'fail.py'))
@@ -89,6 +89,11 @@ expect = """\
   <time>\\d+\.\d</time>
   </results>
 """ % locals()
+
+# Just strip carriage returns so the regular expression matching works.
+contents = test.read('xml.out')
+contents = contents.replace('\r', '')
+test.write('xml.out', contents)
 
 test.must_match('xml.out', expect)
 

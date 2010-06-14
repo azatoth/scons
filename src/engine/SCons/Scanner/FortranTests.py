@@ -207,7 +207,7 @@ test.write(['modules', 'use.mod'], "\n")
 
 # define some helpers:
 
-class DummyEnvironment:
+class DummyEnvironment(object):
     def __init__(self, listCppPath):
         self.path = listCppPath
         self.fs = SCons.Node.FS.FS(test.workpath(''))
@@ -218,10 +218,10 @@ class DummyEnvironment:
         elif len(args) == 1 and args[0] == 'FORTRANPATH':
             return self.path
         else:
-            raise KeyError, "Dummy environment only has FORTRANPATH attribute."
+            raise KeyError("Dummy environment only has FORTRANPATH attribute.")
 
     def has_key(self, key):
-        return self.Dictionary().has_key(key)
+        return key in self.Dictionary()
 
     def __getitem__(self,key):
         return self.Dictionary()[key]
@@ -238,9 +238,9 @@ class DummyEnvironment:
         return arg
 
     def subst_path(self, path, target=None, source=None, conv=None):
-        if type(path) != type([]):
+        if not isinstance(path, list):
             path = [path]
-        return map(self.subst, path)
+        return list(map(self.subst, path))
 
     def get_calculator(self):
         return None
@@ -255,8 +255,8 @@ class DummyEnvironment:
         return self.fs.File(filename)
 
 def deps_match(self, deps, headers):
-    scanned = map(os.path.normpath, map(str, deps))
-    expect = map(os.path.normpath, headers)
+    scanned = list(map(os.path.normpath, list(map(str, deps))))
+    expect = list(map(os.path.normpath, headers))
     self.failUnless(scanned == expect, "expect %s != scanned %s" % (expect, scanned))
 
 # define some tests:
@@ -382,7 +382,7 @@ class FortranScannerTestCase10(unittest.TestCase):
         env.fs.chdir(env.Dir(''))
         path = s.path(env, dir)
         deps2 = s(env.File('#fff4.f'), env, path)
-        headers1 =  map(test.workpath, ['include/f4.f'])
+        headers1 =  list(map(test.workpath, ['include/f4.f']))
         headers2 =  ['include/f4.f']
         deps_match(self, deps1, headers1)
         deps_match(self, deps2, headers2)
@@ -390,7 +390,7 @@ class FortranScannerTestCase10(unittest.TestCase):
 class FortranScannerTestCase11(unittest.TestCase):
     def runTest(self):
         SCons.Warnings.enableWarningClass(SCons.Warnings.DependencyWarning)
-        class TestOut:
+        class TestOut(object):
             def __call__(self, x):
                 self.out = x
 

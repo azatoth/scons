@@ -20,13 +20,21 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import string
-import StringIO
 import sys
+try:
+    from io import StringIO as _StringIO
+except (ImportError, AttributeError):
+    # Pre-2.6 Python has no "io" module.
+    exec('from cStringIO import StringIO')
+else:
+    # TODO(2.6):  The 2.6 io.StringIO.write() method requires unicode strings.
+    # This subclass can be removed when we drop support for Python 2.6.
+    class StringIO(_StringIO):
+        def write(self, s):
+            super(_StringIO, self).write(unicode(s))
 
 import TestSCons
 
@@ -50,7 +58,7 @@ test.must_contain_all_lines(test.stdout(), ['usage: scons [OPTION]'])
 
 try:
     save_stdout = sys.stdout
-    sys.stdout = StringIO.StringIO()
+    sys.stdout = StringIO()
 
     stats = pstats.Stats(scons_prof)
     stats.sort_stats('time')
@@ -71,7 +79,7 @@ test.run(arguments = "--profile %s" % scons_prof)
 
 try:
     save_stdout = sys.stdout
-    sys.stdout = StringIO.StringIO()
+    sys.stdout = StringIO()
 
     stats = pstats.Stats(scons_prof)
     stats.sort_stats('time')
@@ -96,8 +104,8 @@ expect = [
 test.must_contain_all_lines(test.stdout(), expect)
 
 expect = 'Memory before reading SConscript files'
-lines = string.split(test.stdout(), '\n')
-memory_lines = filter(lambda l, e=expect: string.find(l, e) != -1, lines)
+lines = test.stdout().split('\n')
+memory_lines = [l for l in lines if l.find(expect) != -1]
 
 test.fail_test(len(memory_lines) != 1)
 

@@ -40,14 +40,12 @@ be able to depend on any other type of "thing."
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
+import collections
 import copy
-from itertools import chain, izip
-import string
-import UserList
+from itertools import chain
 
 from SCons.Debug import logInstanceCreation
 import SCons.Executor
@@ -57,7 +55,7 @@ import SCons.Util
 from SCons.Debug import Trace
 
 def classname(obj):
-    return string.split(str(obj.__class__), '.')[-1]
+    return str(obj.__class__).split('.')[-1]
 
 # Node states
 #
@@ -99,7 +97,7 @@ Annotate = do_nothing
 
 # Classes for signature info for Nodes.
 
-class NodeInfoBase:
+class NodeInfoBase(object):
     """
     The generic base class for signature information for a Node.
 
@@ -107,7 +105,7 @@ class NodeInfoBase:
     logic for dealing with their own Node-specific signature information.
     """
     current_version_id = 1
-    def __init__(self, node):
+    def __init__(self, node=None):
         # Create an object attribute from the class attribute so it ends up
         # in the pickled data in the .sconsign file.
         self._version_id = self.current_version_id
@@ -136,8 +134,7 @@ class NodeInfoBase:
             try:
                 field_list = self.field_list
             except AttributeError:
-                field_list = self.__dict__.keys()
-                field_list.sort()
+                field_list = sorted(self.__dict__.keys())
         fields = []
         for field in field_list:
             try:
@@ -150,7 +147,7 @@ class NodeInfoBase:
             fields.append(f)
         return fields
 
-class BuildInfoBase:
+class BuildInfoBase(object):
     """
     The generic base class for build information for a Node.
 
@@ -161,7 +158,7 @@ class BuildInfoBase:
     implicit dependencies, and action information.
     """
     current_version_id = 1
-    def __init__(self, node):
+    def __init__(self, node=None):
         # Create an object attribute from the class attribute so it ends up
         # in the pickled data in the .sconsign file.
         self._version_id = self.current_version_id
@@ -172,7 +169,7 @@ class BuildInfoBase:
     def merge(self, other):
         self.__dict__.update(other.__dict__)
 
-class Node:
+class Node(object):
     """The base Node class, for entities that we know how to
     build, or use to build other Nodes.
     """
@@ -182,7 +179,7 @@ class Node:
 
     memoizer_counters = []
 
-    class Attrs:
+    class Attrs(object):
         pass
 
     def __init__(self):
@@ -351,12 +348,12 @@ class Node:
         for d in self.depends:
             if d.missing():
                 msg = "Explicit dependency `%s' not found, needed by target `%s'."
-                raise SCons.Errors.StopError, msg % (d, self)
+                raise SCons.Errors.StopError(msg % (d, self))
         if self.implicit is not None:
             for i in self.implicit:
                 if i.missing():
                     msg = "Implicit dependency `%s' not found, needed by target `%s'."
-                    raise SCons.Errors.StopError, msg % (i, self)
+                    raise SCons.Errors.StopError(msg % (i, self))
         self.binfo = self.get_binfo()
 
     def build(self, **kw):
@@ -372,7 +369,7 @@ class Node:
 
         """
         try:
-            apply(self.get_executor(), (self,), kw)
+            self.get_executor()(self, **kw)
         except SCons.Errors.BuildError, e:
             e.node = self
             raise
@@ -548,8 +545,7 @@ class Node:
         deps = []
         while nodes:
             n = nodes.pop(0)
-            d = filter(lambda x, seen=seen: not seen.has_key(x),
-                       n.get_found_includes(env, scanner, path))
+            d = [x for x in n.get_found_includes(env, scanner, path) if x not in seen]
             if d:
                 deps.extend(d)
                 for n in d:
@@ -832,7 +828,7 @@ class Node:
         except TypeError, e:
             e = e.args[0]
             if SCons.Util.is_List(e):
-                s = map(str, e)
+                s = list(map(str, e))
             else:
                 s = str(e)
             raise SCons.Errors.UserError("attempted to add a non-Node dependency to %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
@@ -849,7 +845,7 @@ class Node:
         except TypeError, e:
             e = e.args[0]
             if SCons.Util.is_List(e):
-                s = map(str, e)
+                s = list(map(str, e))
             else:
                 s = str(e)
             raise SCons.Errors.UserError("attempted to ignore a non-Node dependency of %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
@@ -863,7 +859,7 @@ class Node:
         except TypeError, e:
             e = e.args[0]
             if SCons.Util.is_List(e):
-                s = map(str, e)
+                s = list(map(str, e))
             else:
                 s = str(e)
             raise SCons.Errors.UserError("attempted to add a non-Node as source of %s:\n\t%s is a %s, not a Node" % (str(self), s, type(e)))
@@ -1053,7 +1049,7 @@ class Node:
             if t: Trace(': old %s new %s' % (len(then), len(children)))
             result = True
 
-        for child, prev_ni in izip(children, then):
+        for child, prev_ni in zip(children, then):
             if child.changed_since_last_build(self, prev_ni):
                 if t: Trace(': %s changed' % child)
                 result = True
@@ -1199,8 +1195,8 @@ class Node:
         new_bkids    = new.bsources    + new.bdepends    + new.bimplicit
         new_bkidsigs = new.bsourcesigs + new.bdependsigs + new.bimplicitsigs
 
-        osig = dict(izip(old_bkids, old_bkidsigs))
-        nsig = dict(izip(new_bkids, new_bkidsigs))
+        osig = dict(zip(old_bkids, old_bkidsigs))
+        nsig = dict(zip(new_bkids, new_bkidsigs))
 
         # The sources and dependencies we'll want to report are all stored
         # as relative paths to this target's directory, but we want to
@@ -1215,11 +1211,11 @@ class Node:
 
         lines = []
 
-        removed = filter(lambda x, nk=new_bkids: not x in nk, old_bkids)
+        removed = [x for x in old_bkids if not x in new_bkids]
         if removed:
-            removed = map(stringify, removed)
+            removed = list(map(stringify, removed))
             fmt = "`%s' is no longer a dependency\n"
-            lines.extend(map(lambda s, fmt=fmt: fmt % s, removed))
+            lines.extend([fmt % s for s in removed])
 
         for k in new_bkids:
             if not k in old_bkids:
@@ -1229,14 +1225,14 @@ class Node:
 
         if len(lines) == 0 and old_bkids != new_bkids:
             lines.append("the dependency order changed:\n" +
-                         "%sold: %s\n" % (' '*15, map(stringify, old_bkids)) +
-                         "%snew: %s\n" % (' '*15, map(stringify, new_bkids)))
+                         "%sold: %s\n" % (' '*15, list(map(stringify, old_bkids))) +
+                         "%snew: %s\n" % (' '*15, list(map(stringify, new_bkids))))
 
         if len(lines) == 0:
             def fmt_with_title(title, strlines):
-                lines = string.split(strlines, '\n')
+                lines = strlines.split('\n')
                 sep = '\n' + ' '*(15 + len(title))
-                return ' '*15 + title + string.join(lines, sep) + '\n'
+                return ' '*15 + title + sep.join(lines) + '\n'
             if old.bactsig != new.bactsig:
                 if old.bact == new.bact:
                     lines.append("the contents of the build action changed\n" +
@@ -1254,31 +1250,22 @@ class Node:
             return "%s %s"  % (preamble, lines[0])
         else:
             lines = ["%s:\n" % preamble] + lines
-            return string.join(lines, ' '*11)
+            return ( ' '*11).join(lines)
 
-try:
-    [].extend(UserList.UserList([]))
-except TypeError:
-    # Python 1.5.2 doesn't allow a list to be extended by list-like
-    # objects (such as UserList instances), so just punt and use
-    # real lists.
-    def NodeList(l):
-        return l
-else:
-    class NodeList(UserList.UserList):
-        def __str__(self):
-            return str(map(str, self.data))
+class NodeList(collections.UserList):
+    def __str__(self):
+        return str(list(map(str, self.data)))
 
 def get_children(node, parent): return node.children()
 def ignore_cycle(node, stack): pass
 def do_nothing(node, parent): pass
 
-class Walker:
+class Walker(object):
     """An iterator for walking a Node tree.
 
     This is depth-first, children are visited before the parent.
     The Walker object can be initialized with any node, and
-    returns the next node on the descent with each next() call.
+    returns the next node on the descent with each get_next() call.
     'kids_func' is an optional function that will be called to
     get the children of a node instead of calling 'children'.
     'cycle_func' is an optional function that will be called
@@ -1298,7 +1285,7 @@ class Walker:
         self.history = {} # used to efficiently detect and avoid cycles
         self.history[node] = None
 
-    def next(self):
+    def get_next(self):
         """Return the next node for this walk of the tree.
 
         This function is intentionally iterative, not recursive,
@@ -1310,7 +1297,7 @@ class Walker:
                 node = self.stack[-1].wkids.pop(0)
                 if not self.stack[-1].wkids:
                     self.stack[-1].wkids = None
-                if self.history.has_key(node):
+                if node in self.history:
                     self.cycle_func(node, self.stack)
                 else:
                     node.wkids = copy.copy(self.kids_func(node, self.stack[-1]))

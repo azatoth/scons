@@ -23,7 +23,7 @@
 #
 
 """
-Verify that a failed build action with -j works as expected.
+Verify that a failed build action with -k works as expected.
 """
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
@@ -64,18 +64,11 @@ Command('f6', 'f6.in', r'@%(_python_)s mypass.py f5 -  $TARGET $SOURCE')
 
 def print_build_failures():
     from SCons.Script import GetBuildFailures
-    bf_list = GetBuildFailures()
-    bf_list.sort(lambda a,b: cmp(a.filename, b.filename))
-    for bf in bf_list:
+    for bf in sorted(GetBuildFailures(), key=lambda a: a.filename):
         print "%%s failed:  %%s" %% (bf.node, bf.errstr)
 
-try:
-    import atexit
-except ImportError:
-    import sys
-    sys.exitfunc = print_build_failures
-else:
-    atexit.register(print_build_failures)
+import atexit
+atexit.register(print_build_failures)
 """ % locals())
 
 test.write('f3.in', "f3.in\n")
@@ -97,16 +90,14 @@ scons: *** [f4] Error 1
 scons: *** [f5] Error 1
 """
 
-test.run(arguments = '-k .',
-         status = 2,
-         stdout = expect_stdout,
-         stderr = expect_stderr)
+test.run(arguments = '-k .', status = 2, stdout=None, stderr=None)
+test.must_contain_exactly_lines(test.stdout(), expect_stdout, title='stdout')
+test.must_contain_exactly_lines(test.stderr(), expect_stderr, title='stderr')
 
 test.must_match(test.workpath('f3'), 'f3.in\n')
 test.must_not_exist(test.workpath('f4'))
 test.must_not_exist(test.workpath('f5'))
 test.must_match(test.workpath('f6'), 'f6.in\n') 
-
 
 
 test.pass_test()

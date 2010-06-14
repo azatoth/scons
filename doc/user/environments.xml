@@ -672,11 +672,8 @@ environment, of directory names, suffixes, etc.
 
       <programlisting>
          env = Environment()
-         dict = env.Dictionary()
-         keys = dict.keys()
-         keys.sort()
-         for key in keys:
-             print "construction variable = '%s', value = '%s'" % (key, dict[key])
+         for item in sorted(env.Dictionary().items()):
+             print "construction variable = '%s', value = '%s'" % item
       </programlisting>
 
     </section>
@@ -770,6 +767,83 @@ environment, of directory names, suffixes, etc.
       there are no target or source files
       for &cv-link-TARGET; and &cv-link-SOURCES; to expand.
 
+      </para>
+
+    </section>
+
+    <section>
+    <title>Handling Problems With Value Expansion</title>
+
+      <para>
+
+      If a problem occurs when expanding a construction variable,
+      by default it is expanded to <literal>''</literal>
+      (a null string), and will not cause scons to fail. 
+      
+       <programlisting>
+          env = Environment()
+          print "value is:", env.subst( '-&gt;$MISSING&lt;-' )
+      </programlisting>
+
+       <screen>
+          % <userinput>scons -Q</userinput>
+          value is: -&gt;&lt;-
+          scons: `.' is up to date.
+       </screen>
+      
+      This default behaviour can be changed using the &AllowSubstExceptions;
+      function.
+      When a problem occurs with a variable expansion it generates
+      an exception, and the &AllowSubstExceptions; function controls
+      which of these exceptions are actually fatal and which are
+      allowed to occur safely.   By default, &NameError; and &IndexError;
+      are the two exceptions that are allowed to occur: so instead of
+      causing scons to fail, these are caught, the variable expanded to
+      <literal>''</literal>
+      and scons execution continues.
+      To require that all construction variable names exist, and that
+      indexes out of range are not allowed, call &AllowSubstExceptions;
+      with no extra arguments.
+      </para>
+
+       <programlisting>
+          AllowSubstExceptions()
+          env = Environment()
+          print "value is:", env.subst( '-&gt;$MISSING&lt;-' )
+      </programlisting>
+
+       <screen>
+          % <userinput>scons -Q</userinput>
+          value is:
+          scons: *** NameError `MISSING' trying to evaluate `$MISSING'
+          File "/home/my/project/SConstruct", line 3, in &lt;module&gt;
+       </screen>
+
+      <para>
+      This can also be used to allow other exceptions that might occur,
+      most usefully with the <literal>${...}</literal> construction
+      variable syntax.  For example, this would allow zero-division to
+      occur in a variable expansion in addition to the default exceptions
+      allowed
+      </para>
+
+       <programlisting>
+          AllowSubstExceptions(IndexError, NameError, ZeroDivisionError)
+          env = Environment()
+          print "value is:", env.subst( '-&gt;${1 / 0}&lt;-' )
+      </programlisting>
+
+       <screen>
+          % <userinput>scons -Q</userinput>
+          value is: -&gt;&lt;-
+          scons: `.' is up to date.
+       </screen>
+      <programlisting>
+      </programlisting>
+
+      <para>
+      If &AllowSubstExceptions; is called multiple times, each call
+      completely overwrites the previous list of allowed exceptions.
       </para>
 
     </section>
@@ -1543,11 +1617,10 @@ environment, of directory names, suffixes, etc.
       #!/usr/bin/env python
       import os
       import sys
-      if len(sys.argv) > 1:
+      if len(sys.argv) &gt; 1:
           keys = sys.argv[1:]
       else:
-          keys = os.environ.keys()
-          keys.sort()
+          keys = sorted(os.environ.keys())
       for key in keys:
           print "    " + key + "=" + os.environ[key]
       </file>

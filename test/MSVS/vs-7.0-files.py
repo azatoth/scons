@@ -30,10 +30,14 @@ solution (.sln) files that look correct.
 """
 
 import os
+import sys
+
 
 import TestSConsMSVS
 
 test = TestSConsMSVS.TestSConsMSVS()
+host_arch = test.get_vs_host_arch()
+
 
 # Make the test infrastructure think we have this version of MSVS installed.
 test._msvs_versions = ['7.0']
@@ -46,7 +50,7 @@ SConscript_contents = TestSConsMSVS.SConscript_contents_7_0
 
 
 
-test.write('SConstruct', SConscript_contents)
+test.write('SConstruct', SConscript_contents%{'HOST_ARCH': host_arch})
 
 test.run(arguments="Test.vcproj")
 

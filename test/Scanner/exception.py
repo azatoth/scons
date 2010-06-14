@@ -47,7 +47,7 @@ def kfile_scan(node, env, target, arg):
     contents = node.get_text_contents()
     exceptions = exception_re.findall(contents)
     if exceptions:
-        raise Exception, "kfile_scan error:  %s" % exceptions[0]
+        raise Exception("kfile_scan error:  %s" % exceptions[0])
     includes = include_re.findall(contents)
     return includes
 
@@ -67,11 +67,9 @@ def process(outf, inf):
 
 def cat(env, source, target):
     target = str(target[0])
-    source = map(str, source)
-
     outf = open(target, 'wb')
     for src in source:
-        process(outf, open(src, 'rb'))
+        process(outf, open(str(src), 'rb'))
     outf.close()
 
 env = Environment(BUILDERS={'Cat':Builder(action=cat)})

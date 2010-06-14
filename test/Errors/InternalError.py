@@ -35,9 +35,9 @@ test = TestSCons.TestSCons(match = TestSCons.match_re_dotall)
 
 # Test InternalError.
 test.write('SConstruct', """
-assert not globals().has_key("InternalError")
+assert "InternalError" not in globals()
 from SCons.Errors import InternalError
-raise InternalError, 'error inside'
+raise InternalError('error inside')
 """)
 
 test.run(stdout = "scons: Reading SConscript files ...\ninternal error\n",
@@ -46,7 +46,7 @@ test.run(stdout = "scons: Reading SConscript files ...\ninternal error\n",
   File ".+", line \d+, in .+
   File ".+", line \d+, in .+
   File ".+SConstruct", line \d+, in .+
-    raise InternalError, 'error inside'
+    raise InternalError\('error inside'\)
 InternalError: error inside
 """, status=2)
 

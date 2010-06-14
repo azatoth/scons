@@ -30,13 +30,12 @@ using qmtest.
 """
 
 import os
-import string
 
 import TestRuntest
 
 pythonstring = TestRuntest.pythonstring
 
-test = TestRuntest.TestRuntest(noqmtest=1)
+test = TestRuntest.TestRuntest()
 
 test.subdir('test')
 
@@ -75,7 +74,7 @@ testlist = [
     test_pass_py,
 ]
 
-test.run(arguments = '--noqmtest %s' % string.join(testlist),
+test.run(arguments = '--noqmtest %s' % ' '.join(testlist),
          status = 1,
          stdout = expect_stdout,
          stderr = expect_stderr)

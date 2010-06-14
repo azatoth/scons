@@ -84,7 +84,6 @@ Mylib.Subdirs(env, "src")
 
 test.write('Mylib.py', """\
 import os
-import string
 import re
 
 def Subdirs(env, dirlist):
@@ -92,10 +91,10 @@ def Subdirs(env, dirlist):
         env.SConscript(file, "env")
 
 def _subconf_list(dirlist):
-    return map(lambda x: os.path.join(x, "SConscript"), string.split(dirlist))
+    return [os.path.join(x, "SConscript") for x in dirlist.split()]
 
 def StaticLibMergeMembers(local_env, libname, hackpath, files):
-    for file in string.split(files):
+    for file in files.split():
         # QQQ Fix limits in grok'ed regexp
         tmp = re.sub(".c$", ".o", file)
         objname = re.sub(".cpp", ".o", tmp)
@@ -121,22 +120,22 @@ def Gen_StaticLibMerge(source, target, env, for_signature):
     return [["ar", "cq"] + target + srclist, ["ranlib"] + target]
 
 def StaticLibrary(env, target, source):
-    env.StaticLibrary(target, string.split(source))
+    env.StaticLibrary(target, source.split())
 
 def SharedLibrary(env, target, source):
-    env.SharedLibrary(target, string.split(source))
+    env.SharedLibrary(target, source.split())
 
 def ExportHeader(env, headers):
-    env.Install(dir = env["EXPORT_INCLUDE"], source = string.split(headers))
+    env.Install(dir = env["EXPORT_INCLUDE"], source = headers.split())
 
 def ExportLib(env, libs):
-    env.Install(dir = env["EXPORT_LIB"], source = string.split(libs))
+    env.Install(dir = env["EXPORT_LIB"], source = libs.split())
 
 def InstallBin(env, bins):
-    env.Install(dir = env["INSTALL_BIN"], source = string.split(bins))
+    env.Install(dir = env["INSTALL_BIN"], source = bins.split())
 
 def Program(env, target, source):
-    env.Program(target, string.split(source))
+    env.Program(target, source.split())
 
 def AddCFlags(env, str):
     env.Append(CPPFLAGS = " " + str)
@@ -146,13 +145,13 @@ def AddCFlags(env, str):
 #    AddCFlags(env, str)
 
 def AddIncludeDirs(env, str):
-    env.Append(CPPPATH = string.split(str))
+    env.Append(CPPPATH = str.split())
 
 def AddLibs(env, str):
-    env.Append(LIBS = string.split(str))
+    env.Append(LIBS = str.split())
 
 def AddLibDirs(env, str):
-    env.Append(LIBPATH = string.split(str))
+    env.Append(LIBPATH = str.split())
 
 """)
 
@@ -189,7 +188,6 @@ env = env.Clone()    # Yes, clobber intentionally
 
 test.write(['src', 'lib_geng', 'SConscript'], """\
 # --- Begin SConscript boilerplate ---
-import string
 import sys
 import Mylib
 Import("env")
@@ -233,8 +231,8 @@ for k in fromdict.keys():
         except SCons.Errors.UserError:
              pass
 todict["CFLAGS"] = fromdict["CPPFLAGS"] + " " + \
-    string.join(map(lambda x: "-I" + x, env["CPPPATH"])) + " " + \
-    string.join(map(lambda x: "-L" + x, env["LIBPATH"])) 
+    ' '.join(["-I" + x for x in env["CPPPATH"]]) + " " + \
+    ' '.join(["-L" + x for x in env["LIBPATH"]])
 todict["CXXFLAGS"] = todict["CFLAGS"]
 
 generated_hdrs = "libg_gx.h libg_gy.h libg_gz.h"
@@ -243,9 +241,9 @@ static_hdrs = "libg_w.h"
 exported_hdrs = static_hdrs
 lib_name = "g"
 lib_fullname = env.subst("${LIBPREFIX}g${LIBSUFFIX}")
-lib_srcs = string.split("libg_1.c libg_2.c libg_3.c")
+lib_srcs = "libg_1.c libg_2.c libg_3.c".split()
 import re
-lib_objs = map(lambda x: re.sub("\.c$", ".o", x), lib_srcs)
+lib_objs = [re.sub("\.c$", ".o", x) for x in lib_srcs]
 
 Mylib.ExportHeader(env, exported_hdrs)
 Mylib.ExportLib(env, lib_fullname)
@@ -275,11 +273,11 @@ cmd_justlib = "%s %s -C ${SOURCES[0].dir}" % (escape(sys.executable),
 #
 # SCons bug??
 
-env.Command(string.split(generated_hdrs),
+env.Command(generated_hdrs.split(),
             ["MAKE-HEADER.py"],
             cmd_generated)
 recurse_env.Command([lib_fullname] + lib_objs,
-                    lib_srcs + string.split(generated_hdrs + " " + static_hdrs),
+                    lib_srcs + (generated_hdrs + " " + static_hdrs).split(),
                     cmd_justlib) 
 """)
 
@@ -303,30 +301,43 @@ import os
 Scanned = {}
 
 def write_out(file, dict):
-    keys = dict.keys()
-    keys.sort()
     f = open(file, 'wb')
-    for k in keys:
+    for k in sorted(dict.keys()):
         file = os.path.split(k)[1]
         f.write(file + ": " + str(dict[k]) + "\\n")
     f.close()
 
-orig_function = CScan.__call__
+# A hand-coded new-style class proxy to wrap the underlying C Scanner
+# with a method that counts the calls.
+#
+# This is more complicated than it used to be with old-style classes
+# because the .__*__() methods in new-style classes are not looked
+# up on the instance, but resolve to the actual wrapped class methods,
+# so we have to handle those directly.
+class CScannerCounter(object):
+    def __init__(self, original_CScanner, *args, **kw):
+        self.original_CScanner = original_CScanner
+    def __cmp__(self, *args, **kw):
+        return self.original_CScanner.__cmp__(*args, **kw)
+    def __hash__(self, *args, **kw):
+        return self.original_CScanner.__hash__(*args, **kw)
+    def __str__(self, *args, **kw):
+        return self.original_CScanner.__str__(*args, **kw)
+    def __getattr__(self, *args, **kw):
+        return self.original_CScanner.__getattribute__(*args, **kw)
+    def __call__(self, node, *args, **kw):
+        global Scanned
+        n = str(node)
+        try:
+            Scanned[n] = Scanned[n] + 1
+        except KeyError:
+            Scanned[n] = 1
+        write_out(r'%s', Scanned)
+        return self.original_CScanner(node, *args, **kw)
 
-def MyCScan(node, paths, cwd, orig_function=orig_function):
-    deps = orig_function(node, paths, cwd)
-
-    global Scanned
-    n = str(node)
-    try:
-        Scanned[n] = Scanned[n] + 1
-    except KeyError:
-        Scanned[n] = 1
-    write_out(r'%s', Scanned)
-
-    return deps
-
-CScan.__call__ = MyCScan
+import SCons.Tool
+MyCScanner = CScannerCounter(SCons.Script.CScanner)
+SCons.Tool.SourceFileScanner.add_scanner('.c', MyCScanner)
 
 env = Environment(CPPPATH = ".")
 l = env.StaticLibrary("g", Split("libg_1.c libg_2.c libg_3.c"))

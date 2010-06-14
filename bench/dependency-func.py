@@ -26,7 +26,7 @@ def use_if_tests(env, dep, arg):
     elif t == '4444':
         func = dep.func4
     else:
-        raise Exception, "bad key %s" % t
+        raise Exception("bad key %s" % t)
     return func(arg)
 
 
@@ -71,7 +71,7 @@ def Func02(t):
 #       {'keyword' : 'arguments'},
 #   ),
 
-class A:
+class A(object):
     pass
 
 Data = [

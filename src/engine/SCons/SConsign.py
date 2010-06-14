@@ -29,9 +29,11 @@ Writing and reading information to the .sconsign file or files.
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
-import cPickle
+import SCons.compat
+
 import os
-import os.path
+# compat layer imports "cPickle" for us if it's available.
+import pickle
 
 import SCons.dblite
 import SCons.Warnings
@@ -106,7 +108,7 @@ def write():
         else:
             syncmethod()
 
-class SConsignEntry:
+class SConsignEntry(object):
     """
     Wrapper class for the generic entry in a .sconsign file.
     The Node subclass populates it with attributes as it pleases.
@@ -124,7 +126,7 @@ class SConsignEntry:
     def convert_from_sconsign(self, dir, name):
         self.binfo.convert_from_sconsign(dir, name)
 
-class Base:
+class Base(object):
     """
     This is the controlling class for the signatures for the collection of
     entries associated with a specific directory.  The actual directory
@@ -201,8 +203,8 @@ class DB(Base):
             pass
         else:
             try:
-                self.entries = cPickle.loads(rawentries)
-                if type(self.entries) is not type({}):
+                self.entries = pickle.loads(rawentries)
+                if not isinstance(self.entries, dict):
                     self.entries = {}
                     raise TypeError
             except KeyboardInterrupt:
@@ -239,7 +241,7 @@ class DB(Base):
         path = normcase(self.dir.path)
         for key, entry in self.entries.items():
             entry.convert_to_sconsign()
-        db[path] = cPickle.dumps(self.entries, 1)
+        db[path] = pickle.dumps(self.entries, 1)
 
         if sync:
             try:
@@ -260,8 +262,8 @@ class Dir(Base):
         if not fp:
             return
 
-        self.entries = cPickle.load(fp)
-        if type(self.entries) is not type({}):
+        self.entries = pickle.load(fp)
+        if not isinstance(self.entries, dict):
             self.entries = {}
             raise TypeError
 
@@ -327,7 +329,7 @@ class DirFile(Dir):
                 return
         for key, entry in self.entries.items():
             entry.convert_to_sconsign()
-        cPickle.dump(self.entries, file, 1)
+        pickle.dump(self.entries, file, 1)
         file.close()
         if fname != self.sconsign:
             try:

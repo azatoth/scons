@@ -35,16 +35,13 @@ directory = sys.argv[1]
 Top = None
 TopPath = None
 
-class Dir:
+class Dir(object):
     def __init__(self, path):
         self.path = path
         self.entries = {}
     def call_for_each_entry(self, func):
-        entries = self.entries
-        names = entries.keys()
-        names.sort()
-        for name in names:
-            func(name, entries[name])
+        for name in sorted(self.entries.keys()):
+            func(name, self.entries[name])
 
 def lookup(dirname):
     global Top, TopPath
@@ -60,11 +57,6 @@ def lookup(dirname):
     node = t.entries[dirs[-1]] = Dir(dirs)
     return node
 
-def make_nodes(arg, dirname, fnames):
-    dir = lookup(dirname)
-    for f in fnames:
-        dir.entries[f] = None
-
 def collect_dirs(l, dir):
     if dir.path:
         l.append(dir.path)
@@ -78,7 +70,7 @@ def print_files(dir):
         if not d:
             l = dir.path + [n]
             sys.stdout.write('\ntest.write(%s, """\\\n' % l)
-            p = os.path.join(*([directory] + l))
+            p = os.path.join(directory, *l)
             sys.stdout.write(open(p, 'r').read())
             sys.stdout.write('""")\n')
     dir.call_for_each_entry(print_a_file)
@@ -88,7 +80,10 @@ def print_files(dir):
             print_files(d)
     dir.call_for_each_entry(recurse)
 
-os.path.walk(directory, make_nodes, None)
+for dirpath, dirnames, filenames in os.walk(directory):
+    dir = lookup(dirpath)
+    for f in fnames:
+        dir.entries[f] = None
 
 subdir_list = []
 collect_dirs(subdir_list, Top)

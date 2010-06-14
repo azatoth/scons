@@ -18,8 +18,8 @@ in this subclass.
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os
-import string
 import sys
+import platform
 
 from TestSCons import *
 from TestSCons import __all__
@@ -165,7 +165,8 @@ Package=<3>
 '''
 
 SConscript_contents_6_0 = """\
-env=Environment(platform='win32', tools=['msvs'], MSVS_VERSION='6.0')
+env=Environment(platform='win32', tools=['msvs'],
+                MSVS_VERSION='6.0',HOST_ARCH='%(HOST_ARCH)s')
 
 testsrc = ['test.c']
 testincs = ['sdk.h']
@@ -285,7 +286,8 @@ expected_vcprojfile_7_0 = """\
 """
 
 SConscript_contents_7_0 = """\
-env=Environment(platform='win32', tools=['msvs'], MSVS_VERSION='7.0')
+env=Environment(platform='win32', tools=['msvs'],
+                MSVS_VERSION='7.0',HOST_ARCH='%(HOST_ARCH)s')
 
 testsrc = ['test1.cpp', 'test2.cpp']
 testincs = ['sdk.h']
@@ -408,7 +410,8 @@ expected_vcprojfile_7_1 = """\
 """
 
 SConscript_contents_7_1 = """\
-env=Environment(platform='win32', tools=['msvs'], MSVS_VERSION='7.1')
+env=Environment(platform='win32', tools=['msvs'],
+                MSVS_VERSION='7.1',HOST_ARCH='%(HOST_ARCH)s')
 
 testsrc = ['test1.cpp', 'test2.cpp']
 testincs = ['sdk.h']
@@ -540,7 +543,8 @@ expected_vcprojfile_8_0 = """\
 SConscript_contents_8_0 = """\
 env=Environment(platform='win32', tools=['msvs'], MSVS_VERSION='8.0',
                 CPPDEFINES=['DEF1', 'DEF2',('DEF3','1234')],
-                CPPPATH=['inc1', 'inc2'])
+                CPPPATH=['inc1', 'inc2'],
+                HOST_ARCH='%(HOST_ARCH)s')
 
 testsrc = ['test1.cpp', 'test2.cpp']
 testincs = ['sdk.h']
@@ -596,7 +600,7 @@ print "self._msvs_versions =", str(SCons.Tool.MSCommon.query_versions())
         replace = 'sys.path = [ %s, join(sys' % enginepath
 
         contents = self.read(fname)
-        contents = string.replace(contents, orig, replace)
+        contents = contents.replace(orig, replace)
         self.write(fname, contents)
 
     def msvs_substitute(self, input, msvs_ver,
@@ -620,18 +624,18 @@ print "self._msvs_versions =", str(SCons.Tool.MSCommon.query_versions())
         if project_guid is None:
             project_guid = "{E5466E26-0003-F18B-8F8A-BCD76C86388D}"
 
-        if os.environ.has_key('SCONS_LIB_DIR'):
+        if 'SCONS_LIB_DIR' in os.environ:
             exec_script_main = "from os.path import join; import sys; sys.path = [ r'%s' ] + sys.path; import SCons.Script; SCons.Script.main()" % os.environ['SCONS_LIB_DIR']
         else:
             exec_script_main = "from os.path import join; import sys; sys.path = [ join(sys.prefix, 'Lib', 'site-packages', 'scons-%s'), join(sys.prefix, 'scons-%s'), join(sys.prefix, 'Lib', 'site-packages', 'scons'), join(sys.prefix, 'scons') ] + sys.path; import SCons.Script; SCons.Script.main()" % (self.scons_version, self.scons_version)
-        exec_script_main_xml = string.replace(exec_script_main, "'", "&apos;")
+        exec_script_main_xml = exec_script_main.replace("'", "&apos;")
 
-        result = string.replace(input, r'<WORKPATH>', workpath)
-        result = string.replace(result, r'<PYTHON>', python)
-        result = string.replace(result, r'<SCONSCRIPT>', sconscript)
-        result = string.replace(result, r'<SCONS_SCRIPT_MAIN>', exec_script_main)
-        result = string.replace(result, r'<SCONS_SCRIPT_MAIN_XML>', exec_script_main_xml)
-        result = string.replace(result, r'<PROJECT_GUID>', project_guid)
+        result = input.replace(r'<WORKPATH>', workpath)
+        result = result.replace(r'<PYTHON>', python)
+        result = result.replace(r'<SCONSCRIPT>', sconscript)
+        result = result.replace(r'<SCONS_SCRIPT_MAIN>', exec_script_main)
+        result = result.replace(r'<SCONS_SCRIPT_MAIN_XML>', exec_script_main_xml)
+        result = result.replace(r'<PROJECT_GUID>', project_guid)
         return result
 
     def get_msvs_executable(self, version):
@@ -655,12 +659,44 @@ print "self._msvs_versions =", str(SCons.Tool.MSCommon.query_versions())
         else:
             sconsflags = []
         sconsflags = sconsflags + ['--warn=no-deprecated']
-        os.environ['SCONSFLAGS'] = string.join(sconsflags)
+        os.environ['SCONSFLAGS'] = ' '.join(sconsflags)
         try:
-            result = apply(TestSCons.run, (self,)+args, kw)
+            result = TestSCons.run(self, *args, **kw)
         finally:
             os.environ['SCONSFLAGS'] = save_sconsflags or ''
         return result
+    
+    def get_vs_host_arch(self):
+        """ Get an MSVS, SDK , and/or MSVS acceptable platform arch
+        """
+        
+        # Dict to 'canonalize' the arch
+        _ARCH_TO_CANONICAL = {
+            "x86": "x86",
+            "amd64": "amd64",
+            "i386": "x86",
+            "emt64": "amd64",
+            "x86_64": "amd64",
+            "itanium": "ia64",
+            "ia64": "ia64",
+        }
+
+        host_platform = platform.machine()
+        # TODO(2.5):  the native Python platform.machine() function returns
+        # '' on all Python versions before 2.6, after which it also uses
+        # PROCESSOR_ARCHITECTURE.
+        if not host_platform:
+            host_platform = os.environ.get('PROCESSOR_ARCHITECTURE', '')
+                
+            
+        try:
+            host = _ARCH_TO_CANONICAL[host_platform]
+        except KeyError, e:
+            # Default to x86 for all other platforms
+            host = 'x86'
+    
+   
+        return host
 
 # Local Variables:
 # tab-width:4

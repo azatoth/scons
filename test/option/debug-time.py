@@ -20,12 +20,11 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
+from __future__ import division
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import TestSCons
-import string
 import re
 import time
 
@@ -110,8 +109,10 @@ complete_time = time.time() - start_time
 expected_total_time = complete_time - overhead
 
 pattern = r'Command execution time: (\d+\.\d+) seconds'
-times = map(float, re.findall(pattern, test.stdout()))
-expected_command_time = reduce(lambda x, y: x + y, times, 0.0)
+times = list(map(float, re.findall(pattern, test.stdout())))
+expected_command_time = 0.0
+for t in times:
+    expected_command_time += t
 
 
 stdout = test.stdout()
@@ -153,7 +154,7 @@ outside of the 15%% tolerance.
 """ % locals())
 
 if failures or warnings:
-    print string.join([test.stdout()] + failures + warnings, '\n')
+    print '\n'.join([test.stdout()] + failures + warnings)
 if failures:
     test.fail_test(1)
 
@@ -190,7 +191,7 @@ outside of the 1%% tolerance.
 """ % locals())
 
 if failures:
-    print string.join([test.stdout()] + failures, '\n')
+    print '\n'.join([test.stdout()] + failures)
     test.fail_test(1)
 
 test.run(arguments = "-j4 --debug=time . SLEEP=1")

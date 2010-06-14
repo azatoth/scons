@@ -20,11 +20,8 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
-
-import string
 
 import TestSCons
 
@@ -229,10 +226,9 @@ test.write(['work1', 'src', 'b2.for'], r"""
 def blank_output(err):
     if not err:
         return 1
-    stderrlines = filter(lambda l: l, string.split(err, '\n'))
+    stderrlines = [l for l in err.split('\n') if l]
     msg = "warning: tempnam() possibly used unsafely"
-    stderrlines = filter(lambda l, msg=msg: string.find(l, msg) == -1,
-                         stderrlines)
+    stderrlines = [l for l in stderrlines if l.find(msg) == -1]
     return len(stderrlines) == 0
 
 test.run(chdir='work1', arguments = '. ../build', stderr=None)

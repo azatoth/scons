@@ -24,6 +24,8 @@
 #
 # Options:
 #
+#       -3              Run with the python -3 option,
+#
 #       -a              Run all tests; does a virtual 'find' for
 #                       all SCons tests under the current directory.
 #
@@ -83,20 +85,39 @@
 # library directory.  If we ever resurrect that as the default, then
 # you can find the appropriate code in the 0.04 version of this script,
 # rather than reinventing that wheel.)
-#
 
 import getopt
 import glob
 import os
-import os.path
 import re
 import stat
-import string
 import sys
 import time
 
-if not hasattr(os, 'WEXITSTATUS'):
-    os.WEXITSTATUS = lambda x: x
+try:
+    sorted
+except NameError:
+    # Pre-2.4 Python has no sorted() function.
+    #
+    # The pre-2.4 Python list.sort() method does not support
+    # list.sort(key=) nor list.sort(reverse=) keyword arguments, so
+    # we must implement the functionality of those keyword arguments
+    # by hand instead of passing them to list.sort().
+    def sorted(iterable, cmp=None, key=None, reverse=0):
+        if key is not None:
+            result = [(key(x), x) for x in iterable]
+        else:
+            result = iterable[:]
+        if cmp is None:
+            # Pre-2.3 Python does not support list.sort(None).
+            result.sort()
+        else:
+            result.sort(cmp)
+        if key is not None:
+            result = [t1 for t0,t1 in result]
+        if reverse:
+            result.reverse()
+        return result
 
 cwd = os.getcwd()
 
@@ -110,6 +131,7 @@ list_only = None
 printcommand = 1
 package = None
 print_passed_summary = None
+python3incompatibilities = None
 scons = None
 scons_exec = None
 outputfile = None
@@ -123,6 +145,7 @@ spe = None
 helpstr = """\
 Usage: runtest.py [OPTIONS] [TEST ...]
 Options:
+  -3                          Warn about Python 3.x incompatibilities.
   -a, --all                   Run all tests.
   --aegis                     Print results in Aegis format.
   -b BASE, --baseline BASE    Run test scripts against baseline BASE.
@@ -160,7 +183,7 @@ Options:
   --xml                       Print results in SCons XML format.
 """
 
-opts, args = getopt.getopt(sys.argv[1:], "ab:df:hlno:P:p:qv:Xx:t",
+opts, args = getopt.getopt(sys.argv[1:], "3ab:df:hlno:P:p:qv:Xx:t",
                             ['all', 'aegis', 'baseline=', 'builddir=',
                              'debug', 'file=', 'help',
                              'list', 'no-exec', 'noqmtest', 'output=',
@@ -170,7 +193,9 @@ opts, args = getopt.getopt(sys.argv[1:], "ab:df:hlno:P:p:qv:Xx:t",
                              'verbose=', 'xml'])
 
 for o, a in opts:
-    if o in ['-a', '--all']:
+    if o in ['-3']:
+        python3incompatibilities = 1
+    elif o in ['-a', '--all']:
         all = 1
     elif o in ['-b', '--baseline']:
         baseline = a
@@ -216,9 +241,9 @@ for o, a in opts:
     elif o in ['-q', '--quiet']:
         printcommand = 0
     elif o in ['--sp']:
-        sp = string.split(a, os.pathsep)
+        sp = a.split(os.pathsep)
     elif o in ['--spe']:
-        spe = string.split(a, os.pathsep)
+        spe = a.split(os.pathsep)
     elif o in ['-t', '--time']:
         print_times = 1
     elif o in ['--verbose']:
@@ -245,8 +270,8 @@ runtest.py:  No tests were specified.
 if sys.platform in ('win32', 'cygwin'):
 
     def whereis(file):
-        pathext = [''] + string.split(os.environ['PATHEXT'], os.pathsep)
-        for dir in string.split(os.environ['PATH'], os.pathsep):
+        pathext = [''] + os.environ['PATHEXT'].split(os.pathsep)
+        for dir in os.environ['PATH'].split(os.pathsep):
             f = os.path.join(dir, file)
             for ext in pathext:
                 fext = f + ext
@@ -257,7 +282,7 @@ if sys.platform in ('win32', 'cygwin'):
 else:
 
     def whereis(file):
-        for dir in string.split(os.environ['PATH'], os.pathsep):
+        for dir in os.environ['PATH'].split(os.pathsep):
             f = os.path.join(dir, file)
             if os.path.isfile(f):
                 try:
@@ -295,10 +320,10 @@ if format == '--aegis' and aegis:
     if change:
         if sp is None:
             paths = os.popen("aesub '$sp' 2>/dev/null", "r").read()[:-1]
-            sp = string.split(paths, os.pathsep)
+            sp = paths.split(os.pathsep)
         if spe is None:
             spe = os.popen("aesub '$spe' 2>/dev/null", "r").read()[:-1]
-            spe = string.split(spe, os.pathsep)
+            spe = spe.split(os.pathsep)
     else:
         aegis = None
 
@@ -316,7 +341,7 @@ _ws = re.compile('\s')
 def escape(s):
     if _ws.search(s):
         s = '"' + s + '"'
-    s = string.replace(s, '\\', '\\\\')
+    s = s.replace('\\', '\\\\')
     return s
 
 # Set up lowest-common-denominator spawning of a process on both Windows
@@ -334,10 +359,10 @@ except AttributeError:
 else:
     def spawn_it(command_args):
         command = command_args[0]
-        command_args = map(escape, command_args)
+        command_args = list(map(escape, command_args))
         return os.spawnv(os.P_WAIT, command, command_args)
 
-class Base:
+class Base(object):
     def __init__(self, path, spe=None):
         self.path = path
         self.abspath = os.path.abspath(path)
@@ -447,7 +472,7 @@ if package:
         'deb'        : os.path.join('python2.1', 'site-packages')
     }
 
-    if not dir.has_key(package):
+    if package not in dir:
         sys.stderr.write("Unknown package '%s'\n" % package)
         sys.exit(2)
 
@@ -490,7 +515,7 @@ else:
     #                sd = d
     #                scons = f
     #    spe = map(lambda x: os.path.join(x, 'src', 'engine'), spe)
-    #    ld = string.join(spe, os.pathsep)
+    #    ld = os.pathsep.join(spe)
 
     if not baseline or baseline == '.':
         base = cwd
@@ -569,35 +594,42 @@ for dir in sp:
         q = os.path.join(dir, 'QMTest')
     pythonpaths.append(q)
 
-os.environ['SCONS_SOURCE_PATH_EXECUTABLE'] = string.join(spe, os.pathsep)
+os.environ['SCONS_SOURCE_PATH_EXECUTABLE'] = os.pathsep.join(spe)
 
-os.environ['PYTHONPATH'] = string.join(pythonpaths, os.pathsep)
+os.environ['PYTHONPATH'] = os.pathsep.join(pythonpaths)
 
 if old_pythonpath:
     os.environ['PYTHONPATH'] = os.environ['PYTHONPATH'] + \
                                os.pathsep + \
                                old_pythonpath
 
+if python3incompatibilities:
+    os.environ['SCONS_HORRIBLE_REGRESSION_TEST_HACK'] = '1'
+
 tests = []
 
-def find_Tests_py(tdict, dirname, names):
-    for n in filter(lambda n: n[-8:] == "Tests.py", names):
-        tdict[os.path.join(dirname, n)] = 1
+def find_Tests_py(directory):
+    result = []
+    for dirpath, dirnames, filenames in os.walk(directory):
+        for fname in filenames:
+            if fname.endswith("Tests.py"):
+                result.append(os.path.join(dirpath, fname))
+    return sorted(result)
 
-def find_py(tdict, dirname, names):
-    tests = filter(lambda n: n[-3:] == ".py", names)
-    try:
-        excludes = open(os.path.join(dirname,".exclude_tests")).readlines()
-    except (OSError, IOError):
-        pass
-    else:
-        for exclude in excludes:
-            exclude = string.split(exclude, '#' , 1)[0]
-            exclude = string.strip(exclude)
-            if not exclude: continue
-            tests = filter(lambda n, ex = exclude: n != ex, tests)
-    for n in tests:
-        tdict[os.path.join(dirname, n)] = 1
+def find_py(directory):
+    result = []
+    for dirpath, dirnames, filenames in os.walk(directory):
+        try:
+            exclude_fp = open(os.path.join(dirpath, ".exclude_tests"))
+        except EnvironmentError:
+            excludes = []
+        else:
+            excludes = [ e.split('#', 1)[0].strip()
+                         for e in exclude_fp.readlines() ]
+        for fname in filenames:
+            if fname.endswith(".py") and fname not in excludes:
+                result.append(os.path.join(dirpath, fname))
+    return sorted(result)
 
 if args:
     if spe:
@@ -615,20 +647,17 @@ if args:
         for a in args:
             for path in glob.glob(a):
                 if os.path.isdir(path):
-                    tdict = {}
                     if path[:3] == 'src':
-                        os.path.walk(path, find_Tests_py, tdict)
+                        tests.extend(find_Tests_py(path))
+
                     elif path[:4] == 'test':
-                        os.path.walk(path, find_py, tdict)
-                    t = tdict.keys()
-                    t.sort()
-                    tests.extend(t)
+                        tests.extend(find_py(path))
                 else:
                     tests.append(path)
 elif testlistfile:
     tests = open(testlistfile, 'r').readlines()
-    tests = filter(lambda x: x[0] != '#', tests)
-    tests = map(lambda x: x[:-1], tests)
+    tests = [x for x in tests if x[0] != '#']
+    tests = [x[:-1] for x in tests]
 elif all and not qmtest:
     # Find all of the SCons functional tests in the local directory
     # tree.  This is anything under the 'src' subdirectory that ends
@@ -641,25 +670,22 @@ elif all and not qmtest:
     # still be executed by hand, though, and are routinely executed
     # by the Aegis packaging build to make sure that we're building
     # things correctly.)
-    tdict = {}
-    os.path.walk('src', find_Tests_py, tdict)
-    os.path.walk('test', find_py, tdict)
+    tests.extend(find_Tests_py('src'))
+    tests.extend(find_py('test'))
     if format == '--aegis' and aegis:
         cmd = "aegis -list -unf pf 2>/dev/null"
         for line in os.popen(cmd, "r").readlines():
-            a = string.split(line)
-            if a[0] == "test" and not tdict.has_key(a[-1]):
-                tdict[a[-1]] = Test(a[-1], spe)
+            a = line.split()
+            if a[0] == "test" and a[-1] not in tests:
+                tests.append(Test(a[-1], spe))
         cmd = "aegis -list -unf cf 2>/dev/null"
         for line in os.popen(cmd, "r").readlines():
-            a = string.split(line)
+            a = line.split()
             if a[0] == "test":
                 if a[1] == "remove":
-                    del tdict[a[-1]]
-                elif not tdict.has_key(a[-1]):
-                    tdict[a[-1]] = Test(a[-1], spe)
-
-    tests = tdict.keys()
+                    tests.remove(a[-1])
+                elif a[-1] not in tests:
+                    tests.append(Test(a[-1], spe))
     tests.sort()
 
 if qmtest:
@@ -701,17 +727,23 @@ if qmtest:
         qmtest_args.append(rs)
 
     if format == '--aegis':
-        tests = map(lambda x: string.replace(x, cwd+os.sep, ''), tests)
+        tests = [x.replace(cwd+os.sep, '') for x in tests]
     else:
         os.environ['SCONS'] = os.path.join(cwd, 'src', 'script', 'scons.py')
 
-    cmd = string.join(qmtest_args + tests, ' ')
+    cmd = ' '.join(qmtest_args + tests)
     if printcommand:
         sys.stdout.write(cmd + '\n')
         sys.stdout.flush()
     status = 0
     if execute_tests:
-        status = os.WEXITSTATUS(os.system(cmd))
+        status = os.system(cmd)
+        try:
+            wexitstatus = os.WEXITSTATUS
+        except AttributeError:
+            pass
+        else:
+            status = wexitstatus(status)
     sys.exit(status)
 
 #try:
@@ -719,11 +751,12 @@ if qmtest:
 #except OSError:
 #    pass
 
-tests = map(Test, tests)
+tests = list(map(Test, tests))
 
-class Unbuffered:
+class Unbuffered(object):
     def __init__(self, file):
         self.file = file
+        self.softspace = 0  ## backward compatibility; not supported in Py3k
     def write(self, arg):
         self.file.write(arg)
         self.file.flush()
@@ -744,6 +777,7 @@ if not python:
         python = os.path.join(sys.prefix, 'jython')
     else:
         python = sys.executable
+os.environ["python_executable"] = python
 
 # time.clock() is the suggested interface for doing benchmarking timings,
 # but time.time() does a better job on Linux systems, so let that be
@@ -762,11 +796,13 @@ else:
 total_start_time = time_func()
 for t in tests:
     command_args = ['-tt']
+    if python3incompatibilities:
+        command_args.append('-3')
     if debug:
         command_args.append(debug)
     command_args.append(t.path)
     t.command_args = [python] + command_args
-    t.command_str = string.join([escape(python)] + command_args, " ")
+    t.command_str = " ".join([escape(python)] + command_args)
     if printcommand:
         sys.stdout.write(t.command_str + "\n")
     test_start_time = time_func()
@@ -778,9 +814,9 @@ if len(tests) > 0:
     tests[0].total_time = time_func() - total_start_time
     print_time_func("Total execution time for all tests: %.1f seconds\n", tests[0].total_time)
 
-passed = filter(lambda t: t.status == 0, tests)
-fail = filter(lambda t: t.status == 1, tests)
-no_result = filter(lambda t: t.status == 2, tests)
+passed = [t for t in tests if t.status == 0]
+fail = [t for t in tests if t.status == 1]
+no_result = [t for t in tests if t.status == 2]
 
 if len(tests) != 1 and execute_tests:
     if passed and print_passed_summary:
@@ -788,22 +824,22 @@ if len(tests) != 1 and execute_tests:
             sys.stdout.write("\nPassed the following test:\n")
         else:
             sys.stdout.write("\nPassed the following %d tests:\n" % len(passed))
-        paths = map(lambda x: x.path, passed)
-        sys.stdout.write("\t" + string.join(paths, "\n\t") + "\n")
+        paths = [x.path for x in passed]
+        sys.stdout.write("\t" + "\n\t".join(paths) + "\n")
     if fail:
         if len(fail) == 1:
             sys.stdout.write("\nFailed the following test:\n")
         else:
             sys.stdout.write("\nFailed the following %d tests:\n" % len(fail))
-        paths = map(lambda x: x.path, fail)
-        sys.stdout.write("\t" + string.join(paths, "\n\t") + "\n")
+        paths = [x.path for x in fail]
+        sys.stdout.write("\t" + "\n\t".join(paths) + "\n")
     if no_result:
         if len(no_result) == 1:
             sys.stdout.write("\nNO RESULT from the following test:\n")
         else:
             sys.stdout.write("\nNO RESULT from the following %d tests:\n" % len(no_result))
-        paths = map(lambda x: x.path, no_result)
-        sys.stdout.write("\t" + string.join(paths, "\n\t") + "\n")
+        paths = [x.path for x in no_result]
+        sys.stdout.write("\t" + "\n\t".join(paths) + "\n")
 
 if outputfile:
     if outputfile == '-':
