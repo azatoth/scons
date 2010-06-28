@@ -5,7 +5,7 @@
                             Change Log
 
 
-RELEASE 2.0.1.beta.20100627 - Sun, 27 Jun 2010 09:46:03 -0700
+RELEASE 2.0.1.beta.20100627 - Mon, 27 Jun 2010 18:03:55 -0700
 
   From Dirk Baechle:
 
