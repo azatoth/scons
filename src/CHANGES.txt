@@ -5,7 +5,11 @@
                             Change Log
 
 
-RELEASE 2.1.0.alpha.yyyymmdd - NEW DATE WILL BE INSERTED HERE
+RELEASE 2.0.1.beta.20100627 - Sun, 27 Jun 2010 09:46:03 -0700
+
+  From Dirk Baechle:
+
+    - Fix XML in documentation.
 
   From Joe Zuntz:
 
@@ -19,32 +23,6 @@ RELEASE 2.1.0.alpha.yyyymmdd - NEW DATE WILL BE INSERTED HERE
 
     - Fix explicit dependencies (Depends()) on Nodes that don't have
       attached Builders.
-
-  From Matt Hughes:
-
-    - Fix the ability to append to default $*FLAGS values (which are
-      implemented as CLVar instances) in a copied construction environment
-      without affecting the original construction environment's value.
-
-  From Rob Managan:
-
-    - Updated the TeX command strings to include a /D on Windows in
-      case the new directory is on a different drive letter.
-
-    - Fixed the LaTeX scanner so dependencies are found in commands that
-      are broken across lines with a comment or have embedded spaces.
-
-RELEASE 2.0.0.beta.20100605 - Sat, 05 Jun 2010 21:02:48 -0700
-
-  From Dirk Baechle:
-
-    - Fix XML in documentation.
-
-  From W. Trevor King:
-
-    - Revisions to README.
-
-  From Steven Knight:
 
     - Provide forward compatibility for the 'profile' module.
 
@@ -76,6 +54,24 @@ RELEASE 2.0.0.beta.20100605 - Sat, 05 Jun 2010 21:02:48 -0700
 
     - Handle detecting Visual C++ on Python verions with upper-case
       platform architectures like 'AMD64'.
+
+  From Matt Hughes:
+
+    - Fix the ability to append to default $*FLAGS values (which are
+      implemented as CLVar instances) in a copied construction environment
+      without affecting the original construction environment's value.
+
+  From Rob Managan:
+
+    - Updated the TeX command strings to include a /D on Windows in
+      case the new directory is on a different drive letter.
+
+    - Fixed the LaTeX scanner so dependencies are found in commands that
+      are broken across lines with a comment or have embedded spaces.
+
+  From W. Trevor King:
+
+    - Revisions to README.
 
   From Greg Noel:
 
