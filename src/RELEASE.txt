@@ -20,8 +20,8 @@ the instructions on the following page:
      http://scons.org/lists.php
 
 
+RELEASE 1.3.0.d20100626 - Sat, 26 Jun 2010 17:33:11 -0700
 
-RELEASE 1.3.0.d20100606 - Sun, 06 Jun 2010 15:28:51 -0700
 
   Please consult the CHANGES.txt file for a list of specific changes
   since last release.
@@ -42,6 +42,11 @@ RELEASE 1.3.0.d20100606 - Sun, 06 Jun 2010 15:28:51 -0700
     -- Fixed propagating VS*COMTOOLS & COMSPEC from external
        environment if the Environment object doesn't have them
        defined.
+
+    -- Fix the ability to append to default $*FLAGS values (which are
+       implemented as CLVar instances) in a copied construction environment
+       without affecting the original construction environment's value.
+
 
 
   Please note the following important changes in this release:
@@ -1058,6 +1063,7 @@ With plenty of help from the SCons Development team:
         Chad Austin
         Charles Crain
         Bill Deegan
+        Matt Hughes
         Steve Leblanc
         Greg Noel
         Gary Oberbrunner
