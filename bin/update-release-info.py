@@ -114,7 +114,11 @@ if version_tuple[3] != 'final':
     else:
         yyyy,mm,dd,_,_,_ = release_date
         version_tuple = version_tuple[:4] + ((yyyy*100 + mm)*100 + dd,)
-version_string = '.'.join(map(str, version_tuple))
+    version_string = '.'.join(map(str, version_tuple))
+else:
+    # Final release doesn't have type or builddate in version string
+    version_string = '.'.join(map(str, version_tuple[:3]))
+
 version_type = version_tuple[3]
 if DEBUG: print 'version string', version_string
 
