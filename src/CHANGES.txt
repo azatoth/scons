@@ -5,7 +5,7 @@
                             Change Log
 
 
-RELEASE 2.1.0.alpha.yyyymmdd - NEW DATE WILL BE INSERTED HERE
+RELEASE 2.1.0.alpha.20110323 - Mon, 23 Mar 2011 22:58:23 -0700
 
   From Justin Gullingsrud:
     - support -std=c++0x and related CXXFLAGS in pkgconfig (ParseFlags)

@@ -34,6 +34,9 @@ In 'post' mode, files are prepared for the next release cycle:
   - A blank template replaces src/RELEASE.txt.
   - A new section to accumulate changes is added to src/CHANGES.txt and
     src/Announce.txt.
+
+NOTE:
+   This script doesn't work with python 2.4.
 """
 #
 # __COPYRIGHT__

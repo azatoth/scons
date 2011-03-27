@@ -19,7 +19,7 @@ effectively, please go to http://scons.org/lists.php#users to sign up for
 the scons-users mailing list.
 
 
-RELEASE 2.1.0.alpha.yyyymmdd - NEW DATE WILL BE INSERTED HERE
+RELEASE 2.1.0.alpha.20110323 - Mon, 23 Mar 2011 22:58:23 -0700
 
   Please consult the RELEASE.txt file for a summary changes since the last
   release and consult the CHANGES.txt file for complete a list of changes
